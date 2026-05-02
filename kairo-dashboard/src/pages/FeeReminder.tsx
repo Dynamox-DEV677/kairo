@@ -1,0 +1,496 @@
+import { useState, useEffect } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { DollarSign, Users, Mail, Settings, Send, CheckCircle, XCircle, Clock, Plus, Trash2, RefreshCw, BarChart2 } from 'lucide-react'
+import { get, post, put, del } from '../lib/api'
+
+const SCHOOL_ID = 'demo_school'
+
+const TABS = [
+  { id: 'stats',      label: 'Stats',      icon: BarChart2 },
+  { id: 'students',   label: 'Students',   icon: Users },
+  { id: 'fees',       label: 'Fees',       icon: DollarSign },
+  { id: 'send',       label: 'Send Email', icon: Send },
+  { id: 'setup',      label: 'Setup',      icon: Settings },
+]
+
+const card = { background: '#111', border: '1px solid #1e1e1e', borderRadius: 14, padding: 20 }
+const inp  = { background: '#0d0d0d', border: '1px solid #1e1e1e', borderRadius: 8, padding: '9px 12px', fontSize: 13, color: '#fafafa', fontFamily: 'inherit', outline: 'none', width: '100%' } as React.CSSProperties
+const label = { fontSize: 11, color: '#71717a', display: 'block', marginBottom: 5, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.8 } as React.CSSProperties
+const btn = (active = true) => ({ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', borderRadius: 9, border: 'none', background: active ? 'linear-gradient(135deg,#6366f1,#7c3aed)' : '#1c1c1c', color: active ? '#fff' : '#52525b', fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: active ? 'pointer' : 'not-allowed' } as React.CSSProperties)
+
+export default function FeeReminder() {
+  const [tab, setTab] = useState('stats')
+
+  return (
+    <div style={{ padding: '28px 36px', maxWidth: 1000, margin: '0 auto', height: '100%', overflowY: 'auto' }}>
+      <div style={{ marginBottom: 24 }}>
+        <h1 style={{ fontSize: 20, fontWeight: 700, color: '#fafafa', margin: 0 }}>Fee Reminder System</h1>
+        <p style={{ fontSize: 13, color: '#52525b', marginTop: 4 }}>Automated Gmail reminders · AI-generated content · Smart scheduling</p>
+      </div>
+
+      {/* Tabs */}
+      <div style={{ display: 'flex', gap: 4, marginBottom: 24, background: '#0d0d0d', border: '1px solid #1e1e1e', borderRadius: 10, padding: 4 }}>
+        {TABS.map(t => (
+          <button key={t.id} onClick={() => setTab(t.id)} style={{
+            flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+            padding: '7px 10px', borderRadius: 7, border: 'none', fontFamily: 'inherit',
+            fontSize: 12, fontWeight: tab === t.id ? 600 : 400, cursor: 'pointer',
+            background: tab === t.id ? '#1e1e2e' : 'transparent',
+            color: tab === t.id ? '#818cf8' : '#52525b',
+            transition: 'all 0.15s',
+          }}>
+            <t.icon size={13} /> {t.label}
+          </button>
+        ))}
+      </div>
+
+      <AnimatePresence mode="wait">
+        <motion.div key={tab} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}>
+          {tab === 'stats'    && <StatsTab />}
+          {tab === 'students' && <StudentsTab />}
+          {tab === 'fees'     && <FeesTab />}
+          {tab === 'send'     && <SendTab />}
+          {tab === 'setup'    && <SetupTab />}
+        </motion.div>
+      </AnimatePresence>
+    </div>
+  )
+}
+
+// ── Stats ─────────────────────────────────────────────────────────────────────
+function StatsTab() {
+  const [data, setData] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    get(`/emails/stats?school_id=${SCHOOL_ID}`).then(setData).catch(console.error).finally(() => setLoading(false))
+  }, [])
+
+  if (loading) return <Spinner />
+  if (!data)   return <ErrorMsg msg="Could not load stats. Is the backend running?" />
+
+  const statBoxes = [
+    { label: 'Total Emails', value: data.emails.total,   color: '#818cf8', icon: Mail },
+    { label: 'Sent',         value: data.emails.sent,    color: '#34d399', icon: CheckCircle },
+    { label: 'Failed',       value: data.emails.failed,  color: '#f87171', icon: XCircle },
+    { label: 'Pending Fees', value: data.fees.pending,   color: '#fbbf24', icon: Clock },
+    { label: 'Total Students Fees', value: data.fees.total, color: '#a78bfa', icon: Users },
+    { label: 'Pending Amount', value: `₹${data.fees.pending_amount?.toLocaleString()}`, color: '#fb923c', icon: DollarSign },
+  ]
+
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 14 }}>
+      {statBoxes.map(s => (
+        <div key={s.label} style={card}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+            <div style={{ width: 34, height: 34, borderRadius: 9, background: `${s.color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <s.icon size={16} color={s.color} />
+            </div>
+            <span style={{ fontSize: 12, color: '#71717a', fontWeight: 600 }}>{s.label}</span>
+          </div>
+          <div style={{ fontSize: 28, fontWeight: 700, color: '#fafafa' }}>{s.value}</div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+// ── Students ──────────────────────────────────────────────────────────────────
+function StudentsTab() {
+  const [students, setStudents] = useState<any[]>([])
+  const [loading, setLoading]   = useState(true)
+  const [adding, setAdding]     = useState(false)
+  const [form, setForm]         = useState({ name: '', class: '', parent_email: '', phone: '' })
+  const [saving, setSaving]     = useState(false)
+  const [err, setErr]           = useState('')
+
+  function load() {
+    setLoading(true)
+    get(`/students?school_id=${SCHOOL_ID}`).then(setStudents).catch(console.error).finally(() => setLoading(false))
+  }
+  useEffect(load, [])
+
+  async function addStudent() {
+    if (!form.name || !form.class || !form.parent_email) { setErr('Name, class and email required'); return }
+    setSaving(true); setErr('')
+    try {
+      await post('/students', { school_id: SCHOOL_ID, ...form })
+      setForm({ name: '', class: '', parent_email: '', phone: '' })
+      setAdding(false); load()
+    } catch (e: any) { setErr(e.message) }
+    finally { setSaving(false) }
+  }
+
+  async function remove(id: string) {
+    if (!confirm('Deactivate this student?')) return
+    await del(`/students/${id}`); load()
+  }
+
+  if (loading) return <Spinner />
+
+  return (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+        <span style={{ fontSize: 13, color: '#71717a' }}>{students.length} active students</span>
+        <button onClick={() => setAdding(a => !a)} style={btn()}>
+          <Plus size={13} /> Add Student
+        </button>
+      </div>
+
+      <AnimatePresence>
+        {adding && (
+          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
+            style={{ ...card, marginBottom: 16, overflow: 'hidden' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
+              {[['name','Student Name'],['class','Class'],['parent_email','Parent Email'],['phone','Phone (optional)']].map(([k,l]) => (
+                <div key={k}>
+                  <label style={label}>{l}</label>
+                  <input style={inp} value={(form as any)[k]} onChange={e => setForm(f => ({ ...f, [k]: e.target.value }))} />
+                </div>
+              ))}
+            </div>
+            {err && <p style={{ fontSize: 12, color: '#f87171', marginBottom: 10 }}>{err}</p>}
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button onClick={addStudent} disabled={saving} style={btn(!saving)}><Plus size={13} />{saving ? 'Saving…' : 'Save'}</button>
+              <button onClick={() => setAdding(false)} style={btn(false)}>Cancel</button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        {students.map(s => (
+          <div key={s._id} style={{ ...card, display: 'flex', alignItems: 'center', gap: 14, padding: '12px 16px' }}>
+            <div style={{ width: 34, height: 34, borderRadius: 8, background: '#1e1e2e', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 14, fontWeight: 700, color: '#818cf8' }}>
+              {s.name.charAt(0)}
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: '#fafafa' }}>{s.name}</div>
+              <div style={{ fontSize: 11, color: '#52525b' }}>Class {s.class} · {s.parent_email}</div>
+            </div>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              {s.pending_fees > 0 && (
+                <span style={{ fontSize: 10, fontWeight: 700, background: '#fbbf2420', color: '#fbbf24', borderRadius: 5, padding: '2px 8px' }}>
+                  ₹{s.pending_amount} due
+                </span>
+              )}
+              <button onClick={() => remove(s._id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#3f3f46', padding: 4 }}
+                onMouseEnter={e => (e.currentTarget.style.color = '#f87171')} onMouseLeave={e => (e.currentTarget.style.color = '#3f3f46')}>
+                <Trash2 size={13} />
+              </button>
+            </div>
+          </div>
+        ))}
+        {students.length === 0 && <EmptyState msg="No students yet. Add one above." />}
+      </div>
+    </div>
+  )
+}
+
+// ── Fees ──────────────────────────────────────────────────────────────────────
+function FeesTab() {
+  const [fees, setFees]     = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [adding, setAdding] = useState(false)
+  const [form, setForm]     = useState({ student_id: '', amount: '', due_date: '', label: 'Monthly Fee' })
+  const [students, setStudents] = useState<any[]>([])
+  const [saving, setSaving] = useState(false)
+  const [err, setErr]       = useState('')
+  const [filter, setFilter] = useState('all')
+
+  function load() {
+    setLoading(true)
+    Promise.all([
+      get(`/fees?school_id=${SCHOOL_ID}`),
+      get(`/students?school_id=${SCHOOL_ID}`),
+    ]).then(([f, s]) => { setFees(f); setStudents(s) }).catch(console.error).finally(() => setLoading(false))
+  }
+  useEffect(load, [])
+
+  async function addFee() {
+    if (!form.student_id || !form.amount || !form.due_date) { setErr('All fields required'); return }
+    setSaving(true); setErr('')
+    try {
+      await post('/fees', { school_id: SCHOOL_ID, ...form, amount: Number(form.amount) })
+      setForm({ student_id: '', amount: '', due_date: '', label: 'Monthly Fee' })
+      setAdding(false); load()
+    } catch (e: any) { setErr(e.message) }
+    finally { setSaving(false) }
+  }
+
+  async function markPaid(id: string) {
+    await put(`/fees/${id}`, { status: 'paid' }); load()
+  }
+
+  const filtered = filter === 'all' ? fees : fees.filter(f => f.status === filter)
+
+  if (loading) return <Spinner />
+
+  return (
+    <div>
+      <div style={{ display: 'flex', gap: 8, justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+        <div style={{ display: 'flex', gap: 6 }}>
+          {['all','pending','paid','waived'].map(s => (
+            <button key={s} onClick={() => setFilter(s)} style={{
+              padding: '5px 12px', borderRadius: 6, border: '1px solid #1e1e1e', fontFamily: 'inherit',
+              fontSize: 11, fontWeight: filter === s ? 600 : 400, cursor: 'pointer',
+              background: filter === s ? '#1e1e2e' : 'transparent',
+              color: filter === s ? '#818cf8' : '#52525b',
+            }}>{s}</button>
+          ))}
+        </div>
+        <button onClick={() => setAdding(a => !a)} style={btn()}><Plus size={13} /> Add Fee</button>
+      </div>
+
+      <AnimatePresence>
+        {adding && (
+          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
+            style={{ ...card, marginBottom: 16, overflow: 'hidden' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 12, marginBottom: 12 }}>
+              <div>
+                <label style={label}>Student</label>
+                <select style={inp} value={form.student_id} onChange={e => setForm(f => ({ ...f, student_id: e.target.value }))}>
+                  <option value="">Select…</option>
+                  {students.map(s => <option key={s._id} value={s._id}>{s.name} – {s.class}</option>)}
+                </select>
+              </div>
+              <div>
+                <label style={label}>Amount (₹)</label>
+                <input style={inp} type="number" value={form.amount} onChange={e => setForm(f => ({ ...f, amount: e.target.value }))} />
+              </div>
+              <div>
+                <label style={label}>Due Date</label>
+                <input style={inp} type="date" value={form.due_date} onChange={e => setForm(f => ({ ...f, due_date: e.target.value }))} />
+              </div>
+              <div>
+                <label style={label}>Label</label>
+                <input style={inp} value={form.label} onChange={e => setForm(f => ({ ...f, label: e.target.value }))} />
+              </div>
+            </div>
+            {err && <p style={{ fontSize: 12, color: '#f87171', marginBottom: 10 }}>{err}</p>}
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button onClick={addFee} disabled={saving} style={btn(!saving)}>{saving ? 'Saving…' : 'Save Fee'}</button>
+              <button onClick={() => setAdding(false)} style={btn(false)}>Cancel</button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        {filtered.map(f => (
+          <div key={f._id} style={{ ...card, display: 'flex', alignItems: 'center', gap: 14, padding: '12px 16px' }}>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: '#fafafa' }}>{f.student_name || f.student_id}</div>
+              <div style={{ fontSize: 11, color: '#52525b' }}>{f.label} · Due {f.due_date}</div>
+            </div>
+            <span style={{ fontSize: 14, fontWeight: 700, color: '#fafafa' }}>₹{f.amount?.toLocaleString()}</span>
+            <StatusBadge status={f.status} />
+            {f.status === 'pending' && (
+              <button onClick={() => markPaid(f._id)} style={{ ...btn(), padding: '5px 12px', fontSize: 11 }}>Mark Paid</button>
+            )}
+          </div>
+        ))}
+        {filtered.length === 0 && <EmptyState msg={`No ${filter === 'all' ? '' : filter} fees.`} />}
+      </div>
+    </div>
+  )
+}
+
+// ── Send ──────────────────────────────────────────────────────────────────────
+function SendTab() {
+  const [mode, setMode]       = useState<'one'|'bulk'>('bulk')
+  const [tone, setTone]       = useState('friendly')
+  const [schoolId]            = useState(SCHOOL_ID)
+  const [sending, setSending] = useState(false)
+  const [result, setResult]   = useState<any>(null)
+  const [err, setErr]         = useState('')
+
+  async function send() {
+    setSending(true); setErr(''); setResult(null)
+    try {
+      // Both modes use send-bulk which directly sends to all pending fees.
+      // run-scheduler only fires for schools with enabled:true config — use send-bulk instead.
+      const res = await post('/emails/send-bulk', { school_id: schoolId, tone })
+      setResult(res)
+    } catch (e: any) { setErr(e.message) }
+    finally { setSending(false) }
+  }
+
+  async function retry() {
+    setSending(true); setErr(''); setResult(null)
+    try { setResult(await post('/emails/retry', { school_id: schoolId })) }
+    catch (e: any) { setErr(e.message) }
+    finally { setSending(false) }
+  }
+
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+      <div style={card}>
+        <h3 style={{ fontSize: 14, fontWeight: 700, color: '#fafafa', margin: '0 0 16px' }}>Send Reminders</h3>
+
+        <div style={{ padding: '10px 14px', background: '#0d0d0d', borderRadius: 8, border: '1px solid #1e1e1e', marginBottom: 14 }}>
+          <p style={{ fontSize: 12, color: '#71717a', margin: 0 }}>📧 Sends a reminder email to all students with <strong style={{ color: '#fbbf24' }}>pending fees</strong>. Make sure Gmail credentials are set up in the Setup tab first.</p>
+        </div>
+
+        <div style={{ marginBottom: 16 }}>
+          <label style={label}>Tone</label>
+          <select style={inp} value={tone} onChange={e => setTone(e.target.value)}>
+            <option value="friendly">Friendly</option>
+            <option value="formal">Formal</option>
+            <option value="urgent">Urgent</option>
+          </select>
+        </div>
+
+        {err && <p style={{ fontSize: 12, color: '#f87171', marginBottom: 12 }}>{err}</p>}
+
+        <button onClick={send} disabled={sending} style={{ ...btn(!sending), width: '100%', justifyContent: 'center' }}>
+          <Send size={13} />{sending ? 'Sending…' : 'Send Now'}
+        </button>
+
+        <button onClick={retry} disabled={sending} style={{ ...btn(false), width: '100%', justifyContent: 'center', marginTop: 8 }}>
+          <RefreshCw size={13} />Retry Failed
+        </button>
+      </div>
+
+      {result && (
+        <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} style={card}>
+          <h3 style={{ fontSize: 14, fontWeight: 700, color: result.sent > 0 ? '#34d399' : '#fbbf24', margin: '0 0 14px' }}>
+            {result.sent > 0 ? '✓ Emails Sent' : result.message ? '⚠ Nothing to send' : '⚠ Check Results'}
+          </h3>
+          {result.message && (
+            <p style={{ fontSize: 12, color: '#fbbf24', marginBottom: 14, padding: '10px 14px', background: '#fbbf2410', borderRadius: 8, border: '1px solid #fbbf2430' }}>
+              {result.message}
+            </p>
+          )}
+          <div style={{ display: 'flex', gap: 12, marginBottom: 14 }}>
+            {[['Sent', result.sent, '#34d399'], ['Failed', result.failed, '#f87171'], ['Skipped', result.skipped, '#fbbf24']].map(([l, v, c]) => (
+              <div key={l as string} style={{ flex: 1, background: '#0d0d0d', borderRadius: 8, padding: '10px 12px', textAlign: 'center' }}>
+                <div style={{ fontSize: 22, fontWeight: 700, color: c as string }}>{v as number}</div>
+                <div style={{ fontSize: 10, color: '#71717a' }}>{l}</div>
+              </div>
+            ))}
+          </div>
+          {result.skip_reasons?.length > 0 && (
+            <div style={{ background: '#0d0d0d', borderRadius: 8, padding: 12 }}>
+              <div style={{ fontSize: 10, fontWeight: 700, color: '#71717a', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>Skip Reasons</div>
+              {result.skip_reasons.map((r: any, i: number) => (
+                <div key={i} style={{ fontSize: 11, color: '#fbbf24', marginBottom: 4 }}>
+                  ⚠ {r.student || r.fee_id}: {r.reason}
+                </div>
+              ))}
+            </div>
+          )}
+          {result.failed > 0 && (
+            <p style={{ fontSize: 11, color: '#f87171', marginTop: 10 }}>
+              Failed emails need Gmail credentials. Go to Setup tab and save your Gmail + App Password.
+            </p>
+          )}
+          {result.skipped > 0 && result.skip_reasons?.[0]?.reason?.includes('24h') && (
+            <p style={{ fontSize: 11, color: '#71717a', marginTop: 10 }}>
+              Already sent today — emails are throttled to once per 24h per fee to prevent spam.
+            </p>
+          )}
+        </motion.div>
+      )}
+    </div>
+  )
+}
+
+// ── Setup ─────────────────────────────────────────────────────────────────────
+function SetupTab() {
+  const [creds, setCreds] = useState({ gmail: '', app_password: '' })
+  const [saving, setSaving] = useState(false)
+  const [testing, setTesting] = useState(false)
+  const [msg, setMsg] = useState('')
+  const [err, setErr] = useState('')
+
+  async function save() {
+    if (!creds.gmail || !creds.app_password) { setErr('Gmail and App Password required'); return }
+    setSaving(true); setErr(''); setMsg('')
+    try {
+      const r = await post('/credentials/save', { school_id: SCHOOL_ID, ...creds })
+      setMsg(r.message || 'Credentials saved!')
+    } catch (e: any) { setErr(e.message) }
+    finally { setSaving(false) }
+  }
+
+  async function test() {
+    if (!creds.gmail || !creds.app_password) { setErr('Fill in credentials first'); return }
+    setTesting(true); setErr(''); setMsg('')
+    try {
+      const r = await post('/credentials/test', creds)
+      setMsg(r.message)
+    } catch (e: any) { setErr(e.message) }
+    finally { setTesting(false) }
+  }
+
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+      <div style={card}>
+        <h3 style={{ fontSize: 14, fontWeight: 700, color: '#fafafa', margin: '0 0 16px' }}>Gmail SMTP Setup</h3>
+        <p style={{ fontSize: 12, color: '#52525b', marginBottom: 16 }}>
+          Generate a 16-char App Password at{' '}
+          <a href="https://myaccount.google.com/apppasswords" target="_blank" rel="noopener" style={{ color: '#818cf8' }}>myaccount.google.com/apppasswords</a>
+        </p>
+        <div style={{ marginBottom: 12 }}>
+          <label style={label}>Gmail Address</label>
+          <input style={inp} type="email" placeholder="school@gmail.com" value={creds.gmail} onChange={e => setCreds(c => ({ ...c, gmail: e.target.value }))} />
+        </div>
+        <div style={{ marginBottom: 16 }}>
+          <label style={label}>App Password (16 chars)</label>
+          <input style={inp} type="password" placeholder="xxxx xxxx xxxx xxxx" value={creds.app_password} onChange={e => setCreds(c => ({ ...c, app_password: e.target.value }))} />
+        </div>
+        {err && <p style={{ fontSize: 12, color: '#f87171', marginBottom: 10 }}>{err}</p>}
+        {msg && <p style={{ fontSize: 12, color: '#34d399', marginBottom: 10 }}>{msg}</p>}
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button onClick={test} disabled={testing} style={btn(!testing)}>{testing ? 'Testing…' : 'Test SMTP'}</button>
+          <button onClick={save} disabled={saving} style={btn(!saving)}>{saving ? 'Saving…' : 'Save'}</button>
+        </div>
+      </div>
+
+      <div style={card}>
+        <h3 style={{ fontSize: 14, fontWeight: 700, color: '#fafafa', margin: '0 0 16px' }}>Scheduler Info</h3>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {[
+            ['Daily reminders', '08:00 AM IST (auto)'],
+            ['Retry failed', 'Every 6 hours'],
+            ['Before due', '3 days before'],
+            ['On due date', 'Same day'],
+            ['After due', '1, 3, 7 days after'],
+          ].map(([k, v]) => (
+            <div key={k} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12 }}>
+              <span style={{ color: '#71717a' }}>{k}</span>
+              <span style={{ color: '#a1a1aa', fontWeight: 600 }}>{v}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function StatusBadge({ status }: { status: string }) {
+  const colors: any = { pending: '#fbbf24', paid: '#34d399', waived: '#818cf8', failed: '#f87171', sent: '#34d399' }
+  return (
+    <span style={{ fontSize: 10, fontWeight: 700, background: `${colors[status] || '#71717a'}20`, color: colors[status] || '#71717a', borderRadius: 5, padding: '2px 8px' }}>
+      {status}
+    </span>
+  )
+}
+
+function Spinner() {
+  return (
+    <div style={{ display: 'flex', justifyContent: 'center', padding: '60px 0' }}>
+      <div style={{ width: 28, height: 28, borderRadius: '50%', border: '2px solid #1e1e1e', borderTopColor: '#6366f1', animation: 'spin 0.8s linear infinite' }} />
+    </div>
+  )
+}
+
+function EmptyState({ msg }: { msg: string }) {
+  return <div style={{ textAlign: 'center', padding: '40px 0', fontSize: 13, color: '#3f3f46' }}>{msg}</div>
+}
+
+function ErrorMsg({ msg }: { msg: string }) {
+  return <div style={{ textAlign: 'center', padding: '40px 0', fontSize: 13, color: '#f87171' }}>{msg}</div>
+}

@@ -1,0 +1,68 @@
+No.,Category,Feature,Description,Who Uses It,API Endpoint,Status
+1,Student Learning,Doubt Solver (AI Chat),Ask any academic question — AI tutor answers with step-by-step explanations. Supports CBSE / ICSE / State boards Class 6–12.,Student,OpenRouter (streaming),Done
+2,Student Learning,Flashcard Auto-Generate,Generate up to 30 flashcards from any topic using AI. Stored in DB.,Student,POST /api/flashcards/generate,Done
+3,Student Learning,Spaced Repetition (SM-2),SM-2 algorithm schedules each card for optimal review — intervals grow as you get it right.,Student,POST /api/flashcards/:id/review,Done
+4,Student Learning,Due Today Queue,Shows only cards due for review today — no overwhelm.,Student,GET /api/flashcards/due,Done
+5,Student Learning,Flashcard Chip → Navigate,Clicking 'Make Flashcards' chip in chat auto-creates cards and navigates to the Flashcard page.,Student,POST /api/flashcards/generate,Done
+6,Student Learning,Study Plan Creator,AI generates a week-by-week study plan based on subjects and exam date.,Student,POST /api/study-plan/create,Done
+7,Student Learning,Study Plan Progress,Mark topics as done and track % completion per plan.,Student,PUT /api/study-plan/:id/progress,Done
+8,Student Learning,Adaptive Quiz,AI generates MCQ questions on any topic. Shows correct/wrong instantly with scoring.,Student,POST /api/quiz/start,Done
+9,Student Learning,Quiz History,Review past quiz sessions with scores and grade.,Student,GET /api/quiz/history,Done
+10,Student Learning,Pomodoro Timer,SVG circle countdown timer with focus (25 min) / short break (5 min) / long break (15 min) modes.,Student,Local (no API),Done
+11,Student Learning,Pomodoro Session Log,Logs every session with mode and timestamp.,Student,Local (no API),Done
+12,Writing & Essays,Essay Grader,AI grades essay out of 10 marks — breaks down into structure / content / language / examples.,Student / Teacher,POST /api/essay/grade,Done
+13,Writing & Essays,Tone Improver,Rewrites text in formal / friendly / exam-ready tone.,Student,POST /api/writing/improve,Done
+14,Writing & Essays,Short Answer Expander,Expands a brief answer to a target word count.,Student,POST /api/writing/expand,Done
+15,Writing & Essays,Topper-Level Rewriter,Rewrites a response to board-exam topper quality.,Student,POST /api/writing/topper,Done
+16,Writing & Essays,Plagiarism / AI Similarity Check,Scans text for AI-generated patterns and similarity flags.,Student,POST /api/writing/plagiarism,Done
+17,Concept Tools,Concept Simplifier,Explains any concept at Class 5 / Class 8 / Class 12 level.,Student,POST /api/concept/simplify,Done
+18,Concept Tools,Mind Map Generator,AI generates a JSON mind map with nodes / formulas / key terms — rendered as a tree.,Student,POST /api/concept/mindmap,Done
+19,Concept Tools,Doubt Saver,Save any doubt for later reference. Search / filter doubt history.,Student,POST /api/concept/doubt,Done
+20,Concept Tools,Formula Sheet Generator,AI generates subject formula sheets with sections / constants / tips. Save to DB.,Student,POST /api/formula/generate,Done
+21,Concept Tools,Formula Sheet PDF,Download any saved formula sheet as a PDF.,Student,Browser print (PDF),Done
+22,Exam & Performance,Exam Predictor,AI predicts marks in each subject based on past scores and study hours.,Student,POST /api/exam/predict,Done
+23,Exam & Performance,Mock Test Generator,Generate a timed mock exam and score it automatically.,Student,POST /api/exam/mock,Done
+24,Exam & Performance,Weak Area Detection,Aggregates essay + quiz scores and flags subjects below 70% threshold.,Student / Teacher,GET /api/analytics/weak-areas,Done
+25,Exam & Performance,Daily Study Card,AI recommends what to study today based on weak areas and active plans.,Student,GET /api/analytics/study-today,Done
+26,Exam & Performance,Rank Predictor,Enter scores → AI predicts school rank / percentile.,Student,POST /api/analytics/rank-predict,Done
+27,Exam & Performance,Class Performance Dashboard,Per-student and per-subject breakdown for teachers.,Teacher,GET /api/analytics/class-performance,Done
+28,Gamification,XP & Level System,Earn XP for every action. 10 levels from Beginner (0 XP) to Topper (5000+ XP).,Student,POST /api/gamification/xp,Done
+29,Gamification,10 Achievement Badges,First Flash / Quiz Starter / Writer / 7-Day Streak / Perfect Score / XP Hunter etc.,Student,GET /api/gamification/badges,Done
+30,Gamification,School Leaderboard,School-wide XP ranking. Top 3 get medal icons.,Student,GET /api/gamification/leaderboard,Done
+31,Gamification,XP Earn Buttons,Quick-earn XP from the My Progress page for actions like studying.,Student,POST /api/gamification/xp,Done
+32,Teacher Tools,Question Paper Generator,Generates CBSE-format question papers with marks distribution and section layout.,Teacher,POST /api/question-paper/generate,Done
+33,Teacher Tools,Lesson Plan Generator,AI generates detailed lesson plans with objectives / activities / assessment.,Teacher,POST /api/lesson-plan/generate,Done
+34,Teacher Tools,Parent Message Generator,Drafts individual parent messages for attendance / academic / behaviour issues.,Teacher,POST /api/parent-message/generate,Done
+35,Teacher Tools,Bulk Parent Messages,Generate personalised messages for an entire class at once.,Teacher,POST /api/parent-message/bulk,Done
+36,Teacher Tools,Bulk Assignment Grader,Grade up to 30 student answers at once — returns individual scores + class average.,Teacher,POST /api/grading/bulk,Done
+37,Teacher Tools,Personalised Student Feedback,AI writes detailed personalised feedback for a single student.,Teacher,POST /api/grading/feedback,Done
+38,Teacher Tools,Grading History,Browse past bulk grading sessions.,Teacher,GET /api/grading/results,Done
+39,Teacher Tools,Announcement Generator,Generate school announcements in formal / WhatsApp / SMS / notice board formats.,Teacher / Admin,POST /api/announcement/generate,Done
+40,Teacher Tools,Announcement History,Browse and copy past announcements.,Teacher / Admin,GET /api/announcement,Done
+41,Admin Tools,Fee Reminder System,Track student fees — overdue / partial / paid — and send email reminders.,Admin,GET /api/fees,Done
+42,Admin Tools,Bulk Email Campaign,Send personalised reminder emails to many recipients at once.,Admin,POST /api/emails/send-bulk,Done
+43,Admin Tools,Email Stats,Track opens / delivery for email campaigns.,Admin,GET /api/emails/stats,Done
+44,Admin Tools,Admission Bot,AI chatbot answers prospective parent inquiries automatically.,Admin,POST /api/admission/chat,Done
+45,Admin Tools,Admission Lead Capture,Saves inquiry details as leads with contact info.,Admin,POST /api/admission/lead,Done
+46,Admin Tools,Attendance Logging,Log individual or bulk attendance with date and status.,Admin / Teacher,POST /api/attendance/log,Done
+47,Admin Tools,At-risk Attendance Alerts,Flags students below attendance threshold.,Admin / Teacher,GET /api/attendance/at-risk,Done
+48,Admin Tools,Timetable Generator,Create school timetable with period / subject / teacher assignment.,Admin,POST /api/timetable/generate,Done
+49,Admin Tools,Clash Detection,Detects scheduling conflicts in the timetable automatically.,Admin,GET /api/timetable/clashes,Done
+50,Multi-tenant Platform,School Registration,Register a school — generates a unique XXXXXX-XXXXXX-XXXXXX passcode shown once.,Admin,POST /api/schools/register,Done
+51,Multi-tenant Platform,School Passcode Join,Students and teachers enter the school name + passcode to join.,All,POST /api/users/register,Done
+52,Multi-tenant Platform,Supabase JWT Auth,Sign up / login via Supabase Auth. JWT returned immediately after register — no email confirm step.,All,POST /api/users/login,Done
+53,Multi-tenant Platform,Role-based Access Control,Student / Teacher / Admin roles enforced at middleware level on every route.,All,requireRole() middleware,Done
+54,Multi-tenant Platform,Row Level Security,Supabase RLS ensures users can only read their own school's data at the DB level.,All,Supabase RLS policies,Done
+55,Multi-tenant Platform,Multi-tenant Notes,Create / edit / delete notes scoped to the user. Search by subject or keyword.,Student,POST /api/notes,Done
+56,Multi-tenant Platform,Notes PDF Download,Download any note as a beautifully formatted A4 PDF via pdfkit.,Student,GET /api/notes/:id/pdf,Done
+57,Multi-tenant Platform,School Notifications,Teachers send announcements to the whole school or a specific role. Auto-expire after 12 h.,Teacher / Admin,POST /api/notifications,Done
+58,Multi-tenant Platform,Notification Auto-cleanup,node-cron job runs every hour and hard-deletes expired notifications.,System,src/jobs/cleanup.js,Done
+59,Multi-tenant Platform,School Logo Upload,Upload school logo as base64 → stored in Supabase Storage → URL saved to school record.,Admin,POST /api/schools/:id/upload-logo,Done
+60,Multi-tenant Platform,School Stats Dashboard,Real-time counts of total users / students / teachers / notes / active notifications.,Admin,GET /api/schools/:id/stats,Done
+61,Multi-tenant Platform,Session Restore (offline),App validates JWT on load. If backend is down uses cached profile — never stuck on loading.,All,App.tsx restoreSession(),Done
+62,Platform / UX,11 AI Models via OpenRouter,Smart model routing — picks GPT-4o / Claude / Llama / Gemini based on task type.,All,src/utils/ai.js,Done
+63,Platform / UX,Always-mounted Pages,All 20+ pages mount once in CSS display:none — navigation is instant with no re-render.,All,Dashboard.tsx pageStyle(),Done
+64,Platform / UX,Dark Theme UI,Fully dark themed (#0a0a0a base) with indigo accent glow effects across all pages.,All,index.css,Done
+65,Platform / UX,Landing Page,HTML landing page with hero / stats / 24 feature cards / role-based sections / CTA.,Marketing,/public/landing.html,Done
+66,Platform / UX,Rate Limiting,Express rate limiter on all API routes — prevents abuse.,System,middleware/rateLimit.js,Done
+67,Platform / UX,Supabase Not Configured Guard,requireSupabase middleware returns 503 with clear hint instead of crashing with fetch failed.,System,services/supabase.js,Done
