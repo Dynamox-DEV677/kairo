@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react'
 import { motion } from 'framer-motion'
-import { Camera, User, BookOpen, Bell, Shield, Trash2, Check } from 'lucide-react'
+import { Camera, User, Bell, Shield, Trash2, Check } from 'lucide-react'
 
 const BOARDS = ['CBSE', 'ICSE', 'Maharashtra', 'Tamil Nadu', 'Karnataka', 'UP Board', 'Bihar Board']
 const CLASSES = ['6', '7', '8', '9', '10', '11', '12']

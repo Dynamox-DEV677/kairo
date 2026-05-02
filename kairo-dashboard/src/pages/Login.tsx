@@ -7,7 +7,7 @@
  *  school   — school_name + school_email → POST /api/schools/register
  *  local    — Quick Start, no account needed (works without Supabase)
  */
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   GraduationCap, Mail, Lock, User, Building2,
@@ -58,7 +58,6 @@ async function checkSupabase(): Promise<boolean> {
       body: JSON.stringify({ email: 'probe@check.internal', password: 'probe' }),
       signal: AbortSignal.timeout(3000),
     })
-    const data = await res.json()
     // 503 = Supabase not configured; anything else (even 401) = Supabase is up
     return res.status !== 503
   } catch {
@@ -71,6 +70,9 @@ export default function Login({ onLogin }: LoginProps) {
   const [loading, setLoading]         = useState(false)
   const [error, setError]             = useState('')
   const [supabaseDown, setSupabaseDown] = useState(false)
+
+  // Probe backend on mount to detect if Supabase is configured
+  useEffect(() => { checkSupabase().then(ok => setSupabaseDown(!ok)) }, [])
 
   // Sign in fields
   const [siEmail, setSiEmail]         = useState('')

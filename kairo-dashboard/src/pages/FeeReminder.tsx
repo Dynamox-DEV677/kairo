@@ -298,7 +298,6 @@ function FeesTab() {
 
 // ── Send ──────────────────────────────────────────────────────────────────────
 function SendTab() {
-  const [mode, setMode]       = useState<'one'|'bulk'>('bulk')
   const [tone, setTone]       = useState('friendly')
   const [schoolId]            = useState(SCHOOL_ID)
   const [sending, setSending] = useState(false)

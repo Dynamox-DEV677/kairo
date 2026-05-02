@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Play, Pause, RotateCcw, Coffee, Brain } from 'lucide-react'
+import { Play, Pause, RotateCcw } from 'lucide-react'
 
 type Mode = 'focus' | 'short' | 'long'
 

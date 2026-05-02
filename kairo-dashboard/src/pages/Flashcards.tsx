@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { BookMarked, ChevronLeft, ChevronRight, Sparkles, RotateCcw } from 'lucide-react'
 import { chat } from '../lib/openrouter'
 import { usePageGeneration } from '../lib/generationContext'

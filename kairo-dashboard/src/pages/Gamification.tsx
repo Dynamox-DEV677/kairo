@@ -70,8 +70,6 @@ export default function Gamification() {
 
 function ProfileTab({ profile, onAddXP }: any) {
   const level   = profile.level
-  const xpColor = '#818cf8'
-
   return (
     <div>
       {/* Level Card */}

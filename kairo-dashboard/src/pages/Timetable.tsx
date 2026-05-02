@@ -209,7 +209,7 @@ function GridTab() {
                   <td style={{ padding: '4px 8px', fontSize: 11, color: '#52525b', fontWeight: 600 }}>P{p}</td>
                   {DAYS.map(d => {
                     const slot = grid[d]?.[p]
-                    const color = slot ? (SUBJECT_COLORS[slot.subject] || SUBJECT_COLORS.default) : null
+                    const color = slot ? (SUBJECT_COLORS[slot.subject] || SUBJECT_COLORS.default) : undefined
                     return (
                       <td key={d} style={{ padding: 3 }}>
                         {slot ? (
@@ -379,7 +379,7 @@ function GenerateTab() {
                     <td style={{ fontSize: 10, color: '#52525b', padding: '3px 6px', fontWeight: 600 }}>P{p}</td>
                     {Object.values(result.timetable || {}).map((daySlots: any, di) => {
                       const slot = Array.isArray(daySlots) ? daySlots.find((s: any) => s.period === p) : null
-                      const color = slot ? (SUBJECT_COLORS[slot.subject] || SUBJECT_COLORS.default) : null
+                      const color = slot ? (SUBJECT_COLORS[slot.subject] || SUBJECT_COLORS.default) : undefined
                       return (
                         <td key={di} style={{ padding: 3 }}>
                           {slot ? (
