@@ -5,7 +5,7 @@
  * Shows a subtle pulsing indicator on the sidebar item when a background
  * generation is running on a page the user isn't currently viewing.
  */
-import { createContext, useContext, useState, useCallback, ReactNode } from 'react'
+import { createContext, useContext, useState, useCallback, type ReactNode } from 'react'
 
 interface GenerationState {
   [pageId: string]: boolean  // true = currently generating

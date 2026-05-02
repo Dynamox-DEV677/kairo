@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
-  ChevronDown, Bell, Zap, Flame, Star,
+  ChevronDown, Bell, Flame, Star,
   Gauge, BrainCircuit, Rabbit, Check, Users,
 } from 'lucide-react'
 
