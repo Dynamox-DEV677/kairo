@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { BookOpen, BookMarked, FileText, Target, RotateCcw, Lightbulb } from 'lucide-react'
+import { BookMarked, FileText, Target, RotateCcw, Lightbulb } from 'lucide-react'
 
 interface ActionChipsProps {
   onSimpler: () => void

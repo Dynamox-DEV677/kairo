@@ -3,7 +3,6 @@ import './index.css'
 import Dashboard from './pages/Dashboard'
 import Login, { type AuthProfile } from './pages/Login'
 import { GenerationProvider } from './lib/generationContext'
-import { get } from './lib/api'
 
 export default function App() {
   const [profile, setProfile] = useState<AuthProfile | null>(null)
