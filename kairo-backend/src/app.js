@@ -2,6 +2,9 @@ import 'dotenv/config'
 import express from 'express'
 import { apiLimiter } from './middleware/rateLimit.js'
 
+// ── AI chat proxy (no auth — key stays server-side) ──────────────────────────
+import aiChatRoutes from './routes/aiChat.js'
+
 // ── v1 routes (fee reminder system) ───────────────────────────────────────────
 import credentialRoutes    from './routes/credentials.js'
 import studentRoutes       from './routes/students.js'
@@ -74,6 +77,7 @@ app.use((req, res, next) => {
 // ─── Routes ───────────────────────────────────────────────────────────────────
 
 // v1 — Fee reminder system
+app.use('/api/ai',             aiChatRoutes)
 app.use('/api/credentials',    credentialRoutes)
 app.use('/api/students',       studentRoutes)
 app.use('/api/fees',           feeRoutes)

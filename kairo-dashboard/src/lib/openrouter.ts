@@ -1,7 +1,7 @@
-// Kairo — OpenRouter API client (model IDs synced with kairo-ui)
+// Kairo — OpenRouter client (proxied through backend so the key stays server-side)
 
-const API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY || ''
-const BASE_URL = 'https://openrouter.ai/api/v1/chat/completions'
+const API_BASE = (import.meta.env.VITE_API_BASE as string) || 'http://localhost:4000/api'
+const PROXY_URL = `${API_BASE}/ai/chat`
 
 // All confirmed working free models on OpenRouter (from kairo-ui)
 export const FREE_MODELS = [
@@ -43,20 +43,11 @@ async function callModel(
   onChunk?: ChatOptions['onChunk'],
   signal?: AbortSignal,
 ): Promise<string> {
-  const res = await fetch(BASE_URL, {
+  const res = await fetch(PROXY_URL, {
     method: 'POST',
     signal,
-    headers: {
-      'Authorization': `Bearer ${API_KEY}`,
-      'Content-Type': 'application/json',
-      'HTTP-Referer': window.location.origin,
-      'X-Title': 'Kairo',
-    },
-    body: JSON.stringify({
-      model,
-      messages,
-      stream: !!onChunk,
-    }),
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ model, messages, stream: !!onChunk }),
   })
 
   if (!res.ok) {
