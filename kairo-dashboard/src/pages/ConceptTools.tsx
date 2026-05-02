@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, type JSX } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Lightbulb, GitBranch, HelpCircle, Search, Trash2 } from 'lucide-react'
 import { post, get, del } from '../lib/api'
