@@ -250,14 +250,11 @@ export default function Login({ onLogin }: LoginProps) {
       >
         {/* Logo */}
         <div style={{ textAlign: 'center', marginBottom: 28 }}>
-          <div style={{
-            width: 58, height: 58, borderRadius: 16,
-            background: 'linear-gradient(135deg, #4f46e5, #7c3aed, #ec4899)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            margin: '0 auto 14px', boxShadow: '0 0 40px rgba(99,102,241,0.35)',
-          }}>
-            <GraduationCap size={26} color="#fff" />
-          </div>
+          <img
+            src="/kairo_logo.png"
+            alt="Kairo"
+            style={{ width: 64, height: 64, objectFit: 'contain', borderRadius: 16, margin: '0 auto 14px', display: 'block', filter: 'drop-shadow(0 0 20px rgba(99,102,241,0.5))' }}
+          />
           <h1 style={{ fontSize: 22, fontWeight: 800, color: '#fafafa', margin: 0 }}>Kairo</h1>
           <p style={{ fontSize: 13, color: '#52525b', marginTop: 5 }}>AI education platform</p>
         </div>
