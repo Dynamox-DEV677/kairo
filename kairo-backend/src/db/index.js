@@ -33,7 +33,9 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const DATA_DIR  = process.env.DB_PATH || path.join(__dirname, '../../data')
+// On Vercel, /tmp is the only writable directory (data is ephemeral per instance)
+const DATA_DIR  = process.env.DB_PATH
+  || (process.env.VERCEL ? '/tmp/kairo-data' : path.join(__dirname, '../../data'))
 
 function store(name) {
   return new Datastore({
