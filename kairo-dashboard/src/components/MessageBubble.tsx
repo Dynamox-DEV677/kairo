@@ -2,7 +2,23 @@ import { motion } from 'framer-motion'
 import { User } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import remarkMath from 'remark-math'
+import rehypeKatex from 'rehype-katex'
 import ActionChips from './ActionChips'
+
+/** Normalize AI math output so KaTeX always sees $...$ / $$...$$ */
+function normalizeMath(text: string): string {
+  return text
+    // \[...\]  →  $$...$$  (display)
+    .replace(/\\\[([\s\S]*?)\\\]/g, (_,m) => `\n$$${m}$$\n`)
+    // \(...\)  →  $...$    (inline)
+    .replace(/\\\(([\s\S]*?)\\\)/g, (_,m) => `$${m}$`)
+    // bare [ ... ] lines that look like display math (start with [ and end with ])
+    .replace(/^\[\s*([\s\S]*?)\s*\]$/gm, (_,m) => {
+      if (m.includes('\\') || /[_^{}]/.test(m)) return `$$${m}$$`
+      return _
+    })
+}
 
 interface Message {
   role: 'user' | 'assistant'
@@ -76,7 +92,8 @@ export default function MessageBubble({ message, isLast, isStreaming, onChipActi
           ) : (
             <div style={{ fontSize: 14, color: '#d4d4d8', lineHeight: 1.7 }}>
               <ReactMarkdown
-                remarkPlugins={[remarkGfm]}
+                remarkPlugins={[remarkGfm, remarkMath]}
+                rehypePlugins={[rehypeKatex]}
                 components={{
                   p: ({ children }) => <p style={{ margin: '0 0 10px', lineHeight: 1.7 }}>{children}</p>,
                   h1: ({ children }) => <h1 style={{ fontSize: 18, fontWeight: 800, color: '#fafafa', margin: '14px 0 8px' }}>{children}</h1>,
@@ -107,7 +124,7 @@ export default function MessageBubble({ message, isLast, isStreaming, onChipActi
                   a: ({ children, href }) => <a href={href} target="_blank" rel="noreferrer" style={{ color: '#818cf8', textDecoration: 'underline' }}>{children}</a>,
                 }}
               >
-                {message.content}
+                {normalizeMath(message.content)}
               </ReactMarkdown>
               {isStreaming && isLast && (
                 <span style={{
