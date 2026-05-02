@@ -185,12 +185,13 @@ export default function ChatWindow({ onNewMessage, onNavigate, model = DEFAULT_M
               <div className="animate-float" style={{ marginBottom: 24, display: 'inline-block' }}>
                 <div className="animate-pulse-orb" style={{
                   width: 70, height: 70, borderRadius: 20,
-                  background: 'linear-gradient(135deg, #4f46e5, #7c3aed, #ec4899)',
+                  background: '#000',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   margin: '0 auto',
                   boxShadow: '0 0 40px rgba(99,102,241,0.4), 0 0 80px rgba(124,58,237,0.2)',
+                  border: '1px solid #27272a',
                 }}>
-                  <GraduationCap size={32} color="#fff" />
+                  <img src="/kairo_logo.png" alt="Kairo" style={{ width: 48, height: 48, objectFit: 'contain' }} />
                 </div>
               </div>
 

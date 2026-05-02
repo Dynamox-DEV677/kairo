@@ -1,5 +1,7 @@
 import { motion } from 'framer-motion'
-import { GraduationCap, User } from 'lucide-react'
+import { User } from 'lucide-react'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import ActionChips from './ActionChips'
 
 interface Message {
@@ -34,17 +36,15 @@ export default function MessageBubble({ message, isLast, isStreaming, onChipActi
       {/* Avatar */}
       <div style={{
         width: 30, height: 30, borderRadius: 8, flexShrink: 0,
-        background: isUser
-          ? 'linear-gradient(135deg, #374151, #1f2937)'
-          : 'linear-gradient(135deg, #6366f1, #7c3aed)',
-        border: isUser ? '1px solid #27272a' : '1px solid rgba(99,102,241,0.4)',
+        background: isUser ? 'linear-gradient(135deg, #374151, #1f2937)' : '#000',
+        border: isUser ? '1px solid #27272a' : '1px solid #2a2a2a',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        boxShadow: isUser ? 'none' : '0 0 12px rgba(99,102,241,0.25)',
-        marginTop: 2,
+        boxShadow: isUser ? 'none' : '0 0 12px rgba(99,102,241,0.2)',
+        marginTop: 2, overflow: 'hidden',
       }}>
         {isUser
           ? <User size={14} color="#9ca3af" />
-          : <GraduationCap size={14} color="#fff" />
+          : <img src="/kairo_logo.png" alt="K" style={{ width: 22, height: 22, objectFit: 'contain' }} />
         }
       </div>
 
@@ -64,15 +64,9 @@ export default function MessageBubble({ message, isLast, isStreaming, onChipActi
         <div style={{
           padding: isUser ? '11px 16px' : '14px 18px',
           borderRadius: isUser ? '16px 4px 16px 16px' : '4px 16px 16px 16px',
-          background: isUser
-            ? 'linear-gradient(135deg, #1e1e2e, #16162a)'
-            : '#111111',
-          border: isUser
-            ? '1px solid #2d2d3d'
-            : '1px solid #1e1e1e',
-          boxShadow: isUser
-            ? '0 4px 20px rgba(0,0,0,0.3)'
-            : '0 4px 20px rgba(0,0,0,0.2)',
+          background: isUser ? 'linear-gradient(135deg, #1e1e2e, #16162a)' : '#111111',
+          border: isUser ? '1px solid #2d2d3d' : '1px solid #1e1e1e',
+          boxShadow: isUser ? '0 4px 20px rgba(0,0,0,0.3)' : '0 4px 20px rgba(0,0,0,0.2)',
           position: 'relative',
         }}>
           {isUser ? (
@@ -80,12 +74,46 @@ export default function MessageBubble({ message, isLast, isStreaming, onChipActi
               {message.content}
             </p>
           ) : (
-            <div className="prose-ai">
-              <div dangerouslySetInnerHTML={{ __html: formatMarkdown(message.content) }} />
+            <div style={{ fontSize: 14, color: '#d4d4d8', lineHeight: 1.7 }}>
+              <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                components={{
+                  p: ({ children }) => <p style={{ margin: '0 0 10px', lineHeight: 1.7 }}>{children}</p>,
+                  h1: ({ children }) => <h1 style={{ fontSize: 18, fontWeight: 800, color: '#fafafa', margin: '14px 0 8px' }}>{children}</h1>,
+                  h2: ({ children }) => <h2 style={{ fontSize: 16, fontWeight: 700, color: '#e4e4e7', margin: '12px 0 6px' }}>{children}</h2>,
+                  h3: ({ children }) => <h3 style={{ fontSize: 14, fontWeight: 700, color: '#a1a1aa', margin: '10px 0 4px' }}>{children}</h3>,
+                  strong: ({ children }) => <strong style={{ color: '#fafafa', fontWeight: 700 }}>{children}</strong>,
+                  em: ({ children }) => <em style={{ color: '#c4b5fd' }}>{children}</em>,
+                  ul: ({ children }) => <ul style={{ paddingLeft: 20, margin: '6px 0 10px' }}>{children}</ul>,
+                  ol: ({ children }) => <ol style={{ paddingLeft: 20, margin: '6px 0 10px' }}>{children}</ol>,
+                  li: ({ children }) => <li style={{ marginBottom: 4, color: '#d4d4d8' }}>{children}</li>,
+                  code: ({ children, className }) => {
+                    const isBlock = !!className
+                    return isBlock
+                      ? <pre style={{ background: '#0a0a0a', border: '1px solid #27272a', borderRadius: 8, padding: '12px 14px', overflowX: 'auto', margin: '10px 0' }}>
+                          <code style={{ fontSize: 13, color: '#86efac', fontFamily: 'monospace' }}>{children}</code>
+                        </pre>
+                      : <code style={{ background: '#1a1a2e', padding: '2px 6px', borderRadius: 4, fontSize: 13, color: '#c4b5fd', fontFamily: 'monospace' }}>{children}</code>
+                  },
+                  table: ({ children }) => (
+                    <div style={{ overflowX: 'auto', margin: '10px 0' }}>
+                      <table style={{ borderCollapse: 'collapse', width: '100%', fontSize: 13 }}>{children}</table>
+                    </div>
+                  ),
+                  th: ({ children }) => <th style={{ padding: '8px 12px', background: '#1a1a2e', color: '#818cf8', fontWeight: 700, border: '1px solid #27272a', textAlign: 'left' }}>{children}</th>,
+                  td: ({ children }) => <td style={{ padding: '7px 12px', border: '1px solid #1e1e1e', color: '#d4d4d8', verticalAlign: 'top' }}>{children}</td>,
+                  blockquote: ({ children }) => <blockquote style={{ borderLeft: '3px solid #6366f1', paddingLeft: 12, margin: '8px 0', color: '#a1a1aa', fontStyle: 'italic' }}>{children}</blockquote>,
+                  hr: () => <hr style={{ border: 'none', borderTop: '1px solid #27272a', margin: '12px 0' }} />,
+                  a: ({ children, href }) => <a href={href} target="_blank" rel="noreferrer" style={{ color: '#818cf8', textDecoration: 'underline' }}>{children}</a>,
+                }}
+              >
+                {message.content}
+              </ReactMarkdown>
               {isStreaming && isLast && (
-                <span className="animate-blink" style={{
+                <span style={{
                   display: 'inline-block', width: 2, height: 14,
                   background: '#818cf8', borderRadius: 1, marginLeft: 2, verticalAlign: 'text-bottom',
+                  animation: 'blink 1s step-end infinite',
                 }} />
               )}
             </div>
@@ -105,32 +133,4 @@ export default function MessageBubble({ message, isLast, isStreaming, onChipActi
       </div>
     </motion.div>
   )
-}
-
-// Minimal markdown-to-HTML converter (bold, italic, headings, bullets, code)
-function formatMarkdown(text: string): string {
-  return text
-    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-    // code blocks
-    .replace(/```[\s\S]*?```/g, (m) => `<pre><code>${m.slice(3, -3).trim()}</code></pre>`)
-    // headings
-    .replace(/^### (.+)$/gm, '<h3>$1</h3>')
-    .replace(/^## (.+)$/gm, '<h2>$1</h2>')
-    .replace(/^# (.+)$/gm, '<h1>$1</h1>')
-    // bold + italic
-    .replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>')
-    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*(.+?)\*/g, '<em>$1</em>')
-    // inline code
-    .replace(/`([^`]+)`/g, '<code>$1</code>')
-    // bullets
-    .replace(/^[\-\*] (.+)$/gm, '<li>$1</li>')
-    .replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>')
-    // numbered list
-    .replace(/^\d+\. (.+)$/gm, '<li>$1</li>')
-    // paragraphs
-    .replace(/\n\n/g, '</p><p>')
-    .replace(/^(?!<[huplo]|<\/[huplo])(.+)$/gm, (line) =>
-      line.startsWith('<') ? line : `<p>${line}</p>`
-    )
 }
