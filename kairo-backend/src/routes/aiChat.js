@@ -7,7 +7,7 @@ import express from 'express'
 const router = express.Router()
 const OR_URL = 'https://openrouter.ai/api/v1/chat/completions'
 
-router.post('/', async (req, res) => {
+router.post('/chat', async (req, res) => {
   const { messages, model = 'openai/gpt-oss-20b:free', stream = false } = req.body
 
   if (!messages?.length) {
