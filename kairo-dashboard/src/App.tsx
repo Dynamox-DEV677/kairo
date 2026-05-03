@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+﻿import { useState, useEffect } from 'react'
 import './index.css'
 import Dashboard from './pages/Dashboard'
 import Login, { type AuthProfile } from './pages/Login'
@@ -30,7 +30,7 @@ export default function App() {
 
       // Validate token is still alive by hitting /users/profile
       try {
-        const API = (import.meta.env.VITE_API_BASE as string) || 'http://localhost:4000/api'
+        const API = '/api'
         const res  = await fetch(`${API}/users/profile`, {
           headers: { Authorization: `Bearer ${token}` },
           signal:  AbortSignal.timeout(5000),   // 5-second timeout — don't hang forever
@@ -118,3 +118,4 @@ function clearSession() {
   localStorage.removeItem('kairo_refresh')
   localStorage.removeItem('kairo_profile')
 }
+

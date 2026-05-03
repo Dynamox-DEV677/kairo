@@ -1,10 +1,4 @@
-/**
- * Backend API helper
- * In dev: http://localhost:4000/api
- * In prod: set VITE_API_BASE in Vercel → Environment Variables
- */
-
-const BASE = (import.meta.env.VITE_API_BASE as string) || 'http://localhost:4000/api'
+const BASE = '/api'
 
 export async function api(
   path: string,

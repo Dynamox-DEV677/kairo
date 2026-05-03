@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Login / Register / School Setup / Quick Start
  *
  * Modes:
@@ -51,7 +51,7 @@ const CLASSES = ['6', '7', '8', '9', '10', '11', '12']
 // Detect if Supabase is available by pinging the backend
 async function checkSupabase(): Promise<boolean> {
   try {
-    const API = (import.meta.env.VITE_API_BASE as string) || 'http://localhost:4000/api'
+    const API = '/api'
     const res = await fetch(`${API}/users/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -594,3 +594,4 @@ const eyeBtn: React.CSSProperties = {
   position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)',
   background: 'none', border: 'none', cursor: 'pointer', padding: 4, display: 'flex',
 }
+

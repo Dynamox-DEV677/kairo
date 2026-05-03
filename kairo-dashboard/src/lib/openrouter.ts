@@ -1,7 +1,6 @@
 // Kairo — OpenRouter client (proxied through backend so the key stays server-side)
 
-const API_BASE = (import.meta.env.VITE_API_BASE as string) || 'http://localhost:4000/api'
-const PROXY_URL = `${API_BASE}/ai/chat`
+const PROXY_URL = '/api/ai/chat'
 
 // All confirmed working free models on OpenRouter (from kairo-ui)
 export const FREE_MODELS = [
