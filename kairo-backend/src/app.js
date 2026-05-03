@@ -40,10 +40,13 @@ import usersV2Routes       from './routes/usersV2.js'
 import notesRoutes         from './routes/notes.js'
 import notificationsRoutes from './routes/notifications.js'
 
+// ── v5 routes (School Management Core) ────────────────────────────────────────
+import tasksRoutes         from './routes/tasks.js'
+import networkRulesRoutes  from './routes/networkRules.js'
+
 // ─── Validate env ─────────────────────────────────────────────────────────────
 if (!process.env.ENCRYPTION_SECRET || process.env.ENCRYPTION_SECRET.length < 64) {
   console.error('❌  ENCRYPTION_SECRET missing or too short. See .env.example.')
-  // Throw instead of process.exit so Vercel surfaces the error properly
   throw new Error('ENCRYPTION_SECRET missing or too short.')
 }
 if (!process.env.OPENROUTER_API_KEY) {
@@ -112,12 +115,16 @@ app.use('/api/users',          usersV2Routes)
 app.use('/api/notes',          notesRoutes)
 app.use('/api/notifications',  notificationsRoutes)
 
+// v5 — School Management Core
+app.use('/api/tasks',          tasksRoutes)
+app.use('/api/network-rules',  networkRulesRoutes)
+
 // ─── Health check ─────────────────────────────────────────────────────────────
 app.get('/health', (_req, res) => {
   res.json({
-    status: 'ok',
-    version: '2.0.0',
-    service: 'Kairo Education Platform Backend',
+    status:    'ok',
+    version:   '3.0.0',
+    service:   'Kairo Education Platform Backend',
     serverless: !!process.env.VERCEL,
     features: [
       'fee-reminders', 'auth', 'flashcards-srs', 'study-plans',
@@ -125,6 +132,7 @@ app.get('/health', (_req, res) => {
       'lesson-plan', 'parent-message', 'admission-bot',
       'attendance-alerts', 'timetable',
       'schools-multitenant', 'users-v2', 'notes-pdf', 'notifications-rbac',
+      'tasks-homework', 'network-rules-wifi', 'school-admin-rbac',
     ],
     timestamp: new Date().toISOString(),
   })
@@ -133,7 +141,7 @@ app.get('/health', (_req, res) => {
 // ─── API reference ────────────────────────────────────────────────────────────
 app.get('/api', (_req, res) => {
   res.json({
-    version: '2.0.0',
+    version: '3.0.0',
     endpoints: {
       auth:           ['POST /api/auth/register', 'POST /api/auth/login', 'GET /api/auth/me'],
       flashcards:     ['POST /api/flashcards/generate', 'GET /api/flashcards', 'GET /api/flashcards/due', 'POST /api/flashcards/:id/review'],
@@ -148,10 +156,48 @@ app.get('/api', (_req, res) => {
       timetable:      ['POST /api/timetable', 'GET /api/timetable', 'GET /api/timetable/clashes', 'POST /api/timetable/generate'],
       fees:           ['GET /api/fees', 'POST /api/fees', 'PUT /api/fees/:id'],
       emails:         ['POST /api/emails/send-one', 'POST /api/emails/send-bulk', 'GET /api/emails/stats'],
-      schools:        ['POST /api/schools/register', 'GET /api/schools/:id', 'GET /api/schools/by-name/:name', 'POST /api/schools/:id/upload-logo', 'GET /api/schools/:id/stats'],
-      users_v2:       ['POST /api/users/register', 'POST /api/users/login', 'GET /api/users/profile', 'PUT /api/users/profile', 'POST /api/users/join-school', 'POST /api/users/logout'],
-      notes:          ['POST /api/notes', 'GET /api/notes', 'GET /api/notes/:id', 'PUT /api/notes/:id', 'DELETE /api/notes/:id', 'GET /api/notes/:id/pdf', 'GET /api/notes/subjects'],
-      notifications:  ['POST /api/notifications', 'GET /api/notifications', 'GET /api/notifications/all', 'DELETE /api/notifications/:id'],
+      schools: [
+        'POST /api/schools/register',
+        'GET  /api/schools/:id',
+        'GET  /api/schools/by-name/:name',
+        'GET  /api/schools/:id/members',
+        'GET  /api/schools/:id/stats',
+        'POST /api/schools/:id/regenerate-passcode',
+        'POST /api/schools/:id/teachers',
+        'POST /api/schools/:id/approve/:userId',
+        'POST /api/schools/:id/suspend/:userId',
+        'POST /api/schools/:id/reinstate/:userId',
+        'DELETE /api/schools/:id/members/:userId',
+        'POST /api/schools/:id/upload-logo',
+      ],
+      users_v2: [
+        'POST /api/users/register',
+        'POST /api/users/login',
+        'GET  /api/users/profile',
+        'PUT  /api/users/profile',
+        'POST /api/users/join-school',
+        'GET  /api/users/school-members',
+        'POST /api/users/logout',
+      ],
+      notes:  ['POST /api/notes', 'GET /api/notes', 'GET /api/notes/:id', 'PUT /api/notes/:id', 'DELETE /api/notes/:id', 'GET /api/notes/:id/pdf', 'GET /api/notes/subjects'],
+      notifications: ['POST /api/notifications', 'GET /api/notifications', 'GET /api/notifications/all', 'DELETE /api/notifications/:id'],
+      tasks: [
+        'POST /api/tasks',
+        'GET  /api/tasks',
+        'GET  /api/tasks/:id',
+        'PUT  /api/tasks/:id',
+        'DELETE /api/tasks/:id',
+        'POST /api/tasks/:id/submit',
+        'GET  /api/tasks/:id/submissions',
+        'PUT  /api/tasks/:id/submissions/:sid/grade',
+      ],
+      network_rules: [
+        'POST /api/network-rules',
+        'GET  /api/network-rules',
+        'GET  /api/network-rules/check',
+        'PUT  /api/network-rules/:id',
+        'DELETE /api/network-rules/:id',
+      ],
     },
   })
 })
