@@ -1,10 +1,11 @@
-﻿/**
+/**
  * Login / Register / School Setup / Quick Start
  *
  * Modes:
  *  signin   — email + password → POST /api/users/login
  *  signup   — name + role + email + password + school_name + school_passcode → POST /api/users/register
  *  school   — school_name + school_email → POST /api/schools/register
+ *  parent   — name + email + password + access_code → POST /api/parent/register
  *  local    — Quick Start, no account needed (works without Supabase)
  */
 import { useState, useEffect } from 'react'
@@ -378,7 +379,7 @@ export default function Login({ onLogin }: LoginProps) {
               <button style={tabStyle('signin')}  onClick={() => { setMode('signin');  setError('') }}>Sign In</button>
               <button style={tabStyle('signup')}  onClick={() => { setMode('signup');  setError('') }}>Sign Up</button>
               <button style={tabStyle('school')}  onClick={() => { setMode('school');  setError(''); setScResult(null) }}>School</button>
-              <button style={tabStyle('parent')}  onClick={() => { setMode('parent');  setError('') }}>👨‍👩‍👧 Parent</button>
+              <button style={tabStyle('parent')}  onClick={() => { setMode('parent');  setError('') }}>Parent</button>
               <button style={tabStyle('local')}   onClick={() => { setMode('local');   setError('') }}>
                 <Zap size={11} style={{ display: 'inline', marginRight: 3, verticalAlign: 'middle' }} />
                 Quick
@@ -529,7 +530,7 @@ export default function Login({ onLogin }: LoginProps) {
               <motion.div key="parent" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}>
                 <div style={{ marginBottom: 16, padding: '12px 14px', background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.2)', borderRadius: 10 }}>
                   <p style={{ fontSize: 12, color: '#818cf8', margin: 0, lineHeight: 1.6 }}>
-                    👨‍👩‍👧 <strong>Parent Mode</strong> — view your child's marks and academic performance.<br />
+                    <strong>Parent Mode</strong> — view your child's marks and academic performance.<br />
                     Ask your child to generate a <strong>Parent Access Code</strong> from their Kairo app first.
                   </p>
                 </div>
@@ -630,7 +631,9 @@ export default function Login({ onLogin }: LoginProps) {
                 ? "School admin? → School tab first to get your passcode"
                 : mode === 'school'
                   ? "Already registered? → Sign In tab"
-                  : "Your data stays on this device · Add Supabase later for school sync"}
+                  : mode === 'parent'
+                    ? "Already have an account? → Sign In tab"
+                    : "Your data stays on this device · Add Supabase later for school sync"}
           </p>
         )}
       </motion.div>
@@ -696,4 +699,3 @@ const eyeBtn: React.CSSProperties = {
   position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)',
   background: 'none', border: 'none', cursor: 'pointer', padding: 4, display: 'flex',
 }
-
