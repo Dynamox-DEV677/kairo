@@ -1,8 +1,11 @@
 /**
  * SchoolHub — full school management UI
- * Admin → Overview + Members + Tasks + Notifications
- * Teacher → Create Task + My Tasks + Notifications
- * Student → My Tasks + Feed
+ *
+ * Admin  → Overview · Pending · Members · Tasks · Network Rules · Login Logs · Settings
+ * Teacher → My Tasks · Create Task · Notifications
+ * Student → My Tasks · Feed
+ *
+ * First person to register at a school is automatically the admin (enforced server-side).
  */
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -10,15 +13,17 @@ import {
   Users, BookOpen, Bell, TrendingUp, Plus, Check, X, Clock,
   AlertCircle, RefreshCw, Send, Trash2, Ban, CheckCircle,
   FileText, Calendar, BarChart3, Loader2, Eye, UserCheck,
-  ChevronDown, Filter, Search, Shield, GraduationCap,
+  ChevronDown, Shield, GraduationCap,
   Building2, Sparkles, Award, Inbox,
+  Wifi, WifiOff, LogIn, Settings, Key, UserPlus,
+  ToggleLeft, ToggleRight, AlertTriangle, CheckSquare,
+  Globe, Lock, Unlock,
 } from 'lucide-react'
 import type { AuthProfile } from './Login'
 
 // ─── API helper ───────────────────────────────────────────────────────────────
-function token() {
-  return localStorage.getItem('kairo_token') || ''
-}
+function token() { return localStorage.getItem('kairo_token') || '' }
+
 async function api(path: string, opts: RequestInit = {}): Promise<any> {
   const res = await fetch(`/api${path}`, {
     ...opts,
@@ -55,6 +60,19 @@ interface Stats {
   total_active_users: number; total_students: number; total_teachers: number
   pending_students: number; total_tasks: number; open_tasks: number; active_notifications: number
 }
+interface NetworkRule {
+  id: string; label: string; cidr: string; enabled: boolean; created_at: string
+  creator?: { id: string; name: string }
+}
+interface LoginLog {
+  id: string; email: string; ip_address: string; user_agent: string
+  success: boolean; reason: string | null; created_at: string
+  user?: { id: string; name: string; role: string } | null
+}
+interface SchoolInfo {
+  id: string; school_name: string; school_email: string
+  domain: string | null; require_approval: boolean; school_logo_url: string | null
+}
 
 // ─── SHARED COMPONENTS ────────────────────────────────────────────────────────
 
@@ -73,37 +91,59 @@ function EmptyState({ icon: Icon, title, sub }: { icon: React.ElementType; title
   return (
     <div style={{ textAlign: 'center', padding: '48px 24px', color: '#52525b' }}>
       <Icon size={36} style={{ margin: '0 auto 12px', opacity: 0.4 }} />
-      <p style={{ fontSize: 14, fontWeight: 600, color: '#71717a', margin: '0 0 6px' }}>{title}</p>
-      {sub && <p style={{ fontSize: 12, margin: 0 }}>{sub}</p>}
+      <div style={{ fontSize: 15, fontWeight: 600, color: '#71717a', marginBottom: 4 }}>{title}</div>
+      {sub && <div style={{ fontSize: 13, opacity: 0.7 }}>{sub}</div>}
     </div>
   )
 }
 
-function ErrBanner({ msg, onRetry }: { msg: string; onRetry?: () => void }) {
+function ErrBanner({ msg, onDismiss }: { msg: string; onDismiss?: () => void }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: 10, margin: '12px 0', fontSize: 13, color: '#f87171' }}>
+    <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
+      style={{ background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: 8,
+        padding: '10px 14px', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, color: '#f87171' }}>
       <AlertCircle size={14} style={{ flexShrink: 0 }} />
       <span style={{ flex: 1 }}>{msg}</span>
-      {onRetry && <button onClick={onRetry} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#f87171' }}><RefreshCw size={13} /></button>}
-    </div>
+      {onDismiss && <button onClick={onDismiss} style={{ background: 'none', border: 'none', color: '#f87171', cursor: 'pointer', padding: 0 }}><X size={13} /></button>}
+    </motion.div>
   )
 }
 
-function TabBar({ tabs, active, onSelect }: { tabs: { id: string; label: string; icon: React.ElementType }[]; active: string; onSelect: (id: string) => void }) {
+function SuccessBanner({ msg, onDismiss }: { msg: string; onDismiss?: () => void }) {
   return (
-    <div style={{ display: 'flex', gap: 4, marginBottom: 24, background: '#0d0d0d', borderRadius: 12, padding: 4, border: '1px solid #1a1a1a' }}>
+    <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
+      style={{ background: 'rgba(52,211,153,0.12)', border: '1px solid rgba(52,211,153,0.25)', borderRadius: 8,
+        padding: '10px 14px', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, color: '#34d399' }}>
+      <CheckCircle size={14} style={{ flexShrink: 0 }} />
+      <span style={{ flex: 1 }}>{msg}</span>
+      {onDismiss && <button onClick={onDismiss} style={{ background: 'none', border: 'none', color: '#34d399', cursor: 'pointer', padding: 0 }}><X size={13} /></button>}
+    </motion.div>
+  )
+}
+
+function TabBar({ tabs, active, setActive }: {
+  tabs: { id: string; label: string; icon: React.ElementType; badge?: number }[]
+  active: string; setActive: (v: string) => void
+}) {
+  return (
+    <div style={{ display: 'flex', gap: 4, marginBottom: 20, flexWrap: 'wrap' }}>
       {tabs.map(t => (
-        <button key={t.id} onClick={() => onSelect(t.id)} style={{
-          flex: 1, padding: '8px 12px', borderRadius: 8, border: 'none', cursor: 'pointer',
-          fontFamily: 'inherit', fontSize: 13, fontWeight: 600,
-          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-          background: active === t.id ? 'rgba(99,102,241,0.12)' : 'transparent',
-          color: active === t.id ? '#818cf8' : '#52525b',
-          boxShadow: active === t.id ? 'inset 0 0 0 1px rgba(99,102,241,0.3)' : 'none',
-          transition: 'all 0.15s',
+        <button key={t.id} onClick={() => setActive(t.id)} style={{
+          display: 'flex', alignItems: 'center', gap: 6,
+          padding: '7px 14px', borderRadius: 8, fontSize: 13, fontWeight: active === t.id ? 600 : 400,
+          border: active === t.id ? '1px solid rgba(99,102,241,0.4)' : '1px solid #1e1e1e',
+          background: active === t.id ? 'rgba(99,102,241,0.12)' : '#111',
+          color: active === t.id ? '#818cf8' : '#71717a',
+          cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s', position: 'relative',
         }}>
           <t.icon size={13} />
           {t.label}
+          {!!t.badge && (
+            <span style={{ background: '#ef4444', color: '#fff', borderRadius: 10, fontSize: 10,
+              fontWeight: 700, padding: '0 5px', minWidth: 16, textAlign: 'center' }}>
+              {t.badge}
+            </span>
+          )}
         </button>
       ))}
     </div>
@@ -112,782 +152,1322 @@ function TabBar({ tabs, active, onSelect }: { tabs: { id: string; label: string;
 
 function Card({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
   return (
-    <div style={{ background: '#111', border: '1px solid #1e1e1e', borderRadius: 14, padding: 20, ...style }}>
+    <div style={{ background: '#111', border: '1px solid #1e1e1e', borderRadius: 12, padding: 20, ...style }}>
       {children}
     </div>
   )
 }
 
 function RoleBadge({ role }: { role: string }) {
-  const map: Record<string, { bg: string; color: string }> = {
-    admin:   { bg: 'rgba(139,92,246,0.15)', color: '#a78bfa' },
-    teacher: { bg: 'rgba(59,130,246,0.15)', color: '#60a5fa' },
-    student: { bg: 'rgba(52,211,153,0.15)', color: '#34d399' },
+  const cfg: Record<string, { bg: string; color: string; label: string }> = {
+    admin:   { bg: 'rgba(99,102,241,0.15)',  color: '#818cf8', label: 'Admin' },
+    teacher: { bg: 'rgba(251,146,60,0.15)',  color: '#fb923c', label: 'Teacher' },
+    student: { bg: 'rgba(52,211,153,0.15)',  color: '#34d399', label: 'Student' },
   }
-  const s = map[role] || { bg: '#1e1e1e', color: '#71717a' }
+  const c = cfg[role] || { bg: '#1e1e1e', color: '#71717a', label: role }
   return (
-    <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 6, background: s.bg, color: s.color, textTransform: 'capitalize', letterSpacing: 0.3 }}>
-      {role}
+    <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 6, background: c.bg, color: c.color }}>
+      {c.label}
     </span>
   )
 }
 
 function StatusBadge({ status }: { status: string }) {
-  const map: Record<string, { bg: string; color: string; dot: string }> = {
-    active:    { bg: 'rgba(52,211,153,0.1)',  color: '#34d399', dot: '#34d399' },
-    pending:   { bg: 'rgba(251,191,36,0.1)',  color: '#fbbf24', dot: '#fbbf24' },
-    suspended: { bg: 'rgba(239,68,68,0.1)',   color: '#f87171', dot: '#f87171' },
+  const cfg: Record<string, { bg: string; color: string }> = {
+    active:    { bg: 'rgba(52,211,153,0.15)',  color: '#34d399' },
+    pending:   { bg: 'rgba(251,191,36,0.15)',  color: '#fbbf24' },
+    suspended: { bg: 'rgba(239,68,68,0.15)',   color: '#f87171' },
+    submitted: { bg: 'rgba(99,102,241,0.15)',  color: '#818cf8' },
+    graded:    { bg: 'rgba(52,211,153,0.15)',  color: '#34d399' },
+    late:      { bg: 'rgba(239,68,68,0.15)',   color: '#f87171' },
   }
-  const s = map[status] || { bg: '#1e1e1e', color: '#71717a', dot: '#71717a' }
+  const c = cfg[status] || { bg: '#1e1e1e', color: '#71717a' }
   return (
-    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 6, background: s.bg, color: s.color }}>
-      <span style={{ width: 5, height: 5, borderRadius: '50%', background: s.dot, flexShrink: 0 }} />
-      {status.charAt(0).toUpperCase() + status.slice(1)}
+    <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 6, background: c.bg, color: c.color }}>
+      {status}
     </span>
   )
 }
 
 function Avatar({ name, url, size = 32 }: { name: string; url?: string; size?: number }) {
-  return (
-    <div style={{ width: size, height: size, borderRadius: size / 3, flexShrink: 0, overflow: 'hidden', background: url ? 'transparent' : 'linear-gradient(135deg,#6366f1,#7c3aed)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: size * 0.4, fontWeight: 700, color: '#fff' }}>
-      {url ? <img src={url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : name.charAt(0).toUpperCase()}
-    </div>
-  )
+  return url
+    ? <img src={url} alt={name} style={{ width: size, height: size, borderRadius: size / 3, objectFit: 'cover' }} />
+    : (
+      <div style={{
+        width: size, height: size, borderRadius: size / 3, flexShrink: 0,
+        background: 'linear-gradient(135deg, #6366f1, #7c3aed)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        fontSize: size * 0.4, fontWeight: 700, color: '#fff',
+      }}>{name.charAt(0).toUpperCase()}</div>
+    )
 }
 
-function StatCard({ icon: Icon, label, value, sub, color }: { icon: React.ElementType; label: string; value: number | string; sub?: string; color: string }) {
+function StatCard({ label, value, icon: Icon, color = '#6366f1', sub }: {
+  label: string; value: number | string; icon: React.ElementType; color?: string; sub?: string
+}) {
   return (
-    <Card style={{ display: 'flex', alignItems: 'flex-start', gap: 14, padding: 18 }}>
-      <div style={{ width: 40, height: 40, borderRadius: 10, background: `${color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+    <Card style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
+      <div style={{ width: 40, height: 40, borderRadius: 10, background: `${color}22`,
+        display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
         <Icon size={18} color={color} />
       </div>
       <div>
-        <p style={{ fontSize: 11, color: '#52525b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.8, margin: '0 0 4px' }}>{label}</p>
-        <p style={{ fontSize: 26, fontWeight: 800, color: '#fafafa', margin: '0 0 2px', lineHeight: 1 }}>{value}</p>
-        {sub && <p style={{ fontSize: 11, color: '#52525b', margin: 0 }}>{sub}</p>}
+        <div style={{ fontSize: 24, fontWeight: 700, color: '#fafafa', lineHeight: 1.1 }}>{value}</div>
+        <div style={{ fontSize: 12, color: '#71717a', marginTop: 2 }}>{label}</div>
+        {sub && <div style={{ fontSize: 11, color: '#52525b', marginTop: 1 }}>{sub}</div>}
       </div>
     </Card>
   )
 }
 
-function timeAgo(dateStr: string) {
-  const diff = Date.now() - new Date(dateStr).getTime()
-  const m = Math.floor(diff / 60000)
-  if (m < 1) return 'just now'
-  if (m < 60) return `${m}m ago`
-  const h = Math.floor(m / 60)
-  if (h < 24) return `${h}h ago`
-  return `${Math.floor(h / 24)}d ago`
+function Modal({ open, onClose, title, children, width = 480 }: {
+  open: boolean; onClose: () => void; title: string; children: React.ReactNode; width?: number
+}) {
+  return (
+    <AnimatePresence>
+      {open && (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 1000,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}
+          onClick={e => { if (e.target === e.currentTarget) onClose() }}>
+          <motion.div initial={{ scale: 0.92, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.92, opacity: 0 }}
+            style={{ background: '#111', border: '1px solid #1e1e1e', borderRadius: 14,
+              width: '100%', maxWidth: width, padding: 24, maxHeight: '90vh', overflowY: 'auto' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+              <span style={{ fontWeight: 700, color: '#fafafa', fontSize: 16 }}>{title}</span>
+              <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#52525b', padding: 2 }}>
+                <X size={16} />
+              </button>
+            </div>
+            {children}
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  )
 }
 
-function Modal({ open, onClose, title, children }: { open: boolean; onClose: () => void; title: string; children: React.ReactNode }) {
-  if (!open) return null
+function Btn({ children, onClick, variant = 'primary', size = 'md', disabled = false, style }: {
+  children: React.ReactNode; onClick?: () => void
+  variant?: 'primary' | 'danger' | 'ghost' | 'success' | 'warning'
+  size?: 'sm' | 'md'; disabled?: boolean; style?: React.CSSProperties
+}) {
+  const cfg = {
+    primary: { bg: '#6366f1', hoverBg: '#5558e8', color: '#fff' },
+    danger:  { bg: 'rgba(239,68,68,0.15)', hoverBg: 'rgba(239,68,68,0.25)', color: '#f87171' },
+    ghost:   { bg: '#1a1a1a', hoverBg: '#222', color: '#a1a1aa' },
+    success: { bg: 'rgba(52,211,153,0.15)', hoverBg: 'rgba(52,211,153,0.25)', color: '#34d399' },
+    warning: { bg: 'rgba(251,191,36,0.15)', hoverBg: 'rgba(251,191,36,0.25)', color: '#fbbf24' },
+  }[variant]
+  const pad = size === 'sm' ? '5px 10px' : '8px 16px'
+  const fs  = size === 'sm' ? 12 : 13
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose}
-        style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)' }} />
-      <motion.div initial={{ opacity: 0, scale: 0.95, y: 16 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }}
-        style={{ position: 'relative', width: '100%', maxWidth: 480, background: '#111', border: '1px solid #1e1e1e', borderRadius: 18, padding: 28, zIndex: 1 }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-          <h3 style={{ fontSize: 16, fontWeight: 700, color: '#fafafa', margin: 0 }}>{title}</h3>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#52525b', padding: 4 }}
-            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = '#fafafa' }}
-            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = '#52525b' }}>
-            <X size={16} />
-          </button>
-        </div>
-        {children}
-      </motion.div>
+    <button onClick={onClick} disabled={disabled} style={{
+      padding: pad, borderRadius: 7, fontSize: fs, fontWeight: 600,
+      background: cfg.bg, color: cfg.color, border: 'none', cursor: disabled ? 'not-allowed' : 'pointer',
+      fontFamily: 'inherit', opacity: disabled ? 0.5 : 1, transition: 'all 0.12s', ...style,
+    }}
+      onMouseEnter={e => { if (!disabled) (e.currentTarget as HTMLButtonElement).style.background = cfg.hoverBg }}
+      onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = cfg.bg }}
+    >{children}</button>
+  )
+}
+
+function Input({ label, value, onChange, placeholder, type = 'text', required }: {
+  label: string; value: string; onChange: (v: string) => void
+  placeholder?: string; type?: string; required?: boolean
+}) {
+  return (
+    <div style={{ marginBottom: 14 }}>
+      <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#71717a', marginBottom: 5 }}>
+        {label}{required && <span style={{ color: '#f87171', marginLeft: 2 }}>*</span>}
+      </label>
+      <input type={type} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder}
+        style={{
+          width: '100%', padding: '9px 12px', background: '#0d0d0d', border: '1px solid #2a2a2a',
+          borderRadius: 8, color: '#fafafa', fontSize: 13, fontFamily: 'inherit', outline: 'none',
+          boxSizing: 'border-box',
+        }}
+        onFocus={e => { (e.currentTarget as HTMLInputElement).style.borderColor = '#6366f1' }}
+        onBlur={e => { (e.currentTarget as HTMLInputElement).style.borderColor = '#2a2a2a' }}
+      />
     </div>
   )
 }
 
-const inputStyle: React.CSSProperties = {
-  width: '100%', boxSizing: 'border-box', background: '#0d0d0d', border: '1px solid #1e1e1e',
-  borderRadius: 8, padding: '10px 12px', fontSize: 13, color: '#fafafa',
-  fontFamily: 'inherit', outline: 'none', transition: 'border-color 0.15s',
+function fmtDate(s: string) {
+  const d = new Date(s)
+  return d.toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
 }
-
-function Btn({ children, onClick, variant = 'primary', loading, small, style: s }: {
-  children: React.ReactNode; onClick?: () => void; variant?: 'primary' | 'ghost' | 'danger'
-  loading?: boolean; small?: boolean; style?: React.CSSProperties
-}) {
-  const bg = variant === 'primary' ? 'linear-gradient(135deg,#6366f1,#7c3aed)' : variant === 'danger' ? 'rgba(239,68,68,0.12)' : 'rgba(255,255,255,0.05)'
-  const col = variant === 'primary' ? '#fff' : variant === 'danger' ? '#f87171' : '#a1a1aa'
-  return (
-    <motion.button whileHover={{ scale: loading ? 1 : 1.02 }} whileTap={{ scale: loading ? 1 : 0.97 }} onClick={loading ? undefined : onClick}
-      style={{ padding: small ? '6px 12px' : '10px 18px', borderRadius: 9, border: variant === 'danger' ? '1px solid rgba(239,68,68,0.25)' : 'none', cursor: loading ? 'not-allowed' : 'pointer', background: loading ? '#1e1e2e' : bg, color: loading ? '#52525b' : col, fontSize: small ? 12 : 13, fontWeight: 600, fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap', ...s }}>
-      {loading ? <Loader2 size={12} style={{ animation: 'spin 0.8s linear infinite' }} /> : null}
-      {children}
-    </motion.button>
-  )
+function fmtDateShort(s: string) {
+  return new Date(s).toLocaleString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })
 }
 
 // ─── NO SCHOOL VIEW ───────────────────────────────────────────────────────────
 function NoSchoolView() {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', textAlign: 'center', padding: 40 }}>
-      <div style={{ width: 72, height: 72, borderRadius: 20, background: 'rgba(99,102,241,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20, border: '1px solid rgba(99,102,241,0.2)' }}>
-        <Building2 size={32} color="#6366f1" />
-      </div>
-      <h2 style={{ fontSize: 20, fontWeight: 700, color: '#fafafa', margin: '0 0 10px' }}>You're not in a school yet</h2>
-      <p style={{ fontSize: 14, color: '#52525b', margin: '0 0 28px', maxWidth: 360, lineHeight: 1.6 }}>
-        Join a school to access homework, announcements, and your class dashboard. Ask your admin for the school passcode.
-      </p>
-      <div style={{ padding: '14px 20px', background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.2)', borderRadius: 12, fontSize: 13, color: '#818cf8' }}>
-        Go to <strong>Sign Up → Join School</strong> and enter your school's passcode
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+      minHeight: '60vh', color: '#52525b', gap: 12 }}>
+      <Building2 size={48} style={{ opacity: 0.3 }} />
+      <div style={{ fontSize: 18, fontWeight: 700, color: '#71717a' }}>Not in a school yet</div>
+      <div style={{ fontSize: 13, maxWidth: 300, textAlign: 'center' }}>
+        Register or join a school from the login screen to access School Hub.
       </div>
     </div>
   )
 }
 
-// ─── SCHOOL HEADER ─────────────────────────────────────────────────────────────
+// ─── SCHOOL HEADER ────────────────────────────────────────────────────────────
 function SchoolHeader({ profile }: { profile: AuthProfile }) {
-  const roleIcon = profile.role === 'admin' ? Shield : profile.role === 'teacher' ? BookOpen : GraduationCap
-  const RoleIcon = roleIcon
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 8 }}>
-      {profile.school_logo_url ? (
-        <img src={profile.school_logo_url} alt={profile.school_name} style={{ width: 48, height: 48, borderRadius: 12, objectFit: 'contain', background: '#1a1a1a', border: '1px solid #1e1e1e' }} />
-      ) : (
-        <div style={{ width: 48, height: 48, borderRadius: 12, background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <Building2 size={22} color="#6366f1" />
-        </div>
-      )}
+    <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 4 }}>
+      {profile.school_logo_url
+        ? <img src={profile.school_logo_url} alt="logo"
+            style={{ width: 48, height: 48, borderRadius: 12, objectFit: 'cover', border: '1px solid #1e1e1e' }} />
+        : <div style={{ width: 48, height: 48, borderRadius: 12, background: 'linear-gradient(135deg,#6366f1,#7c3aed)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Building2 size={22} color="#fff" />
+          </div>
+      }
       <div>
-        <h1 style={{ fontSize: 20, fontWeight: 800, color: '#fafafa', margin: '0 0 4px', letterSpacing: '-0.3px' }}>
-          {profile.school_name || 'Your School'}
-        </h1>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div style={{ fontSize: 20, fontWeight: 700, color: '#fafafa' }}>{profile.school_name || 'School Hub'}</div>
+        <div style={{ fontSize: 12, color: '#52525b', display: 'flex', gap: 8, alignItems: 'center' }}>
           <RoleBadge role={profile.role} />
-          <span style={{ fontSize: 12, color: '#3f3f46' }}>·</span>
-          <span style={{ fontSize: 12, color: '#52525b', display: 'flex', alignItems: 'center', gap: 4 }}>
-            <RoleIcon size={11} /> {profile.name}
-          </span>
+          <span>{profile.name}</span>
         </div>
       </div>
     </div>
   )
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// ADMIN HUB
-// ═══════════════════════════════════════════════════════════════════════════════
+// ─── ADMIN HUB ────────────────────────────────────────────────────────────────
 function AdminHub({ profile, schoolId }: { profile: AuthProfile; schoolId: string }) {
   const [tab, setTab] = useState('overview')
+  const [pendingCount, setPendingCount] = useState(0)
+
+  // Count pending students for badge
+  useEffect(() => {
+    api(`/schools/${schoolId}/members?status=pending`)
+      .then(d => setPendingCount(d.members?.length ?? 0))
+      .catch(() => {})
+  }, [schoolId])
+
   const tabs = [
-    { id: 'overview',      label: 'Overview',      icon: BarChart3 },
-    { id: 'members',       label: 'Members',        icon: Users },
-    { id: 'tasks',         label: 'Tasks',          icon: BookOpen },
-    { id: 'notifications', label: 'Notifications',  icon: Bell },
+    { id: 'overview',  label: 'Overview',      icon: TrendingUp },
+    { id: 'pending',   label: 'Pending',        icon: Clock,      badge: pendingCount || undefined },
+    { id: 'members',   label: 'Members',        icon: Users },
+    { id: 'tasks',     label: 'Tasks',          icon: BookOpen },
+    { id: 'network',   label: 'Network Rules',  icon: Wifi },
+    { id: 'logs',      label: 'Login Logs',     icon: LogIn },
+    { id: 'settings',  label: 'Settings',       icon: Settings },
   ]
+
   return (
     <>
-      <TabBar tabs={tabs} active={tab} onSelect={setTab} />
+      <TabBar tabs={tabs} active={tab} setActive={t => { setTab(t); if (t === 'pending') setPendingCount(0) }} />
       <AnimatePresence mode="wait">
-        <motion.div key={tab} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.18 }}>
-          {tab === 'overview'      && <AdminOverview schoolId={schoolId} />}
-          {tab === 'members'       && <AdminMembers  schoolId={schoolId} />}
-          {tab === 'tasks'         && <AdminTasks    schoolId={schoolId} />}
-          {tab === 'notifications' && <NotificationsTab profile={profile} schoolId={schoolId} canSend />}
+        <motion.div key={tab}
+          initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}
+          transition={{ duration: 0.15 }}>
+          {tab === 'overview' && <AdminOverview schoolId={schoolId} />}
+          {tab === 'pending'  && <AdminPending  schoolId={schoolId} onApprove={() => {}} />}
+          {tab === 'members'  && <AdminMembers  schoolId={schoolId} selfId={profile.id} />}
+          {tab === 'tasks'    && <AdminTasks    schoolId={schoolId} />}
+          {tab === 'network'  && <AdminNetwork  schoolId={schoolId} />}
+          {tab === 'logs'     && <AdminLogs     schoolId={schoolId} />}
+          {tab === 'settings' && <AdminSettings schoolId={schoolId} profile={profile} />}
         </motion.div>
       </AnimatePresence>
     </>
   )
 }
 
-// Admin: Overview
+// Overview ────────────────────────────────────────────────────────────────────
 function AdminOverview({ schoolId }: { schoolId: string }) {
   const [stats, setStats] = useState<Stats | null>(null)
   const [loading, setLoading] = useState(true)
   const [err, setErr] = useState('')
 
-  const load = useCallback(async () => {
-    setLoading(true); setErr('')
-    try { setStats((await api(`/schools/${schoolId}/stats`)) as Stats) }
-    catch (e: any) { setErr(e.message) }
-    finally { setLoading(false) }
+  useEffect(() => {
+    setLoading(true)
+    api(`/schools/${schoolId}/stats`)
+      .then(setStats).catch(e => setErr(e.message)).finally(() => setLoading(false))
   }, [schoolId])
-
-  useEffect(() => { load() }, [load])
 
   if (loading) return <Spinner />
-  if (err) return <ErrBanner msg={err} onRetry={load} />
+  if (err) return <ErrBanner msg={err} />
+  if (!stats) return null
 
-  const s = stats!
   return (
     <div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(200px,1fr))', gap: 14, marginBottom: 24 }}>
-        <StatCard icon={Users}      label="Active Users"   value={s.total_active_users} sub="students + teachers" color="#6366f1" />
-        <StatCard icon={GraduationCap} label="Students"   value={s.total_students}      sub={s.pending_students > 0 ? `${s.pending_students} pending` : 'all active'} color="#34d399" />
-        <StatCard icon={BookOpen}   label="Teachers"       value={s.total_teachers}      color="#60a5fa" />
-        <StatCard icon={FileText}   label="Open Tasks"     value={s.open_tasks}          sub={`${s.total_tasks} total`} color="#fb923c" />
-        <StatCard icon={Bell}       label="Notifications"  value={s.active_notifications} sub="active" color="#f472b6" />
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(190px, 1fr))', gap: 12 }}>
+        <StatCard label="Active Users"      value={stats.total_active_users}   icon={Users}     color="#6366f1" />
+        <StatCard label="Students"          value={stats.total_students}        icon={GraduationCap} color="#34d399" />
+        <StatCard label="Teachers"          value={stats.total_teachers}        icon={Shield}    color="#fb923c" />
+        <StatCard label="Pending Approval"  value={stats.pending_students}      icon={Clock}     color="#fbbf24"
+          sub={stats.pending_students > 0 ? 'Go to Pending tab' : undefined} />
+        <StatCard label="Total Tasks"       value={stats.total_tasks}           icon={BookOpen}  color="#818cf8" />
+        <StatCard label="Open Tasks"        value={stats.open_tasks}            icon={CheckSquare} color="#38bdf8" />
+        <StatCard label="Active Notices"    value={stats.active_notifications}  icon={Bell}      color="#f472b6" />
       </div>
-      {s.pending_students > 0 && (
-        <div style={{ padding: '14px 18px', background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.2)', borderRadius: 12, display: 'flex', alignItems: 'center', gap: 12, fontSize: 13, color: '#fbbf24' }}>
-          <AlertCircle size={16} style={{ flexShrink: 0 }} />
-          <span><strong>{s.pending_students}</strong> student{s.pending_students > 1 ? 's' : ''} waiting for approval — go to the <strong>Members</strong> tab to approve them.</span>
-        </div>
-      )}
     </div>
   )
 }
 
-// Admin: Members
-function AdminMembers({ schoolId }: { schoolId: string }) {
+// Pending ─────────────────────────────────────────────────────────────────────
+function AdminPending({ schoolId, onApprove }: { schoolId: string; onApprove: () => void }) {
   const [members, setMembers] = useState<Member[]>([])
   const [loading, setLoading] = useState(true)
-  const [err, setErr] = useState('')
-  const [filter, setFilter] = useState<'all' | 'pending' | 'student' | 'teacher'>('all')
-  const [search, setSearch] = useState('')
-  const [acting, setActing] = useState<string | null>(null)
+  const [err, setErr]         = useState('')
+  const [success, setSuccess] = useState('')
+  const [busy, setBusy]       = useState<string | null>(null)
 
-  const load = useCallback(async () => {
+  const load = useCallback(() => {
     setLoading(true); setErr('')
-    try { setMembers((await api(`/schools/${schoolId}/members`)).members) }
-    catch (e: any) { setErr(e.message) }
-    finally { setLoading(false) }
+    api(`/schools/${schoolId}/members?status=pending`)
+      .then(d => setMembers(d.members || []))
+      .catch(e => setErr(e.message))
+      .finally(() => setLoading(false))
   }, [schoolId])
 
   useEffect(() => { load() }, [load])
 
-  async function action(type: 'approve' | 'suspend' | 'reinstate' | 'remove', userId: string) {
-    setActing(userId)
+  async function approve(m: Member) {
+    setBusy(m.id)
     try {
-      if (type === 'approve')   await api(`/schools/${schoolId}/approve/${userId}`,   { method: 'POST' })
-      if (type === 'suspend')   await api(`/schools/${schoolId}/suspend/${userId}`,   { method: 'POST' })
-      if (type === 'reinstate') await api(`/schools/${schoolId}/reinstate/${userId}`, { method: 'POST' })
-      if (type === 'remove')    await api(`/schools/${schoolId}/members/${userId}`,   { method: 'DELETE' })
-      await load()
+      await api(`/schools/${schoolId}/approve/${m.id}`, { method: 'POST' })
+      setSuccess(`${m.name} approved!`)
+      setMembers(prev => prev.filter(x => x.id !== m.id))
+      onApprove()
     } catch (e: any) { setErr(e.message) }
-    finally { setActing(null) }
+    finally { setBusy(null) }
   }
 
-  const visible = members.filter(m => {
-    if (filter === 'pending' && m.status !== 'pending') return false
-    if (filter === 'student' && m.role !== 'student')   return false
-    if (filter === 'teacher' && m.role !== 'teacher')   return false
-    if (search && !m.name.toLowerCase().includes(search.toLowerCase())) return false
-    return true
-  })
+  async function reject(m: Member) {
+    if (!confirm(`Remove ${m.name} from the school?`)) return
+    setBusy(m.id)
+    try {
+      await api(`/schools/${schoolId}/members/${m.id}`, { method: 'DELETE' })
+      setSuccess(`${m.name} removed.`)
+      setMembers(prev => prev.filter(x => x.id !== m.id))
+    } catch (e: any) { setErr(e.message) }
+    finally { setBusy(null) }
+  }
+
+  if (loading) return <Spinner />
 
   return (
     <div>
-      {err && <ErrBanner msg={err} onRetry={load} />}
-      {/* Toolbar */}
-      <div style={{ display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap' }}>
-        <div style={{ flex: 1, minWidth: 200, position: 'relative' }}>
-          <Search size={13} style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', color: '#52525b', pointerEvents: 'none' }} />
-          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search members…" style={{ ...inputStyle, paddingLeft: 32 }} />
-        </div>
-        {(['all', 'pending', 'student', 'teacher'] as const).map(f => (
-          <button key={f} onClick={() => setFilter(f)} style={{
-            padding: '8px 14px', borderRadius: 8, border: '1px solid', cursor: 'pointer', fontSize: 12, fontWeight: 600, fontFamily: 'inherit', transition: 'all 0.15s',
-            borderColor: filter === f ? '#6366f1' : '#1e1e1e',
-            background: filter === f ? 'rgba(99,102,241,0.1)' : 'transparent',
-            color: filter === f ? '#818cf8' : '#52525b',
-          }}>
-            {f.charAt(0).toUpperCase() + f.slice(1)}
-            {f === 'pending' && members.filter(m => m.status === 'pending').length > 0 && (
-              <span style={{ marginLeft: 6, background: '#fbbf24', color: '#000', borderRadius: 4, padding: '0 5px', fontSize: 10, fontWeight: 800 }}>
-                {members.filter(m => m.status === 'pending').length}
-              </span>
-            )}
-          </button>
-        ))}
-      </div>
+      {err     && <ErrBanner    msg={err}     onDismiss={() => setErr('')} />}
+      {success && <SuccessBanner msg={success} onDismiss={() => setSuccess('')} />}
 
-      {loading ? <Spinner /> : visible.length === 0 ? (
-        <EmptyState icon={Users} title="No members found" sub="Try changing the filter" />
-      ) : (
-        <Card style={{ padding: 0, overflow: 'hidden' }}>
-          {visible.map((m, i) => (
-            <motion.div key={m.id} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.03 }}
-              style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 18px', borderBottom: i < visible.length - 1 ? '1px solid #1a1a1a' : 'none', transition: 'background 0.12s' }}
-              onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.background = '#161616' }}
-              onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = 'transparent' }}>
-              <Avatar name={m.name} url={m.avatar_url} size={36} />
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                  <span style={{ fontSize: 14, fontWeight: 600, color: '#fafafa', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.name}</span>
-                  <RoleBadge role={m.role} />
-                  <StatusBadge status={m.status} />
-                </div>
-                <span style={{ fontSize: 11, color: '#52525b' }}>
-                  {m.subject && `${m.subject} · `}{m.class_name && `Class ${m.class_name} · `}
-                  {m.last_login_at ? `Last seen ${timeAgo(m.last_login_at)}` : 'Never logged in'}
-                </span>
-              </div>
-              {/* Actions */}
-              <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
-                {m.status === 'pending' && (
-                  <Btn small variant="primary" onClick={() => action('approve', m.id)} loading={acting === m.id}>
-                    <Check size={11} /> Approve
-                  </Btn>
-                )}
-                {m.status === 'active' && m.role !== 'admin' && (
-                  <Btn small variant="ghost" onClick={() => action('suspend', m.id)} loading={acting === m.id}>
-                    <Ban size={11} /> Suspend
-                  </Btn>
-                )}
-                {m.status === 'suspended' && (
-                  <Btn small variant="ghost" onClick={() => action('reinstate', m.id)} loading={acting === m.id}>
-                    <CheckCircle size={11} /> Reinstate
-                  </Btn>
-                )}
-                {m.role !== 'admin' && (
-                  <Btn small variant="danger" onClick={() => action('remove', m.id)} loading={acting === m.id}>
-                    <Trash2 size={11} />
-                  </Btn>
-                )}
-              </div>
-            </motion.div>
-          ))}
-        </Card>
-      )}
+      {members.length === 0
+        ? <EmptyState icon={CheckCircle} title="No pending approvals" sub="All students are approved." />
+        : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {members.map(m => (
+              <motion.div key={m.id} layout
+                initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 10 }} transition={{ duration: 0.15 }}>
+                <Card style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px' }}>
+                  <Avatar name={m.name} url={m.avatar_url} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontWeight: 600, color: '#fafafa', fontSize: 14 }}>{m.name}</div>
+                    <div style={{ fontSize: 12, color: '#52525b' }}>
+                      {m.class_name && `Class ${m.class_name} · `}
+                      Awaiting approval since {m.last_login_at ? fmtDateShort(m.last_login_at) : '—'}
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <Btn variant="success" size="sm" disabled={busy === m.id} onClick={() => approve(m)}>
+                      {busy === m.id ? <Loader2 size={12} /> : <><Check size={12} /> Approve</>}
+                    </Btn>
+                    <Btn variant="danger" size="sm" disabled={busy === m.id} onClick={() => reject(m)}>
+                      <X size={12} /> Reject
+                    </Btn>
+                  </div>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+        )
+      }
     </div>
   )
 }
 
-// Admin: All Tasks (read-only overview)
-function AdminTasks({ schoolId }: { schoolId: string }) {
-  const [tasks, setTasks] = useState<Task[]>([])
+// Members ─────────────────────────────────────────────────────────────────────
+function AdminMembers({ schoolId, selfId }: { schoolId: string; selfId: string }) {
+  const [members, setMembers] = useState<Member[]>([])
   const [loading, setLoading] = useState(true)
-  const [err, setErr] = useState('')
-  const [search, setSearch] = useState('')
+  const [err, setErr]         = useState('')
+  const [success, setSuccess] = useState('')
+  const [busy, setBusy]       = useState<string | null>(null)
+  const [filter, setFilter]   = useState<'all' | 'student' | 'teacher' | 'admin'>('all')
 
-  const load = useCallback(async () => {
+  const load = useCallback(() => {
     setLoading(true); setErr('')
-    try { setTasks((await api('/tasks')).tasks) }
-    catch (e: any) { setErr(e.message) }
-    finally { setLoading(false) }
+    const q = filter !== 'all' ? `?role=${filter}` : ''
+    api(`/schools/${schoolId}/members${q}`)
+      .then(d => setMembers(d.members || []))
+      .catch(e => setErr(e.message))
+      .finally(() => setLoading(false))
+  }, [schoolId, filter])
+
+  useEffect(() => { load() }, [load])
+
+  async function act(action: 'approve' | 'suspend' | 'reinstate' | 'remove', m: Member) {
+    if (action === 'remove' && !confirm(`Remove ${m.name} from the school?`)) return
+    setBusy(m.id)
+    try {
+      if (action === 'approve')   await api(`/schools/${schoolId}/approve/${m.id}`,   { method: 'POST' })
+      if (action === 'suspend')   await api(`/schools/${schoolId}/suspend/${m.id}`,   { method: 'POST' })
+      if (action === 'reinstate') await api(`/schools/${schoolId}/reinstate/${m.id}`, { method: 'POST' })
+      if (action === 'remove')    await api(`/schools/${schoolId}/members/${m.id}`,   { method: 'DELETE' })
+      setSuccess(`Done: ${m.name}`)
+      load()
+    } catch (e: any) { setErr(e.message) }
+    finally { setBusy(null) }
+  }
+
+  const filterBtns: Array<{ id: typeof filter; label: string }> = [
+    { id: 'all', label: 'All' },
+    { id: 'student', label: 'Students' },
+    { id: 'teacher', label: 'Teachers' },
+    { id: 'admin', label: 'Admins' },
+  ]
+
+  return (
+    <div>
+      {err     && <ErrBanner    msg={err}     onDismiss={() => setErr('')} />}
+      {success && <SuccessBanner msg={success} onDismiss={() => setSuccess('')} />}
+
+      <div style={{ display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' }}>
+        {filterBtns.map(f => (
+          <button key={f.id} onClick={() => setFilter(f.id)} style={{
+            padding: '5px 12px', borderRadius: 6, fontSize: 12, fontWeight: 600,
+            background: filter === f.id ? 'rgba(99,102,241,0.15)' : '#161616',
+            color: filter === f.id ? '#818cf8' : '#71717a',
+            border: filter === f.id ? '1px solid rgba(99,102,241,0.3)' : '1px solid #1e1e1e',
+            cursor: 'pointer', fontFamily: 'inherit',
+          }}>{f.label}</button>
+        ))}
+        <button onClick={load} style={{ marginLeft: 'auto', background: 'none', border: '1px solid #1e1e1e',
+          borderRadius: 6, padding: '5px 10px', color: '#52525b', cursor: 'pointer' }}>
+          <RefreshCw size={12} />
+        </button>
+      </div>
+
+      {loading ? <Spinner /> : members.length === 0
+        ? <EmptyState icon={Users} title="No members found" />
+        : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {members.map(m => (
+              <Card key={m.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px' }}>
+                <Avatar name={m.name} url={m.avatar_url} size={36} />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontWeight: 600, color: '#fafafa', fontSize: 13, display: 'flex', gap: 8, alignItems: 'center' }}>
+                    {m.name}
+                    <RoleBadge role={m.role} />
+                    <StatusBadge status={m.status} />
+                  </div>
+                  <div style={{ fontSize: 11, color: '#52525b', marginTop: 2 }}>
+                    {m.subject && `${m.subject} · `}
+                    {m.class_name && `Class ${m.class_name} · `}
+                    {m.last_login_at ? `Last seen ${fmtDateShort(m.last_login_at)}` : 'Never logged in'}
+                  </div>
+                </div>
+                {m.id !== selfId && m.role !== 'admin' && (
+                  <div style={{ display: 'flex', gap: 6 }}>
+                    {m.status === 'pending'   && <Btn size="sm" variant="success" disabled={!!busy} onClick={() => act('approve',   m)}><Check size={11} /> Approve</Btn>}
+                    {m.status === 'active'    && <Btn size="sm" variant="warning" disabled={!!busy} onClick={() => act('suspend',   m)}><Ban size={11} /> Suspend</Btn>}
+                    {m.status === 'suspended' && <Btn size="sm" variant="success" disabled={!!busy} onClick={() => act('reinstate', m)}><Unlock size={11} /> Reinstate</Btn>}
+                    <Btn size="sm" variant="danger" disabled={!!busy} onClick={() => act('remove', m)}><Trash2 size={11} /></Btn>
+                  </div>
+                )}
+              </Card>
+            ))}
+          </div>
+        )
+      }
+    </div>
+  )
+}
+
+// Tasks ───────────────────────────────────────────────────────────────────────
+function AdminTasks({ schoolId: _schoolId }: { schoolId: string }) {
+  const [tasks, setTasks]   = useState<Task[]>([])
+  const [loading, setLoading] = useState(true)
+  const [err, setErr]         = useState('')
+
+  useEffect(() => {
+    setLoading(true)
+    api('/tasks')
+      .then(d => setTasks(Array.isArray(d) ? d : (d.tasks || [])))
+      .catch(e => setErr(e.message))
+      .finally(() => setLoading(false))
+  }, [])
+
+  if (loading) return <Spinner />
+  if (err) return <ErrBanner msg={err} />
+  if (tasks.length === 0) return <EmptyState icon={BookOpen} title="No tasks yet" sub="Teachers can create tasks from their portal." />
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      {tasks.map(t => (
+        <Card key={t.id} style={{ padding: '14px 16px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontWeight: 600, color: '#fafafa', fontSize: 14 }}>{t.title}</div>
+              <div style={{ fontSize: 12, color: '#52525b', marginTop: 3 }}>
+                {t.subject && `${t.subject} · `}
+                {t.target_class && `Class ${t.target_class} · `}
+                {t.due_date && `Due ${fmtDateShort(t.due_date)} · `}
+                Max {t.max_score} pts
+              </div>
+              {t.creator && <div style={{ fontSize: 11, color: '#3f3f46', marginTop: 2 }}>by {t.creator.name}</div>}
+            </div>
+            <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexShrink: 0 }}>
+              <StatusBadge status={t.status} />
+              {t.submission_count !== undefined && (
+                <span style={{ fontSize: 11, color: '#52525b' }}>{t.submission_count} submitted</span>
+              )}
+            </div>
+          </div>
+        </Card>
+      ))}
+    </div>
+  )
+}
+
+// Network Rules ───────────────────────────────────────────────────────────────
+function AdminNetwork({ schoolId: _schoolId }: { schoolId: string }) {
+  const [rules, setRules]     = useState<NetworkRule[]>([])
+  const [yourIp, setYourIp]   = useState('')
+  const [loading, setLoading] = useState(true)
+  const [err, setErr]         = useState('')
+  const [success, setSuccess] = useState('')
+  const [busy, setBusy]       = useState<string | null>(null)
+  const [showForm, setShowForm] = useState(false)
+  const [label, setLabel]     = useState('')
+  const [cidr, setCidr]       = useState('')
+
+  const load = useCallback(() => {
+    setLoading(true); setErr('')
+    api('/network-rules')
+      .then(d => { setRules(d.rules || []); setYourIp(d.your_ip || '') })
+      .catch(e => setErr(e.message))
+      .finally(() => setLoading(false))
   }, [])
 
   useEffect(() => { load() }, [load])
 
-  const visible = tasks.filter(t => !search || t.title.toLowerCase().includes(search.toLowerCase()))
+  async function addRule() {
+    if (!label.trim() || !cidr.trim()) return setErr('Label and CIDR are required.')
+    setBusy('add'); setErr('')
+    try {
+      await api('/network-rules', { method: 'POST', body: JSON.stringify({ label, cidr }) })
+      setSuccess('Rule added.')
+      setLabel(''); setCidr(''); setShowForm(false)
+      load()
+    } catch (e: any) { setErr(e.message) }
+    finally { setBusy(null) }
+  }
+
+  async function toggle(r: NetworkRule) {
+    setBusy(r.id)
+    try {
+      await api(`/network-rules/${r.id}`, { method: 'PUT', body: JSON.stringify({ enabled: !r.enabled }) })
+      setRules(prev => prev.map(x => x.id === r.id ? { ...x, enabled: !x.enabled } : x))
+    } catch (e: any) { setErr(e.message) }
+    finally { setBusy(null) }
+  }
+
+  async function del(r: NetworkRule) {
+    if (!confirm(`Delete rule "${r.label}"?`)) return
+    setBusy(r.id)
+    try {
+      await api(`/network-rules/${r.id}`, { method: 'DELETE' })
+      setRules(prev => prev.filter(x => x.id !== r.id))
+      setSuccess(`Rule "${r.label}" deleted.`)
+    } catch (e: any) { setErr(e.message) }
+    finally { setBusy(null) }
+  }
 
   return (
     <div>
-      {err && <ErrBanner msg={err} onRetry={load} />}
-      <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
-        <div style={{ flex: 1, position: 'relative' }}>
-          <Search size={13} style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', color: '#52525b', pointerEvents: 'none' }} />
-          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search tasks…" style={{ ...inputStyle, paddingLeft: 32 }} />
-        </div>
+      {err     && <ErrBanner    msg={err}     onDismiss={() => setErr('')} />}
+      {success && <SuccessBanner msg={success} onDismiss={() => setSuccess('')} />}
+
+      <Card style={{ marginBottom: 16, padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
+        <Globe size={16} color="#6366f1" />
+        <span style={{ fontSize: 13, color: '#71717a' }}>Your current IP:</span>
+        <code style={{ fontSize: 13, color: '#818cf8', background: 'rgba(99,102,241,0.08)',
+          padding: '2px 8px', borderRadius: 5 }}>{yourIp || '…'}</code>
+        {rules.length > 0 && (
+          <span style={{ marginLeft: 'auto', fontSize: 12, color: '#52525b' }}>
+            {rules.filter(r => r.enabled).length} active rule{rules.filter(r => r.enabled).length !== 1 ? 's' : ''}
+          </span>
+        )}
+      </Card>
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+        <span style={{ fontSize: 14, fontWeight: 600, color: '#fafafa' }}>IP Whitelist Rules</span>
+        <Btn variant="primary" size="sm" onClick={() => setShowForm(s => !s)}>
+          <Plus size={12} /> Add Rule
+        </Btn>
       </div>
-      {loading ? <Spinner /> : visible.length === 0 ? (
-        <EmptyState icon={FileText} title="No tasks yet" sub="Teachers can create tasks from their dashboard" />
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {visible.map((t, i) => <TaskRow key={t.id} task={t} index={i} />)}
-        </div>
-      )}
+
+      <AnimatePresence>
+        {showForm && (
+          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}>
+            <Card style={{ marginBottom: 16 }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: '#fafafa', marginBottom: 12 }}>New Network Rule</div>
+              <Input label="Label" value={label} onChange={setLabel} placeholder="e.g. School Wi-Fi" required />
+              <Input label="CIDR" value={cidr} onChange={setCidr} placeholder="e.g. 192.168.1.0/24 or 203.0.113.5/32" required />
+              <div style={{ fontSize: 11, color: '#52525b', marginBottom: 12, marginTop: -8 }}>
+                Use /32 for a single IP. Admins always bypass this restriction.
+              </div>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <Btn variant="primary" onClick={addRule} disabled={busy === 'add'}>
+                  {busy === 'add' ? <Loader2 size={12} /> : 'Add Rule'}
+                </Btn>
+                <Btn variant="ghost" onClick={() => setShowForm(false)}>Cancel</Btn>
+              </div>
+            </Card>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {loading ? <Spinner /> : rules.length === 0
+        ? <EmptyState icon={WifiOff} title="No network rules" sub="When rules are added, only users on matching IPs can log in." />
+        : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {rules.map(r => (
+              <Card key={r.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px',
+                opacity: r.enabled ? 1 : 0.55 }}>
+                <div style={{ width: 36, height: 36, borderRadius: 8,
+                  background: r.enabled ? 'rgba(52,211,153,0.12)' : 'rgba(239,68,68,0.1)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {r.enabled ? <Wifi size={16} color="#34d399" /> : <WifiOff size={16} color="#f87171" />}
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontWeight: 600, color: '#fafafa', fontSize: 13 }}>{r.label}</div>
+                  <div style={{ fontSize: 12, color: '#52525b' }}>
+                    <code style={{ color: '#818cf8' }}>{r.cidr}</code>
+                    {r.creator && ` · added by ${r.creator.name}`}
+                  </div>
+                </div>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                  <StatusBadge status={r.enabled ? 'active' : 'suspended'} />
+                  <button onClick={() => toggle(r)} disabled={!!busy} title={r.enabled ? 'Disable' : 'Enable'}
+                    style={{ background: 'none', border: '1px solid #1e1e1e', borderRadius: 6, padding: '4px 8px',
+                      cursor: 'pointer', color: r.enabled ? '#fbbf24' : '#34d399' }}>
+                    {r.enabled ? <ToggleRight size={14} /> : <ToggleLeft size={14} />}
+                  </button>
+                  <button onClick={() => del(r)} disabled={!!busy} title="Delete"
+                    style={{ background: 'none', border: '1px solid #1e1e1e', borderRadius: 6, padding: '4px 8px',
+                      cursor: 'pointer', color: '#f87171' }}>
+                    <Trash2 size={13} />
+                  </button>
+                </div>
+              </Card>
+            ))}
+          </div>
+        )
+      }
     </div>
   )
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// TEACHER HUB
-// ═══════════════════════════════════════════════════════════════════════════════
+// Login Logs ──────────────────────────────────────────────────────────────────
+function AdminLogs({ schoolId }: { schoolId: string }) {
+  const [logs, setLogs]       = useState<LoginLog[]>([])
+  const [loading, setLoading] = useState(true)
+  const [err, setErr]         = useState('')
+  const [failOnly, setFailOnly] = useState(false)
+
+  const load = useCallback(() => {
+    setLoading(true); setErr('')
+    api(`/schools/${schoolId}/login-logs?limit=100${failOnly ? '&failed=true' : ''}`)
+      .then(d => setLogs(d.logs || []))
+      .catch(e => setErr(e.message))
+      .finally(() => setLoading(false))
+  }, [schoolId, failOnly])
+
+  useEffect(() => { load() }, [load])
+
+  const reasonLabels: Record<string, string> = {
+    wrong_credentials: 'Wrong password',
+    profile_missing:   'No profile',
+    suspended:         'Suspended',
+    pending_approval:  'Pending approval',
+    network_blocked:   'Network blocked',
+  }
+
+  return (
+    <div>
+      {err && <ErrBanner msg={err} onDismiss={() => setErr('')} />}
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+        <span style={{ fontSize: 14, fontWeight: 600, color: '#fafafa' }}>Recent Login Activity</span>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button onClick={() => setFailOnly(f => !f)} style={{
+            padding: '5px 12px', borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: 'pointer',
+            background: failOnly ? 'rgba(239,68,68,0.15)' : '#161616',
+            color: failOnly ? '#f87171' : '#71717a',
+            border: failOnly ? '1px solid rgba(239,68,68,0.3)' : '1px solid #1e1e1e',
+            fontFamily: 'inherit',
+          }}>
+            <AlertTriangle size={11} style={{ marginRight: 4 }} />
+            Failed only
+          </button>
+          <button onClick={load} style={{ background: 'none', border: '1px solid #1e1e1e',
+            borderRadius: 6, padding: '5px 8px', color: '#52525b', cursor: 'pointer' }}>
+            <RefreshCw size={12} />
+          </button>
+        </div>
+      </div>
+
+      {loading ? <Spinner /> : logs.length === 0
+        ? <EmptyState icon={LogIn} title="No login records" sub="Activity appears here as users log in." />
+        : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {logs.map(l => (
+              <Card key={l.id} style={{ padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div style={{ width: 30, height: 30, borderRadius: 8, flexShrink: 0,
+                  background: l.success ? 'rgba(52,211,153,0.12)' : 'rgba(239,68,68,0.12)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {l.success
+                    ? <CheckCircle size={14} color="#34d399" />
+                    : <AlertCircle size={14} color="#f87171" />
+                  }
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: l.success ? '#fafafa' : '#f87171' }}>
+                    {l.user?.name || l.email}
+                    {l.user && <span style={{ fontWeight: 400, color: '#52525b', fontSize: 11 }}> · {l.email}</span>}
+                  </div>
+                  <div style={{ fontSize: 11, color: '#52525b', display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    <code style={{ color: '#818cf8' }}>{l.ip_address}</code>
+                    {!l.success && l.reason && (
+                      <span style={{ color: '#f87171' }}>{reasonLabels[l.reason] || l.reason}</span>
+                    )}
+                    {l.user && <RoleBadge role={l.user.role} />}
+                  </div>
+                </div>
+                <div style={{ fontSize: 11, color: '#3f3f46', flexShrink: 0, textAlign: 'right' }}>
+                  {fmtDateShort(l.created_at)}
+                </div>
+              </Card>
+            ))}
+          </div>
+        )
+      }
+    </div>
+  )
+}
+
+// Settings ────────────────────────────────────────────────────────────────────
+function AdminSettings({ schoolId, profile }: { schoolId: string; profile: AuthProfile }) {
+  const [school, setSchool]       = useState<SchoolInfo | null>(null)
+  const [loading, setLoading]     = useState(true)
+  const [err, setErr]             = useState('')
+  const [success, setSuccess]     = useState('')
+  const [busy, setBusy]           = useState(false)
+
+  // School settings form
+  const [schoolName, setSchoolName] = useState('')
+  const [schoolEmail, setSchoolEmail] = useState('')
+  const [domain, setDomain]         = useState('')
+  const [reqApproval, setReqApproval] = useState(false)
+
+  // Passcode modal
+  const [newPasscode, setNewPasscode] = useState('')
+  const [passkeyModal, setPasskeyModal] = useState(false)
+
+  // Add Teacher modal
+  const [teacherModal, setTeacherModal] = useState(false)
+  const [tName, setTName]   = useState('')
+  const [tEmail, setTEmail] = useState('')
+  const [tPass, setTPass]   = useState('')
+  const [tSubject, setTSubject] = useState('')
+  const [tBusy, setTBusy]   = useState(false)
+
+  useEffect(() => {
+    setLoading(true)
+    api(`/schools/${schoolId}`)
+      .then((d: SchoolInfo) => {
+        setSchool(d)
+        setSchoolName(d.school_name)
+        setSchoolEmail(d.school_email)
+        setDomain(d.domain || '')
+        setReqApproval(d.require_approval)
+      })
+      .catch(e => setErr(e.message))
+      .finally(() => setLoading(false))
+  }, [schoolId])
+
+  async function saveSettings() {
+    setBusy(true); setErr(''); setSuccess('')
+    try {
+      await api(`/schools/${schoolId}`, {
+        method: 'PUT',
+        body: JSON.stringify({
+          school_name: schoolName,
+          school_email: schoolEmail,
+          domain: domain || null,
+          require_approval: reqApproval,
+        }),
+      })
+      setSuccess('School settings saved.')
+    } catch (e: any) { setErr(e.message) }
+    finally { setBusy(false) }
+  }
+
+  async function regenPasscode() {
+    if (!confirm('This will invalidate the old passcode. Anyone who wants to join must use the new one.')) return
+    setBusy(true); setErr('')
+    try {
+      const d = await api(`/schools/${schoolId}/regenerate-passcode`, { method: 'POST' })
+      setNewPasscode(d.passcode)
+      setPasskeyModal(true)
+    } catch (e: any) { setErr(e.message) }
+    finally { setBusy(false) }
+  }
+
+  async function addTeacher() {
+    if (!tName || !tEmail || !tPass) return setErr('Name, email, and password are required.')
+    setTBusy(true); setErr('')
+    try {
+      await api(`/schools/${schoolId}/teachers`, {
+        method: 'POST',
+        body: JSON.stringify({ name: tName, email: tEmail, password: tPass, subject: tSubject }),
+      })
+      setSuccess(`Teacher "${tName}" added.`)
+      setTeacherModal(false)
+      setTName(''); setTEmail(''); setTPass(''); setTSubject('')
+    } catch (e: any) { setErr(e.message) }
+    finally { setTBusy(false) }
+  }
+
+  if (loading) return <Spinner />
+
+  return (
+    <div>
+      {err     && <ErrBanner    msg={err}     onDismiss={() => setErr('')} />}
+      {success && <SuccessBanner msg={success} onDismiss={() => setSuccess('')} />}
+
+      {/* School Info */}
+      <Card style={{ marginBottom: 16 }}>
+        <div style={{ fontSize: 14, fontWeight: 700, color: '#fafafa', marginBottom: 16, display: 'flex', gap: 8 }}>
+          <Building2 size={16} color="#6366f1" /> School Information
+        </div>
+        <Input label="School Name"  value={schoolName}  onChange={setSchoolName}  required />
+        <Input label="School Email" value={schoolEmail} onChange={setSchoolEmail} type="email" required />
+        <Input label="Domain (optional)" value={domain} onChange={setDomain} placeholder="e.g. schoolname.edu.in" />
+
+        {/* Require approval toggle */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16,
+          padding: '12px 14px', background: '#0d0d0d', borderRadius: 8, border: '1px solid #1e1e1e' }}>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 13, fontWeight: 600, color: '#fafafa' }}>Require Admin Approval</div>
+            <div style={{ fontSize: 12, color: '#52525b' }}>New students must be approved before accessing school features.</div>
+          </div>
+          <button onClick={() => setReqApproval(v => !v)} style={{
+            background: 'none', border: 'none', cursor: 'pointer', color: reqApproval ? '#34d399' : '#52525b',
+          }}>
+            {reqApproval ? <ToggleRight size={28} /> : <ToggleLeft size={28} />}
+          </button>
+        </div>
+
+        <Btn variant="primary" onClick={saveSettings} disabled={busy}>
+          {busy ? <Loader2 size={13} /> : 'Save Settings'}
+        </Btn>
+      </Card>
+
+      {/* Danger Zone */}
+      <Card style={{ marginBottom: 16 }}>
+        <div style={{ fontSize: 14, fontWeight: 700, color: '#fafafa', marginBottom: 4, display: 'flex', gap: 8 }}>
+          <Key size={16} color="#fbbf24" /> School Passcode
+        </div>
+        <div style={{ fontSize: 12, color: '#52525b', marginBottom: 14 }}>
+          Members use this passcode when joining. Regenerating it instantly invalidates the old one.
+        </div>
+        <Btn variant="warning" onClick={regenPasscode} disabled={busy}>
+          <RefreshCw size={12} /> Regenerate Passcode
+        </Btn>
+      </Card>
+
+      {/* Add Teacher */}
+      <Card>
+        <div style={{ fontSize: 14, fontWeight: 700, color: '#fafafa', marginBottom: 4, display: 'flex', gap: 8 }}>
+          <UserPlus size={16} color="#fb923c" /> Add Teacher Account
+        </div>
+        <div style={{ fontSize: 12, color: '#52525b', marginBottom: 14 }}>
+          Create a teacher account directly — no school passcode needed.
+        </div>
+        <Btn variant="primary" onClick={() => setTeacherModal(true)}>
+          <UserPlus size={12} /> Add Teacher
+        </Btn>
+      </Card>
+
+      {/* Passcode reveal modal */}
+      <Modal open={passkeyModal} onClose={() => setPasskeyModal(false)} title="New School Passcode" width={420}>
+        <div style={{ textAlign: 'center', padding: '8px 0 16px' }}>
+          <Key size={32} color="#fbbf24" style={{ marginBottom: 12 }} />
+          <div style={{ fontSize: 11, color: '#52525b', marginBottom: 8 }}>Save this passcode — it will never be shown again.</div>
+          <div style={{ fontSize: 22, fontWeight: 700, letterSpacing: 2, color: '#fafafa',
+            background: '#0d0d0d', border: '1px solid #2a2a2a', borderRadius: 10, padding: '14px 20px',
+            fontFamily: 'monospace', userSelect: 'all' }}>
+            {newPasscode}
+          </div>
+          <div style={{ fontSize: 11, color: '#3f3f46', marginTop: 8 }}>Click the passcode to select it, then copy.</div>
+        </div>
+        <Btn variant="primary" onClick={() => { navigator.clipboard.writeText(newPasscode); setPasskeyModal(false) }}
+          style={{ width: '100%' }}>
+          Copy &amp; Close
+        </Btn>
+      </Modal>
+
+      {/* Add Teacher modal */}
+      <Modal open={teacherModal} onClose={() => setTeacherModal(false)} title="Add Teacher Account">
+        <Input label="Full Name"  value={tName}    onChange={setTName}    required />
+        <Input label="Email"      value={tEmail}   onChange={setTEmail}   type="email" required />
+        <Input label="Password"   value={tPass}    onChange={setTPass}    type="password" required />
+        <Input label="Subject (optional)" value={tSubject} onChange={setTSubject} placeholder="e.g. Mathematics" />
+        <div style={{ display: 'flex', gap: 8 }}>
+          <Btn variant="primary" onClick={addTeacher} disabled={tBusy}>
+            {tBusy ? <Loader2 size={13} /> : 'Create Account'}
+          </Btn>
+          <Btn variant="ghost" onClick={() => setTeacherModal(false)}>Cancel</Btn>
+        </div>
+      </Modal>
+    </div>
+  )
+}
+
+// ─── TEACHER HUB ─────────────────────────────────────────────────────────────
 function TeacherHub({ profile, schoolId }: { profile: AuthProfile; schoolId: string }) {
   const [tab, setTab] = useState('tasks')
-  const [refresh, setRefresh] = useState(0)
+
   const tabs = [
-    { id: 'tasks',         label: 'My Tasks',       icon: FileText },
-    { id: 'create',        label: 'Create Task',     icon: Plus },
-    { id: 'notifications', label: 'Notifications',   icon: Bell },
+    { id: 'tasks',  label: 'My Tasks',       icon: BookOpen },
+    { id: 'create', label: 'Create Task',    icon: Plus },
+    { id: 'notifs', label: 'Notifications',  icon: Bell },
   ]
+
   return (
     <>
-      <TabBar tabs={tabs} active={tab} onSelect={setTab} />
+      <TabBar tabs={tabs} active={tab} setActive={setTab} />
       <AnimatePresence mode="wait">
-        <motion.div key={tab} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.18 }}>
-          {tab === 'tasks'         && <TeacherTaskList refresh={refresh} />}
-          {tab === 'create'        && <CreateTaskForm onCreated={() => { setRefresh(r => r + 1); setTab('tasks') }} />}
-          {tab === 'notifications' && <NotificationsTab profile={profile} schoolId={schoolId} canSend />}
+        <motion.div key={tab}
+          initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}
+          transition={{ duration: 0.15 }}>
+          {tab === 'tasks'  && <TeacherTasks schoolId={schoolId} />}
+          {tab === 'create' && <CreateTask   schoolId={schoolId} onCreated={() => setTab('tasks')} />}
+          {tab === 'notifs' && <NotifPanel   schoolId={schoolId} profile={profile} canSend />}
         </motion.div>
       </AnimatePresence>
     </>
   )
 }
 
-function TeacherTaskList({ refresh }: { refresh: number }) {
-  const [tasks, setTasks] = useState<Task[]>([])
+function TeacherTasks({ schoolId: _schoolId }: { schoolId: string }) {
+  const [tasks, setTasks]     = useState<Task[]>([])
   const [loading, setLoading] = useState(true)
-  const [err, setErr] = useState('')
+  const [err, setErr]         = useState('')
 
-  const load = useCallback(async () => {
-    setLoading(true); setErr('')
-    try { setTasks((await api('/tasks')).tasks) }
-    catch (e: any) { setErr(e.message) }
-    finally { setLoading(false) }
+  useEffect(() => {
+    setLoading(true)
+    api('/tasks')
+      .then(d => setTasks(Array.isArray(d) ? d : (d.tasks || [])))
+      .catch(e => setErr(e.message))
+      .finally(() => setLoading(false))
   }, [])
 
-  useEffect(() => { load() }, [load, refresh])
+  if (loading) return <Spinner />
+  if (err) return <ErrBanner msg={err} />
+  if (tasks.length === 0) return <EmptyState icon={BookOpen} title="No tasks yet" sub='Create a task from the "Create Task" tab.' />
 
   return (
-    <div>
-      {err && <ErrBanner msg={err} onRetry={load} />}
-      {loading ? <Spinner /> : tasks.length === 0 ? (
-        <EmptyState icon={FileText} title="No tasks yet" sub="Click 'Create Task' to assign homework to your class" />
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {tasks.map((t, i) => <TaskRow key={t.id} task={t} index={i} showSubmissions />)}
-        </div>
-      )}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      {tasks.map(t => (
+        <Card key={t.id} style={{ padding: '14px 16px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontWeight: 600, color: '#fafafa', fontSize: 14 }}>{t.title}</div>
+              <div style={{ fontSize: 12, color: '#52525b', marginTop: 3 }}>
+                {t.subject && `${t.subject} · `}
+                {t.target_class && `Class ${t.target_class} · `}
+                {t.due_date && `Due ${fmtDateShort(t.due_date)} · `}
+                Max {t.max_score} pts
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexShrink: 0 }}>
+              <StatusBadge status={t.status} />
+              {t.submission_count !== undefined && (
+                <span style={{ fontSize: 11, color: '#52525b' }}>{t.submission_count} submitted</span>
+              )}
+            </div>
+          </div>
+        </Card>
+      ))}
     </div>
   )
 }
 
-function CreateTaskForm({ onCreated }: { onCreated: () => void }) {
-  const [title, setTitle]           = useState('')
-  const [desc, setDesc]             = useState('')
-  const [subject, setSubject]       = useState('')
-  const [targetClass, setTargetClass] = useState('')
-  const [dueDate, setDueDate]       = useState('')
-  const [maxScore, setMaxScore]     = useState('100')
-  const [loading, setLoading]       = useState(false)
-  const [err, setErr]               = useState('')
-  const [success, setSuccess]       = useState(false)
+function CreateTask({ schoolId: _schoolId, onCreated }: { schoolId: string; onCreated: () => void }) {
+  const [title, setTitle]         = useState('')
+  const [desc, setDesc]           = useState('')
+  const [subject, setSubject]     = useState('')
+  const [cls, setCls]             = useState('')
+  const [dueDate, setDueDate]     = useState('')
+  const [maxScore, setMaxScore]   = useState('100')
+  const [loading, setLoading]     = useState(false)
+  const [err, setErr]             = useState('')
 
   async function submit() {
-    if (!title.trim()) { setErr('Title is required'); return }
-    setLoading(true); setErr(''); setSuccess(false)
+    if (!title.trim()) return setErr('Title is required.')
+    setLoading(true); setErr('')
     try {
       await api('/tasks', {
         method: 'POST',
         body: JSON.stringify({
           title: title.trim(), description: desc.trim() || undefined,
-          subject: subject.trim() || undefined, target_class: targetClass.trim() || undefined,
-          due_date: dueDate || undefined, max_score: parseInt(maxScore) || 100,
+          subject: subject.trim() || undefined, target_class: cls.trim() || undefined,
+          due_date: dueDate || undefined, max_score: parseInt(maxScore, 10) || 100,
         }),
       })
-      setSuccess(true)
-      setTimeout(() => onCreated(), 800)
+      onCreated()
     } catch (e: any) { setErr(e.message) }
     finally { setLoading(false) }
   }
 
   return (
-    <Card style={{ maxWidth: 600 }}>
-      <h3 style={{ fontSize: 16, fontWeight: 700, color: '#fafafa', margin: '0 0 20px', display: 'flex', alignItems: 'center', gap: 8 }}>
-        <Plus size={16} color="#6366f1" /> New Task / Homework
-      </h3>
-      {err && <ErrBanner msg={err} />}
-      {success && (
-        <div style={{ padding: '10px 14px', background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.2)', borderRadius: 10, marginBottom: 14, fontSize: 13, color: '#34d399', display: 'flex', alignItems: 'center', gap: 8 }}>
-          <Check size={14} /> Task created! Redirecting…
-        </div>
-      )}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-        <div>
-          <label style={{ fontSize: 11, fontWeight: 700, color: '#71717a', textTransform: 'uppercase', letterSpacing: 0.8, display: 'block', marginBottom: 6 }}>Title *</label>
-          <input value={title} onChange={e => setTitle(e.target.value)} placeholder="e.g. Chapter 5 Worksheet" style={inputStyle} autoFocus />
-        </div>
-        <div>
-          <label style={{ fontSize: 11, fontWeight: 700, color: '#71717a', textTransform: 'uppercase', letterSpacing: 0.8, display: 'block', marginBottom: 6 }}>Description</label>
-          <textarea value={desc} onChange={e => setDesc(e.target.value)} placeholder="Instructions, links, notes…" rows={3} style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6 }} />
-        </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-          <div>
-            <label style={{ fontSize: 11, fontWeight: 700, color: '#71717a', textTransform: 'uppercase', letterSpacing: 0.8, display: 'block', marginBottom: 6 }}>Subject</label>
-            <input value={subject} onChange={e => setSubject(e.target.value)} placeholder="e.g. Physics" style={inputStyle} />
-          </div>
-          <div>
-            <label style={{ fontSize: 11, fontWeight: 700, color: '#71717a', textTransform: 'uppercase', letterSpacing: 0.8, display: 'block', marginBottom: 6 }}>Target Class</label>
-            <input value={targetClass} onChange={e => setTargetClass(e.target.value)} placeholder="e.g. 10A (leave blank for all)" style={inputStyle} />
-          </div>
-          <div>
-            <label style={{ fontSize: 11, fontWeight: 700, color: '#71717a', textTransform: 'uppercase', letterSpacing: 0.8, display: 'block', marginBottom: 6 }}>Due Date</label>
-            <input type="datetime-local" value={dueDate} onChange={e => setDueDate(e.target.value)} style={inputStyle} />
-          </div>
-          <div>
-            <label style={{ fontSize: 11, fontWeight: 700, color: '#71717a', textTransform: 'uppercase', letterSpacing: 0.8, display: 'block', marginBottom: 6 }}>Max Score</label>
-            <input type="number" value={maxScore} onChange={e => setMaxScore(e.target.value)} min="1" max="1000" style={inputStyle} />
-          </div>
-        </div>
-        <Btn onClick={submit} loading={loading} style={{ alignSelf: 'flex-start', marginTop: 4 }}>
-          <Sparkles size={13} /> Create Task
-        </Btn>
+    <Card>
+      <div style={{ fontSize: 15, fontWeight: 700, color: '#fafafa', marginBottom: 18 }}>New Task</div>
+      {err && <ErrBanner msg={err} onDismiss={() => setErr('')} />}
+      <Input label="Title" value={title} onChange={setTitle} placeholder="e.g. Chapter 5 Assignment" required />
+      <div style={{ marginBottom: 14 }}>
+        <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#71717a', marginBottom: 5 }}>Description</label>
+        <textarea value={desc} onChange={e => setDesc(e.target.value)} rows={3}
+          placeholder="Task instructions..."
+          style={{ width: '100%', padding: '9px 12px', background: '#0d0d0d', border: '1px solid #2a2a2a',
+            borderRadius: 8, color: '#fafafa', fontSize: 13, fontFamily: 'inherit', outline: 'none',
+            resize: 'vertical', boxSizing: 'border-box' }}
+          onFocus={e => { (e.currentTarget as HTMLTextAreaElement).style.borderColor = '#6366f1' }}
+          onBlur={e => { (e.currentTarget as HTMLTextAreaElement).style.borderColor = '#2a2a2a' }}
+        />
       </div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+        <Input label="Subject" value={subject} onChange={setSubject} placeholder="e.g. Maths" />
+        <Input label="Class" value={cls} onChange={setCls} placeholder="e.g. 10A" />
+        <Input label="Due Date" value={dueDate} onChange={setDueDate} type="datetime-local" />
+        <Input label="Max Score" value={maxScore} onChange={setMaxScore} type="number" />
+      </div>
+      <Btn variant="primary" onClick={submit} disabled={loading}>
+        {loading ? <Loader2 size={13} /> : 'Create Task'}
+      </Btn>
     </Card>
   )
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// STUDENT HUB
-// ═══════════════════════════════════════════════════════════════════════════════
+// ─── STUDENT HUB ─────────────────────────────────────────────────────────────
 function StudentHub({ profile, schoolId }: { profile: AuthProfile; schoolId: string }) {
   const [tab, setTab] = useState('tasks')
+
   const tabs = [
-    { id: 'tasks', label: 'My Tasks',  icon: BookOpen },
-    { id: 'feed',  label: 'Feed',      icon: Bell },
+    { id: 'tasks', label: 'My Tasks', icon: BookOpen },
+    { id: 'feed',  label: 'Feed',     icon: Bell },
   ]
+
   return (
     <>
-      <TabBar tabs={tabs} active={tab} onSelect={setTab} />
+      <TabBar tabs={tabs} active={tab} setActive={setTab} />
       <AnimatePresence mode="wait">
-        <motion.div key={tab} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.18 }}>
-          {tab === 'tasks' && <StudentTaskList />}
-          {tab === 'feed'  && <NotificationsTab profile={profile} schoolId={schoolId} canSend={false} />}
+        <motion.div key={tab}
+          initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}
+          transition={{ duration: 0.15 }}>
+          {tab === 'tasks' && <StudentTasks profile={profile} />}
+          {tab === 'feed'  && <NotifPanel   schoolId={schoolId} profile={profile} canSend={false} />}
         </motion.div>
       </AnimatePresence>
     </>
   )
 }
 
-function StudentTaskList() {
-  const [tasks, setTasks] = useState<Task[]>([])
+function StudentTasks({ profile }: { profile: AuthProfile }) {
+  const [tasks, setTasks]   = useState<Task[]>([])
   const [loading, setLoading] = useState(true)
-  const [err, setErr] = useState('')
-  const [submitting, setSubmitting] = useState<Task | null>(null)
+  const [err, setErr]         = useState('')
+  const [submitModal, setSubmitModal] = useState<Task | null>(null)
+  const [answer, setAnswer]   = useState('')
+  const [submitting, setSubmitting] = useState(false)
+  const [success, setSuccess] = useState('')
 
-  const load = useCallback(async () => {
-    setLoading(true); setErr('')
-    try { setTasks((await api('/tasks')).tasks) }
-    catch (e: any) { setErr(e.message) }
-    finally { setLoading(false) }
-  }, [])
+  useEffect(() => {
+    setLoading(true)
+    api('/tasks')
+      .then(d => setTasks(Array.isArray(d) ? d : (d.tasks || [])))
+      .catch(e => setErr(e.message))
+      .finally(() => setLoading(false))
+  }, [profile.id])
 
-  useEffect(() => { load() }, [load])
+  async function submitTask() {
+    if (!submitModal || !answer.trim()) return
+    setSubmitting(true)
+    try {
+      await api(`/tasks/${submitModal.id}/submit`, {
+        method: 'POST',
+        body: JSON.stringify({ answer }),
+      })
+      setSuccess(`Submitted "${submitModal.title}" successfully.`)
+      setSubmitModal(null); setAnswer('')
+      setTasks(prev => prev.map(t => t.id === submitModal!.id
+        ? { ...t, my_submission: { status: 'submitted', submitted_at: new Date().toISOString() } }
+        : t
+      ))
+    } catch (e: any) { setErr(e.message) }
+    finally { setSubmitting(false) }
+  }
 
-  const pending  = tasks.filter(t => !t.my_submission)
-  const done     = tasks.filter(t =>  t.my_submission)
+  if (loading) return <Spinner />
+  if (err) return <ErrBanner msg={err} />
+
+  const active   = tasks.filter(t => t.status === 'active')
+  const previous = tasks.filter(t => t.status !== 'active')
 
   return (
     <div>
-      {err && <ErrBanner msg={err} onRetry={load} />}
-      {loading ? <Spinner /> : tasks.length === 0 ? (
-        <EmptyState icon={Inbox} title="No tasks assigned" sub="Your teacher hasn't posted any homework yet" />
-      ) : (
-        <div>
-          {pending.length > 0 && (
-            <>
-              <p style={{ fontSize: 11, fontWeight: 700, color: '#52525b', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 12 }}>
-                📋 To Do · {pending.length}
-              </p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 28 }}>
-                {pending.map((t, i) => (
-                  <TaskRow key={t.id} task={t} index={i} onSubmit={() => setSubmitting(t)} />
-                ))}
+      {success && <SuccessBanner msg={success} onDismiss={() => setSuccess('')} />}
+      {active.length === 0 && previous.length === 0
+        ? <EmptyState icon={Inbox} title="No tasks yet" sub="Your teacher has not assigned any tasks." />
+        : (
+          <>
+            {active.length > 0 && (
+              <>
+                <div style={{ fontSize: 12, fontWeight: 600, color: '#52525b', textTransform: 'uppercase',
+                  letterSpacing: 1, marginBottom: 8 }}>Active</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 20 }}>
+                  {active.map(t => (
+                    <Card key={t.id} style={{ padding: '14px 16px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontWeight: 600, color: '#fafafa', fontSize: 14 }}>{t.title}</div>
+                          <div style={{ fontSize: 12, color: '#52525b', marginTop: 3 }}>
+                            {t.subject && `${t.subject} · `}
+                            {t.due_date && `Due ${fmtDateShort(t.due_date)} · `}
+                            Max {t.max_score} pts
+                          </div>
+                          {t.description && (
+                            <div style={{ fontSize: 12, color: '#71717a', marginTop: 6, lineHeight: 1.5 }}>
+                              {t.description}
+                            </div>
+                          )}
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-end', flexShrink: 0 }}>
+                          {t.my_submission
+                            ? <StatusBadge status={t.my_submission.status} />
+                            : <Btn size="sm" variant="primary" onClick={() => { setSubmitModal(t); setAnswer('') }}>
+                                <Send size={11} /> Submit
+                              </Btn>
+                          }
+                          {t.my_submission?.score !== undefined && (
+                            <span style={{ fontSize: 12, fontWeight: 700, color: '#34d399' }}>
+                              {t.my_submission.score}/{t.max_score}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              </>
+            )}
+            {previous.length > 0 && (
+              <>
+                <div style={{ fontSize: 12, fontWeight: 600, color: '#52525b', textTransform: 'uppercase',
+                  letterSpacing: 1, marginBottom: 8 }}>Closed</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, opacity: 0.65 }}>
+                  {previous.map(t => (
+                    <Card key={t.id} style={{ padding: '12px 16px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div>
+                          <div style={{ fontWeight: 600, color: '#fafafa', fontSize: 13 }}>{t.title}</div>
+                          <div style={{ fontSize: 12, color: '#52525b' }}>{t.subject}</div>
+                        </div>
+                        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                          {t.my_submission
+                            ? <StatusBadge status={t.my_submission.status} />
+                            : <span style={{ fontSize: 12, color: '#52525b' }}>Not submitted</span>
+                          }
+                          {t.my_submission?.score !== undefined && (
+                            <span style={{ fontSize: 12, fontWeight: 700, color: '#34d399' }}>
+                              {t.my_submission.score}/{t.max_score}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              </>
+            )}
+          </>
+        )
+      }
+
+      {/* Submit Modal */}
+      <Modal open={!!submitModal} onClose={() => setSubmitModal(null)} title={`Submit: ${submitModal?.title}`}>
+        {submitModal && (
+          <>
+            {submitModal.description && (
+              <div style={{ fontSize: 13, color: '#71717a', marginBottom: 14, lineHeight: 1.6 }}>
+                {submitModal.description}
               </div>
-            </>
-          )}
-          {done.length > 0 && (
-            <>
-              <p style={{ fontSize: 11, fontWeight: 700, color: '#52525b', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 12 }}>
-                ✅ Submitted · {done.length}
-              </p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {done.map((t, i) => <TaskRow key={t.id} task={t} index={i} />)}
-              </div>
-            </>
-          )}
-        </div>
-      )}
-      {submitting && (
-        <SubmitModal task={submitting} onClose={() => setSubmitting(null)} onDone={() => { setSubmitting(null); load() }} />
-      )}
+            )}
+            <div style={{ marginBottom: 14 }}>
+              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#71717a', marginBottom: 5 }}>
+                Your Answer / Response *
+              </label>
+              <textarea value={answer} onChange={e => setAnswer(e.target.value)} rows={5}
+                placeholder="Type your answer here..."
+                style={{ width: '100%', padding: '9px 12px', background: '#0d0d0d', border: '1px solid #2a2a2a',
+                  borderRadius: 8, color: '#fafafa', fontSize: 13, fontFamily: 'inherit', outline: 'none',
+                  resize: 'vertical', boxSizing: 'border-box' }}
+                onFocus={e => { (e.currentTarget as HTMLTextAreaElement).style.borderColor = '#6366f1' }}
+                onBlur={e => { (e.currentTarget as HTMLTextAreaElement).style.borderColor = '#2a2a2a' }}
+              />
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <Btn variant="primary" onClick={submitTask} disabled={submitting || !answer.trim()}>
+                {submitting ? <Loader2 size={13} /> : <><Send size={12} /> Submit</>}
+              </Btn>
+              <Btn variant="ghost" onClick={() => setSubmitModal(null)}>Cancel</Btn>
+            </div>
+          </>
+        )}
+      </Modal>
     </div>
   )
 }
 
-function SubmitModal({ task, onClose, onDone }: { task: Task; onClose: () => void; onDone: () => void }) {
-  const [content, setContent] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [err, setErr] = useState('')
-
-  async function submit() {
-    if (!content.trim()) { setErr('Write your answer first'); return }
-    setLoading(true); setErr('')
-    try {
-      await api(`/tasks/${task.id}/submit`, { method: 'POST', body: JSON.stringify({ content: content.trim() }) })
-      onDone()
-    } catch (e: any) { setErr(e.message) }
-    finally { setLoading(false) }
-  }
-
-  return (
-    <Modal open title={`Submit: ${task.title}`} onClose={onClose}>
-      {task.description && (
-        <div style={{ padding: '10px 14px', background: '#0d0d0d', borderRadius: 8, marginBottom: 16, fontSize: 13, color: '#a1a1aa', lineHeight: 1.6, border: '1px solid #1a1a1a' }}>
-          {task.description}
-        </div>
-      )}
-      {err && <ErrBanner msg={err} />}
-      <div style={{ marginBottom: 14 }}>
-        <label style={{ fontSize: 11, fontWeight: 700, color: '#71717a', textTransform: 'uppercase', letterSpacing: 0.8, display: 'block', marginBottom: 6 }}>Your Answer</label>
-        <textarea value={content} onChange={e => setContent(e.target.value)} placeholder="Write your answer here…" rows={5} style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6 }} autoFocus />
-      </div>
-      <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
-        <Btn variant="ghost" onClick={onClose}>Cancel</Btn>
-        <Btn onClick={submit} loading={loading}><Send size={13} /> Submit</Btn>
-      </div>
-    </Modal>
-  )
-}
-
-// ─── TASK ROW (shared) ────────────────────────────────────────────────────────
-function TaskRow({ task: t, index, onSubmit, showSubmissions }: { task: Task; index: number; onSubmit?: () => void; showSubmissions?: boolean }) {
-  const isOverdue = t.due_date && new Date(t.due_date) < new Date() && t.status === 'active'
-  const sub = t.my_submission
-  const subStatusMap: Record<string, { bg: string; color: string; label: string }> = {
-    submitted: { bg: 'rgba(52,211,153,0.1)',  color: '#34d399', label: '✓ Submitted' },
-    graded:    { bg: 'rgba(99,102,241,0.1)',  color: '#818cf8', label: `★ Graded` },
-    late:      { bg: 'rgba(251,191,36,0.1)',  color: '#fbbf24', label: '⚠ Late' },
-  }
-  const subStyle = sub ? subStatusMap[sub.status] : null
-
-  return (
-    <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.04 }}>
-      <Card style={{ padding: '16px 18px', display: 'flex', alignItems: 'center', gap: 16 }}>
-        {/* Left icon */}
-        <div style={{ width: 38, height: 38, borderRadius: 10, background: sub ? 'rgba(52,211,153,0.1)' : isOverdue ? 'rgba(239,68,68,0.1)' : 'rgba(99,102,241,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-          {sub ? <Check size={16} color="#34d399" /> : isOverdue ? <AlertCircle size={16} color="#f87171" /> : <FileText size={16} color="#818cf8" />}
-        </div>
-
-        {/* Info */}
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
-            <span style={{ fontSize: 14, fontWeight: 600, color: '#fafafa', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.title}</span>
-            {t.subject && <span style={{ fontSize: 11, color: '#52525b', background: '#1e1e1e', padding: '1px 7px', borderRadius: 5 }}>{t.subject}</span>}
-            {t.target_class && <span style={{ fontSize: 11, color: '#52525b' }}>· Class {t.target_class}</span>}
-            {subStyle && (
-              <span style={{ fontSize: 11, fontWeight: 700, padding: '1px 8px', borderRadius: 5, background: subStyle.bg, color: subStyle.color }}>
-                {subStyle.label}{sub?.score !== undefined && sub?.score !== null ? ` · ${sub.score}/${t.max_score}` : ''}
-              </span>
-            )}
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 11, color: '#52525b', flexWrap: 'wrap' }}>
-            {t.creator && <span>by {t.creator.name}</span>}
-            {t.due_date && (
-              <span style={{ display: 'flex', alignItems: 'center', gap: 3, color: isOverdue ? '#f87171' : '#52525b' }}>
-                <Calendar size={10} />
-                Due {new Date(t.due_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
-                {isOverdue && ' · overdue'}
-              </span>
-            )}
-            {showSubmissions && t.submission_count !== undefined && (
-              <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}><Eye size={10} /> {t.submission_count} submissions</span>
-            )}
-          </div>
-        </div>
-
-        {/* Action */}
-        {onSubmit && !sub && (
-          <Btn small onClick={onSubmit}><Send size={11} /> Submit</Btn>
-        )}
-      </Card>
-    </motion.div>
-  )
-}
-
-// ─── NOTIFICATIONS TAB (shared) ───────────────────────────────────────────────
-function NotificationsTab({ profile, schoolId, canSend }: { profile: AuthProfile; schoolId: string; canSend: boolean }) {
-  const [notifs, setNotifs] = useState<Notif[]>([])
+// ─── SHARED NOTIFICATION PANEL ────────────────────────────────────────────────
+function NotifPanel({ schoolId, profile, canSend }: { schoolId: string; profile: AuthProfile; canSend: boolean }) {
+  const [notifs, setNotifs]   = useState<Notif[]>([])
   const [loading, setLoading] = useState(true)
-  const [err, setErr] = useState('')
-  const [msg, setMsg] = useState('')
-  const [target, setTarget] = useState<'all' | 'student' | 'teacher'>('all')
-  const [sending, setSending] = useState(false)
-  const [sendErr, setSendErr] = useState('')
+  const [err, setErr]         = useState('')
+  const [success, setSuccess] = useState('')
+  const [msg, setMsg]         = useState('')
+  const [targetRole, setTargetRole] = useState('all')
+  const [expiresIn, setExpiresIn]   = useState('24')
+  const [sending, setSending]       = useState(false)
 
-  const load = useCallback(async () => {
-    setLoading(true); setErr('')
-    try {
-      const endpoint = profile.role === 'admin' ? `/notifications/all` : `/notifications`
-      setNotifs((await api(endpoint)).notifications || [])
-    } catch (e: any) { setErr(e.message) }
-    finally { setLoading(false) }
-  }, [profile.role])
+  const load = useCallback(() => {
+    setLoading(true)
+    api('/notifications')
+      .then(d => setNotifs(Array.isArray(d) ? d : (d.notifications || [])))
+      .catch(e => setErr(e.message))
+      .finally(() => setLoading(false))
+  }, [schoolId])
 
   useEffect(() => { load() }, [load])
 
   async function send() {
     if (!msg.trim()) return
-    setSending(true); setSendErr('')
+    setSending(true); setErr('')
     try {
-      await api('/notifications', { method: 'POST', body: JSON.stringify({ school_id: schoolId, message: msg.trim(), target_role: target }) })
+      await api('/notifications', {
+        method: 'POST',
+        body: JSON.stringify({
+          message: msg.trim(),
+          target_role: targetRole,
+          expires_in_hours: parseInt(expiresIn, 10) || 24,
+        }),
+      })
+      setSuccess('Notification sent!')
       setMsg('')
-      await load()
-    } catch (e: any) { setSendErr(e.message) }
+      load()
+    } catch (e: any) { setErr(e.message) }
     finally { setSending(false) }
   }
 
+  const now = Date.now()
+
   return (
     <div>
+      {err     && <ErrBanner    msg={err}     onDismiss={() => setErr('')} />}
+      {success && <SuccessBanner msg={success} onDismiss={() => setSuccess('')} />}
+
       {canSend && (
-        <Card style={{ marginBottom: 20 }}>
-          <h3 style={{ fontSize: 14, fontWeight: 700, color: '#fafafa', margin: '0 0 14px', display: 'flex', alignItems: 'center', gap: 8 }}>
-            <Bell size={14} color="#f472b6" /> Send Notification
-          </h3>
-          {sendErr && <ErrBanner msg={sendErr} />}
-          <textarea value={msg} onChange={e => setMsg(e.target.value)} placeholder="Write a message for your school…" rows={3} style={{ ...inputStyle, resize: 'vertical', marginBottom: 12, lineHeight: 1.6 }} />
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <div style={{ display: 'flex', gap: 6 }}>
-              {(['all', 'student', 'teacher'] as const).map(r => (
-                <button key={r} onClick={() => setTarget(r)} style={{
-                  padding: '5px 12px', borderRadius: 7, border: '1px solid', cursor: 'pointer', fontSize: 12, fontWeight: 600, fontFamily: 'inherit',
-                  borderColor: target === r ? '#f472b6' : '#1e1e1e',
-                  background: target === r ? 'rgba(244,114,182,0.1)' : 'transparent',
-                  color: target === r ? '#f472b6' : '#52525b',
-                }}>
-                  {r.charAt(0).toUpperCase() + r.slice(1)}
-                </button>
-              ))}
-            </div>
-            <Btn onClick={send} loading={sending} style={{ marginLeft: 'auto' }}>
-              <Send size={13} /> Send
+        <Card style={{ marginBottom: 16 }}>
+          <div style={{ fontSize: 14, fontWeight: 700, color: '#fafafa', marginBottom: 12 }}>Send Notification</div>
+          <div style={{ marginBottom: 10 }}>
+            <textarea value={msg} onChange={e => setMsg(e.target.value)} rows={2}
+              placeholder="Broadcast message to school..."
+              style={{ width: '100%', padding: '9px 12px', background: '#0d0d0d', border: '1px solid #2a2a2a',
+                borderRadius: 8, color: '#fafafa', fontSize: 13, fontFamily: 'inherit', outline: 'none',
+                resize: 'vertical', boxSizing: 'border-box' }}
+              onFocus={e => { (e.currentTarget as HTMLTextAreaElement).style.borderColor = '#6366f1' }}
+              onBlur={e => { (e.currentTarget as HTMLTextAreaElement).style.borderColor = '#2a2a2a' }}
+            />
+          </div>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+            <select value={targetRole} onChange={e => setTargetRole(e.target.value)}
+              style={{ padding: '7px 10px', background: '#0d0d0d', border: '1px solid #2a2a2a',
+                borderRadius: 7, color: '#fafafa', fontSize: 12, fontFamily: 'inherit' }}>
+              <option value="all">Everyone</option>
+              <option value="student">Students only</option>
+              <option value="teacher">Teachers only</option>
+            </select>
+            <select value={expiresIn} onChange={e => setExpiresIn(e.target.value)}
+              style={{ padding: '7px 10px', background: '#0d0d0d', border: '1px solid #2a2a2a',
+                borderRadius: 7, color: '#fafafa', fontSize: 12, fontFamily: 'inherit' }}>
+              <option value="1">Expires in 1h</option>
+              <option value="6">Expires in 6h</option>
+              <option value="24">Expires in 24h</option>
+              <option value="72">Expires in 3 days</option>
+              <option value="168">Expires in 7 days</option>
+            </select>
+            <Btn variant="primary" onClick={send} disabled={sending || !msg.trim()}>
+              {sending ? <Loader2 size={13} /> : <><Send size={12} /> Send</>}
             </Btn>
           </div>
         </Card>
       )}
 
-      {err && <ErrBanner msg={err} onRetry={load} />}
-      {loading ? <Spinner /> : notifs.length === 0 ? (
-        <EmptyState icon={Bell} title="No notifications" sub="Announcements from teachers and admins appear here" />
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {notifs.map((n, i) => <NotifCard key={n.id} notif={n} index={i} />)}
-        </div>
-      )}
+      {loading ? <Spinner /> : notifs.length === 0
+        ? <EmptyState icon={Bell} title="No notifications" sub="Nothing here yet." />
+        : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {notifs.map(n => {
+              const expires = new Date(n.expires_at).getTime()
+              const created = new Date(n.created_at).getTime()
+              const pct = Math.max(0, Math.min(100, ((expires - now) / (expires - created)) * 100))
+              const barColor = pct > 50 ? '#34d399' : pct > 20 ? '#fbbf24' : '#f87171'
+              return (
+                <Card key={n.id} style={{ padding: '12px 14px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, marginBottom: 8 }}>
+                    <div style={{ flex: 1, fontSize: 13, color: '#d4d4d8', lineHeight: 1.5 }}>{n.message}</div>
+                    <span style={{ fontSize: 10, color: '#3f3f46', flexShrink: 0 }}>
+                      {n.target_role !== 'all' ? `→ ${n.target_role}` : '→ everyone'}
+                    </span>
+                  </div>
+                  <div style={{ fontSize: 11, color: '#52525b', marginBottom: 6 }}>
+                    {n.sender_name && `from ${n.sender_name} · `}{fmtDate(n.created_at)}
+                  </div>
+                  <div style={{ height: 3, background: '#1e1e1e', borderRadius: 2, overflow: 'hidden' }}>
+                    <div style={{ height: '100%', width: `${pct}%`, background: barColor,
+                      borderRadius: 2, transition: 'width 1s linear' }} />
+                  </div>
+                </Card>
+              )
+            })}
+          </div>
+        )
+      }
     </div>
-  )
-}
-
-function NotifCard({ notif: n, index }: { notif: Notif; index: number }) {
-  const expiresAt = new Date(n.expires_at)
-  const now = new Date()
-  const minsLeft = Math.max(0, Math.floor((expiresAt.getTime() - now.getTime()) / 60000))
-  const pct = Math.min(100, (minsLeft / 720) * 100)
-
-  return (
-    <motion.div initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: index * 0.04 }}>
-      <Card style={{ padding: '16px 18px' }}>
-        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
-          <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(244,114,182,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            <Bell size={15} color="#f472b6" />
-          </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ fontSize: 14, color: '#fafafa', margin: '0 0 6px', lineHeight: 1.5 }}>{n.message}</p>
-            <div style={{ display: 'flex', align: 'center', gap: 10, fontSize: 11, color: '#52525b', flexWrap: 'wrap' }}>
-              {n.sender_name && <span>from <strong style={{ color: '#71717a' }}>{n.sender_name}</strong></span>}
-              <span>· {timeAgo(n.created_at)}</span>
-              {n.target_role !== 'all' && <RoleBadge role={n.target_role} />}
-            </div>
-            {/* Expiry bar */}
-            <div style={{ marginTop: 10, height: 2, background: '#1e1e1e', borderRadius: 1, overflow: 'hidden' }}>
-              <motion.div initial={{ width: `${pct}%` }} style={{ height: '100%', background: pct > 50 ? '#34d399' : pct > 20 ? '#fbbf24' : '#f87171', borderRadius: 1 }} />
-            </div>
-            <span style={{ fontSize: 10, color: '#3f3f46' }}>
-              {minsLeft > 60 ? `Expires in ${Math.floor(minsLeft / 60)}h ${minsLeft % 60}m` : minsLeft > 0 ? `Expires in ${minsLeft}m` : 'Expired'}
-            </span>
-          </div>
-        </div>
-      </Card>
-    </motion.div>
   )
 }
 
@@ -897,15 +1477,15 @@ interface SchoolHubProps {
 }
 
 export default function SchoolHub({ profile }: SchoolHubProps) {
-  const role = profile.role as 'admin' | 'teacher' | 'student'
+  const role     = profile.role as 'admin' | 'teacher' | 'student'
   const schoolId = profile.school_id
 
   if (!schoolId) return <NoSchoolView />
 
   return (
-    <div style={{ height: '100%', overflow: 'auto', background: '#0a0a0a', fontFamily: "'Inter', system-ui, sans-serif" }}>
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-      <div style={{ maxWidth: 1000, margin: '0 auto', padding: '24px 20px' }}>
+    <div style={{ height: '100%', overflow: 'auto', background: '#0a0a0a',
+      fontFamily: "'Inter', system-ui, sans-serif" }}>
+      <div style={{ maxWidth: 1080, margin: '0 auto', padding: '24px 20px' }}>
         <SchoolHeader profile={profile} />
         <div style={{ marginTop: 24 }}>
           {role === 'admin'   && <AdminHub   profile={profile} schoolId={schoolId} />}

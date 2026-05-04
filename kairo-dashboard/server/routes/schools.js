@@ -471,6 +471,67 @@ router.get('/:id/stats', requireSupabaseAuth, requireTeacherOrAdmin, async (req,
   }
 })
 
+// ── Update School Settings ─────────────────────────────────────────────────────
+router.put('/:id', requireSupabaseAuth, requireSchoolAdmin, async (req, res) => {
+  const schoolId = req.params.id
+  if (req.schoolId !== schoolId) return res.status(403).json({ error: 'Not your school.' })
+
+  const { school_name, school_email, require_approval, domain } = req.body
+  const updates = {}
+
+  if (school_name      !== undefined) updates.school_name      = school_name.trim()
+  if (school_email     !== undefined) updates.school_email     = school_email.trim().toLowerCase()
+  if (require_approval !== undefined) updates.require_approval = !!require_approval
+  if (domain           !== undefined) updates.domain           = domain || null
+
+  if (!Object.keys(updates).length) return res.status(400).json({ error: 'Nothing to update.' })
+
+  try {
+    const { data, error } = await supabaseAdmin
+      .from('schools')
+      .update(updates)
+      .eq('id', schoolId)
+      .select('id, school_name, school_email, domain, require_approval, school_logo_url')
+      .single()
+
+    if (error) throw new Error(error.message)
+    res.json({ message: 'School settings updated.', school: data })
+  } catch (e) {
+    res.status(500).json({ error: e.message })
+  }
+})
+
+// ── Login Logs ─────────────────────────────────────────────────────────────────
+router.get('/:id/login-logs', requireSupabaseAuth, requireSchoolAdmin, async (req, res) => {
+  const schoolId = req.params.id
+  if (req.schoolId !== schoolId) return res.status(403).json({ error: 'Not your school.' })
+
+  const limit  = Math.min(parseInt(req.query.limit  || '50',  10), 200)
+  const offset = Math.max(parseInt(req.query.offset || '0',   10), 0)
+  const onlyFailed = req.query.failed === 'true'
+
+  try {
+    let query = supabaseAdmin
+      .from('login_logs')
+      .select(`
+        id, email, ip_address, user_agent, success, reason, created_at,
+        user:users!login_logs_user_id_fkey(id, name, role)
+      `)
+      .eq('school_id', schoolId)
+      .order('created_at', { ascending: false })
+      .range(offset, offset + limit - 1)
+
+    if (onlyFailed) query = query.eq('success', false)
+
+    const { data, error } = await query
+    if (error) throw new Error(error.message)
+
+    res.json({ school_id: schoolId, logs: data, count: data.length, limit, offset })
+  } catch (e) {
+    res.status(500).json({ error: e.message })
+  }
+})
+
 // ── Helpers ────────────────────────────────────────────────────────────────────
 function generatePasscode() {
   // Format: XXXXXX-XXXXXX-XXXXXX (uppercase hex, easy to read/share)

@@ -97,10 +97,20 @@ router.post('/register', async (req, res) => {
     const passcodeMatch = await bcrypt.compare(school_passcode, school.school_passcode)
     if (!passcodeMatch) return res.status(401).json({ error: 'Incorrect school passcode.' })
 
-    // 3. Determine initial status
-    // Admins must use the /schools/:id/teachers endpoint instead
-    // Students may require approval if school has that setting enabled
-    const initialStatus = (role === 'student' && school.require_approval) ? 'pending' : 'active'
+    // 3. Check if this is the very first member of the school → auto-admin
+    const { count: existingCount } = await supabaseAdmin
+      .from('users')
+      .select('*', { count: 'exact', head: true })
+      .eq('school_id', school.id)
+
+    const isFirstMember = existingCount === 0
+    const effectiveRole = isFirstMember ? 'admin' : role
+
+    // Determine initial status
+    // First member (admin) is always active; students may require approval
+    const initialStatus = isFirstMember
+      ? 'active'
+      : (effectiveRole === 'student' && school.require_approval) ? 'pending' : 'active'
 
     // 4. Create Supabase auth user
     const { data: authData, error: authErr } = await supabaseAdmin.auth.admin.createUser({
@@ -124,7 +134,7 @@ router.post('/register', async (req, res) => {
       .insert({
         id:         authUser.id,
         name:       name.trim(),
-        role,
+        role:       effectiveRole,
         school_id:  school.id,
         status:     initialStatus,
         subject:    subject    || null,
@@ -144,12 +154,16 @@ router.post('/register', async (req, res) => {
       password,
     })
 
-    console.log(`[Users] ✓ Registered: ${name} (${role}, ${initialStatus}) → ${school.school_name}`)
+    const autoPromoted = isFirstMember && role !== 'admin'
+    console.log(`[Users] ✓ Registered: ${name} (${effectiveRole}, ${initialStatus}) → ${school.school_name}${autoPromoted ? ' [auto-promoted to admin]' : ''}`)
 
     res.status(201).json({
-      message: initialStatus === 'pending'
-        ? 'Account created. Awaiting admin approval before full access.'
-        : 'Account created successfully.',
+      message: isFirstMember
+        ? 'Account created. You are the first member — you have been made the school admin.'
+        : initialStatus === 'pending'
+          ? 'Account created. Awaiting admin approval before full access.'
+          : 'Account created successfully.',
+      auto_promoted_to_admin: autoPromoted,
       user:   profile,
       school: {
         id:              school.id,
