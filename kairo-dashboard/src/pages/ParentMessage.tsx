@@ -1,122 +1,445 @@
-import { useState } from 'react'
-import { motion } from 'framer-motion'
-import { Sparkles, Copy, Check } from 'lucide-react'
+import { useState, useEffect, useRef } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Sparkles, Copy, Check, Mail, ChevronDown, Search, User, X, Edit3 } from 'lucide-react'
 import { chat } from '../lib/openrouter'
 
+// ── API helper ──────────────────────────────────────────────────────────────
+function token() { return localStorage.getItem('kairo_token') || '' }
+async function apiFetch(path: string) {
+  const res = await fetch(`/api${path}`, {
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token()}` },
+  })
+  if (!res.ok) return null
+  return res.json()
+}
+
+// ── Types ───────────────────────────────────────────────────────────────────
+interface Student { id: string; name: string; class_name?: string; subject?: string }
+
+// ── Prompt config ───────────────────────────────────────────────────────────
 const SYSTEM = `You are Kairo, assisting Indian school teachers and admins.
-Write professional, polite parent messages suitable for WhatsApp or SMS (under 150 words).
-If bilingual requested, provide English then Hindi versions.`
+Write professional, polite parent messages suitable for WhatsApp, SMS or email (under 160 words).
+If bilingual requested, provide English version then Hindi version separated by a line.`
 
 const TEMPLATES = [
-  { label: '📅 Absent today', prompt: 'Student was absent today without prior notice.' },
+  { label: '📅 Absent today',     prompt: 'Student was absent today without prior notice.' },
   { label: '📉 Poor performance', prompt: 'Student has shown declining performance in recent tests.' },
-  { label: '💰 Fee reminder', prompt: 'Monthly school fee is pending and should be paid by the due date.' },
-  { label: '🤝 Parent meeting', prompt: 'Parent-teacher meeting is scheduled. Request the parent to attend.' },
-  { label: '🏆 Achievement', prompt: 'Student performed exceptionally well and achieved top rank in class.' },
-  { label: '⚠️ Behaviour issue', prompt: 'Student has been misbehaving in class and needs parental guidance.' },
+  { label: '💰 Fee reminder',     prompt: 'Monthly school fee is pending and should be paid by the due date.' },
+  { label: '🤝 Parent meeting',   prompt: 'Parent-teacher meeting is scheduled. Request the parent to attend.' },
+  { label: '🏆 Achievement',      prompt: 'Student performed exceptionally well and achieved top rank in class.' },
+  { label: '⚠️ Behaviour issue',  prompt: 'Student has been misbehaving in class and needs parental guidance.' },
+  { label: '📝 Homework missing', prompt: 'Student has not submitted homework for the past week.' },
+  { label: '🤒 Health concern',   prompt: 'Student appeared unwell today and should see a doctor.' },
 ]
 
+// ── Student Name Picker ─────────────────────────────────────────────────────
+function NamePicker({
+  value,
+  onChange,
+  students,
+}: {
+  value: string
+  onChange: (name: string) => void
+  students: Student[]
+}) {
+  const [open, setOpen]         = useState(false)
+  const [query, setQuery]       = useState(value)
+  const ref                     = useRef<HTMLDivElement>(null)
+
+  // Close on outside click
+  useEffect(() => {
+    function handler(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
+
+  const filtered = query.trim()
+    ? students.filter(s => s.name.toLowerCase().includes(query.toLowerCase()))
+    : students
+
+  function select(s: Student) {
+    onChange(s.name)
+    setQuery(s.name)
+    setOpen(false)
+  }
+
+  function clear() {
+    onChange('')
+    setQuery('')
+  }
+
+  return (
+    <div ref={ref} style={{ position: 'relative' }}>
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: 8,
+        background: '#111', border: '1px solid #1e1e1e', borderRadius: 8,
+        padding: '0 12px', transition: 'border-color 0.15s',
+      }}
+        onFocus={() => {}}
+      >
+        <Search size={13} color="#52525b" style={{ flexShrink: 0 }} />
+        <input
+          value={query}
+          onChange={e => { setQuery(e.target.value); onChange(e.target.value); setOpen(true) }}
+          onFocus={() => setOpen(true)}
+          placeholder={students.length > 0 ? 'Search or type student name…' : 'Type student name…'}
+          style={{
+            flex: 1, padding: '10px 0', background: 'none', border: 'none',
+            fontSize: 13, color: '#fafafa', fontFamily: 'inherit', outline: 'none',
+          }}
+        />
+        {query && (
+          <button onClick={clear} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#52525b', padding: 0 }}>
+            <X size={13} />
+          </button>
+        )}
+        {students.length > 0 && (
+          <button onClick={() => setOpen(o => !o)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#52525b', padding: 0 }}>
+            <ChevronDown size={13} style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }} />
+          </button>
+        )}
+      </div>
+
+      <AnimatePresence>
+        {open && students.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}
+            transition={{ duration: 0.12 }}
+            style={{
+              position: 'absolute', top: 'calc(100% + 6px)', left: 0, right: 0, zIndex: 50,
+              background: '#161616', border: '1px solid #2a2a2a', borderRadius: 10,
+              boxShadow: '0 8px 32px rgba(0,0,0,0.5)', maxHeight: 220, overflowY: 'auto',
+            }}
+          >
+            {filtered.length === 0 ? (
+              <div style={{ padding: '12px 14px', fontSize: 12, color: '#52525b' }}>
+                No students found — your typed name will be used.
+              </div>
+            ) : (
+              filtered.map(s => (
+                <button
+                  key={s.id}
+                  onClick={() => select(s)}
+                  style={{
+                    width: '100%', display: 'flex', alignItems: 'center', gap: 10,
+                    padding: '10px 14px', background: 'none', border: 'none',
+                    cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left',
+                    borderBottom: '1px solid #1e1e1e',
+                  }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = '#1e1e1e' }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'none' }}
+                >
+                  <div style={{
+                    width: 28, height: 28, borderRadius: 7, flexShrink: 0,
+                    background: 'linear-gradient(135deg, #6366f1, #7c3aed)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 11, fontWeight: 700, color: '#fff',
+                  }}>
+                    {s.name.charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: '#fafafa' }}>{s.name}</div>
+                    {(s.class_name || s.subject) && (
+                      <div style={{ fontSize: 11, color: '#52525b' }}>
+                        {[s.class_name && `Class ${s.class_name}`, s.subject].filter(Boolean).join(' · ')}
+                      </div>
+                    )}
+                  </div>
+                </button>
+              ))
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  )
+}
+
+// ── Main component ──────────────────────────────────────────────────────────
 export default function ParentMessage() {
   const [studentName, setStudentName] = useState('')
-  const [situation, setSituation] = useState('')
-  const [tone, setTone] = useState('Professional')
-  const [bilingual, setBilingual] = useState(false)
-  const [message, setMessage] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [copied, setCopied] = useState(false)
+  const [situation, setSituation]     = useState('')
+  const [tone, setTone]               = useState('Professional')
+  const [bilingual, setBilingual]     = useState(false)
+  const [message, setMessage]         = useState('')
+  const [loading, setLoading]         = useState(false)
+  const [error, setError]             = useState('')
+  const [copied, setCopied]           = useState(false)
+  const [editing, setEditing]         = useState(false)
+
+  // Students for name picker
+  const [students, setStudents]       = useState<Student[]>([])
+
+  // Try to fetch school students (works when logged in with a school account)
+  useEffect(() => {
+    const raw = localStorage.getItem('kairo_profile')
+    if (!raw) return
+    try {
+      const profile = JSON.parse(raw)
+      const schoolId = profile.school_id
+      if (!schoolId) return
+      apiFetch(`/schools/${schoolId}/members?role=student`)
+        .then(d => { if (d?.members) setStudents(d.members) })
+        .catch(() => {})
+    } catch {}
+  }, [])
 
   async function generate() {
-    if (!situation.trim()) { setError('Describe the situation'); return }
-    setLoading(true); setError(''); setMessage('')
+    if (!situation.trim()) { setError('Please describe the situation first.'); return }
+    setLoading(true); setError(''); setMessage(''); setEditing(false)
     try {
-      const r = await chat({ messages: [{ role: 'system', content: SYSTEM }, { role: 'user', content: `Write a ${tone.toLowerCase()} parent message.\nStudent: ${studentName || 'the student'}\nSituation: ${situation}\n${bilingual ? 'Provide English and Hindi versions.' : 'English only.'}` }] })
+      const r = await chat({
+        messages: [
+          { role: 'system', content: SYSTEM },
+          {
+            role: 'user',
+            content: `Write a ${tone.toLowerCase()} parent message.\nStudent: ${studentName.trim() || 'the student'}\nSituation: ${situation}\n${bilingual ? 'Provide both English and Hindi versions.' : 'English only.'}`,
+          },
+        ],
+      })
       setMessage(r)
     } catch (e: any) { setError(e.message) }
     finally { setLoading(false) }
   }
 
-  function copy() { navigator.clipboard.writeText(message); setCopied(true); setTimeout(() => setCopied(false), 2000) }
+  function copy() {
+    navigator.clipboard.writeText(message)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  function openGmail() {
+    const subject = encodeURIComponent(`Message regarding ${studentName || 'your child'}`)
+    const body    = encodeURIComponent(message)
+    window.open(`https://mail.google.com/mail/?view=cm&su=${subject}&body=${body}`, '_blank')
+  }
+
+  function openMailto() {
+    const subject = encodeURIComponent(`Message regarding ${studentName || 'your child'}`)
+    const body    = encodeURIComponent(message)
+    window.location.href = `mailto:?subject=${subject}&body=${body}`
+  }
 
   return (
-    <div style={{ padding: '28px 36px', maxWidth: 900, margin: '0 auto', height: '100%', overflowY: 'auto' }}>
+    <div style={{ padding: '28px 36px', maxWidth: 960, margin: '0 auto', height: '100%', overflowY: 'auto' }}>
+      {/* Header */}
       <div style={{ marginBottom: 24 }}>
         <h1 style={{ fontSize: 20, fontWeight: 700, color: '#fafafa', margin: 0 }}>Parent Message Writer</h1>
-        <p style={{ fontSize: 13, color: '#52525b', marginTop: 4 }}>Professional WhatsApp and SMS messages in seconds</p>
+        <p style={{ fontSize: 13, color: '#52525b', marginTop: 4 }}>
+          AI-crafted WhatsApp, SMS &amp; email messages — edit and send in seconds
+        </p>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: message ? '1fr 1fr' : '1fr', gap: 20 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: message ? '1fr 1fr' : '1fr', gap: 24 }}>
+
+        {/* ── LEFT PANEL: inputs ── */}
         <div>
-          <div style={{ marginBottom: 16 }}>
-            <label style={{ fontSize: 11, fontWeight: 600, color: '#71717a', display: 'block', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.8 }}>Quick templates</label>
+          {/* Quick templates */}
+          <div style={{ marginBottom: 18 }}>
+            <label style={{ fontSize: 11, fontWeight: 600, color: '#71717a', display: 'block', marginBottom: 8,
+              textTransform: 'uppercase', letterSpacing: 0.8 }}>Quick templates</label>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
               {TEMPLATES.map(t => (
-                <motion.button key={t.label} whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} onClick={() => setSituation(t.prompt)}
-                  style={{ padding: '5px 10px', borderRadius: 6, fontSize: 11, cursor: 'pointer', fontFamily: 'inherit',
-                    background: '#161616', border: '1px solid #1e1e1e', color: '#71717a', transition: 'all 0.1s' }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = '#fafafa'; (e.currentTarget as HTMLButtonElement).style.borderColor = '#3f3f46' }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = '#71717a'; (e.currentTarget as HTMLButtonElement).style.borderColor = '#1e1e1e' }}>
+                <motion.button key={t.label} whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
+                  onClick={() => setSituation(t.prompt)}
+                  style={{
+                    padding: '5px 10px', borderRadius: 6, fontSize: 11, cursor: 'pointer', fontFamily: 'inherit',
+                    background: situation === t.prompt ? 'rgba(99,102,241,0.15)' : '#161616',
+                    border: `1px solid ${situation === t.prompt ? '#6366f1' : '#1e1e1e'}`,
+                    color: situation === t.prompt ? '#818cf8' : '#71717a',
+                    transition: 'all 0.1s',
+                  }}>
                   {t.label}
                 </motion.button>
               ))}
             </div>
           </div>
 
+          {/* Student name picker */}
           <div style={{ marginBottom: 14 }}>
-            <label style={{ fontSize: 11, fontWeight: 600, color: '#71717a', display: 'block', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.8 }}>Student name (optional)</label>
-            <input value={studentName} onChange={e => setStudentName(e.target.value)} placeholder="e.g. Rahul Sharma"
-              style={{ width: '100%', background: '#111', border: '1px solid #1e1e1e', borderRadius: 8, padding: '9px 12px', fontSize: 13, color: '#fafafa', fontFamily: 'inherit', outline: 'none' }} />
+            <label style={{ fontSize: 11, fontWeight: 600, color: '#71717a', display: 'block', marginBottom: 6,
+              textTransform: 'uppercase', letterSpacing: 0.8 }}>
+              Student name
+              {students.length > 0 && (
+                <span style={{ marginLeft: 6, fontSize: 10, color: '#52525b', textTransform: 'none', letterSpacing: 0 }}>
+                  · {students.length} students in your school
+                </span>
+              )}
+            </label>
+            <NamePicker value={studentName} onChange={setStudentName} students={students} />
           </div>
 
+          {/* Situation */}
           <div style={{ marginBottom: 16 }}>
-            <label style={{ fontSize: 11, fontWeight: 600, color: '#71717a', display: 'block', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.8 }}>Situation</label>
-            <textarea rows={4} value={situation} onChange={e => setSituation(e.target.value)} placeholder="Describe what happened or what you need to communicate…"
-              style={{ width: '100%', background: '#111', border: '1px solid #1e1e1e', borderRadius: 8, padding: '10px 12px', fontSize: 13, color: '#fafafa', fontFamily: 'inherit', outline: 'none', resize: 'vertical' }} />
+            <label style={{ fontSize: 11, fontWeight: 600, color: '#71717a', display: 'block', marginBottom: 6,
+              textTransform: 'uppercase', letterSpacing: 0.8 }}>Situation</label>
+            <textarea rows={4} value={situation} onChange={e => setSituation(e.target.value)}
+              placeholder="Describe what happened or what you need to communicate…"
+              style={{ width: '100%', background: '#111', border: '1px solid #1e1e1e', borderRadius: 8,
+                padding: '10px 12px', fontSize: 13, color: '#fafafa', fontFamily: 'inherit',
+                outline: 'none', resize: 'vertical', boxSizing: 'border-box' }}
+              onFocus={e => { (e.currentTarget as HTMLTextAreaElement).style.borderColor = '#6366f1' }}
+              onBlur={e => { (e.currentTarget as HTMLTextAreaElement).style.borderColor = '#1e1e1e' }}
+            />
           </div>
 
+          {/* Tone */}
           <div style={{ marginBottom: 16 }}>
-            <label style={{ fontSize: 11, fontWeight: 600, color: '#71717a', display: 'block', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.8 }}>Tone</label>
-            <div style={{ display: 'flex', gap: 6 }}>
-              {['Professional','Friendly','Urgent','Formal'].map(t => (
+            <label style={{ fontSize: 11, fontWeight: 600, color: '#71717a', display: 'block', marginBottom: 8,
+              textTransform: 'uppercase', letterSpacing: 0.8 }}>Tone</label>
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+              {['Professional', 'Friendly', 'Urgent', 'Formal', 'Empathetic'].map(t => (
                 <motion.button key={t} whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }} onClick={() => setTone(t)}
-                  style={{ padding: '5px 12px', borderRadius: 7, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit',
+                  style={{
+                    padding: '5px 12px', borderRadius: 7, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit',
                     background: tone === t ? 'rgba(99,102,241,0.15)' : '#161616',
                     border: `1px solid ${tone === t ? '#6366f1' : '#1e1e1e'}`,
-                    color: tone === t ? '#818cf8' : '#52525b' }}>
+                    color: tone === t ? '#818cf8' : '#52525b',
+                    transition: 'all 0.12s',
+                  }}>
                   {t}
                 </motion.button>
               ))}
             </div>
           </div>
 
+          {/* Bilingual */}
           <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20, cursor: 'pointer' }}>
-            <input type="checkbox" checked={bilingual} onChange={e => setBilingual(e.target.checked)} style={{ accentColor: '#6366f1', width: 15, height: 15 }} />
+            <input type="checkbox" checked={bilingual} onChange={e => setBilingual(e.target.checked)}
+              style={{ accentColor: '#6366f1', width: 15, height: 15 }} />
             <span style={{ fontSize: 13, color: '#71717a' }}>Include Hindi translation</span>
           </label>
 
-          {error && <p style={{ fontSize: 12, color: '#f87171', marginBottom: 14 }}>{error}</p>}
+          {error && (
+            <div style={{ fontSize: 12, color: '#f87171', background: 'rgba(239,68,68,0.08)',
+              border: '1px solid rgba(239,68,68,0.2)', borderRadius: 7, padding: '8px 12px', marginBottom: 14 }}>
+              {error}
+            </div>
+          )}
 
-          <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} onClick={generate} disabled={loading || !situation.trim()}
-            style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '11px 22px', borderRadius: 10, border: 'none',
-              background: 'linear-gradient(135deg, #6366f1, #7c3aed)', color: '#fff', fontFamily: 'inherit', fontSize: 14, fontWeight: 600,
-              cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.6 : 1, boxShadow: '0 0 20px rgba(99,102,241,0.3)' }}>
+          <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} onClick={generate}
+            disabled={loading || !situation.trim()}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 7, padding: '11px 22px',
+              borderRadius: 10, border: 'none',
+              background: 'linear-gradient(135deg, #6366f1, #7c3aed)', color: '#fff',
+              fontFamily: 'inherit', fontSize: 14, fontWeight: 600,
+              cursor: loading || !situation.trim() ? 'not-allowed' : 'pointer',
+              opacity: loading || !situation.trim() ? 0.6 : 1,
+              boxShadow: '0 0 20px rgba(99,102,241,0.3)',
+            }}>
             <Sparkles size={14} />{loading ? 'Writing…' : 'Write message'}
           </motion.button>
         </div>
 
-        {message && (
-          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}
-            style={{ background: '#111', border: '1px solid #1e1e1e', borderRadius: 14, padding: 20 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-              <span style={{ fontSize: 10, fontWeight: 700, color: '#3f3f46', textTransform: 'uppercase', letterSpacing: 1 }}>Generated message</span>
-              <motion.button whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }} onClick={copy}
-                style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: copied ? '#34d399' : '#71717a', background: 'none', border: '1px solid #1e1e1e', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontFamily: 'inherit' }}>
-                {copied ? <><Check size={11} /> Copied!</> : <><Copy size={11} /> Copy</>}
-              </motion.button>
-            </div>
-            <p style={{ fontSize: 14, color: '#d4d4d8', lineHeight: 1.7, whiteSpace: 'pre-wrap', margin: 0 }}>{message}</p>
-          </motion.div>
-        )}
+        {/* ── RIGHT PANEL: generated message ── */}
+        <AnimatePresence>
+          {message && (
+            <motion.div
+              initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }}
+              style={{ background: '#111', border: '1px solid #1e1e1e', borderRadius: 14,
+                padding: 20, display: 'flex', flexDirection: 'column', gap: 0 }}>
+
+              {/* Title row */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                <span style={{ fontSize: 10, fontWeight: 700, color: '#3f3f46', textTransform: 'uppercase', letterSpacing: 1 }}>
+                  Generated message
+                </span>
+                <button onClick={() => setEditing(e => !e)}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 5, fontSize: 11,
+                    color: editing ? '#818cf8' : '#71717a',
+                    background: editing ? 'rgba(99,102,241,0.1)' : 'none',
+                    border: `1px solid ${editing ? '#6366f1' : '#1e1e1e'}`,
+                    borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontFamily: 'inherit',
+                  }}>
+                  <Edit3 size={11} />{editing ? 'Done editing' : 'Edit'}
+                </button>
+              </div>
+
+              {/* Message — editable textarea OR readable pre-wrap */}
+              {editing ? (
+                <textarea
+                  value={message}
+                  onChange={e => setMessage(e.target.value)}
+                  rows={12}
+                  style={{
+                    flex: 1, width: '100%', background: '#0d0d0d', border: '1px solid #6366f1',
+                    borderRadius: 8, padding: '12px', fontSize: 14, color: '#d4d4d8',
+                    fontFamily: 'inherit', lineHeight: 1.7, outline: 'none', resize: 'vertical',
+                    boxSizing: 'border-box',
+                  }}
+                />
+              ) : (
+                <div
+                  onClick={() => setEditing(true)}
+                  title="Click to edit"
+                  style={{
+                    flex: 1, fontSize: 14, color: '#d4d4d8', lineHeight: 1.7,
+                    whiteSpace: 'pre-wrap', cursor: 'text',
+                    minHeight: 120, padding: '2px 0',
+                  }}>
+                  {message}
+                </div>
+              )}
+
+              {/* Character count */}
+              <div style={{ fontSize: 11, color: '#3f3f46', marginTop: 8, marginBottom: 14 }}>
+                {message.length} characters · {message.split(/\s+/).filter(Boolean).length} words
+              </div>
+
+              {/* Action buttons */}
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                {/* Copy */}
+                <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} onClick={copy}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 600,
+                    color: copied ? '#34d399' : '#fafafa',
+                    background: copied ? 'rgba(52,211,153,0.12)' : '#1a1a1a',
+                    border: `1px solid ${copied ? 'rgba(52,211,153,0.3)' : '#2a2a2a'}`,
+                    borderRadius: 8, padding: '8px 14px', cursor: 'pointer', fontFamily: 'inherit',
+                    transition: 'all 0.15s',
+                  }}>
+                  {copied ? <><Check size={12} /> Copied!</> : <><Copy size={12} /> Copy</>}
+                </motion.button>
+
+                {/* Gmail */}
+                <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} onClick={openGmail}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 600,
+                    color: '#ea4335', background: 'rgba(234,67,53,0.1)', border: '1px solid rgba(234,67,53,0.25)',
+                    borderRadius: 8, padding: '8px 14px', cursor: 'pointer', fontFamily: 'inherit',
+                  }}>
+                  <Mail size={12} /> Open in Gmail
+                </motion.button>
+
+                {/* Mail app */}
+                <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} onClick={openMailto}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 600,
+                    color: '#71717a', background: '#161616', border: '1px solid #1e1e1e',
+                    borderRadius: 8, padding: '8px 14px', cursor: 'pointer', fontFamily: 'inherit',
+                  }}>
+                  <Mail size={12} /> Mail app
+                </motion.button>
+
+                {/* Regenerate */}
+                <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
+                  onClick={generate} disabled={loading}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 600,
+                    color: '#818cf8', background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.25)',
+                    borderRadius: 8, padding: '8px 14px', cursor: loading ? 'not-allowed' : 'pointer',
+                    fontFamily: 'inherit', opacity: loading ? 0.5 : 1,
+                  }}>
+                  <Sparkles size={12} /> Regenerate
+                </motion.button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   )
