@@ -236,7 +236,7 @@ router.post('/login', async (req, res) => {
           email, ipAddress: clientIp, userAgent, success: false, reason: 'network_blocked',
         })
         return res.status(403).json({
-          error:     'Login denied: your network is not allowed by your school's Wi-Fi policy.',
+          error:     "Login denied: your network is not allowed by your school's Wi-Fi policy.",
           client_ip: clientIp,
         })
       }

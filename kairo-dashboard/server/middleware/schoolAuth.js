@@ -148,7 +148,7 @@ export async function checkNetworkRestriction(req, res, next) {
 
     if (!allowed) {
       return res.status(403).json({
-        error:     'Access denied: your network is not allowed by your school's Wi-Fi policy.',
+        error:     "Access denied: your network is not allowed by your school's Wi-Fi policy.",
         client_ip: clientIp,
         rules_count: rules.length,
       })
