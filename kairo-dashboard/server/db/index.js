@@ -30,12 +30,20 @@
 
 import Datastore from '@seald-io/nedb'
 import path from 'path'
+import fs from 'fs'
 import { fileURLToPath } from 'url'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 // On Vercel, /tmp is the only writable directory (data is ephemeral per instance)
 const DATA_DIR  = process.env.DB_PATH
   || (process.env.VERCEL ? '/tmp/kairo-data' : path.join(__dirname, '../../data'))
+
+// Create the data directory if it doesn't exist (critical on Vercel /tmp)
+try {
+  fs.mkdirSync(DATA_DIR, { recursive: true })
+} catch (e) {
+  console.error('[DB] Could not create data directory:', DATA_DIR, e.message)
+}
 
 function store(name) {
   return new Datastore({
