@@ -23,6 +23,7 @@ import Analytics from './Analytics'
 import Gamification from './Gamification'
 import Pomodoro from './Pomodoro'
 import Announcement from './Announcement'
+import SchoolHub from './SchoolHub'
 import { DEFAULT_MODEL } from '../lib/openrouter'
 
 import type { AuthProfile } from './Login'
@@ -49,6 +50,7 @@ const PAGE_TITLES: Record<string, string> = {
   gamification:     'My Progress',
   pomodoro:         'Pomodoro Timer',
   announcement:     'Announcements',
+  school:           'School Hub',
   settings:         'Settings',
 }
 
@@ -167,6 +169,9 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
 
             {/* Announcement */}
             <div style={pageStyle('announcement')}><Announcement /></div>
+
+            {/* School Hub */}
+            <div style={pageStyle('school')}>{profile && <SchoolHub profile={profile} />}</div>
 
           </div>
 

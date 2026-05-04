@@ -40,6 +40,7 @@ const TEACHER_NAV: NavItem[] = [
 ]
 
 const ADMIN_NAV: NavItem[] = [
+  { label: 'School Hub',      icon: Building2,   to: 'school',          color: '#6366f1' },
   { label: 'Fee Reminder',    icon: DollarSign,  to: 'fee-reminder',    color: '#34d399' },
   { label: 'Admission Bot',   icon: Bot,         to: 'admission',       color: '#818cf8' },
   { label: 'Attendance',      icon: UserCheck,   to: 'attendance',      color: '#fbbf24' },
