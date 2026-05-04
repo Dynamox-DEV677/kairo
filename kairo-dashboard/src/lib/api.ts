@@ -1,3 +1,4 @@
+// Always use relative /api — never an external URL (ignores VITE_API_BASE if set in Vercel)
 const BASE = '/api'
 
 export async function api(
