@@ -3,6 +3,7 @@ import './index.css'
 import Dashboard from './pages/Dashboard'
 import Login, { type AuthProfile } from './pages/Login'
 import { GenerationProvider } from './lib/generationContext'
+import { supabase } from './lib/supabase'
 
 export default function App() {
   const [profile, setProfile] = useState<AuthProfile | null>(null)
@@ -26,44 +27,48 @@ export default function App() {
         } catch {}
       }
 
-      if (!token) { setChecking(false); return }
-
-      // Validate token is still alive by hitting /users/profile
+      // Validate session via Supabase directly — no backend needed
       try {
-        const API = '/api'
-        const res  = await fetch(`${API}/users/profile`, {
-          headers: { Authorization: `Bearer ${token}` },
-          signal:  AbortSignal.timeout(5000),   // 5-second timeout — don't hang forever
-        })
-        const data = await res.json()
+        const { data: { session } } = await supabase.auth.getSession()
 
-        if (res.ok && data?.id) {
-          // Token valid — rebuild profile from live data
+        if (session) {
+          const { data: userRow } = await supabase
+            .from('users')
+            .select('id, name, role, school_id, avatar_url')
+            .eq('id', session.user.id)
+            .single()
+
+          let school: any = null
+          if (userRow?.school_id) {
+            const { data: s } = await supabase
+              .from('schools')
+              .select('id, school_name, school_logo_url, school_email, plan')
+              .eq('id', userRow.school_id)
+              .single()
+            school = s
+          }
+
           const freshProfile: AuthProfile = {
-            id:              data.id,
-            name:            data.name,
-            role:            data.role,
-            avatar_url:      data.avatar_url,
-            school_id:       data.school?.id  ?? data.school_id,
-            school_name:     data.school?.school_name,
-            school_logo_url: data.school?.school_logo_url,
-            school_email:    data.school?.school_email,
-            plan:            data.school?.plan,
-            access_token:    token,
-            refresh_token:   localStorage.getItem('kairo_refresh') || '',
+            id:              userRow?.id              || session.user.id,
+            name:            userRow?.name            || session.user.email || '',
+            role:            userRow?.role            || 'student',
+            avatar_url:      userRow?.avatar_url,
+            school_id:       userRow?.school_id,
+            school_name:     school?.school_name,
+            school_logo_url: school?.school_logo_url,
+            school_email:    school?.school_email,
+            plan:            school?.plan,
+            access_token:    session.access_token,
+            refresh_token:   session.refresh_token,
           }
           localStorage.setItem('kairo_profile', JSON.stringify(freshProfile))
           setProfile(freshProfile)
-        } else if (res.status === 503) {
-          // Supabase not configured — still let user in with cached profile
-          if (cached) { try { setProfile(JSON.parse(cached)) } catch { clearSession() } }
-          else clearSession()
+        } else if (cached) {
+          try { setProfile(JSON.parse(cached)) } catch { clearSession() }
         } else {
-          // 401/403 — token invalid, clear session
           clearSession()
         }
       } catch {
-        // Network down or backend not running — use cached profile (offline mode)
         if (cached) {
           try { setProfile(JSON.parse(cached)) } catch { clearSession() }
         } else {

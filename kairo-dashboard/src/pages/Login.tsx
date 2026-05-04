@@ -14,6 +14,7 @@ import {
   Key, ArrowRight, Sparkles, Eye, EyeOff, Copy, Check, Zap,
 } from 'lucide-react'
 import { post } from '../lib/api'
+import { supabase, supabaseReady } from '../lib/supabase'
 
 export interface AuthProfile {
   id:               string
@@ -48,20 +49,14 @@ const ROLES = [
 const BOARDS  = ['CBSE', 'ICSE', 'Maharashtra', 'Tamil Nadu', 'Karnataka', 'UP Board', 'Bihar Board']
 const CLASSES = ['6', '7', '8', '9', '10', '11', '12']
 
-// Detect if Supabase is available by pinging the backend
+// Detect if Supabase is available using the anon key directly
 async function checkSupabase(): Promise<boolean> {
+  if (!supabaseReady) return false
   try {
-    const API = '/api'
-    const res = await fetch(`${API}/users/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: 'probe@check.internal', password: 'probe' }),
-      signal: AbortSignal.timeout(3000),
-    })
-    // 503 = Supabase not configured; anything else (even 401) = Supabase is up
-    return res.status !== 503
+    const { error } = await supabase.auth.getSession()
+    return !error
   } catch {
-    return false  // backend not running
+    return false
   }
 }
 
@@ -105,30 +100,50 @@ export default function Login({ onLogin }: LoginProps) {
     if (!siEmail.trim() || !siPassword) { setError('Email and password are required.'); return }
     setLoading(true); setError(''); setSupabaseDown(false)
     try {
-      const data = await post('/users/login', { email: siEmail.trim(), password: siPassword })
-      const profile: AuthProfile = {
-        id:              data.user?.id,
-        name:            data.user?.name,
-        role:            data.user?.role,
-        avatar_url:      data.user?.avatar_url,
-        school_id:       data.user?.school_id,
-        school_name:     data.user?.school_name,
-        school_logo_url: data.user?.school_logo_url,
-        school_email:    data.user?.school_email,
-        plan:            data.user?.plan,
-        access_token:    data.access_token,
-        refresh_token:   data.refresh_token,
+      // Use Supabase auth directly — no backend needed
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email:    siEmail.trim().toLowerCase(),
+        password: siPassword,
+      })
+      if (error) throw new Error(error.message)
+
+      // Load user profile row
+      const { data: userRow } = await supabase
+        .from('users')
+        .select('id, name, role, school_id, avatar_url')
+        .eq('id', data.user.id)
+        .single()
+
+      // Load school if joined
+      let school: any = null
+      if (userRow?.school_id) {
+        const { data: s } = await supabase
+          .from('schools')
+          .select('id, school_name, school_logo_url, school_email, plan')
+          .eq('id', userRow.school_id)
+          .single()
+        school = s
       }
-      localStorage.setItem('kairo_token',   data.access_token)
-      localStorage.setItem('kairo_refresh',  data.refresh_token)
+
+      const profile: AuthProfile = {
+        id:              userRow?.id              || data.user.id,
+        name:            userRow?.name            || data.user.email || '',
+        role:            userRow?.role            || 'student',
+        avatar_url:      userRow?.avatar_url,
+        school_id:       userRow?.school_id,
+        school_name:     school?.school_name,
+        school_logo_url: school?.school_logo_url,
+        school_email:    school?.school_email,
+        plan:            school?.plan,
+        access_token:    data.session.access_token,
+        refresh_token:   data.session.refresh_token,
+      }
+      localStorage.setItem('kairo_token',   data.session.access_token)
+      localStorage.setItem('kairo_refresh',  data.session.refresh_token)
       localStorage.setItem('kairo_profile',  JSON.stringify(profile))
       onLogin(profile)
     } catch (e: any) {
-      if (e.message?.includes('503') || e.message?.toLowerCase().includes('not configured')) {
-        setSupabaseDown(true)
-      } else {
-        setError(e.message || 'Login failed.')
-      }
+      setError(e.message || 'Login failed.')
     } finally {
       setLoading(false)
     }
