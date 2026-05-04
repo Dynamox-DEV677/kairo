@@ -24,6 +24,7 @@ import Gamification from './Gamification'
 import Pomodoro from './Pomodoro'
 import Announcement from './Announcement'
 import SchoolHub from './SchoolHub'
+import ParentDashboard from './ParentDashboard'
 import { DEFAULT_MODEL } from '../lib/openrouter'
 
 import type { AuthProfile } from './Login'
@@ -65,6 +66,11 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
   const [lastQuestion, setLastQuestion] = useState('')
   const [hasContent, setHasContent]   = useState(false)
   const [selectedModel, setSelectedModel] = useState(DEFAULT_MODEL)
+
+  // Parent users get a completely separate portal — no sidebar, no AI tools
+  if (profile?.role === 'parent') {
+    return <ParentDashboard profile={profile} onLogout={onLogout} />
+  }
 
   function handleNewMessage(q: string) {
     setLastQuestion(q)

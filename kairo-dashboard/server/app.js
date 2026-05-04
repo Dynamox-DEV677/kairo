@@ -44,6 +44,10 @@ import notificationsRoutes from './routes/notifications.js'
 import tasksRoutes         from './routes/tasks.js'
 import networkRulesRoutes  from './routes/networkRules.js'
 
+// ── v6 routes (Parent Mode + Marks) ──────────────────────────────────────────
+import marksRoutes         from './routes/marks.js'
+import parentRoutes        from './routes/parent.js'
+
 // ─── Validate env ─────────────────────────────────────────────────────────────
 if (!process.env.ENCRYPTION_SECRET || process.env.ENCRYPTION_SECRET.length < 32) {
   // Use a fallback so the server doesn't crash — set ENCRYPTION_SECRET in prod for real security
@@ -119,6 +123,10 @@ app.use('/api/notifications',  notificationsRoutes)
 // v5 — School Management Core
 app.use('/api/tasks',          tasksRoutes)
 app.use('/api/network-rules',  networkRulesRoutes)
+
+// v6 — Parent Mode + Marks
+app.use('/api/marks',          marksRoutes)
+app.use('/api/parent',         parentRoutes)
 
 // ─── Health check ─────────────────────────────────────────────────────────────
 app.get('/health', (_req, res) => {

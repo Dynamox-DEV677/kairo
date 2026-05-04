@@ -18,10 +18,10 @@ export async function requireSupabaseAuth(req, res, next) {
     const { data: { user }, error } = await supabaseAdmin.auth.getUser(token)
     if (error || !user) return res.status(401).json({ error: 'Invalid or expired token.' })
 
-    // Load full user profile (role + school)
+    // Load full user profile (role + school) — valid for student/teacher/admin/parent
     const { data: profile, error: profileErr } = await supabaseAdmin
       .from('users')
-      .select('id, name, role, school_id, avatar_url')
+      .select('id, name, role, school_id, avatar_url, status')
       .eq('id', user.id)
       .single()
 

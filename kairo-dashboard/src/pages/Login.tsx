@@ -33,13 +33,16 @@ export interface AuthProfile {
   // Supabase tokens (absent in localMode)
   access_token?:    string
   refresh_token?:   string
+  // Parent-specific
+  linked_student_id?:   string
+  linked_student_name?: string
 }
 
 interface LoginProps {
   onLogin: (profile: AuthProfile) => void
 }
 
-type Mode = 'signin' | 'signup' | 'school' | 'local'
+type Mode = 'signin' | 'signup' | 'school' | 'parent' | 'local'
 
 const ROLES = [
   { id: 'student', label: 'Student', icon: '🎓', desc: 'Learn, revise & practice' },
@@ -88,6 +91,13 @@ export default function Login({ onLogin }: LoginProps) {
   const [scEmail, setScEmail]         = useState('')
   const [scResult, setScResult]       = useState<{ passcode: string; school_id: string } | null>(null)
   const [copied, setCopied]           = useState(false)
+
+  // Parent registration fields
+  const [prName, setPrName]           = useState('')
+  const [prEmail, setPrEmail]         = useState('')
+  const [prPassword, setPrPassword]   = useState('')
+  const [prCode, setPrCode]           = useState('')
+  const [prShowPw, setPrShowPw]       = useState(false)
 
   // Quick Start (local) fields
   const [qlName, setQlName]           = useState('')
@@ -205,6 +215,43 @@ export default function Login({ onLogin }: LoginProps) {
       } else {
         setError(e.message || 'School registration failed.')
       }
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // ── Parent Register ───────────────────────────────────────────────────────────
+  async function handleParentRegister() {
+    if (!prName.trim())     { setError('Name is required.');          return }
+    if (!prEmail.trim())    { setError('Email is required.');         return }
+    if (!prPassword)        { setError('Password is required.');      return }
+    if (!prCode.trim())     { setError('Child access code is required. Ask your child to generate one in their Kairo app.'); return }
+    setLoading(true); setError('')
+    try {
+      const data = await post('/parent/register', {
+        name:        prName.trim(),
+        email:       prEmail.trim(),
+        password:    prPassword,
+        access_code: prCode.trim().toUpperCase(),
+      })
+      const profile: AuthProfile = {
+        id:                   data.parent?.id,
+        name:                 data.parent?.name,
+        role:                 'parent',
+        school_id:            data.school?.id,
+        school_name:          data.school?.school_name,
+        school_logo_url:      data.school?.school_logo_url,
+        linked_student_id:    data.linked_student?.id,
+        linked_student_name:  data.linked_student?.name,
+        access_token:         data.access_token,
+        refresh_token:        data.refresh_token,
+      }
+      localStorage.setItem('kairo_token',   data.access_token)
+      localStorage.setItem('kairo_refresh',  data.refresh_token)
+      localStorage.setItem('kairo_profile',  JSON.stringify(profile))
+      onLogin(profile)
+    } catch (e: any) {
+      setError(e.message || 'Parent registration failed.')
     } finally {
       setLoading(false)
     }
@@ -328,10 +375,11 @@ export default function Login({ onLogin }: LoginProps) {
           {/* Tab bar */}
           {!supabaseDown && (
             <div style={{ display: 'flex', gap: 4, marginBottom: 20, background: '#0d0d0d', borderRadius: 10, padding: 4 }}>
-              <button style={tabStyle('signin')} onClick={() => { setMode('signin'); setError('') }}>Sign In</button>
-              <button style={tabStyle('signup')} onClick={() => { setMode('signup'); setError('') }}>Sign Up</button>
-              <button style={tabStyle('school')} onClick={() => { setMode('school'); setError(''); setScResult(null) }}>School</button>
-              <button style={tabStyle('local')}  onClick={() => { setMode('local');  setError('') }}>
+              <button style={tabStyle('signin')}  onClick={() => { setMode('signin');  setError('') }}>Sign In</button>
+              <button style={tabStyle('signup')}  onClick={() => { setMode('signup');  setError('') }}>Sign Up</button>
+              <button style={tabStyle('school')}  onClick={() => { setMode('school');  setError(''); setScResult(null) }}>School</button>
+              <button style={tabStyle('parent')}  onClick={() => { setMode('parent');  setError('') }}>👨‍👩‍👧 Parent</button>
+              <button style={tabStyle('local')}   onClick={() => { setMode('local');   setError('') }}>
                 <Zap size={11} style={{ display: 'inline', marginRight: 3, verticalAlign: 'middle' }} />
                 Quick
               </button>
@@ -473,6 +521,45 @@ export default function Login({ onLogin }: LoginProps) {
                     </button>
                   </motion.div>
                 )}
+              </motion.div>
+            )}
+
+            {/* ── PARENT REGISTER ─────────────────────────────────────────── */}
+            {mode === 'parent' && !supabaseDown && (
+              <motion.div key="parent" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}>
+                <div style={{ marginBottom: 16, padding: '12px 14px', background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.2)', borderRadius: 10 }}>
+                  <p style={{ fontSize: 12, color: '#818cf8', margin: 0, lineHeight: 1.6 }}>
+                    👨‍👩‍👧 <strong>Parent Mode</strong> — view your child's marks and academic performance.<br />
+                    Ask your child to generate a <strong>Parent Access Code</strong> from their Kairo app first.
+                  </p>
+                </div>
+                <Field icon={<User size={14} color="#52525b" />} label="Your Name">
+                  <input value={prName} onChange={e => setPrName(e.target.value)} placeholder="e.g. Mrs. Kavita Sharma" autoFocus style={inputStyle} />
+                </Field>
+                <Field icon={<Mail size={14} color="#52525b" />} label="Your Email">
+                  <input type="email" value={prEmail} onChange={e => setPrEmail(e.target.value)} placeholder="parent@example.com" style={inputStyle} />
+                </Field>
+                <Field icon={<Lock size={14} color="#52525b" />} label="Create Password">
+                  <div style={{ position: 'relative' }}>
+                    <input type={prShowPw ? 'text' : 'password'} value={prPassword}
+                      onChange={e => setPrPassword(e.target.value)} placeholder="min 8 characters"
+                      style={{ ...inputStyle, paddingRight: 40 }} />
+                    <button onClick={() => setPrShowPw(p => !p)} style={eyeBtn}>
+                      {prShowPw ? <EyeOff size={13} color="#52525b" /> : <Eye size={13} color="#52525b" />}
+                    </button>
+                  </div>
+                </Field>
+                <Field icon={<Key size={14} color="#52525b" />} label="Child's Access Code" hint="Get this from your child">
+                  <input value={prCode} onChange={e => setPrCode(e.target.value)}
+                    placeholder="e.g. ABCD1234"
+                    style={{ ...inputStyle, fontFamily: 'monospace', letterSpacing: 2, textTransform: 'uppercase' }} />
+                </Field>
+                <PrimaryBtn loading={loading} onClick={handleParentRegister}>
+                  <ArrowRight size={14} /> Create Parent Account
+                </PrimaryBtn>
+                <p style={{ fontSize: 11, color: '#3f3f46', textAlign: 'center', marginTop: 10 }}>
+                  Already have an account? Use Sign In tab.
+                </p>
               </motion.div>
             )}
 

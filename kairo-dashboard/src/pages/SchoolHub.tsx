@@ -17,7 +17,7 @@ import {
   Building2, Sparkles, Award, Inbox,
   Wifi, WifiOff, LogIn, Settings, Key, UserPlus,
   ToggleLeft, ToggleRight, AlertTriangle, CheckSquare,
-  Globe, Lock, Unlock,
+  Globe, Lock, Unlock, Star, Target, TrendingDown, QrCode,
 } from 'lucide-react'
 import type { AuthProfile } from './Login'
 
@@ -72,6 +72,18 @@ interface LoginLog {
 interface SchoolInfo {
   id: string; school_name: string; school_email: string
   domain: string | null; require_approval: boolean; school_logo_url: string | null
+}
+interface Mark {
+  id: string; subject: string; exam_name: string
+  marks_obtained: number; total_marks: number; remarks?: string | null
+  created_at: string
+  teacher?: { id: string; name: string }
+  student?: { id: string; name: string; class_name?: string }
+}
+interface MarkSummary {
+  average_percentage: number; total_exams: number
+  strong_subjects: string[]; weak_subjects: string[]
+  subjects: Array<{ subject: string; percentage: number; total_obtained: number; total_max: number; count: number }>
 }
 
 // ─── SHARED COMPONENTS ────────────────────────────────────────────────────────
@@ -357,6 +369,7 @@ function AdminHub({ profile, schoolId }: { profile: AuthProfile; schoolId: strin
     { id: 'pending',   label: 'Pending',        icon: Clock,      badge: pendingCount || undefined },
     { id: 'members',   label: 'Members',        icon: Users },
     { id: 'tasks',     label: 'Tasks',          icon: BookOpen },
+    { id: 'marks',     label: 'Marks Audit',    icon: BarChart3 },
     { id: 'network',   label: 'Network Rules',  icon: Wifi },
     { id: 'logs',      label: 'Login Logs',     icon: LogIn },
     { id: 'settings',  label: 'Settings',       icon: Settings },
@@ -369,13 +382,14 @@ function AdminHub({ profile, schoolId }: { profile: AuthProfile; schoolId: strin
         <motion.div key={tab}
           initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}
           transition={{ duration: 0.15 }}>
-          {tab === 'overview' && <AdminOverview schoolId={schoolId} />}
-          {tab === 'pending'  && <AdminPending  schoolId={schoolId} onApprove={() => {}} />}
-          {tab === 'members'  && <AdminMembers  schoolId={schoolId} selfId={profile.id} />}
-          {tab === 'tasks'    && <AdminTasks    schoolId={schoolId} />}
-          {tab === 'network'  && <AdminNetwork  schoolId={schoolId} />}
-          {tab === 'logs'     && <AdminLogs     schoolId={schoolId} />}
-          {tab === 'settings' && <AdminSettings schoolId={schoolId} profile={profile} />}
+          {tab === 'overview' && <AdminOverview    schoolId={schoolId} />}
+          {tab === 'pending'  && <AdminPending     schoolId={schoolId} onApprove={() => {}} />}
+          {tab === 'members'  && <AdminMembers     schoolId={schoolId} selfId={profile.id} />}
+          {tab === 'tasks'    && <AdminTasks       schoolId={schoolId} />}
+          {tab === 'marks'    && <AdminMarksAudit  schoolId={schoolId} />}
+          {tab === 'network'  && <AdminNetwork     schoolId={schoolId} />}
+          {tab === 'logs'     && <AdminLogs        schoolId={schoolId} />}
+          {tab === 'settings' && <AdminSettings    schoolId={schoolId} profile={profile} />}
         </motion.div>
       </AnimatePresence>
     </>
@@ -1052,9 +1066,10 @@ function TeacherHub({ profile, schoolId }: { profile: AuthProfile; schoolId: str
   const [tab, setTab] = useState('tasks')
 
   const tabs = [
-    { id: 'tasks',  label: 'My Tasks',       icon: BookOpen },
-    { id: 'create', label: 'Create Task',    icon: Plus },
-    { id: 'notifs', label: 'Notifications',  icon: Bell },
+    { id: 'tasks',  label: 'My Tasks',      icon: BookOpen },
+    { id: 'create', label: 'Create Task',   icon: Plus },
+    { id: 'marks',  label: 'Enter Marks',   icon: BarChart3 },
+    { id: 'notifs', label: 'Notifications', icon: Bell },
   ]
 
   return (
@@ -1064,9 +1079,10 @@ function TeacherHub({ profile, schoolId }: { profile: AuthProfile; schoolId: str
         <motion.div key={tab}
           initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}
           transition={{ duration: 0.15 }}>
-          {tab === 'tasks'  && <TeacherTasks schoolId={schoolId} />}
-          {tab === 'create' && <CreateTask   schoolId={schoolId} onCreated={() => setTab('tasks')} />}
-          {tab === 'notifs' && <NotifPanel   schoolId={schoolId} profile={profile} canSend />}
+          {tab === 'tasks'  && <TeacherTasks  schoolId={schoolId} />}
+          {tab === 'create' && <CreateTask    schoolId={schoolId} onCreated={() => setTab('tasks')} />}
+          {tab === 'marks'  && <TeacherMarks  schoolId={schoolId} profile={profile} />}
+          {tab === 'notifs' && <NotifPanel    schoolId={schoolId} profile={profile} canSend />}
         </motion.div>
       </AnimatePresence>
     </>
@@ -1178,8 +1194,9 @@ function StudentHub({ profile, schoolId }: { profile: AuthProfile; schoolId: str
   const [tab, setTab] = useState('tasks')
 
   const tabs = [
-    { id: 'tasks', label: 'My Tasks', icon: BookOpen },
-    { id: 'feed',  label: 'Feed',     icon: Bell },
+    { id: 'tasks', label: 'My Tasks',  icon: BookOpen },
+    { id: 'marks', label: 'My Marks',  icon: BarChart3 },
+    { id: 'feed',  label: 'Feed',      icon: Bell },
   ]
 
   return (
@@ -1190,6 +1207,7 @@ function StudentHub({ profile, schoolId }: { profile: AuthProfile; schoolId: str
           initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}
           transition={{ duration: 0.15 }}>
           {tab === 'tasks' && <StudentTasks profile={profile} />}
+          {tab === 'marks' && <StudentMarks profile={profile} schoolId={schoolId} />}
           {tab === 'feed'  && <NotifPanel   schoolId={schoolId} profile={profile} canSend={false} />}
         </motion.div>
       </AnimatePresence>
@@ -1460,6 +1478,410 @@ function NotifPanel({ schoolId, profile, canSend }: { schoolId: string; profile:
                   <div style={{ height: 3, background: '#1e1e1e', borderRadius: 2, overflow: 'hidden' }}>
                     <div style={{ height: '100%', width: `${pct}%`, background: barColor,
                       borderRadius: 2, transition: 'width 1s linear' }} />
+                  </div>
+                </Card>
+              )
+            })}
+          </div>
+        )
+      }
+    </div>
+  )
+}
+
+// ─── MARKS HELPERS & COMPONENTS ──────────────────────────────────────────────
+
+function gradeInfo(pct: number) {
+  if (pct >= 90) return { label: 'A+', color: '#34d399' }
+  if (pct >= 75) return { label: 'A',  color: '#6ee7b7' }
+  if (pct >= 60) return { label: 'B',  color: '#60a5fa' }
+  if (pct >= 45) return { label: 'C',  color: '#fbbf24' }
+  if (pct >= 33) return { label: 'D',  color: '#fb923c' }
+  return { label: 'F', color: '#f87171' }
+}
+
+// Teacher marks tab: add marks + view school marks
+function TeacherMarks({ schoolId, profile }: { schoolId: string; profile: AuthProfile }) {
+  const [students, setStudents] = useState<Member[]>([])
+  const [marks, setMarks]       = useState<Mark[]>([])
+  const [loading, setLoading]   = useState(true)
+  const [err, setErr]           = useState('')
+  const [success, setSuccess]   = useState('')
+  const [tab, setTab]           = useState<'add' | 'list'>('add')
+  const [busy, setBusy]         = useState(false)
+
+  // Form state
+  const [studentId, setStudentId]   = useState('')
+  const [subject, setSubject]       = useState('')
+  const [examName, setExamName]     = useState('')
+  const [obtained, setObtained]     = useState('')
+  const [total, setTotal]           = useState('100')
+  const [remarks, setRemarks]       = useState('')
+
+  useEffect(() => {
+    // Load students + existing marks for this teacher
+    Promise.all([
+      api(`/schools/${schoolId}/members?role=student`),
+      api('/marks/school'),
+    ])
+      .then(([s, m]) => {
+        setStudents(s.members || [])
+        setMarks(m.marks || [])
+      })
+      .catch(e => setErr(e.message))
+      .finally(() => setLoading(false))
+  }, [schoolId])
+
+  async function addMark() {
+    if (!studentId || !subject || !examName || !obtained) {
+      setErr('Student, subject, exam name and marks are required.')
+      return
+    }
+    setBusy(true); setErr('')
+    try {
+      const d = await api('/marks', {
+        method: 'POST',
+        body: JSON.stringify({
+          student_id: studentId, subject: subject.trim(),
+          exam_name: examName.trim(),
+          marks_obtained: parseFloat(obtained), total_marks: parseFloat(total),
+          remarks: remarks.trim() || undefined,
+        }),
+      })
+      setSuccess('Marks added successfully.')
+      setMarks(prev => [d.mark, ...prev])
+      setStudentId(''); setSubject(''); setExamName(''); setObtained(''); setTotal('100'); setRemarks('')
+    } catch (e: any) { setErr(e.message) }
+    finally { setBusy(false) }
+  }
+
+  async function deleteMark(id: string) {
+    if (!confirm('Delete this mark entry?')) return
+    try {
+      await api(`/marks/${id}`, { method: 'DELETE' })
+      setMarks(prev => prev.filter(m => m.id !== id))
+      setSuccess('Mark deleted.')
+    } catch (e: any) { setErr(e.message) }
+  }
+
+  if (loading) return <Spinner />
+
+  return (
+    <div>
+      {err     && <ErrBanner    msg={err}     onDismiss={() => setErr('')} />}
+      {success && <SuccessBanner msg={success} onDismiss={() => setSuccess('')} />}
+
+      <div style={{ display: 'flex', gap: 6, marginBottom: 16 }}>
+        <Btn size="sm" variant={tab === 'add' ? 'primary' : 'ghost'} onClick={() => setTab('add')}>
+          <Plus size={12} /> Add Marks
+        </Btn>
+        <Btn size="sm" variant={tab === 'list' ? 'primary' : 'ghost'} onClick={() => setTab('list')}>
+          <BarChart3 size={12} /> View Records ({marks.length})
+        </Btn>
+      </div>
+
+      {tab === 'add' && (
+        <Card>
+          <div style={{ fontSize: 14, fontWeight: 700, color: '#fafafa', marginBottom: 16 }}>Enter Marks</div>
+          <div style={{ marginBottom: 12 }}>
+            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#71717a', marginBottom: 5 }}>
+              Student <span style={{ color: '#f87171' }}>*</span>
+            </label>
+            <select value={studentId} onChange={e => setStudentId(e.target.value)}
+              style={{ width: '100%', padding: '9px 12px', background: '#0d0d0d', border: '1px solid #2a2a2a',
+                borderRadius: 8, color: studentId ? '#fafafa' : '#52525b', fontSize: 13, fontFamily: 'inherit' }}>
+              <option value="">— Select student —</option>
+              {students.map(s => (
+                <option key={s.id} value={s.id}>
+                  {s.name}{s.class_name ? ` (Class ${s.class_name})` : ''}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <Input label="Subject *" value={subject} onChange={setSubject} placeholder="e.g. Mathematics" />
+            <Input label="Exam / Test Name *" value={examName} onChange={setExamName} placeholder="e.g. Unit Test 1" />
+            <Input label="Marks Obtained *" value={obtained} onChange={setObtained} type="number" placeholder="e.g. 85" />
+            <Input label="Total Marks" value={total} onChange={setTotal} type="number" placeholder="100" />
+          </div>
+          <Input label="Remarks (optional)" value={remarks} onChange={setRemarks} placeholder="e.g. Excellent improvement!" />
+          <Btn variant="primary" onClick={addMark} disabled={busy}>
+            {busy ? <Loader2 size={13} /> : <><Check size={12} /> Save Marks</>}
+          </Btn>
+        </Card>
+      )}
+
+      {tab === 'list' && (
+        marks.length === 0
+          ? <EmptyState icon={BarChart3} title="No marks added yet" sub='Use the "Add Marks" tab to enter student marks.' />
+          : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {marks.map(m => {
+                const pct = Math.round((m.marks_obtained / m.total_marks) * 100)
+                const g   = gradeInfo(pct)
+                return (
+                  <Card key={m.id} style={{ padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <div style={{ width: 36, height: 36, borderRadius: 9, flexShrink: 0,
+                      background: `${g.color}18`, border: `1px solid ${g.color}44`,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: 13, fontWeight: 800, color: g.color }}>
+                      {g.label}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontWeight: 600, color: '#fafafa', fontSize: 13 }}>
+                        {m.student?.name || '—'}
+                        <span style={{ fontSize: 11, color: '#52525b', fontWeight: 400 }}>
+                          {m.student?.class_name && ` · Class ${m.student.class_name}`}
+                        </span>
+                      </div>
+                      <div style={{ fontSize: 12, color: '#52525b' }}>
+                        {m.subject} · {m.exam_name}
+                      </div>
+                    </div>
+                    <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                      <div style={{ fontSize: 16, fontWeight: 800, color: g.color }}>
+                        {m.marks_obtained}/{m.total_marks}
+                      </div>
+                      <div style={{ fontSize: 11, color: '#52525b' }}>{pct}%</div>
+                    </div>
+                    <button onClick={() => deleteMark(m.id)} title="Delete"
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#52525b', padding: 4 }}
+                      onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = '#f87171' }}
+                      onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = '#52525b' }}>
+                      <Trash2 size={13} />
+                    </button>
+                  </Card>
+                )
+              })}
+            </div>
+          )
+      )}
+    </div>
+  )
+}
+
+// Student marks tab: view own marks + generate parent code
+function StudentMarks({ profile, schoolId }: { profile: AuthProfile; schoolId: string }) {
+  const [marks, setMarks]       = useState<Mark[]>([])
+  const [summary, setSummary]   = useState<MarkSummary | null>(null)
+  const [loading, setLoading]   = useState(true)
+  const [err, setErr]           = useState('')
+  const [code, setCode]         = useState<string | null>(null)
+  const [codeLoading, setCodeLoading] = useState(false)
+  const [codeExpiry, setCodeExpiry]   = useState<string | null>(null)
+  const [codeCopied, setCodeCopied]   = useState(false)
+
+  useEffect(() => {
+    setLoading(true)
+    Promise.all([
+      api('/marks/my'),
+      api('/parent/my-code'),
+    ])
+      .then(([md, cd]) => {
+        setMarks(md.marks || [])
+        setSummary(md.summary || null)
+        setCode(cd.code || null)
+        setCodeExpiry(cd.expires_at || null)
+      })
+      .catch(e => setErr(e.message))
+      .finally(() => setLoading(false))
+  }, [profile.id])
+
+  async function generateCode() {
+    setCodeLoading(true)
+    try {
+      const d = await api('/parent/generate-code', { method: 'POST' })
+      setCode(d.code)
+      setCodeExpiry(d.expires_at)
+    } catch (e: any) { setErr(e.message) }
+    finally { setCodeLoading(false) }
+  }
+
+  function copyCode() {
+    if (!code) return
+    navigator.clipboard.writeText(code)
+    setCodeCopied(true)
+    setTimeout(() => setCodeCopied(false), 2000)
+  }
+
+  if (loading) return <Spinner />
+
+  return (
+    <div>
+      {err && <ErrBanner msg={err} onDismiss={() => setErr('')} />}
+
+      {/* Parent access code section */}
+      <Card style={{ marginBottom: 16 }}>
+        <div style={{ fontSize: 14, fontWeight: 700, color: '#fafafa', marginBottom: 4, display: 'flex', gap: 8 }}>
+          <QrCode size={16} color="#818cf8" /> Parent Access Code
+        </div>
+        <div style={{ fontSize: 12, color: '#52525b', marginBottom: 12 }}>
+          Share this code with your parent so they can create a Parent account and view your marks.
+        </div>
+        {code ? (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+            <code style={{ fontSize: 20, fontWeight: 800, letterSpacing: 3, color: '#818cf8',
+              background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.2)',
+              borderRadius: 8, padding: '8px 14px', fontFamily: 'monospace' }}>
+              {code}
+            </code>
+            <Btn size="sm" variant="ghost" onClick={copyCode}>
+              {codeCopied ? <><Check size={12} /> Copied!</> : 'Copy'}
+            </Btn>
+            <Btn size="sm" variant="warning" onClick={generateCode} disabled={codeLoading}>
+              <RefreshCw size={12} /> New Code
+            </Btn>
+            {codeExpiry && (
+              <span style={{ fontSize: 11, color: '#52525b' }}>
+                Expires {new Date(codeExpiry).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
+              </span>
+            )}
+          </div>
+        ) : (
+          <Btn variant="primary" onClick={generateCode} disabled={codeLoading}>
+            {codeLoading ? <Loader2 size={13} /> : <><QrCode size={12} /> Generate Code</>}
+          </Btn>
+        )}
+      </Card>
+
+      {/* Marks */}
+      {marks.length === 0 ? (
+        <EmptyState icon={BarChart3} title="No marks yet" sub="Your teacher will enter marks here after each exam." />
+      ) : (
+        <>
+          {summary && (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(155px, 1fr))', gap: 10, marginBottom: 16 }}>
+              <StatCard label="Overall Avg" value={`${summary.average_percentage}%`} icon={Target}
+                color={gradeInfo(summary.average_percentage).color} sub={gradeInfo(summary.average_percentage).label} />
+              <StatCard label="Total Exams" value={summary.total_exams} icon={BookOpen} color="#818cf8" />
+              <StatCard label="Strong" value={summary.strong_subjects.length} icon={Star} color="#34d399"
+                sub={summary.strong_subjects.slice(0,2).join(', ') || '—'} />
+              <StatCard label="Needs Work" value={summary.weak_subjects.length} icon={TrendingDown} color="#f87171"
+                sub={summary.weak_subjects.slice(0,2).join(', ') || 'none'} />
+            </div>
+          )}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {marks.map((m, i) => {
+              const pct = Math.round((m.marks_obtained / m.total_marks) * 100)
+              const g   = gradeInfo(pct)
+              return (
+                <motion.div key={m.id} initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.04 }}>
+                  <Card style={{ padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <div style={{ width: 36, height: 36, borderRadius: 9, flexShrink: 0,
+                      background: `${g.color}18`, border: `1px solid ${g.color}44`,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: 13, fontWeight: 800, color: g.color }}>
+                      {g.label}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontWeight: 600, color: '#fafafa', fontSize: 13 }}>{m.exam_name}</div>
+                      <div style={{ fontSize: 12, color: '#52525b' }}>
+                        {m.subject}{m.teacher && ` · ${m.teacher.name}`} · {fmtDate(m.created_at)}
+                      </div>
+                      {m.remarks && (
+                        <div style={{ fontSize: 11, color: '#71717a', marginTop: 2, fontStyle: 'italic' }}>"{m.remarks}"</div>
+                      )}
+                    </div>
+                    <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                      <div style={{ fontSize: 18, fontWeight: 800, color: g.color }}>
+                        {m.marks_obtained}<span style={{ fontSize: 11, color: '#52525b' }}>/{m.total_marks}</span>
+                      </div>
+                      <div style={{ fontSize: 11, color: '#52525b' }}>{pct}%</div>
+                    </div>
+                  </Card>
+                </motion.div>
+              )
+            })}
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
+
+// Admin marks audit tab
+function AdminMarksAudit({ schoolId }: { schoolId: string }) {
+  const [marks, setMarks]   = useState<Mark[]>([])
+  const [loading, setLoading] = useState(true)
+  const [err, setErr]         = useState('')
+  const [links, setLinks]     = useState<any[]>([])
+
+  useEffect(() => {
+    setLoading(true)
+    Promise.all([
+      api('/marks/school?limit=100'),
+      api('/parent/links'),
+    ])
+      .then(([md, ld]) => {
+        setMarks(md.marks || [])
+        setLinks(ld.links || [])
+      })
+      .catch(e => setErr(e.message))
+      .finally(() => setLoading(false))
+  }, [schoolId])
+
+  if (loading) return <Spinner />
+  if (err) return <ErrBanner msg={err} />
+
+  return (
+    <div>
+      {/* Parent links summary */}
+      <Card style={{ marginBottom: 16 }}>
+        <div style={{ fontSize: 14, fontWeight: 700, color: '#fafafa', marginBottom: 10, display: 'flex', gap: 8 }}>
+          <Users size={16} color="#6366f1" /> Parent Links ({links.length})
+        </div>
+        {links.length === 0
+          ? <div style={{ fontSize: 13, color: '#52525b' }}>No parents linked yet. Students generate codes from their Marks tab.</div>
+          : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {links.map(l => (
+                <div key={l.id} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, color: '#d4d4d8' }}>
+                  <span style={{ fontSize: 11, background: 'rgba(99,102,241,0.12)', color: '#818cf8',
+                    borderRadius: 5, padding: '2px 7px', fontWeight: 600 }}>Parent</span>
+                  {l.parent?.name} →
+                  <span style={{ fontSize: 11, background: 'rgba(52,211,153,0.12)', color: '#34d399',
+                    borderRadius: 5, padding: '2px 7px', fontWeight: 600 }}>Student</span>
+                  {l.student?.name}
+                  {l.student?.class_name && <span style={{ color: '#52525b' }}>Class {l.student.class_name}</span>}
+                </div>
+              ))}
+            </div>
+          )
+        }
+      </Card>
+
+      {/* Marks audit */}
+      <div style={{ fontSize: 14, fontWeight: 700, color: '#fafafa', marginBottom: 10 }}>
+        All Mark Records ({marks.length})
+      </div>
+      {marks.length === 0
+        ? <EmptyState icon={BarChart3} title="No marks entered" sub="Teachers enter marks from their Marks tab." />
+        : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {marks.map(m => {
+              const pct = Math.round((m.marks_obtained / m.total_marks) * 100)
+              const g   = gradeInfo(pct)
+              return (
+                <Card key={m.id} style={{ padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div style={{ width: 32, height: 32, borderRadius: 8, flexShrink: 0,
+                    background: `${g.color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 12, fontWeight: 800, color: g.color }}>
+                    {g.label}
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: '#fafafa' }}>
+                      {m.student?.name || '—'}
+                      {m.student?.class_name && <span style={{ color: '#52525b', fontWeight: 400 }}> · Class {m.student.class_name}</span>}
+                    </div>
+                    <div style={{ fontSize: 12, color: '#52525b' }}>
+                      {m.subject} · {m.exam_name}
+                      {m.teacher && ` · by ${m.teacher.name}`}
+                    </div>
+                  </div>
+                  <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: g.color }}>{m.marks_obtained}/{m.total_marks}</div>
+                    <div style={{ fontSize: 11, color: '#52525b' }}>{pct}%</div>
                   </div>
                 </Card>
               )
