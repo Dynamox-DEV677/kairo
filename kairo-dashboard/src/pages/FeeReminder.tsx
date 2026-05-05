@@ -298,26 +298,45 @@ function FeesTab() {
 
 // ── Send ──────────────────────────────────────────────────────────────────────
 function SendTab() {
-  const [tone, setTone]       = useState('friendly')
-  const [schoolId]            = useState(SCHOOL_ID)
-  const [sending, setSending] = useState(false)
-  const [result, setResult]   = useState<any>(null)
-  const [err, setErr]         = useState('')
+  const [mode, setMode]           = useState<'ai' | 'manual'>('ai')
+  const [tone, setTone]           = useState('friendly')
+  const [senderName, setSenderName] = useState('')
+  const [message, setMessage]     = useState('')
+  const [polishing, setPolishing] = useState(false)
+  const [sending, setSending]     = useState(false)
+  const [result, setResult]       = useState<any>(null)
+  const [err, setErr]             = useState('')
+
+  async function polishWithAI() {
+    if (!message.trim()) return
+    setPolishing(true)
+    try {
+      const data = await post('/ai/chat', {
+        messages: [{
+          role: 'user',
+          content: `You are an expert school communication writer. Improve this fee reminder email message — keep it professional, warm, and clear. Return ONLY the improved message text, no explanations:\n\n${message}`,
+        }],
+      })
+      const improved = data?.choices?.[0]?.message?.content?.trim()
+      if (improved) setMessage(improved)
+    } catch (e: any) { setErr('AI polish failed: ' + e.message) }
+    finally { setPolishing(false) }
+  }
 
   async function send() {
     setSending(true); setErr(''); setResult(null)
     try {
-      // Both modes use send-bulk which directly sends to all pending fees.
-      // run-scheduler only fires for schools with enabled:true config — use send-bulk instead.
-      const res = await post('/emails/send-bulk', { school_id: schoolId, tone })
-      setResult(res)
+      const payload: any = { school_id: SCHOOL_ID, tone }
+      if (senderName.trim())        payload.sender_name    = senderName.trim()
+      if (mode === 'manual' && message.trim()) payload.custom_message = message.trim()
+      setResult(await post('/emails/send-bulk', payload))
     } catch (e: any) { setErr(e.message) }
     finally { setSending(false) }
   }
 
   async function retry() {
     setSending(true); setErr(''); setResult(null)
-    try { setResult(await post('/emails/retry', { school_id: schoolId })) }
+    try { setResult(await post('/emails/retry', { school_id: SCHOOL_ID })) }
     catch (e: any) { setErr(e.message) }
     finally { setSending(false) }
   }
@@ -327,27 +346,88 @@ function SendTab() {
       <div style={card}>
         <h3 style={{ fontSize: 14, fontWeight: 700, color: '#fafafa', margin: '0 0 16px' }}>Send Reminders</h3>
 
-        <div style={{ padding: '10px 14px', background: '#0d0d0d', borderRadius: 8, border: '1px solid #1e1e1e', marginBottom: 14 }}>
-          <p style={{ fontSize: 12, color: '#71717a', margin: 0 }}>📧 Sends a reminder email to all students with <strong style={{ color: '#fbbf24' }}>pending fees</strong>. Make sure Gmail credentials are set up in the Setup tab first.</p>
+        <div style={{ padding: '10px 14px', background: '#0d0d0d', borderRadius: 8, border: '1px solid #1e1e1e', marginBottom: 16 }}>
+          <p style={{ fontSize: 12, color: '#71717a', margin: 0 }}>📧 Sends a reminder to all students with <strong style={{ color: '#fbbf24' }}>pending fees</strong>. Set up Gmail in the Setup tab first.</p>
         </div>
 
+        {/* Sender name */}
         <div style={{ marginBottom: 16 }}>
-          <label style={label}>Tone</label>
-          <select style={inp} value={tone} onChange={e => setTone(e.target.value)}>
-            <option value="friendly">Friendly</option>
-            <option value="formal">Formal</option>
-            <option value="urgent">Urgent</option>
-          </select>
+          <label style={label}>Your Name (shown in Gmail "From")</label>
+          <input
+            style={inp}
+            placeholder="e.g. DPS Fee Office, Principal Sharma…"
+            value={senderName}
+            onChange={e => setSenderName(e.target.value)}
+          />
         </div>
+
+        {/* Mode toggle */}
+        <div style={{ marginBottom: 16 }}>
+          <label style={label}>Message Mode</label>
+          <div style={{ display: 'flex', gap: 6 }}>
+            {(['ai', 'manual'] as const).map(m => (
+              <button key={m} onClick={() => setMode(m)} style={{
+                flex: 1, padding: '8px 0', borderRadius: 8, border: `1px solid ${mode === m ? '#6366f1' : '#1e1e1e'}`,
+                background: mode === m ? 'rgba(99,102,241,0.12)' : '#0d0d0d',
+                color: mode === m ? '#818cf8' : '#52525b',
+                fontFamily: 'inherit', fontSize: 12, fontWeight: 600, cursor: 'pointer', transition: 'all 0.15s',
+              }}>
+                {m === 'ai' ? '✨ AI Generated' : '✏️ Write Yourself'}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* AI mode — just tone picker */}
+        {mode === 'ai' && (
+          <div style={{ marginBottom: 16 }}>
+            <label style={label}>Tone</label>
+            <select style={inp} value={tone} onChange={e => setTone(e.target.value)}>
+              <option value="friendly">Friendly</option>
+              <option value="formal">Formal</option>
+              <option value="urgent">Urgent</option>
+            </select>
+          </div>
+        )}
+
+        {/* Manual mode — textarea + polish button */}
+        {mode === 'manual' && (
+          <div style={{ marginBottom: 16 }}>
+            <label style={label}>Your Message</label>
+            <textarea
+              style={{ ...inp, minHeight: 130, resize: 'vertical', lineHeight: 1.6 }}
+              placeholder="Write your fee reminder message here…"
+              value={message}
+              onChange={e => setMessage(e.target.value)}
+            />
+            <button
+              onClick={polishWithAI}
+              disabled={polishing || !message.trim()}
+              style={{
+                marginTop: 8, display: 'flex', alignItems: 'center', gap: 6,
+                padding: '7px 14px', borderRadius: 8,
+                border: '1px solid rgba(99,102,241,0.4)',
+                background: 'rgba(99,102,241,0.08)',
+                color: polishing || !message.trim() ? '#3f3f46' : '#818cf8',
+                fontFamily: 'inherit', fontSize: 12, fontWeight: 600,
+                cursor: polishing || !message.trim() ? 'not-allowed' : 'pointer',
+                transition: 'all 0.15s',
+              }}
+            >
+              {polishing
+                ? <><div style={{ width: 11, height: 11, border: '2px solid #3f3f46', borderTopColor: '#818cf8', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} /> Polishing…</>
+                : <>✨ Polish with AI</>}
+            </button>
+          </div>
+        )}
 
         {err && <p style={{ fontSize: 12, color: '#f87171', marginBottom: 12 }}>{err}</p>}
 
         <button onClick={send} disabled={sending} style={{ ...btn(!sending), width: '100%', justifyContent: 'center' }}>
           <Send size={13} />{sending ? 'Sending…' : 'Send Now'}
         </button>
-
         <button onClick={retry} disabled={sending} style={{ ...btn(false), width: '100%', justifyContent: 'center', marginTop: 8 }}>
-          <RefreshCw size={13} />Retry Failed
+          <RefreshCw size={13} /> Retry Failed
         </button>
       </div>
 
@@ -373,21 +453,15 @@ function SendTab() {
             <div style={{ background: '#0d0d0d', borderRadius: 8, padding: 12 }}>
               <div style={{ fontSize: 10, fontWeight: 700, color: '#71717a', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>Skip Reasons</div>
               {result.skip_reasons.map((r: any, i: number) => (
-                <div key={i} style={{ fontSize: 11, color: '#fbbf24', marginBottom: 4 }}>
-                  ⚠ {r.student || r.fee_id}: {r.reason}
-                </div>
+                <div key={i} style={{ fontSize: 11, color: '#fbbf24', marginBottom: 4 }}>⚠ {r.student || r.fee_id}: {r.reason}</div>
               ))}
             </div>
           )}
           {result.failed > 0 && (
-            <p style={{ fontSize: 11, color: '#f87171', marginTop: 10 }}>
-              Failed emails need Gmail credentials. Go to Setup tab and save your Gmail + App Password.
-            </p>
+            <p style={{ fontSize: 11, color: '#f87171', marginTop: 10 }}>Failed emails need Gmail credentials. Go to Setup tab.</p>
           )}
           {result.skipped > 0 && result.skip_reasons?.[0]?.reason?.includes('24h') && (
-            <p style={{ fontSize: 11, color: '#71717a', marginTop: 10 }}>
-              Already sent today — emails are throttled to once per 24h per fee to prevent spam.
-            </p>
+            <p style={{ fontSize: 11, color: '#71717a', marginTop: 10 }}>Already sent today — throttled to once per 24h per fee.</p>
           )}
         </motion.div>
       )}
