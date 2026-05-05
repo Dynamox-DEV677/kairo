@@ -31,9 +31,47 @@ export default function Flashcards() {
           { role: 'user', content: `Generate flashcards for: ${topic}` },
         ],
       })
-      const match = result.match(/\[[\s\S]*\]/)
-      if (!match) throw new Error('Could not parse flashcards — try again')
-      setCards(JSON.parse(match[0]))
+
+      // Strip thinking blocks (reasoning models output <think>...</think>)
+      let clean = result
+        .replace(/<think>[\s\S]*?<\/think>/gi, '')
+        .replace(/<thinking>[\s\S]*?<\/thinking>/gi, '')
+        // Strip markdown code fences
+        .replace(/```(?:json)?\s*/gi, '')
+        .replace(/```/g, '')
+        .trim()
+
+      // Try direct parse first
+      let parsed: Card[] | null = null
+      try {
+        const direct = JSON.parse(clean)
+        if (Array.isArray(direct)) parsed = direct
+      } catch { /* fall through */ }
+
+      // Fallback: greedy match for the outermost JSON array
+      if (!parsed) {
+        const start = clean.indexOf('[')
+        const end   = clean.lastIndexOf(']')
+        if (start === -1 || end === -1 || end <= start) {
+          console.error('[Flashcards] Raw AI response:', result)
+          throw new Error('AI response had no JSON array. Check console and try again.')
+        }
+        try {
+          parsed = JSON.parse(clean.slice(start, end + 1))
+        } catch (parseErr: any) {
+          console.error('[Flashcards] Parse failed. Raw:', result, '\nCleaned:', clean)
+          throw new Error('Could not parse the JSON the AI returned. Try again.')
+        }
+      }
+
+      // Validate shape
+      const valid = (parsed || []).filter(c => c && typeof c.front === 'string' && typeof c.back === 'string')
+      if (valid.length === 0) {
+        console.error('[Flashcards] Parsed but empty/invalid:', parsed)
+        throw new Error('AI returned 0 valid cards. Try a more specific topic.')
+      }
+
+      setCards(valid)
     } catch (e: any) { setError(e.message) }
     finally { setLoading(false); stopGenerating() }
   }
