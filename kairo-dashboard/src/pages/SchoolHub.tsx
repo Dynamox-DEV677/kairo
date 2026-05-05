@@ -370,6 +370,7 @@ function AdminHub({ profile, schoolId }: { profile: AuthProfile; schoolId: strin
     { id: 'members',   label: 'Members',        icon: Users },
     { id: 'tasks',     label: 'Tasks',          icon: BookOpen },
     { id: 'marks',     label: 'Marks Audit',    icon: BarChart3 },
+    { id: 'announce',  label: 'AI Announce',    icon: Sparkles },
     { id: 'network',   label: 'Network Rules',  icon: Wifi },
     { id: 'logs',      label: 'Login Logs',     icon: LogIn },
     { id: 'settings',  label: 'Settings',       icon: Settings },
@@ -387,12 +388,185 @@ function AdminHub({ profile, schoolId }: { profile: AuthProfile; schoolId: strin
           {tab === 'members'  && <AdminMembers     schoolId={schoolId} selfId={profile.id} />}
           {tab === 'tasks'    && <AdminTasks       schoolId={schoolId} />}
           {tab === 'marks'    && <AdminMarksAudit  schoolId={schoolId} />}
+          {tab === 'announce' && <AdminAIAnnounce  schoolId={schoolId} />}
           {tab === 'network'  && <AdminNetwork     schoolId={schoolId} />}
           {tab === 'logs'     && <AdminLogs        schoolId={schoolId} />}
           {tab === 'settings' && <AdminSettings    schoolId={schoolId} profile={profile} />}
         </motion.div>
       </AnimatePresence>
     </>
+  )
+}
+
+// AI Announcement Generator ───────────────────────────────────────────────────
+function AdminAIAnnounce({ schoolId: _ }: { schoolId: string }) {
+  const [topic, setTopic]         = useState('')
+  const [tone, setTone]           = useState<'friendly' | 'formal' | 'urgent'>('friendly')
+  const [draft, setDraft]         = useState('')
+  const [audience, setAudience]   = useState<'all' | 'student' | 'teacher'>('all')
+  const [hours, setHours]         = useState(12)
+  const [generating, setGenerating] = useState(false)
+  const [sending, setSending]     = useState(false)
+  const [err, setErr]             = useState('')
+  const [success, setSuccess]     = useState('')
+
+  async function generate() {
+    if (!topic.trim()) { setErr('Enter a topic first'); return }
+    setErr(''); setSuccess(''); setGenerating(true); setDraft('')
+    try {
+      const res = await fetch('/api/ai/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: [{
+            role: 'user',
+            content: `Write a school announcement in a ${tone} tone about: "${topic}". Keep it concise (2-4 sentences), clear, and professional. Return ONLY the announcement text — no preamble, no quotes, no markdown.`,
+          }],
+        }),
+      })
+      const data = await res.json()
+      const text = data?.choices?.[0]?.message?.content?.trim()
+      if (!text) throw new Error('AI returned no text. Try again.')
+      setDraft(text.replace(/^["']|["']$/g, '').replace(/<\/?think(?:ing)?>[\s\S]*?<\/?think(?:ing)?>/gi, '').trim())
+    } catch (e: any) { setErr(e.message) }
+    finally { setGenerating(false) }
+  }
+
+  async function send() {
+    if (!draft.trim()) { setErr('Nothing to send'); return }
+    setErr(''); setSuccess(''); setSending(true)
+    try {
+      await api('/notifications', {
+        method: 'POST',
+        body: JSON.stringify({ message: draft.trim(), target_role: audience, expires_in_hours: hours }),
+      })
+      setSuccess(`Sent to ${audience === 'all' ? 'everyone' : audience + 's'}. Auto-deletes in ${hours}h.`)
+      setDraft(''); setTopic('')
+    } catch (e: any) { setErr(e.message) }
+    finally { setSending(false) }
+  }
+
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+      {/* Generate */}
+      <div style={{ background: '#0f0f12', border: '1px solid #1e1e2e', borderRadius: 12, padding: 18 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+          <Sparkles size={15} color="#a5b4fc" />
+          <h3 style={{ fontSize: 14, fontWeight: 700, color: '#fafafa', margin: 0 }}>Generate</h3>
+        </div>
+
+        <label style={{ fontSize: 11, fontWeight: 700, color: '#71717a', textTransform: 'uppercase', letterSpacing: 0.8, display: 'block', marginBottom: 6 }}>Topic</label>
+        <input
+          value={topic}
+          onChange={e => setTopic(e.target.value)}
+          placeholder='e.g. "Sports day on Friday" or "Holiday on 20th May"'
+          style={{
+            width: '100%', background: '#0a0a0a', border: '1px solid #1e1e2e',
+            borderRadius: 8, padding: '9px 12px', color: '#fafafa', fontSize: 13,
+            fontFamily: 'inherit', outline: 'none', marginBottom: 12, boxSizing: 'border-box',
+          }}
+        />
+
+        <label style={{ fontSize: 11, fontWeight: 700, color: '#71717a', textTransform: 'uppercase', letterSpacing: 0.8, display: 'block', marginBottom: 6 }}>Tone</label>
+        <div style={{ display: 'flex', gap: 6, marginBottom: 14 }}>
+          {(['friendly', 'formal', 'urgent'] as const).map(t => (
+            <button key={t} onClick={() => setTone(t)} style={{
+              flex: 1, padding: '7px 0', borderRadius: 7,
+              border: `1px solid ${tone === t ? '#6366f1' : '#1e1e2e'}`,
+              background: tone === t ? 'rgba(99,102,241,0.12)' : '#0a0a0a',
+              color: tone === t ? '#a5b4fc' : '#52525b',
+              fontFamily: 'inherit', fontSize: 12, fontWeight: 600, cursor: 'pointer',
+            }}>{t}</button>
+          ))}
+        </div>
+
+        <button
+          onClick={generate}
+          disabled={generating || !topic.trim()}
+          style={{
+            width: '100%', padding: '10px 14px', borderRadius: 8, border: 'none',
+            background: !topic.trim() || generating ? '#1c1c1c' : 'linear-gradient(135deg, #6366f1, #7c3aed)',
+            color: !topic.trim() || generating ? '#52525b' : '#fff',
+            fontFamily: 'inherit', fontSize: 13, fontWeight: 600,
+            cursor: !topic.trim() || generating ? 'not-allowed' : 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
+          }}
+        >
+          <Sparkles size={13} />{generating ? 'Generating…' : 'Generate Announcement'}
+        </button>
+      </div>
+
+      {/* Preview + Send */}
+      <div style={{ background: '#0f0f12', border: '1px solid #1e1e2e', borderRadius: 12, padding: 18 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+          <Send size={14} color="#34d399" />
+          <h3 style={{ fontSize: 14, fontWeight: 700, color: '#fafafa', margin: 0 }}>Preview & Send</h3>
+        </div>
+
+        <textarea
+          value={draft}
+          onChange={e => setDraft(e.target.value)}
+          placeholder="Generated announcement will appear here. You can edit it before sending."
+          style={{
+            width: '100%', minHeight: 110, background: '#0a0a0a',
+            border: '1px solid #1e1e2e', borderRadius: 8, padding: 12,
+            color: '#fafafa', fontSize: 13, fontFamily: 'inherit',
+            outline: 'none', resize: 'vertical', lineHeight: 1.55, marginBottom: 12,
+            boxSizing: 'border-box',
+          }}
+        />
+
+        <label style={{ fontSize: 11, fontWeight: 700, color: '#71717a', textTransform: 'uppercase', letterSpacing: 0.8, display: 'block', marginBottom: 6 }}>Send to</label>
+        <div style={{ display: 'flex', gap: 6, marginBottom: 12 }}>
+          {([['all', 'Everyone'], ['student', 'Students'], ['teacher', 'Teachers']] as const).map(([id, label]) => (
+            <button key={id} onClick={() => setAudience(id)} style={{
+              flex: 1, padding: '7px 0', borderRadius: 7,
+              border: `1px solid ${audience === id ? '#34d399' : '#1e1e2e'}`,
+              background: audience === id ? 'rgba(52,211,153,0.1)' : '#0a0a0a',
+              color: audience === id ? '#34d399' : '#52525b',
+              fontFamily: 'inherit', fontSize: 12, fontWeight: 600, cursor: 'pointer',
+            }}>{label}</button>
+          ))}
+        </div>
+
+        <label style={{ fontSize: 11, fontWeight: 700, color: '#71717a', textTransform: 'uppercase', letterSpacing: 0.8, display: 'block', marginBottom: 6 }}>
+          Auto-delete after
+        </label>
+        <select
+          value={hours}
+          onChange={e => setHours(Number(e.target.value))}
+          style={{
+            width: '100%', background: '#0a0a0a', border: '1px solid #1e1e2e',
+            borderRadius: 8, padding: '9px 12px', color: '#fafafa', fontSize: 13,
+            fontFamily: 'inherit', outline: 'none', marginBottom: 14, boxSizing: 'border-box',
+          }}
+        >
+          <option value={1}>1 hour</option>
+          <option value={6}>6 hours</option>
+          <option value={12}>12 hours (default)</option>
+          <option value={24}>24 hours</option>
+          <option value={72}>3 days</option>
+        </select>
+
+        {err     && <p style={{ fontSize: 12, color: '#f87171', marginBottom: 10 }}>{err}</p>}
+        {success && <p style={{ fontSize: 12, color: '#34d399', marginBottom: 10 }}>{success}</p>}
+
+        <button
+          onClick={send}
+          disabled={sending || !draft.trim()}
+          style={{
+            width: '100%', padding: '10px 14px', borderRadius: 8, border: 'none',
+            background: !draft.trim() || sending ? '#1c1c1c' : 'linear-gradient(135deg, #34d399, #10b981)',
+            color: !draft.trim() || sending ? '#52525b' : '#fff',
+            fontFamily: 'inherit', fontSize: 13, fontWeight: 600,
+            cursor: !draft.trim() || sending ? 'not-allowed' : 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
+          }}
+        >
+          <Send size={13} />{sending ? 'Sending…' : 'Send Announcement'}
+        </button>
+      </div>
+    </div>
   )
 }
 

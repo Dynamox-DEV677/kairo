@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   ChevronDown, Bell, Flame, Star,
   Gauge, BrainCircuit, Rabbit, Check, Users,
+  Key, Copy, Building2, Shield, RefreshCw,
 } from 'lucide-react'
 
 const MODELS = [
@@ -26,16 +27,63 @@ function fmt(n: number) {
   return n >= 1000 ? (n / 1000).toFixed(1).replace(/\.0$/, '') + 'k' : String(n)
 }
 
+interface ProfileLike {
+  role?: string
+  school_id?: string
+  school_name?: string
+  school_logo_url?: string
+}
+
 interface TopBarProps {
   title: string
   onModelChange?: (modelId: string) => void
+  profile?: ProfileLike
 }
 
-export default function TopBar({ title, onModelChange }: TopBarProps) {
+export default function TopBar({ title, onModelChange, profile }: TopBarProps) {
   const [modelOpen, setModelOpen] = useState(false)
   const [modeOpen, setModeOpen] = useState(false)
   const [model, setModel] = useState(MODELS[0])
   const [mode, setMode] = useState<AccuracyMode>('balanced')
+  const [passcode, setPasscode] = useState<string | null>(null)
+  const [copied, setCopied] = useState(false)
+  const [regenerating, setRegenerating] = useState(false)
+
+  const isAdmin = profile?.role === 'admin'
+
+  // Fetch passcode for admins so they can share it with new joiners
+  useEffect(() => {
+    if (!isAdmin || !profile?.school_id) return
+    fetch(`/api/schools/${profile.school_id}/passcode`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('kairo_token') || ''}` },
+    })
+      .then(r => r.json())
+      .then(d => { if (d?.passcode) setPasscode(d.passcode) })
+      .catch(() => {})
+  }, [isAdmin, profile?.school_id])
+
+  async function copyPasscode() {
+    if (!passcode) return
+    try {
+      await navigator.clipboard.writeText(passcode)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 1600)
+    } catch {}
+  }
+
+  async function regeneratePasscode() {
+    if (!profile?.school_id || regenerating) return
+    if (!confirm('Regenerate passcode? The old one will stop working immediately.')) return
+    setRegenerating(true)
+    try {
+      const res = await fetch(`/api/schools/${profile.school_id}/regenerate-passcode`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${localStorage.getItem('kairo_token') || ''}` },
+      })
+      const d = await res.json()
+      if (d?.passcode) setPasscode(d.passcode)
+    } catch {} finally { setRegenerating(false) }
+  }
 
   function selectModel(m: typeof MODELS[0]) {
     setModel(m)
@@ -49,18 +97,83 @@ export default function TopBar({ title, onModelChange }: TopBarProps) {
   return (
     <div style={{
       height: 52, flexShrink: 0,
-      borderBottom: '1px solid #1a1a1a',
+      borderBottom: isAdmin ? '1px solid rgba(99,102,241,0.25)' : '1px solid #1a1a1a',
       display: 'flex', alignItems: 'center',
       padding: '0 20px', gap: 10,
-      background: 'rgba(13,13,13,0.95)',
+      background: isAdmin
+        ? 'linear-gradient(90deg, rgba(99,102,241,0.06) 0%, rgba(13,13,13,0.95) 60%)'
+        : 'rgba(13,13,13,0.95)',
       backdropFilter: 'blur(12px)',
       zIndex: 200,
       position: 'relative',
     }}>
-      {/* Page title */}
-      <div style={{ flex: 1 }}>
-        <h1 style={{ fontSize: 14, fontWeight: 600, color: '#fafafa', letterSpacing: '-0.2px' }}>{title}</h1>
-      </div>
+      {/* Page title — for admins, show control-center identity instead */}
+      {isAdmin ? (
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
+          {/* Admin shield + school logo */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+            <div style={{
+              width: 28, height: 28, borderRadius: 7,
+              background: 'linear-gradient(135deg, #6366f1, #7c3aed)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              boxShadow: '0 0 14px rgba(99,102,241,0.4)',
+            }}>
+              {profile?.school_logo_url
+                ? <img src={profile.school_logo_url} alt="" style={{ width: '100%', height: '100%', borderRadius: 6, objectFit: 'cover' }} />
+                : <Shield size={14} color="#fff" />}
+            </div>
+            <div style={{ minWidth: 0 }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: '#fafafa', lineHeight: 1.2, letterSpacing: '-0.2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 180 }}>
+                {profile?.school_name || 'School'}
+              </div>
+              <div style={{ fontSize: 9, fontWeight: 700, color: '#818cf8', textTransform: 'uppercase', letterSpacing: 1, lineHeight: 1.2 }}>
+                Admin · {title}
+              </div>
+            </div>
+          </div>
+
+          {/* Passcode pill — click to copy */}
+          {passcode && (
+            <motion.button
+              onClick={copyPasscode}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.97 }}
+              title="Click to copy passcode"
+              style={{
+                display: 'flex', alignItems: 'center', gap: 6,
+                padding: '5px 10px', borderRadius: 7,
+                background: copied ? 'rgba(52,211,153,0.12)' : 'rgba(99,102,241,0.08)',
+                border: `1px solid ${copied ? 'rgba(52,211,153,0.35)' : 'rgba(99,102,241,0.25)'}`,
+                cursor: 'pointer', fontFamily: 'monospace', fontSize: 12,
+                color: copied ? '#34d399' : '#a5b4fc', fontWeight: 700,
+                letterSpacing: 0.5, transition: 'all 0.15s',
+              }}
+            >
+              <Key size={11} />
+              <span style={{ letterSpacing: 1 }}>{copied ? 'Copied!' : passcode}</span>
+              {!copied && <Copy size={11} style={{ opacity: 0.6 }} />}
+            </motion.button>
+          )}
+          <button
+            onClick={regeneratePasscode}
+            disabled={regenerating}
+            title="Regenerate passcode"
+            style={{
+              width: 26, height: 26, borderRadius: 6,
+              background: '#161616', border: '1px solid #1e1e1e',
+              cursor: regenerating ? 'not-allowed' : 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: '#71717a', flexShrink: 0,
+            }}
+          >
+            <RefreshCw size={11} style={{ animation: regenerating ? 'spin 0.8s linear infinite' : 'none' }} />
+          </button>
+        </div>
+      ) : (
+        <div style={{ flex: 1 }}>
+          <h1 style={{ fontSize: 14, fontWeight: 600, color: '#fafafa', letterSpacing: '-0.2px' }}>{title}</h1>
+        </div>
+      )}
 
       {/* Controls row */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>

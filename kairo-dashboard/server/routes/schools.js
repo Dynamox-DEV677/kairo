@@ -56,7 +56,7 @@ router.post('/register', async (req, res) => {
 
     if (existing) return res.status(409).json({ error: `School "${school_name}" is already registered.` })
 
-    // Generate plain passcode — shown ONCE
+    // Generate plain passcode — admin can view it later
     const plainPasscode  = generatePasscode()
     const hashedPasscode = await bcrypt.hash(plainPasscode, 12)
 
@@ -66,6 +66,7 @@ router.post('/register', async (req, res) => {
         school_name:      school_name.trim(),
         school_email:     school_email.trim().toLowerCase(),
         school_passcode:  hashedPasscode,
+        passcode_plain:   plainPasscode,         // admin-only readable, for sharing
         school_logo_url:  school_logo_url || null,
         domain:           domain          || null,
         require_approval: !!require_approval,
@@ -183,6 +184,31 @@ router.get('/:id/members', requireSupabaseAuth, requireTeacherOrAdmin, async (re
   }
 })
 
+// ── Get Current Passcode (admin-only, for sharing with new joiners) ────────────
+router.get('/:id/passcode', requireSupabaseAuth, requireSchoolAdmin, async (req, res) => {
+  const schoolId = req.params.id
+  if (req.schoolId !== schoolId) return res.status(403).json({ error: 'Not your school.' })
+
+  try {
+    const { data, error } = await supabaseAdmin
+      .from('schools')
+      .select('passcode_plain')
+      .eq('id', schoolId)
+      .single()
+
+    if (error) throw new Error(error.message)
+    if (!data?.passcode_plain) {
+      return res.status(404).json({
+        error: 'Passcode not stored. Regenerate it to get a new one.',
+        regenerate: true,
+      })
+    }
+    res.json({ passcode: data.passcode_plain })
+  } catch (e) {
+    res.status(500).json({ error: e.message })
+  }
+})
+
 // ── Regenerate Passcode ────────────────────────────────────────────────────────
 router.post('/:id/regenerate-passcode', requireSupabaseAuth, requireSchoolAdmin, async (req, res) => {
   const schoolId = req.params.id
@@ -194,7 +220,7 @@ router.post('/:id/regenerate-passcode', requireSupabaseAuth, requireSchoolAdmin,
 
     const { error } = await supabaseAdmin
       .from('schools')
-      .update({ school_passcode: hashedPasscode })
+      .update({ school_passcode: hashedPasscode, passcode_plain: plainPasscode })
       .eq('id', schoolId)
 
     if (error) throw new Error(error.message)

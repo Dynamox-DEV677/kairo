@@ -61,7 +61,8 @@ interface DashboardProps {
 }
 
 export default function Dashboard({ profile, onLogout }: DashboardProps) {
-  const [active, setActive]           = useState('doubt')
+  // Admins land on School Hub (their control center); everyone else on Doubt Solver
+  const [active, setActive]           = useState(profile?.role === 'admin' ? 'school' : 'doubt')
   const [isDark, setIsDark]           = useState(() => {
     const v = localStorage.getItem('kairo_theme')
     return v === null ? true : v === 'dark'
@@ -115,7 +116,7 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
       />
 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
-        <TopBar title={PAGE_TITLES[active] || 'Dashboard'} onModelChange={setSelectedModel} />
+        <TopBar title={PAGE_TITLES[active] || 'Dashboard'} onModelChange={setSelectedModel} profile={profile} />
 
         <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
           <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column', position: 'relative' }}>
