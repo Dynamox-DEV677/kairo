@@ -214,7 +214,7 @@ router.put('/:id', requireRole('teacher', 'admin'), async (req, res) => {
     }
 
     const { subject, exam_name, marks_obtained, total_marks, remarks } = req.body
-    const updates: any = {}
+    const updates = {}
     if (subject        !== undefined) updates.subject        = subject.trim()
     if (exam_name      !== undefined) updates.exam_name      = exam_name.trim()
     if (marks_obtained !== undefined) updates.marks_obtained = parseFloat(marks_obtained)
