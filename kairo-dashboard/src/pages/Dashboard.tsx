@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Sidebar from '../components/Sidebar'
 import TopBar from '../components/TopBar'
 import ChatWindow from '../components/ChatWindow'
@@ -62,10 +62,21 @@ interface DashboardProps {
 
 export default function Dashboard({ profile, onLogout }: DashboardProps) {
   const [active, setActive]           = useState('doubt')
-  const [isDark, setIsDark]           = useState(true)
+  const [isDark, setIsDark]           = useState(() => {
+    const v = localStorage.getItem('kairo_theme')
+    return v === null ? true : v === 'dark'
+  })
   const [lastQuestion, setLastQuestion] = useState('')
   const [hasContent, setHasContent]   = useState(false)
   const [selectedModel, setSelectedModel] = useState(DEFAULT_MODEL)
+
+  // Apply theme to document root + persist
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light')
+    document.body.style.background = isDark ? '#0a0a0a' : '#f4f4f5'
+    document.body.style.color      = isDark ? '#fafafa' : '#18181b'
+    localStorage.setItem('kairo_theme', isDark ? 'dark' : 'light')
+  }, [isDark])
 
   // Parent users get a completely separate portal — no sidebar, no AI tools
   if (profile?.role === 'parent') {
@@ -89,8 +100,10 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
       display: 'flex',
       height: '100vh',
       overflow: 'hidden',
-      background: '#0a0a0a',
+      background: isDark ? '#0a0a0a' : '#f4f4f5',
+      color:      isDark ? '#fafafa' : '#18181b',
       fontFamily: "'Lora', 'Georgia', serif",
+      transition: 'background 0.25s ease',
     }}>
       <Sidebar
         active={active}

@@ -4,6 +4,7 @@ import { Send, StopCircle, GraduationCap, Sparkles, Layers, CheckCircle2, AlertT
 import MessageBubble from './MessageBubble'
 import { chat, DEFAULT_MODEL } from '../lib/openrouter'
 import { post } from '../lib/api'
+import { saveRecentChat, getRecentChats, makeTitle } from '../lib/recentChats'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -36,6 +37,7 @@ type FlashcardState = 'idle' | 'loading' | 'success' | 'error'
 
 export default function ChatWindow({ onNewMessage, onNavigate, model = DEFAULT_MODEL }: ChatWindowProps) {
   const [messages, setMessages] = useState<Message[]>([])
+  const [chatId, setChatId] = useState<string>(() => `chat_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`)
   const [input, setInput] = useState('')
   const [streaming, setStreaming] = useState(false)
   const [streamContent, setStreamContent] = useState('')
@@ -51,6 +53,39 @@ export default function ChatWindow({ onNewMessage, onNavigate, model = DEFAULT_M
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, streamContent])
+
+  // Listen for "load this recent chat" events from the sidebar
+  useEffect(() => {
+    function onLoad(e: Event) {
+      const id = (e as CustomEvent).detail?.id
+      if (!id) return
+      if (id === 'new') {
+        setMessages([])
+        setChatId(`chat_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`)
+        return
+      }
+      const c = getRecentChats().find(c => c.id === id)
+      if (c) {
+        setMessages(c.messages as Message[])
+        setChatId(c.id)
+      }
+    }
+    window.addEventListener('kairo:load-chat', onLoad)
+    return () => window.removeEventListener('kairo:load-chat', onLoad)
+  }, [])
+
+  // Persist chat to recents whenever it changes (debounced on render)
+  useEffect(() => {
+    if (messages.length === 0) return
+    const firstUser = messages.find(m => m.role === 'user')
+    if (!firstUser) return
+    saveRecentChat({
+      id: chatId,
+      title: makeTitle(firstUser.content),
+      messages: messages.map(m => ({ id: m.id, role: m.role, content: m.content })),
+      updated: Date.now(),
+    })
+  }, [messages, chatId])
 
   async function send(text?: string) {
     const q = (text ?? input).trim()
