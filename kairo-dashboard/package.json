@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@seald-io/nedb": "^4.0.4",
-    "@supabase/supabase-js": "^2.105.1",
+    "@supabase/supabase-js": "^2.105.3",
     "@tailwindcss/vite": "^4.2.4",
     "bcryptjs": "^2.4.3",
     "clsx": "^2.1.1",
