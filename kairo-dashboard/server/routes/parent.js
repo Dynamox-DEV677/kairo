@@ -307,7 +307,7 @@ function buildSummary(marks) {
     bySubject[m.subject].max      += parseFloat(m.total_marks)
     bySubject[m.subject].count    += 1
   }
-  const subjects = Object.entries(bySubject).map(([subject, d]: any) => ({
+  const subjects = Object.entries(bySubject).map(([subject, d]) => ({
     subject,
     percentage:     Math.round((d.obtained / d.max) * 100),
     total_obtained: d.obtained,

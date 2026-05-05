@@ -281,7 +281,7 @@ function buildSummary(marks) {
     bySubject[m.subject].count          += 1
   }
 
-  const subjects = Object.entries(bySubject).map(([subject, d]: any) => ({
+  const subjects = Object.entries(bySubject).map(([subject, d]) => ({
     subject,
     total_obtained: d.total_obtained,
     total_max:      d.total_max,
