@@ -142,7 +142,7 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
           <img src="/kairo_logo.png" alt="Kairo" style={{ width: 52, height: 52, objectFit: 'contain', borderRadius: 12 }} />
           <div>
             <div style={{ fontSize: 16, fontWeight: 700, color: isDark ? '#fafafa' : '#18181b', letterSpacing: '-0.3px' }}>kairo</div>
-            <div style={{ fontSize: 10, color: '#6366f1', fontWeight: 600, letterSpacing: 0.5, textTransform: 'uppercase' }}>Improve Academics</div>
+            <div style={{ fontSize: 10, color: '#6366f1', fontWeight: 600, letterSpacing: 0.5, textTransform: 'uppercase' }}>Accelerate Your Academics</div>
           </div>
         </div>
 
