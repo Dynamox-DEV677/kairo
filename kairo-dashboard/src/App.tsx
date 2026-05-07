@@ -4,10 +4,29 @@ import Dashboard from './pages/Dashboard'
 import Login, { type AuthProfile } from './pages/Login'
 import { GenerationProvider } from './lib/generationContext'
 import { supabase } from './lib/supabase'
+import { refreshIfStale } from './lib/api'
 
 export default function App() {
   const [profile, setProfile] = useState<AuthProfile | null>(null)
   const [checking, setChecking] = useState(true)
+
+  // Listen for auth-expired (refresh token died) — bounce to login screen
+  useEffect(() => {
+    const onExpired = () => {
+      clearSession()
+      setProfile(null)
+    }
+    window.addEventListener('kairo:auth-expired', onExpired)
+    return () => window.removeEventListener('kairo:auth-expired', onExpired)
+  }, [])
+
+  // Background refresh every 10 minutes so tokens never expire while you work
+  useEffect(() => {
+    if (!profile || profile.localMode) return
+    refreshIfStale()
+    const id = setInterval(() => { refreshIfStale() }, 10 * 60 * 1000)
+    return () => clearInterval(id)
+  }, [profile])
 
   // On mount — try to restore session from localStorage
   useEffect(() => {

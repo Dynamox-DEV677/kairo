@@ -5,20 +5,8 @@ import {
   Settings, BarChart3, Trash2, ExternalLink, Save, Sparkles,
 } from 'lucide-react'
 
-// ── Auth-aware fetch (sends Bearer token) ────────────────────────────────────
-async function api(path: string, opts: RequestInit = {}): Promise<any> {
-  const res = await fetch(`/api${path}`, {
-    ...opts,
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${localStorage.getItem('kairo_token') || ''}`,
-      ...(opts.headers || {}),
-    },
-  })
-  const data = await res.json().catch(() => ({}))
-  if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`)
-  return data
-}
+// ── Auth-aware fetch (auto-refreshes expired Supabase JWTs) ──────────────────
+import { api } from '../lib/api'
 
 // Public fetch (no auth) — for the chat preview
 async function publicApi(path: string, opts: RequestInit = {}): Promise<any> {

@@ -21,22 +21,9 @@ import {
 } from 'lucide-react'
 import type { AuthProfile } from './Login'
 
-// ─── API helper ───────────────────────────────────────────────────────────────
-function token() { return localStorage.getItem('kairo_token') || '' }
-
-async function api(path: string, opts: RequestInit = {}): Promise<any> {
-  const res = await fetch(`/api${path}`, {
-    ...opts,
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token()}`,
-      ...(opts.headers || {}),
-    },
-  })
-  const data = await res.json().catch(() => ({}))
-  if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`)
-  return data
-}
+// ─── API helper (auto-refreshes expired Supabase JWTs) ────────────────────────
+import { api as apiClient } from '../lib/api'
+const api = apiClient
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface Member {
