@@ -6,6 +6,7 @@ import {
   Sun, Moon, Clock, Camera, Plus, X,
   GraduationCap, Shield, Sparkles, DollarSign, Bot, UserCheck, Grid3x3, Building2,
   Edit3, Lightbulb, FunctionSquare, Brain, TrendingUp, Star, Timer, Megaphone,
+  Target,
 } from 'lucide-react'
 import { useGeneration } from '../lib/generationContext'
 import { getRecentChats, deleteRecentChat, timeAgo } from '../lib/recentChats'
@@ -23,6 +24,8 @@ interface NavItem {
 // Each role sees ONLY their own tools — no cross-access.
 const STUDENT_NAV: NavItem[] = [
   { label: 'Doubt Solver',    icon: MessageCircle,   to: 'doubt',         color: '#818cf8' },
+  { label: 'AI Memory',       icon: Brain,           to: 'memory',        color: '#a78bfa' },
+  { label: 'Focus Mode',      icon: Target,          to: 'focus',         color: '#34d399' },
   { label: 'Flashcards',      icon: BookMarked,      to: 'flashcards',    color: '#34d399' },
   { label: 'Grader',          icon: FileText,        to: 'essay',         color: '#f472b6' },
   { label: 'My Tasks',        icon: BookOpen,        to: 'school',        color: '#fb923c' },

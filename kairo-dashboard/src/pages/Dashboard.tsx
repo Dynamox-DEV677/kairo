@@ -25,6 +25,8 @@ import Pomodoro from './Pomodoro'
 import Announcement from './Announcement'
 import SchoolHub from './SchoolHub'
 import ParentDashboard from './ParentDashboard'
+import MemoryBrain from './MemoryBrain'
+import FocusMode from './FocusMode'
 import { DEFAULT_MODEL } from '../lib/openrouter'
 
 import type { AuthProfile } from './Login'
@@ -52,6 +54,8 @@ const PAGE_TITLES: Record<string, string> = {
   pomodoro:         'Pomodoro Timer',
   announcement:     'Announcements',
   school:           'School Hub',
+  memory:           'AI Memory',
+  focus:            'Focus Mode',
   settings:         'Settings',
 }
 
@@ -192,6 +196,12 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
 
             {/* School Hub */}
             <div style={pageStyle('school')}>{profile && <SchoolHub profile={profile} />}</div>
+
+            {/* AI Memory Brain */}
+            <div style={pageStyle('memory')}><MemoryBrain /></div>
+
+            {/* Focus Mode */}
+            <div style={pageStyle('focus')}><FocusMode /></div>
 
           </div>
 

@@ -109,11 +109,20 @@ export default function ChatWindow({ onNewMessage, onNavigate, model = DEFAULT_M
     const abortCtrl = new AbortController()
     abortRef.current = abortCtrl
 
+    // Pull memory context so the AI personalizes the answer (best-effort, non-blocking)
+    let memoryContext = ''
+    try {
+      const r = await fetch('/api/memory/context', {
+        headers: { Authorization: `Bearer ${localStorage.getItem('kairo_token') || ''}` },
+      })
+      if (r.ok) memoryContext = (await r.json()).context || ''
+    } catch { /* non-fatal */ }
+
     try {
       await chat({
         model,
         messages: [
-          { role: 'system', content: SYSTEM },
+          { role: 'system', content: SYSTEM + memoryContext },
           ...messages.map(m => ({ role: m.role as 'user' | 'assistant' | 'system', content: m.content })),
           { role: 'user', content: q },
         ],

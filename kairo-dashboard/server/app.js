@@ -48,6 +48,9 @@ import networkRulesRoutes  from './routes/networkRules.js'
 import marksRoutes         from './routes/marks.js'
 import parentRoutes        from './routes/parent.js'
 
+// ── v7 routes (AI Memory Brain) ──────────────────────────────────────────────
+import memoryRoutes        from './routes/memory.js'
+
 // ─── Validate env ─────────────────────────────────────────────────────────────
 if (!process.env.ENCRYPTION_SECRET || process.env.ENCRYPTION_SECRET.length < 32) {
   // Use a fallback so the server doesn't crash — set ENCRYPTION_SECRET in prod for real security
@@ -127,6 +130,9 @@ app.use('/api/network-rules',  networkRulesRoutes)
 // v6 — Parent Mode + Marks
 app.use('/api/marks',          marksRoutes)
 app.use('/api/parent',         parentRoutes)
+
+// v7 — AI Memory Brain
+app.use('/api/memory',         memoryRoutes)
 
 // ─── Health check ─────────────────────────────────────────────────────────────
 app.get('/health', (_req, res) => {
