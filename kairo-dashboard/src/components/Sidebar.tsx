@@ -25,6 +25,7 @@ interface NavItem {
 const STUDENT_NAV: NavItem[] = [
   { label: 'Doubt Solver',    icon: MessageCircle,   to: 'doubt',         color: '#818cf8' },
   { label: 'AI Memory',       icon: Brain,           to: 'memory',        color: '#a78bfa' },
+  { label: 'Camera Study',    icon: Camera,          to: 'camera',        color: '#f472b6' },
   { label: 'Focus Mode',      icon: Target,          to: 'focus',         color: '#34d399' },
   { label: 'Flashcards',      icon: BookMarked,      to: 'flashcards',    color: '#34d399' },
   { label: 'Grader',          icon: FileText,        to: 'essay',         color: '#f472b6' },

@@ -46,9 +46,51 @@ export default function EssayGrader() {
   async function grade() {
     if (!question.trim() || !answer.trim()) { setError('Fill in both question and answer'); return }
     setLoading(true); setError(''); setFeedback('')
+
+    // Pull memory context (best-effort)
+    let memoryContext = ''
     try {
-      const r = await chat({ messages: [{ role: 'system', content: SYSTEM }, { role: 'user', content: `Subject: ${subject}\nMarks: ${marks}\n\nQuestion: ${question}\n\nStudent Answer:\n${answer}` }] })
+      const r = await fetch('/api/memory/context', {
+        headers: { Authorization: `Bearer ${localStorage.getItem('kairo_token') || ''}` },
+      })
+      if (r.ok) memoryContext = (await r.json()).context || ''
+    } catch { /* non-fatal */ }
+
+    try {
+      const r = await chat({
+        messages: [
+          { role: 'system', content: SYSTEM + memoryContext },
+          { role: 'user',   content: `Subject: ${subject}\nMarks: ${marks}\n\nQuestion: ${question}\n\nStudent Answer:\n${answer}` },
+        ],
+      })
       setFeedback(r)
+
+      // Parse score and write to memory brain (best-effort)
+      const scoreMatch = r.match(/(\d+(?:\.\d+)?)\s*\/\s*(\d+(?:\.\d+)?)/)
+      if (scoreMatch) {
+        const got   = parseFloat(scoreMatch[1])
+        const total = parseFloat(scoreMatch[2])
+        const pct   = total > 0 ? got / total : 0
+        const topic = (question.split(/[?.\n]/)[0] || '').trim().slice(0, 80)
+        if (topic) {
+          try {
+            await fetch('/api/memory/track', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${localStorage.getItem('kairo_token') || ''}`,
+              },
+              body: JSON.stringify({
+                type:    pct < 0.5 ? 'weak_topic' : pct > 0.85 ? 'strong_topic' : 'note',
+                subject,
+                topic,
+                content: `Graded ${got}/${total}`,
+                signal:  Math.max(-1, Math.min(1, (pct - 0.5) * 2)),  // 0% → -1, 100% → +1
+              }),
+            })
+          } catch { /* memory is best-effort */ }
+        }
+      }
     } catch (e: any) { setError(e.message) }
     finally { setLoading(false) }
   }

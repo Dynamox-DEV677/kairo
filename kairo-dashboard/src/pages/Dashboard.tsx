@@ -27,6 +27,7 @@ import SchoolHub from './SchoolHub'
 import ParentDashboard from './ParentDashboard'
 import MemoryBrain from './MemoryBrain'
 import FocusMode from './FocusMode'
+import CameraStudy from './CameraStudy'
 import { DEFAULT_MODEL } from '../lib/openrouter'
 
 import type { AuthProfile } from './Login'
@@ -56,6 +57,7 @@ const PAGE_TITLES: Record<string, string> = {
   school:           'School Hub',
   memory:           'AI Memory',
   focus:            'Focus Mode',
+  camera:           'Camera Study',
   settings:         'Settings',
 }
 
@@ -202,6 +204,9 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
 
             {/* Focus Mode */}
             <div style={pageStyle('focus')}><FocusMode /></div>
+
+            {/* Camera Study */}
+            <div style={pageStyle('camera')}><CameraStudy /></div>
 
           </div>
 
