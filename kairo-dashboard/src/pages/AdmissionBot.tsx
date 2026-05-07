@@ -1,41 +1,154 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Send, Bot, User, Users, Phone, Mail, CheckCircle, Clock, XCircle } from 'lucide-react'
-import { post, get, put } from '../lib/api'
+import {
+  Send, Bot, User, Users, Phone, Mail, CheckCircle, Clock, XCircle,
+  Settings, BarChart3, Trash2, ExternalLink, Save, Sparkles,
+} from 'lucide-react'
 
-const SCHOOL_ID = 'demo_school'
-const SCHOOL_INFO = {
-  name: 'Kairo Academy',
-  description: 'A premier CBSE school offering Classes 1–12 with focus on board excellence and holistic development.',
-  grades: 'Class 1 to Class 12 (CBSE)',
-  fees: '₹40,000 – ₹80,000 per year',
-  contact: '+91 98765 43210',
-  address: 'Chennai, Tamil Nadu',
-  facilities: 'Smart classrooms, Science labs, Library, Sports ground, Canteen',
+// ── Auth-aware fetch (sends Bearer token) ────────────────────────────────────
+async function api(path: string, opts: RequestInit = {}): Promise<any> {
+  const res = await fetch(`/api${path}`, {
+    ...opts,
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${localStorage.getItem('kairo_token') || ''}`,
+      ...(opts.headers || {}),
+    },
+  })
+  const data = await res.json().catch(() => ({}))
+  if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`)
+  return data
 }
 
-const TABS = [
-  { id: 'chat',  label: 'Chat Bot',   icon: Bot },
-  { id: 'leads', label: 'Leads',      icon: Users },
-]
+// Public fetch (no auth) — for the chat preview
+async function publicApi(path: string, opts: RequestInit = {}): Promise<any> {
+  const res = await fetch(`/api${path}`, {
+    ...opts,
+    headers: { 'Content-Type': 'application/json', ...(opts.headers || {}) },
+  })
+  const data = await res.json().catch(() => ({}))
+  if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`)
+  return data
+}
+
+interface AdmissionConfig {
+  description?:     string
+  grades?:          string
+  fees?:            string
+  timings?:         string
+  contact?:         string
+  address?:         string
+  facilities?:      string
+  documents?:       string
+  admission_dates?: string
+}
+
+interface SchoolCtx {
+  school_id:   string
+  school_name: string
+  school_logo: string | null
+  config:      AdmissionConfig
+}
+
+interface Lead {
+  id:          string
+  parent_name: string | null
+  child_name:  string | null
+  grade:       string | null
+  phone:       string | null
+  email:       string | null
+  message:     string | null
+  status:      'new' | 'contacted' | 'admitted' | 'rejected' | 'not_interested'
+  notes:       string | null
+  created_at:  string
+}
+
+const STATUS_META: Record<string, { color: string; icon: any; label: string }> = {
+  new:            { color: '#fbbf24', icon: Clock,         label: 'New' },
+  contacted:      { color: '#818cf8', icon: Phone,         label: 'Contacted' },
+  admitted:       { color: '#34d399', icon: CheckCircle,   label: 'Admitted' },
+  rejected:       { color: '#f87171', icon: XCircle,       label: 'Rejected' },
+  not_interested: { color: '#71717a', icon: XCircle,       label: 'Not Interested' },
+}
 
 const card = { background: '#111', border: '1px solid #1e1e1e', borderRadius: 14 }
-const inp  = { background: '#0d0d0d', border: '1px solid #1e1e1e', borderRadius: 8, padding: '9px 12px', fontSize: 13, color: '#fafafa', fontFamily: 'inherit', outline: 'none', width: '100%' } as React.CSSProperties
-const label = { fontSize: 11, color: '#71717a', display: 'block', marginBottom: 5, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.8 } as React.CSSProperties
+const inp: React.CSSProperties = {
+  background: '#0d0d0d', border: '1px solid #1e1e1e', borderRadius: 8,
+  padding: '9px 12px', fontSize: 13, color: '#fafafa',
+  fontFamily: 'inherit', outline: 'none', width: '100%', boxSizing: 'border-box',
+}
+const labelStyle: React.CSSProperties = {
+  fontSize: 11, color: '#71717a', display: 'block', marginBottom: 5,
+  fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.8,
+}
 
-interface Message { role: 'user' | 'assistant'; content: string }
-
+// ─── Top-level component ───────────────────────────────────────────────────────
 export default function AdmissionBot() {
   const [tab, setTab] = useState('chat')
+  const [ctx, setCtx] = useState<SchoolCtx | null>(null)
+  const [err, setErr] = useState('')
+
+  const profile = (() => {
+    try { return JSON.parse(localStorage.getItem('kairo_profile') || 'null') } catch { return null }
+  })()
+  const schoolId = profile?.school_id || ''
+  const isAdmin  = profile?.role === 'admin'
+
+  const loadCtx = useCallback(async () => {
+    if (!schoolId) return
+    try {
+      const data = isAdmin
+        ? await api('/admission/config')
+        : await publicApi(`/admission/public-config/${schoolId}`)
+      setCtx({
+        school_id:   schoolId,
+        school_name: data.school_name || 'School',
+        school_logo: data.school_logo || null,
+        config:      data.config || {},
+      })
+    } catch (e: any) { setErr(e.message) }
+  }, [schoolId, isAdmin])
+
+  useEffect(() => { loadCtx() }, [loadCtx])
+
+  const TABS = isAdmin
+    ? [
+        { id: 'chat',     label: 'Bot Preview', icon: Bot },
+        { id: 'leads',    label: 'Leads',       icon: Users },
+        { id: 'stats',    label: 'Stats',       icon: BarChart3 },
+        { id: 'settings', label: 'Settings',    icon: Settings },
+      ]
+    : [
+        { id: 'chat', label: 'Chat Bot', icon: Bot },
+      ]
+
+  if (!schoolId) {
+    return (
+      <div style={{ padding: 36, textAlign: 'center', color: '#71717a' }}>
+        Join a school first to use the Admission Bot.
+      </div>
+    )
+  }
 
   return (
-    <div style={{ padding: '28px 36px', maxWidth: 1000, margin: '0 auto', height: '100%', overflowY: 'auto' }}>
-      <div style={{ marginBottom: 24 }}>
-        <h1 style={{ fontSize: 20, fontWeight: 700, color: '#fafafa', margin: 0 }}>Admission Enquiry Bot</h1>
-        <p style={{ fontSize: 13, color: '#52525b', marginTop: 4 }}>24/7 AI-powered bot · Auto lead capture · Instant replies</p>
+    <div style={{ padding: '28px 36px', maxWidth: 1100, margin: '0 auto', height: '100%', overflowY: 'auto' }}>
+      <div style={{ marginBottom: 22 }}>
+        <h1 style={{ fontSize: 20, fontWeight: 700, color: '#fafafa', margin: 0 }}>
+          Admission Bot
+        </h1>
+        <p style={{ fontSize: 13, color: '#52525b', marginTop: 4 }}>
+          24/7 AI lead-gen for prospective parents · School-aware · Auto lead capture
+        </p>
       </div>
 
-      <div style={{ display: 'flex', gap: 4, marginBottom: 24, background: '#0d0d0d', border: '1px solid #1e1e1e', borderRadius: 10, padding: 4, width: 'fit-content' }}>
+      {err && (
+        <div style={{ marginBottom: 16, padding: '10px 14px', background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.25)', borderRadius: 8, fontSize: 12, color: '#f87171' }}>
+          {err}
+        </div>
+      )}
+
+      {/* Tab bar */}
+      <div style={{ display: 'flex', gap: 4, marginBottom: 22, background: '#0d0d0d', border: '1px solid #1e1e1e', borderRadius: 10, padding: 4, width: 'fit-content' }}>
         {TABS.map(t => (
           <button key={t.id} onClick={() => setTab(t.id)} style={{
             display: 'flex', alignItems: 'center', gap: 6, padding: '7px 18px',
@@ -43,98 +156,125 @@ export default function AdmissionBot() {
             fontSize: 12, fontWeight: tab === t.id ? 600 : 400, cursor: 'pointer',
             background: tab === t.id ? '#1e1e2e' : 'transparent',
             color: tab === t.id ? '#818cf8' : '#52525b',
+            transition: 'all 0.12s',
           }}>
             <t.icon size={13} /> {t.label}
           </button>
         ))}
       </div>
 
-      {tab === 'chat'  && <ChatTab />}
-      {tab === 'leads' && <LeadsTab />}
+      <AnimatePresence mode="wait">
+        <motion.div key={tab} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.12 }}>
+          {tab === 'chat'     && ctx && <ChatTab ctx={ctx} />}
+          {tab === 'leads'    && isAdmin && <LeadsTab />}
+          {tab === 'stats'    && isAdmin && <StatsTab />}
+          {tab === 'settings' && isAdmin && ctx && <SettingsTab ctx={ctx} onSaved={loadCtx} />}
+        </motion.div>
+      </AnimatePresence>
     </div>
   )
 }
 
-// ── Chat ──────────────────────────────────────────────────────────────────────
-function ChatTab() {
-  const [messages, setMessages] = useState<Message[]>([
-    { role: 'assistant', content: `Hello! 👋 Welcome to ${SCHOOL_INFO.name}. I'm here to help with admission queries. How can I assist you today?` }
+// ─── Chat ───────────────────────────────────────────────────────────────────
+interface Msg { role: 'user' | 'assistant'; content: string }
+
+function ChatTab({ ctx }: { ctx: SchoolCtx }) {
+  const [messages, setMessages] = useState<Msg[]>([
+    { role: 'assistant', content: `Hello! Welcome to ${ctx.school_name}. I'm here to help with admission queries. How can I assist you today?` },
   ])
-  const [input, setInput]   = useState('')
+  const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
-  const [leadForm, setLeadForm] = useState({ parent_name: '', child_name: '', grade: '', phone: '', email: '' })
   const [showLead, setShowLead] = useState(false)
   const [leadSaved, setLeadSaved] = useState(false)
+  const [leadForm, setLeadForm] = useState({ parent_name: '', child_name: '', grade: '', phone: '', email: '' })
   const bottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages])
 
   async function send() {
     if (!input.trim() || loading) return
-    const userMsg: Message = { role: 'user', content: input.trim() }
+    const userMsg: Msg = { role: 'user', content: input.trim() }
     setMessages(m => [...m, userMsg])
     setInput('')
     setLoading(true)
     try {
-      const { reply } = await post('/admission/chat', {
-        school_id: SCHOOL_ID,
-        message: userMsg.content,
-        conversation_history: messages,
-        school_info: SCHOOL_INFO,
+      const { reply } = await publicApi('/admission/chat', {
+        method: 'POST',
+        body: JSON.stringify({
+          school_id: ctx.school_id,
+          message: userMsg.content,
+          conversation_history: messages,
+        }),
       })
       setMessages(m => [...m, { role: 'assistant', content: reply }])
-
-      // Suggest lead form after 3 user messages
       const userCount = messages.filter(m => m.role === 'user').length + 1
       if (userCount === 3 && !leadSaved) setShowLead(true)
-    } catch {
-      setMessages(m => [...m, { role: 'assistant', content: 'Sorry, I had trouble responding. Please try again.' }])
+    } catch (e: any) {
+      setMessages(m => [...m, { role: 'assistant', content: `Sorry, I had trouble responding. ${e.message}` }])
     }
     setLoading(false)
   }
 
   async function saveLead() {
-    if (!leadForm.phone) return
-    try {
-      await post('/admission/lead', { school_id: SCHOOL_ID, ...leadForm })
-      setLeadSaved(true)
-      setShowLead(false)
-      setMessages(m => [...m, { role: 'assistant', content: `Thank you, ${leadForm.parent_name || 'there'}! We've saved your details. Our admissions team will contact you at ${leadForm.phone} within 24 hours. 🎓` }])
-    } catch (e: any) {
-      alert(e.message)
+    if (!leadForm.phone && !leadForm.email) {
+      alert('Please give a phone or email so the team can reach you.')
+      return
     }
+    try {
+      await publicApi('/admission/lead', {
+        method: 'POST',
+        body: JSON.stringify({ school_id: ctx.school_id, ...leadForm }),
+      })
+      setLeadSaved(true); setShowLead(false)
+      setMessages(m => [...m, {
+        role: 'assistant',
+        content: `Thank you, ${leadForm.parent_name || 'there'}! We've saved your details. Our admissions team will contact you${leadForm.phone ? ' at ' + leadForm.phone : ''} within 24 hours.`,
+      }])
+    } catch (e: any) { alert(e.message) }
   }
 
+  const quickQs = [
+    'What are your fees?',
+    'How do I apply?',
+    'What grades do you offer?',
+    'When is the next admission window?',
+    'What documents are needed?',
+  ]
+
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 20, minHeight: 500 }}>
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 20, minHeight: 540 }}>
       {/* Chat window */}
       <div style={{ ...card, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-        {/* Header */}
         <div style={{ padding: '14px 18px', borderBottom: '1px solid #1a1a1a', display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{ width: 36, height: 36, borderRadius: 10, background: 'linear-gradient(135deg,#6366f1,#7c3aed)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Bot size={18} color="#fff" />
+          <div style={{ width: 36, height: 36, borderRadius: 10, background: 'linear-gradient(135deg,#6366f1,#7c3aed)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+            {ctx.school_logo
+              ? <img src={ctx.school_logo} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              : <Bot size={18} color="#fff" />}
           </div>
-          <div>
-            <div style={{ fontSize: 13, fontWeight: 700, color: '#fafafa' }}>Admission Assistant</div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: '#fafafa' }}>{ctx.school_name}</div>
             <div style={{ fontSize: 11, color: '#34d399', display: 'flex', alignItems: 'center', gap: 4 }}>
               <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#34d399', display: 'inline-block' }} /> Online
             </div>
           </div>
         </div>
 
-        {/* Messages */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 12 }}>
           {messages.map((m, i) => (
             <motion.div key={i} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
               style={{ display: 'flex', gap: 10, alignItems: 'flex-start', flexDirection: m.role === 'user' ? 'row-reverse' : 'row' }}>
-              <div style={{ width: 28, height: 28, borderRadius: 7, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                background: m.role === 'user' ? '#6366f1' : '#1e1e2e' }}>
+              <div style={{
+                width: 28, height: 28, borderRadius: 7, flexShrink: 0,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: m.role === 'user' ? '#6366f1' : '#1e1e2e',
+              }}>
                 {m.role === 'user' ? <User size={13} color="#fff" /> : <Bot size={13} color="#818cf8" />}
               </div>
               <div style={{
-                maxWidth: '75%', padding: '9px 13px', borderRadius: m.role === 'user' ? '12px 4px 12px 12px' : '4px 12px 12px 12px',
+                maxWidth: '75%', padding: '9px 13px',
+                borderRadius: m.role === 'user' ? '12px 4px 12px 12px' : '4px 12px 12px 12px',
                 background: m.role === 'user' ? 'linear-gradient(135deg,#6366f1,#7c3aed)' : '#1a1a1a',
-                fontSize: 13, color: '#fafafa', lineHeight: 1.55,
+                fontSize: 13, color: '#fafafa', lineHeight: 1.55, whiteSpace: 'pre-wrap',
               }}>
                 {m.content}
               </div>
@@ -146,14 +286,15 @@ function ChatTab() {
                 <Bot size={13} color="#818cf8" />
               </div>
               <div style={{ padding: '10px 14px', background: '#1a1a1a', borderRadius: '4px 12px 12px 12px', display: 'flex', gap: 5 }}>
-                {[0,1,2].map(i => <div key={i} style={{ width: 6, height: 6, borderRadius: '50%', background: '#6366f1', animation: `dot-bounce 1.2s ease-in-out ${i*0.2}s infinite` }} />)}
+                {[0, 1, 2].map(i => (
+                  <div key={i} style={{ width: 6, height: 6, borderRadius: '50%', background: '#6366f1', animation: `dot-bounce 1.2s ease-in-out ${i * 0.2}s infinite` }} />
+                ))}
               </div>
             </div>
           )}
           <div ref={bottomRef} />
         </div>
 
-        {/* Input */}
         <div style={{ padding: '12px 14px', borderTop: '1px solid #1a1a1a', display: 'flex', gap: 8 }}>
           <input
             style={{ ...inp, flex: 1 }}
@@ -163,7 +304,8 @@ function ChatTab() {
             onKeyDown={e => e.key === 'Enter' && send()}
           />
           <button onClick={send} disabled={!input.trim() || loading} style={{
-            width: 38, height: 38, borderRadius: 9, border: 'none', cursor: 'pointer',
+            width: 38, height: 38, borderRadius: 9, border: 'none',
+            cursor: input.trim() ? 'pointer' : 'not-allowed',
             background: input.trim() ? 'linear-gradient(135deg,#6366f1,#7c3aed)' : '#1c1c1c',
             display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
           }}>
@@ -172,32 +314,43 @@ function ChatTab() {
         </div>
       </div>
 
-      {/* Lead capture panel */}
+      {/* Right panel */}
       <div>
         <AnimatePresence>
           {showLead && !leadSaved && (
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
               style={{ ...card, padding: 18, marginBottom: 16 }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: '#fafafa', marginBottom: 4 }}>💬 Save your details</div>
-              <p style={{ fontSize: 12, color: '#52525b', marginBottom: 14 }}>Get a callback from our admissions team</p>
-              {[['parent_name','Parent Name'],['child_name',"Child's Name"],['grade','Grade Applying'],['phone','Phone *'],['email','Email']].map(([k,l]) => (
+              <div style={{ fontSize: 13, fontWeight: 700, color: '#fafafa', marginBottom: 4 }}>Save your details</div>
+              <p style={{ fontSize: 12, color: '#52525b', marginBottom: 14 }}>Get a callback from our admissions team.</p>
+              {([
+                ['parent_name', 'Parent Name'],
+                ['child_name',  "Child's Name"],
+                ['grade',       'Grade Applying'],
+                ['phone',       'Phone'],
+                ['email',       'Email'],
+              ] as const).map(([k, l]) => (
                 <div key={k} style={{ marginBottom: 10 }}>
-                  <label style={label}>{l}</label>
+                  <label style={labelStyle}>{l}</label>
                   <input style={inp} value={(leadForm as any)[k]} onChange={e => setLeadForm(f => ({ ...f, [k]: e.target.value }))} />
                 </div>
               ))}
-              <button onClick={saveLead} style={{ width: '100%', padding: '9px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg,#6366f1,#7c3aed)', color: '#fff', fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+              <button onClick={saveLead} style={{
+                width: '100%', padding: '9px', borderRadius: 8, border: 'none',
+                background: 'linear-gradient(135deg,#6366f1,#7c3aed)', color: '#fff',
+                fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: 'pointer',
+              }}>
                 Submit Enquiry
               </button>
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* Quick questions */}
         <div style={{ ...card, padding: 18 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: '#52525b', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 12 }}>Quick Questions</div>
-          {['What are your fees?','How do I apply for admission?','What classes are available?','Do you have hostel facility?','When does the next session start?'].map(q => (
-            <button key={q} onClick={() => { setInput(q); }} style={{
+          <div style={{ fontSize: 11, fontWeight: 700, color: '#52525b', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 12 }}>
+            Quick Questions
+          </div>
+          {quickQs.map(q => (
+            <button key={q} onClick={() => setInput(q)} style={{
               width: '100%', textAlign: 'left', padding: '8px 12px', borderRadius: 7,
               border: '1px solid #1e1e1e', background: 'transparent', color: '#71717a',
               fontFamily: 'inherit', fontSize: 12, cursor: 'pointer', marginBottom: 6,
@@ -215,71 +368,256 @@ function ChatTab() {
   )
 }
 
-// ── Leads ─────────────────────────────────────────────────────────────────────
+// ─── Leads ─────────────────────────────────────────────────────────────────
 function LeadsTab() {
-  const [leads, setLeads] = useState<any[]>([])
+  const [leads, setLeads]     = useState<Lead[]>([])
   const [loading, setLoading] = useState(true)
-  const [filter, setFilter] = useState('all')
+  const [filter, setFilter]   = useState('all')
+  const [err, setErr]         = useState('')
 
-  function load() {
-    setLoading(true)
-    get('/admission/leads').then(setLeads).catch(console.error).finally(() => setLoading(false))
-  }
-  useEffect(load, [])
+  const load = useCallback(() => {
+    setLoading(true); setErr('')
+    api('/admission/leads' + (filter === 'all' ? '' : `?status=${filter}`))
+      .then(setLeads)
+      .catch(e => setErr(e.message))
+      .finally(() => setLoading(false))
+  }, [filter])
+
+  useEffect(() => { load() }, [load])
 
   async function updateStatus(id: string, status: string) {
-    await put(`/admission/leads/${id}`, { status }); load()
+    try { await api(`/admission/leads/${id}`, { method: 'PUT', body: JSON.stringify({ status }) }); load() }
+    catch (e: any) { alert(e.message) }
   }
 
-  const filtered = filter === 'all' ? leads : leads.filter(l => l.status === filter)
-  const statusColor: any = { new: '#fbbf24', contacted: '#818cf8', admitted: '#34d399', not_interested: '#f87171' }
-  const StatusIcon: any = { new: Clock, contacted: Bot, admitted: CheckCircle, not_interested: XCircle }
+  async function remove(id: string) {
+    if (!confirm('Delete this lead permanently?')) return
+    try { await api(`/admission/leads/${id}`, { method: 'DELETE' }); load() }
+    catch (e: any) { alert(e.message) }
+  }
 
-  if (loading) return <div style={{ textAlign: 'center', padding: '60px 0', color: '#52525b' }}>Loading…</div>
+  const allStatuses = ['all', 'new', 'contacted', 'admitted', 'rejected', 'not_interested']
 
   return (
     <div>
-      <div style={{ display: 'flex', gap: 6, marginBottom: 16 }}>
-        {['all','new','contacted','admitted','not_interested'].map(s => (
+      <div style={{ display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' }}>
+        {allStatuses.map(s => (
           <button key={s} onClick={() => setFilter(s)} style={{
-            padding: '5px 12px', borderRadius: 6, border: '1px solid #1e1e1e', fontFamily: 'inherit',
-            fontSize: 11, fontWeight: filter === s ? 600 : 400, cursor: 'pointer',
+            padding: '5px 12px', borderRadius: 6, border: '1px solid #1e1e1e',
+            fontFamily: 'inherit', fontSize: 11, fontWeight: filter === s ? 600 : 400,
+            cursor: 'pointer',
             background: filter === s ? '#1e1e2e' : 'transparent',
             color: filter === s ? '#818cf8' : '#52525b',
-          }}>{s.replace('_',' ')}</button>
+          }}>
+            {s.replace('_', ' ')}
+          </button>
         ))}
       </div>
 
+      {err     && <div style={{ marginBottom: 12, padding: '10px 14px', background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.25)', borderRadius: 8, fontSize: 12, color: '#f87171' }}>{err}</div>}
+      {loading && <div style={{ textAlign: 'center', padding: '40px 0', color: '#52525b' }}>Loading…</div>}
+
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        {filtered.map(l => {
-          const SIcon = StatusIcon[l.status] || Clock
+        {!loading && leads.map(l => {
+          const meta = STATUS_META[l.status] || STATUS_META.new
+          const SIcon = meta.icon
           return (
-            <div key={l._id} style={{ ...card, padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 14 }}>
-              <div style={{ width: 36, height: 36, borderRadius: 9, background: `${statusColor[l.status]}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <SIcon size={16} color={statusColor[l.status]} />
+            <div key={l.id} style={{ ...card, padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 14 }}>
+              <div style={{
+                width: 36, height: 36, borderRadius: 9,
+                background: `${meta.color}18`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+              }}>
+                <SIcon size={16} color={meta.color} />
               </div>
-              <div style={{ flex: 1 }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 13, fontWeight: 600, color: '#fafafa' }}>
-                  {l.parent_name || 'Unknown'} {l.child_name ? `→ ${l.child_name}` : ''}
-                  {l.grade ? ` (${l.grade})` : ''}
+                  {l.parent_name || 'Unknown parent'}
+                  {l.child_name ? ` → ${l.child_name}` : ''}
+                  {l.grade ? <span style={{ marginLeft: 6, fontSize: 11, color: '#818cf8' }}>({l.grade})</span> : null}
                 </div>
-                <div style={{ fontSize: 11, color: '#52525b', display: 'flex', gap: 12, marginTop: 2 }}>
+                <div style={{ fontSize: 11, color: '#52525b', display: 'flex', gap: 12, marginTop: 2, flexWrap: 'wrap' }}>
                   {l.phone && <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Phone size={10} />{l.phone}</span>}
                   {l.email && <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Mail size={10} />{l.email}</span>}
+                  <span style={{ color: '#3f3f46' }}>{new Date(l.created_at).toLocaleDateString()}</span>
                 </div>
               </div>
-              <div style={{ fontSize: 10, color: '#3f3f46' }}>{new Date(l.created_at).toLocaleDateString()}</div>
-              <select value={l.status} onChange={e => updateStatus(l._id, e.target.value)} style={{
+              <select value={l.status} onChange={e => updateStatus(l.id, e.target.value)} style={{
                 background: '#0d0d0d', border: '1px solid #1e1e1e', borderRadius: 6,
-                padding: '4px 8px', fontSize: 11, color: statusColor[l.status] || '#a1a1aa',
+                padding: '4px 8px', fontSize: 11, color: meta.color,
                 fontFamily: 'inherit', cursor: 'pointer',
               }}>
-                {['new','contacted','admitted','not_interested'].map(s => <option key={s} value={s}>{s.replace('_',' ')}</option>)}
+                {(['new', 'contacted', 'admitted', 'rejected', 'not_interested'] as const).map(s => (
+                  <option key={s} value={s}>{s.replace('_', ' ')}</option>
+                ))}
               </select>
+              <button onClick={() => remove(l.id)} title="Delete"
+                style={{
+                  background: 'none', border: 'none', cursor: 'pointer',
+                  color: '#3f3f46', padding: 4, display: 'flex',
+                }}
+                onMouseEnter={e => (e.currentTarget.style.color = '#f87171')}
+                onMouseLeave={e => (e.currentTarget.style.color = '#3f3f46')}
+              >
+                <Trash2 size={13} />
+              </button>
             </div>
           )
         })}
-        {filtered.length === 0 && <div style={{ textAlign: 'center', padding: '40px 0', fontSize: 13, color: '#3f3f46' }}>No leads yet.</div>}
+        {!loading && leads.length === 0 && (
+          <div style={{ textAlign: 'center', padding: '60px 0', fontSize: 13, color: '#3f3f46' }}>
+            No leads yet. Share your bot link with parents to start collecting enquiries.
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// ─── Stats ──────────────────────────────────────────────────────────────────
+function StatsTab() {
+  const [stats, setStats] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+  const [err, setErr] = useState('')
+
+  useEffect(() => {
+    api('/admission/stats')
+      .then(setStats)
+      .catch(e => setErr(e.message))
+      .finally(() => setLoading(false))
+  }, [])
+
+  if (loading) return <div style={{ textAlign: 'center', padding: '40px 0', color: '#52525b' }}>Loading…</div>
+  if (err)     return <div style={{ color: '#f87171', fontSize: 13 }}>{err}</div>
+  if (!stats)  return null
+
+  const conversion = stats.total > 0 ? Math.round((stats.admitted / stats.total) * 100) : 0
+
+  const tiles = [
+    { label: 'Total leads', value: stats.total,     color: '#818cf8' },
+    { label: 'New',         value: stats.new,        color: '#fbbf24' },
+    { label: 'Contacted',   value: stats.contacted,  color: '#a78bfa' },
+    { label: 'Admitted',    value: stats.admitted,   color: '#34d399' },
+    { label: 'Rejected',    value: stats.rejected,   color: '#f87171' },
+    { label: 'Conversion',  value: `${conversion}%`, color: '#22d3ee' },
+  ]
+
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 14 }}>
+      {tiles.map(t => (
+        <div key={t.label} style={{
+          background: '#111', border: `1px solid ${t.color}30`, borderRadius: 12,
+          padding: 18,
+        }}>
+          <div style={{ fontSize: 30, fontWeight: 700, color: t.color, lineHeight: 1.1 }}>{t.value}</div>
+          <div style={{ fontSize: 12, color: '#71717a', marginTop: 6 }}>{t.label}</div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+// ─── Settings ──────────────────────────────────────────────────────────────
+function SettingsTab({ ctx, onSaved }: { ctx: SchoolCtx; onSaved: () => void }) {
+  const [cfg, setCfg]       = useState<AdmissionConfig>(ctx.config || {})
+  const [saving, setSaving] = useState(false)
+  const [msg, setMsg]       = useState('')
+  const [err, setErr]       = useState('')
+
+  function set<K extends keyof AdmissionConfig>(k: K, v: string) {
+    setCfg(p => ({ ...p, [k]: v }))
+  }
+
+  async function save() {
+    setSaving(true); setErr(''); setMsg('')
+    try {
+      await api('/admission/config', { method: 'PUT', body: JSON.stringify(cfg) })
+      setMsg('Saved. The bot now uses these details.')
+      onSaved()
+    } catch (e: any) { setErr(e.message) }
+    finally { setSaving(false) }
+  }
+
+  const fields: Array<{ key: keyof AdmissionConfig; label: string; placeholder: string; rows?: number }> = [
+    { key: 'description',     label: 'School description',  placeholder: 'A premier CBSE school offering Classes 1–12 with focus on board excellence and holistic development.', rows: 3 },
+    { key: 'grades',          label: 'Grades offered',      placeholder: 'Class 1 to Class 12 (CBSE)' },
+    { key: 'fees',            label: 'Fee range',           placeholder: '₹40,000 – ₹80,000 per year' },
+    { key: 'timings',         label: 'School timings',      placeholder: 'Mon–Fri, 8:00 AM – 3:30 PM' },
+    { key: 'admission_dates', label: 'Admission window',    placeholder: 'Applications open: Jan 15 – Mar 31' },
+    { key: 'documents',       label: 'Documents required',  placeholder: 'Birth certificate, last school TC, parent ID, photographs', rows: 2 },
+    { key: 'facilities',      label: 'Facilities',          placeholder: 'Smart classrooms, science labs, library, sports ground, canteen', rows: 2 },
+    { key: 'address',         label: 'Address',             placeholder: 'Full address with pincode' },
+    { key: 'contact',         label: 'Contact (phone/email)', placeholder: '+91 98765 43210 · admissions@school.edu.in' },
+  ]
+
+  const shareUrl = `${window.location.origin}/admit?school=${ctx.school_id}`
+
+  return (
+    <div>
+      <div style={{ ...card, padding: 18, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div style={{
+          width: 36, height: 36, borderRadius: 9, background: 'rgba(99,102,241,0.12)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+        }}>
+          <Sparkles size={16} color="#818cf8" />
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: '#fafafa' }}>Public bot link</div>
+          <div style={{ fontSize: 11, color: '#52525b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            Share with parents — opens the chat without login
+          </div>
+        </div>
+        <code style={{
+          fontSize: 11, padding: '5px 10px', background: '#0d0d0d',
+          border: '1px solid #1e1e1e', borderRadius: 6, color: '#a5b4fc',
+        }}>{shareUrl}</code>
+        <button onClick={() => { navigator.clipboard.writeText(shareUrl); setMsg('Link copied') }}
+          style={{
+            padding: '6px 10px', borderRadius: 7, border: '1px solid #1e1e1e',
+            background: '#161616', color: '#71717a', cursor: 'pointer',
+            fontFamily: 'inherit', fontSize: 11, fontWeight: 600,
+            display: 'flex', alignItems: 'center', gap: 5,
+          }}>
+          <ExternalLink size={11} /> Copy
+        </button>
+      </div>
+
+      <div style={{ ...card, padding: 22 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+          {fields.map(f => (
+            <div key={f.key} style={{ gridColumn: f.rows ? '1 / -1' : 'auto' }}>
+              <label style={labelStyle}>{f.label}</label>
+              {f.rows
+                ? <textarea rows={f.rows} placeholder={f.placeholder}
+                    value={cfg[f.key] || ''}
+                    onChange={e => set(f.key, e.target.value)}
+                    style={{ ...inp, resize: 'vertical', lineHeight: 1.55 }} />
+                : <input placeholder={f.placeholder}
+                    value={cfg[f.key] || ''}
+                    onChange={e => set(f.key, e.target.value)}
+                    style={inp} />}
+            </div>
+          ))}
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 18 }}>
+          <button onClick={save} disabled={saving} style={{
+            padding: '10px 18px', borderRadius: 8, border: 'none',
+            background: saving ? '#1c1c1c' : 'linear-gradient(135deg,#6366f1,#7c3aed)',
+            color: saving ? '#52525b' : '#fff',
+            fontFamily: 'inherit', fontSize: 13, fontWeight: 600,
+            cursor: saving ? 'not-allowed' : 'pointer',
+            display: 'flex', alignItems: 'center', gap: 7,
+          }}>
+            <Save size={13} />{saving ? 'Saving…' : 'Save Settings'}
+          </button>
+          {msg && <span style={{ fontSize: 12, color: '#34d399' }}>{msg}</span>}
+          {err && <span style={{ fontSize: 12, color: '#f87171' }}>{err}</span>}
+        </div>
+
+        <p style={{ fontSize: 11, color: '#3f3f46', marginTop: 14 }}>
+          The bot uses these fields to answer parent questions accurately. Empty fields are simply skipped.
+        </p>
       </div>
     </div>
   )
