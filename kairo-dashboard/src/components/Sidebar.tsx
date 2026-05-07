@@ -19,12 +19,14 @@ interface NavItem {
   color?: string
 }
 
+// ── Role-isolated navigation ─────────────────────────────────────────────────
+// Each role sees ONLY their own tools — no cross-access.
 const STUDENT_NAV: NavItem[] = [
   { label: 'Doubt Solver',    icon: MessageCircle,   to: 'doubt',         color: '#818cf8' },
   { label: 'Flashcards',      icon: BookMarked,      to: 'flashcards',    color: '#34d399' },
+  { label: 'Grader',          icon: FileText,        to: 'essay',         color: '#f472b6' },
+  { label: 'My Tasks',        icon: BookOpen,        to: 'school',        color: '#fb923c' },
   { label: 'Study Plan',      icon: Calendar,        to: 'study-plan',    color: '#fb923c' },
-  { label: 'Essay Grader',    icon: FileText,        to: 'essay',         color: '#f472b6' },
-  { label: 'Exam Predictor',  icon: BarChart3,       to: 'predictor',     color: '#fbbf24' },
   { label: 'Adaptive Quiz',   icon: Brain,           to: 'quiz',          color: '#38bdf8' },
   { label: 'Writing Tools',   icon: Edit3,           to: 'writing',       color: '#a78bfa' },
   { label: 'Concept Tools',   icon: Lightbulb,       to: 'concept',       color: '#34d399' },
@@ -35,19 +37,32 @@ const STUDENT_NAV: NavItem[] = [
 ]
 
 const TEACHER_NAV: NavItem[] = [
-  { label: 'Question Paper',  icon: BookOpen,    to: 'question-paper',  color: '#a78bfa' },
-  { label: 'Lesson Plan',     icon: Calendar,    to: 'lesson-plan',     color: '#38bdf8' },
-  { label: 'Parent Message',  icon: Bell,        to: 'parent-message',  color: '#fb923c' },
-  { label: 'Announcements',   icon: Megaphone,   to: 'announcement',    color: '#f472b6' },
+  { label: 'Doubt Solver',    icon: MessageCircle,   to: 'doubt',           color: '#818cf8' },
+  { label: 'Flashcards',      icon: BookMarked,      to: 'flashcards',      color: '#34d399' },
+  { label: 'Grader',          icon: FileText,        to: 'essay',           color: '#f472b6' },
+  { label: 'Tasks & Marks',   icon: BookOpen,        to: 'school',          color: '#fbbf24' },
+  { label: 'Question Paper',  icon: BookOpen,        to: 'question-paper',  color: '#a78bfa' },
+  { label: 'Lesson Plan',     icon: Calendar,        to: 'lesson-plan',     color: '#38bdf8' },
+  { label: 'Parent Message',  icon: Bell,            to: 'parent-message',  color: '#fb923c' },
+  { label: 'Announcements',   icon: Megaphone,       to: 'announcement',    color: '#f472b6' },
+  { label: 'Analytics',       icon: TrendingUp,      to: 'analytics',       color: '#818cf8' },
 ]
 
+// Admin = command center ONLY. No student learning tools.
 const ADMIN_NAV: NavItem[] = [
   { label: 'School Hub',      icon: Building2,   to: 'school',          color: '#6366f1' },
+  { label: 'Announcements',   icon: Megaphone,   to: 'announcement',    color: '#f472b6' },
   { label: 'Fee Reminder',    icon: DollarSign,  to: 'fee-reminder',    color: '#34d399' },
   { label: 'Admission Bot',   icon: Bot,         to: 'admission',       color: '#818cf8' },
   { label: 'Attendance',      icon: UserCheck,   to: 'attendance',      color: '#fbbf24' },
   { label: 'Timetable',       icon: Grid3x3,     to: 'timetable',       color: '#38bdf8' },
 ]
+
+function navForRole(role?: string): { items: NavItem[]; label: string; icon: React.ElementType } {
+  if (role === 'admin')   return { items: ADMIN_NAV,   label: 'Admin Console', icon: Shield }
+  if (role === 'teacher') return { items: TEACHER_NAV, label: 'Teacher Tools', icon: GraduationCap }
+  return { items: STUDENT_NAV, label: 'My Tools', icon: GraduationCap }
+}
 
 
 interface Profile {
@@ -73,9 +88,6 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ active, setActive, isDark, toggleTheme, profile, onLogout }: SidebarProps) {
-  const [studentOpen, setStudentOpen] = useState(true)
-  const [teacherOpen, setTeacherOpen] = useState(false)
-  const [adminOpen, setAdminOpen]     = useState(false)
   const [recentOpen, setRecentOpen]   = useState(true)
   const [hoveredItem, setHoveredItem] = useState<string | null>(null)
   const [recents, setRecents] = useState<RecentChat[]>(() => getRecentChats())
@@ -166,21 +178,20 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
       {/* Nav */}
       <nav style={{ flex: 1, overflowY: 'auto', padding: '10px 8px' }}>
 
-        {/* Student section */}
-        <SectionHeader
-          label="Student" icon={GraduationCap}
-          open={studentOpen} toggle={() => setStudentOpen(o => !o)}
-        />
-        <AnimatePresence initial={false}>
-          {studentOpen && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              style={{ overflow: 'hidden' }}
-            >
-              {STUDENT_NAV.map(item => (
+        {/* Role-filtered nav — admins see only admin tools, etc. */}
+        {(() => {
+          const { items, label, icon: SectionIcon } = navForRole(profile?.role)
+          return (
+            <>
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: 6,
+                padding: '4px 8px 6px',
+                color: '#3f3f46', fontSize: 10,
+                fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1,
+              }}>
+                <SectionIcon size={10} />{label}
+              </div>
+              {items.map(item => (
                 <NavItemRow
                   key={item.to}
                   item={item}
@@ -191,71 +202,9 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
                   onClick={() => setActive(item.to)}
                 />
               ))}
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        <div style={{ height: 8 }} />
-
-        {/* Teacher section */}
-        <SectionHeader
-          label="Teacher" icon={Shield}
-          open={teacherOpen} toggle={() => setTeacherOpen(o => !o)}
-        />
-        <AnimatePresence initial={false}>
-          {teacherOpen && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              style={{ overflow: 'hidden' }}
-            >
-              {TEACHER_NAV.map(item => (
-                <NavItemRow
-                  key={item.to}
-                  item={item}
-                  isActive={active === item.to}
-                  isHovered={hoveredItem === item.to}
-                  isGenerating={!!(generating[item.to] && active !== item.to)}
-                  onHover={setHoveredItem}
-                  onClick={() => setActive(item.to)}
-                />
-              ))}
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        <div style={{ height: 8 }} />
-
-        {/* Admin section */}
-        <SectionHeader
-          label="Admin" icon={Building2}
-          open={adminOpen} toggle={() => setAdminOpen(o => !o)}
-        />
-        <AnimatePresence initial={false}>
-          {adminOpen && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              style={{ overflow: 'hidden' }}
-            >
-              {ADMIN_NAV.map(item => (
-                <NavItemRow
-                  key={item.to}
-                  item={item}
-                  isActive={active === item.to}
-                  isHovered={hoveredItem === item.to}
-                  isGenerating={!!(generating[item.to] && active !== item.to)}
-                  onHover={setHoveredItem}
-                  onClick={() => setActive(item.to)}
-                />
-              ))}
-            </motion.div>
-          )}
-        </AnimatePresence>
+            </>
+          )
+        })()}
 
         <div style={{ height: 8 }} />
 

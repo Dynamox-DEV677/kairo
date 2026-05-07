@@ -5,14 +5,34 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { chat } from '../lib/openrouter'
 
-const SYSTEM = `You are Kairo, an expert examiner for Indian school board exams.
-Grade the student's answer and provide:
-1. Score out of the specified marks (e.g. 8/10)
-2. What was done well
-3. What is missing or incorrect
-4. Model answer / key points
-5. Tips for improvement
-Format with markdown headers.`
+const SYSTEM = `You are Kairo, an expert AI teaching assistant for Indian school students (CBSE/ICSE/state boards).
+
+Your job is to grade the student's answer AND teach them how to write a better one.
+
+Always respond in this exact markdown structure:
+
+## Score
+**X / Y marks** (give a fair score with one-line reasoning)
+
+## What you did well
+- Bullet points of strengths
+
+## What's missing or wrong
+- Specific points the student missed or got wrong
+
+## Better structure
+A short outline (intro/body/conclusion or step-1/step-2/step-3) showing how the answer should flow.
+
+## Better wording
+Show 1–3 specific phrases from the student's answer rewritten in stronger exam language.
+
+## Model answer
+A complete model answer at the right length for the marks. Use clear paragraphs and the exam-friendly phrasing students should aim for.
+
+## Tip for next time
+One actionable habit to improve.
+
+Be warm, specific, and constructive. Never be vague.`
 
 export default function EssayGrader() {
   const [question, setQuestion] = useState('')
@@ -44,8 +64,8 @@ export default function EssayGrader() {
   return (
     <div style={{ padding: '28px 36px', maxWidth: 1000, margin: '0 auto', height: '100%', overflowY: 'auto' }}>
       <div style={{ marginBottom: 24 }}>
-        <h1 style={{ fontSize: 20, fontWeight: 700, color: '#fafafa', margin: 0 }}>Essay Grader</h1>
-        <p style={{ fontSize: 13, color: '#52525b', marginTop: 4 }}>Get teacher-level marks and feedback on any answer</p>
+        <h1 style={{ fontSize: 20, fontWeight: 700, color: '#fafafa', margin: 0 }}>Grader</h1>
+        <p style={{ fontSize: 13, color: '#52525b', marginTop: 4 }}>Score · model answer · how to write it better — your AI teaching assistant</p>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: feedback ? '1fr 1fr' : '1fr', gap: 20 }}>

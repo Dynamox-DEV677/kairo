@@ -34,7 +34,7 @@ const PAGE_TITLES: Record<string, string> = {
   doubt:            'Doubt Solver',
   flashcards:       'Flashcards & SRS',
   'study-plan':     'Study Plan',
-  essay:            'Essay Grader',
+  essay:            'Grader',
   predictor:        'Exam Predictor',
   'question-paper': 'Question Paper',
   'lesson-plan':    'Lesson Plan',
