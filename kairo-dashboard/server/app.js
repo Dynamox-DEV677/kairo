@@ -51,6 +51,9 @@ import parentRoutes        from './routes/parent.js'
 // ── v7 routes (AI Memory Brain) ──────────────────────────────────────────────
 import memoryRoutes        from './routes/memory.js'
 
+// ── v8 routes (School Health Monitor) ────────────────────────────────────────
+import schoolHealthRoutes  from './routes/schoolHealth.js'
+
 // ─── Validate env ─────────────────────────────────────────────────────────────
 if (!process.env.ENCRYPTION_SECRET || process.env.ENCRYPTION_SECRET.length < 32) {
   // Use a fallback so the server doesn't crash — set ENCRYPTION_SECRET in prod for real security
@@ -133,6 +136,9 @@ app.use('/api/parent',         parentRoutes)
 
 // v7 — AI Memory Brain
 app.use('/api/memory',         memoryRoutes)
+
+// v8 — School Health Monitor (admin)
+app.use('/api/school-health',  schoolHealthRoutes)
 
 // ─── Health check ─────────────────────────────────────────────────────────────
 app.get('/health', (_req, res) => {

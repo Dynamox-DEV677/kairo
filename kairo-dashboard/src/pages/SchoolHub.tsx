@@ -353,6 +353,7 @@ function AdminHub({ profile, schoolId }: { profile: AuthProfile; schoolId: strin
 
   const tabs = [
     { id: 'overview',  label: 'Overview',      icon: TrendingUp },
+    { id: 'health',    label: 'Health Monitor', icon: AlertTriangle },
     { id: 'pending',   label: 'Pending',        icon: Clock,      badge: pendingCount || undefined },
     { id: 'members',   label: 'Members',        icon: Users },
     { id: 'tasks',     label: 'Tasks',          icon: BookOpen },
@@ -371,6 +372,7 @@ function AdminHub({ profile, schoolId }: { profile: AuthProfile; schoolId: strin
           initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}
           transition={{ duration: 0.15 }}>
           {tab === 'overview' && <AdminOverview    schoolId={schoolId} />}
+          {tab === 'health'   && <AdminHealthMonitor />}
           {tab === 'pending'  && <AdminPending     schoolId={schoolId} onApprove={() => {}} />}
           {tab === 'members'  && <AdminMembers     schoolId={schoolId} selfId={profile.id} />}
           {tab === 'tasks'    && <AdminTasks       schoolId={schoolId} />}
@@ -585,6 +587,208 @@ function AdminOverview({ schoolId }: { schoolId: string }) {
         <StatCard label="Open Tasks"        value={stats.open_tasks}            icon={CheckSquare} color="#38bdf8" />
         <StatCard label="Active Notices"    value={stats.active_notifications}  icon={Bell}      color="#f472b6" />
       </div>
+    </div>
+  )
+}
+
+// School Health Monitor ───────────────────────────────────────────────────────
+function AdminHealthMonitor() {
+  const [data, setData] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+  const [err, setErr] = useState('')
+
+  const load = useCallback(async () => {
+    setLoading(true); setErr('')
+    try { setData(await api('/school-health')) }
+    catch (e: any) { setErr(e.message) }
+    finally { setLoading(false) }
+  }, [])
+
+  useEffect(() => { load() }, [load])
+
+  if (loading) return <Spinner />
+  if (err)     return <ErrBanner msg={err} />
+  if (!data)   return null
+
+  const score = data.health_score
+  const scoreColor = score >= 80 ? '#34d399' : score >= 60 ? '#fbbf24' : '#f87171'
+  const scoreLabel = score >= 80 ? 'Excellent' : score >= 60 ? 'Healthy' : score >= 40 ? 'Needs attention' : 'Critical'
+
+  return (
+    <div>
+      {/* Big health score card */}
+      <div style={{
+        background: '#111', border: '1px solid #1e1e1e', borderRadius: 14,
+        padding: 26, marginBottom: 16, position: 'relative', overflow: 'hidden',
+      }}>
+        <div style={{
+          position: 'absolute', top: -50, right: -50, width: 220, height: 220,
+          borderRadius: '50%', background: `${scoreColor}25`, filter: 'blur(60px)',
+        }} />
+        <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 24 }}>
+          <div style={{ position: 'relative', width: 110, height: 110 }}>
+            <svg viewBox="-55 -55 110 110" style={{ width: '100%', height: '100%', transform: 'rotate(-90deg)' }}>
+              <circle r={45} fill="none" stroke="#1a1a1a" strokeWidth={6} />
+              <circle r={45} fill="none" stroke={scoreColor} strokeWidth={6} strokeLinecap="round"
+                strokeDasharray={2 * Math.PI * 45}
+                strokeDashoffset={2 * Math.PI * 45 * (1 - score / 100)} />
+            </svg>
+            <div style={{
+              position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column',
+              alignItems: 'center', justifyContent: 'center',
+            }}>
+              <div style={{ fontSize: 32, fontWeight: 800, color: scoreColor, lineHeight: 1 }}>{score}</div>
+              <div style={{ fontSize: 9, color: '#71717a', textTransform: 'uppercase', letterSpacing: 1 }}>/ 100</div>
+            </div>
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 11, color: '#71717a', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1 }}>
+              School Health
+            </div>
+            <div style={{ fontSize: 28, fontWeight: 800, color: scoreColor, marginTop: 4, marginBottom: 6, lineHeight: 1 }}>
+              {scoreLabel}
+            </div>
+            <div style={{ fontSize: 12, color: '#a1a1aa' }}>
+              {data.alerts.length === 0
+                ? 'No active alerts. Keep going.'
+                : `${data.alerts.length} active alert${data.alerts.length === 1 ? '' : 's'} below.`}
+            </div>
+          </div>
+          <button onClick={load} style={{
+            padding: '8px 14px', borderRadius: 8, border: '1px solid #1e1e1e',
+            background: '#161616', color: '#71717a', cursor: 'pointer',
+            fontFamily: 'inherit', fontSize: 12, display: 'flex', alignItems: 'center', gap: 6,
+          }}>
+            <RefreshCw size={12} /> Refresh
+          </button>
+        </div>
+      </div>
+
+      {/* Alerts */}
+      {data.alerts.length > 0 && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
+          {data.alerts.map((a: any, i: number) => {
+            const c = a.level === 'high' ? '#f87171' : '#fbbf24'
+            return (
+              <div key={i} style={{
+                background: '#111', border: `1px solid ${c}40`, borderRadius: 11,
+                borderLeft: `3px solid ${c}`,
+                padding: '12px 16px', display: 'flex', gap: 12, alignItems: 'flex-start',
+              }}>
+                <AlertCircle size={16} color={c} style={{ flexShrink: 0, marginTop: 2 }} />
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: '#fafafa' }}>{a.title}</div>
+                  <div style={{ fontSize: 12, color: '#a1a1aa', marginTop: 3 }}>{a.body}</div>
+                </div>
+                <span style={{
+                  padding: '2px 8px', borderRadius: 4, fontSize: 9, fontWeight: 700,
+                  background: `${c}20`, color: c, textTransform: 'uppercase', letterSpacing: 1,
+                }}>{a.level}</span>
+              </div>
+            )
+          })}
+        </div>
+      )}
+
+      {/* Engagement */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: 16 }}>
+        {[
+          { l: 'Marks (7d)',     v: data.engagement.last7.marks,  t: data.engagement.trend.marks  },
+          { l: 'Tasks (7d)',     v: data.engagement.last7.tasks,  t: data.engagement.trend.tasks  },
+          { l: 'Submissions',    v: data.engagement.last7.subs,   t: data.engagement.trend.subs   },
+          { l: 'Notifications',  v: data.engagement.last7.notifs, t: data.engagement.trend.notifs },
+        ].map(s => (
+          <div key={s.l} style={{ background: '#111', border: '1px solid #1e1e1e', borderRadius: 11, padding: 14 }}>
+            <div style={{ fontSize: 10, color: '#71717a', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>
+              {s.l}
+            </div>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+              <span style={{ fontSize: 24, fontWeight: 800, color: '#fafafa' }}>{s.v}</span>
+              <span style={{
+                fontSize: 11, fontWeight: 700,
+                color: s.t > 0 ? '#34d399' : s.t < 0 ? '#f87171' : '#71717a',
+              }}>
+                {s.t > 0 ? '+' : ''}{s.t}%
+              </span>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+        {/* Class performance */}
+        <div style={{ background: '#111', border: '1px solid #1e1e1e', borderRadius: 12, padding: 16 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: '#fafafa', marginBottom: 12 }}>Class Performance</div>
+          {data.classPerformance.length === 0 && <div style={{ fontSize: 12, color: '#52525b', fontStyle: 'italic' }}>No marks logged yet.</div>}
+          {data.classPerformance.map((c: any) => (
+            <div key={c.class_name} style={{ marginBottom: 10 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                <span style={{ fontSize: 12, color: '#d4d4d8' }}>{c.class_name}</span>
+                <span style={{
+                  fontSize: 11, fontWeight: 700,
+                  color: c.avg_pct >= 75 ? '#34d399' : c.avg_pct >= 60 ? '#fbbf24' : '#f87171',
+                }}>{c.avg_pct}%</span>
+              </div>
+              <div style={{ height: 6, background: '#0d0d0d', borderRadius: 3, overflow: 'hidden' }}>
+                <div style={{
+                  height: '100%', width: `${c.avg_pct}%`,
+                  background: c.avg_pct >= 75 ? '#34d399' : c.avg_pct >= 60 ? '#fbbf24' : '#f87171',
+                }} />
+              </div>
+              <div style={{ fontSize: 10, color: '#52525b', marginTop: 2 }}>{c.exam_count} marks logged</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Teacher load */}
+        <div style={{ background: '#111', border: '1px solid #1e1e1e', borderRadius: 12, padding: 16 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: '#fafafa', marginBottom: 12 }}>Teacher Load (30d)</div>
+          {data.teacherLoad.length === 0 && <div style={{ fontSize: 12, color: '#52525b', fontStyle: 'italic' }}>No tasks created yet.</div>}
+          {data.teacherLoad.slice(0, 8).map((t: any) => (
+            <div key={t.id} style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              padding: '6px 10px', marginBottom: 4,
+              background: t.tasks >= 8 ? 'rgba(251,146,60,0.06)' : '#0d0d0d',
+              border: `1px solid ${t.tasks >= 8 ? 'rgba(251,146,60,0.25)' : '#1a1a1a'}`,
+              borderRadius: 6,
+            }}>
+              <span style={{ fontSize: 12, color: '#d4d4d8' }}>{t.name}</span>
+              <span style={{
+                fontSize: 11, fontWeight: 700,
+                color: t.tasks >= 8 ? '#fb923c' : t.tasks >= 4 ? '#fbbf24' : '#71717a',
+              }}>{t.tasks} task{t.tasks === 1 ? '' : 's'}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Lead funnel */}
+      {(data.leadFunnel.new + data.leadFunnel.contacted + data.leadFunnel.admitted) > 0 && (
+        <div style={{
+          background: '#111', border: '1px solid #1e1e1e', borderRadius: 12,
+          padding: 16, marginTop: 14,
+        }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: '#fafafa', marginBottom: 12 }}>
+            Admission Lead Funnel (30d)
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
+            {[
+              { l: 'New',       v: data.leadFunnel.new,       c: '#fbbf24' },
+              { l: 'Contacted', v: data.leadFunnel.contacted, c: '#818cf8' },
+              { l: 'Admitted',  v: data.leadFunnel.admitted,  c: '#34d399' },
+              { l: 'Rejected',  v: data.leadFunnel.rejected,  c: '#f87171' },
+            ].map(s => (
+              <div key={s.l} style={{
+                padding: 12, background: '#0d0d0d',
+                border: `1px solid ${s.c}30`, borderRadius: 8,
+              }}>
+                <div style={{ fontSize: 22, fontWeight: 700, color: s.c }}>{s.v}</div>
+                <div style={{ fontSize: 10.5, color: '#71717a', marginTop: 3 }}>{s.l}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

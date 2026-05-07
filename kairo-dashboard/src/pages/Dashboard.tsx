@@ -29,6 +29,7 @@ import MemoryBrain from './MemoryBrain'
 import FocusMode from './FocusMode'
 import CameraStudy from './CameraStudy'
 import MistakeAnalysis from './MistakeAnalysis'
+import RevisionSimulator from './RevisionSimulator'
 import { DEFAULT_MODEL } from '../lib/openrouter'
 
 import type { AuthProfile } from './Login'
@@ -60,6 +61,7 @@ const PAGE_TITLES: Record<string, string> = {
   focus:            'Focus Mode',
   camera:           'Camera Study',
   mistakes:         'Mistake Analysis',
+  simulator:        'Revision Simulator',
   settings:         'Settings',
 }
 
@@ -212,6 +214,9 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
 
             {/* Mistake Analysis */}
             <div style={pageStyle('mistakes')}><MistakeAnalysis /></div>
+
+            {/* Revision Simulator */}
+            <div style={pageStyle('simulator')}><RevisionSimulator /></div>
 
           </div>
 
