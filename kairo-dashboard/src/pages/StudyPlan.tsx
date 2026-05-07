@@ -1,124 +1,469 @@
-import { useState } from 'react'
-import { motion } from 'framer-motion'
-import { Sparkles } from 'lucide-react'
+/**
+ * Smart Timetable / Study Plan — AI-optimized
+ *
+ * Pulls:
+ *  - Weak topics auto-loaded from /api/memory (so AI weights them heavier)
+ *  - Per-subject exam dates (user adds them)
+ *  - Daily study hours + days available
+ *
+ * Outputs:
+ *  - Visual weekly grid (subjects × days color-coded)
+ *  - Day-by-day markdown plan
+ *  - Re-optimize button to regenerate as memory updates
+ */
+import { useState, useEffect, useCallback } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import {
+  Sparkles, Plus, X, Calendar, Brain, RefreshCw, BookOpen, Target, Zap,
+} from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { chat } from '../lib/openrouter'
 
-const SYSTEM = `You are Kairo, an expert study coach for Indian board exam students.
-Create a detailed, realistic day-by-day study plan. Format as markdown with clear structure,
-daily schedule, subject breakdown, revision days and mock test days. Be specific and motivating.`
+const SUBJECTS = [
+  'Mathematics', 'Physics', 'Chemistry', 'Biology',
+  'English', 'Hindi', 'History', 'Geography',
+  'Political Science', 'Economics', 'Computer Science',
+]
+const SUBJECT_COLORS: Record<string, string> = {
+  Mathematics: '#818cf8', Physics: '#38bdf8', Chemistry: '#34d399',
+  Biology: '#86efac', English: '#fb923c', Hindi: '#f472b6',
+  History: '#fbbf24', Geography: '#a78bfa',
+  'Political Science': '#67e8f9', Economics: '#facc15',
+  'Computer Science': '#a5f3fc',
+}
+const colorFor = (s: string) => SUBJECT_COLORS[s] || '#6366f1'
 
-const SUBJECTS = ['Mathematics','Physics','Chemistry','Biology','English','Hindi','History','Geography','Political Science','Economics','Computer Science']
+const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+
+const card: React.CSSProperties = { background: '#111', border: '1px solid #1e1e1e', borderRadius: 14 }
+const inp: React.CSSProperties = {
+  background: '#0d0d0d', border: '1px solid #1e1e1e', borderRadius: 8,
+  padding: '9px 12px', fontSize: 13, color: '#fafafa',
+  fontFamily: 'inherit', outline: 'none', width: '100%', boxSizing: 'border-box',
+}
+const lbl: React.CSSProperties = {
+  fontSize: 11, color: '#71717a', display: 'block', marginBottom: 5,
+  fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.8,
+}
+
+interface ExamDate { subject: string; date: string }
+
+interface ScheduleBlock {
+  day: string         // "Mon"
+  start: string       // "16:00"
+  end: string         // "17:30"
+  subject: string
+  topic?: string
+  type?: 'study' | 'revision' | 'practice' | 'rest'
+}
+
+const SYSTEM = `You are Kairo, an expert AI study coach for Indian board exam students.
+Generate a SMART weekly study schedule that:
+1. Distributes study time across days based on exam proximity (closer exams = more time).
+2. Front-loads weak topics in mornings/early sessions when focus is highest.
+3. Builds in spaced revision (revisit weak topics 2-3 times per week).
+4. Includes mock-test slots in the final 30% of the runway.
+5. Adds 1-2 rest blocks per week so the student doesn't burn out.
+
+Respond with TWO things in this exact format:
+
+\`\`\`json
+[
+  {"day":"Mon","start":"16:00","end":"17:30","subject":"Mathematics","topic":"Quadratic equations","type":"study"},
+  {"day":"Mon","start":"18:00","end":"18:30","subject":"Physics","topic":"Optics revision","type":"revision"}
+]
+\`\`\`
+
+(JSON array of weekly blocks, 12-22 entries total — that's the visual schedule.)
+
+Then a markdown plan:
+
+## Week at a Glance
+A 2-3 sentence summary of the strategy.
+
+## Day-by-Day Notes
+Brief tactical guidance for each day (1-2 lines per day).
+
+## Why This Schedule
+A short paragraph explaining the priority logic.
+
+Be concrete, realistic, and motivating.`
 
 export default function StudyPlan() {
-  const [form, setForm] = useState({ days: 30, subjects: [] as string[], weakAreas: '', hours: 6, board: 'CBSE', cls: '10' })
-  const [plan, setPlan] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+  const [board, setBoard]     = useState('CBSE')
+  const [cls, setCls]         = useState('10')
+  const [hours, setHours]     = useState(4)
+  const [subjects, setSubjects] = useState<string[]>([])
+  const [examDates, setExamDates] = useState<ExamDate[]>([])
+  const [weakTopics, setWeakTopics] = useState<string[]>([])
+  const [memoryCount, setMemoryCount] = useState(0)
+  const [loadingMemory, setLoadingMemory] = useState(true)
 
-  const toggleSubject = (s: string) => setForm(f => ({ ...f, subjects: f.subjects.includes(s) ? f.subjects.filter(x => x !== s) : [...f.subjects, s] }))
+  const [plan, setPlan]       = useState<{ markdown: string; blocks: ScheduleBlock[] } | null>(null)
+  const [busy, setBusy]       = useState(false)
+  const [err, setErr]         = useState('')
 
-  async function generate() {
-    if (!form.subjects.length) { setError('Select at least one subject'); return }
-    setLoading(true); setError(''); setPlan('')
+  // Auto-pull weak topics from AI memory
+  const loadMemory = useCallback(async () => {
+    setLoadingMemory(true)
     try {
-      const r = await chat({ messages: [{ role: 'system', content: SYSTEM }, { role: 'user', content: `${form.days}-day plan, Class ${form.cls} ${form.board}. Subjects: ${form.subjects.join(', ')}. Weak: ${form.weakAreas || 'none'}. Daily hours: ${form.hours}.` }] })
-      setPlan(r)
-    } catch (e: any) { setError(e.message) }
-    finally { setLoading(false) }
+      const r = await fetch('/api/memory', {
+        headers: { Authorization: `Bearer ${localStorage.getItem('kairo_token') || ''}` },
+      })
+      if (r.ok) {
+        const d = await r.json()
+        const weakItems = (d.weak || []).slice(0, 12)
+        setWeakTopics(weakItems.map((m: any) => m.topic || m.content).filter(Boolean))
+        setMemoryCount(d.total || 0)
+        // Auto-populate subjects from memory if user hasn't picked any
+        if (subjects.length === 0) {
+          const memSubjects = new Set<string>()
+          for (const m of weakItems) if (m.subject && SUBJECTS.includes(m.subject)) memSubjects.add(m.subject)
+          if (memSubjects.size > 0) setSubjects([...memSubjects])
+        }
+      }
+    } catch { /* non-fatal */ }
+    finally { setLoadingMemory(false) }
+  }, [subjects.length])
+
+  useEffect(() => { loadMemory() }, [loadMemory])
+
+  function toggleSubject(s: string) {
+    setSubjects(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s])
+  }
+  function addExamDate() {
+    setExamDates(prev => [...prev, { subject: subjects[0] || 'Mathematics', date: '' }])
+  }
+  function updateExamDate(i: number, k: keyof ExamDate, v: string) {
+    setExamDates(prev => prev.map((e, idx) => idx === i ? { ...e, [k]: v } : e))
+  }
+  function removeExamDate(i: number) {
+    setExamDates(prev => prev.filter((_, idx) => idx !== i))
   }
 
-  const inp = (extra = {}) => ({ style: { background: '#111', border: '1px solid #1e1e1e', borderRadius: 8, padding: '9px 12px', fontSize: 13, color: '#fafafa', fontFamily: 'inherit', outline: 'none', width: '100%', ...extra } })
+  async function generate() {
+    if (subjects.length === 0) { setErr('Pick at least one subject'); return }
+    setBusy(true); setErr(''); setPlan(null)
+
+    const examLines = examDates.filter(e => e.date)
+      .map(e => `- ${e.subject}: ${e.date}`).join('\n')
+
+    const userMsg = `Class ${cls} ${board}.
+Subjects to study: ${subjects.join(', ')}.
+Daily hours available: ${hours}.
+${examLines ? `Exam dates:\n${examLines}` : 'No fixed exam dates yet.'}
+${weakTopics.length ? `Weak topics that NEED extra reps:\n${weakTopics.map(t => `- ${t}`).join('\n')}` : ''}
+
+Generate the JSON schedule and markdown plan as instructed.`
+
+    try {
+      const reply = await chat({
+        messages: [
+          { role: 'system', content: SYSTEM },
+          { role: 'user',   content: userMsg },
+        ],
+      })
+
+      // Extract JSON block
+      const jsonMatch = reply.match(/```(?:json)?\s*(\[[\s\S]*?\])\s*```/)
+      let blocks: ScheduleBlock[] = []
+      if (jsonMatch) {
+        try { blocks = JSON.parse(jsonMatch[1]) } catch { /* ignore */ }
+      }
+      if (blocks.length === 0) {
+        // Fallback — try greedy match
+        const greedy = reply.match(/\[\s*\{[\s\S]*?\}\s*\]/)
+        if (greedy) try { blocks = JSON.parse(greedy[0]) } catch { /* ignore */ }
+      }
+
+      // Strip the JSON block from the markdown
+      const markdown = reply.replace(/```(?:json)?\s*\[[\s\S]*?\]\s*```/, '').trim()
+      setPlan({ markdown, blocks })
+    } catch (e: any) { setErr(e.message) }
+    finally { setBusy(false) }
+  }
 
   return (
-    <div style={{ padding: '28px 36px', maxWidth: 900, margin: '0 auto', height: '100%', overflowY: 'auto' }}>
-      <div style={{ marginBottom: 24 }}>
-        <h1 style={{ fontSize: 20, fontWeight: 700, color: '#fafafa', margin: 0 }}>Study Plan Builder</h1>
-        <p style={{ fontSize: 13, color: '#52525b', marginTop: 4 }}>Personalised day-by-day board exam preparation</p>
+    <div style={{ padding: '28px 36px', maxWidth: 1100, margin: '0 auto', height: '100%', overflowY: 'auto' }}>
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 22 }}>
+        <div style={{
+          width: 44, height: 44, borderRadius: 11,
+          background: 'linear-gradient(135deg, #fb923c, #f472b6)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          boxShadow: '0 0 18px rgba(251,146,60,0.35)', flexShrink: 0,
+        }}>
+          <Calendar size={22} color="#fff" />
+        </div>
+        <div style={{ flex: 1 }}>
+          <h1 style={{ fontSize: 20, fontWeight: 700, color: '#fafafa', margin: 0 }}>Smart Timetable</h1>
+          <p style={{ fontSize: 13, color: '#52525b', marginTop: 4 }}>
+            AI-optimized weekly schedule · weighted by your weak topics + upcoming exams
+          </p>
+        </div>
       </div>
 
+      {/* Memory pulse banner */}
+      {!loadingMemory && (
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px',
+          background: weakTopics.length ? 'rgba(99,102,241,0.06)' : 'rgba(82,82,91,0.04)',
+          border: `1px solid ${weakTopics.length ? 'rgba(99,102,241,0.2)' : '#1e1e1e'}`,
+          borderRadius: 10, marginBottom: 18,
+        }}>
+          <Brain size={14} color={weakTopics.length ? '#a5b4fc' : '#71717a'} />
+          <span style={{ fontSize: 12, color: weakTopics.length ? '#a5b4fc' : '#71717a' }}>
+            {weakTopics.length
+              ? <>Pulled <strong>{weakTopics.length} weak topic{weakTopics.length === 1 ? '' : 's'}</strong> from your AI Memory. AI will weight these heavier.</>
+              : memoryCount === 0
+                ? <>No memory data yet — schedule will be balanced. Use the Doubt Solver, Grader, or quizzes to teach Kairo your weak spots.</>
+                : <>Memory has {memoryCount} entries but no weak topics flagged yet.</>}
+          </span>
+          <button onClick={loadMemory} style={{
+            marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer',
+            color: '#52525b', display: 'flex', alignItems: 'center', gap: 4, fontSize: 11,
+          }}>
+            <RefreshCw size={11} /> Refresh
+          </button>
+        </div>
+      )}
+
+      {/* Setup form */}
       {!plan && (
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-          style={{ background: '#111', border: '1px solid #1e1e1e', borderRadius: 14, padding: 28, marginBottom: 20 }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14, marginBottom: 20 }}>
+        <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} style={{ ...card, padding: 22 }}>
+          {/* Row 1: board / class / hours */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14, marginBottom: 18 }}>
             <div>
-              <label style={{ fontSize: 11, color: '#71717a', display: 'block', marginBottom: 6, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.8 }}>Board</label>
-              <select {...inp({ appearance: 'none' })} value={form.board} onChange={e => setForm(f => ({ ...f, board: e.target.value }))}>
-                {['CBSE','ICSE','Maharashtra','Tamil Nadu','Karnataka','UP Board'].map(b => <option key={b}>{b}</option>)}
+              <label style={lbl}>Board</label>
+              <select value={board} onChange={e => setBoard(e.target.value)} style={{ ...inp, appearance: 'none' as any }}>
+                {['CBSE', 'ICSE', 'Maharashtra', 'Tamil Nadu', 'Karnataka', 'UP Board'].map(b => <option key={b}>{b}</option>)}
               </select>
             </div>
             <div>
-              <label style={{ fontSize: 11, color: '#71717a', display: 'block', marginBottom: 6, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.8 }}>Class</label>
-              <select {...inp({ appearance: 'none' })} value={form.cls} onChange={e => setForm(f => ({ ...f, cls: e.target.value }))}>
-                {['8','9','10','11','12'].map(c => <option key={c}>{c}</option>)}
+              <label style={lbl}>Class</label>
+              <select value={cls} onChange={e => setCls(e.target.value)} style={{ ...inp, appearance: 'none' as any }}>
+                {['8', '9', '10', '11', '12'].map(c => <option key={c}>{c}</option>)}
               </select>
             </div>
             <div>
-              <label style={{ fontSize: 11, color: '#71717a', display: 'block', marginBottom: 6, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.8 }}>Days until exam</label>
-              <input type="number" min={7} max={180} {...inp()} value={form.days} onChange={e => setForm(f => ({ ...f, days: +e.target.value }))} />
+              <label style={lbl}>Daily study hours</label>
+              <input type="number" min={1} max={12} value={hours}
+                onChange={e => setHours(Math.max(1, Math.min(12, +e.target.value || 1)))} style={inp} />
             </div>
           </div>
 
-          <div style={{ marginBottom: 20 }}>
-            <label style={{ fontSize: 11, color: '#71717a', display: 'block', marginBottom: 8, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.8 }}>
-              Daily study hours: <span style={{ color: '#818cf8' }}>{form.hours}h</span>
-            </label>
-            <input type="range" min={2} max={12} value={form.hours} onChange={e => setForm(f => ({ ...f, hours: +e.target.value }))} style={{ width: '100%', accentColor: '#6366f1' }} />
+          {/* Subjects */}
+          <div style={{ marginBottom: 18 }}>
+            <label style={lbl}>Subjects ({subjects.length} selected)</label>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+              {SUBJECTS.map(s => {
+                const selected = subjects.includes(s)
+                return (
+                  <button key={s} onClick={() => toggleSubject(s)} style={{
+                    padding: '6px 12px', borderRadius: 7, cursor: 'pointer',
+                    border: `1px solid ${selected ? colorFor(s) : '#1e1e1e'}`,
+                    background: selected ? `${colorFor(s)}15` : '#0d0d0d',
+                    color: selected ? colorFor(s) : '#71717a',
+                    fontFamily: 'inherit', fontSize: 12, fontWeight: 600,
+                  }}>{s}</button>
+                )
+              })}
+            </div>
           </div>
 
-          <div style={{ marginBottom: 20 }}>
-            <label style={{ fontSize: 11, color: '#71717a', display: 'block', marginBottom: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.8 }}>Subjects</label>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-              {SUBJECTS.map(s => (
-                <motion.button key={s} whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} onClick={() => toggleSubject(s)}
-                  style={{ padding: '6px 12px', borderRadius: 7, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit',
-                    background: form.subjects.includes(s) ? 'rgba(99,102,241,0.15)' : '#161616',
-                    border: `1px solid ${form.subjects.includes(s) ? '#6366f1' : '#1e1e1e'}`,
-                    color: form.subjects.includes(s) ? '#818cf8' : '#52525b' }}>
-                  {s}
-                </motion.button>
+          {/* Exam dates */}
+          <div style={{ marginBottom: 18 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+              <label style={lbl}>Exam dates (optional — sharpens AI priorities)</label>
+              <button onClick={addExamDate} disabled={subjects.length === 0} style={{
+                padding: '5px 10px', borderRadius: 6, border: '1px solid #1e1e1e',
+                background: '#161616', color: '#a1a1aa',
+                fontFamily: 'inherit', fontSize: 11, cursor: subjects.length === 0 ? 'not-allowed' : 'pointer',
+                display: 'flex', alignItems: 'center', gap: 5,
+              }}><Plus size={11} /> Add Exam</button>
+            </div>
+            <AnimatePresence>
+              {examDates.map((e, i) => (
+                <motion.div key={i} initial={{ opacity: 0, x: -6 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}
+                  style={{ display: 'flex', gap: 8, marginBottom: 6 }}>
+                  <select value={e.subject} onChange={ev => updateExamDate(i, 'subject', ev.target.value)}
+                    style={{ ...inp, flex: 1, appearance: 'none' as any }}>
+                    {subjects.map(s => <option key={s}>{s}</option>)}
+                  </select>
+                  <input type="date" value={e.date} onChange={ev => updateExamDate(i, 'date', ev.target.value)}
+                    style={{ ...inp, width: 180 }} />
+                  <button onClick={() => removeExamDate(i)} style={{
+                    width: 36, height: 36, borderRadius: 7, border: '1px solid #1e1e1e',
+                    background: '#161616', color: '#71717a', cursor: 'pointer',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}><X size={13} /></button>
+                </motion.div>
               ))}
+            </AnimatePresence>
+          </div>
+
+          {/* Weak topics chip row */}
+          {weakTopics.length > 0 && (
+            <div style={{ marginBottom: 18 }}>
+              <label style={lbl}>Auto-detected weak topics</label>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                {weakTopics.map((t, i) => (
+                  <span key={i} style={{
+                    padding: '5px 10px', borderRadius: 6,
+                    background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.25)',
+                    color: '#fbbf24', fontSize: 11, fontWeight: 600,
+                    display: 'inline-flex', alignItems: 'center', gap: 5,
+                  }}>
+                    <Target size={10} /> {t}
+                  </span>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
-          <div style={{ marginBottom: 24 }}>
-            <label style={{ fontSize: 11, color: '#71717a', display: 'block', marginBottom: 6, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.8 }}>Weak areas (optional)</label>
-            <input {...inp()} placeholder="e.g. Calculus, Organic Chemistry" value={form.weakAreas} onChange={e => setForm(f => ({ ...f, weakAreas: e.target.value }))} />
-          </div>
+          {err && <p style={{ fontSize: 12, color: '#f87171', marginBottom: 12 }}>{err}</p>}
 
-          {error && <p style={{ fontSize: 12, color: '#f87171', marginBottom: 16 }}>{error}</p>}
-
-          <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} onClick={generate} disabled={loading}
-            style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '11px 22px', borderRadius: 10, border: 'none',
-              background: 'linear-gradient(135deg, #6366f1, #7c3aed)', color: '#fff', fontFamily: 'inherit', fontSize: 14, fontWeight: 600, cursor: 'pointer',
-              boxShadow: '0 0 20px rgba(99,102,241,0.3)', opacity: loading ? 0.6 : 1 }}>
-            <Sparkles size={14} />
-            {loading ? 'Building plan…' : 'Build study plan'}
+          <motion.button
+            whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
+            onClick={generate} disabled={busy || subjects.length === 0}
+            style={{
+              padding: '12px 24px', borderRadius: 10, border: 'none',
+              background: busy || subjects.length === 0
+                ? '#1c1c1c'
+                : 'linear-gradient(135deg, #6366f1, #7c3aed)',
+              color: busy || subjects.length === 0 ? '#52525b' : '#fff',
+              fontFamily: 'inherit', fontSize: 14, fontWeight: 700,
+              cursor: busy || subjects.length === 0 ? 'not-allowed' : 'pointer',
+              display: 'flex', alignItems: 'center', gap: 8,
+              boxShadow: busy || subjects.length === 0 ? 'none' : '0 0 22px rgba(99,102,241,0.35)',
+            }}>
+            <Sparkles size={14} />{busy ? 'Optimizing your week…' : 'Generate Smart Schedule'}
           </motion.button>
         </motion.div>
       )}
 
-      {loading && (
-        <div style={{ textAlign: 'center', padding: 60 }}>
-          <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginBottom: 14 }}>
-            {[0,1,2].map(i => <div key={i} style={{ width: 8, height: 8, borderRadius: '50%', background: '#6366f1', animation: `dot-bounce 1.2s ease-in-out ${i * 0.2}s infinite` }} />)}
-          </div>
-          <p style={{ fontSize: 13, color: '#52525b' }}>Building your personalised plan…</p>
-        </div>
-      )}
+      {/* Results */}
+      {plan && (
+        <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}>
+          {/* Visual weekly grid */}
+          {plan.blocks.length > 0 && (
+            <div style={{ ...card, padding: 18, marginBottom: 16 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+                <Zap size={15} color="#34d399" />
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: '#fafafa' }}>Weekly Schedule</div>
+                  <div style={{ fontSize: 11, color: '#52525b' }}>{plan.blocks.length} optimized blocks across the week</div>
+                </div>
+              </div>
+              <WeekGrid blocks={plan.blocks} />
+            </div>
+          )}
 
-      {plan && !loading && (
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-            <p style={{ fontSize: 13, color: '#52525b' }}>Your {form.days}-day plan is ready</p>
-            <button onClick={() => setPlan('')} style={{ fontSize: 12, padding: '6px 14px', borderRadius: 7, background: '#161616', border: '1px solid #1e1e1e', color: '#71717a', cursor: 'pointer', fontFamily: 'inherit' }}>Rebuild plan</button>
-          </div>
-          <div style={{ background: '#111', border: '1px solid #1e1e1e', borderRadius: 14, padding: '28px 32px' }}>
-            <div className="prose-ai"><ReactMarkdown remarkPlugins={[remarkGfm]}>{plan}</ReactMarkdown></div>
+          {/* Markdown plan */}
+          <div style={{ ...card, padding: 22 }}>
+            <div className="prose-ai" style={{
+              fontSize: 13.5, color: '#e4e4e7', lineHeight: 1.7,
+            }}>
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>{plan.markdown}</ReactMarkdown>
+            </div>
+
+            <div style={{ display: 'flex', gap: 8, marginTop: 18 }}>
+              <button onClick={() => { setPlan(null); }} style={{
+                padding: '8px 14px', borderRadius: 8, border: '1px solid #1e1e1e',
+                background: '#161616', color: '#a1a1aa', cursor: 'pointer',
+                fontFamily: 'inherit', fontSize: 12, display: 'flex', alignItems: 'center', gap: 6,
+              }}>
+                <Plus size={12} /> Edit Setup
+              </button>
+              <button onClick={generate} disabled={busy} style={{
+                padding: '8px 14px', borderRadius: 8, border: '1px solid rgba(99,102,241,0.3)',
+                background: 'rgba(99,102,241,0.08)', color: '#a5b4fc', cursor: 'pointer',
+                fontFamily: 'inherit', fontSize: 12, display: 'flex', alignItems: 'center', gap: 6,
+              }}>
+                <RefreshCw size={12} style={{ animation: busy ? 'spin 0.8s linear infinite' : 'none' }} />
+                Re-optimize with Latest Memory
+              </button>
+            </div>
           </div>
         </motion.div>
       )}
+    </div>
+  )
+}
+
+// ─── Weekly grid visualization ────────────────────────────────────────────────
+function WeekGrid({ blocks }: { blocks: ScheduleBlock[] }) {
+  // Group by day
+  const byDay: Record<string, ScheduleBlock[]> = {}
+  for (const d of DAYS) byDay[d] = []
+  for (const b of blocks) {
+    const day = b.day.slice(0, 3)
+    if (byDay[day]) byDay[day].push(b)
+  }
+  for (const d of DAYS) byDay[d].sort((a, b) => a.start.localeCompare(b.start))
+
+  return (
+    <div style={{
+      display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 8,
+    }}>
+      {DAYS.map(d => (
+        <div key={d}>
+          <div style={{
+            fontSize: 11, fontWeight: 700, color: '#71717a',
+            textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8, textAlign: 'center',
+          }}>
+            {d}
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, minHeight: 80 }}>
+            {byDay[d].length === 0 && (
+              <div style={{
+                padding: '14px 6px', textAlign: 'center', borderRadius: 7,
+                border: '1px dashed #1e1e1e', fontSize: 10, color: '#3f3f46',
+              }}>rest</div>
+            )}
+            {byDay[d].map((b, i) => (
+              <motion.div key={i} initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.05 }}
+                style={{
+                  padding: '8px 9px', borderRadius: 7,
+                  background: `${colorFor(b.subject)}15`,
+                  border: `1px solid ${colorFor(b.subject)}40`,
+                  borderLeft: `3px solid ${colorFor(b.subject)}`,
+                }}>
+                <div style={{
+                  fontSize: 10, fontWeight: 700, color: colorFor(b.subject),
+                  textTransform: 'uppercase', letterSpacing: 0.5,
+                }}>
+                  {b.start}–{b.end}
+                </div>
+                <div style={{ fontSize: 11.5, color: '#fafafa', fontWeight: 600, marginTop: 2 }}>
+                  {b.subject}
+                </div>
+                {b.topic && (
+                  <div style={{
+                    fontSize: 10, color: '#a1a1aa', marginTop: 1,
+                    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                  }}>{b.topic}</div>
+                )}
+                {b.type && b.type !== 'study' && (
+                  <span style={{
+                    display: 'inline-block', marginTop: 3,
+                    fontSize: 9, padding: '1px 5px', borderRadius: 3,
+                    background: b.type === 'revision' ? 'rgba(251,191,36,0.15)'
+                      : b.type === 'practice' ? 'rgba(52,211,153,0.15)'
+                      : 'rgba(82,82,91,0.15)',
+                    color: b.type === 'revision' ? '#fbbf24'
+                      : b.type === 'practice' ? '#34d399'
+                      : '#a1a1aa',
+                    fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5,
+                  }}>{b.type}</span>
+                )}
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      ))}
     </div>
   )
 }

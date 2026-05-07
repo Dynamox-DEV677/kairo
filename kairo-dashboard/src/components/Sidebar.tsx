@@ -6,7 +6,7 @@ import {
   Sun, Moon, Clock, Camera, Plus, X,
   GraduationCap, Shield, Sparkles, DollarSign, Bot, UserCheck, Grid3x3, Building2,
   Edit3, Lightbulb, FunctionSquare, Brain, TrendingUp, Star, Timer, Megaphone,
-  Target,
+  Target, Activity,
 } from 'lucide-react'
 import { useGeneration } from '../lib/generationContext'
 import { getRecentChats, deleteRecentChat, timeAgo } from '../lib/recentChats'
@@ -25,6 +25,7 @@ interface NavItem {
 const STUDENT_NAV: NavItem[] = [
   { label: 'Doubt Solver',    icon: MessageCircle,   to: 'doubt',         color: '#818cf8' },
   { label: 'AI Memory',       icon: Brain,           to: 'memory',        color: '#a78bfa' },
+  { label: 'Mistake Analysis',icon: Activity,        to: 'mistakes',      color: '#f87171' },
   { label: 'Camera Study',    icon: Camera,          to: 'camera',        color: '#f472b6' },
   { label: 'Focus Mode',      icon: Target,          to: 'focus',         color: '#34d399' },
   { label: 'Flashcards',      icon: BookMarked,      to: 'flashcards',    color: '#34d399' },

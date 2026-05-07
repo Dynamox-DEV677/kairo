@@ -28,6 +28,7 @@ import ParentDashboard from './ParentDashboard'
 import MemoryBrain from './MemoryBrain'
 import FocusMode from './FocusMode'
 import CameraStudy from './CameraStudy'
+import MistakeAnalysis from './MistakeAnalysis'
 import { DEFAULT_MODEL } from '../lib/openrouter'
 
 import type { AuthProfile } from './Login'
@@ -58,6 +59,7 @@ const PAGE_TITLES: Record<string, string> = {
   memory:           'AI Memory',
   focus:            'Focus Mode',
   camera:           'Camera Study',
+  mistakes:         'Mistake Analysis',
   settings:         'Settings',
 }
 
@@ -207,6 +209,9 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
 
             {/* Camera Study */}
             <div style={pageStyle('camera')}><CameraStudy /></div>
+
+            {/* Mistake Analysis */}
+            <div style={pageStyle('mistakes')}><MistakeAnalysis /></div>
 
           </div>
 
