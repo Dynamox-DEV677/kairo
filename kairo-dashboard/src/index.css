@@ -166,11 +166,16 @@ html, body, #root {
   grid-template-columns: repeat(2, 1fr) !important;
 }
 
-/* Disable absolute insets created by pageStyle() for the mobile transition feel — keep them but ensure visibility under the top bar */
+/* Pages with inset:0 — lift them above the bottom nav (60px nav + 12px gap + safe-area) */
 .kairo-mobile [style*="position: 'absolute'"][style*="inset: 0"] {
-  position: relative !important;
-  inset: auto !important;
-  height: 100%;
+  bottom: calc(72px + env(safe-area-inset-bottom)) !important;
+}
+
+/* ChatWindow's input border — give the input area its own breathing room from the nav */
+.kairo-mobile [style*="borderTop: '1px solid #1a1a1a'"]:last-child,
+.kairo-mobile [style*="borderTop: '1px solid #1e1e1e'"]:last-child {
+  padding-bottom: calc(14px + env(safe-area-inset-bottom)) !important;
+  margin-bottom: 8px;
 }
 
 /* Inputs / textareas should never zoom-on-focus on iOS — needs >= 16px font-size */
