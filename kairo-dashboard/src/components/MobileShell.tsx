@@ -16,6 +16,7 @@ import {
   TrendingUp, Megaphone, Bell, DollarSign, Bot, UserCheck, Grid3x3,
   Building2, GraduationCap, Shield, Sparkles, Settings, LogOut,
   Sun, Moon, Menu, X, MoreHorizontal, ChevronRight, Key, Copy, Check,
+  AlertTriangle,
 } from 'lucide-react'
 import type { AuthProfile } from '../pages/Login'
 
@@ -57,11 +58,12 @@ const DRAWER_STUDENT = [
   {
     title: 'Core',
     items: [
-      { to: 'doubt',      label: 'Doubt Solver',     icon: MessageCircle },
-      { to: 'memory',     label: 'AI Memory',         icon: Brain },
-      { to: 'mistakes',   label: 'Mistake Analysis',  icon: Activity },
-      { to: 'simulator',  label: 'Revision Simulator', icon: Zap },
-      { to: 'adaptive',   label: 'Adaptive Path',     icon: Compass },
+      { to: 'doubt',          label: 'Doubt Solver',      icon: MessageCircle },
+      { to: 'memory',         label: 'AI Memory',          icon: Brain },
+      { to: 'mistakes',       label: 'Mistake Analysis',   icon: Activity },
+      { to: 'explain-mistake',label: 'Explain Mistake',    icon: AlertTriangle },
+      { to: 'simulator',      label: 'Revision Simulator', icon: Zap },
+      { to: 'adaptive',       label: 'Adaptive Path',      icon: Compass },
     ],
   },
   {
@@ -88,10 +90,12 @@ const DRAWER_STUDENT = [
   {
     title: 'Progress',
     items: [
-      { to: 'battle',       label: 'Battle Mode',    icon: Swords },
-      { to: 'analytics',    label: 'Analytics',      icon: TrendingUp },
-      { to: 'gamification', label: 'My Progress',    icon: Star },
-      { to: 'notebook',     label: 'AI Notebook',    icon: BookOpen },
+      { to: 'battle',          label: 'Battle Mode',       icon: Swords },
+      { to: 'perf-predictor',  label: 'Performance Predictor', icon: TrendingUp },
+      { to: 'panic',           label: 'Panic Mode',        icon: Zap },
+      { to: 'analytics',       label: 'Analytics',         icon: TrendingUp },
+      { to: 'gamification',    label: 'My Progress',       icon: Star },
+      { to: 'notebook',        label: 'AI Notebook',       icon: BookOpen },
     ],
   },
   {

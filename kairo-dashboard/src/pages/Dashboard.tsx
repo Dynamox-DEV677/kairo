@@ -39,6 +39,9 @@ import VoiceTutor from './VoiceTutor'
 import BattleMode from './BattleMode'
 import KnowledgeGraph from './KnowledgeGraph'
 import TeacherAssistant from './TeacherAssistant'
+import ExplainMistake from './ExplainMistake'
+import PerformancePredictor from './PerformancePredictor'
+import PanicMode from './PanicMode'
 import { DEFAULT_MODEL } from '../lib/openrouter'
 
 import type { AuthProfile } from './Login'
@@ -78,6 +81,9 @@ const PAGE_TITLES: Record<string, string> = {
   battle:           'Battle Mode',
   knowledge:        'Knowledge Graph',
   'teacher-ai':     'AI Teacher Assistant',
+  'explain-mistake': 'Explain My Mistake',
+  'perf-predictor': 'Performance Predictor',
+  panic:            'Exam Panic Mode',
   settings:         'Settings',
 }
 
@@ -277,6 +283,15 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
 
             {/* AI Teacher Assistant */}
             <div style={pageStyle('teacher-ai')}><TeacherAssistant /></div>
+
+            {/* Explain My Mistake */}
+            <div style={pageStyle('explain-mistake')}><ExplainMistake /></div>
+
+            {/* Performance Predictor */}
+            <div style={pageStyle('perf-predictor')}><PerformancePredictor /></div>
+
+            {/* Exam Panic Mode */}
+            <div style={pageStyle('panic')}><PanicMode /></div>
 
           </div>
 
