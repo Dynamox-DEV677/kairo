@@ -30,6 +30,9 @@ import FocusMode from './FocusMode'
 import CameraStudy from './CameraStudy'
 import MistakeAnalysis from './MistakeAnalysis'
 import RevisionSimulator from './RevisionSimulator'
+import Notebook from './Notebook'
+import AdaptivePath from './AdaptivePath'
+import ConceptMap from './ConceptMap'
 import { DEFAULT_MODEL } from '../lib/openrouter'
 
 import type { AuthProfile } from './Login'
@@ -62,6 +65,9 @@ const PAGE_TITLES: Record<string, string> = {
   camera:           'Camera Study',
   mistakes:         'Mistake Analysis',
   simulator:        'Revision Simulator',
+  notebook:         'AI Notebook',
+  adaptive:         'Adaptive Path',
+  'concept-map':    'Concept Map',
   settings:         'Settings',
 }
 
@@ -80,6 +86,12 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
   const [lastQuestion, setLastQuestion] = useState('')
   const [hasContent, setHasContent]   = useState(false)
   const [selectedModel, setSelectedModel] = useState(DEFAULT_MODEL)
+
+  // Expose setActive to other pages (used by Adaptive Path's "jump to feature" buttons)
+  useEffect(() => {
+    (window as any).__kairoSetActive = setActive
+    return () => { delete (window as any).__kairoSetActive }
+  }, [])
 
   // Apply theme to document root + persist
   useEffect(() => {
@@ -217,6 +229,15 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
 
             {/* Revision Simulator */}
             <div style={pageStyle('simulator')}><RevisionSimulator /></div>
+
+            {/* AI Notebook */}
+            <div style={pageStyle('notebook')}><Notebook /></div>
+
+            {/* Adaptive Path */}
+            <div style={pageStyle('adaptive')}><AdaptivePath /></div>
+
+            {/* Concept Map */}
+            <div style={pageStyle('concept-map')}><ConceptMap /></div>
 
           </div>
 

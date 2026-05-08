@@ -6,7 +6,7 @@ import {
   Sun, Moon, Clock, Camera, Plus, X,
   GraduationCap, Shield, Sparkles, DollarSign, Bot, UserCheck, Grid3x3, Building2,
   Edit3, Lightbulb, FunctionSquare, Brain, TrendingUp, Star, Timer, Megaphone,
-  Target, Activity, Zap,
+  Target, Activity, Zap, Compass, Network,
 } from 'lucide-react'
 import { useGeneration } from '../lib/generationContext'
 import { getRecentChats, deleteRecentChat, timeAgo } from '../lib/recentChats'
@@ -27,6 +27,9 @@ const STUDENT_NAV: NavItem[] = [
   { label: 'AI Memory',       icon: Brain,           to: 'memory',        color: '#a78bfa' },
   { label: 'Mistake Analysis',icon: Activity,        to: 'mistakes',      color: '#f87171' },
   { label: 'Revision Sim',    icon: Zap,             to: 'simulator',     color: '#fb923c' },
+  { label: 'Adaptive Path',   icon: Compass,         to: 'adaptive',      color: '#38bdf8' },
+  { label: 'Concept Map',     icon: Network,         to: 'concept-map',   color: '#a78bfa' },
+  { label: 'AI Notebook',     icon: BookOpen,        to: 'notebook',      color: '#fbbf24' },
   { label: 'Camera Study',    icon: Camera,          to: 'camera',        color: '#f472b6' },
   { label: 'Focus Mode',      icon: Target,          to: 'focus',         color: '#34d399' },
   { label: 'Flashcards',      icon: BookMarked,      to: 'flashcards',    color: '#34d399' },

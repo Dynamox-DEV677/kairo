@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import { BookMarked, ChevronLeft, ChevronRight, Sparkles, RotateCcw } from 'lucide-react'
 import { chat } from '../lib/openrouter'
 import { usePageGeneration } from '../lib/generationContext'
+import { saveToNotebook } from '../lib/notebook'
 
 const SYSTEM = `You are Kairo, an expert tutor for Indian school students.
 When given a chapter or topic, generate exactly 8-12 flashcards in this JSON format:
@@ -72,6 +73,16 @@ export default function Flashcards() {
       }
 
       setCards(valid)
+
+      // Auto-save to notebook (best-effort, fire-and-forget)
+      saveToNotebook({
+        kind: 'flashcards',
+        title: `Flashcards · ${topic}`,
+        content: valid.map((c, i) => `**${i + 1}. ${c.front}**\n\n${c.back}`).join('\n\n---\n\n'),
+        subject: null,
+        tags: [topic.split(' ')[0]],
+        source: 'flashcards-page',
+      })
     } catch (e: any) { setError(e.message) }
     finally { setLoading(false); stopGenerating() }
   }
