@@ -25,6 +25,7 @@ import crypto       from 'crypto'
 import { supabaseAdmin, requireSupabase }         from '../services/supabase.js'
 import { requireSupabaseAuth }                     from '../middleware/supabaseAuth.js'
 import { requireSchoolAdmin, requireTeacherOrAdmin } from '../middleware/schoolAuth.js'
+import { schoolCreatedEmail, approvedEmail }      from '../services/welcomeEmail.js'
 
 const router = Router()
 router.use(requireSupabase)
@@ -113,6 +114,18 @@ router.post('/register', async (req, res) => {
     }
 
     console.log(`[Schools] ✓ Registered: ${school_name} (${school.id})`)
+
+    // Welcome email — fire and forget
+    if (owner_email && owner_name) {
+      schoolCreatedEmail({
+        to:         owner_email.trim(),
+        name:       owner_name.trim(),
+        schoolName: school_name.trim(),
+        joinCode:   plainPasscode,
+        plan:       'pending',
+        trial:      false,
+      }).catch(() => {})
+    }
 
     res.status(201).json({
       message:        'School registered successfully.',
@@ -367,6 +380,20 @@ router.post('/:id/approve/:userId', requireSupabaseAuth, requireSchoolAdmin, asy
       .eq('id', userId)
 
     if (error) throw new Error(error.message)
+
+    // Approval email — pull email from auth.users + school name
+    try {
+      const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(userId)
+      const { data: school }   = await supabaseAdmin.from('schools').select('school_name').eq('id', schoolId).single()
+      if (authUser?.user?.email && school?.school_name) {
+        approvedEmail({
+          to:         authUser.user.email,
+          name:       target.name,
+          schoolName: school.school_name,
+          role:       target.role,
+        }).catch(() => {})
+      }
+    } catch { /* fire-and-forget */ }
 
     res.json({ message: `${target.name} has been approved and can now access school features.` })
   } catch (e) {

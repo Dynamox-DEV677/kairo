@@ -13,6 +13,7 @@ import crypto      from 'crypto'
 import bcrypt      from 'bcryptjs'
 import { supabaseAdmin, requireSupabase } from '../services/supabase.js'
 import { requireSupabaseAuth, requireRole } from '../middleware/supabaseAuth.js'
+import { parentLinkedEmail }                from '../services/welcomeEmail.js'
 
 const router = Router()
 router.use(requireSupabase)
@@ -193,6 +194,14 @@ router.post('/register', async (req, res) => {
       .maybeSingle()
 
     console.log(`[Parent] ✓ Registered: ${name} → linked to student ${student?.name}`)
+
+    // Welcome email — fire and forget
+    parentLinkedEmail({
+      to:          email.trim().toLowerCase(),
+      name:        name.trim(),
+      studentName: student?.name || 'your child',
+      schoolName:  school?.school_name || 'their school',
+    }).catch(() => {})
 
     res.status(201).json({
       message:       `Account created. You are now linked to ${student?.name}.`,

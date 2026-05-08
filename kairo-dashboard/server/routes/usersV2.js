@@ -13,6 +13,7 @@ import { Router } from 'express'
 import bcrypt     from 'bcryptjs'
 import { supabaseAdmin, requireSupabase }      from '../services/supabase.js'
 import { requireSupabaseAuth, requireRole }    from '../middleware/supabaseAuth.js'
+import { joinedSchoolEmail }                    from '../services/welcomeEmail.js'
 import { getClientIp, isIpInRange }            from '../middleware/schoolAuth.js'
 
 const router = Router()
@@ -156,6 +157,15 @@ router.post('/register', async (req, res) => {
 
     const autoPromoted = isFirstMember && role !== 'admin'
     console.log(`[Users] ✓ Registered: ${name} (${effectiveRole}, ${initialStatus}) → ${school.school_name}${autoPromoted ? ' [auto-promoted to admin]' : ''}`)
+
+    // Welcome email — fire and forget
+    joinedSchoolEmail({
+      to:               email.trim().toLowerCase(),
+      name:             name.trim(),
+      role:             effectiveRole,
+      schoolName:       school.school_name,
+      requireApproval:  initialStatus === 'pending',
+    }).catch(() => {})
 
     res.status(201).json({
       message: isFirstMember
