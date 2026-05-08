@@ -33,6 +33,8 @@ import RevisionSimulator from './RevisionSimulator'
 import Notebook from './Notebook'
 import AdaptivePath from './AdaptivePath'
 import ConceptMap from './ConceptMap'
+import VoiceTutor from './VoiceTutor'
+import BattleMode from './BattleMode'
 import { DEFAULT_MODEL } from '../lib/openrouter'
 
 import type { AuthProfile } from './Login'
@@ -68,6 +70,8 @@ const PAGE_TITLES: Record<string, string> = {
   notebook:         'AI Notebook',
   adaptive:         'Adaptive Path',
   'concept-map':    'Concept Map',
+  voice:            'Voice Tutor',
+  battle:           'Battle Mode',
   settings:         'Settings',
 }
 
@@ -238,6 +242,12 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
 
             {/* Concept Map */}
             <div style={pageStyle('concept-map')}><ConceptMap /></div>
+
+            {/* Voice Tutor */}
+            <div style={pageStyle('voice')}><VoiceTutor /></div>
+
+            {/* Battle Mode */}
+            <div style={pageStyle('battle')}><BattleMode /></div>
 
           </div>
 

@@ -1,0 +1,224 @@
+/**
+ * Exam Battle Mode — daily challenge + school leaderboard.
+ *
+ * Async "battle" model (avoids realtime infra costs):
+ *   - Each day, students compete on the same scoring system.
+ *   - Submit a battle score → leaderboard updates.
+ *   - Server tracks streaks, XP, ranks per school.
+ *
+ * Routes:
+ *   POST /api/battle/submit            Save a battle result
+ *   GET  /api/battle/leaderboard       Top 50 scorers in my school (today / week / all-time)
+ *   GET  /api/battle/me                My stats (XP, streak, rank, last 10 battles)
+ *   GET  /api/battle/daily-challenge   The shared daily challenge seed/topic
+ */
+import { Router } from 'express'
+import { supabaseAdmin, requireSupabase } from '../services/supabase.js'
+import { requireSupabaseAuth } from '../middleware/supabaseAuth.js'
+
+const router = Router()
+router.use(requireSupabase)
+router.use(requireSupabaseAuth)
+
+// XP per correct answer scaled by difficulty
+const XP_PER_CORRECT = { easy: 8, medium: 14, hard: 22 }
+
+// Today's date as YYYY-MM-DD
+function today() { return new Date().toISOString().slice(0, 10) }
+
+// Daily challenge — deterministic topic rotation seeded by date
+const DAILY_TOPICS = [
+  { subject: 'Mathematics', topic: 'Quadratic Equations',  difficulty: 'medium' },
+  { subject: 'Physics',     topic: 'Newton\'s Laws',         difficulty: 'medium' },
+  { subject: 'Chemistry',   topic: 'Periodic Table Trends', difficulty: 'medium' },
+  { subject: 'Biology',     topic: 'Photosynthesis',         difficulty: 'easy'   },
+  { subject: 'English',     topic: 'Tenses & Modals',        difficulty: 'easy'   },
+  { subject: 'History',     topic: 'Indian Independence',    difficulty: 'medium' },
+  { subject: 'Mathematics', topic: 'Trigonometry',           difficulty: 'hard'   },
+  { subject: 'Physics',     topic: 'Optics',                 difficulty: 'medium' },
+  { subject: 'Geography',   topic: 'Climate Zones',          difficulty: 'easy'   },
+  { subject: 'Chemistry',   topic: 'Acids & Bases',          difficulty: 'medium' },
+]
+
+// Submit a battle result
+router.post('/submit', async (req, res) => {
+  const { score, total, difficulty = 'medium', topic, subject, daily = false } = req.body || {}
+  if (typeof score !== 'number' || typeof total !== 'number' || total < 1) {
+    return res.status(400).json({ error: 'score and total must be numbers, total > 0' })
+  }
+  if (!['easy', 'medium', 'hard'].includes(difficulty)) {
+    return res.status(400).json({ error: 'difficulty must be easy/medium/hard' })
+  }
+  if (!req.schoolId) return res.status(400).json({ error: 'You must be in a school to play.' })
+
+  const xp = score * (XP_PER_CORRECT[difficulty] || 14)
+
+  try {
+    const { data, error } = await supabaseAdmin
+      .from('battle_scores')
+      .insert({
+        user_id:    req.user.id,
+        school_id:  req.schoolId,
+        score, total,
+        accuracy:   total > 0 ? score / total : 0,
+        difficulty,
+        topic:      topic || null,
+        subject:    subject || null,
+        xp,
+        is_daily:   !!daily,
+        played_on:  today(),
+      })
+      .select('id, xp, played_on')
+      .single()
+
+    if (error) throw new Error(error.message)
+    res.status(201).json({ message: 'Score saved', id: data.id, xp_gained: xp })
+  } catch (e) {
+    res.status(500).json({ error: e.message })
+  }
+})
+
+// Leaderboard for my school
+router.get('/leaderboard', async (req, res) => {
+  if (!req.schoolId) return res.status(400).json({ error: 'You are not in a school.' })
+  const range = req.query.range || 'week'   // today | week | all
+  const td    = today()
+
+  try {
+    let q = supabaseAdmin
+      .from('battle_scores')
+      .select('user_id, xp, score, total, played_on')
+      .eq('school_id', req.schoolId)
+
+    if (range === 'today') q = q.eq('played_on', td)
+    else if (range === 'week') {
+      const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
+      q = q.gte('played_on', weekAgo)
+    }
+
+    const { data: rows, error } = await q
+    if (error) throw new Error(error.message)
+
+    // Aggregate per user
+    const byUser = {}
+    for (const r of rows || []) {
+      if (!byUser[r.user_id]) byUser[r.user_id] = { user_id: r.user_id, xp: 0, battles: 0, score: 0, total: 0 }
+      byUser[r.user_id].xp      += r.xp || 0
+      byUser[r.user_id].battles += 1
+      byUser[r.user_id].score   += r.score
+      byUser[r.user_id].total   += r.total
+    }
+    const aggList = Object.values(byUser)
+    aggList.sort((a, b) => b.xp - a.xp)
+    const top = aggList.slice(0, 50)
+
+    // Resolve user names + avatars in one query
+    const userIds = top.map(r => r.user_id)
+    let nameMap = {}
+    if (userIds.length > 0) {
+      const { data: users } = await supabaseAdmin
+        .from('users').select('id, name, avatar_url, class_name')
+        .in('id', userIds)
+      nameMap = (users || []).reduce((m, u) => { m[u.id] = u; return m }, {})
+    }
+
+    const enriched = top.map((r, i) => ({
+      rank:       i + 1,
+      user_id:    r.user_id,
+      name:       nameMap[r.user_id]?.name || 'Anonymous',
+      avatar_url: nameMap[r.user_id]?.avatar_url || null,
+      class_name: nameMap[r.user_id]?.class_name || null,
+      xp:         r.xp,
+      battles:    r.battles,
+      accuracy:   r.total > 0 ? Math.round((r.score / r.total) * 100) : 0,
+    }))
+
+    res.json({ range, leaders: enriched, you: enriched.find(e => e.user_id === req.user.id) || null })
+  } catch (e) {
+    res.status(500).json({ error: e.message })
+  }
+})
+
+// My stats
+router.get('/me', async (req, res) => {
+  try {
+    const { data: rows, error } = await supabaseAdmin
+      .from('battle_scores')
+      .select('id, score, total, accuracy, difficulty, topic, subject, xp, is_daily, played_on, created_at')
+      .eq('user_id', req.user.id)
+      .order('created_at', { ascending: false })
+      .limit(60)
+
+    if (error) throw new Error(error.message)
+
+    const totalXp = (rows || []).reduce((s, r) => s + (r.xp || 0), 0)
+    const battles = rows.length
+    const avgAcc  = battles > 0 ? rows.reduce((s, r) => s + r.accuracy, 0) / battles : 0
+
+    // Streak: count consecutive days with at least one battle, ending today/yesterday
+    const days = new Set((rows || []).map(r => r.played_on))
+    let streak = 0
+    const cursor = new Date()
+    while (true) {
+      const k = cursor.toISOString().slice(0, 10)
+      if (days.has(k)) {
+        streak++
+        cursor.setDate(cursor.getDate() - 1)
+      } else {
+        // Allow gap if today not played but yesterday was
+        if (streak === 0) {
+          cursor.setDate(cursor.getDate() - 1)
+          const k2 = cursor.toISOString().slice(0, 10)
+          if (days.has(k2)) { streak++; cursor.setDate(cursor.getDate() - 1); continue }
+        }
+        break
+      }
+    }
+
+    // Best score
+    const best = rows.reduce((m, r) => (r.accuracy > (m?.accuracy || 0) ? r : m), null)
+
+    res.json({
+      total_xp:    totalXp,
+      battles,
+      avg_accuracy: Math.round(avgAcc * 100),
+      streak,
+      best,
+      recent:      rows.slice(0, 10),
+    })
+  } catch (e) {
+    res.status(500).json({ error: e.message })
+  }
+})
+
+// Today's challenge
+router.get('/daily-challenge', async (req, res) => {
+  // Pick deterministically by day-of-year so all students see the same challenge
+  const start = new Date(new Date().getFullYear(), 0, 0)
+  const diff = (Date.now() - start.getTime()) / (1000 * 60 * 60 * 24)
+  const idx = Math.floor(diff) % DAILY_TOPICS.length
+  const c = DAILY_TOPICS[idx]
+
+  // Has the user already played today?
+  let alreadyPlayed = false
+  try {
+    const { data } = await supabaseAdmin
+      .from('battle_scores')
+      .select('id')
+      .eq('user_id', req.user.id)
+      .eq('played_on', today())
+      .eq('is_daily', true)
+      .maybeSingle()
+    alreadyPlayed = !!data
+  } catch { /* ignore */ }
+
+  res.json({
+    date: today(),
+    challenge: c,
+    already_played: alreadyPlayed,
+    xp_per_correct: XP_PER_CORRECT[c.difficulty],
+    questions: 10,
+  })
+})
+
+export default router

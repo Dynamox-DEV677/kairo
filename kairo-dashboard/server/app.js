@@ -57,6 +57,9 @@ import schoolHealthRoutes  from './routes/schoolHealth.js'
 // ── v9 routes (AI Notebook / Second Brain) ───────────────────────────────────
 import notebookRoutes      from './routes/notebook.js'
 
+// ── v10 routes (Battle Mode — daily challenge + leaderboard) ─────────────────
+import battleRoutes        from './routes/battle.js'
+
 // ─── Validate env ─────────────────────────────────────────────────────────────
 if (!process.env.ENCRYPTION_SECRET || process.env.ENCRYPTION_SECRET.length < 32) {
   // Use a fallback so the server doesn't crash — set ENCRYPTION_SECRET in prod for real security
@@ -145,6 +148,9 @@ app.use('/api/school-health',  schoolHealthRoutes)
 
 // v9 — AI Notebook (Second Brain)
 app.use('/api/notebook',       notebookRoutes)
+
+// v10 — Battle Mode (daily challenge + leaderboard)
+app.use('/api/battle',         battleRoutes)
 
 // ─── Health check ─────────────────────────────────────────────────────────────
 app.get('/health', (_req, res) => {
