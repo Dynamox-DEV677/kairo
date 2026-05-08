@@ -60,6 +60,9 @@ import notebookRoutes      from './routes/notebook.js'
 // ── v10 routes (Battle Mode — daily challenge + leaderboard) ─────────────────
 import battleRoutes        from './routes/battle.js'
 
+// ── v11 routes (Knowledge Graph Engine) ──────────────────────────────────────
+import knowledgeRoutes     from './routes/knowledge.js'
+
 // ─── Validate env ─────────────────────────────────────────────────────────────
 if (!process.env.ENCRYPTION_SECRET || process.env.ENCRYPTION_SECRET.length < 32) {
   // Use a fallback so the server doesn't crash — set ENCRYPTION_SECRET in prod for real security
@@ -151,6 +154,9 @@ app.use('/api/notebook',       notebookRoutes)
 
 // v10 — Battle Mode (daily challenge + leaderboard)
 app.use('/api/battle',         battleRoutes)
+
+// v11 — Knowledge Graph Engine
+app.use('/api/knowledge',      knowledgeRoutes)
 
 // ─── Health check ─────────────────────────────────────────────────────────────
 app.get('/health', (_req, res) => {

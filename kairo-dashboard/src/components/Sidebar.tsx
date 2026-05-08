@@ -6,7 +6,7 @@ import {
   Sun, Moon, Clock, Camera, Plus, X,
   GraduationCap, Shield, Sparkles, DollarSign, Bot, UserCheck, Grid3x3, Building2,
   Edit3, Lightbulb, FunctionSquare, Brain, TrendingUp, Star, Timer, Megaphone,
-  Target, Activity, Zap, Compass, Network, Mic, Swords,
+  Target, Activity, Zap, Compass, Network, Mic, Swords, Share2,
 } from 'lucide-react'
 import { useGeneration } from '../lib/generationContext'
 import { getRecentChats, deleteRecentChat, timeAgo } from '../lib/recentChats'
@@ -32,6 +32,7 @@ const STUDENT_NAV: NavItem[] = [
   { label: 'AI Notebook',     icon: BookOpen,        to: 'notebook',      color: '#fbbf24' },
   { label: 'Voice Tutor',     icon: Mic,             to: 'voice',         color: '#34d399' },
   { label: 'Battle Mode',     icon: Swords,          to: 'battle',        color: '#fbbf24' },
+  { label: 'Knowledge Graph', icon: Share2,          to: 'knowledge',     color: '#818cf8' },
   { label: 'Camera Study',    icon: Camera,          to: 'camera',        color: '#f472b6' },
   { label: 'Focus Mode',      icon: Target,          to: 'focus',         color: '#34d399' },
   { label: 'Flashcards',      icon: BookMarked,      to: 'flashcards',    color: '#34d399' },
@@ -48,6 +49,7 @@ const STUDENT_NAV: NavItem[] = [
 ]
 
 const TEACHER_NAV: NavItem[] = [
+  { label: 'AI Teacher',      icon: Bot,             to: 'teacher-ai',      color: '#818cf8' },
   { label: 'Doubt Solver',    icon: MessageCircle,   to: 'doubt',           color: '#818cf8' },
   { label: 'Flashcards',      icon: BookMarked,      to: 'flashcards',      color: '#34d399' },
   { label: 'Grader',          icon: FileText,        to: 'essay',           color: '#f472b6' },

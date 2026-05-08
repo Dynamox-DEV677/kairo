@@ -35,6 +35,8 @@ import AdaptivePath from './AdaptivePath'
 import ConceptMap from './ConceptMap'
 import VoiceTutor from './VoiceTutor'
 import BattleMode from './BattleMode'
+import KnowledgeGraph from './KnowledgeGraph'
+import TeacherAssistant from './TeacherAssistant'
 import { DEFAULT_MODEL } from '../lib/openrouter'
 
 import type { AuthProfile } from './Login'
@@ -72,6 +74,8 @@ const PAGE_TITLES: Record<string, string> = {
   'concept-map':    'Concept Map',
   voice:            'Voice Tutor',
   battle:           'Battle Mode',
+  knowledge:        'Knowledge Graph',
+  'teacher-ai':     'AI Teacher Assistant',
   settings:         'Settings',
 }
 
@@ -248,6 +252,12 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
 
             {/* Battle Mode */}
             <div style={pageStyle('battle')}><BattleMode /></div>
+
+            {/* Knowledge Graph */}
+            <div style={pageStyle('knowledge')}><KnowledgeGraph /></div>
+
+            {/* AI Teacher Assistant */}
+            <div style={pageStyle('teacher-ai')}><TeacherAssistant /></div>
 
           </div>
 
