@@ -7,6 +7,10 @@
  */
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
+import remarkMath from 'remark-math'
+import rehypeKatex from 'rehype-katex'
 import {
   Camera, Upload, X, Sparkles, FileText, BookmarkPlus,
   Lightbulb, RotateCcw, Loader2, CheckCircle2,
@@ -32,15 +36,27 @@ const VISION_MODELS = [
   },
 ]
 
+// IMPORTANT: every prompt enforces strict markdown rules so ReactMarkdown renders nicely.
+// "## Heading" with a space, "**bold**", "- bullet", $math$. NO "#Heading" without space.
+const MD_RULES = `
+
+Format your response in clean markdown:
+- Headings start with "## " (TWO hashes and a SPACE, never "##Heading")
+- Use blank lines between paragraphs and sections
+- Use **bold** for emphasis, - for bullet lists, 1. for numbered lists
+- Use $...$ for inline math, $$...$$ for display math
+- No code fences around prose
+- No <think> tags`
+
 const ACTIONS = [
   { id: 'solve',     label: 'Solve',         icon: Sparkles,     color: '#6366f1',
-    prompt: 'Read the question(s) in this image carefully. Solve each one step-by-step. Show your working clearly. Use markdown headings for each problem and $...$ for math.' },
+    prompt: 'Read the question(s) in this image carefully. Solve each one step-by-step with clear working.' + MD_RULES },
   { id: 'explain',   label: 'Explain',       icon: Lightbulb,    color: '#34d399',
-    prompt: 'Explain the concept(s) shown in this image as if teaching a Class 10 student in India. Use simple language, give an analogy, and end with a 3-line summary.' },
+    prompt: 'Explain the concept(s) shown in this image as if teaching a Class 10 student in India. Use simple language, give an analogy, end with a 3-line summary under "## Summary".' + MD_RULES },
   { id: 'flashcards', label: 'Flashcards',   icon: BookmarkPlus, color: '#fbbf24',
-    prompt: 'Create 8-10 high-quality flashcards from the content in this image. Return ONLY a JSON array: [{"front":"question","back":"answer"}]. No other text.' },
+    prompt: 'Create 8-10 high-quality flashcards from the content in this image. Return ONLY a JSON array: [{"front":"question","back":"answer"}]. No other text, no markdown, no explanation.' },
   { id: 'summarize', label: 'Summarize',     icon: FileText,     color: '#f472b6',
-    prompt: 'Summarize the content in this image into clear bullet points organized under markdown headings. Capture all key facts, formulas, and definitions. Keep it tight.' },
+    prompt: 'Summarize the content in this image into clear bullet points organized under "## Section Name" headings. Capture all key facts, formulas, and definitions. Keep it tight.' + MD_RULES },
 ]
 
 interface VisionMsg {
@@ -390,10 +406,11 @@ export default function CameraStudy() {
                 Saved to recent chats
               </span>
             </div>
-            <pre style={{
-              fontSize: 13.5, color: '#e4e4e7', lineHeight: 1.6, margin: 0,
-              fontFamily: 'inherit', whiteSpace: 'pre-wrap', wordBreak: 'break-word',
-            }}>{result}</pre>
+            <div className="prose-ai" style={{ fontSize: 14, color: '#e4e4e7', lineHeight: 1.7 }}>
+              <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>
+                {cleanMarkdown(result)}
+              </ReactMarkdown>
+            </div>
             <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
               <button onClick={() => navigator.clipboard.writeText(result)} style={{
                 padding: '6px 12px', borderRadius: 7, border: '1px solid #1e1e1e',
@@ -415,4 +432,21 @@ export default function CameraStudy() {
       </AnimatePresence>
     </div>
   )
+}
+
+// ─── Markdown post-processor ────────────────────────────────────────────────
+// Vision LLMs sometimes emit malformed markdown (#Heading instead of # Heading,
+// stray <think> blocks, code fences around plain text). Clean it up before
+// passing to ReactMarkdown so headings, bold, lists actually render.
+function cleanMarkdown(s: string): string {
+  return s
+    // Strip reasoning model thought-blocks
+    .replace(/<\/?think(?:ing)?>[\s\S]*?<\/?think(?:ing)?>/gi, '')
+    // "##Step" → "## Step" (require space after hashes)
+    .replace(/^(\s*#{1,6})([^\s#])/gm, '$1 $2')
+    // Stray code fences with no language at the very start/end of plain prose
+    .replace(/^\s*```\s*$/gm, '')
+    // Collapse 3+ blank lines into 2
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
 }
