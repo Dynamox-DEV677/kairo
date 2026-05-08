@@ -66,12 +66,15 @@ router.post('/register', async (req, res) => {
         school_name:      school_name.trim(),
         school_email:     school_email.trim().toLowerCase(),
         school_passcode:  hashedPasscode,
-        passcode_plain:   plainPasscode,         // admin-only readable, for sharing
+        passcode_plain:   plainPasscode,
         school_logo_url:  school_logo_url || null,
         domain:           domain          || null,
         require_approval: !!require_approval,
+        // Schools start inactive until payment webhook flips them
+        status:               'pending_payment',
+        subscription_status:  'pending_payment',
       })
-      .select('id, school_name, school_email, school_logo_url, domain, require_approval, created_at')
+      .select('id, school_name, school_email, school_logo_url, domain, require_approval, created_at, status, subscription_status')
       .single()
 
     if (error) throw new Error(error.message)
@@ -118,6 +121,54 @@ router.post('/register', async (req, res) => {
       passcode:       plainPasscode,
       warning:        'Save this passcode securely — it will never be shown again.',
       owner_account:  ownerAccount,
+    })
+  } catch (e) {
+    res.status(500).json({ error: e.message })
+  }
+})
+
+// ── Preview school by join code (public — used on the Join School form) ──────
+// Returns enough info to show "You are joining XYZ" preview card BEFORE the
+// user has typed any account details. Validates passcode via bcrypt.compare.
+router.get('/preview/:code', async (req, res) => {
+  const code = (req.params.code || '').trim()
+  if (!code || code.length < 5) return res.status(400).json({ error: 'Invalid code' })
+
+  try {
+    // Fast path: passcode_plain exact match (admin-readable, populated since slide 6 of new schema)
+    let { data, error } = await supabaseAdmin
+      .from('schools')
+      .select('id, school_name, school_logo_url, plan, require_approval, status')
+      .eq('passcode_plain', code)
+      .maybeSingle()
+
+    // Slow path: bcrypt-compare against all schools (only if passcode_plain not yet populated)
+    if (!data && !error) {
+      const { data: all } = await supabaseAdmin
+        .from('schools')
+        .select('id, school_name, school_logo_url, plan, require_approval, status, school_passcode')
+      if (all) {
+        for (const s of all) {
+          if (s.school_passcode && await bcrypt.compare(code, s.school_passcode)) {
+            data = { id: s.id, school_name: s.school_name, school_logo_url: s.school_logo_url, plan: s.plan, require_approval: s.require_approval, status: s.status }
+            break
+          }
+        }
+      }
+    }
+
+    if (!data) return res.status(404).json({ error: 'No school matches this code. Double-check with your admin.' })
+
+    // Block joins to inactive schools
+    if (data.status === 'pending_payment' || data.status === 'inactive') {
+      return res.status(403).json({ error: 'This school is not active yet. Ask the admin to complete payment.' })
+    }
+
+    res.json({
+      id:               data.id,
+      school_name:      data.school_name,
+      school_logo_url:  data.school_logo_url,
+      require_approval: !!data.require_approval,
     })
   } catch (e) {
     res.status(500).json({ error: e.message })

@@ -1,18 +1,18 @@
 /**
- * Login / Register / School Setup / Quick Start
+ * Kairo Onboarding — three modes: Sign In · Join School · Create School
  *
- * Modes:
- *  signin   — email + password → POST /api/users/login
- *  signup   — name + role + email + password + school_name + school_passcode → POST /api/users/register
- *  school   — school_name + school_email → POST /api/schools/register
- *  parent   — name + email + password + access_code → POST /api/parent/register
- *  local    — Quick Start, no account needed (works without Supabase)
+ *   Sign In        : email + password → supabase.auth.signInWithPassword
+ *   Join School    : 4-step wizard → POST /api/users/register OR /api/parent/register
+ *   Create School  : 3-step wizard → POST /api/schools/register → checkout
+ *
+ * Quick Start mode is removed. Public signup without a school code is removed.
  */
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
-  GraduationCap, Mail, Lock, User, Building2,
-  Key, ArrowRight, Sparkles, Eye, EyeOff, Copy, Check, Zap,
+  Mail, Lock, User, Building2, Key, ArrowRight, ArrowLeft,
+  Eye, EyeOff, Check, Sparkles, GraduationCap, BookOpen, Users,
+  Shield, CreditCard, Loader2,
 } from 'lucide-react'
 import { post } from '../lib/api'
 import { supabase, supabaseReady } from '../lib/supabase'
@@ -27,119 +27,189 @@ export interface AuthProfile {
   school_logo_url?: string
   school_email?:    string
   plan?:            string
-  // local-only fields (Quick Start — no Supabase)
   cls?:             string
   board?:           string
   localMode?:       boolean
-  // Supabase tokens (absent in localMode)
   access_token?:    string
   refresh_token?:   string
-  // Parent-specific
   linked_student_id?:   string
   linked_student_name?: string
 }
 
-interface LoginProps {
-  onLogin: (profile: AuthProfile) => void
-}
-
-type Mode = 'signin' | 'signup' | 'school' | 'parent' | 'local'
+interface LoginProps { onLogin: (profile: AuthProfile) => void }
+type Mode = 'choose' | 'signin' | 'join' | 'create'
 
 const ROLES = [
-  { id: 'student', label: 'Student', icon: '🎓', desc: 'Learn, revise & practice' },
-  { id: 'teacher', label: 'Teacher', icon: '📚', desc: 'Create papers & plans' },
+  { id: 'student', label: 'Student',  icon: GraduationCap, desc: 'I study here' },
+  { id: 'teacher', label: 'Teacher',  icon: BookOpen,      desc: 'I teach here' },
+  { id: 'parent',  label: 'Parent',   icon: Users,         desc: 'My child studies here' },
 ]
 
-const BOARDS  = ['CBSE', 'ICSE', 'Maharashtra', 'Tamil Nadu', 'Karnataka', 'UP Board', 'Bihar Board']
-const CLASSES = ['6', '7', '8', '9', '10', '11', '12']
+const PLANS = [
+  { id: 'monthly', label: 'Monthly',  price: '₹1,999',  per: 'month', popular: false },
+  { id: 'yearly',  label: 'Yearly',   price: '₹19,999', per: 'year',  popular: true, save: 'save 17%' },
+  { id: 'trial',   label: 'Free Trial', price: '₹0',    per: '14 days', popular: false },
+]
 
-// Detect if Supabase is available using the anon key directly
-async function checkSupabase(): Promise<boolean> {
-  if (!supabaseReady) return false
-  try {
-    const { error } = await supabase.auth.getSession()
-    return !error
-  } catch {
-    return false
-  }
+// ─── Top-level component ────────────────────────────────────────────────────
+export default function Login({ onLogin }: LoginProps) {
+  const [mode, setMode] = useState<Mode>('choose')
+
+  const transition = { type: 'spring' as const, stiffness: 250, damping: 30 }
+
+  return (
+    <div style={{
+      minHeight: '100vh',
+      background: '#0a0a0a',
+      fontFamily: "'Inter', system-ui, sans-serif",
+      display: 'flex', alignItems: 'stretch', justifyContent: 'center',
+      paddingTop: 'env(safe-area-inset-top)',
+      paddingBottom: 'env(safe-area-inset-bottom)',
+    }}>
+      {/* Ambient glow */}
+      <div style={{
+        position: 'fixed', top: '15%', left: '50%', transform: 'translateX(-50%)',
+        width: 600, height: 600, borderRadius: '50%',
+        background: 'radial-gradient(circle, rgba(99,102,241,0.10) 0%, transparent 70%)',
+        pointerEvents: 'none',
+      }} />
+
+      <div style={{ width: '100%', maxWidth: 480, padding: '40px 24px', display: 'flex', flexDirection: 'column' }}>
+        {/* Logo */}
+        <div style={{ textAlign: 'center', marginBottom: 28, flexShrink: 0 }}>
+          <img src="/kairo_logo.png" alt="Kairo"
+            style={{
+              width: 64, height: 64, borderRadius: 16, objectFit: 'contain',
+              margin: '0 auto 14px', display: 'block',
+              filter: 'drop-shadow(0 0 20px rgba(99,102,241,0.45))',
+            }} />
+          <h1 style={{ fontSize: 24, fontWeight: 800, color: '#fafafa', margin: 0, letterSpacing: '-0.5px' }}>kairo</h1>
+          <p style={{ fontSize: 11, color: '#6366f1', fontWeight: 700, letterSpacing: 4, marginTop: 4, textTransform: 'uppercase' }}>
+            Accelerate Your Academics
+          </p>
+        </div>
+
+        {/* Wizard surface */}
+        <div style={{
+          background: '#111', border: '1px solid #1e1e1e', borderRadius: 18,
+          padding: 28, flex: 1, display: 'flex', flexDirection: 'column',
+        }}>
+          <AnimatePresence mode="wait">
+            {mode === 'choose' && (
+              <motion.div key="choose" initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 16 }} transition={transition}>
+                <ChooseMode setMode={setMode} />
+              </motion.div>
+            )}
+            {mode === 'signin' && (
+              <motion.div key="signin" initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -16 }} transition={transition}>
+                <SignIn onLogin={onLogin} onBack={() => setMode('choose')} />
+              </motion.div>
+            )}
+            {mode === 'join' && (
+              <motion.div key="join" initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -16 }} transition={transition}>
+                <JoinSchool onLogin={onLogin} onBack={() => setMode('choose')} />
+              </motion.div>
+            )}
+            {mode === 'create' && (
+              <motion.div key="create" initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -16 }} transition={transition}>
+                <CreateSchool onLogin={onLogin} onBack={() => setMode('choose')} />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {!supabaseReady && (
+          <p style={{ fontSize: 11, color: '#fbbf24', textAlign: 'center', marginTop: 14, padding: '8px 14px', background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.25)', borderRadius: 8 }}>
+            ⚠ Supabase env vars missing — auth will fail. Add VITE_SUPABASE_URL + VITE_SUPABASE_ANON_KEY.
+          </p>
+        )}
+      </div>
+    </div>
+  )
 }
 
-export default function Login({ onLogin }: LoginProps) {
-  const [mode, setMode]               = useState<Mode>('signin')
-  const [loading, setLoading]         = useState(false)
-  const [error, setError]             = useState('')
-  const [supabaseDown, setSupabaseDown] = useState(false)
+// ════════════════════════════════════════════════════════════════════════════
+// Choose mode landing
+// ════════════════════════════════════════════════════════════════════════════
+function ChooseMode({ setMode }: { setMode: (m: Mode) => void }) {
+  return (
+    <div>
+      <h2 style={{ fontSize: 20, fontWeight: 700, color: '#fafafa', margin: 0, marginBottom: 6 }}>Welcome</h2>
+      <p style={{ fontSize: 13, color: '#71717a', marginBottom: 24 }}>Pick how you'd like to continue.</p>
 
-  // Probe backend on mount to detect if Supabase is configured
-  useEffect(() => { checkSupabase().then(ok => setSupabaseDown(!ok)) }, [])
+      <ChoiceCard onClick={() => setMode('signin')} icon={Mail}
+        title="Sign In" desc="Email + password — already a member" />
+      <ChoiceCard onClick={() => setMode('join')} icon={Building2}
+        title="Join School" desc="I have a school join code" highlight />
+      <ChoiceCard onClick={() => setMode('create')} icon={Sparkles}
+        title="Create School" desc="Start a new school on Kairo" />
+    </div>
+  )
+}
 
-  // Sign in fields
-  const [siEmail, setSiEmail]         = useState('')
-  const [siPassword, setSiPassword]   = useState('')
-  const [siShowPw, setSiShowPw]       = useState(false)
+function ChoiceCard({ onClick, icon: Icon, title, desc, highlight = false }: any) {
+  return (
+    <motion.button onClick={onClick}
+      whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}
+      style={{
+        width: '100%', padding: '16px 18px', borderRadius: 12,
+        background: highlight ? 'rgba(99,102,241,0.06)' : '#0d0d0d',
+        border: `1px solid ${highlight ? 'rgba(99,102,241,0.3)' : '#1e1e1e'}`,
+        cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left',
+        display: 'flex', alignItems: 'center', gap: 14, marginBottom: 10,
+      }}>
+      <div style={{
+        width: 42, height: 42, borderRadius: 10, flexShrink: 0,
+        background: highlight ? 'linear-gradient(135deg,#6366f1,#7c3aed)' : '#1a1a1a',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}>
+        <Icon size={18} color={highlight ? '#fff' : '#a1a1aa'} />
+      </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 15, fontWeight: 700, color: '#fafafa' }}>{title}</div>
+        <div style={{ fontSize: 12, color: '#71717a', marginTop: 2 }}>{desc}</div>
+      </div>
+      <ArrowRight size={16} color="#52525b" />
+    </motion.button>
+  )
+}
 
-  // Sign up fields
-  const [suName, setSuName]           = useState('')
-  const [suRole, setSuRole]           = useState('student')
-  const [suEmail, setSuEmail]         = useState('')
-  const [suPassword, setSuPassword]   = useState('')
-  const [suShowPw, setSuShowPw]       = useState(false)
-  const [suSchool, setSuSchool]       = useState('')
-  const [suPasscode, setSuPasscode]   = useState('')
+// ════════════════════════════════════════════════════════════════════════════
+// Sign In
+// ════════════════════════════════════════════════════════════════════════════
+function SignIn({ onLogin, onBack }: any) {
+  const [email, setEmail]       = useState('')
+  const [password, setPassword] = useState('')
+  const [show, setShow]         = useState(false)
+  const [busy, setBusy]         = useState(false)
+  const [err, setErr]           = useState('')
 
-  // School register
-  const [scName, setScName]           = useState('')
-  const [scEmail, setScEmail]         = useState('')
-  const [scResult, setScResult]       = useState<{ passcode: string; school_id: string } | null>(null)
-  const [copied, setCopied]           = useState(false)
-
-  // Parent registration fields
-  const [prName, setPrName]           = useState('')
-  const [prEmail, setPrEmail]         = useState('')
-  const [prPassword, setPrPassword]   = useState('')
-  const [prCode, setPrCode]           = useState('')
-  const [prShowPw, setPrShowPw]       = useState(false)
-
-  // Quick Start (local) fields
-  const [qlName, setQlName]           = useState('')
-  const [qlRole, setQlRole]           = useState('student')
-  const [qlCls, setQlCls]             = useState('10')
-  const [qlBoard, setQlBoard]         = useState('CBSE')
-
-  // ── Sign In ──────────────────────────────────────────────────────────────────
-  async function handleSignIn() {
-    if (!siEmail.trim() || !siPassword) { setError('Email and password are required.'); return }
-    setLoading(true); setError(''); setSupabaseDown(false)
+  async function submit() {
+    if (!email.trim() || !password) { setErr('Enter your email and password.'); return }
+    setBusy(true); setErr('')
     try {
-      // Use Supabase auth directly — no backend needed
       const { data, error } = await supabase.auth.signInWithPassword({
-        email:    siEmail.trim().toLowerCase(),
-        password: siPassword,
+        email: email.trim().toLowerCase(),
+        password,
       })
       if (error) throw new Error(error.message)
 
-      // Load user profile row
       const { data: userRow } = await supabase
-        .from('users')
-        .select('id, name, role, school_id, avatar_url')
-        .eq('id', data.user.id)
-        .single()
+        .from('users').select('id, name, role, school_id, avatar_url')
+        .eq('id', data.user.id).single()
 
-      // Load school if joined
       let school: any = null
       if (userRow?.school_id) {
         const { data: s } = await supabase
-          .from('schools')
-          .select('id, school_name, school_logo_url, school_email, plan')
-          .eq('id', userRow.school_id)
-          .single()
+          .from('schools').select('id, school_name, school_logo_url, school_email, plan')
+          .eq('id', userRow.school_id).single()
         school = s
       }
 
       const profile: AuthProfile = {
-        id:              userRow?.id              || data.user.id,
-        name:            userRow?.name            || data.user.email || '',
-        role:            userRow?.role            || 'student',
+        id:              userRow?.id || data.user.id,
+        name:            userRow?.name || data.user.email || '',
+        role:            userRow?.role || 'student',
         avatar_url:      userRow?.avatar_url,
         school_id:       userRow?.school_id,
         school_name:     school?.school_name,
@@ -150,504 +220,549 @@ export default function Login({ onLogin }: LoginProps) {
         refresh_token:   data.session.refresh_token,
       }
       localStorage.setItem('kairo_token',   data.session.access_token)
-      localStorage.setItem('kairo_refresh',  data.session.refresh_token)
-      localStorage.setItem('kairo_profile',  JSON.stringify(profile))
+      localStorage.setItem('kairo_refresh', data.session.refresh_token)
+      localStorage.setItem('kairo_profile', JSON.stringify(profile))
       onLogin(profile)
-    } catch (e: any) {
-      setError(e.message || 'Login failed.')
-    } finally {
-      setLoading(false)
-    }
+    } catch (e: any) { setErr(e.message); setBusy(false) }
   }
 
-  // ── Sign Up ──────────────────────────────────────────────────────────────────
-  async function handleSignUp() {
-    if (!suName.trim())     { setError('Name is required.');            return }
-    if (!suEmail.trim())    { setError('Email is required.');           return }
-    if (!suPassword)        { setError('Password is required.');        return }
-    if (!suSchool.trim())   { setError('School name is required.');     return }
-    if (!suPasscode.trim()) { setError('School passcode is required.'); return }
-    setLoading(true); setError(''); setSupabaseDown(false)
+  return (
+    <Wizard back={onBack} step={null} title="Sign In" subtitle="Welcome back.">
+      <Field label="Email" icon={Mail}>
+        <input type="email" autoFocus value={email} onChange={e => setEmail(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && submit()}
+          placeholder="you@example.com" style={inp} />
+      </Field>
+      <Field label="Password" icon={Lock}>
+        <div style={{ position: 'relative' }}>
+          <input type={show ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && submit()}
+            placeholder="••••••••" style={{ ...inp, paddingRight: 40 }} />
+          <button onClick={() => setShow(s => !s)} type="button" style={eyeBtn}>
+            {show ? <EyeOff size={14} color="#52525b" /> : <Eye size={14} color="#52525b" />}
+          </button>
+        </div>
+      </Field>
+      {err && <ErrLine msg={err} />}
+      <PrimaryBtn busy={busy} onClick={submit} icon={Sparkles}>Sign in</PrimaryBtn>
+    </Wizard>
+  )
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// Join School — 4-step wizard
+// ════════════════════════════════════════════════════════════════════════════
+function JoinSchool({ onLogin, onBack }: any) {
+  const [step, setStep] = useState(1)
+  const [code, setCode] = useState('')
+  const [school, setSchool] = useState<any>(null)
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [show, setShow] = useState(false)
+  const [role, setRole] = useState<'student' | 'teacher' | 'parent' | null>(null)
+  // Parent extras
+  const [studentName, setStudentName] = useState('')
+  const [parentCode, setParentCode] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [err, setErr] = useState('')
+
+  async function fetchSchool() {
+    if (!code.trim()) { setErr('Enter the join code.'); return }
+    setBusy(true); setErr('')
     try {
-      const data = await post('/users/register', {
-        name:            suName.trim(),
-        role:            suRole,
-        email:           suEmail.trim(),
-        password:        suPassword,
-        school_name:     suSchool.trim(),
-        school_passcode: suPasscode.trim(),
-      })
-      const profile: AuthProfile = {
-        id:              data.user?.id,
-        name:            data.user?.name,
-        role:            data.user?.role,
-        school_id:       data.school?.id,
-        school_name:     data.school?.school_name,
-        school_logo_url: data.school?.school_logo_url,
-        access_token:    data.access_token,
-        refresh_token:   data.refresh_token,
-      }
-      localStorage.setItem('kairo_token',   data.access_token)
-      localStorage.setItem('kairo_refresh',  data.refresh_token)
-      localStorage.setItem('kairo_profile',  JSON.stringify(profile))
-      onLogin(profile)
-    } catch (e: any) {
-      if (e.message?.includes('503') || e.message?.toLowerCase().includes('not configured')) {
-        setSupabaseDown(true)
+      const res = await fetch(`/api/schools/preview/${encodeURIComponent(code.trim().toUpperCase())}`)
+      const d = await res.json()
+      if (!res.ok) throw new Error(d.error || 'School not found.')
+      setSchool(d)
+      setStep(2)
+    } catch (e: any) { setErr(e.message) }
+    finally { setBusy(false) }
+  }
+
+  async function submit() {
+    setBusy(true); setErr('')
+    try {
+      if (role === 'parent') {
+        // Parent: validate parent code (NOT the school join code)
+        if (!parentCode.trim() || !studentName.trim()) {
+          throw new Error('Enter the student\'s name and your access code.')
+        }
+        const data = await post('/parent/register', {
+          name: name.trim(), email: email.trim(), password,
+          access_code: parentCode.trim().toUpperCase(),
+        })
+        const profile: AuthProfile = {
+          id: data.parent?.id, name: data.parent?.name, role: 'parent',
+          school_id: data.school?.id, school_name: data.school?.school_name,
+          school_logo_url: data.school?.school_logo_url,
+          linked_student_id: data.linked_student?.id,
+          linked_student_name: data.linked_student?.name,
+          access_token: data.access_token, refresh_token: data.refresh_token,
+        }
+        localStorage.setItem('kairo_token',   data.access_token)
+        localStorage.setItem('kairo_refresh', data.refresh_token)
+        localStorage.setItem('kairo_profile', JSON.stringify(profile))
+        onLogin(profile)
       } else {
-        setError(e.message || 'Registration failed.')
+        // Student / Teacher: standard register flow
+        const data = await post('/users/register', {
+          name: name.trim(), role, email: email.trim(), password,
+          school_name: school.school_name, school_passcode: code.trim().toUpperCase(),
+        })
+        const profile: AuthProfile = {
+          id: data.user?.id, name: data.user?.name, role: data.user?.role,
+          school_id: data.school?.id, school_name: data.school?.school_name,
+          school_logo_url: data.school?.school_logo_url,
+          access_token: data.access_token, refresh_token: data.refresh_token,
+        }
+        localStorage.setItem('kairo_token',   data.access_token)
+        localStorage.setItem('kairo_refresh', data.refresh_token)
+        localStorage.setItem('kairo_profile', JSON.stringify(profile))
+        onLogin(profile)
       }
-    } finally {
-      setLoading(false)
-    }
+    } catch (e: any) { setErr(e.message); setBusy(false) }
   }
 
-  // ── Register School ───────────────────────────────────────────────────────────
-  async function handleSchoolRegister() {
-    if (!scName.trim())  { setError('School name is required.');  return }
-    if (!scEmail.trim()) { setError('School email is required.'); return }
-    setLoading(true); setError(''); setSupabaseDown(false); setScResult(null)
-    try {
-      const data = await post('/schools/register', { school_name: scName.trim(), school_email: scEmail.trim() })
-      setScResult({ passcode: data.passcode, school_id: data.school_id })
-    } catch (e: any) {
-      if (e.message?.includes('503') || e.message?.toLowerCase().includes('not configured')) {
-        setSupabaseDown(true)
-      } else {
-        setError(e.message || 'School registration failed.')
-      }
-    } finally {
-      setLoading(false)
-    }
-  }
+  // Step 1 — code entry
+  if (step === 1) return (
+    <Wizard back={onBack} step={1} of={4} title="Join School" subtitle="Enter the code your school gave you.">
+      <Field label="School Join Code" icon={Key}>
+        <input autoFocus value={code} onChange={e => setCode(e.target.value.toUpperCase())}
+          onKeyDown={e => e.key === 'Enter' && fetchSchool()}
+          placeholder="XXXXXX-XXXXXX-XXXXXX"
+          style={{ ...inp, fontFamily: 'monospace', letterSpacing: 2, textTransform: 'uppercase' }} />
+      </Field>
+      {err && <ErrLine msg={err} />}
+      <PrimaryBtn busy={busy} onClick={fetchSchool} icon={ArrowRight}>Continue</PrimaryBtn>
+    </Wizard>
+  )
 
-  // ── Parent Register ───────────────────────────────────────────────────────────
-  async function handleParentRegister() {
-    if (!prName.trim())     { setError('Name is required.');          return }
-    if (!prEmail.trim())    { setError('Email is required.');         return }
-    if (!prPassword)        { setError('Password is required.');      return }
-    if (!prCode.trim())     { setError('Child access code is required. Ask your child to generate one in their Kairo app.'); return }
-    setLoading(true); setError('')
+  // Step 2 — school preview + account
+  if (step === 2) return (
+    <Wizard
+      back={() => setStep(1)} step={2} of={4}
+      title="Account Setup" subtitle={`You're joining ${school.school_name}.`}>
+      <SchoolPreview school={school} />
+
+      <Field label="Full Name" icon={User}>
+        <input autoFocus value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Ananya Iyer" style={inp} />
+      </Field>
+      <Field label="Email" icon={Mail}>
+        <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" style={inp} />
+      </Field>
+      <Field label="Create Password" icon={Lock}>
+        <div style={{ position: 'relative' }}>
+          <input type={show ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)}
+            placeholder="min 8 characters" style={{ ...inp, paddingRight: 40 }} />
+          <button onClick={() => setShow(s => !s)} type="button" style={eyeBtn}>
+            {show ? <EyeOff size={14} color="#52525b" /> : <Eye size={14} color="#52525b" />}
+          </button>
+        </div>
+      </Field>
+      {err && <ErrLine msg={err} />}
+      <PrimaryBtn
+        busy={false}
+        onClick={() => {
+          if (!name.trim() || !email.trim() || password.length < 8) {
+            setErr('Fill all fields. Password must be 8+ chars.'); return
+          }
+          setErr(''); setStep(3)
+        }}
+        icon={ArrowRight}>Continue</PrimaryBtn>
+    </Wizard>
+  )
+
+  // Step 3 — pick role
+  if (step === 3) return (
+    <Wizard
+      back={() => setStep(2)} step={3} of={4}
+      title="I'm a..." subtitle="Pick your role at this school.">
+      <SchoolPreview school={school} compact />
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 14 }}>
+        {ROLES.map(r => {
+          const Icon = r.icon
+          const active = role === r.id
+          return (
+            <motion.button key={r.id}
+              whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}
+              onClick={() => setRole(r.id as any)}
+              style={{
+                padding: '14px 16px', borderRadius: 11,
+                background: active ? 'rgba(99,102,241,0.10)' : '#0d0d0d',
+                border: `1px solid ${active ? '#6366f1' : '#1e1e1e'}`,
+                cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left',
+                display: 'flex', alignItems: 'center', gap: 12,
+              }}>
+              <div style={{
+                width: 38, height: 38, borderRadius: 9, flexShrink: 0,
+                background: active ? 'linear-gradient(135deg,#6366f1,#7c3aed)' : '#1a1a1a',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <Icon size={16} color={active ? '#fff' : '#a1a1aa'} />
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 14, fontWeight: 700, color: active ? '#a5b4fc' : '#fafafa' }}>{r.label}</div>
+                <div style={{ fontSize: 11, color: '#71717a', marginTop: 2 }}>{r.desc}</div>
+              </div>
+              {active && <Check size={16} color="#6366f1" />}
+            </motion.button>
+          )
+        })}
+      </div>
+
+      <div style={{ padding: '10px 14px', borderRadius: 8, background: 'rgba(115,115,115,0.06)', border: '1px solid #1e1e1e', marginBottom: 14 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+          <Shield size={11} color="#71717a" />
+          <span style={{ fontSize: 10, fontWeight: 700, color: '#71717a', textTransform: 'uppercase', letterSpacing: 1 }}>Note</span>
+        </div>
+        <p style={{ fontSize: 11, color: '#a1a1aa', margin: 0, lineHeight: 1.5 }}>
+          Admin role is reserved for the school creator. Reach out to your school admin if you need elevated access.
+        </p>
+      </div>
+
+      {err && <ErrLine msg={err} />}
+      <PrimaryBtn
+        busy={false}
+        onClick={() => {
+          if (!role) { setErr('Pick a role.'); return }
+          setErr('')
+          if (role === 'parent') setStep(4)
+          else submit()
+        }}
+        icon={role === 'parent' ? ArrowRight : Sparkles}>
+        {role === 'parent' ? 'Continue' : 'Create Account'}
+      </PrimaryBtn>
+    </Wizard>
+  )
+
+  // Step 4 — parent linking
+  return (
+    <Wizard
+      back={() => setStep(3)} step={4} of={4}
+      title="Link to Your Child" subtitle="Get the access code from your child's Kairo app.">
+      <Field label="Student's Name" icon={User} hint="As shown on report cards">
+        <input autoFocus value={studentName} onChange={e => setStudentName(e.target.value)}
+          placeholder="e.g. Ananya Iyer" style={inp} />
+      </Field>
+      <Field label="Parent Access Code" icon={Key} hint="8 characters, from your child's app">
+        <input value={parentCode} onChange={e => setParentCode(e.target.value.toUpperCase())}
+          placeholder="ABCD1234"
+          style={{ ...inp, fontFamily: 'monospace', letterSpacing: 2, textTransform: 'uppercase' }} />
+      </Field>
+      {err && <ErrLine msg={err} />}
+      <PrimaryBtn busy={busy} onClick={submit} icon={Sparkles}>Create Parent Account</PrimaryBtn>
+    </Wizard>
+  )
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// Create School — 3-step wizard (no payment frontend yet)
+// ════════════════════════════════════════════════════════════════════════════
+function CreateSchool({ onLogin, onBack }: any) {
+  const [step, setStep]           = useState(1)
+  const [schoolName, setSchoolName] = useState('')
+  const [name, setName]           = useState('')
+  const [email, setEmail]         = useState('')
+  const [password, setPassword]   = useState('')
+  const [show, setShow]           = useState(false)
+  const [plan, setPlan]           = useState<'monthly' | 'yearly' | 'trial'>('yearly')
+  const [busy, setBusy]           = useState(false)
+  const [err, setErr]             = useState('')
+  const [result, setResult]       = useState<any>(null)
+
+  async function createSchool() {
+    setBusy(true); setErr('')
     try {
-      const data = await post('/parent/register', {
-        name:        prName.trim(),
-        email:       prEmail.trim(),
-        password:    prPassword,
-        access_code: prCode.trim().toUpperCase(),
+      // 1. Create the school (status: pending_payment) + admin account
+      const data = await post('/schools/register', {
+        school_name:    schoolName.trim(),
+        school_email:   email.trim().toLowerCase(),
+        owner_name:     name.trim(),
+        owner_email:    email.trim().toLowerCase(),
+        owner_password: password,
       })
-      const profile: AuthProfile = {
-        id:                   data.parent?.id,
-        name:                 data.parent?.name,
-        role:                 'parent',
-        school_id:            data.school?.id,
-        school_name:          data.school?.school_name,
-        school_logo_url:      data.school?.school_logo_url,
-        linked_student_id:    data.linked_student?.id,
-        linked_student_name:  data.linked_student?.name,
-        access_token:         data.access_token,
-        refresh_token:        data.refresh_token,
-      }
-      localStorage.setItem('kairo_token',   data.access_token)
-      localStorage.setItem('kairo_refresh',  data.refresh_token)
-      localStorage.setItem('kairo_profile',  JSON.stringify(profile))
-      onLogin(profile)
-    } catch (e: any) {
-      setError(e.message || 'Parent registration failed.')
-    } finally {
-      setLoading(false)
-    }
+
+      // 2. Sign the admin in immediately (so the next call has auth)
+      const { data: signed } = await supabase.auth.signInWithPassword({
+        email:    email.trim().toLowerCase(),
+        password,
+      })
+      if (!signed?.session?.access_token) throw new Error('Sign-in failed after school creation.')
+
+      // 3. Create payment session
+      const sessionRes = await fetch('/api/payments/create-session', {
+        method:  'POST',
+        headers: {
+          'Content-Type':  'application/json',
+          Authorization:   `Bearer ${signed.session.access_token}`,
+        },
+        body: JSON.stringify({ plan }),
+      })
+      const session = await sessionRes.json()
+      if (!sessionRes.ok) throw new Error(session.error || 'Could not start payment.')
+
+      setResult({
+        passcode:    data.passcode,
+        school_id:   data.school_id,
+        access_token: signed.session.access_token,
+        refresh_token: signed.session.refresh_token,
+        owner_email: email.trim().toLowerCase(),
+        owner_name:  name.trim(),
+        school_name: schoolName.trim(),
+        session,
+      })
+      setStep(4)
+    } catch (e: any) { setErr(e.message); setBusy(false) }
   }
 
-  // ── Quick Start (local, no account) ─────────────────────────────────────────
-  function handleQuickStart() {
-    if (!qlName.trim()) { setError('Please enter your name.'); return }
+  function continueToDashboard() {
+    if (!result) return
     const profile: AuthProfile = {
-      id:        `local_${Date.now()}`,
-      name:      qlName.trim(),
-      role:      qlRole,
-      cls:       qlCls,
-      board:     qlBoard,
-      localMode: true,
+      id: '', name: result.owner_name, role: 'admin',
+      school_id: result.school_id, school_name: result.school_name,
+      access_token: result.access_token, refresh_token: result.refresh_token,
     }
+    localStorage.setItem('kairo_token',   result.access_token)
+    localStorage.setItem('kairo_refresh', result.refresh_token)
     localStorage.setItem('kairo_profile', JSON.stringify(profile))
-    // clear any stale tokens from a previous Supabase session
-    localStorage.removeItem('kairo_token')
-    localStorage.removeItem('kairo_refresh')
     onLogin(profile)
   }
 
-  function copyPasscode() {
-    if (!scResult) return
-    navigator.clipboard.writeText(scResult.passcode)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
+  if (step === 1) return (
+    <Wizard back={onBack} step={1} of={3} title="Create School" subtitle="Let's set up your school on Kairo.">
+      <Field label="School Name" icon={Building2}>
+        <input autoFocus value={schoolName} onChange={e => setSchoolName(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && schoolName.trim() && setStep(2)}
+          placeholder="e.g. Delhi Public School, R.K. Puram" style={inp} />
+      </Field>
+      {err && <ErrLine msg={err} />}
+      <PrimaryBtn busy={false} onClick={() => {
+        if (!schoolName.trim()) { setErr('Enter your school\'s name.'); return }
+        setErr(''); setStep(2)
+      }} icon={ArrowRight}>Continue</PrimaryBtn>
+    </Wizard>
+  )
 
-  const tabStyle = (t: Mode) => ({
-    flex: 1, padding: '9px 0', fontSize: 13, fontWeight: 600,
-    borderRadius: 8, border: 'none', cursor: 'pointer',
-    fontFamily: 'inherit', transition: 'all 0.2s',
-    background: mode === t ? '#1e1e2e' : 'transparent',
-    color: mode === t ? '#818cf8' : '#52525b',
-    boxShadow: mode === t ? 'inset 0 0 0 1px #2d2d4d' : 'none',
-  })
-
-  return (
-    <div style={{
-      minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
-      background: '#0a0a0a', fontFamily: "'Inter', system-ui, sans-serif", padding: 20,
-    }}>
-      {/* Ambient glow */}
-      <div style={{
-        position: 'fixed', top: '15%', left: '50%', transform: 'translateX(-50%)',
-        width: 600, height: 600, borderRadius: '50%',
-        background: 'radial-gradient(circle, rgba(99,102,241,0.10) 0%, transparent 70%)',
-        pointerEvents: 'none',
-      }} />
-
-      <motion.div
-        initial={{ opacity: 0, y: 24 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-        style={{ width: '100%', maxWidth: 460, position: 'relative' }}
-      >
-        {/* Logo */}
-        <div style={{ textAlign: 'center', marginBottom: 28 }}>
-          <img
-            src="/kairo_logo.png"
-            alt="Kairo"
-            style={{ width: 64, height: 64, objectFit: 'contain', borderRadius: 16, margin: '0 auto 14px', display: 'block', filter: 'drop-shadow(0 0 20px rgba(99,102,241,0.5))' }}
-          />
-          <h1 style={{ fontSize: 22, fontWeight: 800, color: '#fafafa', margin: 0 }}>Kairo</h1>
-          <p style={{ fontSize: 13, color: '#52525b', marginTop: 5 }}>AI education platform</p>
+  if (step === 2) return (
+    <Wizard back={() => setStep(1)} step={2} of={3} title="Owner Account" subtitle={`You'll be the admin of ${schoolName}.`}>
+      <Field label="Your Name" icon={User}>
+        <input autoFocus value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Mrs. Priya Sharma" style={inp} />
+      </Field>
+      <Field label="Email" icon={Mail}>
+        <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="admin@school.edu.in" style={inp} />
+      </Field>
+      <Field label="Create Password" icon={Lock}>
+        <div style={{ position: 'relative' }}>
+          <input type={show ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)}
+            placeholder="min 8 characters" style={{ ...inp, paddingRight: 40 }} />
+          <button onClick={() => setShow(s => !s)} type="button" style={eyeBtn}>
+            {show ? <EyeOff size={14} color="#52525b" /> : <Eye size={14} color="#52525b" />}
+          </button>
         </div>
+      </Field>
+      {err && <ErrLine msg={err} />}
+      <PrimaryBtn busy={false} onClick={() => {
+        if (!name.trim() || !email.trim() || password.length < 8) {
+          setErr('Fill all fields. Password must be 8+ chars.'); return
+        }
+        setErr(''); setStep(3)
+      }} icon={ArrowRight}>Continue</PrimaryBtn>
+    </Wizard>
+  )
 
-        <div style={{ background: '#111', border: '1px solid #1e1e1e', borderRadius: 18, padding: 28 }}>
-
-          {/* ── Supabase not configured banner ─────────────────────────────── */}
-          <AnimatePresence>
-            {supabaseDown && (
-              <motion.div
-                initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-                style={{
-                  background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.25)',
-                  borderRadius: 10, padding: '14px 16px', marginBottom: 16,
-                }}
-              >
-                <p style={{ fontSize: 13, fontWeight: 700, color: '#fbbf24', margin: '0 0 6px' }}>
-                  ⚠️ Supabase is not configured
-                </p>
-                <p style={{ fontSize: 12, color: '#92400e', margin: '0 0 12px', lineHeight: 1.6 }}>
-                  The backend doesn't have Supabase credentials yet. Add <code style={{ color: '#fbbf24' }}>SUPABASE_URL</code>,{' '}
-                  <code style={{ color: '#fbbf24' }}>SUPABASE_ANON_KEY</code>, and{' '}
-                  <code style={{ color: '#fbbf24' }}>SUPABASE_SERVICE_ROLE_KEY</code> to your{' '}
-                  <code style={{ color: '#fbbf24' }}>.env</code> file.
-                </p>
-                <div style={{ display: 'flex', gap: 8 }}>
-                  <button
-                    onClick={() => { setSupabaseDown(false); setMode('local') }}
-                    style={{
-                      flex: 1, padding: '9px', borderRadius: 8, border: 'none', cursor: 'pointer',
-                      background: 'linear-gradient(135deg, #f59e0b, #d97706)', color: '#fff',
-                      fontFamily: 'inherit', fontSize: 13, fontWeight: 700,
-                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                    }}
-                  >
-                    <Zap size={13} /> Use Quick Start
-                  </button>
-                  <a
-                    href="https://app.supabase.com"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
-                      flex: 1, padding: '9px', borderRadius: 8, textDecoration: 'none',
-                      border: '1px solid rgba(251,191,36,0.3)', color: '#fbbf24',
-                      fontFamily: 'inherit', fontSize: 13, fontWeight: 600,
-                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                    }}
-                  >
-                    Set up Supabase →
-                  </a>
+  if (step === 3) return (
+    <Wizard back={() => setStep(2)} step={3} of={3} title="Pick a Plan" subtitle="Choose your subscription. Trial works without payment.">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 14 }}>
+        {PLANS.map(p => {
+          const active = plan === p.id
+          return (
+            <motion.button key={p.id}
+              whileTap={{ scale: 0.99 }}
+              onClick={() => setPlan(p.id as any)}
+              style={{
+                padding: '14px 16px', borderRadius: 11,
+                background: active ? 'rgba(99,102,241,0.10)' : '#0d0d0d',
+                border: `1px solid ${active ? '#6366f1' : '#1e1e1e'}`,
+                cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left',
+                display: 'flex', alignItems: 'center', gap: 12, position: 'relative',
+              }}>
+              {p.popular && (
+                <span style={{
+                  position: 'absolute', top: -8, right: 12,
+                  fontSize: 9, fontWeight: 800, padding: '2px 8px', borderRadius: 4,
+                  background: '#6366f1', color: '#fff', textTransform: 'uppercase', letterSpacing: 1,
+                }}>Best Value</span>
+              )}
+              <div style={{
+                width: 38, height: 38, borderRadius: 9, flexShrink: 0,
+                background: active ? 'linear-gradient(135deg,#6366f1,#7c3aed)' : '#1a1a1a',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <CreditCard size={16} color={active ? '#fff' : '#a1a1aa'} />
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 14, fontWeight: 700, color: active ? '#a5b4fc' : '#fafafa' }}>{p.label}</div>
+                <div style={{ fontSize: 11, color: '#71717a', marginTop: 2 }}>
+                  {p.price} <span style={{ color: '#52525b' }}>/ {p.per}</span>
+                  {p.save && <span style={{ marginLeft: 8, color: '#34d399', fontWeight: 600 }}>{p.save}</span>}
                 </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+              </div>
+              {active && <Check size={16} color="#6366f1" />}
+            </motion.button>
+          )
+        })}
+      </div>
+      {err && <ErrLine msg={err} />}
+      <PrimaryBtn busy={busy} onClick={createSchool} icon={Sparkles}>
+        {plan === 'trial' ? 'Start Free Trial' : 'Create School & Pay'}
+      </PrimaryBtn>
+    </Wizard>
+  )
 
-          {/* Tab bar */}
-          {!supabaseDown && (
-            <div style={{ display: 'flex', gap: 4, marginBottom: 20, background: '#0d0d0d', borderRadius: 10, padding: 4 }}>
-              <button style={tabStyle('signin')}  onClick={() => { setMode('signin');  setError('') }}>Sign In</button>
-              <button style={tabStyle('signup')}  onClick={() => { setMode('signup');  setError('') }}>Sign Up</button>
-              <button style={tabStyle('school')}  onClick={() => { setMode('school');  setError(''); setScResult(null) }}>School</button>
-              <button style={tabStyle('parent')}  onClick={() => { setMode('parent');  setError('') }}>Parent</button>
-              <button style={tabStyle('local')}   onClick={() => { setMode('local');   setError('') }}>
-                <Zap size={11} style={{ display: 'inline', marginRight: 3, verticalAlign: 'middle' }} />
-                Quick
-              </button>
+  // Step 4 — passcode reveal + payment status
+  return (
+    <Wizard back={null} step={null} title="School Created" subtitle="Save your join code somewhere safe.">
+      <div style={{
+        background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.3)',
+        borderRadius: 12, padding: 18, marginBottom: 16, textAlign: 'center',
+      }}>
+        <div style={{ fontSize: 10, fontWeight: 700, color: '#a5b4fc', textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 8 }}>
+          Your School Join Code
+        </div>
+        <code style={{
+          fontSize: 22, fontFamily: 'monospace', fontWeight: 800, color: '#fafafa',
+          letterSpacing: 3, display: 'block', marginBottom: 8,
+        }}>
+          {result.passcode}
+        </code>
+        <button onClick={() => navigator.clipboard.writeText(result.passcode)}
+          style={{
+            padding: '6px 14px', borderRadius: 6, fontSize: 11,
+            background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.3)',
+            color: '#a5b4fc', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600,
+          }}>
+          Copy code
+        </button>
+      </div>
+
+      {result.session.mode === 'demo' && (
+        <div style={{ padding: '12px 14px', borderRadius: 8, background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.25)', marginBottom: 14 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+            <Loader2 size={11} color="#fbbf24" style={{ animation: 'spin 1s linear infinite' }} />
+            <span style={{ fontSize: 11, fontWeight: 700, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 1 }}>Demo activation</span>
+          </div>
+          <p style={{ fontSize: 11, color: '#a1a1aa', margin: 0, lineHeight: 1.5 }}>
+            Razorpay keys aren't set on the server, so we're auto-activating the school in 3 seconds. Set <code style={{ background: '#1a1a1a', padding: '1px 5px', borderRadius: 3 }}>RAZORPAY_KEY_ID</code> in env for real payments.
+          </p>
+        </div>
+      )}
+
+      {result.session.mode === 'trial' && (
+        <div style={{ padding: '12px 14px', borderRadius: 8, background: 'rgba(52,211,153,0.06)', border: '1px solid rgba(52,211,153,0.3)', marginBottom: 14 }}>
+          <span style={{ fontSize: 11, fontWeight: 700, color: '#34d399', textTransform: 'uppercase', letterSpacing: 1 }}>Trial active</span>
+          <p style={{ fontSize: 11, color: '#a1a1aa', margin: 0, marginTop: 4, lineHeight: 1.5 }}>
+            Your school is active for 14 days. Add payment from Settings before it expires.
+          </p>
+        </div>
+      )}
+
+      {result.session.mode === 'razorpay' && (
+        <div style={{ padding: '12px 14px', borderRadius: 8, background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.3)', marginBottom: 14 }}>
+          <span style={{ fontSize: 11, fontWeight: 700, color: '#a5b4fc', textTransform: 'uppercase', letterSpacing: 1 }}>Payment pending</span>
+          <p style={{ fontSize: 11, color: '#a1a1aa', margin: 0, marginTop: 4, lineHeight: 1.5 }}>
+            Order ID: <code style={{ fontFamily: 'monospace' }}>{result.session.order_id}</code>. Frontend payment page is coming next — for now your school is in pending_payment state.
+          </p>
+        </div>
+      )}
+
+      <PrimaryBtn busy={false} onClick={continueToDashboard} icon={ArrowRight}>
+        Open Admin Dashboard
+      </PrimaryBtn>
+    </Wizard>
+  )
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// Shared sub-components
+// ════════════════════════════════════════════════════════════════════════════
+function Wizard({ back, step, of, title, subtitle, children }: any) {
+  return (
+    <div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 18 }}>
+        {back && (
+          <button onClick={back} style={{
+            width: 30, height: 30, borderRadius: 7, flexShrink: 0,
+            background: '#161616', border: '1px solid #1e1e1e',
+            color: '#a1a1aa', cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <ArrowLeft size={14} />
+          </button>
+        )}
+        <div style={{ flex: 1 }}>
+          {step !== null && (
+            <div style={{ fontSize: 10, color: '#52525b', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 2 }}>
+              Step {step}{of ? ` of ${of}` : ''}
             </div>
           )}
-
-          {/* Error */}
-          <AnimatePresence>
-            {error && (
-              <motion.div
-                initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-                style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#f87171', marginBottom: 16 }}
-              >
-                {error}
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          <AnimatePresence mode="wait">
-
-            {/* ── SIGN IN ─────────────────────────────────────────────────── */}
-            {mode === 'signin' && !supabaseDown && (
-              <motion.div key="signin" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}>
-                <Field icon={<Mail size={14} color="#52525b" />} label="Email">
-                  <input type="email" value={siEmail} onChange={e => setSiEmail(e.target.value)}
-                    placeholder="you@example.com" autoFocus
-                    onKeyDown={e => e.key === 'Enter' && handleSignIn()}
-                    style={inputStyle} />
-                </Field>
-                <Field icon={<Lock size={14} color="#52525b" />} label="Password">
-                  <div style={{ position: 'relative' }}>
-                    <input type={siShowPw ? 'text' : 'password'} value={siPassword}
-                      onChange={e => setSiPassword(e.target.value)} placeholder="••••••••"
-                      onKeyDown={e => e.key === 'Enter' && handleSignIn()}
-                      style={{ ...inputStyle, paddingRight: 40 }} />
-                    <button onClick={() => setSiShowPw(p => !p)} style={eyeBtn}>
-                      {siShowPw ? <EyeOff size={13} color="#52525b" /> : <Eye size={13} color="#52525b" />}
-                    </button>
-                  </div>
-                </Field>
-                <PrimaryBtn loading={loading} onClick={handleSignIn}>
-                  <Sparkles size={14} /> Sign in to Kairo
-                </PrimaryBtn>
-              </motion.div>
-            )}
-
-            {/* ── SIGN UP ─────────────────────────────────────────────────── */}
-            {mode === 'signup' && !supabaseDown && (
-              <motion.div key="signup" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 16 }}>
-                  {ROLES.map(r => (
-                    <button key={r.id} onClick={() => setSuRole(r.id)} style={{
-                      padding: '12px 10px', borderRadius: 10, cursor: 'pointer',
-                      border: `1px solid ${suRole === r.id ? '#6366f1' : '#1e1e1e'}`,
-                      background: suRole === r.id ? 'rgba(99,102,241,0.08)' : '#0d0d0d',
-                      fontFamily: 'inherit', textAlign: 'left', transition: 'all 0.15s',
-                    }}>
-                      <div style={{ fontSize: 20, marginBottom: 4 }}>{r.icon}</div>
-                      <div style={{ fontSize: 13, fontWeight: 700, color: suRole === r.id ? '#818cf8' : '#d4d4d8' }}>{r.label}</div>
-                      <div style={{ fontSize: 11, color: '#52525b', marginTop: 2 }}>{r.desc}</div>
-                    </button>
-                  ))}
-                </div>
-                <Field icon={<User size={14} color="#52525b" />} label="Full Name">
-                  <input value={suName} onChange={e => setSuName(e.target.value)} placeholder="e.g. Rahul Kumar" style={inputStyle} autoFocus />
-                </Field>
-                <Field icon={<Mail size={14} color="#52525b" />} label="Email">
-                  <input type="email" value={suEmail} onChange={e => setSuEmail(e.target.value)} placeholder="you@example.com" style={inputStyle} />
-                </Field>
-                <Field icon={<Lock size={14} color="#52525b" />} label="Password">
-                  <div style={{ position: 'relative' }}>
-                    <input type={suShowPw ? 'text' : 'password'} value={suPassword}
-                      onChange={e => setSuPassword(e.target.value)} placeholder="min 8 characters"
-                      style={{ ...inputStyle, paddingRight: 40 }} />
-                    <button onClick={() => setSuShowPw(p => !p)} style={eyeBtn}>
-                      {suShowPw ? <EyeOff size={13} color="#52525b" /> : <Eye size={13} color="#52525b" />}
-                    </button>
-                  </div>
-                </Field>
-                <div style={{ margin: '16px 0 12px', padding: '14px 16px', background: '#0d0d0d', border: '1px solid #1e1e1e', borderRadius: 10 }}>
-                  <p style={{ fontSize: 11, fontWeight: 700, color: '#52525b', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 12 }}>🏫 Join your school</p>
-                  <Field icon={<Building2 size={14} color="#52525b" />} label="School Name">
-                    <input value={suSchool} onChange={e => setSuSchool(e.target.value)} placeholder="e.g. Delhi Public School" style={inputStyle} />
-                  </Field>
-                  <Field icon={<Key size={14} color="#52525b" />} label="School Passcode" hint="Get this from your school admin">
-                    <input value={suPasscode} onChange={e => setSuPasscode(e.target.value)}
-                      placeholder="XXXXXX-XXXXXX-XXXXXX"
-                      style={{ ...inputStyle, fontFamily: 'monospace', letterSpacing: 1 }} />
-                  </Field>
-                </div>
-                <PrimaryBtn loading={loading} onClick={handleSignUp}>
-                  <ArrowRight size={14} /> Create account
-                </PrimaryBtn>
-              </motion.div>
-            )}
-
-            {/* ── REGISTER SCHOOL ─────────────────────────────────────────── */}
-            {mode === 'school' && !supabaseDown && (
-              <motion.div key="school" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}>
-                {!scResult ? (
-                  <>
-                    <p style={{ fontSize: 13, color: '#71717a', marginBottom: 16, lineHeight: 1.6 }}>
-                      Register your school to get a <strong style={{ color: '#fafafa' }}>unique passcode</strong>. Share it with teachers &amp; students so they can join.
-                    </p>
-                    <Field icon={<Building2 size={14} color="#52525b" />} label="School Name">
-                      <input value={scName} onChange={e => setScName(e.target.value)} placeholder="e.g. Delhi Public School, R.K. Puram" autoFocus style={inputStyle} />
-                    </Field>
-                    <Field icon={<Mail size={14} color="#52525b" />} label="School Email">
-                      <input type="email" value={scEmail} onChange={e => setScEmail(e.target.value)} placeholder="admin@school.edu.in" style={inputStyle} />
-                    </Field>
-                    <PrimaryBtn loading={loading} onClick={handleSchoolRegister}>
-                      <Building2 size={14} /> Register School
-                    </PrimaryBtn>
-                  </>
-                ) : (
-                  <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }}>
-                    <div style={{ textAlign: 'center', marginBottom: 20 }}>
-                      <div style={{ fontSize: 40, marginBottom: 8 }}>🎉</div>
-                      <h3 style={{ fontSize: 16, fontWeight: 700, color: '#fafafa', margin: 0 }}>School Registered!</h3>
-                      <p style={{ fontSize: 13, color: '#71717a', marginTop: 6 }}>Share this passcode with your staff and students</p>
-                    </div>
-                    <div style={{ background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.3)', borderRadius: 12, padding: '18px 20px', textAlign: 'center', marginBottom: 16 }}>
-                      <p style={{ fontSize: 11, fontWeight: 600, color: '#6366f1', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 }}>School Passcode</p>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
-                        <code style={{ fontSize: 22, fontFamily: 'monospace', fontWeight: 800, color: '#fafafa', letterSpacing: 3 }}>
-                          {scResult.passcode}
-                        </code>
-                        <button onClick={copyPasscode} style={{ background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.3)', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
-                          {copied ? <Check size={15} color="#34d399" /> : <Copy size={15} color="#818cf8" />}
-                        </button>
-                      </div>
-                      <p style={{ fontSize: 11, color: '#f87171', marginTop: 12, fontWeight: 600 }}>
-                        ⚠️ Save this now — it will never be shown again
-                      </p>
-                    </div>
-                    <button onClick={() => { setScResult(null); setScName(''); setScEmail(''); setMode('signup') }}
-                      style={{ width: '100%', padding: '11px', borderRadius: 10, border: '1px solid #1e1e1e', background: '#0d0d0d', color: '#fafafa', fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
-                      Continue → Create your teacher account
-                    </button>
-                  </motion.div>
-                )}
-              </motion.div>
-            )}
-
-            {/* ── PARENT REGISTER ─────────────────────────────────────────── */}
-            {mode === 'parent' && !supabaseDown && (
-              <motion.div key="parent" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}>
-                <div style={{ marginBottom: 16, padding: '12px 14px', background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.2)', borderRadius: 10 }}>
-                  <p style={{ fontSize: 12, color: '#818cf8', margin: 0, lineHeight: 1.6 }}>
-                    <strong>Parent Mode</strong> — view your child's marks and academic performance.<br />
-                    Ask your child to generate a <strong>Parent Access Code</strong> from their Kairo app first.
-                  </p>
-                </div>
-                <Field icon={<User size={14} color="#52525b" />} label="Your Name">
-                  <input value={prName} onChange={e => setPrName(e.target.value)} placeholder="e.g. Mrs. Kavita Sharma" autoFocus style={inputStyle} />
-                </Field>
-                <Field icon={<Mail size={14} color="#52525b" />} label="Your Email">
-                  <input type="email" value={prEmail} onChange={e => setPrEmail(e.target.value)} placeholder="parent@example.com" style={inputStyle} />
-                </Field>
-                <Field icon={<Lock size={14} color="#52525b" />} label="Create Password">
-                  <div style={{ position: 'relative' }}>
-                    <input type={prShowPw ? 'text' : 'password'} value={prPassword}
-                      onChange={e => setPrPassword(e.target.value)} placeholder="min 8 characters"
-                      style={{ ...inputStyle, paddingRight: 40 }} />
-                    <button onClick={() => setPrShowPw(p => !p)} style={eyeBtn}>
-                      {prShowPw ? <EyeOff size={13} color="#52525b" /> : <Eye size={13} color="#52525b" />}
-                    </button>
-                  </div>
-                </Field>
-                <Field icon={<Key size={14} color="#52525b" />} label="Child's Access Code" hint="Get this from your child">
-                  <input value={prCode} onChange={e => setPrCode(e.target.value)}
-                    placeholder="e.g. ABCD1234"
-                    style={{ ...inputStyle, fontFamily: 'monospace', letterSpacing: 2, textTransform: 'uppercase' }} />
-                </Field>
-                <PrimaryBtn loading={loading} onClick={handleParentRegister}>
-                  <ArrowRight size={14} /> Create Parent Account
-                </PrimaryBtn>
-                <p style={{ fontSize: 11, color: '#3f3f46', textAlign: 'center', marginTop: 10 }}>
-                  Already have an account? Use Sign In tab.
-                </p>
-              </motion.div>
-            )}
-
-            {/* ── QUICK START (local, no Supabase needed) ─────────────────── */}
-            {(mode === 'local' || supabaseDown) && (
-              <motion.div key="local" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14, padding: '10px 14px', background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)', borderRadius: 10 }}>
-                  <Zap size={14} color="#f59e0b" style={{ flexShrink: 0 }} />
-                  <p style={{ fontSize: 12, color: '#92400e', margin: 0, lineHeight: 1.5 }}>
-                    <strong style={{ color: '#fbbf24' }}>Quick Start</strong> — no account needed. All AI features work. Data stays on your device. Add Supabase later for school sync.
-                  </p>
-                </div>
-
-                {/* Role picker */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 14 }}>
-                  {ROLES.map(r => (
-                    <button key={r.id} onClick={() => setQlRole(r.id)} style={{
-                      padding: '12px 10px', borderRadius: 10, cursor: 'pointer',
-                      border: `1px solid ${qlRole === r.id ? '#f59e0b' : '#1e1e1e'}`,
-                      background: qlRole === r.id ? 'rgba(245,158,11,0.08)' : '#0d0d0d',
-                      fontFamily: 'inherit', textAlign: 'left', transition: 'all 0.15s',
-                    }}>
-                      <div style={{ fontSize: 20, marginBottom: 4 }}>{r.icon}</div>
-                      <div style={{ fontSize: 13, fontWeight: 700, color: qlRole === r.id ? '#fbbf24' : '#d4d4d8' }}>{r.label}</div>
-                      <div style={{ fontSize: 11, color: '#52525b', marginTop: 2 }}>{r.desc}</div>
-                    </button>
-                  ))}
-                </div>
-
-                <Field icon={<User size={14} color="#52525b" />} label="Your Name">
-                  <input value={qlName} onChange={e => setQlName(e.target.value)}
-                    placeholder={qlRole === 'teacher' ? 'e.g. Mrs. Priya Sharma' : 'e.g. Rahul Kumar'}
-                    autoFocus
-                    onKeyDown={e => e.key === 'Enter' && handleQuickStart()}
-                    style={inputStyle} />
-                </Field>
-
-                {qlRole === 'student' && (
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 4 }}>
-                    <Field label="Board">
-                      <select value={qlBoard} onChange={e => setQlBoard(e.target.value)} style={{ ...inputStyle, appearance: 'none' as any }}>
-                        {BOARDS.map(b => <option key={b}>{b}</option>)}
-                      </select>
-                    </Field>
-                    <Field label="Class">
-                      <select value={qlCls} onChange={e => setQlCls(e.target.value)} style={{ ...inputStyle, appearance: 'none' as any }}>
-                        {CLASSES.map(c => <option key={c}>Class {c}</option>)}
-                      </select>
-                    </Field>
-                  </div>
-                )}
-
-                <PrimaryBtn loading={false} onClick={handleQuickStart} color="amber">
-                  <Zap size={14} /> Start using Kairo
-                </PrimaryBtn>
-              </motion.div>
-            )}
-
-          </AnimatePresence>
+          <h2 style={{ fontSize: 19, fontWeight: 700, color: '#fafafa', margin: 0 }}>{title}</h2>
+          {subtitle && <p style={{ fontSize: 12, color: '#71717a', margin: 0, marginTop: 2 }}>{subtitle}</p>}
         </div>
-
-        {/* Footer hint */}
-        {!supabaseDown && (
-          <p style={{ fontSize: 11, color: '#27272a', textAlign: 'center', marginTop: 14 }}>
-            {mode === 'signin'
-              ? "New here? → Sign Up tab  ·  No account? → Quick tab"
-              : mode === 'signup'
-                ? "School admin? → School tab first to get your passcode"
-                : mode === 'school'
-                  ? "Already registered? → Sign In tab"
-                  : mode === 'parent'
-                    ? "Already have an account? → Sign In tab"
-                    : "Your data stays on this device · Add Supabase later for school sync"}
-          </p>
-        )}
-      </motion.div>
+      </div>
+      {step !== null && of && (
+        <div style={{ display: 'flex', gap: 4, marginBottom: 20 }}>
+          {[...Array(of)].map((_, i) => (
+            <div key={i} style={{
+              flex: 1, height: 3, borderRadius: 2,
+              background: i < step ? '#6366f1' : '#1e1e1e',
+            }} />
+          ))}
+        </div>
+      )}
+      {children}
     </div>
   )
 }
 
-// ── Sub-components ────────────────────────────────────────────────────────────
+function SchoolPreview({ school, compact = false }: { school: any; compact?: boolean }) {
+  return (
+    <div style={{
+      padding: compact ? '10px 14px' : '14px 16px', borderRadius: 11,
+      background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.3)',
+      display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14,
+    }}>
+      <div style={{
+        width: compact ? 34 : 40, height: compact ? 34 : 40, borderRadius: 9, flexShrink: 0,
+        background: school.school_logo_url ? '#fff' : 'linear-gradient(135deg,#6366f1,#7c3aed)',
+        overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}>
+        {school.school_logo_url
+          ? <img src={school.school_logo_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          : <Building2 size={18} color="#fff" />}
+      </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: compact ? 12 : 13, fontWeight: 700, color: '#fafafa', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {school.school_name}
+        </div>
+        <div style={{ fontSize: 10, color: '#a5b4fc', fontWeight: 600, marginTop: 2, textTransform: 'uppercase', letterSpacing: 1 }}>
+          You're joining
+        </div>
+      </div>
+      <Check size={16} color="#34d399" />
+    </div>
+  )
+}
 
-function Field({ icon, label, hint, children }: { icon?: React.ReactNode; label: string; hint?: string; children: React.ReactNode }) {
+function Field({ icon: Icon, label, hint, children }: any) {
   return (
     <div style={{ marginBottom: 12 }}>
-      <label style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, fontWeight: 600, color: '#71717a', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.8 }}>
-        {icon}{label}
+      <label style={{
+        display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, fontWeight: 600,
+        color: '#71717a', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.8,
+      }}>
+        <Icon size={11} color="#52525b" />{label}
         {hint && <span style={{ color: '#3f3f46', fontWeight: 400, textTransform: 'none', letterSpacing: 0, marginLeft: 4 }}>· {hint}</span>}
       </label>
       {children}
@@ -655,42 +770,38 @@ function Field({ icon, label, hint, children }: { icon?: React.ReactNode; label:
   )
 }
 
-function PrimaryBtn({ loading, onClick, children, color = 'indigo' }: { loading: boolean; onClick: () => void; children: React.ReactNode; color?: 'indigo' | 'amber' }) {
-  const bg = color === 'amber'
-    ? 'linear-gradient(135deg, #f59e0b, #d97706)'
-    : 'linear-gradient(135deg, #6366f1, #7c3aed)'
-  const glow = color === 'amber'
-    ? '0 0 24px rgba(245,158,11,0.35)'
-    : '0 0 24px rgba(99,102,241,0.35)'
+function PrimaryBtn({ busy, onClick, icon: Icon, children }: any) {
   return (
-    <motion.button
-      whileHover={{ scale: loading ? 1 : 1.02 }}
-      whileTap={{ scale: loading ? 1 : 0.97 }}
-      onClick={onClick}
-      disabled={loading}
+    <motion.button whileHover={{ scale: busy ? 1 : 1.02 }} whileTap={{ scale: busy ? 1 : 0.97 }}
+      onClick={onClick} disabled={busy}
       style={{
-        width: '100%', marginTop: 8, padding: '13px', borderRadius: 10, border: 'none',
-        background: loading ? '#1e1e2e' : bg,
-        color: loading ? '#52525b' : '#fff', fontFamily: 'inherit', fontSize: 14, fontWeight: 700,
-        cursor: loading ? 'not-allowed' : 'pointer',
-        boxShadow: loading ? 'none' : glow,
+        width: '100%', marginTop: 6, padding: '13px', borderRadius: 11, border: 'none',
+        background: busy ? '#1e1e2e' : 'linear-gradient(135deg, #6366f1, #7c3aed)',
+        color: busy ? '#52525b' : '#fff', fontFamily: 'inherit', fontSize: 14, fontWeight: 700,
+        cursor: busy ? 'not-allowed' : 'pointer',
+        boxShadow: busy ? 'none' : '0 0 22px rgba(99,102,241,0.35)',
         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-        transition: 'all 0.2s',
-      }}
-    >
-      {loading ? (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div style={{ width: 14, height: 14, borderRadius: '50%', border: '2px solid #3f3f46', borderTopColor: '#818cf8', animation: 'spin 0.8s linear infinite' }} />
-          Please wait…
-        </div>
-      ) : children}
+      }}>
+      {busy
+        ? <><Loader2 size={14} style={{ animation: 'spin 0.8s linear infinite' }} /> Please wait…</>
+        : <>{Icon && <Icon size={14} />} {children}</>}
     </motion.button>
   )
 }
 
-const inputStyle: React.CSSProperties = {
+function ErrLine({ msg }: { msg: string }) {
+  return (
+    <p style={{
+      fontSize: 12, color: '#f87171', marginTop: -4, marginBottom: 12,
+      padding: '8px 12px', background: 'rgba(248,113,113,0.08)',
+      border: '1px solid rgba(248,113,113,0.25)', borderRadius: 7,
+    }}>{msg}</p>
+  )
+}
+
+const inp: React.CSSProperties = {
   width: '100%', background: '#0d0d0d', border: '1px solid #1e1e1e',
-  borderRadius: 8, padding: '10px 12px', fontSize: 14, color: '#fafafa',
+  borderRadius: 9, padding: '11px 14px', fontSize: 14, color: '#fafafa',
   fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box',
   transition: 'border-color 0.15s',
 }

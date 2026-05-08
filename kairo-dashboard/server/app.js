@@ -63,6 +63,9 @@ import battleRoutes        from './routes/battle.js'
 // ── v11 routes (Knowledge Graph Engine) ──────────────────────────────────────
 import knowledgeRoutes     from './routes/knowledge.js'
 
+// ── v12 routes (Payments + Subscriptions) ────────────────────────────────────
+import paymentRoutes       from './routes/payments.js'
+
 // ─── Validate env ─────────────────────────────────────────────────────────────
 if (!process.env.ENCRYPTION_SECRET || process.env.ENCRYPTION_SECRET.length < 32) {
   // Use a fallback so the server doesn't crash — set ENCRYPTION_SECRET in prod for real security
@@ -157,6 +160,9 @@ app.use('/api/battle',         battleRoutes)
 
 // v11 — Knowledge Graph Engine
 app.use('/api/knowledge',      knowledgeRoutes)
+
+// v12 — Payments + subscription lifecycle
+app.use('/api/payments',       paymentRoutes)
 
 // ─── Health check ─────────────────────────────────────────────────────────────
 app.get('/health', (_req, res) => {
