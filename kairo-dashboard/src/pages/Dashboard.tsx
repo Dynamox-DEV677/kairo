@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import Sidebar from '../components/Sidebar'
 import TopBar from '../components/TopBar'
+import MobileShell from '../components/MobileShell'
+import { useIsMobile } from '../hooks/useViewport'
 import ChatWindow from '../components/ChatWindow'
 import InsightPanel from '../components/InsightPanel'
 import Flashcards from './Flashcards'
@@ -126,9 +128,12 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
     flexDirection: 'column' as const,
   })
 
+  const isMobile = useIsMobile()
+
   return (
-    <div style={{
+    <div className={isMobile ? 'kairo-mobile' : 'kairo-desktop'} style={{
       display: 'flex',
+      flexDirection: isMobile ? 'column' : 'row',
       height: '100vh',
       overflow: 'hidden',
       background: isDark ? '#0a0a0a' : '#f4f4f5',
@@ -136,17 +141,31 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
       fontFamily: "'Lora', 'Georgia', serif",
       transition: 'background 0.25s ease',
     }}>
-      <Sidebar
-        active={active}
-        setActive={setActive}
-        isDark={isDark}
-        toggleTheme={() => setIsDark(d => !d)}
-        profile={profile}
-        onLogout={onLogout}
-      />
+      {!isMobile && (
+        <Sidebar
+          active={active}
+          setActive={setActive}
+          isDark={isDark}
+          toggleTheme={() => setIsDark(d => !d)}
+          profile={profile}
+          onLogout={onLogout}
+        />
+      )}
 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
-        <TopBar title={PAGE_TITLES[active] || 'Dashboard'} onModelChange={setSelectedModel} profile={profile} />
+        {isMobile ? (
+          <MobileShell
+            active={active}
+            setActive={setActive}
+            pageTitle={PAGE_TITLES[active] || 'Dashboard'}
+            isDark={isDark}
+            toggleTheme={() => setIsDark(d => !d)}
+            profile={profile}
+            onLogout={onLogout}
+          />
+        ) : (
+          <TopBar title={PAGE_TITLES[active] || 'Dashboard'} onModelChange={setSelectedModel} profile={profile} />
+        )}
 
         <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
           <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column', position: 'relative' }}>
@@ -261,8 +280,8 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
 
           </div>
 
-          {/* Insight panel — only for doubt solver */}
-          {active === 'doubt' && (
+          {/* Insight panel — only for doubt solver, desktop-only */}
+          {active === 'doubt' && !isMobile && (
             <InsightPanel hasContent={hasContent} lastQuestion={lastQuestion} />
           )}
         </div>

@@ -101,3 +101,95 @@ html, body, #root {
 .prose-ai table { width: 100%; border-collapse: collapse; margin: 0.8em 0; font-size: 13px; }
 .prose-ai th, .prose-ai td { border: 1px solid #1e1e1e; padding: 8px 12px; }
 .prose-ai th { background: #161616; color: #fafafa; font-weight: 600; }
+
+/* ──────────────────────────────────────────────────────────────────────────
+   MOBILE — feature-flagged via .kairo-mobile root class on the shell.
+   Targets the inline `padding: '28px 36px'` set on every page wrapper:
+   pages render as <div style="padding: 28px 36px ..."> — we override with !important
+   on direct descendants of the page container.
+   ────────────────────────────────────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  /* Body never scrolls — only inner page does — fixes iOS rubber-band hiding nav */
+  html, body { overflow: hidden; overscroll-behavior: none; }
+  /* Smaller scrollbars for touch */
+  ::-webkit-scrollbar { width: 0; height: 0; }
+}
+
+/* Re-pad every page when the shell is in mobile mode.
+   Pages set their own inline padding, so we use the descendant attribute selector
+   to clamp horizontal padding + add bottom clearance for the bottom-nav (60px + safe-area). */
+.kairo-mobile [style*="padding: '28px 36px'"],
+.kairo-mobile [style*="padding:28px 36px"] {
+  padding: 16px 16px calc(76px + env(safe-area-inset-bottom)) !important;
+}
+
+/* Pages with vertical padding only */
+.kairo-mobile [style*="padding: '28px"] {
+  padding-bottom: calc(76px + env(safe-area-inset-bottom)) !important;
+}
+
+/* Fix max-width clamping on mobile so we use the full width */
+.kairo-mobile [style*="maxWidth: 1100"],
+.kairo-mobile [style*="maxWidth: 1000"],
+.kairo-mobile [style*="maxWidth: 900"],
+.kairo-mobile [style*="maxWidth: 880"],
+.kairo-mobile [style*="maxWidth: 820"],
+.kairo-mobile [style*="maxWidth: 760"],
+.kairo-mobile [style*="maxWidth: 720"] {
+  max-width: 100% !important;
+}
+
+/* Touch targets — bump small buttons to 40px min */
+.kairo-mobile button {
+  min-height: 36px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Stack 2-col grids into 1 column on mobile */
+.kairo-mobile [style*="gridTemplateColumns: '1fr 1fr'"],
+.kairo-mobile [style*="gridTemplateColumns:'1fr 1fr'"],
+.kairo-mobile [style*="gridTemplateColumns: \"1fr 1fr\""] {
+  grid-template-columns: 1fr !important;
+}
+
+/* Stack 3-col grids into 1 column too — too cramped at narrow widths */
+.kairo-mobile [style*="gridTemplateColumns: '1fr 1fr 1fr'"],
+.kairo-mobile [style*="gridTemplateColumns:'1fr 1fr 1fr'"] {
+  grid-template-columns: 1fr 1fr !important;
+}
+
+/* 4-col grids → 2 columns (e.g. stat tiles) */
+.kairo-mobile [style*="gridTemplateColumns: 'repeat(4, 1fr)'"],
+.kairo-mobile [style*="gridTemplateColumns:'repeat(4, 1fr)'"],
+.kairo-mobile [style*="repeat(4,1fr)"] {
+  grid-template-columns: repeat(2, 1fr) !important;
+}
+
+/* Disable absolute insets created by pageStyle() for the mobile transition feel — keep them but ensure visibility under the top bar */
+.kairo-mobile [style*="position: 'absolute'"][style*="inset: 0"] {
+  position: relative !important;
+  inset: auto !important;
+  height: 100%;
+}
+
+/* Inputs / textareas should never zoom-on-focus on iOS — needs >= 16px font-size */
+.kairo-mobile input,
+.kairo-mobile textarea,
+.kairo-mobile select {
+  font-size: 16px !important;
+}
+
+/* Headings on mobile a touch smaller to feel app-like */
+.kairo-mobile h1 { font-size: 18px !important; }
+
+/* Smooth scroll for inner panels on iOS */
+.kairo-mobile [style*="overflowY: 'auto'"],
+.kairo-mobile [style*="overflow: 'auto'"] {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Bottom nav active-pill animation already handled in component, just ensure layout transitions are GPU-accelerated */
+.kairo-mobile [data-mobile-page] {
+  will-change: opacity, transform;
+}
