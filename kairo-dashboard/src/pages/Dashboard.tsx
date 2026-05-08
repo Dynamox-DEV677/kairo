@@ -42,6 +42,7 @@ import TeacherAssistant from './TeacherAssistant'
 import ExplainMistake from './ExplainMistake'
 import PerformancePredictor from './PerformancePredictor'
 import PanicMode from './PanicMode'
+import KairoLabs from './KairoLabs'
 import { DEFAULT_MODEL } from '../lib/openrouter'
 
 import type { AuthProfile } from './Login'
@@ -84,6 +85,7 @@ const PAGE_TITLES: Record<string, string> = {
   'explain-mistake': 'Explain My Mistake',
   'perf-predictor': 'Performance Predictor',
   panic:            'Exam Panic Mode',
+  labs:             'Kairo Labs',
   settings:         'Settings',
 }
 
@@ -292,6 +294,9 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
 
             {/* Exam Panic Mode */}
             <div style={pageStyle('panic')}><PanicMode /></div>
+
+            {/* Kairo Labs */}
+            <div style={pageStyle('labs')}><KairoLabs /></div>
 
           </div>
 

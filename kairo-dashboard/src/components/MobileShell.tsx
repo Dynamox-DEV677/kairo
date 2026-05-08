@@ -16,7 +16,7 @@ import {
   TrendingUp, Megaphone, Bell, DollarSign, Bot, UserCheck, Grid3x3,
   Building2, GraduationCap, Shield, Sparkles, Settings, LogOut,
   Sun, Moon, Menu, X, MoreHorizontal, ChevronRight, Key, Copy, Check,
-  AlertTriangle,
+  AlertTriangle, Beaker,
 } from 'lucide-react'
 import type { AuthProfile } from '../pages/Login'
 
@@ -69,6 +69,7 @@ const DRAWER_STUDENT = [
   {
     title: 'Tools',
     items: [
+      { to: 'labs',         label: 'Kairo Labs',     icon: Beaker },
       { to: 'flashcards',   label: 'Flashcards',     icon: BookMarked },
       { to: 'camera',       label: 'Camera Study',   icon: Camera },
       { to: 'concept-map',  label: 'Concept Map',    icon: Network },

@@ -7,6 +7,7 @@ import {
   GraduationCap, Shield, Sparkles, DollarSign, Bot, UserCheck, Grid3x3, Building2,
   Edit3, Lightbulb, FunctionSquare, Brain, TrendingUp, Star, Timer, Megaphone,
   Target, Activity, Zap, Compass, Network, Mic, Swords, Share2, AlertTriangle,
+  Beaker,
 } from 'lucide-react'
 import { useGeneration } from '../lib/generationContext'
 import { getRecentChats, deleteRecentChat, timeAgo } from '../lib/recentChats'
@@ -25,6 +26,7 @@ interface NavItem {
 const STUDENT_NAV: NavItem[] = [
   { label: 'Doubt Solver',    icon: MessageCircle,   to: 'doubt',         color: '#818cf8' },
   { label: 'AI Memory',       icon: Brain,           to: 'memory',        color: '#a78bfa' },
+  { label: 'Kairo Labs',      icon: Beaker,          to: 'labs',          color: '#ec4899' },
   { label: 'Mistake Analysis',icon: Activity,        to: 'mistakes',      color: '#f87171' },
   { label: 'Revision Sim',    icon: Zap,             to: 'simulator',     color: '#fb923c' },
   { label: 'Adaptive Path',   icon: Compass,         to: 'adaptive',      color: '#38bdf8' },

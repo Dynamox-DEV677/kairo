@@ -1,0 +1,252 @@
+/**
+ * Kairo Labs — interactive 3D learning simulations.
+ * Lists available labs; clicking one opens the simulation full-bleed.
+ */
+import { useState, lazy, Suspense } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import {
+  Beaker, Atom, Heart, Activity, Sparkles, Lock,
+  ArrowRight, Loader2,
+} from 'lucide-react'
+
+// Lazy-load the heavy R3F lab — only fetched when student opens it.
+// This keeps the main bundle small.
+const GravityLab = lazy(() => import('../labs/GravityLab'))
+
+interface Lab {
+  id:        string
+  title:     string
+  topic:     string
+  subject:   'Physics' | 'Chemistry' | 'Biology' | 'Math'
+  desc:      string
+  icon:      any
+  ready:     boolean
+  Component?: any
+}
+
+const LABS: Lab[] = [
+  // ─── Physics ────────────────────────────────────────────────────────────
+  {
+    id: 'gravity', title: 'Gravity & Free Fall', topic: 'Newton\'s Laws',
+    subject: 'Physics', icon: Activity, ready: true, Component: GravityLab,
+    desc: 'Apple falling from a tree. Tweak gravity, air drag, and drop height — AI explains live.',
+  },
+  {
+    id: 'pendulum', title: 'Pendulum Motion', topic: 'Simple Harmonic Motion',
+    subject: 'Physics', icon: Activity, ready: false,
+    desc: 'Adjust length, mass, and damping. Visualize period and amplitude.',
+  },
+  {
+    id: 'projectile', title: 'Projectile Motion', topic: 'Kinematics',
+    subject: 'Physics', icon: Activity, ready: false,
+    desc: 'Fire a cannonball at any angle and velocity. Trace the trajectory.',
+  },
+  {
+    id: 'circuits', title: 'Electric Circuits', topic: 'Ohm\'s Law',
+    subject: 'Physics', icon: Activity, ready: false,
+    desc: 'Build circuits with batteries, resistors, and bulbs. See current flow.',
+  },
+
+  // ─── Chemistry ──────────────────────────────────────────────────────────
+  {
+    id: 'atom', title: 'Atomic Structure', topic: 'Bohr Model',
+    subject: 'Chemistry', icon: Atom, ready: false,
+    desc: 'Orbit electrons around a nucleus. Add protons to see element changes.',
+  },
+  {
+    id: 'molecule', title: 'Molecule Builder', topic: 'Bonding',
+    subject: 'Chemistry', icon: Atom, ready: false,
+    desc: 'Drag atoms together to form molecules. See bond angles and energy.',
+  },
+  {
+    id: 'reaction', title: 'Chemical Reactions', topic: 'Stoichiometry',
+    subject: 'Chemistry', icon: Beaker, ready: false,
+    desc: 'Mix reactants and watch products form with energy diagrams.',
+  },
+
+  // ─── Biology ────────────────────────────────────────────────────────────
+  {
+    id: 'heart', title: 'Human Heart', topic: 'Circulation',
+    subject: 'Biology', icon: Heart, ready: false,
+    desc: 'Beating 3D heart. Track blood flow through chambers and vessels.',
+  },
+  {
+    id: 'cell', title: 'Cell Structure', topic: 'Organelles',
+    subject: 'Biology', icon: Heart, ready: false,
+    desc: 'Explore organelles inside an animal cell. Click any to learn its role.',
+  },
+
+  // ─── Math ───────────────────────────────────────────────────────────────
+  {
+    id: 'vectors', title: 'Vectors in 3D', topic: 'Dot & Cross Product',
+    subject: 'Math', icon: Sparkles, ready: false,
+    desc: 'Drag two vectors in 3D space. See dot product, cross product, and angle.',
+  },
+  {
+    id: 'graphs', title: 'Function Plotter', topic: 'Calculus',
+    subject: 'Math', icon: Sparkles, ready: false,
+    desc: 'Type a function. Watch it plot in 3D with derivative + integral overlays.',
+  },
+]
+
+const SUBJECT_COLORS: Record<string, string> = {
+  Physics: '#818cf8', Chemistry: '#34d399', Biology: '#f472b6', Math: '#fbbf24',
+}
+
+export default function KairoLabs() {
+  const [activeLab, setActive] = useState<Lab | null>(null)
+  const [filter, setFilter]    = useState<'all' | 'Physics' | 'Chemistry' | 'Biology' | 'Math'>('all')
+
+  // Active lab — full-bleed
+  if (activeLab && activeLab.ready && activeLab.Component) {
+    const C = activeLab.Component
+    return (
+      <Suspense fallback={
+        <div style={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 14 }}>
+          <Loader2 size={28} color="#a5b4fc" style={{ animation: 'spin 0.8s linear infinite' }} />
+          <p style={{ fontSize: 13, color: '#a1a1aa' }}>Loading {activeLab.title}…</p>
+        </div>
+      }>
+        <C onBack={() => setActive(null)} />
+      </Suspense>
+    )
+  }
+
+  const visible = filter === 'all' ? LABS : LABS.filter(l => l.subject === filter)
+  const readyCount = LABS.filter(l => l.ready).length
+
+  return (
+    <div style={{ padding: '28px 36px', maxWidth: 1100, margin: '0 auto', height: '100%', overflowY: 'auto' }}>
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 22 }}>
+        <div style={{
+          width: 44, height: 44, borderRadius: 11,
+          background: 'linear-gradient(135deg, #6366f1, #ec4899)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          boxShadow: '0 0 20px rgba(99,102,241,0.4)', flexShrink: 0,
+        }}>
+          <Beaker size={22} color="#fff" />
+        </div>
+        <div style={{ flex: 1 }}>
+          <h1 style={{ fontSize: 20, fontWeight: 700, color: '#fafafa', margin: 0 }}>Kairo Labs</h1>
+          <p style={{ fontSize: 13, color: '#52525b', marginTop: 4 }}>
+            Interactive 3D simulations · AI-powered explanations · {readyCount} live · {LABS.length - readyCount} coming soon
+          </p>
+        </div>
+      </div>
+
+      {/* Subject filter */}
+      <div style={{ display: 'flex', gap: 6, marginBottom: 18, flexWrap: 'wrap' }}>
+        {([
+          { id: 'all',       label: 'All',       color: '#a1a1aa' },
+          { id: 'Physics',   label: 'Physics',   color: SUBJECT_COLORS.Physics },
+          { id: 'Chemistry', label: 'Chemistry', color: SUBJECT_COLORS.Chemistry },
+          { id: 'Biology',   label: 'Biology',   color: SUBJECT_COLORS.Biology },
+          { id: 'Math',      label: 'Math',      color: SUBJECT_COLORS.Math },
+        ] as const).map(t => {
+          const active = filter === t.id
+          return (
+            <button key={t.id} onClick={() => setFilter(t.id as any)}
+              style={{
+                padding: '7px 14px', borderRadius: 8,
+                border: `1px solid ${active ? t.color : '#1e1e1e'}`,
+                background: active ? `${t.color}12` : 'transparent',
+                color: active ? t.color : '#71717a',
+                fontFamily: 'inherit', fontSize: 12, fontWeight: 600, cursor: 'pointer',
+              }}>
+              {t.label}
+            </button>
+          )
+        })}
+      </div>
+
+      {/* Lab grid */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 14 }}>
+        <AnimatePresence>
+          {visible.map((lab, i) => {
+            const Icon = lab.icon
+            const color = SUBJECT_COLORS[lab.subject] || '#a1a1aa'
+            return (
+              <motion.button key={lab.id}
+                initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                transition={{ delay: i * 0.04 }}
+                whileHover={{ y: lab.ready ? -3 : 0 }}
+                onClick={() => lab.ready && setActive(lab)}
+                disabled={!lab.ready}
+                style={{
+                  background: '#111', border: `1px solid ${lab.ready ? color + '30' : '#1e1e1e'}`,
+                  borderRadius: 14, padding: 18, textAlign: 'left',
+                  cursor: lab.ready ? 'pointer' : 'not-allowed',
+                  fontFamily: 'inherit',
+                  position: 'relative', overflow: 'hidden',
+                  opacity: lab.ready ? 1 : 0.55,
+                }}>
+                {/* Ambient color glow on hover */}
+                {lab.ready && (
+                  <div style={{
+                    position: 'absolute', top: -30, right: -30,
+                    width: 100, height: 100, borderRadius: '50%',
+                    background: color, opacity: 0.12, filter: 'blur(40px)',
+                    pointerEvents: 'none',
+                  }} />
+                )}
+
+                <div style={{ position: 'relative', zIndex: 1 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+                    <div style={{
+                      width: 36, height: 36, borderRadius: 9,
+                      background: `${color}18`, border: `1px solid ${color}30`,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}>
+                      <Icon size={16} color={color} />
+                    </div>
+                    <span style={{ fontSize: 10, color, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.5 }}>
+                      {lab.subject}
+                    </span>
+                    {lab.ready ? (
+                      <span style={{
+                        marginLeft: 'auto', fontSize: 9, fontWeight: 700,
+                        padding: '2px 7px', borderRadius: 4,
+                        background: 'rgba(52,211,153,0.12)', color: '#34d399',
+                        textTransform: 'uppercase', letterSpacing: 1,
+                      }}>Live</span>
+                    ) : (
+                      <Lock size={11} color="#52525b" style={{ marginLeft: 'auto' }} />
+                    )}
+                  </div>
+
+                  <div style={{ fontSize: 15, fontWeight: 700, color: '#fafafa', marginBottom: 4 }}>
+                    {lab.title}
+                  </div>
+                  <div style={{ fontSize: 11, color: '#71717a', marginBottom: 10, fontWeight: 500 }}>
+                    {lab.topic}
+                  </div>
+                  <div style={{ fontSize: 12, color: '#a1a1aa', lineHeight: 1.6, marginBottom: 12 }}>
+                    {lab.desc}
+                  </div>
+                  {lab.ready && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color, fontWeight: 600 }}>
+                      Open lab <ArrowRight size={11} />
+                    </div>
+                  )}
+                </div>
+              </motion.button>
+            )
+          })}
+        </AnimatePresence>
+      </div>
+
+      {/* Footer note */}
+      <div style={{
+        marginTop: 22, padding: '12px 16px', borderRadius: 9,
+        background: 'rgba(99,102,241,0.04)', border: '1px solid rgba(99,102,241,0.15)',
+        display: 'flex', alignItems: 'center', gap: 10,
+      }}>
+        <Sparkles size={13} color="#a5b4fc" />
+        <p style={{ fontSize: 11.5, color: '#a1a1aa', margin: 0, lineHeight: 1.5 }}>
+          New labs ship every week. Each one is a real interactive simulation, not a video — drag, zoom, tweak parameters, and watch the AI explanation update live.
+        </p>
+      </div>
+    </div>
+  )
+}
