@@ -22,6 +22,41 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
+
+/** Same normalizer the doubt-solver uses. Coerces non-standard math delimiters
+ *  ([ ... ], \[ ... \], \( ... \)) into the $$...$$ / $...$ KaTeX expects. */
+function normalizeMath(text: string): string {
+  return text
+    .replace(/\\\[([\s\S]*?)\\\]/g, (_, m) => `\n$$${m}$$\n`)
+    .replace(/\\\(([\s\S]*?)\\\)/g, (_, m) => `$${m}$`)
+    .replace(/^\[\s*([\s\S]*?)\s*\]$/gm, (_, m) => {
+      if (m.includes('\\') || /[_^{}]/.test(m)) return `$$${m}$$`
+      return _
+    })
+}
+
+/** Markdown components — match the doubt-solver styling so labs and chat look identical. */
+const MARKDOWN_COMPONENTS = {
+  p:  ({ children }: any) => <p style={{ margin: '0 0 10px', lineHeight: 1.7 }}>{children}</p>,
+  h1: ({ children }: any) => <h1 style={{ fontSize: 17, fontWeight: 800, color: '#fafafa', margin: '14px 0 8px' }}>{children}</h1>,
+  h2: ({ children }: any) => <h2 style={{ fontSize: 15, fontWeight: 700, color: '#e4e4e7', margin: '14px 0 6px', letterSpacing: '-0.2px' }}>{children}</h2>,
+  h3: ({ children }: any) => <h3 style={{ fontSize: 13.5, fontWeight: 700, color: '#a5b4fc', margin: '10px 0 4px', textTransform: 'uppercase', letterSpacing: 1 }}>{children}</h3>,
+  strong: ({ children }: any) => <strong style={{ color: '#fafafa', fontWeight: 700 }}>{children}</strong>,
+  em:     ({ children }: any) => <em style={{ color: '#c4b5fd' }}>{children}</em>,
+  ul: ({ children }: any) => <ul style={{ paddingLeft: 20, margin: '6px 0 10px' }}>{children}</ul>,
+  ol: ({ children }: any) => <ol style={{ paddingLeft: 20, margin: '6px 0 10px' }}>{children}</ol>,
+  li: ({ children }: any) => <li style={{ marginBottom: 4, color: '#d4d4d8' }}>{children}</li>,
+  code: ({ children, className }: any) => {
+    const isBlock = !!className
+    return isBlock
+      ? <pre style={{ background: '#0a0a0a', border: '1px solid #27272a', borderRadius: 8, padding: '12px 14px', overflowX: 'auto', margin: '10px 0' }}>
+          <code style={{ fontSize: 12.5, color: '#86efac', fontFamily: 'monospace' }}>{children}</code>
+        </pre>
+      : <code style={{ background: '#1a1a2e', padding: '2px 6px', borderRadius: 4, fontSize: 12.5, color: '#c4b5fd', fontFamily: 'monospace' }}>{children}</code>
+  },
+  blockquote: ({ children }: any) => <blockquote style={{ borderLeft: '3px solid #6366f1', paddingLeft: 12, margin: '8px 0', color: '#a1a1aa', fontStyle: 'italic' }}>{children}</blockquote>,
+  hr: () => <hr style={{ border: 'none', borderTop: '1px solid #27272a', margin: '12px 0' }} />,
+}
 import { chat } from '../lib/openrouter'
 import { saveToNotebook } from '../lib/notebook'
 
@@ -71,13 +106,22 @@ export default function LabShell({
       const reply = await chat({
         messages: [
           { role: 'system', content: `You are Kairo Labs — a friendly AI lab assistant for Indian school students.
-Explain the ${subject.toLowerCase()} simulation the student is interacting with. Use markdown:
+Explain the ${subject.toLowerCase()} simulation the student is interacting with.
+
+STRICT FORMATTING RULES:
+- Use markdown headings (## for sections).
+- Inline math: wrap in single dollars, e.g. $F = ma$.
+- Display math: wrap in DOUBLE dollars on their own line, e.g. $$E = mc^2$$.
+- NEVER use [ ... ] or \\[ ... \\] for math — only $...$ or $$...$$.
+- Pure prose between equations. No LaTeX commands outside math delimiters.
+
+Output structure (use these exact headings):
 
 ## What you're seeing
 2-3 sentences describing the visual.
 
 ## The physics behind it
-Concise explanation. Use $...$ for inline math, $$...$$ for display math.
+Concise explanation with $..$ inline math and $$..$$ display math.
 
 ## Why this happens
 1-2 sentences of intuition.
@@ -282,8 +326,11 @@ Be specific to the parameters provided. Adapt language to Class 9-12 level.` },
                 <motion.div key="exp" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
                   className="prose-ai"
                   style={{ fontSize: 13.5, color: '#e4e4e7', lineHeight: 1.7 }}>
-                  <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>
-                    {explanation}
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm, remarkMath]}
+                    rehypePlugins={[rehypeKatex]}
+                    components={MARKDOWN_COMPONENTS}>
+                    {normalizeMath(explanation)}
                   </ReactMarkdown>
                 </motion.div>
               )}

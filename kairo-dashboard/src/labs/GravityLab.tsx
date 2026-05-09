@@ -104,22 +104,51 @@ function Ground() {
 
 function Tree({ treeHeight }: { treeHeight: number }) {
   const trunkHeight = treeHeight * 0.7
+  // Cluster of overlapping foliage spheres → organic canopy
+  const canopyClusters: { p: [number, number, number]; r: number; c: string }[] = [
+    { p: [ 0,    trunkHeight + 1.1, 0    ], r: 1.7, c: '#166534' },
+    { p: [ 1.2,  trunkHeight + 1.4, 0.3  ], r: 1.3, c: '#15803d' },
+    { p: [-1.1,  trunkHeight + 1.3, 0.4  ], r: 1.4, c: '#16a34a' },
+    { p: [ 0.5,  trunkHeight + 2.1, -0.6 ], r: 1.1, c: '#22c55e' },
+    { p: [-0.6,  trunkHeight + 2.2, 0.6  ], r: 1.0, c: '#15803d' },
+    { p: [ 0.2,  trunkHeight + 0.5, 1.3  ], r: 1.0, c: '#166534' },
+    { p: [ 0.0,  trunkHeight + 0.4, -1.2 ], r: 1.0, c: '#15803d' },
+  ]
   return (
     <group position={[-3, 0, 0]}>
-      {/* Trunk */}
-      <mesh position={[0, trunkHeight / 2, 0]} castShadow>
-        <cylinderGeometry args={[0.25, 0.35, trunkHeight, 12]} />
-        <meshStandardMaterial color="#3f2614" roughness={1} />
+      {/* Trunk — tapered cylinder with a slightly knobbly base */}
+      <mesh position={[0, trunkHeight / 2, 0]} castShadow receiveShadow>
+        <cylinderGeometry args={[0.22, 0.4, trunkHeight, 14]} />
+        <meshStandardMaterial color="#4a2f1a" roughness={1} />
       </mesh>
-      {/* Foliage */}
-      <mesh position={[0, trunkHeight + 1.2, 0]} castShadow>
-        <sphereGeometry args={[1.8, 16, 16]} />
-        <meshStandardMaterial color="#15803d" roughness={0.7} />
+      {/* Bark detail ring */}
+      <mesh position={[0, 0.15, 0]} castShadow>
+        <cylinderGeometry args={[0.45, 0.55, 0.3, 14]} />
+        <meshStandardMaterial color="#3a2410" roughness={1} />
       </mesh>
-      {/* Inner foliage glow */}
-      <mesh position={[0, trunkHeight + 1.2, 0]}>
-        <sphereGeometry args={[1.85, 16, 16]} />
-        <meshBasicMaterial color="#22c55e" transparent opacity={0.08} />
+      {/* Roots — three short cylinders fanning out */}
+      {[0, 1, 2].map(i => {
+        const angle = (i / 3) * Math.PI * 2
+        return (
+          <mesh key={i}
+            position={[Math.cos(angle) * 0.45, 0.08, Math.sin(angle) * 0.45]}
+            rotation={[0, -angle, Math.PI / 2.4]} castShadow>
+            <cylinderGeometry args={[0.07, 0.14, 0.5, 8]} />
+            <meshStandardMaterial color="#3a2410" roughness={1} />
+          </mesh>
+        )
+      })}
+      {/* Foliage clusters — overlapping spheres */}
+      {canopyClusters.map((c, i) => (
+        <mesh key={i} position={c.p} castShadow>
+          <sphereGeometry args={[c.r, 18, 18]} />
+          <meshStandardMaterial color={c.c} roughness={0.85} />
+        </mesh>
+      ))}
+      {/* Soft outer glow */}
+      <mesh position={[0, trunkHeight + 1.4, 0]}>
+        <sphereGeometry args={[2.4, 12, 12]} />
+        <meshBasicMaterial color="#22c55e" transparent opacity={0.05} />
       </mesh>
     </group>
   )
@@ -170,11 +199,31 @@ function FallingApple({ gravity, airDrag, startHeight, playing }: {
   })
 
   return (
-    <group position={[-3, 0, 0]}>
-      {/* Glow */}
-      <mesh ref={meshRef} position={[0, startHeight, 0]} castShadow>
-        <sphereGeometry args={[0.25, 16, 16]} />
-        <meshStandardMaterial color="#ef4444" emissive="#ef4444" emissiveIntensity={0.3} roughness={0.4} />
+    <group ref={meshRef as any} position={[-3, startHeight, 0]}>
+      {/* Apple body — slightly squashed sphere */}
+      <mesh castShadow scale={[1, 0.9, 1]}>
+        <sphereGeometry args={[0.28, 24, 24]} />
+        <meshStandardMaterial color="#dc2626" emissive="#7f1d1d" emissiveIntensity={0.15} roughness={0.45} metalness={0.05} />
+      </mesh>
+      {/* Top dimple — small dark sphere */}
+      <mesh position={[0, 0.22, 0]}>
+        <sphereGeometry args={[0.07, 12, 12]} />
+        <meshStandardMaterial color="#451a03" roughness={1} />
+      </mesh>
+      {/* Stem */}
+      <mesh position={[0, 0.32, 0]}>
+        <cylinderGeometry args={[0.025, 0.03, 0.12, 8]} />
+        <meshStandardMaterial color="#5e3a1c" roughness={1} />
+      </mesh>
+      {/* Leaf */}
+      <mesh position={[0.08, 0.36, 0]} rotation={[0, 0, Math.PI / 4]} scale={[1.4, 0.4, 0.4]}>
+        <sphereGeometry args={[0.07, 8, 8]} />
+        <meshStandardMaterial color="#16a34a" roughness={0.7} />
+      </mesh>
+      {/* Highlight — small specular hint */}
+      <mesh position={[-0.12, 0.05, 0.18]}>
+        <sphereGeometry args={[0.05, 8, 8]} />
+        <meshBasicMaterial color="#fecaca" transparent opacity={0.5} />
       </mesh>
     </group>
   )
