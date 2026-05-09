@@ -9,9 +9,19 @@ import {
   ArrowRight, Loader2,
 } from 'lucide-react'
 
-// Lazy-load the heavy R3F lab — only fetched when student opens it.
+// Lazy-load each R3F lab — only fetched when student opens it.
 // This keeps the main bundle small.
-const GravityLab = lazy(() => import('../labs/GravityLab'))
+const GravityLab    = lazy(() => import('../labs/GravityLab'))
+const PendulumLab   = lazy(() => import('../labs/PendulumLab'))
+const ProjectileLab = lazy(() => import('../labs/ProjectileLab'))
+const CircuitsLab   = lazy(() => import('../labs/CircuitsLab'))
+const AtomLab       = lazy(() => import('../labs/AtomLab'))
+const MoleculeLab   = lazy(() => import('../labs/MoleculeLab'))
+const ReactionLab   = lazy(() => import('../labs/ReactionLab'))
+const HeartLab      = lazy(() => import('../labs/HeartLab'))
+const CellLab       = lazy(() => import('../labs/CellLab'))
+const VectorsLab    = lazy(() => import('../labs/VectorsLab'))
+const GraphsLab     = lazy(() => import('../labs/GraphsLab'))
 
 interface Lab {
   id:        string
@@ -33,59 +43,59 @@ const LABS: Lab[] = [
   },
   {
     id: 'pendulum', title: 'Pendulum Motion', topic: 'Simple Harmonic Motion',
-    subject: 'Physics', icon: Activity, ready: false,
-    desc: 'Adjust length, mass, and damping. Visualize period and amplitude.',
+    subject: 'Physics', icon: Activity, ready: true, Component: PendulumLab,
+    desc: 'Adjust length, gravity, and damping. Visualize the period of oscillation.',
   },
   {
     id: 'projectile', title: 'Projectile Motion', topic: 'Kinematics',
-    subject: 'Physics', icon: Activity, ready: false,
-    desc: 'Fire a cannonball at any angle and velocity. Trace the trajectory.',
+    subject: 'Physics', icon: Activity, ready: true, Component: ProjectileLab,
+    desc: 'Fire a cannonball at any angle and velocity. Watch the parabolic trail.',
   },
   {
     id: 'circuits', title: 'Electric Circuits', topic: 'Ohm\'s Law',
-    subject: 'Physics', icon: Activity, ready: false,
-    desc: 'Build circuits with batteries, resistors, and bulbs. See current flow.',
+    subject: 'Physics', icon: Activity, ready: true, Component: CircuitsLab,
+    desc: 'Tune voltage and resistance. Watch current flow and the bulb glow.',
   },
 
   // ─── Chemistry ──────────────────────────────────────────────────────────
   {
     id: 'atom', title: 'Atomic Structure', topic: 'Bohr Model',
-    subject: 'Chemistry', icon: Atom, ready: false,
-    desc: 'Orbit electrons around a nucleus. Add protons to see element changes.',
+    subject: 'Chemistry', icon: Atom, ready: true, Component: AtomLab,
+    desc: 'Add protons to transform elements. Electrons fill shells using 2n² rule.',
   },
   {
     id: 'molecule', title: 'Molecule Builder', topic: 'Bonding',
-    subject: 'Chemistry', icon: Atom, ready: false,
-    desc: 'Drag atoms together to form molecules. See bond angles and energy.',
+    subject: 'Chemistry', icon: Atom, ready: true, Component: MoleculeLab,
+    desc: '5 common molecules with proper bond angles. Single, double, triple bonds.',
   },
   {
     id: 'reaction', title: 'Chemical Reactions', topic: 'Stoichiometry',
-    subject: 'Chemistry', icon: Beaker, ready: false,
-    desc: 'Mix reactants and watch products form with energy diagrams.',
+    subject: 'Chemistry', icon: Beaker, ready: true, Component: ReactionLab,
+    desc: 'Combustion of methane. Atoms physically rearrange — nothing disappears.',
   },
 
   // ─── Biology ────────────────────────────────────────────────────────────
   {
     id: 'heart', title: 'Human Heart', topic: 'Circulation',
-    subject: 'Biology', icon: Heart, ready: false,
-    desc: 'Beating 3D heart. Track blood flow through chambers and vessels.',
+    subject: 'Biology', icon: Heart, ready: true, Component: HeartLab,
+    desc: 'Beating 4-chamber heart. Track blood flow with particle animation.',
   },
   {
     id: 'cell', title: 'Cell Structure', topic: 'Organelles',
-    subject: 'Biology', icon: Heart, ready: false,
-    desc: 'Explore organelles inside an animal cell. Click any to learn its role.',
+    subject: 'Biology', icon: Heart, ready: true, Component: CellLab,
+    desc: 'Animal cell with hover-labeled organelles. See nucleus, mitochondria, ER, golgi.',
   },
 
   // ─── Math ───────────────────────────────────────────────────────────────
   {
     id: 'vectors', title: 'Vectors in 3D', topic: 'Dot & Cross Product',
-    subject: 'Math', icon: Sparkles, ready: false,
-    desc: 'Drag two vectors in 3D space. See dot product, cross product, and angle.',
+    subject: 'Math', icon: Sparkles, ready: true, Component: VectorsLab,
+    desc: 'Drag two vectors. Live dot product, cross product, and angle readout.',
   },
   {
     id: 'graphs', title: 'Function Plotter', topic: 'Calculus',
-    subject: 'Math', icon: Sparkles, ready: false,
-    desc: 'Type a function. Watch it plot in 3D with derivative + integral overlays.',
+    subject: 'Math', icon: Sparkles, ready: true, Component: GraphsLab,
+    desc: '5 preset functions plotted as 3D surfaces. Color-coded by height.',
   },
 ]
 
