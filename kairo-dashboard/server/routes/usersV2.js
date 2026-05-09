@@ -154,26 +154,59 @@ router.post('/register', async (req, res) => {
       }
     }
 
-    // 6. Create user profile
-    const { data: profile, error: profileErr } = await supabaseAdmin
+    // 6. Create user profile — defensive about optional columns
+    //    (status/subject/class_name only exist after school_schema migration).
+    const fullProfile = {
+      id:         authUser.id,
+      name:       name.trim(),
+      role:       effectiveRole,
+      school_id:  school.id,
+      status:     initialStatus,
+      subject:    subject    || null,
+      class_name: class_name || null,
+      avatar_url: avatarUrl,
+    }
+    let profileResult = await supabaseAdmin
       .from('users')
-      .insert({
+      .insert(fullProfile)
+      .select('id, name, role, school_id, avatar_url, created_at')
+      .single()
+
+    if (profileResult.error) {
+      const m = (profileResult.error.message || '').toLowerCase()
+      const schemaIssue = m.includes('column') || m.includes('schema cache')
+      if (!schemaIssue) {
+        await supabaseAdmin.auth.admin.deleteUser(authUser.id)
+        throw new Error(profileResult.error.message)
+      }
+      // Retry with the minimal column set that matches the original base schema.
+      const minProfile = {
         id:         authUser.id,
         name:       name.trim(),
         role:       effectiveRole,
         school_id:  school.id,
-        status:     initialStatus,
-        subject:    subject    || null,
-        class_name: class_name || null,
         avatar_url: avatarUrl,
-      })
-      .select('id, name, role, status, school_id, subject, class_name, avatar_url, created_at')
-      .single()
-
-    if (profileErr) {
-      await supabaseAdmin.auth.admin.deleteUser(authUser.id)
-      throw new Error(profileErr.message)
+      }
+      profileResult = await supabaseAdmin
+        .from('users')
+        .insert(minProfile)
+        .select('id, name, role, school_id, avatar_url, created_at')
+        .single()
+      if (profileResult.error) {
+        await supabaseAdmin.auth.admin.deleteUser(authUser.id)
+        throw new Error(profileResult.error.message)
+      }
+      // Patch the optional columns one at a time — each silently no-ops if missing.
+      const patches = [
+        { status: initialStatus },
+        { subject: subject || null },
+        { class_name: class_name || null },
+      ]
+      for (const p of patches) {
+        await supabaseAdmin.from('users').update(p).eq('id', authUser.id).then(() => {}, () => {})
+      }
     }
+    const profile = profileResult.data
 
     // 6. Sign in for immediate session
     const { data: signInData } = await supabaseAdmin.auth.signInWithPassword({
@@ -214,6 +247,130 @@ router.post('/register', async (req, res) => {
     })
   } catch (e) {
     console.error('[Users/register]', e.message)
+    res.status(500).json({ error: e.message })
+  }
+})
+
+// ── Register Personal: standalone student, no school ──────────────────────────
+// For individuals using Kairo on their own (not via a school).
+// Creates auth user + profile with school_id = null.
+router.post('/register-personal', async (req, res) => {
+  const { email, password, name, class_name, board, avatar_base64 } = req.body
+
+  if (!email || !password) return res.status(400).json({ error: 'email and password are required.' })
+  if (!name)               return res.status(400).json({ error: 'name is required.' })
+  if (password.length < 8) return res.status(400).json({ error: 'password must be 8+ characters.' })
+
+  try {
+    // 1. Create Supabase auth user
+    const { data: authData, error: authErr } = await supabaseAdmin.auth.admin.createUser({
+      email:         email.trim().toLowerCase(),
+      password,
+      email_confirm: true,
+    })
+
+    if (authErr) {
+      if (authErr.message.includes('already') || authErr.status === 422) {
+        return res.status(409).json({ error: 'An account with this email already exists.' })
+      }
+      throw new Error(authErr.message)
+    }
+
+    const authUser = authData.user
+
+    // 2. Optional avatar upload to kairo-public bucket
+    let avatarUrl = null
+    if (avatar_base64 && typeof avatar_base64 === 'string') {
+      try {
+        const m = avatar_base64.match(/^data:(image\/[a-z+]+);base64,(.+)$/i)
+        if (m) {
+          const mime = m[1]
+          const ext  = (mime.split('/')[1] || 'png').replace('+xml', '')
+          const buffer = Buffer.from(m[2], 'base64')
+          if (buffer.length > 5 * 1024 * 1024) throw new Error('Avatar exceeds 5 MB')
+          const path = `avatars/${authUser.id}.${ext}`
+          const { error: upErr } = await supabaseAdmin.storage
+            .from('kairo-public')
+            .upload(path, buffer, { contentType: mime, upsert: true })
+          if (!upErr) {
+            const { data: { publicUrl } } = supabaseAdmin.storage.from('kairo-public').getPublicUrl(path)
+            avatarUrl = publicUrl
+          }
+        }
+      } catch (e) {
+        console.warn('[Users/register-personal] avatar upload skipped:', e.message)
+      }
+    }
+
+    // 3. Create user profile (school_id = null) — defensive about optional cols
+    const fullProfile = {
+      id:         authUser.id,
+      name:       name.trim(),
+      role:       'student',
+      school_id:  null,
+      status:     'active',
+      class_name: class_name || null,
+      board:      board || null,
+      avatar_url: avatarUrl,
+    }
+    let profileResult = await supabaseAdmin
+      .from('users')
+      .insert(fullProfile)
+      .select('id, name, role, school_id, avatar_url, created_at')
+      .single()
+
+    if (profileResult.error) {
+      const m = (profileResult.error.message || '').toLowerCase()
+      const schemaIssue = m.includes('column') || m.includes('schema cache')
+      if (!schemaIssue) {
+        await supabaseAdmin.auth.admin.deleteUser(authUser.id)
+        throw new Error(profileResult.error.message)
+      }
+      const minProfile = {
+        id:         authUser.id,
+        name:       name.trim(),
+        role:       'student',
+        school_id:  null,
+        avatar_url: avatarUrl,
+      }
+      profileResult = await supabaseAdmin
+        .from('users')
+        .insert(minProfile)
+        .select('id, name, role, school_id, avatar_url, created_at')
+        .single()
+      if (profileResult.error) {
+        await supabaseAdmin.auth.admin.deleteUser(authUser.id)
+        throw new Error(profileResult.error.message)
+      }
+      // Best-effort patches for optional cols (each silently no-ops if column missing)
+      const patches = [
+        { status: 'active' },
+        { class_name: class_name || null },
+        { board: board || null },
+      ]
+      for (const p of patches) {
+        await supabaseAdmin.from('users').update(p).eq('id', authUser.id).then(() => {}, () => {})
+      }
+    }
+    const profile = profileResult.data
+
+    // 4. Sign in for immediate session
+    const { data: signInData } = await supabaseAdmin.auth.signInWithPassword({
+      email: email.trim().toLowerCase(),
+      password,
+    })
+
+    console.log(`[Users] ✓ Registered personal: ${name} (${authUser.id})`)
+
+    res.status(201).json({
+      message: 'Personal account created.',
+      user: { ...profile, class_name: class_name || null, board: board || null },
+      access_token:  signInData?.session?.access_token  || null,
+      refresh_token: signInData?.session?.refresh_token || null,
+      expires_in:    signInData?.session?.expires_in    || 3600,
+    })
+  } catch (e) {
+    console.error('[Users/register-personal]', e.message)
     res.status(500).json({ error: e.message })
   }
 })

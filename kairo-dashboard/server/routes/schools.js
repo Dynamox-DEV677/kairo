@@ -61,24 +61,58 @@ router.post('/register', async (req, res) => {
     const plainPasscode  = generatePasscode()
     const hashedPasscode = await bcrypt.hash(plainPasscode, 12)
 
-    const { data: school, error } = await supabaseAdmin
+    // Insert with the full set of columns. If the deployed Supabase is missing
+    // some of the newer columns (passcode_plain, status, subscription_status, …),
+    // retry with the minimal set so signup never breaks on a stale schema.
+    const fullCols = {
+      school_name:          school_name.trim(),
+      school_email:         school_email.trim().toLowerCase(),
+      school_passcode:      hashedPasscode,
+      passcode_plain:       plainPasscode,
+      school_logo_url:      school_logo_url || null,
+      domain:               domain          || null,
+      require_approval:     !!require_approval,
+      status:               'pending_payment',
+      subscription_status:  'pending_payment',
+    }
+    let { data: school, error } = await supabaseAdmin
       .from('schools')
-      .insert({
-        school_name:      school_name.trim(),
-        school_email:     school_email.trim().toLowerCase(),
-        school_passcode:  hashedPasscode,
-        passcode_plain:   plainPasscode,
-        school_logo_url:  school_logo_url || null,
-        domain:           domain          || null,
-        require_approval: !!require_approval,
-        // Schools start inactive until payment webhook flips them
-        status:               'pending_payment',
-        subscription_status:  'pending_payment',
-      })
-      .select('id, school_name, school_email, school_logo_url, domain, require_approval, created_at, status, subscription_status')
+      .insert(fullCols)
+      .select('id, school_name, school_email, school_logo_url, domain, require_approval, created_at')
       .single()
 
-    if (error) throw new Error(error.message)
+    if (error) {
+      // Detect missing-column errors and retry with the minimal column set.
+      const msg = (error.message || '').toLowerCase()
+      const schemaIssue = msg.includes('column') || msg.includes('schema cache')
+      if (!schemaIssue) throw new Error(error.message)
+
+      const minCols = {
+        school_name:     school_name.trim(),
+        school_email:    school_email.trim().toLowerCase(),
+        school_passcode: hashedPasscode,
+        school_logo_url: school_logo_url || null,
+      }
+      const retry = await supabaseAdmin
+        .from('schools')
+        .insert(minCols)
+        .select('id, school_name, school_email, school_logo_url, created_at')
+        .single()
+      if (retry.error) throw new Error(retry.error.message)
+      school = retry.data
+
+      // Best-effort: patch each new column individually so missing ones are skipped.
+      const patches = [
+        { passcode_plain:       plainPasscode },
+        { domain:               domain || null },
+        { require_approval:     !!require_approval },
+        { status:               'pending_payment' },
+        { subscription_status:  'pending_payment' },
+      ]
+      for (const p of patches) {
+        await supabaseAdmin.from('schools').update(p).eq('id', school.id).then(() => {}, () => {})
+      }
+    }
 
     let ownerAccount = null
 
@@ -91,25 +125,39 @@ router.post('/register', async (req, res) => {
       })
 
       if (!authErr && authData?.user) {
-        const { data: ownerProfile } = await supabaseAdmin
+        // Defensive: try with status, fall back without it on schema mismatch.
+        const ownerCols = {
+          id:        authData.user.id,
+          name:      owner_name.trim(),
+          role:      'admin',
+          school_id: school.id,
+          status:    'active',
+        }
+        let ownerInsert = await supabaseAdmin
           .from('users')
-          .insert({
-            id:        authData.user.id,
-            name:      owner_name.trim(),
-            role:      'admin',
-            school_id: school.id,
-            status:    'active',
-          })
+          .insert(ownerCols)
           .select('id, name, role')
           .single()
+        if (ownerInsert.error) {
+          const m = (ownerInsert.error.message || '').toLowerCase()
+          if (m.includes('column') || m.includes('schema cache')) {
+            const { status: _drop, ...minOwnerCols } = ownerCols
+            ownerInsert = await supabaseAdmin
+              .from('users')
+              .insert(minOwnerCols)
+              .select('id, name, role')
+              .single()
+          }
+        }
 
-        // Set owner_id on school
+        // Set owner_id on school (silently no-op if column missing)
         await supabaseAdmin
           .from('schools')
           .update({ owner_id: authData.user.id })
           .eq('id', school.id)
+          .then(() => {}, () => {})
 
-        ownerAccount = ownerProfile
+        ownerAccount = ownerInsert.data || null
       }
     }
 
@@ -148,22 +196,26 @@ router.get('/preview/:code', async (req, res) => {
   if (!code || code.length < 5) return res.status(400).json({ error: 'Invalid code' })
 
   try {
-    // Fast path: passcode_plain exact match (admin-readable, populated since slide 6 of new schema)
-    let { data, error } = await supabaseAdmin
-      .from('schools')
-      .select('id, school_name, school_logo_url, plan, require_approval, status')
-      .eq('passcode_plain', code)
-      .maybeSingle()
+    // Fast path: passcode_plain exact match (only works after migration)
+    let data = null
+    try {
+      const r = await supabaseAdmin
+        .from('schools')
+        .select('id, school_name, school_logo_url, plan, require_approval, status')
+        .eq('passcode_plain', code)
+        .maybeSingle()
+      if (!r.error) data = r.data
+    } catch { /* column may not exist on stale schema — fall through */ }
 
-    // Slow path: bcrypt-compare against all schools (only if passcode_plain not yet populated)
-    if (!data && !error) {
+    // Slow path: bcrypt-compare against all schools (works on any schema)
+    if (!data) {
       const { data: all } = await supabaseAdmin
         .from('schools')
-        .select('id, school_name, school_logo_url, plan, require_approval, status, school_passcode')
+        .select('id, school_name, school_logo_url, plan, require_approval, school_passcode')
       if (all) {
         for (const s of all) {
           if (s.school_passcode && await bcrypt.compare(code, s.school_passcode)) {
-            data = { id: s.id, school_name: s.school_name, school_logo_url: s.school_logo_url, plan: s.plan, require_approval: s.require_approval, status: s.status }
+            data = { id: s.id, school_name: s.school_name, school_logo_url: s.school_logo_url, plan: s.plan, require_approval: s.require_approval }
             break
           }
         }
@@ -172,7 +224,7 @@ router.get('/preview/:code', async (req, res) => {
 
     if (!data) return res.status(404).json({ error: 'No school matches this code. Double-check with your admin.' })
 
-    // Block joins to inactive schools
+    // Block joins to inactive schools — only relevant after migration adds status column.
     if (data.status === 'pending_payment' || data.status === 'inactive') {
       return res.status(403).json({ error: 'This school is not active yet. Ask the admin to complete payment.' })
     }

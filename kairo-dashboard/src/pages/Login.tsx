@@ -1,11 +1,10 @@
 /**
- * Kairo Onboarding — three modes: Sign In · Join School · Create School
+ * Kairo Onboarding — four modes: Sign In · Personal · Join School · Create School
  *
  *   Sign In        : email + password → supabase.auth.signInWithPassword
+ *   Personal       : 1-step → POST /api/users/register-personal (no school)
  *   Join School    : 4-step wizard → POST /api/users/register OR /api/parent/register
  *   Create School  : 3-step wizard → POST /api/schools/register → checkout
- *
- * Quick Start mode is removed. Public signup without a school code is removed.
  */
 import { useState, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -37,7 +36,7 @@ export interface AuthProfile {
 }
 
 interface LoginProps { onLogin: (profile: AuthProfile) => void }
-type Mode = 'choose' | 'signin' | 'join' | 'create'
+type Mode = 'choose' | 'signin' | 'personal' | 'join' | 'create'
 
 const ROLES = [
   { id: 'student', label: 'Student',  icon: GraduationCap, desc: 'I study here' },
@@ -105,6 +104,11 @@ export default function Login({ onLogin }: LoginProps) {
                 <SignIn onLogin={onLogin} onBack={() => setMode('choose')} />
               </motion.div>
             )}
+            {mode === 'personal' && (
+              <motion.div key="personal" initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -16 }} transition={transition}>
+                <PersonalSignup onLogin={onLogin} onBack={() => setMode('choose')} />
+              </motion.div>
+            )}
             {mode === 'join' && (
               <motion.div key="join" initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -16 }} transition={transition}>
                 <JoinSchool onLogin={onLogin} onBack={() => setMode('choose')} />
@@ -139,8 +143,10 @@ function ChooseMode({ setMode }: { setMode: (m: Mode) => void }) {
 
       <ChoiceCard onClick={() => setMode('signin')} icon={Mail}
         title="Sign In" desc="Email + password — already a member" />
+      <ChoiceCard onClick={() => setMode('personal')} icon={GraduationCap}
+        title="Sign Up — Personal" desc="I'm a student, no school code needed" highlight />
       <ChoiceCard onClick={() => setMode('join')} icon={Building2}
-        title="Join School" desc="I have a school join code" highlight />
+        title="Join School" desc="I have a school join code" />
       <ChoiceCard onClick={() => setMode('create')} icon={Sparkles}
         title="Create School" desc="Start a new school on Kairo" />
     </div>
@@ -245,6 +251,129 @@ function SignIn({ onLogin, onBack }: any) {
       </Field>
       {err && <ErrLine msg={err} />}
       <PrimaryBtn busy={busy} onClick={submit} icon={Sparkles}>Sign in</PrimaryBtn>
+    </Wizard>
+  )
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// Personal Sign Up — single screen, no school required
+// ════════════════════════════════════════════════════════════════════════════
+const BOARDS = ['CBSE', 'ICSE', 'State', 'IB', 'Other'] as const
+
+function PersonalSignup({ onLogin, onBack }: any) {
+  const [name, setName]         = useState('')
+  const [email, setEmail]       = useState('')
+  const [password, setPassword] = useState('')
+  const [show, setShow]         = useState(false)
+  const [cls, setCls]           = useState('')
+  const [board, setBoard]       = useState<string>('')
+  const [avatar, setAvatar]     = useState<string | null>(null)
+  const [busy, setBusy]         = useState(false)
+  const [err, setErr]           = useState('')
+
+  function handleAvatar(file: File | null) {
+    if (!file) { setAvatar(null); return }
+    if (!file.type.startsWith('image/')) { setErr('Please pick an image file.'); return }
+    if (file.size > 4 * 1024 * 1024) { setErr('Image must be under 4 MB.'); return }
+    setErr('')
+    const reader = new FileReader()
+    reader.onload = () => setAvatar(reader.result as string)
+    reader.readAsDataURL(file)
+  }
+
+  function validate() {
+    if (!name.trim()) return 'Enter your full name.'
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) return 'Enter a valid email address.'
+    if (password.length < 8) return 'Password must be at least 8 characters.'
+    return null
+  }
+
+  async function submit() {
+    const v = validate()
+    if (v) { setErr(v); return }
+    setBusy(true); setErr('')
+    try {
+      const data = await post('/users/register-personal', {
+        name:          name.trim(),
+        email:         email.trim().toLowerCase(),
+        password,
+        class_name:    cls.trim() || undefined,
+        board:         board || undefined,
+        avatar_base64: avatar || undefined,
+      })
+      const profile: AuthProfile = {
+        id:            data.user?.id,
+        name:          data.user?.name,
+        role:          'student',
+        avatar_url:    data.user?.avatar_url,
+        cls:           data.user?.class_name,
+        board:         data.user?.board || board,
+        access_token:  data.access_token,
+        refresh_token: data.refresh_token,
+      }
+      localStorage.setItem('kairo_token',   data.access_token)
+      localStorage.setItem('kairo_refresh', data.refresh_token)
+      localStorage.setItem('kairo_profile', JSON.stringify(profile))
+      onLogin(profile)
+    } catch (e: any) {
+      const msg = e.message || 'Something went wrong.'
+      setErr(msg.toLowerCase().includes('already exists')
+        ? 'That email is already registered. Try Sign In instead.'
+        : msg)
+      setBusy(false)
+    }
+  }
+
+  return (
+    <Wizard back={onBack} step={null} title="Personal Sign Up" subtitle="Just for you — no school code needed.">
+      <AvatarPicker avatar={avatar} onPick={handleAvatar} fallback={name} />
+      <Field label="Full Name" icon={User}>
+        <input autoFocus value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Aarav Verma" style={inp} />
+      </Field>
+      <Field label="Email" icon={Mail}>
+        <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" style={inp} />
+      </Field>
+      <Field label="Create Password" icon={Lock}>
+        <div style={{ position: 'relative' }}>
+          <input type={show ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)}
+            placeholder="min 8 characters" style={{ ...inp, paddingRight: 40 }} />
+          <button onClick={() => setShow(s => !s)} type="button" style={eyeBtn}>
+            {show ? <EyeOff size={14} color="#52525b" /> : <Eye size={14} color="#52525b" />}
+          </button>
+        </div>
+      </Field>
+      <Field label="Class / Grade" icon={GraduationCap} hint="Optional — helps tailor content">
+        <input value={cls} onChange={e => setCls(e.target.value)} placeholder="e.g. 9, 10A, Class 11" style={inp} />
+      </Field>
+      <Field label="Board" icon={BookOpen} hint="Optional — for syllabus matching">
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          {BOARDS.map(b => {
+            const active = board === b
+            return (
+              <button key={b} type="button"
+                onClick={() => setBoard(active ? '' : b)}
+                style={{
+                  padding: '7px 13px', borderRadius: 8,
+                  background: active ? 'rgba(99,102,241,0.12)' : '#0d0d0d',
+                  border: `1px solid ${active ? '#6366f1' : '#1e1e1e'}`,
+                  color: active ? '#a5b4fc' : '#a1a1aa',
+                  fontFamily: 'inherit', fontSize: 12, fontWeight: 600, cursor: 'pointer',
+                }}>
+                {b}
+              </button>
+            )
+          })}
+        </div>
+      </Field>
+      {err && <ErrLine msg={err} />}
+      <PrimaryBtn busy={busy} onClick={submit} icon={Sparkles}>Create my account</PrimaryBtn>
+      <p style={{ fontSize: 11, color: '#52525b', textAlign: 'center', marginTop: 12, lineHeight: 1.5 }}>
+        Already have an account?{' '}
+        <button onClick={onBack} style={{
+          background: 'none', border: 'none', color: '#a5b4fc',
+          fontFamily: 'inherit', fontSize: 11, fontWeight: 600, cursor: 'pointer', padding: 0,
+        }}>Sign in instead</button>
+      </p>
     </Wizard>
   )
 }
