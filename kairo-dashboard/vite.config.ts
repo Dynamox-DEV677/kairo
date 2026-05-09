@@ -29,6 +29,11 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,ico,woff2}'],
+        // Skip large model files — caching 17MB+ of GLBs would blow up the SW.
+        globIgnores: ['**/models/**', '**/*.glb'],
+        // Bump the per-file precache cap so workbox doesn't choke on the
+        // Three.js chunk if it grows past 2MB.
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         // Don't cache API calls — always fresh
         navigateFallbackDenylist: [/^\/api/],
         runtimeCaching: [
@@ -60,7 +65,33 @@ export default defineConfig({
     }),
   ],
   build: {
-    chunkSizeWarningLimit: 1000,
+    chunkSizeWarningLimit: 1500,
+    // Saves significant memory on Vercel's build VM
+    sourcemap: false,
+    // Split the heavy 3D / markdown stacks into their own chunks so the
+    // bundler doesn't try to minify everything in one pass.
+    // (Vite 8 uses Rolldown — manualChunks must be a function, not an object.)
+    rollupOptions: {
+      output: {
+        manualChunks: (id: string) => {
+          if (id.includes('node_modules/three/')) return 'three'
+          if (id.includes('node_modules/@react-three/')) return 'r3f'
+          if (
+            id.includes('react-markdown') ||
+            id.includes('remark-') ||
+            id.includes('rehype-') ||
+            id.includes('katex') ||
+            id.includes('mdast') ||
+            id.includes('hast') ||
+            id.includes('micromark') ||
+            id.includes('unist')
+          ) return 'markdown'
+          if (id.includes('framer-motion')) return 'motion'
+          if (id.includes('@supabase/')) return 'supabase'
+          return undefined
+        },
+      },
+    },
   },
   server: {
     port: 3002,
