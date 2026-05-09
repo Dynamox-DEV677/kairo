@@ -14,14 +14,37 @@
  *   air_drag    — 0 (vacuum) to 1 (heavy resistance)
  *   start_height — 4 to 14 m
  */
-import { useState, useRef, useEffect, useMemo } from 'react'
+import { Suspense, useState, useRef, useEffect, useMemo } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
-import { OrbitControls, Stars, Grid } from '@react-three/drei'
+import { OrbitControls, Stars, Grid, useGLTF, Html } from '@react-three/drei'
 import LabShell from './LabShell'
 import * as THREE from 'three'
 
+const TREE_MODEL_URL  = '/models/maple_tree.glb'
+const APPLE_MODEL_URL = '/models/red_apple.glb'
 const TREE_HEIGHT = 6
 const APPLE_BRANCH_Y_OFFSET = 0.5  // apple sits slightly inside the foliage
+
+/** Clone a GLB scene and uniformly scale it so its longest axis equals targetSize. */
+function useFittedClone(url: string, targetSize: number) {
+  const { scene } = useGLTF(url)
+  return useMemo(() => {
+    const cloned = scene.clone(true)
+    cloned.traverse((o: any) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true } })
+    const box = new THREE.Box3().setFromObject(cloned)
+    const size = new THREE.Vector3()
+    box.getSize(size)
+    const longest = Math.max(size.x, size.y, size.z) || 1
+    const factor = targetSize / longest
+    cloned.scale.setScalar(factor)
+    // Re-center on origin so the base of the tree is at y=0 / apple at center
+    box.setFromObject(cloned)
+    const center = new THREE.Vector3()
+    box.getCenter(center)
+    cloned.position.sub(center)
+    return { cloned, fittedSize: size.clone().multiplyScalar(factor) }
+  }, [scene, targetSize])
+}
 
 interface SimProps {
   params: {
@@ -56,16 +79,18 @@ function GravitySim({ params, playing }: SimProps) {
       {/* Ground */}
       <Ground />
 
-      {/* Tree (left side) */}
-      <Tree treeHeight={params.start_height} />
+      <Suspense fallback={<LoaderChip />}>
+        {/* Tree (left side) — real maple GLB */}
+        <Tree treeHeight={params.start_height} />
 
-      {/* Falling apple */}
-      <FallingApple
-        gravity={params.gravity}
-        airDrag={params.air_drag}
-        startHeight={params.start_height}
-        playing={playing}
-      />
+        {/* Falling apple — real apple GLB */}
+        <FallingApple
+          gravity={params.gravity}
+          airDrag={params.air_drag}
+          startHeight={params.start_height}
+          playing={playing}
+        />
+      </Suspense>
 
       {/* Drop guide */}
       <DropGuide startHeight={params.start_height} />
@@ -102,54 +127,30 @@ function Ground() {
   )
 }
 
+function LoaderChip() {
+  return (
+    <Html center>
+      <div style={{
+        background: 'rgba(13,13,13,0.85)', border: '1px solid rgba(99,102,241,0.4)',
+        borderRadius: 10, padding: '8px 14px', fontFamily: 'inherit',
+        fontSize: 11, color: '#a5b4fc', whiteSpace: 'nowrap',
+      }}>
+        Loading scene…
+      </div>
+    </Html>
+  )
+}
+
 function Tree({ treeHeight }: { treeHeight: number }) {
-  const trunkHeight = treeHeight * 0.7
-  // Cluster of overlapping foliage spheres → organic canopy
-  const canopyClusters: { p: [number, number, number]; r: number; c: string }[] = [
-    { p: [ 0,    trunkHeight + 1.1, 0    ], r: 1.7, c: '#166534' },
-    { p: [ 1.2,  trunkHeight + 1.4, 0.3  ], r: 1.3, c: '#15803d' },
-    { p: [-1.1,  trunkHeight + 1.3, 0.4  ], r: 1.4, c: '#16a34a' },
-    { p: [ 0.5,  trunkHeight + 2.1, -0.6 ], r: 1.1, c: '#22c55e' },
-    { p: [-0.6,  trunkHeight + 2.2, 0.6  ], r: 1.0, c: '#15803d' },
-    { p: [ 0.2,  trunkHeight + 0.5, 1.3  ], r: 1.0, c: '#166534' },
-    { p: [ 0.0,  trunkHeight + 0.4, -1.2 ], r: 1.0, c: '#15803d' },
-  ]
+  // Fit the maple GLB so its longest axis matches the chosen tree height,
+  // then ground it (base at y=0).
+  const { cloned, fittedSize } = useFittedClone(TREE_MODEL_URL, treeHeight)
+  // useFittedClone centered the model on origin → lift it so its base sits on the ground
+  cloned.position.y += fittedSize.y / 2
+
   return (
     <group position={[-3, 0, 0]}>
-      {/* Trunk — tapered cylinder with a slightly knobbly base */}
-      <mesh position={[0, trunkHeight / 2, 0]} castShadow receiveShadow>
-        <cylinderGeometry args={[0.22, 0.4, trunkHeight, 14]} />
-        <meshStandardMaterial color="#4a2f1a" roughness={1} />
-      </mesh>
-      {/* Bark detail ring */}
-      <mesh position={[0, 0.15, 0]} castShadow>
-        <cylinderGeometry args={[0.45, 0.55, 0.3, 14]} />
-        <meshStandardMaterial color="#3a2410" roughness={1} />
-      </mesh>
-      {/* Roots — three short cylinders fanning out */}
-      {[0, 1, 2].map(i => {
-        const angle = (i / 3) * Math.PI * 2
-        return (
-          <mesh key={i}
-            position={[Math.cos(angle) * 0.45, 0.08, Math.sin(angle) * 0.45]}
-            rotation={[0, -angle, Math.PI / 2.4]} castShadow>
-            <cylinderGeometry args={[0.07, 0.14, 0.5, 8]} />
-            <meshStandardMaterial color="#3a2410" roughness={1} />
-          </mesh>
-        )
-      })}
-      {/* Foliage clusters — overlapping spheres */}
-      {canopyClusters.map((c, i) => (
-        <mesh key={i} position={c.p} castShadow>
-          <sphereGeometry args={[c.r, 18, 18]} />
-          <meshStandardMaterial color={c.c} roughness={0.85} />
-        </mesh>
-      ))}
-      {/* Soft outer glow */}
-      <mesh position={[0, trunkHeight + 1.4, 0]}>
-        <sphereGeometry args={[2.4, 12, 12]} />
-        <meshBasicMaterial color="#22c55e" transparent opacity={0.05} />
-      </mesh>
+      <primitive object={cloned} />
     </group>
   )
 }
@@ -198,33 +199,12 @@ function FallingApple({ gravity, airDrag, startHeight, playing }: {
     }
   })
 
+  // Real apple GLB, scaled so it's roughly fist-sized in scene units.
+  const { cloned } = useFittedClone(APPLE_MODEL_URL, 0.55)
+
   return (
     <group ref={meshRef as any} position={[-3, startHeight, 0]}>
-      {/* Apple body — slightly squashed sphere */}
-      <mesh castShadow scale={[1, 0.9, 1]}>
-        <sphereGeometry args={[0.28, 24, 24]} />
-        <meshStandardMaterial color="#dc2626" emissive="#7f1d1d" emissiveIntensity={0.15} roughness={0.45} metalness={0.05} />
-      </mesh>
-      {/* Top dimple — small dark sphere */}
-      <mesh position={[0, 0.22, 0]}>
-        <sphereGeometry args={[0.07, 12, 12]} />
-        <meshStandardMaterial color="#451a03" roughness={1} />
-      </mesh>
-      {/* Stem */}
-      <mesh position={[0, 0.32, 0]}>
-        <cylinderGeometry args={[0.025, 0.03, 0.12, 8]} />
-        <meshStandardMaterial color="#5e3a1c" roughness={1} />
-      </mesh>
-      {/* Leaf */}
-      <mesh position={[0.08, 0.36, 0]} rotation={[0, 0, Math.PI / 4]} scale={[1.4, 0.4, 0.4]}>
-        <sphereGeometry args={[0.07, 8, 8]} />
-        <meshStandardMaterial color="#16a34a" roughness={0.7} />
-      </mesh>
-      {/* Highlight — small specular hint */}
-      <mesh position={[-0.12, 0.05, 0.18]}>
-        <sphereGeometry args={[0.05, 8, 8]} />
-        <meshBasicMaterial color="#fecaca" transparent opacity={0.5} />
-      </mesh>
+      <primitive object={cloned} />
     </group>
   )
 }
@@ -318,6 +298,10 @@ function GravitySimWrapped(props: SimProps) {
 }
 
 // ─── Top-level page ────────────────────────────────────────────────────────
+// Kick off downloads early so the lab opens fast.
+useGLTF.preload(TREE_MODEL_URL)
+useGLTF.preload(APPLE_MODEL_URL)
+
 export default function GravityLab({ onBack }: { onBack?: () => void }) {
   return (
     <LabShell
