@@ -7,7 +7,7 @@
  *
  * Quick Start mode is removed. Public signup without a school code is removed.
  */
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Mail, Lock, User, Building2, Key, ArrowRight, ArrowLeft,
@@ -261,11 +261,22 @@ function JoinSchool({ onLogin, onBack }: any) {
   const [password, setPassword] = useState('')
   const [show, setShow] = useState(false)
   const [role, setRole] = useState<'student' | 'teacher' | 'parent' | null>(null)
+  const [avatar, setAvatar] = useState<string | null>(null)   // base64 data URL
   // Parent extras
   const [studentName, setStudentName] = useState('')
   const [parentCode, setParentCode] = useState('')
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState('')
+
+  function handleAvatar(file: File | null) {
+    if (!file) { setAvatar(null); return }
+    if (!file.type.startsWith('image/')) { setErr('Please pick an image file.'); return }
+    if (file.size > 4 * 1024 * 1024) { setErr('Image must be under 4 MB.'); return }
+    setErr('')
+    const reader = new FileReader()
+    reader.onload = () => setAvatar(reader.result as string)
+    reader.readAsDataURL(file)
+  }
 
   async function fetchSchool() {
     if (!code.trim()) { setErr('Enter the join code.'); return }
@@ -309,6 +320,7 @@ function JoinSchool({ onLogin, onBack }: any) {
         const data = await post('/users/register', {
           name: name.trim(), role, email: email.trim(), password,
           school_name: school.school_name, school_passcode: code.trim().toUpperCase(),
+          avatar_base64: avatar || undefined,
         })
         const profile: AuthProfile = {
           id: data.user?.id, name: data.user?.name, role: data.user?.role,
@@ -344,6 +356,9 @@ function JoinSchool({ onLogin, onBack }: any) {
       back={() => setStep(1)} step={2} of={4}
       title="Account Setup" subtitle={`You're joining ${school.school_name}.`}>
       <SchoolPreview school={school} />
+
+      {/* Avatar picker — circular, click to upload, x to remove */}
+      <AvatarPicker avatar={avatar} onPick={handleAvatar} fallback={name} />
 
       <Field label="Full Name" icon={User}>
         <input autoFocus value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Ananya Iyer" style={inp} />
@@ -796,6 +811,71 @@ function ErrLine({ msg }: { msg: string }) {
       padding: '8px 12px', background: 'rgba(248,113,113,0.08)',
       border: '1px solid rgba(248,113,113,0.25)', borderRadius: 7,
     }}>{msg}</p>
+  )
+}
+
+function AvatarPicker({ avatar, onPick, fallback }: {
+  avatar: string | null
+  onPick: (file: File | null) => void
+  fallback: string
+}) {
+  const inputRef = useRef<HTMLInputElement>(null)
+  const initial = (fallback?.trim()?.charAt(0) || 'K').toUpperCase()
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 14 }}>
+      <div
+        onClick={() => inputRef.current?.click()}
+        style={{
+          width: 90, height: 90, borderRadius: '50%', cursor: 'pointer',
+          background: avatar ? 'transparent' : 'linear-gradient(135deg,#6366f1,#7c3aed)',
+          overflow: 'hidden', position: 'relative',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: 32, fontWeight: 800, color: '#fff',
+          border: '2px solid rgba(99,102,241,0.4)',
+          boxShadow: avatar ? '0 0 22px rgba(99,102,241,0.3)' : 'none',
+          transition: 'box-shadow 0.2s, border-color 0.2s',
+        }}
+      >
+        {avatar
+          ? <img src={avatar} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          : initial}
+        {/* Camera badge */}
+        <div style={{
+          position: 'absolute', bottom: 0, right: 0,
+          width: 26, height: 26, borderRadius: '50%',
+          background: '#6366f1', border: '2px solid #111',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: 11,
+        }}>
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5"
+            strokeLinecap="round" strokeLinejoin="round">
+            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+            <circle cx="12" cy="13" r="4" />
+          </svg>
+        </div>
+      </div>
+
+      <input ref={inputRef} type="file" accept="image/*" style={{ display: 'none' }}
+        onChange={e => onPick(e.target.files?.[0] || null)} />
+
+      <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+        <button type="button" onClick={() => inputRef.current?.click()} style={{
+          padding: '5px 11px', borderRadius: 6, border: '1px solid #1e1e1e',
+          background: '#161616', color: '#a1a1aa', cursor: 'pointer',
+          fontFamily: 'inherit', fontSize: 11, fontWeight: 600,
+        }}>{avatar ? 'Change' : 'Upload photo'}</button>
+        {avatar && (
+          <button type="button" onClick={() => onPick(null)} style={{
+            padding: '5px 11px', borderRadius: 6, border: '1px solid #1e1e1e',
+            background: '#161616', color: '#71717a', cursor: 'pointer',
+            fontFamily: 'inherit', fontSize: 11,
+          }}>Remove</button>
+        )}
+      </div>
+      <p style={{ fontSize: 10, color: '#3f3f46', marginTop: 8, textAlign: 'center' }}>
+        Optional · max 4 MB · JPG/PNG/WebP
+      </p>
+    </div>
   )
 }
 

@@ -74,6 +74,7 @@ router.post('/register', async (req, res) => {
     school_passcode,
     subject,         // for teachers
     class_name,      // for students
+    avatar_base64,   // optional: data:image/...;base64,...
   } = req.body
 
   if (!email || !password) return res.status(400).json({ error: 'email and password are required.' })
@@ -129,7 +130,31 @@ router.post('/register', async (req, res) => {
 
     const authUser = authData.user
 
-    // 5. Create user profile
+    // 5. Upload avatar (optional) → Supabase Storage
+    let avatarUrl = null
+    if (avatar_base64 && typeof avatar_base64 === 'string') {
+      try {
+        const m = avatar_base64.match(/^data:(image\/[a-z+]+);base64,(.+)$/i)
+        if (m) {
+          const mime = m[1]
+          const ext  = (mime.split('/')[1] || 'png').replace('+xml', '')
+          const buffer = Buffer.from(m[2], 'base64')
+          if (buffer.length > 5 * 1024 * 1024) throw new Error('Avatar exceeds 5 MB')
+          const path = `avatars/${authUser.id}.${ext}`
+          const { error: upErr } = await supabaseAdmin.storage
+            .from('kairo-public')
+            .upload(path, buffer, { contentType: mime, upsert: true })
+          if (!upErr) {
+            const { data: { publicUrl } } = supabaseAdmin.storage.from('kairo-public').getPublicUrl(path)
+            avatarUrl = publicUrl
+          }
+        }
+      } catch (e) {
+        console.warn('[Users/register] avatar upload skipped:', e.message)
+      }
+    }
+
+    // 6. Create user profile
     const { data: profile, error: profileErr } = await supabaseAdmin
       .from('users')
       .insert({
@@ -140,8 +165,9 @@ router.post('/register', async (req, res) => {
         status:     initialStatus,
         subject:    subject    || null,
         class_name: class_name || null,
+        avatar_url: avatarUrl,
       })
-      .select('id, name, role, status, school_id, subject, class_name, created_at')
+      .select('id, name, role, status, school_id, subject, class_name, avatar_url, created_at')
       .single()
 
     if (profileErr) {
