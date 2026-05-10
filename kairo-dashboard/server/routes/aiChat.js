@@ -218,81 +218,137 @@ Otherwise labRoute=null.
 
 CRITICAL: Output ONLY the JSON. Do not wrap in code fences. Do not say "Here is the JSON". Do not add any prose before or after.`
 
+// ─── Internal: do the LLM classification, return the plan + cache it ────
+// Used by both /solver/text and /solver/images so the frontend's two parallel
+// calls share one cached LLM result instead of paying for it twice.
+async function getSolverPlan(question) {
+  const cacheKey = 'plan:' + question.toLowerCase()
+  const cached = cacheGet(cacheKey)
+  if (cached) return cached
+
+  const apiKey = process.env.OPENROUTER_API_KEY
+  if (!apiKey) throw new Error('OPENROUTER_API_KEY not configured on server.')
+
+  const llmResp = await fetch(OR_URL, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type':  'application/json',
+      'HTTP-Referer':  process.env.ALLOWED_ORIGIN || 'https://kairo-daily-edu.vercel.app',
+      'X-Title':       'Kairo Solver',
+    },
+    body: JSON.stringify({
+      model:    process.env.SOLVER_MODEL || 'openai/gpt-oss-120b:free',
+      messages: [
+        { role: 'system', content: SOLVER_SYSTEM },
+        { role: 'user',   content: question },
+      ],
+      response_format: { type: 'json_object' },
+      temperature: 0.4,
+    }),
+  })
+
+  if (!llmResp.ok) {
+    const errText = await llmResp.text()
+    console.error('[solver] LLM error', llmResp.status, errText.slice(0, 300))
+    throw new Error('AI classifier failed.')
+  }
+
+  const llmData = await llmResp.json()
+  const raw = llmData?.choices?.[0]?.message?.content || ''
+  const plan = parseJsonLoose(raw)
+  if (!plan || !plan.textExplanation) {
+    throw new Error('AI returned malformed response.')
+  }
+
+  // Validate labRoute
+  let labRoute = plan.labRoute || null
+  if (labRoute && !KAIRO_LABS[labRoute]) labRoute = null
+
+  const normalized = {
+    questionType:    plan.questionType || 'general',
+    supports3D:      !!plan.supports3D,
+    labRoute,
+    textExplanation: plan.textExplanation,
+    formulas:        Array.isArray(plan.formulas) ? plan.formulas.slice(0, 8) : [],
+    relatedConcepts: Array.isArray(plan.relatedConcepts) ? plan.relatedConcepts.slice(0, 6) : [],
+    imageQueries:    Array.isArray(plan.imageQueries) ? plan.imageQueries.slice(0, 6) : [],
+  }
+  cacheSet(cacheKey, normalized)
+  return normalized
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// /api/ai/solver/text — fast path. Returns the LLM plan WITHOUT the images.
+// Designed to fit Vercel's 10s function timeout: only runs the LLM call.
+// ────────────────────────────────────────────────────────────────────────────
+router.post('/solver/text', async (req, res) => {
+  const question = (req.body?.question || '').toString().trim()
+  if (!question) return res.status(400).json({ error: 'question required' })
+  if (question.length > 500) return res.status(400).json({ error: 'question too long (max 500 chars)' })
+
+  try {
+    const plan = await getSolverPlan(question)
+    // Don't ship imageQueries to the client — they're internal routing data.
+    const { imageQueries, ...publicFields } = plan
+    res.json({ ...publicFields, hasImageQueries: imageQueries.length > 0 })
+  } catch (e) {
+    console.error('[solver/text]', e.message)
+    const code = e.message.includes('not configured') ? 503 : 502
+    res.status(code).json({ error: e.message })
+  }
+})
+
+// ────────────────────────────────────────────────────────────────────────────
+// /api/ai/solver/images — image search only.
+// Re-uses the cached plan from /solver/text (LLM call is shared). If the plan
+// isn't cached yet (e.g. images endpoint was called first), it will trigger
+// the LLM call here too — but the frontend always fires both in parallel so
+// the worst case is one /text and one /images both running an LLM call once.
+// ────────────────────────────────────────────────────────────────────────────
+router.post('/solver/images', async (req, res) => {
+  const question = (req.body?.question || '').toString().trim()
+  if (!question) return res.status(400).json({ error: 'question required' })
+  if (question.length > 500) return res.status(400).json({ error: 'question too long (max 500 chars)' })
+
+  // Fast path: serve full slide set from cache if we have it
+  const fullCacheKey = 'images:' + question.toLowerCase()
+  const cachedSlides = cacheGet(fullCacheKey)
+  if (cachedSlides) {
+    return res.json({ imageSlides: cachedSlides, cached: true })
+  }
+
+  try {
+    const plan = await getSolverPlan(question)
+    const slides = await searchManyParallel(plan.imageQueries)
+    cacheSet(fullCacheKey, slides)
+    res.json({ imageSlides: slides, cached: false })
+  } catch (e) {
+    console.error('[solver/images]', e.message)
+    const code = e.message.includes('not configured') ? 503 : 502
+    res.status(code).json({ error: e.message })
+  }
+})
+
+// ────────────────────────────────────────────────────────────────────────────
+// /api/ai/solver — legacy combined endpoint, kept for backwards compat.
+// New frontend code should use /solver/text + /solver/images in parallel.
+// This endpoint is timeout-prone on Vercel Hobby — see memory:vercel_timeouts.
+// ────────────────────────────────────────────────────────────────────────────
 router.post('/solver', async (req, res) => {
   const question = (req.body?.question || '').toString().trim()
   if (!question) return res.status(400).json({ error: 'question required' })
   if (question.length > 500) return res.status(400).json({ error: 'question too long (max 500 chars)' })
 
-  const cacheKey = question.toLowerCase()
-  const cached = cacheGet(cacheKey)
-  if (cached) {
-    return res.json({ ...cached, cached: true })
-  }
-
-  const apiKey = process.env.OPENROUTER_API_KEY
-  if (!apiKey) {
-    return res.status(503).json({ error: 'OPENROUTER_API_KEY not configured on server.' })
-  }
-
   try {
-    // 1. Classify + plan via LLM
-    const llmResp = await fetch(OR_URL, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type':  'application/json',
-        'HTTP-Referer':  process.env.ALLOWED_ORIGIN || 'https://kairo-daily-edu.vercel.app',
-        'X-Title':       'Kairo Solver',
-      },
-      body: JSON.stringify({
-        model:    process.env.SOLVER_MODEL || 'openai/gpt-oss-120b:free',
-        messages: [
-          { role: 'system', content: SOLVER_SYSTEM },
-          { role: 'user',   content: question },
-        ],
-        response_format: { type: 'json_object' },
-        temperature: 0.4,
-      }),
-    })
-
-    if (!llmResp.ok) {
-      const errText = await llmResp.text()
-      console.error('[solver] LLM error', llmResp.status, errText.slice(0, 300))
-      return res.status(502).json({ error: 'AI classifier failed.' })
-    }
-
-    const llmData = await llmResp.json()
-    const raw = llmData?.choices?.[0]?.message?.content || ''
-    const plan = parseJsonLoose(raw)
-
-    if (!plan || !plan.textExplanation) {
-      return res.status(502).json({ error: 'AI returned malformed response.', raw: raw.slice(0, 200) })
-    }
-
-    // 2. Fetch images for each query in parallel (cap at 6).
-    const queries = Array.isArray(plan.imageQueries) ? plan.imageQueries.slice(0, 6) : []
-    const slides = await searchManyParallel(queries)
-
-    // 3. Validate labRoute against the known lab list — null if AI hallucinated one.
-    let labRoute = plan.labRoute || null
-    if (labRoute && !KAIRO_LABS[labRoute]) labRoute = null
-
-    const response = {
-      questionType:    plan.questionType || 'general',
-      supports3D:      !!plan.supports3D,
-      labRoute,
-      textExplanation: plan.textExplanation,
-      formulas:        Array.isArray(plan.formulas) ? plan.formulas.slice(0, 8) : [],
-      relatedConcepts: Array.isArray(plan.relatedConcepts) ? plan.relatedConcepts.slice(0, 6) : [],
-      imageSlides:     slides,
-      cached:          false,
-    }
-
-    cacheSet(cacheKey, response)
-    res.json(response)
+    const plan = await getSolverPlan(question)
+    const slides = await searchManyParallel(plan.imageQueries)
+    const { imageQueries, ...publicFields } = plan
+    res.json({ ...publicFields, imageSlides: slides, cached: false })
   } catch (e) {
     console.error('[solver]', e.message)
-    res.status(500).json({ error: 'Solver failed: ' + e.message })
+    const code = e.message.includes('not configured') ? 503 : 502
+    res.status(code).json({ error: e.message })
   }
 })
 

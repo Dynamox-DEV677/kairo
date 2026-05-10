@@ -40,15 +40,22 @@ interface ImageSlide {
   pageUrl?:    string
 }
 
-interface SolverResponse {
+interface TextPlan {
   questionType:    string
   supports3D:      boolean
   labRoute:        string | null
   textExplanation: string
   formulas:        string[]
   relatedConcepts: string[]
-  imageSlides:     ImageSlide[]
   cached:          boolean
+  hasImageQueries: boolean
+}
+
+interface SolverResponse extends TextPlan {
+  imageSlides:     ImageSlide[]
+  imagesBusy:      boolean       // true while images are still loading
+  imagesCached:    boolean
+  imagesError?:    string
 }
 
 interface KairoSolverProps {
@@ -87,22 +94,54 @@ export default function KairoSolver({ onNavigate }: KairoSolverProps) {
     const ctrl = new AbortController()
     abortRef.current = ctrl
 
-    try {
-      const r = await fetch('/api/ai/solver', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question }),
-        signal: ctrl.signal,
-      })
+    // Fire BOTH endpoints in parallel — each fits inside Vercel's 10s function
+    // timeout on its own. The text usually wins (~5s), then images drop in
+    // when ready (~3s after that). User starts reading immediately.
+    const body = JSON.stringify({ question })
+    const headers = { 'Content-Type': 'application/json' }
+
+    const textPromise = fetch('/api/ai/solver/text', {
+      method: 'POST', headers, body, signal: ctrl.signal,
+    }).then(async r => {
       if (!r.ok) {
         const e = await r.json().catch(() => ({}))
-        throw new Error(e.error || `Server returned ${r.status}`)
+        throw new Error(e.error || `Text endpoint returned ${r.status}`)
       }
-      const data: SolverResponse = await r.json()
-      setResp(data)
+      return r.json() as Promise<TextPlan>
+    })
+
+    const imagesPromise = fetch('/api/ai/solver/images', {
+      method: 'POST', headers, body, signal: ctrl.signal,
+    }).then(async r => {
+      if (!r.ok) {
+        const e = await r.json().catch(() => ({}))
+        throw new Error(e.error || `Images endpoint returned ${r.status}`)
+      }
+      return r.json() as Promise<{ imageSlides: ImageSlide[]; cached: boolean }>
+    }).catch(e => { return { imageSlides: [] as ImageSlide[], cached: false, _err: e.message } })
+
+    // Paint as soon as TEXT lands — slideshow shows skeleton until images arrive.
+    try {
+      const text = await textPromise
+      setResp({
+        ...text,
+        imageSlides: [],
+        imagesBusy:  true,
+        imagesCached: false,
+      })
+      setBusy(false)   // unlock input — user can keep reading
+
+      // Now wait for images and merge them in.
+      const img = await imagesPromise
+      setResp(prev => prev ? {
+        ...prev,
+        imageSlides:  img.imageSlides || [],
+        imagesBusy:   false,
+        imagesCached: img.cached || false,
+        imagesError:  (img as any)._err,
+      } : prev)
     } catch (e: any) {
       if (e?.name !== 'AbortError') setError(e?.message || 'Something went wrong.')
-    } finally {
       setBusy(false)
     }
   }
@@ -150,12 +189,13 @@ export default function KairoSolver({ onNavigate }: KairoSolverProps) {
           gridTemplateColumns: 'minmax(0, 1.4fr) minmax(0, 1fr)',
           gap: 14, paddingBottom: 14,
         }}>
-          {/* LEFT — slideshow */}
+          {/* LEFT — slideshow (busy until text arrives OR images arrive) */}
           <Slideshow
             slides={resp?.imageSlides || []}
-            busy={busy && !resp}
+            busy={(busy && !resp) || resp?.imagesBusy === true}
             topic={topic}
             questionType={resp?.questionType}
+            err={resp?.imagesError}
           />
 
           {/* RIGHT — explanation */}
@@ -261,8 +301,8 @@ function Hero({ onPick }: { onPick: (q: string) => void }) {
 // ════════════════════════════════════════════════════════════════════════════
 // SLIDESHOW — left panel
 // ════════════════════════════════════════════════════════════════════════════
-function Slideshow({ slides, busy, topic, questionType }: {
-  slides: ImageSlide[]; busy: boolean; topic: string; questionType?: string
+function Slideshow({ slides, busy, topic, questionType, err }: {
+  slides: ImageSlide[]; busy: boolean; topic: string; questionType?: string; err?: string
 }) {
   const [idx, setIdx] = useState(0)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -334,13 +374,21 @@ function Slideshow({ slides, busy, topic, questionType }: {
       {/* Loading / error states */}
       {busy && slides.length === 0 && <SlideshowSkeleton />}
 
-      {!busy && slides.length === 0 && (
+      {!busy && slides.length === 0 && !err && (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, color: '#52525b' }}>
           <ImageIcon size={36} />
           <div style={{ fontSize: 13, fontWeight: 600 }}>No images found</div>
           <div style={{ fontSize: 11, color: '#3f3f46', maxWidth: 260, textAlign: 'center' }}>
             We couldn't find good visuals for this topic. The text answer is still on the right.
           </div>
+        </div>
+      )}
+
+      {!busy && err && slides.length === 0 && (
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, padding: 24, textAlign: 'center', color: '#f87171', maxWidth: 360 }}>
+          <ImageIcon size={28} />
+          <div style={{ fontSize: 13, fontWeight: 600 }}>Couldn't load images</div>
+          <div style={{ fontSize: 11, color: '#71717a' }}>{err}</div>
         </div>
       )}
 
