@@ -217,7 +217,7 @@ Generate the JSON schedule and markdown plan as instructed.`
             {weakTopics.length
               ? <>Pulled <strong>{weakTopics.length} weak topic{weakTopics.length === 1 ? '' : 's'}</strong> from your AI Memory. AI will weight these heavier.</>
               : memoryCount === 0
-                ? <>No memory data yet — schedule will be balanced. Use the Doubt Solver, Grader, or quizzes to teach Kairo your weak spots.</>
+                ? <>No memory data yet — schedule will be balanced. Use Kairo's Solver, Grader, or quizzes to teach Kairo your weak spots.</>
                 : <>Memory has {memoryCount} entries but no weak topics flagged yet.</>}
           </span>
           <button onClick={loadMemory} style={{

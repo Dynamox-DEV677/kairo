@@ -321,7 +321,7 @@ Rules:
             <AlertTriangle size={32} color="#52525b" />
             <p style={{ fontSize: 13, color: '#71717a', margin: 0, fontWeight: 600 }}>Your graph is empty</p>
             <p style={{ fontSize: 12, color: '#52525b', margin: 0, maxWidth: 340, lineHeight: 1.6 }}>
-              Use Doubt Solver, take quizzes, or click "Extract Concepts" to seed it with a topic.
+              Use Kairo's Solver, take quizzes, or click "Extract Concepts" to seed it with a topic.
             </p>
           </div>
         )}

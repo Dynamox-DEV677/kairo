@@ -58,7 +58,7 @@ const DRAWER_STUDENT = [
   {
     title: 'Core',
     items: [
-      { to: 'doubt',          label: 'Doubt Solver',      icon: MessageCircle },
+      { to: 'doubt',          label: "Kairo's Solver",      icon: MessageCircle },
       { to: 'memory',         label: 'AI Memory',          icon: Brain },
       { to: 'mistakes',       label: 'Mistake Analysis',   icon: Activity },
       { to: 'explain-mistake',label: 'Explain Mistake',    icon: AlertTriangle },
@@ -114,7 +114,7 @@ const DRAWER_TEACHER = [
     title: 'AI Tools',
     items: [
       { to: 'teacher-ai',     label: 'AI Teacher Assistant', icon: Bot },
-      { to: 'doubt',          label: 'Doubt Solver',         icon: MessageCircle },
+      { to: 'doubt',          label: "Kairo's Solver",         icon: MessageCircle },
       { to: 'essay',          label: 'Grader',                icon: FileText },
       { to: 'flashcards',     label: 'Flashcards',            icon: BookMarked },
     ],

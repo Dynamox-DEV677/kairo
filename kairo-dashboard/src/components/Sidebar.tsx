@@ -24,7 +24,7 @@ interface NavItem {
 // ── Role-isolated navigation ─────────────────────────────────────────────────
 // Each role sees ONLY their own tools — no cross-access.
 const STUDENT_NAV: NavItem[] = [
-  { label: 'Doubt Solver',    icon: MessageCircle,   to: 'doubt',         color: '#818cf8' },
+  { label: "Kairo's Solver",    icon: MessageCircle,   to: 'doubt',         color: '#818cf8' },
   { label: 'AI Memory',       icon: Brain,           to: 'memory',        color: '#a78bfa' },
   { label: 'Kairo Labs',      icon: Beaker,          to: 'labs',          color: '#ec4899' },
   { label: 'Mistake Analysis',icon: Activity,        to: 'mistakes',      color: '#f87171' },
@@ -55,7 +55,7 @@ const STUDENT_NAV: NavItem[] = [
 
 const TEACHER_NAV: NavItem[] = [
   { label: 'AI Teacher',      icon: Bot,             to: 'teacher-ai',      color: '#818cf8' },
-  { label: 'Doubt Solver',    icon: MessageCircle,   to: 'doubt',           color: '#818cf8' },
+  { label: "Kairo's Solver",    icon: MessageCircle,   to: 'doubt',           color: '#818cf8' },
   { label: 'Flashcards',      icon: BookMarked,      to: 'flashcards',      color: '#34d399' },
   { label: 'Grader',          icon: FileText,        to: 'essay',           color: '#f472b6' },
   { label: 'Tasks & Marks',   icon: BookOpen,        to: 'school',          color: '#fbbf24' },
@@ -259,7 +259,7 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
             >
               {recents.length === 0 && (
                 <div style={{ padding: '8px 10px', fontSize: 11, color: isDark ? '#3f3f46' : '#a1a1aa', fontStyle: 'italic' }}>
-                  No chats yet — ask anything in Doubt Solver
+                  No chats yet — ask anything in Kairo's Solver
                 </div>
               )}
               {recents.map(r => (

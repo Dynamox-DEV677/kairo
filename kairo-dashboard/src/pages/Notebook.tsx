@@ -156,7 +156,7 @@ export default function Notebook() {
             <div style={{ ...card, padding: '40px 24px', textAlign: 'center' }}>
               <StickyNote size={28} color="#52525b" style={{ marginBottom: 12 }} />
               <p style={{ fontSize: 13, color: '#71717a', margin: 0 }}>
-                {notes.length === 0 ? 'Empty notebook — generate flashcards or use the Doubt Solver to start filling it.' : 'No matches.'}
+                {notes.length === 0 ? "Empty notebook — generate flashcards or use Kairo's Solver to start filling it." : 'No matches.'}
               </p>
             </div>
           )}

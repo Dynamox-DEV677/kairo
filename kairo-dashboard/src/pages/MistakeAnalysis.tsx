@@ -190,7 +190,7 @@ export default function MistakeAnalysis() {
             No mistakes tracked yet
           </h3>
           <p style={{ fontSize: 13, color: '#71717a', maxWidth: 460, margin: '0 auto', lineHeight: 1.6 }}>
-            Take quizzes, get essays graded, or use the Doubt Solver — Kairo will start tracking patterns and surface them here.
+            Take quizzes, get essays graded, or use Kairo's Solver — Kairo will start tracking patterns and surface them here.
           </p>
         </div>
       )}

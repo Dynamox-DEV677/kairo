@@ -35,7 +35,7 @@ interface Action {
 }
 
 const FEATURE_META: Record<Action['feature'], { label: string; icon: any; color: string; route: string }> = {
-  'doubt':       { label: 'Ask in Doubt Solver',     icon: MessageCircle, color: '#818cf8', route: 'doubt' },
+  'doubt':       { label: "Ask in Kairo's Solver",   icon: MessageCircle, color: '#818cf8', route: 'doubt' },
   'flashcards':  { label: 'Generate Flashcards',     icon: BookMarked,    color: '#34d399', route: 'flashcards' },
   'simulator':   { label: 'Run Revision Simulator',  icon: Zap,           color: '#fb923c', route: 'simulator' },
   'camera':      { label: 'Snap a Textbook Photo',   icon: Camera,        color: '#f472b6', route: 'camera' },

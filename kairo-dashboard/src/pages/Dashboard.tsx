@@ -4,6 +4,7 @@ import TopBar from '../components/TopBar'
 import MobileShell from '../components/MobileShell'
 import { useIsMobile } from '../hooks/useViewport'
 import ChatWindow from '../components/ChatWindow'
+import KairoSolver from './KairoSolver'
 import InsightPanel from '../components/InsightPanel'
 import Flashcards from './Flashcards'
 import StudyPlan from './StudyPlan'
@@ -49,7 +50,7 @@ import type { AuthProfile } from './Login'
 type Profile = AuthProfile
 
 const PAGE_TITLES: Record<string, string> = {
-  doubt:            'Doubt Solver',
+  doubt:            "Kairo's Solver",
   flashcards:       'Flashcards & SRS',
   'study-plan':     'Study Plan',
   essay:            'Grader',
@@ -95,7 +96,7 @@ interface DashboardProps {
 }
 
 export default function Dashboard({ profile, onLogout }: DashboardProps) {
-  // Admins land on School Hub (their control center); everyone else on Doubt Solver
+  // Admins land on School Hub (their control center); everyone else on Kairo's Solver
   const [active, setActive]           = useState(profile?.role === 'admin' ? 'school' : 'doubt')
   const [isDark, setIsDark]           = useState(() => {
     const v = localStorage.getItem('kairo_theme')
@@ -178,13 +179,9 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
         <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
           <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column', position: 'relative' }}>
 
-            {/* Doubt Solver */}
+            {/* Kairo's Solver — split-pane: AI text + Nano Banana image slideshow */}
             <div style={pageStyle('doubt')}>
-              <ChatWindow
-                onNewMessage={handleNewMessage}
-                onNavigate={setActive}
-                model={selectedModel}
-              />
+              <KairoSolver model={selectedModel} />
             </div>
 
             {/* Flashcards */}
@@ -300,8 +297,9 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
 
           </div>
 
-          {/* Insight panel — only for doubt solver, desktop-only */}
-          {active === 'doubt' && !isMobile && (
+          {/* Insight panel — Kairo's Solver has its own slideshow column,
+              so suppress the side panel on the doubt route. */}
+          {false && active === 'doubt' && !isMobile && (
             <InsightPanel hasContent={hasContent} lastQuestion={lastQuestion} />
           )}
         </div>

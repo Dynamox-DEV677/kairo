@@ -148,7 +148,7 @@ export default function MemoryBrain() {
                 Your memory is empty
               </h3>
               <p style={{ fontSize: 13, color: '#71717a', maxWidth: 460, margin: '0 auto', lineHeight: 1.6 }}>
-                Take a quiz, ask the Doubt Solver, or get an essay graded —
+                Take a quiz, ask Kairo's Solver, or get an essay graded —
                 Kairo will start tracking what you know and what to practice.
               </p>
             </div>
