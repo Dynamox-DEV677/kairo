@@ -2,7 +2,7 @@
  * Kairo Labs — interactive 3D learning simulations.
  * Lists available labs; clicking one opens the simulation full-bleed.
  */
-import { useState, lazy, Suspense } from 'react'
+import { useState, useEffect, lazy, Suspense } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Beaker, Atom, Heart, Activity, Sparkles, Lock,
@@ -106,6 +106,18 @@ const SUBJECT_COLORS: Record<string, string> = {
 export default function KairoLabs() {
   const [activeLab, setActive] = useState<Lab | null>(null)
   const [filter, setFilter]    = useState<'all' | 'Physics' | 'Chemistry' | 'Biology' | 'Math'>('all')
+
+  // Listen for "open this lab" events from Kairo's Solver
+  useEffect(() => {
+    function onOpen(e: Event) {
+      const id = (e as CustomEvent).detail?.id
+      if (!id) return
+      const lab = LABS.find(l => l.id === id && l.ready)
+      if (lab) setActive(lab)
+    }
+    window.addEventListener('kairo:open-lab', onOpen)
+    return () => window.removeEventListener('kairo:open-lab', onOpen)
+  }, [])
 
   // Active lab — full-bleed
   if (activeLab && activeLab.ready && activeLab.Component) {

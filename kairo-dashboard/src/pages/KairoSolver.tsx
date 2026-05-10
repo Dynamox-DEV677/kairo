@@ -1,127 +1,119 @@
 /**
- * Kairo's Solver — split-view doubt solver.
+ * Kairo's Solver — adaptive AI visual learning engine.
  *
- *   ┌────────────────────────┐ ┌────────┐
- *   │                        │ │        │
- *   │   image slideshow      │ │  AI    │
- *   │   (auto-cycle 2s)      │ │  text  │
- *   │                        │ │        │
- *   └────────────────────────┘ └────────┘
- *   ┌────────────────────────────────────┐
- *   │  ask anything…                  ▶  │
- *   └────────────────────────────────────┘
+ *   ┌────────────────────────────┐ ┌────────────────────┐
+ *   │                            │ │ ## What you're     │
+ *   │   Cinematic slideshow      │ │     seeing         │
+ *   │   (5 sequential edu        │ │ ...                │
+ *   │    images, auto 3.5s,      │ │ ## How it works    │
+ *   │    ←/→ keyboard nav,       │ │ Formulas:          │
+ *   │    parallax + fade)        │ │   F = ma           │
+ *   │                            │ │ Related: ...       │
+ *   └────────────────────────────┘ │ [Open in Kairo Labs]│
+ *   ┌─────────────────────────────────┐
+ *   │  ask anything…              ▶   │
+ *   └─────────────────────────────────┘
  *
- * Image slideshow uses Nano Banana (Gemini 2.5 Flash Image) via the backend
- * `/api/ai/visualize` route. Text uses the existing OpenRouter chat stream.
+ * Powered by /api/ai/solver — single call returns:
+ *   - markdown text (right panel)
+ *   - 5 sequential image slides from Wikimedia / Pexels / Unsplash (left)
+ *   - lab route if the topic has an interactive Kairo Lab
+ *   - related concept chips, formulas
  */
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Send, StopCircle, Sparkles, Image as ImageIcon, Loader2, ChevronLeft, ChevronRight } from 'lucide-react'
+import {
+  Send, StopCircle, Sparkles, Image as ImageIcon, Loader2,
+  ChevronLeft, ChevronRight, Beaker, ExternalLink, BookOpen, Atom,
+} from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
-import { chat, DEFAULT_MODEL } from '../lib/openrouter'
 
-const SYSTEM = `You are Kairo, an expert AI tutor for Indian school students (CBSE/ICSE/state, Class 6–12).
-Explain concepts clearly with markdown. Use $...$ for inline math, $$...$$ for display math.
-Keep answers focused, friendly, and exam-ready.`
+interface ImageSlide {
+  url:         string
+  thumb?:      string
+  caption:     string
+  source:      'wikimedia' | 'pexels' | 'unsplash'
+  attribution?: string
+  pageUrl?:    string
+}
+
+interface SolverResponse {
+  questionType:    string
+  supports3D:      boolean
+  labRoute:        string | null
+  textExplanation: string
+  formulas:        string[]
+  relatedConcepts: string[]
+  imageSlides:     ImageSlide[]
+  cached:          boolean
+}
 
 interface KairoSolverProps {
   model?: string
+  onNavigate?: (page: string) => void
 }
 
-interface SolverImage {
-  mime: string
-  data: string  // base64
-  prompt: string
-}
+const SUGGESTIONS = [
+  'Explain Newton\'s laws of motion',
+  'How does the human heart work?',
+  'What caused the French Revolution?',
+  'Photosynthesis step by step',
+  'Solve x² - 5x + 6 = 0',
+]
 
-export default function KairoSolver({ model = DEFAULT_MODEL }: KairoSolverProps) {
+export default function KairoSolver({ onNavigate }: KairoSolverProps) {
   const [input, setInput]               = useState('')
-  const [streaming, setStreaming]       = useState(false)
-  const [text, setText]                 = useState('')
+  const [busy, setBusy]                 = useState(false)
   const [topic, setTopic]               = useState('')
-  const [images, setImages]             = useState<SolverImage[]>([])
-  const [imagesBusy, setImagesBusy]     = useState(false)
-  const [imagesErr, setImagesErr]       = useState('')
+  const [resp, setResp]                 = useState<SolverResponse | null>(null)
   const [error, setError]               = useState('')
+  const abortRef = useRef<AbortController | null>(null)
+  const taRef = useRef<HTMLTextAreaElement>(null)
 
-  const stopRef    = useRef(false)
-  const abortRef   = useRef<AbortController | null>(null)
-  const accRef     = useRef('')
-  const taRef      = useRef<HTMLTextAreaElement>(null)
+  async function ask(q: string) {
+    const question = q.trim()
+    if (!question || busy) return
 
-  async function send() {
-    const q = input.trim()
-    if (!q || streaming) return
-
-    setText('')
-    setImages([])
-    setImagesErr('')
     setError('')
-    setTopic(q)
+    setResp(null)
+    setTopic(question)
     setInput('')
+    setBusy(true)
     if (taRef.current) taRef.current.style.height = 'auto'
-
-    stopRef.current = false
-    accRef.current = ''
-    setStreaming(true)
 
     const ctrl = new AbortController()
     abortRef.current = ctrl
 
-    // Kick off image generation in PARALLEL with text streaming.
-    setImagesBusy(true)
-    fetch('/api/ai/visualize', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ topic: q, count: 4 }),
-    })
-      .then(async r => {
-        if (!r.ok) {
-          const e = await r.json().catch(() => ({}))
-          throw new Error(e.error || `HTTP ${r.status}`)
-        }
-        return r.json()
-      })
-      .then((data: { images: SolverImage[] }) => {
-        if (!stopRef.current) setImages(data.images || [])
-      })
-      .catch(e => { if (!stopRef.current) setImagesErr(e.message || 'Image generation failed.') })
-      .finally(() => setImagesBusy(false))
-
-    // Stream the text answer.
     try {
-      await chat({
-        model,
-        messages: [
-          { role: 'system', content: SYSTEM },
-          { role: 'user', content: q },
-        ],
-        onChunk: (_, full) => {
-          if (stopRef.current) return
-          accRef.current = full
-          setText(full)
-        },
+      const r = await fetch('/api/ai/solver', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question }),
         signal: ctrl.signal,
       })
-    } catch (e: any) {
-      if (!stopRef.current && e?.name !== 'AbortError') {
-        setError(e?.message || 'Something went wrong')
+      if (!r.ok) {
+        const e = await r.json().catch(() => ({}))
+        throw new Error(e.error || `Server returned ${r.status}`)
       }
+      const data: SolverResponse = await r.json()
+      setResp(data)
+    } catch (e: any) {
+      if (e?.name !== 'AbortError') setError(e?.message || 'Something went wrong.')
     } finally {
-      setStreaming(false)
+      setBusy(false)
     }
   }
 
   function stop() {
-    stopRef.current = true
     abortRef.current?.abort()
+    setBusy(false)
   }
 
   function onKeyDown(e: React.KeyboardEvent) {
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() }
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); ask(input) }
   }
 
   function handleInput(e: React.ChangeEvent<HTMLTextAreaElement>) {
@@ -130,85 +122,60 @@ export default function KairoSolver({ model = DEFAULT_MODEL }: KairoSolverProps)
     e.target.style.height = Math.min(e.target.scrollHeight, 140) + 'px'
   }
 
-  const hasResult = !!topic
+  const showResult = !!topic
 
   return (
     <div style={{
       flex: 1, height: '100%', display: 'flex', flexDirection: 'column',
-      padding: '20px 24px 0', overflow: 'hidden',
+      padding: '20px 24px 0', overflow: 'hidden', position: 'relative',
     }}>
-      {/* Empty / hero state */}
-      {!hasResult && (
+      {/* Ambient cinematic glow when result is up */}
+      {showResult && (
         <div style={{
-          flex: 1, display: 'flex', flexDirection: 'column',
-          alignItems: 'center', justifyContent: 'center', gap: 14,
-        }}>
-          <div style={{
-            width: 64, height: 64, borderRadius: 16,
-            background: 'linear-gradient(135deg, #6366f1, #ec4899)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: '0 0 32px rgba(99,102,241,0.4)',
-          }}>
-            <Sparkles size={28} color="#fff" />
-          </div>
-          <h1 style={{ fontSize: 22, fontWeight: 800, color: '#fafafa', margin: 0, letterSpacing: '-0.5px' }}>
-            Kairo's Solver
-          </h1>
-          <p style={{ fontSize: 13, color: '#71717a', margin: 0, textAlign: 'center', maxWidth: 460, lineHeight: 1.6 }}>
-            Ask anything. You get a clear written answer on the right and a live picture-book on the left,
-            generated from your question — no more reading walls of text.
-          </p>
-        </div>
+          position: 'absolute', top: '20%', left: '10%',
+          width: 400, height: 400, borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(99,102,241,0.10) 0%, transparent 70%)',
+          pointerEvents: 'none', zIndex: 0,
+        }} />
       )}
 
-      {/* Result split */}
-      {hasResult && (
+      {/* HERO — empty state */}
+      {!showResult && <Hero onPick={ask} />}
+
+      {/* RESULT — split pane */}
+      {showResult && (
         <div style={{
-          flex: 1, minHeight: 0, display: 'grid',
-          gridTemplateColumns: 'minmax(0, 2fr) minmax(0, 1fr)',
-          gap: 16, paddingBottom: 16,
+          flex: 1, minHeight: 0, position: 'relative', zIndex: 1,
+          display: 'grid',
+          gridTemplateColumns: 'minmax(0, 1.4fr) minmax(0, 1fr)',
+          gap: 14, paddingBottom: 14,
         }}>
           {/* LEFT — slideshow */}
           <Slideshow
-            images={images} busy={imagesBusy} err={imagesErr} topic={topic}
+            slides={resp?.imageSlides || []}
+            busy={busy && !resp}
+            topic={topic}
+            questionType={resp?.questionType}
           />
 
-          {/* RIGHT — text */}
-          <div style={{
-            background: '#0d0d0d', border: '1px solid #1e1e1e',
-            borderRadius: 16, padding: 18, overflowY: 'auto',
-            display: 'flex', flexDirection: 'column', gap: 8,
-          }}>
-            <div style={{
-              fontSize: 10, color: '#a5b4fc', fontWeight: 700,
-              textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 4,
-            }}>
-              Kairo says
-            </div>
-            <div style={{ fontSize: 13.5, color: '#e4e4e7', lineHeight: 1.7, flex: 1 }}>
-              {text ? (
-                <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>
-                  {text}
-                </ReactMarkdown>
-              ) : (
-                <div style={{ color: '#52525b', fontSize: 13, display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <Loader2 size={14} style={{ animation: 'spin 0.8s linear infinite' }} />
-                  Thinking…
-                </div>
-              )}
-              {error && (
-                <p style={{ marginTop: 8, color: '#f87171', fontSize: 12 }}>⚠ {error}</p>
-              )}
-            </div>
-          </div>
+          {/* RIGHT — explanation */}
+          <ExplanationPanel
+            resp={resp}
+            busy={busy && !resp}
+            error={error}
+            onOpenLab={(route) => onNavigate?.('labs:' + route)}
+            onAskRelated={(c) => ask(c)}
+          />
         </div>
       )}
 
-      {/* Input bar (always at bottom) */}
+      {/* INPUT */}
       <div style={{
         background: '#0d0d0d', border: '1px solid #1e1e1e',
-        borderRadius: 14, padding: 10, display: 'flex', alignItems: 'flex-end', gap: 10,
-        marginBottom: 18, marginTop: hasResult ? 0 : 14,
+        borderRadius: 14, padding: 10,
+        display: 'flex', alignItems: 'flex-end', gap: 10,
+        marginBottom: 18, marginTop: showResult ? 0 : 14,
+        position: 'relative', zIndex: 2,
       }}>
         <textarea
           ref={taRef}
@@ -216,19 +183,20 @@ export default function KairoSolver({ model = DEFAULT_MODEL }: KairoSolverProps)
           onChange={handleInput}
           onKeyDown={onKeyDown}
           rows={1}
-          placeholder="Ask anything — physics, biology, math, history…"
+          placeholder={showResult ? 'Ask another question…' : 'Ask anything — physics, biology, math, history…'}
+          disabled={busy}
           style={{
             flex: 1, background: 'transparent', border: 'none', outline: 'none',
             color: '#fafafa', fontFamily: 'inherit', fontSize: 14, resize: 'none',
             padding: '8px 6px', lineHeight: 1.5, maxHeight: 140,
           }}
         />
-        {streaming ? (
+        {busy ? (
           <button onClick={stop} style={btnStop}>
             <StopCircle size={14} /> Stop
           </button>
         ) : (
-          <button onClick={() => send()} disabled={!input.trim()} style={{
+          <button onClick={() => ask(input)} disabled={!input.trim()} style={{
             ...btnSend, opacity: input.trim() ? 1 : 0.45,
             cursor: input.trim() ? 'pointer' : 'not-allowed',
           }}>
@@ -240,94 +208,196 @@ export default function KairoSolver({ model = DEFAULT_MODEL }: KairoSolverProps)
   )
 }
 
-// ─── Slideshow ────────────────────────────────────────────────────────────
-function Slideshow({ images, busy, err, topic }: {
-  images: SolverImage[]; busy: boolean; err: string; topic: string
-}) {
-  const [idx, setIdx] = useState(0)
-
-  // Auto-cycle every 2 seconds.
-  useEffect(() => {
-    if (images.length < 2) return
-    const t = setInterval(() => setIdx(i => (i + 1) % images.length), 2000)
-    return () => clearInterval(t)
-  }, [images.length])
-
-  // Reset to first slide whenever the image set changes.
-  useEffect(() => { setIdx(0) }, [images])
-
-  const current = images[idx]
-
+// ════════════════════════════════════════════════════════════════════════════
+// HERO — empty state with suggestions
+// ════════════════════════════════════════════════════════════════════════════
+function Hero({ onPick }: { onPick: (q: string) => void }) {
   return (
     <div style={{
-      background: '#0d0d0d', border: '1px solid #1e1e1e',
-      borderRadius: 16, overflow: 'hidden', position: 'relative',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      minHeight: 0,
+      flex: 1, display: 'flex', flexDirection: 'column',
+      alignItems: 'center', justifyContent: 'center', gap: 18,
+      position: 'relative',
     }}>
-      {/* Topic label, top-left */}
+      <motion.div
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+        style={{
+          width: 76, height: 76, borderRadius: 18,
+          background: 'linear-gradient(135deg, #6366f1, #ec4899)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          boxShadow: '0 0 40px rgba(99,102,241,0.45)',
+        }}>
+        <Sparkles size={32} color="#fff" />
+      </motion.div>
+      <div style={{ textAlign: 'center', maxWidth: 520 }}>
+        <h1 style={{ fontSize: 26, fontWeight: 800, color: '#fafafa', margin: 0, letterSpacing: '-0.5px' }}>
+          Kairo's Solver
+        </h1>
+        <p style={{ fontSize: 13.5, color: '#a1a1aa', margin: '8px 0 0', lineHeight: 1.6 }}>
+          Ask anything. Kairo writes a clear explanation on the right and builds a
+          live picture-book on the left — sourced from Wikimedia and educational image libraries.
+        </p>
+      </div>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center', maxWidth: 580, marginTop: 6 }}>
+        {SUGGESTIONS.map(s => (
+          <motion.button key={s} onClick={() => onPick(s)}
+            whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
+            style={{
+              padding: '8px 14px', borderRadius: 100,
+              background: 'rgba(99,102,241,0.06)',
+              border: '1px solid rgba(99,102,241,0.2)',
+              color: '#a5b4fc', fontFamily: 'inherit', fontSize: 12, fontWeight: 600,
+              cursor: 'pointer',
+            }}>
+            {s}
+          </motion.button>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// SLIDESHOW — left panel
+// ════════════════════════════════════════════════════════════════════════════
+function Slideshow({ slides, busy, topic, questionType }: {
+  slides: ImageSlide[]; busy: boolean; topic: string; questionType?: string
+}) {
+  const [idx, setIdx] = useState(0)
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  // Auto-cycle every 3.5s
+  useEffect(() => {
+    if (slides.length < 2) return
+    const t = setInterval(() => setIdx(i => (i + 1) % slides.length), 3500)
+    return () => clearInterval(t)
+  }, [slides.length])
+
+  // Reset to first slide when slides change
+  useEffect(() => { setIdx(0) }, [slides])
+
+  // Keyboard navigation
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (slides.length < 2) return
+      // Don't hijack typing
+      const target = e.target as HTMLElement
+      if (target?.tagName === 'INPUT' || target?.tagName === 'TEXTAREA') return
+      if (e.key === 'ArrowLeft')  setIdx(i => (i - 1 + slides.length) % slides.length)
+      if (e.key === 'ArrowRight') setIdx(i => (i + 1) % slides.length)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [slides.length])
+
+  const current = slides[idx]
+
+  return (
+    <div ref={containerRef}
+      style={{
+        background: '#0a0a0a', border: '1px solid #1e1e1e',
+        borderRadius: 18, overflow: 'hidden', position: 'relative',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        minHeight: 0,
+        boxShadow: '0 0 60px rgba(99,102,241,0.06) inset',
+      }}>
+      {/* Topic label */}
       <div style={{
-        position: 'absolute', top: 12, left: 14, zIndex: 4,
-        padding: '5px 11px', borderRadius: 6,
-        background: 'rgba(13,13,13,0.85)', backdropFilter: 'blur(10px)',
+        position: 'absolute', top: 14, left: 14, zIndex: 4,
+        padding: '6px 12px', borderRadius: 7,
+        background: 'rgba(13,13,13,0.85)', backdropFilter: 'blur(12px)',
         border: '1px solid rgba(99,102,241,0.3)',
-        fontSize: 10, color: '#a5b4fc', fontWeight: 700,
+        fontSize: 10.5, color: '#a5b4fc', fontWeight: 700,
         textTransform: 'uppercase', letterSpacing: 1.5,
         maxWidth: '70%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+        display: 'flex', alignItems: 'center', gap: 6,
       }}>
+        {iconForType(questionType)}
         {topic}
       </div>
 
-      {/* Image area */}
-      {busy && images.length === 0 && (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14, color: '#a1a1aa' }}>
-          <div style={{
-            width: 56, height: 56, borderRadius: 14,
-            background: 'linear-gradient(135deg, #6366f1, #ec4899)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: '0 0 24px rgba(99,102,241,0.4)',
-          }}>
-            <Loader2 size={24} color="#fff" style={{ animation: 'spin 0.8s linear infinite' }} />
+      {/* Slide counter */}
+      {slides.length > 0 && (
+        <div style={{
+          position: 'absolute', top: 14, right: 14, zIndex: 4,
+          padding: '5px 11px', borderRadius: 6,
+          background: 'rgba(13,13,13,0.85)', backdropFilter: 'blur(12px)',
+          border: '1px solid #1e1e1e',
+          fontSize: 10, color: '#a1a1aa', fontWeight: 700,
+          fontFamily: 'monospace', letterSpacing: 0.5,
+        }}>
+          {idx + 1} / {slides.length}
+        </div>
+      )}
+
+      {/* Loading / error states */}
+      {busy && slides.length === 0 && <SlideshowSkeleton />}
+
+      {!busy && slides.length === 0 && (
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, color: '#52525b' }}>
+          <ImageIcon size={36} />
+          <div style={{ fontSize: 13, fontWeight: 600 }}>No images found</div>
+          <div style={{ fontSize: 11, color: '#3f3f46', maxWidth: 260, textAlign: 'center' }}>
+            We couldn't find good visuals for this topic. The text answer is still on the right.
           </div>
-          <div style={{ fontSize: 13, fontWeight: 600 }}>Generating diagrams…</div>
-          <div style={{ fontSize: 11, color: '#52525b' }}>Nano Banana is drawing 4 illustrations</div>
         </div>
       )}
 
-      {err && images.length === 0 && (
-        <div style={{ padding: 24, textAlign: 'center', color: '#f87171', fontSize: 13, maxWidth: 380 }}>
-          ⚠ {err}
-        </div>
-      )}
-
+      {/* The image */}
       <AnimatePresence mode="wait">
         {current && (
-          <motion.img
-            key={idx}
-            src={`data:${current.mime};base64,${current.data}`}
-            alt={current.prompt}
-            initial={{ opacity: 0, scale: 1.02 }}
+          <motion.div
+            key={`slide-${idx}-${current.url}`}
+            initial={{ opacity: 0, scale: 1.04 }}
             animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.98 }}
-            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            style={{
-              maxWidth: '100%', maxHeight: '100%', objectFit: 'contain',
-              borderRadius: 12,
-            }}
-          />
+            exit={{ opacity: 0, scale: 0.97 }}
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+            style={{ width: '100%', height: '100%', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          >
+            <img
+              src={current.url}
+              alt={current.caption}
+              loading="eager"
+              style={{
+                maxWidth: '100%', maxHeight: '100%', objectFit: 'contain',
+                borderRadius: 8,
+              }}
+            />
+            {/* Caption overlay */}
+            <div style={{
+              position: 'absolute', bottom: 0, left: 0, right: 0,
+              padding: '32px 18px 18px',
+              background: 'linear-gradient(180deg, transparent 0%, rgba(10,10,10,0.92) 70%)',
+              pointerEvents: 'none',
+            }}>
+              <div style={{ fontSize: 12.5, color: '#fafafa', fontWeight: 600, lineHeight: 1.5, marginBottom: 4 }}>
+                {current.caption}
+              </div>
+              <div style={{ fontSize: 10, color: '#71717a', display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{
+                  padding: '1px 6px', borderRadius: 3,
+                  background: 'rgba(99,102,241,0.15)', color: '#a5b4fc',
+                  textTransform: 'uppercase', letterSpacing: 0.8, fontWeight: 700,
+                }}>{current.source}</span>
+                {current.attribution && <span style={{ pointerEvents: 'auto' }}>{current.attribution}</span>}
+              </div>
+            </div>
+          </motion.div>
         )}
       </AnimatePresence>
 
       {/* Pagination dots */}
-      {images.length > 1 && (
+      {slides.length > 1 && (
         <div style={{
-          position: 'absolute', bottom: 12, left: 0, right: 0, zIndex: 4,
+          position: 'absolute', bottom: 14, left: 0, right: 0, zIndex: 4,
           display: 'flex', justifyContent: 'center', gap: 6,
         }}>
-          {images.map((_, i) => (
+          {slides.map((_, i) => (
             <button key={i} onClick={() => setIdx(i)}
+              aria-label={`Slide ${i + 1}`}
               style={{
-                width: i === idx ? 22 : 8, height: 8, borderRadius: 4,
+                width: i === idx ? 24 : 8, height: 8, borderRadius: 4,
                 border: 'none', cursor: 'pointer',
                 background: i === idx ? '#a5b4fc' : '#3f3f46',
                 transition: 'all 0.3s',
@@ -338,42 +408,247 @@ function Slideshow({ images, busy, err, topic }: {
       )}
 
       {/* Prev / next arrows */}
-      {images.length > 1 && (
+      {slides.length > 1 && (
         <>
-          <button onClick={() => setIdx(i => (i - 1 + images.length) % images.length)}
-            style={{ ...arrowBtn, left: 10 }}>
-            <ChevronLeft size={16} color="#fafafa" />
+          <button onClick={() => setIdx(i => (i - 1 + slides.length) % slides.length)}
+            aria-label="Previous slide"
+            style={{ ...arrowBtn, left: 12 }}>
+            <ChevronLeft size={18} color="#fafafa" />
           </button>
-          <button onClick={() => setIdx(i => (i + 1) % images.length)}
-            style={{ ...arrowBtn, right: 10 }}>
-            <ChevronRight size={16} color="#fafafa" />
+          <button onClick={() => setIdx(i => (i + 1) % slides.length)}
+            aria-label="Next slide"
+            style={{ ...arrowBtn, right: 12 }}>
+            <ChevronRight size={18} color="#fafafa" />
           </button>
         </>
       )}
+    </div>
+  )
+}
 
-      {/* "Generating more…" badge while images keep streaming in */}
-      {busy && images.length > 0 && (
-        <div style={{
-          position: 'absolute', top: 12, right: 12, zIndex: 4,
-          padding: '4px 9px', borderRadius: 5,
-          background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.3)',
-          fontSize: 10, color: '#a5b4fc', fontWeight: 600,
-          display: 'flex', alignItems: 'center', gap: 5,
+function SlideshowSkeleton() {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 18, color: '#a1a1aa' }}>
+      <motion.div
+        animate={{ scale: [1, 1.08, 1], rotate: [0, 6, -6, 0] }}
+        transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
+        style={{
+          width: 64, height: 64, borderRadius: 16,
+          background: 'linear-gradient(135deg, #6366f1, #ec4899)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          boxShadow: '0 0 32px rgba(99,102,241,0.4)',
         }}>
-          <Loader2 size={10} style={{ animation: 'spin 0.8s linear infinite' }} />
-          Adding more
+        <Sparkles size={28} color="#fff" />
+      </motion.div>
+      <div style={{ fontSize: 13, fontWeight: 700, color: '#fafafa' }}>Building your visual lesson…</div>
+      <div style={{ fontSize: 11, color: '#71717a', maxWidth: 320, textAlign: 'center', lineHeight: 1.5 }}>
+        Searching Wikimedia + educational image libraries · Generating storyboard · Writing explanation
+      </div>
+      {/* Animated bar */}
+      <div style={{ width: 200, height: 3, background: '#1e1e1e', borderRadius: 2, overflow: 'hidden', marginTop: 4 }}>
+        <motion.div
+          animate={{ x: ['-100%', '100%'] }}
+          transition={{ duration: 1.4, repeat: Infinity, ease: 'easeInOut' }}
+          style={{ width: '40%', height: '100%', background: 'linear-gradient(90deg, transparent, #6366f1, transparent)' }}
+        />
+      </div>
+    </div>
+  )
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// EXPLANATION PANEL — right
+// ════════════════════════════════════════════════════════════════════════════
+function ExplanationPanel({ resp, busy, error, onOpenLab, onAskRelated }: {
+  resp: SolverResponse | null
+  busy: boolean
+  error: string
+  onOpenLab: (route: string) => void
+  onAskRelated: (concept: string) => void
+}) {
+  return (
+    <div style={{
+      background: '#0d0d0d', border: '1px solid #1e1e1e',
+      borderRadius: 18, padding: 20, overflowY: 'auto',
+      display: 'flex', flexDirection: 'column', gap: 12,
+    }}>
+      <div style={{
+        fontSize: 10, color: '#a5b4fc', fontWeight: 700,
+        textTransform: 'uppercase', letterSpacing: 1.5,
+        display: 'flex', alignItems: 'center', gap: 6,
+      }}>
+        <Sparkles size={12} /> Kairo says
+        {resp?.cached && (
+          <span style={{
+            marginLeft: 'auto',
+            padding: '2px 7px', borderRadius: 4,
+            background: 'rgba(52,211,153,0.10)', color: '#34d399',
+            fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.8,
+          }}>Cached</span>
+        )}
+      </div>
+
+      {/* Body */}
+      {busy && <ExplanationSkeleton />}
+
+      {error && (
+        <div style={{
+          padding: '10px 14px', borderRadius: 10,
+          background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.25)',
+          color: '#f87171', fontSize: 12,
+        }}>
+          ⚠ {error}
         </div>
       )}
 
-      {/* No-image fallback */}
-      {!busy && images.length === 0 && !err && (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, color: '#52525b' }}>
-          <ImageIcon size={32} />
-          <div style={{ fontSize: 12 }}>Waiting for slideshow…</div>
-        </div>
+      {resp && (
+        <>
+          {/* Markdown explanation */}
+          <div style={{ fontSize: 13.5, color: '#e4e4e7', lineHeight: 1.75 }}>
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm, remarkMath]}
+              rehypePlugins={[rehypeKatex]}
+              components={MD_COMPONENTS}
+            >
+              {resp.textExplanation}
+            </ReactMarkdown>
+          </div>
+
+          {/* Formulas (highlighted) */}
+          {resp.formulas.length > 0 && (
+            <div style={{
+              padding: '12px 14px', borderRadius: 11,
+              background: 'rgba(99,102,241,0.05)', border: '1px solid rgba(99,102,241,0.2)',
+            }}>
+              <div style={{
+                fontSize: 10, color: '#a5b4fc', fontWeight: 700,
+                textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 8,
+                display: 'flex', alignItems: 'center', gap: 6,
+              }}>
+                <BookOpen size={11} /> Key formulas
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                {resp.formulas.map((f, i) => (
+                  <div key={i} style={{ fontSize: 13.5, color: '#fafafa' }}>
+                    <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
+                      {`$$${f}$$`}
+                    </ReactMarkdown>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Lab CTA */}
+          {resp.labRoute && (
+            <motion.button
+              whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}
+              onClick={() => onOpenLab(resp.labRoute!)}
+              style={{
+                width: '100%', padding: '12px 16px', borderRadius: 12,
+                background: 'linear-gradient(135deg, rgba(236,72,153,0.18), rgba(99,102,241,0.18))',
+                border: '1px solid rgba(236,72,153,0.4)',
+                color: '#fafafa', fontFamily: 'inherit', cursor: 'pointer', textAlign: 'left',
+                display: 'flex', alignItems: 'center', gap: 12,
+                boxShadow: '0 0 24px rgba(236,72,153,0.15)',
+              }}>
+              <div style={{
+                width: 36, height: 36, borderRadius: 9, flexShrink: 0,
+                background: 'linear-gradient(135deg, #ec4899, #6366f1)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <Beaker size={16} color="#fff" />
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 13, fontWeight: 700 }}>Open in Kairo Labs</div>
+                <div style={{ fontSize: 11, color: '#a1a1aa', marginTop: 1 }}>
+                  Tweak parameters, watch it live in 3D
+                </div>
+              </div>
+              <ExternalLink size={14} color="#a5b4fc" />
+            </motion.button>
+          )}
+
+          {/* Related concepts */}
+          {resp.relatedConcepts.length > 0 && (
+            <div>
+              <div style={{
+                fontSize: 10, color: '#71717a', fontWeight: 700,
+                textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 8,
+              }}>
+                Explore further
+              </div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                {resp.relatedConcepts.map((c, i) => (
+                  <motion.button key={i}
+                    whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}
+                    onClick={() => onAskRelated(c)}
+                    style={{
+                      padding: '6px 11px', borderRadius: 100,
+                      background: '#161616', border: '1px solid #1e1e1e',
+                      color: '#a5b4fc', fontFamily: 'inherit', fontSize: 11.5, fontWeight: 600,
+                      cursor: 'pointer',
+                    }}>
+                    {c}
+                  </motion.button>
+                ))}
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   )
+}
+
+function ExplanationSkeleton() {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 10, paddingTop: 4 }}>
+      {[100, 92, 78, 96, 88].map((w, i) => (
+        <motion.div key={i}
+          animate={{ opacity: [0.3, 0.7, 0.3] }}
+          transition={{ duration: 1.4, repeat: Infinity, delay: i * 0.15, ease: 'easeInOut' }}
+          style={{ height: 10, width: `${w}%`, background: '#1e1e1e', borderRadius: 5 }}
+        />
+      ))}
+      <div style={{ height: 10 }} />
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#52525b', fontSize: 11 }}>
+        <Loader2 size={12} style={{ animation: 'spin 0.8s linear infinite' }} />
+        Writing explanation…
+      </div>
+    </div>
+  )
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// Helpers
+// ════════════════════════════════════════════════════════════════════════════
+function iconForType(t?: string) {
+  if (!t) return <Sparkles size={11} />
+  if (t === 'physics' || t === 'math') return <Atom size={11} />
+  if (t === 'chemistry') return <Beaker size={11} />
+  return <BookOpen size={11} />
+}
+
+const MD_COMPONENTS = {
+  p:  ({ children }: any) => <p style={{ margin: '0 0 10px', lineHeight: 1.75 }}>{children}</p>,
+  h1: ({ children }: any) => <h1 style={{ fontSize: 17, fontWeight: 800, color: '#fafafa', margin: '12px 0 8px' }}>{children}</h1>,
+  h2: ({ children }: any) => <h2 style={{ fontSize: 14, fontWeight: 700, color: '#a5b4fc', margin: '14px 0 6px', textTransform: 'uppercase', letterSpacing: 1, display: 'flex', alignItems: 'center', gap: 6 }}>{children}</h2>,
+  h3: ({ children }: any) => <h3 style={{ fontSize: 13, fontWeight: 700, color: '#fafafa', margin: '10px 0 4px' }}>{children}</h3>,
+  strong: ({ children }: any) => <strong style={{ color: '#fafafa', fontWeight: 700 }}>{children}</strong>,
+  em:     ({ children }: any) => <em style={{ color: '#c4b5fd' }}>{children}</em>,
+  ul: ({ children }: any) => <ul style={{ paddingLeft: 18, margin: '6px 0 10px' }}>{children}</ul>,
+  ol: ({ children }: any) => <ol style={{ paddingLeft: 18, margin: '6px 0 10px' }}>{children}</ol>,
+  li: ({ children }: any) => <li style={{ marginBottom: 3, color: '#d4d4d8' }}>{children}</li>,
+  code: ({ children, className }: any) => {
+    const isBlock = !!className
+    return isBlock
+      ? <pre style={{ background: '#0a0a0a', border: '1px solid #1e1e1e', borderRadius: 8, padding: '10px 12px', overflowX: 'auto', margin: '8px 0' }}>
+          <code style={{ fontSize: 12.5, color: '#86efac', fontFamily: 'monospace' }}>{children}</code>
+        </pre>
+      : <code style={{ background: '#1a1a2e', padding: '2px 6px', borderRadius: 4, fontSize: 12.5, color: '#c4b5fd', fontFamily: 'monospace' }}>{children}</code>
+  },
+  blockquote: ({ children }: any) => <blockquote style={{ borderLeft: '3px solid #6366f1', paddingLeft: 12, margin: '8px 0', color: '#a1a1aa', fontStyle: 'italic' }}>{children}</blockquote>,
 }
 
 // ─── Styles ───────────────────────────────────────────────────────────────
@@ -394,8 +669,8 @@ const btnStop: React.CSSProperties = {
 
 const arrowBtn: React.CSSProperties = {
   position: 'absolute', top: '50%', transform: 'translateY(-50%)',
-  width: 30, height: 30, borderRadius: 8, zIndex: 4,
-  background: 'rgba(13,13,13,0.85)', backdropFilter: 'blur(8px)',
-  border: '1px solid #1e1e1e', cursor: 'pointer',
+  width: 34, height: 34, borderRadius: 9, zIndex: 4,
+  background: 'rgba(13,13,13,0.85)', backdropFilter: 'blur(10px)',
+  border: '1px solid rgba(99,102,241,0.3)', cursor: 'pointer',
   display: 'flex', alignItems: 'center', justifyContent: 'center',
 }

@@ -1,11 +1,37 @@
 /**
- * /api/ai/chat  — OpenRouter proxy (no auth required, key stays server-side)
- * The frontend streams through here instead of calling OpenRouter directly.
+ * /api/ai/chat      — OpenRouter proxy
+ * /api/ai/visualize — Nano Banana image generation (legacy, used as fallback)
+ * /api/ai/solver    — Kairo's Solver: classify + image search + AI explanation
  */
 import express from 'express'
+import { searchManyParallel } from '../services/imageSearch.js'
 
 const router = express.Router()
 const OR_URL = 'https://openrouter.ai/api/v1/chat/completions'
+
+// In-memory cache for solver responses. Keyed by lowercased+trimmed question.
+// TTL = 1 hour. Caps at 100 entries (LRU-ish: oldest evicted on overflow).
+const SOLVER_CACHE = new Map()
+const SOLVER_CACHE_TTL_MS = 60 * 60 * 1000
+const SOLVER_CACHE_MAX = 100
+
+function cacheGet(key) {
+  const entry = SOLVER_CACHE.get(key)
+  if (!entry) return null
+  if (Date.now() - entry.ts > SOLVER_CACHE_TTL_MS) {
+    SOLVER_CACHE.delete(key)
+    return null
+  }
+  return entry.data
+}
+
+function cacheSet(key, data) {
+  if (SOLVER_CACHE.size >= SOLVER_CACHE_MAX) {
+    const oldest = SOLVER_CACHE.keys().next().value
+    if (oldest) SOLVER_CACHE.delete(oldest)
+  }
+  SOLVER_CACHE.set(key, { ts: Date.now(), data })
+}
 
 router.post('/chat', async (req, res) => {
   const { messages, model = 'openai/gpt-oss-20b:free', stream = false } = req.body
@@ -134,4 +160,168 @@ router.post('/visualize', async (req, res) => {
   }
 })
 
+// ────────────────────────────────────────────────────────────────────────────
+// /api/ai/solver — Kairo's Solver
+//
+// Single endpoint that powers the dual-panel learning experience:
+//   1. Calls the LLM in JSON mode to classify the question + plan a sequential
+//      visual storyboard (5-6 image search queries) + write the explanation
+//   2. Fans out the image queries in parallel against Wikimedia / Pexels /
+//      Unsplash (Wikimedia first — free, encyclopedic, no key)
+//   3. Detects if a Kairo Lab matches (gravity, pendulum, heart, etc.) and
+//      returns a labRoute the frontend uses to render an "Open in Labs" CTA
+//   4. Caches the whole response by question for 1 hour
+//
+// Returns:
+//   {
+//     questionType, supports3D, labRoute,
+//     textExplanation, formulas[], relatedConcepts[],
+//     imageSlides: [{ url, thumb, caption, source, attribution, pageUrl }],
+//     cached: boolean
+//   }
+// ────────────────────────────────────────────────────────────────────────────
+
+const KAIRO_LABS = {
+  gravity:    'Newton\'s laws, free fall, drop motion, weight',
+  pendulum:   'simple harmonic motion, oscillation, period, Newton\'s cradle',
+  projectile: 'kinematics, motion under gravity, trajectory',
+  circuits:   'Ohm\'s law, current, voltage, resistance, electrical circuits',
+  atom:       'atomic structure, Bohr model, electron shells',
+  molecule:   'chemical bonding, molecular geometry, VSEPR',
+  reaction:   'stoichiometry, combustion, balanced equations',
+  heart:      'human heart anatomy, circulation, chambers',
+  cell:       'cell structure, organelles, animal cell',
+  vectors:    '3D vectors, dot product, cross product',
+  graphs:     'function plotting, surfaces, 3D graphs of equations',
+}
+
+const SOLVER_SYSTEM = `You are Kairo's Solver — an AI that turns a student's question into a structured learning experience.
+
+Always answer the question. No matter the topic — science, math, history, biology, geography, literature, current events — give a clear, friendly explanation aimed at Indian school students (Class 6-12, CBSE/ICSE/state).
+
+Your output MUST be a single valid JSON object (no markdown fences, no commentary, no leading text). Schema:
+
+{
+  "questionType":   "physics" | "chemistry" | "biology" | "math" | "history" | "geography" | "literature" | "general",
+  "supports3D":     boolean,
+  "labRoute":       null | one of: ${Object.keys(KAIRO_LABS).map(k => `"${k}"`).join(' | ')},
+  "imageQueries":   [<5 short web-search queries for educational images, in NARRATIVE order — like a 5-slide storyboard that builds the concept from intro → mechanism → equation → real-world example. Include named figures, specific objects, concrete nouns. NOT abstract.>],
+  "formulas":       [<key formulas as plain LaTeX strings, e.g. "F = ma" — empty array if N/A>],
+  "relatedConcepts":[<3-5 related topics or follow-up questions, short strings>],
+  "textExplanation": <markdown string — concise but complete. Use ## sub-headings (\"What you're seeing\", \"How it works\", \"Why it matters\", \"Real-world example\"). Use $...$ for inline math, $$...$$ for display. Aim for 200-400 words.>
+}
+
+Lab matching guidance — set labRoute when the question's core topic matches one of these:
+${Object.entries(KAIRO_LABS).map(([k, v]) => `  ${k}: ${v}`).join('\n')}
+
+Otherwise labRoute=null.
+
+CRITICAL: Output ONLY the JSON. Do not wrap in code fences. Do not say "Here is the JSON". Do not add any prose before or after.`
+
+router.post('/solver', async (req, res) => {
+  const question = (req.body?.question || '').toString().trim()
+  if (!question) return res.status(400).json({ error: 'question required' })
+  if (question.length > 500) return res.status(400).json({ error: 'question too long (max 500 chars)' })
+
+  const cacheKey = question.toLowerCase()
+  const cached = cacheGet(cacheKey)
+  if (cached) {
+    return res.json({ ...cached, cached: true })
+  }
+
+  const apiKey = process.env.OPENROUTER_API_KEY
+  if (!apiKey) {
+    return res.status(503).json({ error: 'OPENROUTER_API_KEY not configured on server.' })
+  }
+
+  try {
+    // 1. Classify + plan via LLM
+    const llmResp = await fetch(OR_URL, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type':  'application/json',
+        'HTTP-Referer':  process.env.ALLOWED_ORIGIN || 'https://kairo-daily-edu.vercel.app',
+        'X-Title':       'Kairo Solver',
+      },
+      body: JSON.stringify({
+        model:    process.env.SOLVER_MODEL || 'openai/gpt-oss-120b:free',
+        messages: [
+          { role: 'system', content: SOLVER_SYSTEM },
+          { role: 'user',   content: question },
+        ],
+        response_format: { type: 'json_object' },
+        temperature: 0.4,
+      }),
+    })
+
+    if (!llmResp.ok) {
+      const errText = await llmResp.text()
+      console.error('[solver] LLM error', llmResp.status, errText.slice(0, 300))
+      return res.status(502).json({ error: 'AI classifier failed.' })
+    }
+
+    const llmData = await llmResp.json()
+    const raw = llmData?.choices?.[0]?.message?.content || ''
+    const plan = parseJsonLoose(raw)
+
+    if (!plan || !plan.textExplanation) {
+      return res.status(502).json({ error: 'AI returned malformed response.', raw: raw.slice(0, 200) })
+    }
+
+    // 2. Fetch images for each query in parallel (cap at 6).
+    const queries = Array.isArray(plan.imageQueries) ? plan.imageQueries.slice(0, 6) : []
+    const slides = await searchManyParallel(queries)
+
+    // 3. Validate labRoute against the known lab list — null if AI hallucinated one.
+    let labRoute = plan.labRoute || null
+    if (labRoute && !KAIRO_LABS[labRoute]) labRoute = null
+
+    const response = {
+      questionType:    plan.questionType || 'general',
+      supports3D:      !!plan.supports3D,
+      labRoute,
+      textExplanation: plan.textExplanation,
+      formulas:        Array.isArray(plan.formulas) ? plan.formulas.slice(0, 8) : [],
+      relatedConcepts: Array.isArray(plan.relatedConcepts) ? plan.relatedConcepts.slice(0, 6) : [],
+      imageSlides:     slides,
+      cached:          false,
+    }
+
+    cacheSet(cacheKey, response)
+    res.json(response)
+  } catch (e) {
+    console.error('[solver]', e.message)
+    res.status(500).json({ error: 'Solver failed: ' + e.message })
+  }
+})
+
+/**
+ * Some models prepend "```json" or trailing prose. This pulls out the first
+ * balanced { ... } object and JSON.parses it.
+ */
+function parseJsonLoose(text) {
+  if (!text) return null
+  // Strip markdown code fences if present
+  const fence = text.match(/```(?:json)?\s*([\s\S]*?)```/i)
+  const candidate = fence ? fence[1] : text
+
+  // Find the first { and the matching closing }
+  const start = candidate.indexOf('{')
+  if (start < 0) return null
+  let depth = 0
+  for (let i = start; i < candidate.length; i++) {
+    if (candidate[i] === '{') depth++
+    else if (candidate[i] === '}') {
+      depth--
+      if (depth === 0) {
+        try { return JSON.parse(candidate.slice(start, i + 1)) }
+        catch { return null }
+      }
+    }
+  }
+  return null
+}
+
 export default router
+

@@ -179,9 +179,24 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
         <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
           <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column', position: 'relative' }}>
 
-            {/* Kairo's Solver — split-pane: AI text + Nano Banana image slideshow */}
+            {/* Kairo's Solver — adaptive AI visual learning engine */}
             <div style={pageStyle('doubt')}>
-              <KairoSolver model={selectedModel} />
+              <KairoSolver
+                model={selectedModel}
+                onNavigate={(target) => {
+                  // "labs:gravity" -> jump to labs page + dispatch event so the
+                  // KairoLabs page knows which lab to open.
+                  if (target.startsWith('labs:')) {
+                    const lab = target.slice('labs:'.length)
+                    setActive('labs')
+                    setTimeout(() => {
+                      window.dispatchEvent(new CustomEvent('kairo:open-lab', { detail: { id: lab } }))
+                    }, 100)
+                  } else {
+                    setActive(target)
+                  }
+                }}
+              />
             </div>
 
             {/* Flashcards */}
