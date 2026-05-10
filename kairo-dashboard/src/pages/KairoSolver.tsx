@@ -47,8 +47,8 @@ interface TextPlan {
   textExplanation: string
   formulas:        string[]
   relatedConcepts: string[]
-  cached:          boolean
-  hasImageQueries: boolean
+  cached?:         boolean
+  imageQueries:    string[]   // backend now ships these so /images skips the LLM call
 }
 
 interface SolverResponse extends TextPlan {
@@ -94,51 +94,54 @@ export default function KairoSolver({ onNavigate }: KairoSolverProps) {
     const ctrl = new AbortController()
     abortRef.current = ctrl
 
-    // Fire BOTH endpoints in parallel — each fits inside Vercel's 10s function
-    // timeout on its own. The text usually wins (~5s), then images drop in
-    // when ready (~3s after that). User starts reading immediately.
-    const body = JSON.stringify({ question })
+    // Sequential pipeline that fits Vercel's 10s timeout:
+    //   1. /text  → LLM call only (~3-5s on gpt-oss-20b). Returns plan + queries.
+    //   2. /images → pure image search using THOSE queries (~2-3s, no LLM).
+    // Total ~6-8s wall clock, but the user sees text within 3-5s and starts
+    // reading while images load.
     const headers = { 'Content-Type': 'application/json' }
 
-    const textPromise = fetch('/api/ai/solver/text', {
-      method: 'POST', headers, body, signal: ctrl.signal,
-    }).then(async r => {
-      if (!r.ok) {
-        const e = await r.json().catch(() => ({}))
-        throw new Error(e.error || `Text endpoint returned ${r.status}`)
-      }
-      return r.json() as Promise<TextPlan>
-    })
-
-    const imagesPromise = fetch('/api/ai/solver/images', {
-      method: 'POST', headers, body, signal: ctrl.signal,
-    }).then(async r => {
-      if (!r.ok) {
-        const e = await r.json().catch(() => ({}))
-        throw new Error(e.error || `Images endpoint returned ${r.status}`)
-      }
-      return r.json() as Promise<{ imageSlides: ImageSlide[]; cached: boolean }>
-    }).catch(e => { return { imageSlides: [] as ImageSlide[], cached: false, _err: e.message } })
-
-    // Paint as soon as TEXT lands — slideshow shows skeleton until images arrive.
     try {
-      const text = await textPromise
+      const textRes = await fetch('/api/ai/solver/text', {
+        method: 'POST', headers,
+        body: JSON.stringify({ question }),
+        signal: ctrl.signal,
+      })
+      if (!textRes.ok) {
+        const e = await textRes.json().catch(() => ({}))
+        throw new Error(e.error || `Text endpoint returned ${textRes.status}`)
+      }
+      const text: TextPlan = await textRes.json()
+
+      // Paint text immediately, mark images as still loading
       setResp({
         ...text,
         imageSlides: [],
-        imagesBusy:  true,
+        imagesBusy:  text.imageQueries.length > 0,
         imagesCached: false,
       })
       setBusy(false)   // unlock input — user can keep reading
 
-      // Now wait for images and merge them in.
-      const img = await imagesPromise
+      // No queries? skip the second call entirely.
+      if (text.imageQueries.length === 0) return
+
+      // Fetch images using the queries we already have — no LLM, fast.
+      const imgRes = await fetch('/api/ai/solver/images', {
+        method: 'POST', headers,
+        body: JSON.stringify({ queries: text.imageQueries }),
+        signal: ctrl.signal,
+      })
+      if (!imgRes.ok) {
+        const e = await imgRes.json().catch(() => ({}))
+        setResp(prev => prev ? { ...prev, imagesBusy: false, imagesError: e.error || `Image search failed (${imgRes.status})` } : prev)
+        return
+      }
+      const img = await imgRes.json() as { imageSlides: ImageSlide[]; cached: boolean }
       setResp(prev => prev ? {
         ...prev,
         imageSlides:  img.imageSlides || [],
         imagesBusy:   false,
         imagesCached: img.cached || false,
-        imagesError:  (img as any)._err,
       } : prev)
     } catch (e: any) {
       if (e?.name !== 'AbortError') setError(e?.message || 'Something went wrong.')

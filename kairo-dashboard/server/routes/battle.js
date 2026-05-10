@@ -78,10 +78,13 @@ router.post('/submit', async (req, res) => {
   }
 })
 
-// Leaderboard for my school
+// Leaderboard for my school. Personal users (no school) get an empty board
+// instead of a 400 — they can still play, just not compete with classmates.
 router.get('/leaderboard', async (req, res) => {
-  if (!req.schoolId) return res.status(400).json({ error: 'You are not in a school.' })
   const range = req.query.range || 'week'   // today | week | all
+  if (!req.schoolId) {
+    return res.json({ range, leaders: [], you: null, personal: true })
+  }
   const td    = today()
 
   try {

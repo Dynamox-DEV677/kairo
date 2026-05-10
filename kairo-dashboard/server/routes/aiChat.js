@@ -238,7 +238,9 @@ async function getSolverPlan(question) {
       'X-Title':       'Kairo Solver',
     },
     body: JSON.stringify({
-      model:    process.env.SOLVER_MODEL || 'openai/gpt-oss-120b:free',
+      // gpt-oss-20b is ~3× faster than 120b on free tier — fits inside
+      // Vercel's 10s timeout much more reliably. Override via SOLVER_MODEL.
+      model:    process.env.SOLVER_MODEL || 'openai/gpt-oss-20b:free',
       messages: [
         { role: 'system', content: SOLVER_SYSTEM },
         { role: 'user',   content: question },
@@ -289,9 +291,9 @@ router.post('/solver/text', async (req, res) => {
 
   try {
     const plan = await getSolverPlan(question)
-    // Don't ship imageQueries to the client — they're internal routing data.
-    const { imageQueries, ...publicFields } = plan
-    res.json({ ...publicFields, hasImageQueries: imageQueries.length > 0 })
+    // Ship imageQueries TO the client now — frontend hands them to /images
+    // so /images doesn't have to redo the LLM call (that's what was 504-ing).
+    res.json(plan)
   } catch (e) {
     console.error('[solver/text]', e.message)
     const code = e.message.includes('not configured') ? 503 : 502
@@ -300,33 +302,52 @@ router.post('/solver/text', async (req, res) => {
 })
 
 // ────────────────────────────────────────────────────────────────────────────
-// /api/ai/solver/images — image search only.
-// Re-uses the cached plan from /solver/text (LLM call is shared). If the plan
-// isn't cached yet (e.g. images endpoint was called first), it will trigger
-// the LLM call here too — but the frontend always fires both in parallel so
-// the worst case is one /text and one /images both running an LLM call once.
+// /api/ai/solver/images — pure image search. NO LLM call.
+//
+// Body: { queries: string[] }   ← frontend gets these from /solver/text
+//       { question: string }    ← legacy fallback if no queries provided
+//
+// Pure image search fits in ~2-3s, well under Vercel's 10s timeout.
 // ────────────────────────────────────────────────────────────────────────────
 router.post('/solver/images', async (req, res) => {
-  const question = (req.body?.question || '').toString().trim()
-  if (!question) return res.status(400).json({ error: 'question required' })
-  if (question.length > 500) return res.status(400).json({ error: 'question too long (max 500 chars)' })
+  const queries = Array.isArray(req.body?.queries)
+    ? req.body.queries.filter(q => typeof q === 'string' && q.trim()).slice(0, 6)
+    : []
 
-  // Fast path: serve full slide set from cache if we have it
-  const fullCacheKey = 'images:' + question.toLowerCase()
-  const cachedSlides = cacheGet(fullCacheKey)
-  if (cachedSlides) {
-    return res.json({ imageSlides: cachedSlides, cached: true })
+  // No queries provided? Fall back to question-based path (slower — runs LLM).
+  // Kept only for callers that don't yet pass queries.
+  if (queries.length === 0) {
+    const question = (req.body?.question || '').toString().trim()
+    if (!question) return res.status(400).json({ error: 'queries[] or question required' })
+
+    const fullCacheKey = 'images:' + question.toLowerCase()
+    const cachedSlides = cacheGet(fullCacheKey)
+    if (cachedSlides) return res.json({ imageSlides: cachedSlides, cached: true })
+
+    try {
+      const plan = await getSolverPlan(question)
+      const slides = await searchManyParallel(plan.imageQueries)
+      cacheSet(fullCacheKey, slides)
+      return res.json({ imageSlides: slides, cached: false })
+    } catch (e) {
+      console.error('[solver/images:fallback]', e.message)
+      const code = e.message.includes('not configured') ? 503 : 502
+      return res.status(code).json({ error: e.message })
+    }
   }
 
+  // Fast path: search the queries directly. Cache by sorted-query string.
+  const cacheKey = 'imagesByQ:' + queries.slice().sort().join('|').toLowerCase()
+  const cached = cacheGet(cacheKey)
+  if (cached) return res.json({ imageSlides: cached, cached: true })
+
   try {
-    const plan = await getSolverPlan(question)
-    const slides = await searchManyParallel(plan.imageQueries)
-    cacheSet(fullCacheKey, slides)
+    const slides = await searchManyParallel(queries)
+    cacheSet(cacheKey, slides)
     res.json({ imageSlides: slides, cached: false })
   } catch (e) {
     console.error('[solver/images]', e.message)
-    const code = e.message.includes('not configured') ? 503 : 502
-    res.status(code).json({ error: e.message })
+    res.status(500).json({ error: e.message })
   }
 })
 

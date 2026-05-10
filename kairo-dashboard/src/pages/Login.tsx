@@ -200,15 +200,34 @@ function SignIn({ onLogin, onBack }: any) {
       })
       if (error) throw new Error(error.message)
 
-      const { data: userRow } = await supabase
+      // maybeSingle() avoids the 406 you get when .single() finds zero rows.
+      // Some legacy auth users don't have a public.users profile — handle that.
+      let { data: userRow } = await supabase
         .from('users').select('id, name, role, school_id, avatar_url')
-        .eq('id', data.user.id).single()
+        .eq('id', data.user.id).maybeSingle()
+
+      // Auto-provision a minimal profile when the auth user has no public row.
+      // Personal-mode default: role=student, no school, status=active.
+      if (!userRow) {
+        const fallbackName = (data.user.user_metadata as any)?.name
+          || data.user.email?.split('@')[0]
+          || 'Kairo Student'
+        try {
+          await supabase.from('users').insert({
+            id:        data.user.id,
+            name:      fallbackName,
+            role:      'student',
+            school_id: null,
+          })
+        } catch { /* RLS may block — server will still pick up via /users/profile */ }
+        userRow = { id: data.user.id, name: fallbackName, role: 'student', school_id: null, avatar_url: null } as any
+      }
 
       let school: any = null
       if (userRow?.school_id) {
         const { data: s } = await supabase
           .from('schools').select('id, school_name, school_logo_url, school_email, plan')
-          .eq('id', userRow.school_id).single()
+          .eq('id', userRow.school_id).maybeSingle()
         school = s
       }
 
