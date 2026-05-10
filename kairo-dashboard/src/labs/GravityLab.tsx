@@ -20,8 +20,9 @@ import { OrbitControls, Stars, Grid, useGLTF, Html } from '@react-three/drei'
 import LabShell from './LabShell'
 import * as THREE from 'three'
 
-const TREE_MODEL_URL  = '/models/maple_tree.glb'
-const APPLE_MODEL_URL = '/models/red_apple.glb'
+// jsDelivr CDN — keeps GLBs out of the Vercel build pipeline.
+const TREE_MODEL_URL  = 'https://cdn.jsdelivr.net/gh/Dynamox-DEV677/kairo@main/models-cdn/maple_tree.glb'
+const APPLE_MODEL_URL = 'https://cdn.jsdelivr.net/gh/Dynamox-DEV677/kairo@main/models-cdn/red_apple.glb'
 const TREE_HEIGHT = 6
 const APPLE_BRANCH_Y_OFFSET = 0.5  // apple sits slightly inside the foliage
 

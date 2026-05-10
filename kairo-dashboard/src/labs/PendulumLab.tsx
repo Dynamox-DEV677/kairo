@@ -9,7 +9,8 @@ import { OrbitControls, Stars, useGLTF, useAnimations, Html, Bounds } from '@rea
 import * as THREE from 'three'
 import LabShell from './LabShell'
 
-const CRADLE_MODEL_URL = '/models/newtons_cradle.glb'
+// jsDelivr CDN — keeps GLBs out of the Vercel build pipeline.
+const CRADLE_MODEL_URL = 'https://cdn.jsdelivr.net/gh/Dynamox-DEV677/kairo@main/models-cdn/newtons_cradle.glb'
 
 interface SimProps {
   params: { length: number; gravity: number; damping: number; angle: number }

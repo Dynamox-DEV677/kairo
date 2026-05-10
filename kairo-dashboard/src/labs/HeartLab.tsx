@@ -10,7 +10,9 @@ import { OrbitControls, Stars, Text, useGLTF, useAnimations, Html } from '@react
 import * as THREE from 'three'
 import LabShell from './LabShell'
 
-const HEART_MODEL_URL = '/models/beating-heart.glb'
+// Served from jsDelivr's CDN directly off the GitHub repo so the 12MB GLB
+// never has to ride along with the Vercel build. Free, fast, globally cached.
+const HEART_MODEL_URL = 'https://cdn.jsdelivr.net/gh/Dynamox-DEV677/kairo@main/models-cdn/beating-heart.glb'
 const TARGET_SIZE = 3.2   // fit the heart's longest axis to this many world units
 
 interface SimProps {
