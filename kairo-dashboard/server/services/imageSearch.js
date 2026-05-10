@@ -9,9 +9,11 @@
  * Pexels, then Unsplash. Returns the first hit per query.
  */
 
-const WIKIMEDIA_API = 'https://commons.wikimedia.org/w/api.php'
-const PEXELS_API    = 'https://api.pexels.com/v1/search'
-const UNSPLASH_API  = 'https://api.unsplash.com/search/photos'
+const WIKIMEDIA_API   = 'https://commons.wikimedia.org/w/api.php'
+const WIKIPEDIA_API   = 'https://en.wikipedia.org/w/api.php'
+const WIKIPEDIA_REST  = 'https://en.wikipedia.org/api/rest_v1'
+const PEXELS_API      = 'https://api.pexels.com/v1/search'
+const UNSPLASH_API    = 'https://api.unsplash.com/search/photos'
 
 const UA = 'KairoEdu/1.0 (https://kairo-daily-edu.vercel.app; contact: support@kairo.app)'
 
@@ -23,8 +25,107 @@ const UA = 'KairoEdu/1.0 (https://kairo-daily-edu.vercel.app; contact: support@k
  */
 
 /**
+ * Search Wikipedia for an article matching the query, return its lead image.
+ * This is FAST and gives high-quality educational visuals — Wikipedia article
+ * thumbnails are curated and reliably tied to the topic. No API key needed.
+ */
+export async function searchWikipediaArticle(query) {
+  // 1. Search Wikipedia for the closest article title.
+  const searchParams = new URLSearchParams({
+    action: 'query', format: 'json', list: 'search',
+    srsearch: query, srlimit: '1', origin: '*',
+  })
+  const sr = await fetch(`${WIKIPEDIA_API}?${searchParams}`, { headers: { 'User-Agent': UA } })
+  if (!sr.ok) return null
+  const sdata = await sr.json()
+  const title = sdata?.query?.search?.[0]?.title
+  if (!title) return null
+
+  // 2. Get the article summary (thumbnail + originalimage).
+  const summaryUrl = `${WIKIPEDIA_REST}/page/summary/${encodeURIComponent(title)}`
+  const summary = await fetch(summaryUrl, { headers: { 'User-Agent': UA } }).then(r => r.ok ? r.json() : null)
+  if (!summary) return null
+
+  const img = summary.originalimage || summary.thumbnail
+  if (!img?.source) return null
+
+  return {
+    url:     img.source,
+    thumb:   summary.thumbnail?.source,
+    caption: summary.title + (summary.description ? ' — ' + summary.description : ''),
+    source:  'wikimedia',
+    attribution: 'Wikipedia · ' + summary.title,
+    pageUrl: summary.content_urls?.desktop?.page || `https://en.wikipedia.org/wiki/${encodeURIComponent(title)}`,
+  }
+}
+
+/**
+ * Get N images from a Wikipedia article's media list — useful when one topic
+ * (like "photosynthesis") should yield a whole storyboard. No API key.
+ */
+export async function getWikipediaArticleImages(topic, limit = 6) {
+  // Find the article first
+  const searchParams = new URLSearchParams({
+    action: 'query', format: 'json', list: 'search',
+    srsearch: topic, srlimit: '1', origin: '*',
+  })
+  const sr = await fetch(`${WIKIPEDIA_API}?${searchParams}`, { headers: { 'User-Agent': UA } })
+  if (!sr.ok) return []
+  const sdata = await sr.json()
+  const title = sdata?.query?.search?.[0]?.title
+  if (!title) return []
+
+  // Get every image from that article via the page-images endpoint
+  const params = new URLSearchParams({
+    action: 'query', format: 'json',
+    titles: title, prop: 'images', imlimit: '20', origin: '*',
+  })
+  const r = await fetch(`${WIKIPEDIA_API}?${params}`, { headers: { 'User-Agent': UA } })
+  if (!r.ok) return []
+  const data = await r.json()
+  const page = Object.values(data?.query?.pages || {})[0]
+  const imageTitles = (page?.images || [])
+    .map(i => i.title)
+    .filter(t => t && !/\.(svg|webp)$/i.test(t.toLowerCase()) === false || /\.(svg|png|jpg|jpeg)$/i.test(t.toLowerCase()))
+    .filter(t => !/(commons-logo|wiki-logo|disambig|edit-icon|stub|wikidata-logo|symbol)/i.test(t))
+    .slice(0, limit + 4)   // get a few extra; we'll drop noise
+
+  // Resolve each title to a real image URL
+  const slides = await Promise.all(imageTitles.map(async (fileTitle) => {
+    const p = new URLSearchParams({
+      action: 'query', format: 'json',
+      titles: fileTitle, prop: 'imageinfo',
+      iiprop: 'url|size|extmetadata', iiurlwidth: '900', origin: '*',
+    })
+    try {
+      const rr = await fetch(`${WIKIMEDIA_API}?${p}`, { headers: { 'User-Agent': UA } })
+      if (!rr.ok) return null
+      const dd = await rr.json()
+      const pp = Object.values(dd?.query?.pages || {})[0]
+      const info = pp?.imageinfo?.[0]
+      if (!info) return null
+      if (info.width && info.width < 200) return null
+      const url = info.thumburl || info.url
+      if (!url) return null
+      const ext = info.extmetadata || {}
+      const caption = stripHtml(ext.ImageDescription?.value)
+        || fileTitle.replace(/^File:/, '').replace(/_/g, ' ').replace(/\.[^.]+$/, '')
+      return {
+        url,
+        thumb:       info.thumburl,
+        caption:     truncate(caption, 200),
+        source:      'wikimedia',
+        attribution: stripHtml(ext.Artist?.value) || `Wikipedia · ${title}`,
+        pageUrl:     `https://commons.wikimedia.org/wiki/${encodeURIComponent(fileTitle)}`,
+      }
+    } catch { return null }
+  }))
+  return slides.filter(Boolean).slice(0, limit)
+}
+
+/**
  * Search Wikimedia Commons for one query. Returns the first image as a slide,
- * or null if nothing matched.
+ * or null if nothing matched. Less restrictive than before — no filetype filter.
  */
 export async function searchWikimedia(query) {
   const params = new URLSearchParams({
@@ -32,9 +133,9 @@ export async function searchWikimedia(query) {
     format:        'json',
     prop:          'imageinfo',
     generator:     'search',
-    gsrsearch:     `${query} filetype:bitmap|drawing -filemime:gif`,
+    gsrsearch:     query,
     gsrnamespace:  '6',          // File:
-    gsrlimit:      '3',
+    gsrlimit:      '5',
     iiprop:        'url|size|extmetadata',
     iiurlwidth:    '900',
     origin:        '*',
@@ -53,8 +154,9 @@ export async function searchWikimedia(query) {
     const ext = info.extmetadata || {}
     const url = info.thumburl || info.url
     if (!url) continue
-    // Skip tiny / placeholder images
     if (info.width && info.width < 200) continue
+    // Skip obvious icons/logos that polluted results
+    if (/(logo|icon|symbol|disambig|stub)/i.test(page.title || '')) continue
 
     const caption = stripHtml(ext.ImageDescription?.value)
       || stripHtml(ext.ObjectName?.value)
@@ -116,14 +218,20 @@ export async function searchUnsplash(query) {
 }
 
 /**
- * Best-effort: try Wikimedia first (no key, free, encyclopedic), then Pexels,
- * then Unsplash. Returns first non-null result.
+ * Try every source in order. Wikipedia article match first (most reliable for
+ * educational topics), then Wikimedia Commons full-text, then Pexels/Unsplash
+ * if keys exist. Returns first non-null hit.
  */
 export async function searchAny(query) {
   try {
+    const wp = await searchWikipediaArticle(query)
+    if (wp) return wp
+  } catch (e) { /* swallow */ }
+
+  try {
     const wm = await searchWikimedia(query)
     if (wm) return wm
-  } catch (e) { /* swallow & continue */ }
+  } catch (e) { /* swallow */ }
 
   try {
     const px = await searchPexels(query)
@@ -139,18 +247,38 @@ export async function searchAny(query) {
 }
 
 /**
- * Fan out: take an array of queries, run searchAny in parallel, return
- * non-null results in order. De-dupes by URL so the slideshow doesn't repeat.
+ * Fan out: try every query in parallel + ALSO grab the article-level images
+ * for the broader topic so we always have something. De-duped by URL.
+ *
+ *   queries  array of specific search phrases (from the AI plan)
+ *   topic    optional fallback term (the user's original question)
  */
-export async function searchManyParallel(queries) {
-  const results = await Promise.all(queries.map(q => searchAny(q).catch(() => null)))
+export async function searchManyParallel(queries, topic) {
+  const tasks = []
+  for (const q of queries) tasks.push(searchAny(q).catch(() => null))
+  // ALWAYS grab the topic article's media list as a fallback batch — fast,
+  // single API call, and reliably yields a sequential storyboard.
+  const fallbackTopic = topic || queries[0] || ''
+  if (fallbackTopic) {
+    tasks.push(getWikipediaArticleImages(fallbackTopic, 6).catch(() => []))
+  }
+
+  const results = await Promise.all(tasks)
+  // Flatten — searchAny returns one slide, getWikipediaArticleImages returns N
+  const flat = []
+  for (const r of results) {
+    if (Array.isArray(r)) flat.push(...r)
+    else if (r) flat.push(r)
+  }
+
+  // De-dupe by URL, cap at 8
   const seen = new Set()
   const out = []
-  for (const r of results) {
-    if (!r || !r.url) continue
-    if (seen.has(r.url)) continue
+  for (const r of flat) {
+    if (!r?.url || seen.has(r.url)) continue
     seen.add(r.url)
     out.push(r)
+    if (out.length >= 8) break
   }
   return out
 }

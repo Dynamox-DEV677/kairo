@@ -345,20 +345,21 @@ router.post('/solver/images', async (req, res) => {
   const queries = Array.isArray(req.body?.queries)
     ? req.body.queries.filter(q => typeof q === 'string' && q.trim()).slice(0, 6)
     : []
+  // The original question — used as a guaranteed fallback so we can pull
+  // a Wikipedia article's full image set even when individual queries miss.
+  const topic = (req.body?.topic || req.body?.question || '').toString().trim()
 
   // No queries provided? Fall back to question-based path (slower — runs LLM).
-  // Kept only for callers that don't yet pass queries.
   if (queries.length === 0) {
-    const question = (req.body?.question || '').toString().trim()
-    if (!question) return res.status(400).json({ error: 'queries[] or question required' })
+    if (!topic) return res.status(400).json({ error: 'queries[] or topic required' })
 
-    const fullCacheKey = 'images:' + question.toLowerCase()
+    const fullCacheKey = 'images:' + topic.toLowerCase()
     const cachedSlides = cacheGet(fullCacheKey)
     if (cachedSlides) return res.json({ imageSlides: cachedSlides, cached: true })
 
     try {
-      const plan = await getSolverPlan(question)
-      const slides = await searchManyParallel(plan.imageQueries)
+      const plan = await getSolverPlan(topic)
+      const slides = await searchManyParallel(plan.imageQueries, topic)
       cacheSet(fullCacheKey, slides)
       return res.json({ imageSlides: slides, cached: false })
     } catch (e) {
@@ -368,13 +369,13 @@ router.post('/solver/images', async (req, res) => {
     }
   }
 
-  // Fast path: search the queries directly. Cache by sorted-query string.
-  const cacheKey = 'imagesByQ:' + queries.slice().sort().join('|').toLowerCase()
+  // Fast path: search the queries directly + Wikipedia topic fallback batch.
+  const cacheKey = 'imagesByQ:' + (topic + '|' + queries.slice().sort().join('|')).toLowerCase()
   const cached = cacheGet(cacheKey)
   if (cached) return res.json({ imageSlides: cached, cached: true })
 
   try {
-    const slides = await searchManyParallel(queries)
+    const slides = await searchManyParallel(queries, topic)
     cacheSet(cacheKey, slides)
     res.json({ imageSlides: slides, cached: false })
   } catch (e) {

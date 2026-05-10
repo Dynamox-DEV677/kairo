@@ -126,9 +126,11 @@ export default function KairoSolver({ onNavigate }: KairoSolverProps) {
       if (text.imageQueries.length === 0) return
 
       // Fetch images using the queries we already have — no LLM, fast.
+      // Also pass the topic (original question) so the backend can pull a
+      // Wikipedia article's media list as a guaranteed fallback batch.
       const imgRes = await fetch('/api/ai/solver/images', {
         method: 'POST', headers,
-        body: JSON.stringify({ queries: text.imageQueries }),
+        body: JSON.stringify({ queries: text.imageQueries, topic: question }),
         signal: ctrl.signal,
       })
       if (!imgRes.ok) {
