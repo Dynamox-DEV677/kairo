@@ -203,13 +203,27 @@ Your output MUST be a single valid JSON object (no markdown fences, no commentar
 
 {
   "questionType":   "physics" | "chemistry" | "biology" | "math" | "history" | "geography" | "literature" | "general",
+  "topicKeyword":   <ONE clean 1-3 word noun phrase that names this topic — used to look up the matching Wikipedia article. Examples: "Photosynthesis", "French Revolution", "Newton's laws", "Mitosis". Must be the most likely exact Wikipedia article title. NEVER use vague phrases like "step by step" or "explained">,
   "supports3D":     boolean,
   "labRoute":       null | one of: ${Object.keys(KAIRO_LABS).map(k => `"${k}"`).join(' | ')},
   "imageQueries":   [<5 short web-search queries for educational images, in NARRATIVE order — like a 5-slide storyboard that builds the concept from intro → mechanism → equation → real-world example. Include named figures, specific objects, concrete nouns. NOT abstract.>],
   "formulas":       [<key formulas as plain LaTeX strings, e.g. "F = ma" — empty array if N/A>],
   "relatedConcepts":[<3-5 related topics or follow-up questions, short strings>],
-  "textExplanation": <markdown string — concise but complete. Use ## sub-headings (\"What you're seeing\", \"How it works\", \"Why it matters\", \"Real-world example\"). Use $...$ for inline math, $$...$$ for display. Aim for 200-400 words.>
+  "textExplanation": <markdown string — concise but complete. Use ## sub-headings ("What you're seeing", "How it works", "Why it matters", "Real-world example"). Aim for 200-400 words.>
 }
+
+CRITICAL JSON ESCAPING RULES for textExplanation:
+
+1. ALL backslashes MUST be doubled. \\\\rightarrow not \\rightarrow. JSON parses single-backslash sequences as control characters which destroys LaTeX.
+2. Prefer Unicode arrows / symbols inline when possible: → ⇌ ⇒ ≈ ≤ ≥ × ÷ — they don't need escaping.
+3. For inline math use $...$. For display math use $$...$$ on its own line. ALWAYS close every $ and $$ — an open math block consumes the rest of the answer.
+4. Math examples (note the doubled backslashes):
+   Correct: "$F = ma$"
+   Correct: "$$E = mc^2$$"
+   Correct: "$\\\\frac{1}{2}mv^2$"
+   WRONG:   "$\\frac{1}{2}mv^2$"   (single backslash → JSON control char)
+   WRONG:   "$\\rightarrow$"        (use → instead, or "$\\\\rightarrow$")
+5. Never wrap the whole answer in $$ ... $$. Only wrap actual equations.
 
 Lab matching guidance — set labRoute when the question's core topic matches one of these:
 ${Object.entries(KAIRO_LABS).map(([k, v]) => `  ${k}: ${v}`).join('\n')}
@@ -290,12 +304,19 @@ async function getSolverPlan(question) {
 
       const normalized = {
         questionType:    plan.questionType || 'general',
+        topicKeyword:    sanitizeOneLine(plan.topicKeyword || '') || null,
         supports3D:      !!plan.supports3D,
         labRoute,
-        textExplanation: plan.textExplanation,
-        formulas:        Array.isArray(plan.formulas) ? plan.formulas.slice(0, 8) : [],
-        relatedConcepts: Array.isArray(plan.relatedConcepts) ? plan.relatedConcepts.slice(0, 6) : [],
-        imageQueries:    Array.isArray(plan.imageQueries) ? plan.imageQueries.slice(0, 6) : [],
+        textExplanation: sanitizeMarkdown(plan.textExplanation),
+        formulas:        Array.isArray(plan.formulas)
+          ? plan.formulas.slice(0, 8).map(f => sanitizeOneLine(String(f)))
+          : [],
+        relatedConcepts: Array.isArray(plan.relatedConcepts)
+          ? plan.relatedConcepts.slice(0, 6).map(c => sanitizeOneLine(String(c)))
+          : [],
+        imageQueries:    Array.isArray(plan.imageQueries)
+          ? plan.imageQueries.slice(0, 6).map(q => sanitizeOneLine(String(q)))
+          : [],
         modelUsed:       model,
       }
       cacheSet(cacheKey, normalized)
@@ -345,9 +366,10 @@ router.post('/solver/images', async (req, res) => {
   const queries = Array.isArray(req.body?.queries)
     ? req.body.queries.filter(q => typeof q === 'string' && q.trim()).slice(0, 6)
     : []
-  // The original question — used as a guaranteed fallback so we can pull
-  // a Wikipedia article's full image set even when individual queries miss.
-  const topic = (req.body?.topic || req.body?.question || '').toString().trim()
+  // Prefer the AI-extracted topicKeyword (clean noun like "Photosynthesis")
+  // over the verbose question. Wikipedia's relevance algorithm misroutes
+  // long phrases like "photosynthesis step by step" to wrong articles.
+  const topic = (req.body?.topicKeyword || req.body?.topic || req.body?.question || '').toString().trim()
 
   // No queries provided? Fall back to question-based path (slower — runs LLM).
   if (queries.length === 0) {
@@ -405,6 +427,66 @@ router.post('/solver', async (req, res) => {
     res.status(code).json({ error: e.message })
   }
 })
+
+/**
+ * Repair LaTeX/markdown that came back through JSON.parse with single-backslash
+ * sequences interpreted as control chars. The classic example:
+ *
+ *   AI emits "$\rightarrow$"  →  JSON.parse turns \r into a CR  →  string becomes
+ *   "$<CR>ightarrow$" which renders as "ightarrow" with a stray carriage return.
+ *
+ * We restore the most common LaTeX commands by mapping the control char back
+ * to a backslash whenever it's followed by alpha characters.
+ *
+ * Also: drop any orphan trailing "$$" that has no matching opener — those eat
+ * the rest of the markdown and are a common AI mistake.
+ */
+function sanitizeMarkdown(s) {
+  if (!s || typeof s !== 'string') return ''
+  let out = s
+    // CR followed by letters: \rightarrow, \rho, \rangle, etc.
+    .replace(/\r([a-zA-Z])/g, '\\$1')
+    // Backspace followed by letters: \beta, \boxed, \bar, \binom, \bullet
+    .replace(/\x08([a-zA-Z])/g, '\\$1')
+    // Form-feed followed by letters: \frac, \forall, \frown
+    .replace(/\x0c([a-zA-Z])/g, '\\$1')
+    // Vertical tab: \vec, \varphi, \vee
+    .replace(/\x0b([a-zA-Z])/g, '\\$1')
+    // Stray null / control chars elsewhere — drop
+    .replace(/[\x00-\x08\x0b\x0c\x0e-\x1f]/g, '')
+
+  // Balance $$ blocks: if the count is odd, append a closing $$ on its own line.
+  const ddCount = (out.match(/\$\$/g) || []).length
+  if (ddCount % 2 === 1) out += '\n$$\n'
+
+  // Same for $: a stray single $ in the middle of prose tends to consume rest.
+  // Strip a lone $ that doesn't have a matching close in the same paragraph.
+  // Cheap heuristic: count $ inside each paragraph; if odd, neutralize the orphan.
+  out = out.split('\n\n').map(para => {
+    const dollars = (para.match(/\$/g) || []).length - (para.match(/\$\$/g) || []).length * 2
+    if (dollars % 2 === 1) {
+      // Strip the LAST orphan single $ in this paragraph
+      const idx = para.lastIndexOf('$')
+      if (idx >= 0) return para.slice(0, idx) + para.slice(idx + 1)
+    }
+    return para
+  }).join('\n\n')
+
+  return out
+}
+
+/** Same idea, but for short single-line strings (formulas, search queries). */
+function sanitizeOneLine(s) {
+  if (!s || typeof s !== 'string') return ''
+  return s
+    .replace(/\r([a-zA-Z])/g, '\\$1')
+    .replace(/\x08([a-zA-Z])/g, '\\$1')
+    .replace(/\x0c([a-zA-Z])/g, '\\$1')
+    .replace(/\x0b([a-zA-Z])/g, '\\$1')
+    .replace(/[\x00-\x1f]/g, ' ')
+    .trim()
+    .slice(0, 200)
+}
 
 /**
  * Some models prepend "```json" or trailing prose. This pulls out the first

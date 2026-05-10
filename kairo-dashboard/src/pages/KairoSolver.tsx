@@ -42,6 +42,7 @@ interface ImageSlide {
 
 interface TextPlan {
   questionType:    string
+  topicKeyword:    string | null  // clean noun for Wikipedia article lookup
   supports3D:      boolean
   labRoute:        string | null
   textExplanation: string
@@ -126,11 +127,16 @@ export default function KairoSolver({ onNavigate }: KairoSolverProps) {
       if (text.imageQueries.length === 0) return
 
       // Fetch images using the queries we already have — no LLM, fast.
-      // Also pass the topic (original question) so the backend can pull a
-      // Wikipedia article's media list as a guaranteed fallback batch.
+      // Pass the AI's clean topicKeyword (e.g. "Photosynthesis") for the
+      // Wikipedia article fallback so we don't misroute on the verbose
+      // question ("photosynthesis step by step" → "Climate change" article).
       const imgRes = await fetch('/api/ai/solver/images', {
         method: 'POST', headers,
-        body: JSON.stringify({ queries: text.imageQueries, topic: question }),
+        body: JSON.stringify({
+          queries:      text.imageQueries,
+          topicKeyword: text.topicKeyword,
+          topic:        question,
+        }),
         signal: ctrl.signal,
       })
       if (!imgRes.ok) {
