@@ -3,11 +3,17 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
+// VitePWA + Workbox is the single biggest memory consumer in the build pipeline.
+// Vercel's free/hobby tier gives ~4GB total — workbox alone can spike to 2GB+
+// during precache manifest generation, on top of Rollup/Rolldown's own usage.
+// Default to OFF on Vercel; flip ENABLE_PWA=true to opt back in (e.g. on Pro).
+const PWA_ENABLED = process.env.ENABLE_PWA === 'true'
+
 export default defineConfig({
   plugins: [
     react(),
     tailwindcss(),
-    VitePWA({
+    ...(PWA_ENABLED ? [VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['kairo_logo.png', 'favicon.svg'],
       manifest: {
@@ -29,12 +35,8 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,ico,woff2}'],
-        // Skip large model files — caching 17MB+ of GLBs would blow up the SW.
         globIgnores: ['**/models/**', '**/*.glb'],
-        // Bump the per-file precache cap so workbox doesn't choke on the
-        // Three.js chunk if it grows past 2MB.
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
-        // Don't cache API calls — always fresh
         navigateFallbackDenylist: [/^\/api/],
         runtimeCaching: [
           {
@@ -55,22 +57,18 @@ export default defineConfig({
             },
           },
           {
-            // Never cache /api — always go to network
             urlPattern: /\/api\//,
             handler: 'NetworkOnly',
           },
         ],
       },
       devOptions: { enabled: false },
-    }),
+    })] : []),
   ],
   build: {
     chunkSizeWarningLimit: 1500,
-    // Saves significant memory on Vercel's build VM
     sourcemap: false,
-    // Split the heavy 3D / markdown stacks into their own chunks so the
-    // bundler doesn't try to minify everything in one pass.
-    // (Vite 8 uses Rolldown — manualChunks must be a function, not an object.)
+    // Aggressive code-splitting keeps Rolldown's per-chunk peak memory low.
     rollupOptions: {
       output: {
         manualChunks: (id: string) => {
@@ -88,6 +86,7 @@ export default defineConfig({
           ) return 'markdown'
           if (id.includes('framer-motion')) return 'motion'
           if (id.includes('@supabase/')) return 'supabase'
+          if (id.includes('lucide-react')) return 'icons'
           return undefined
         },
       },
