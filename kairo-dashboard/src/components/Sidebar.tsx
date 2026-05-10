@@ -74,6 +74,7 @@ const ADMIN_NAV: NavItem[] = [
   { label: 'Admission Bot',   icon: Bot,         to: 'admission',       color: '#818cf8' },
   { label: 'Attendance',      icon: UserCheck,   to: 'attendance',      color: '#fbbf24' },
   { label: 'Timetable',       icon: Grid3x3,     to: 'timetable',       color: '#38bdf8' },
+  { label: 'Ops Dashboard',   icon: Activity,    to: 'ops',             color: '#34d399' },
 ]
 
 function navForRole(role?: string): { items: NavItem[]; label: string; icon: React.ElementType } {

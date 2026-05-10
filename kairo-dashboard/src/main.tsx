@@ -4,6 +4,40 @@ import './index.css'
 import App from './App.tsx'
 import { initPwa } from './lib/pwa'
 
+// ── Global error reporter ────────────────────────────────────────────────
+// Any unhandled exception or rejected promise gets POSTed to /api/ops/error
+// so it appears on the /ops dashboard (and to anything polling status).
+// Throttled so a runaway loop doesn't spam the endpoint.
+const REPORT_THROTTLE_MS = 5000
+let lastReportTs = 0
+function reportError(msg: string, extras: Record<string, any> = {}) {
+  const now = Date.now()
+  if (now - lastReportTs < REPORT_THROTTLE_MS) return
+  lastReportTs = now
+  fetch('/api/ops/error', {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      message:    msg,
+      page:       location.pathname + location.hash,
+      userAgent:  navigator.userAgent.slice(0, 200),
+      ...extras,
+    }),
+  }).catch(() => { /* swallow — never let the reporter throw */ })
+}
+window.addEventListener('error', (e) => {
+  reportError(e.message || 'window.error', {
+    source: e.filename, line: e.lineno, col: e.colno,
+    stack:  e.error?.stack,
+  })
+})
+window.addEventListener('unhandledrejection', (e: any) => {
+  const reason = e?.reason
+  reportError('Unhandled rejection: ' + (reason?.message || String(reason).slice(0, 200)), {
+    stack: reason?.stack,
+  })
+})
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <App />

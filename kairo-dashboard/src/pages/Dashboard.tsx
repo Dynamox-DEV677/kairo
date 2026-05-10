@@ -5,6 +5,7 @@ import MobileShell from '../components/MobileShell'
 import { useIsMobile } from '../hooks/useViewport'
 import ChatWindow from '../components/ChatWindow'
 import KairoSolver from './KairoSolver'
+import Ops from './Ops'
 import InsightPanel from '../components/InsightPanel'
 import Flashcards from './Flashcards'
 import StudyPlan from './StudyPlan'
@@ -51,6 +52,7 @@ type Profile = AuthProfile
 
 const PAGE_TITLES: Record<string, string> = {
   doubt:            "Kairo's Solver",
+  ops:              'Ops Dashboard',
   flashcards:       'Flashcards & SRS',
   'study-plan':     'Study Plan',
   essay:            'Grader',
@@ -294,6 +296,9 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
 
             {/* Knowledge Graph */}
             <div style={pageStyle('knowledge')}><KnowledgeGraph /></div>
+
+            {/* Ops Dashboard — live status, public JSON at /api/ops/status */}
+            <div style={pageStyle('ops')}><Ops /></div>
 
             {/* AI Teacher Assistant */}
             <div style={pageStyle('teacher-ai')}><TeacherAssistant /></div>

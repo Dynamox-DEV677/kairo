@@ -5,6 +5,9 @@ import { apiLimiter } from './middleware/rateLimit.js'
 // ── AI chat proxy (no auth — key stays server-side) ──────────────────────────
 import aiChatRoutes from './routes/aiChat.js'
 
+// ── Ops / status (public — Cowork & uptime monitors poll this) ───────────────
+import opsRoutes from './routes/ops.js'
+
 // ── v1 routes (fee reminder system) ───────────────────────────────────────────
 import credentialRoutes    from './routes/credentials.js'
 import studentRoutes       from './routes/students.js'
@@ -104,6 +107,7 @@ app.use((req, res, next) => {
 
 // v1 — Fee reminder system
 app.use('/api/ai',             aiChatRoutes)
+app.use('/api/ops',            opsRoutes)
 app.use('/api/credentials',    credentialRoutes)
 app.use('/api/students',       studentRoutes)
 app.use('/api/fees',           feeRoutes)
