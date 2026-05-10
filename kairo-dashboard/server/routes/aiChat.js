@@ -229,55 +229,87 @@ async function getSolverPlan(question) {
   const apiKey = process.env.OPENROUTER_API_KEY
   if (!apiKey) throw new Error('OPENROUTER_API_KEY not configured on server.')
 
-  const llmResp = await fetch(OR_URL, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${apiKey}`,
-      'Content-Type':  'application/json',
-      'HTTP-Referer':  process.env.ALLOWED_ORIGIN || 'https://kairo-daily-edu.vercel.app',
-      'X-Title':       'Kairo Solver',
-    },
-    body: JSON.stringify({
-      // gpt-oss-20b is ~3× faster than 120b on free tier — fits inside
-      // Vercel's 10s timeout much more reliably. Override via SOLVER_MODEL.
-      model:    process.env.SOLVER_MODEL || 'openai/gpt-oss-20b:free',
-      messages: [
-        { role: 'system', content: SOLVER_SYSTEM },
-        { role: 'user',   content: question },
-      ],
-      response_format: { type: 'json_object' },
-      temperature: 0.4,
-    }),
-  })
+  // Fallback chain — if the primary model is rate-limited or returns malformed
+  // output, try the next one. parseJsonLoose handles models that don't honour
+  // response_format=json_object by extracting the first balanced { ... }.
+  const FALLBACK_CHAIN = [
+    process.env.SOLVER_MODEL,                              // override (if set)
+    'openai/gpt-oss-20b:free',                             // fast, json-mode capable
+    'meta-llama/llama-3.3-70b-instruct:free',              // good json adherence
+    'google/gemma-4-31b-it:free',                          // small, fast
+    'openai/gpt-oss-120b:free',                            // smarter but slower (last resort)
+  ].filter(Boolean)
 
-  if (!llmResp.ok) {
-    const errText = await llmResp.text()
-    console.error('[solver] LLM error', llmResp.status, errText.slice(0, 300))
-    throw new Error('AI classifier failed.')
+  const lastError = { model: null, status: null, body: '' }
+  for (const model of FALLBACK_CHAIN) {
+    try {
+      const llmResp = await fetch(OR_URL, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type':  'application/json',
+          'HTTP-Referer':  process.env.ALLOWED_ORIGIN || 'https://kairo-daily-edu.vercel.app',
+          'X-Title':       'Kairo Solver',
+        },
+        // Drop response_format — not every model supports it on OpenRouter,
+        // and parseJsonLoose handles the fence-stripping anyway.
+        body: JSON.stringify({
+          model,
+          messages: [
+            { role: 'system', content: SOLVER_SYSTEM },
+            { role: 'user',   content: question },
+          ],
+          temperature: 0.3,
+          max_tokens:  1400,
+        }),
+      })
+
+      if (!llmResp.ok) {
+        const errText = await llmResp.text()
+        lastError.model = model
+        lastError.status = llmResp.status
+        lastError.body = errText.slice(0, 200)
+        console.warn('[solver] model', model, 'returned', llmResp.status)
+        continue   // try next model in chain
+      }
+
+      const llmData = await llmResp.json()
+      const raw = llmData?.choices?.[0]?.message?.content || ''
+      const plan = parseJsonLoose(raw)
+      if (!plan || !plan.textExplanation) {
+        lastError.model = model
+        lastError.status = 200
+        lastError.body = 'malformed JSON'
+        console.warn('[solver] model', model, 'returned malformed JSON, len=', raw.length)
+        continue
+      }
+
+      // Validate labRoute
+      let labRoute = plan.labRoute || null
+      if (labRoute && !KAIRO_LABS[labRoute]) labRoute = null
+
+      const normalized = {
+        questionType:    plan.questionType || 'general',
+        supports3D:      !!plan.supports3D,
+        labRoute,
+        textExplanation: plan.textExplanation,
+        formulas:        Array.isArray(plan.formulas) ? plan.formulas.slice(0, 8) : [],
+        relatedConcepts: Array.isArray(plan.relatedConcepts) ? plan.relatedConcepts.slice(0, 6) : [],
+        imageQueries:    Array.isArray(plan.imageQueries) ? plan.imageQueries.slice(0, 6) : [],
+        modelUsed:       model,
+      }
+      cacheSet(cacheKey, normalized)
+      return normalized
+    } catch (e) {
+      lastError.model = model
+      lastError.body = e.message
+      console.warn('[solver] model', model, 'threw:', e.message)
+      continue
+    }
   }
 
-  const llmData = await llmResp.json()
-  const raw = llmData?.choices?.[0]?.message?.content || ''
-  const plan = parseJsonLoose(raw)
-  if (!plan || !plan.textExplanation) {
-    throw new Error('AI returned malformed response.')
-  }
-
-  // Validate labRoute
-  let labRoute = plan.labRoute || null
-  if (labRoute && !KAIRO_LABS[labRoute]) labRoute = null
-
-  const normalized = {
-    questionType:    plan.questionType || 'general',
-    supports3D:      !!plan.supports3D,
-    labRoute,
-    textExplanation: plan.textExplanation,
-    formulas:        Array.isArray(plan.formulas) ? plan.formulas.slice(0, 8) : [],
-    relatedConcepts: Array.isArray(plan.relatedConcepts) ? plan.relatedConcepts.slice(0, 6) : [],
-    imageQueries:    Array.isArray(plan.imageQueries) ? plan.imageQueries.slice(0, 6) : [],
-  }
-  cacheSet(cacheKey, normalized)
-  return normalized
+  // Every model failed.
+  throw new Error(`All AI models failed. Last: ${lastError.model} (${lastError.status}) ${lastError.body}`)
 }
 
 // ────────────────────────────────────────────────────────────────────────────

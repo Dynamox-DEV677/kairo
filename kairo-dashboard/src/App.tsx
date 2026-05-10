@@ -51,11 +51,13 @@ export default function App() {
         const { data: { session } } = await supabase.auth.getSession()
 
         if (session) {
+          // maybeSingle() — no 406 when the row doesn't exist (auth user
+          // without a public.users profile, e.g. legacy or partial-signup).
           const { data: userRow } = await supabase
             .from('users')
             .select('id, name, role, school_id, avatar_url')
             .eq('id', session.user.id)
-            .single()
+            .maybeSingle()
 
           let school: any = null
           if (userRow?.school_id) {
@@ -63,7 +65,7 @@ export default function App() {
               .from('schools')
               .select('id, school_name, school_logo_url, school_email, plan')
               .eq('id', userRow.school_id)
-              .single()
+              .maybeSingle()
             school = s
           }
 
