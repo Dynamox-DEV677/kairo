@@ -78,6 +78,7 @@ export default function KairoSolver({ onNavigate }: KairoSolverProps) {
   const [topic, setTopic]               = useState('')
   const [resp, setResp]                 = useState<SolverResponse | null>(null)
   const [error, setError]               = useState('')
+  const [retryHint, setRetryHint]       = useState('')   // visible during 429 backoff
   const abortRef = useRef<AbortController | null>(null)
   const taRef = useRef<HTMLTextAreaElement>(null)
 
@@ -86,6 +87,7 @@ export default function KairoSolver({ onNavigate }: KairoSolverProps) {
     if (!question || busy) return
 
     setError('')
+    setRetryHint('')
     setResp(null)
     setTopic(question)
     setInput('')
@@ -98,29 +100,38 @@ export default function KairoSolver({ onNavigate }: KairoSolverProps) {
     // Sequential pipeline that fits Vercel's 10s timeout:
     //   1. /text  → LLM call only (~3-5s on gpt-oss-20b). Returns plan + queries.
     //   2. /images → pure image search using THOSE queries (~2-3s, no LLM).
-    // Total ~6-8s wall clock, but the user sees text within 3-5s and starts
-    // reading while images load.
     const headers = { 'Content-Type': 'application/json' }
 
-    try {
-      const textRes = await fetch('/api/ai/solver/text', {
+    // Auto-retry the /text call up to 2 times on 429 with a short backoff.
+    // OpenRouter's free pool throttles in seconds-long bursts, so a single
+    // wait+retry almost always succeeds.
+    async function fetchTextWithRetry(attempt = 0): Promise<TextPlan> {
+      const r = await fetch('/api/ai/solver/text', {
         method: 'POST', headers,
         body: JSON.stringify({ question }),
         signal: ctrl.signal,
       })
-      if (!textRes.ok) {
-        const e = await textRes.json().catch(() => ({}))
-        // Friendly message when free AI tier is throttled — don't dump
-        // raw HTTP 429 details on the student.
-        if (textRes.status === 429 || e.rateLimited) {
-          throw new Error(
-            "Free AI models are busy right now — usually clears in a minute. " +
-            "Tap Solve again, or try a different question."
-          )
-        }
-        throw new Error(e.error || `Text endpoint returned ${textRes.status}`)
+      if (r.ok) return r.json()
+      const errBody = await r.json().catch(() => ({}))
+      if ((r.status === 429 || errBody.rateLimited) && attempt < 2) {
+        const waitMs = 2500 + attempt * 2000   // 2.5s, then 4.5s
+        setRetryHint(`Free AI is busy — retrying in ${(waitMs / 1000).toFixed(1)}s…`)
+        await new Promise(res => setTimeout(res, waitMs))
+        setRetryHint('Retrying…')
+        if (ctrl.signal.aborted) throw new DOMException('aborted', 'AbortError')
+        return fetchTextWithRetry(attempt + 1)
       }
-      const text: TextPlan = await textRes.json()
+      if (r.status === 429 || errBody.rateLimited) {
+        throw new Error(
+          "Free AI is still busy. Try again in a minute, or ask a different question."
+        )
+      }
+      throw new Error(errBody.error || `Text endpoint returned ${r.status}`)
+    }
+
+    try {
+      const text = await fetchTextWithRetry()
+      setRetryHint('')
 
       // Paint text immediately, mark images as still loading
       setResp({
@@ -222,6 +233,7 @@ export default function KairoSolver({ onNavigate }: KairoSolverProps) {
             resp={resp}
             busy={busy && !resp}
             error={error}
+            retryHint={retryHint}
             onOpenLab={(route) => onNavigate?.('labs:' + route)}
             onAskRelated={(c) => ask(c)}
           />
@@ -526,10 +538,11 @@ function SlideshowSkeleton() {
 // ════════════════════════════════════════════════════════════════════════════
 // EXPLANATION PANEL — right
 // ════════════════════════════════════════════════════════════════════════════
-function ExplanationPanel({ resp, busy, error, onOpenLab, onAskRelated }: {
+function ExplanationPanel({ resp, busy, error, retryHint, onOpenLab, onAskRelated }: {
   resp: SolverResponse | null
   busy: boolean
   error: string
+  retryHint?: string
   onOpenLab: (route: string) => void
   onAskRelated: (concept: string) => void
 }) {
@@ -556,7 +569,7 @@ function ExplanationPanel({ resp, busy, error, onOpenLab, onAskRelated }: {
       </div>
 
       {/* Body */}
-      {busy && <ExplanationSkeleton />}
+      {busy && <ExplanationSkeleton retryHint={retryHint} />}
 
       {error && (
         <div style={{
@@ -668,7 +681,7 @@ function ExplanationPanel({ resp, busy, error, onOpenLab, onAskRelated }: {
   )
 }
 
-function ExplanationSkeleton() {
+function ExplanationSkeleton({ retryHint }: { retryHint?: string }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10, paddingTop: 4 }}>
       {[100, 92, 78, 96, 88].map((w, i) => (
@@ -679,9 +692,13 @@ function ExplanationSkeleton() {
         />
       ))}
       <div style={{ height: 10 }} />
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#52525b', fontSize: 11 }}>
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: 8,
+        color: retryHint ? '#fbbf24' : '#52525b',
+        fontSize: 11,
+      }}>
         <Loader2 size={12} style={{ animation: 'spin 0.8s linear infinite' }} />
-        Writing explanation…
+        {retryHint || 'Writing explanation…'}
       </div>
     </div>
   )

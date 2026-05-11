@@ -10,10 +10,11 @@ const router = express.Router()
 const OR_URL = 'https://openrouter.ai/api/v1/chat/completions'
 
 // In-memory cache for solver responses. Keyed by lowercased+trimmed question.
-// TTL = 1 hour. Caps at 100 entries (LRU-ish: oldest evicted on overflow).
+// 24h TTL + 300 entries: when free models are throttled, cached repeats sail
+// through unchanged. Cache survives the function's warm window on Vercel.
 const SOLVER_CACHE = new Map()
-const SOLVER_CACHE_TTL_MS = 60 * 60 * 1000
-const SOLVER_CACHE_MAX = 100
+const SOLVER_CACHE_TTL_MS = 24 * 60 * 60 * 1000
+const SOLVER_CACHE_MAX = 300
 
 function cacheGet(key) {
   const entry = SOLVER_CACHE.get(key)
@@ -278,47 +279,6 @@ async function callModel(model, question, apiKey, timeout = 7000) {
   }
 }
 
-/**
- * Call Gemini Flash directly — completely separate quota from OpenRouter, so
- * when OpenRouter free tier is rate-limited Gemini usually still works. Free
- * tier: 15 RPM / 1500 RPD per project.
- */
-async function callGemini(question, apiKey, timeout = 7000) {
-  const ctrl = new AbortController()
-  const timer = setTimeout(() => ctrl.abort(), timeout)
-  try {
-    const model = 'gemini-2.5-flash'
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`
-    const resp = await fetch(url, {
-      method: 'POST',
-      signal: ctrl.signal,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [
-          { role: 'user', parts: [{ text: `SYSTEM:\n${SOLVER_SYSTEM}\n\n---\n\nUSER QUESTION:\n${question}` }] },
-        ],
-        generationConfig: {
-          temperature: 0.3,
-          maxOutputTokens: 1400,
-          responseMimeType: 'application/json',
-        },
-      }),
-    })
-    if (!resp.ok) {
-      const t = await resp.text()
-      throw new Error(`gemini HTTP ${resp.status}: ${t.slice(0, 120)}`)
-    }
-    const data = await resp.json()
-    const raw = data?.candidates?.[0]?.content?.parts?.[0]?.text || ''
-    const plan = parseJsonLoose(raw)
-    if (!plan || !plan.textExplanation) {
-      throw new Error(`gemini malformed JSON (len=${raw.length})`)
-    }
-    return { plan, model: 'google/gemini-2.5-flash' }
-  } finally {
-    clearTimeout(timer)
-  }
-}
 
 async function getSolverPlan(question) {
   const cacheKey = 'plan:' + question.toLowerCase()
@@ -328,40 +288,33 @@ async function getSolverPlan(question) {
   const apiKey = process.env.OPENROUTER_API_KEY
   if (!apiKey) throw new Error('OPENROUTER_API_KEY not configured on server.')
 
-  // Race a wide pool of free models across TWO providers in parallel.
-  // OpenRouter free tier shares one global rate limit so all OpenRouter
-  // models can be 429'd at the same time — Gemini has a separate quota
-  // and usually picks up the slack.
+  // Race the full pool of free OpenRouter models in parallel. Promise.any
+  // resolves on the first model that returns valid JSON. Failures and
+  // per-call timeouts (7s) are ignored. Wall-clock max ~7s; usually 2-4s.
   const RACE_MODELS = [
     process.env.SOLVER_MODEL,                                // operator override
     'openai/gpt-oss-20b:free',
     'google/gemma-4-31b-it:free',
     'meta-llama/llama-3.3-70b-instruct:free',
-    'openai/gpt-oss-120b:free',
-    'nvidia/nemotron-3-super-120b-a12b:free',
     'qwen/qwen3-coder:free',
+    'nvidia/nemotron-3-super-120b-a12b:free',
+    'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',
+    'openai/gpt-oss-120b:free',
   ].filter(Boolean)
-
-  const tasks = RACE_MODELS.map(m => callModel(m, question, apiKey, 7000))
-
-  // Gemini Flash — separate quota from OpenRouter. Added if GEMINI_API_KEY
-  // is set (you already have it for image generation).
-  if (process.env.GEMINI_API_KEY) {
-    tasks.push(callGemini(question, process.env.GEMINI_API_KEY, 7000))
-  }
 
   let winner
   try {
-    winner = await Promise.any(tasks)
+    winner = await Promise.any(
+      RACE_MODELS.map(m => callModel(m, question, apiKey, 7000))
+    )
   } catch (aggregate) {
     const errs = aggregate.errors?.map(e => e.message).join(' · ') || 'unknown'
     console.error('[solver] all models failed:', errs)
 
-    // Detect "everything is 429" specifically so we can return a friendlier
-    // user-facing message + 429 status that the frontend can theme.
+    // Detect "everything is 429" so the frontend can show a soft retry hint.
     const all429 = aggregate.errors?.every(e => /HTTP 429/.test(e.message || ''))
     if (all429) {
-      const err = new Error('Free AI models are rate-limited right now. Wait a minute and try again, or add an OpenRouter paid key for unlimited use.')
+      const err = new Error('Free AI is busy right now — usually clears in a few seconds.')
       err.statusCode = 429
       throw err
     }
