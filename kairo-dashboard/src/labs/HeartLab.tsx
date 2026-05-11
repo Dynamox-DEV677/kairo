@@ -13,7 +13,7 @@ import LabShell from './LabShell'
 // Served from jsDelivr's CDN directly off the GitHub repo so the 12MB GLB
 // never has to ride along with the Vercel build. Free, fast, globally cached.
 const HEART_MODEL_URL = 'https://cdn.jsdelivr.net/gh/Dynamox-DEV677/kairo@main/models-cdn/beating-heart.glb'
-const TARGET_SIZE = 3.2   // fit the heart's longest axis to this many world units
+const TARGET_SIZE = 4.5   // fit the heart's longest VISIBLE axis to this many world units
 
 interface SimProps {
   params: { bpm: number }
@@ -68,6 +68,11 @@ function HeartModel({ bpm, playing }: { bpm: number; playing: boolean }) {
 
   // Clone, enable shadows, and fit to TARGET_SIZE so the heart is always
   // visible regardless of the GLB's native units.
+  //
+  // CRITICAL: many rigged GLBs have invisible bones / empty nodes that sit
+  // far from the mesh — Box3.setFromObject() includes them, which inflates
+  // the bounding box and makes the fit-factor tiny (heart-as-a-speck bug).
+  // We compute bounds from VISIBLE MESHES ONLY for an accurate fit.
   const { cloned, fitScale } = useMemo(() => {
     const c = scene.clone(true)
     c.traverse((obj: any) => {
@@ -79,16 +84,33 @@ function HeartModel({ bpm, playing }: { bpm: number; playing: boolean }) {
         }
       }
     })
-    // Measure & center
-    const box = new THREE.Box3().setFromObject(c)
+
+    // Compute bounds from meshes only — ignore bones/empties.
+    const meshBox = new THREE.Box3()
+    let meshCount = 0
+    c.traverse((obj: any) => {
+      if (obj.isMesh && obj.geometry) {
+        obj.geometry.computeBoundingBox?.()
+        const objBox = new THREE.Box3().setFromObject(obj)
+        meshBox.union(objBox)
+        meshCount++
+      }
+    })
+    // Fallback to full-scene bounds if we somehow found no meshes
+    const box = meshCount > 0 ? meshBox : new THREE.Box3().setFromObject(c)
     const size = new THREE.Vector3()
     box.getSize(size)
     const longest = Math.max(size.x, size.y, size.z) || 1
     const factor = TARGET_SIZE / longest
     c.scale.setScalar(factor)
-    box.setFromObject(c)
+
+    // Recompute mesh-only bounds AFTER scaling, then center
+    const scaledBox = new THREE.Box3()
+    c.traverse((obj: any) => {
+      if (obj.isMesh && obj.geometry) scaledBox.union(new THREE.Box3().setFromObject(obj))
+    })
     const center = new THREE.Vector3()
-    box.getCenter(center)
+    scaledBox.getCenter(center)
     c.position.sub(center)
     return { cloned: c, fitScale: factor }
   }, [scene])

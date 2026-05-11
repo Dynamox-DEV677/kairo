@@ -26,22 +26,39 @@ const APPLE_MODEL_URL = 'https://cdn.jsdelivr.net/gh/Dynamox-DEV677/kairo@main/m
 const TREE_HEIGHT = 6
 const APPLE_BRANCH_Y_OFFSET = 0.5  // apple sits slightly inside the foliage
 
-/** Clone a GLB scene and uniformly scale it so its longest axis equals targetSize. */
+/** Clone a GLB scene and uniformly scale it so its longest VISIBLE axis
+ *  equals targetSize. Bounds are computed from meshes only — rigged models
+ *  often have invisible bones/empties that inflate Box3.setFromObject() and
+ *  produce a fit-factor tiny enough to make the model a speck. */
 function useFittedClone(url: string, targetSize: number) {
   const { scene } = useGLTF(url)
   return useMemo(() => {
     const cloned = scene.clone(true)
     cloned.traverse((o: any) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true } })
-    const box = new THREE.Box3().setFromObject(cloned)
+
+    // Mesh-only bounds
+    const meshBox = new THREE.Box3()
+    let meshCount = 0
+    cloned.traverse((o: any) => {
+      if (o.isMesh && o.geometry) {
+        meshBox.union(new THREE.Box3().setFromObject(o))
+        meshCount++
+      }
+    })
+    const box = meshCount > 0 ? meshBox : new THREE.Box3().setFromObject(cloned)
     const size = new THREE.Vector3()
     box.getSize(size)
     const longest = Math.max(size.x, size.y, size.z) || 1
     const factor = targetSize / longest
     cloned.scale.setScalar(factor)
-    // Re-center on origin so the base of the tree is at y=0 / apple at center
-    box.setFromObject(cloned)
+
+    // Re-center on origin using mesh-only bounds again, post-scale.
+    const scaledBox = new THREE.Box3()
+    cloned.traverse((o: any) => {
+      if (o.isMesh && o.geometry) scaledBox.union(new THREE.Box3().setFromObject(o))
+    })
     const center = new THREE.Vector3()
-    box.getCenter(center)
+    scaledBox.getCenter(center)
     cloned.position.sub(center)
     return { cloned, fittedSize: size.clone().multiplyScalar(factor) }
   }, [scene, targetSize])
