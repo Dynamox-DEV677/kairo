@@ -238,15 +238,10 @@ CRITICAL: Output ONLY the JSON. Do not wrap in code fences. Do not say "Here is 
 /**
  * Call one specific OpenRouter model with a hard per-call timeout. Throws
  * on any failure so Promise.any can pick the first successful winner.
- *
- *   model    OpenRouter model id (e.g. "openai/gpt-oss-20b:free")
- *   question the user's question
- *   apiKey   OpenRouter key (already validated by caller)
- *   timeout  abort after this many ms (default 7000 — fits Vercel's 10s budget)
  */
 async function callModel(model, question, apiKey, timeout = 7000) {
   const ctrl = new AbortController()
-  const t = setTimeout(() => ctrl.abort(), timeout)
+  const timer = setTimeout(() => ctrl.abort(), timeout)
   try {
     const resp = await fetch(OR_URL, {
       method: 'POST',
@@ -279,7 +274,49 @@ async function callModel(model, question, apiKey, timeout = 7000) {
     }
     return { plan, model }
   } finally {
-    clearTimeout(t)
+    clearTimeout(timer)
+  }
+}
+
+/**
+ * Call Gemini Flash directly — completely separate quota from OpenRouter, so
+ * when OpenRouter free tier is rate-limited Gemini usually still works. Free
+ * tier: 15 RPM / 1500 RPD per project.
+ */
+async function callGemini(question, apiKey, timeout = 7000) {
+  const ctrl = new AbortController()
+  const timer = setTimeout(() => ctrl.abort(), timeout)
+  try {
+    const model = 'gemini-2.5-flash'
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`
+    const resp = await fetch(url, {
+      method: 'POST',
+      signal: ctrl.signal,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [
+          { role: 'user', parts: [{ text: `SYSTEM:\n${SOLVER_SYSTEM}\n\n---\n\nUSER QUESTION:\n${question}` }] },
+        ],
+        generationConfig: {
+          temperature: 0.3,
+          maxOutputTokens: 1400,
+          responseMimeType: 'application/json',
+        },
+      }),
+    })
+    if (!resp.ok) {
+      const t = await resp.text()
+      throw new Error(`gemini HTTP ${resp.status}: ${t.slice(0, 120)}`)
+    }
+    const data = await resp.json()
+    const raw = data?.candidates?.[0]?.content?.parts?.[0]?.text || ''
+    const plan = parseJsonLoose(raw)
+    if (!plan || !plan.textExplanation) {
+      throw new Error(`gemini malformed JSON (len=${raw.length})`)
+    }
+    return { plan, model: 'google/gemini-2.5-flash' }
+  } finally {
+    clearTimeout(timer)
   }
 }
 
@@ -291,23 +328,44 @@ async function getSolverPlan(question) {
   const apiKey = process.env.OPENROUTER_API_KEY
   if (!apiKey) throw new Error('OPENROUTER_API_KEY not configured on server.')
 
-  // Race three fast free models in parallel. Promise.any resolves on the
-  // first one to SUCCESS — failures and timeouts are ignored. This fits in
-  // 7s wall-clock max, well under Vercel's 10s function ceiling. Even if
-  // one model is rate-limited or slow, another usually wins.
+  // Race a wide pool of free models across TWO providers in parallel.
+  // OpenRouter free tier shares one global rate limit so all OpenRouter
+  // models can be 429'd at the same time — Gemini has a separate quota
+  // and usually picks up the slack.
   const RACE_MODELS = [
-    process.env.SOLVER_MODEL,                      // operator override
+    process.env.SOLVER_MODEL,                                // operator override
     'openai/gpt-oss-20b:free',
     'google/gemma-4-31b-it:free',
     'meta-llama/llama-3.3-70b-instruct:free',
+    'openai/gpt-oss-120b:free',
+    'nvidia/nemotron-3-super-120b-a12b:free',
+    'qwen/qwen3-coder:free',
   ].filter(Boolean)
+
+  const tasks = RACE_MODELS.map(m => callModel(m, question, apiKey, 7000))
+
+  // Gemini Flash — separate quota from OpenRouter. Added if GEMINI_API_KEY
+  // is set (you already have it for image generation).
+  if (process.env.GEMINI_API_KEY) {
+    tasks.push(callGemini(question, process.env.GEMINI_API_KEY, 7000))
+  }
 
   let winner
   try {
-    winner = await Promise.any(RACE_MODELS.map(m => callModel(m, question, apiKey, 7000)))
+    winner = await Promise.any(tasks)
   } catch (aggregate) {
     const errs = aggregate.errors?.map(e => e.message).join(' · ') || 'unknown'
     console.error('[solver] all models failed:', errs)
+
+    // Detect "everything is 429" specifically so we can return a friendlier
+    // user-facing message + 429 status that the frontend can theme.
+    const all429 = aggregate.errors?.every(e => /HTTP 429/.test(e.message || ''))
+    if (all429) {
+      const err = new Error('Free AI models are rate-limited right now. Wait a minute and try again, or add an OpenRouter paid key for unlimited use.')
+      err.statusCode = 429
+      throw err
+    }
+
     throw new Error('All AI models failed: ' + errs.slice(0, 300))
   }
 
@@ -349,13 +407,14 @@ router.post('/solver/text', async (req, res) => {
 
   try {
     const plan = await getSolverPlan(question)
-    // Ship imageQueries TO the client now — frontend hands them to /images
-    // so /images doesn't have to redo the LLM call (that's what was 504-ing).
     res.json(plan)
   } catch (e) {
     console.error('[solver/text]', e.message)
-    const code = e.message.includes('not configured') ? 503 : 502
-    res.status(code).json({ error: e.message })
+    // Preserve 429 (rate limited) so the UI can render a friendly retry hint;
+    // 503 if env not configured; everything else is upstream failure → 502.
+    const code = e.statusCode
+      || (e.message.includes('not configured') ? 503 : 502)
+    res.status(code).json({ error: e.message, rateLimited: code === 429 })
   }
 })
 

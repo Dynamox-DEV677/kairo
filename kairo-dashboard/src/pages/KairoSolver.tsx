@@ -110,6 +110,14 @@ export default function KairoSolver({ onNavigate }: KairoSolverProps) {
       })
       if (!textRes.ok) {
         const e = await textRes.json().catch(() => ({}))
+        // Friendly message when free AI tier is throttled — don't dump
+        // raw HTTP 429 details on the student.
+        if (textRes.status === 429 || e.rateLimited) {
+          throw new Error(
+            "Free AI models are busy right now — usually clears in a minute. " +
+            "Tap Solve again, or try a different question."
+          )
+        }
         throw new Error(e.error || `Text endpoint returned ${textRes.status}`)
       }
       const text: TextPlan = await textRes.json()
