@@ -6,7 +6,7 @@ import { useState, useEffect, lazy, Suspense } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Beaker, Atom, Heart, Activity, Sparkles, Lock,
-  ArrowRight, Loader2,
+  ArrowRight, Loader2, Brain, Eye, Globe, Dna,
 } from 'lucide-react'
 
 // Lazy-load each R3F lab — only fetched when student opens it.
@@ -22,12 +22,16 @@ const HeartLab      = lazy(() => import('../labs/HeartLab'))
 const CellLab       = lazy(() => import('../labs/CellLab'))
 const VectorsLab    = lazy(() => import('../labs/VectorsLab'))
 const GraphsLab     = lazy(() => import('../labs/GraphsLab'))
+const DnaLab        = lazy(() => import('../labs/DnaLab'))
+const BrainLab      = lazy(() => import('../labs/BrainLab'))
+const EyeLab        = lazy(() => import('../labs/EyeLab'))
+const SolarSystemLab = lazy(() => import('../labs/SolarSystemLab'))
 
 interface Lab {
   id:        string
   title:     string
   topic:     string
-  subject:   'Physics' | 'Chemistry' | 'Biology' | 'Math'
+  subject:   'Physics' | 'Chemistry' | 'Biology' | 'Math' | 'Space'
   desc:      string
   icon:      any
   ready:     boolean
@@ -97,15 +101,39 @@ const LABS: Lab[] = [
     subject: 'Math', icon: Sparkles, ready: true, Component: GraphsLab,
     desc: '5 preset functions plotted as 3D surfaces. Color-coded by height.',
   },
+
+  // ─── Biology — new ───────────────────────────────────────────────────────
+  {
+    id: 'dna', title: 'DNA Double Helix', topic: 'Genetics',
+    subject: 'Biology', icon: Dna, ready: true, Component: DnaLab,
+    desc: 'Click any base (A·T·G·C) or backbone strand. See A-T (2 H-bonds) vs G-C (3 H-bonds).',
+  },
+  {
+    id: 'brain', title: 'Human Brain', topic: 'Nervous System',
+    subject: 'Biology', icon: Brain, ready: true, Component: BrainLab,
+    desc: 'Click the 4 lobes + cerebellum + brainstem. See what each region controls.',
+  },
+  {
+    id: 'eye', title: 'Human Eye', topic: 'Sense Organs',
+    subject: 'Biology', icon: Eye, ready: true, Component: EyeLab,
+    desc: 'Cross-section eye. Click the cornea, iris, lens, retina, optic nerve.',
+  },
+
+  // ─── Space ──────────────────────────────────────────────────────────────
+  {
+    id: 'solar', title: 'Solar System', topic: 'Astronomy',
+    subject: 'Space', icon: Globe, ready: true, Component: SolarSystemLab,
+    desc: '8 planets orbiting the Sun. Click any body to learn what makes it unique.',
+  },
 ]
 
 const SUBJECT_COLORS: Record<string, string> = {
-  Physics: '#818cf8', Chemistry: '#34d399', Biology: '#f472b6', Math: '#fbbf24',
+  Physics: '#818cf8', Chemistry: '#34d399', Biology: '#f472b6', Math: '#fbbf24', Space: '#a78bfa',
 }
 
 export default function KairoLabs() {
   const [activeLab, setActive] = useState<Lab | null>(null)
-  const [filter, setFilter]    = useState<'all' | 'Physics' | 'Chemistry' | 'Biology' | 'Math'>('all')
+  const [filter, setFilter]    = useState<'all' | 'Physics' | 'Chemistry' | 'Biology' | 'Math' | 'Space'>('all')
 
   // Listen for "open this lab" events from Kairo's Solver
   useEffect(() => {
@@ -165,6 +193,7 @@ export default function KairoLabs() {
           { id: 'Chemistry', label: 'Chemistry', color: SUBJECT_COLORS.Chemistry },
           { id: 'Biology',   label: 'Biology',   color: SUBJECT_COLORS.Biology },
           { id: 'Math',      label: 'Math',      color: SUBJECT_COLORS.Math },
+          { id: 'Space',     label: 'Space',     color: SUBJECT_COLORS.Space },
         ] as const).map(t => {
           const active = filter === t.id
           return (

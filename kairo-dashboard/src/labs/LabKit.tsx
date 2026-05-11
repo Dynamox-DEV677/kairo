@@ -311,6 +311,14 @@ function InteractiveModel({
 // ════════════════════════════════════════════════════════════════════════════
 // Standard overlay components — reuse across every lab for identity
 // ════════════════════════════════════════════════════════════════════════════
+export function PartHoverChip({ hovered, selected, catalog }: { hovered: string | null; selected: string | null; catalog: PartCatalog }) {
+  return <HoverChip hovered={hovered} selected={selected} catalog={catalog} />
+}
+export function PartIdleHint({ hovered, selected, hint }: { hovered: string | null; selected: string | null; hint?: string }) {
+  return <IdleHint hovered={hovered} selected={selected} hint={hint} />
+}
+export { PartInfoCard }
+
 function HoverChip({ hovered, selected, catalog }: any) {
   return (
     <AnimatePresence>
