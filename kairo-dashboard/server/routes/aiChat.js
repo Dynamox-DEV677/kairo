@@ -208,6 +208,7 @@ Your output MUST be a single valid JSON object (no markdown fences, no commentar
   "supports3D":     boolean,
   "labRoute":       null | one of: ${Object.keys(KAIRO_LABS).map(k => `"${k}"`).join(' | ')},
   "imageQueries":   [<5 short web-search queries for educational images, in NARRATIVE order — like a 5-slide storyboard that builds the concept from intro → mechanism → equation → real-world example. Include named figures, specific objects, concrete nouns. NOT abstract.>],
+  "videoQuery":     <ONE short search query for an educational explainer video, e.g. "photosynthesis 3D animation for students" or "French Revolution causes documentary". Aim for content-creator style queries that find well-produced 5-10 minute lessons. Required>,
   "formulas":       [<key formulas as plain LaTeX strings, e.g. "F = ma" — empty array if N/A>],
   "relatedConcepts":[<3-5 related topics or follow-up questions, short strings>],
   "textExplanation": <markdown string — concise but complete. Use ## sub-headings ("What you're seeing", "How it works", "Why it matters", "Real-world example"). Aim for 200-400 words.>
@@ -356,6 +357,7 @@ async function getSolverPlan(question) {
     imageQueries:    Array.isArray(plan.imageQueries)
       ? plan.imageQueries.slice(0, 6).map(q => sanitizeOneLine(String(q)))
       : [],
+    videoQuery:      sanitizeOneLine(plan.videoQuery || plan.topicKeyword || ''),
     modelUsed:       model,
   }
   cacheSet(cacheKey, normalized)
@@ -437,6 +439,63 @@ router.post('/solver/images', async (req, res) => {
 })
 
 // ────────────────────────────────────────────────────────────────────────────
+// /api/ai/solver/video — find one educational video for the topic.
+// No API key — scrapes the public search results page for the first video ID.
+// Cached 24h. Frontend embeds it via youtube-nocookie + modestbranding so it
+// reads as "the Kairo lesson video" rather than a third-party embed.
+// ────────────────────────────────────────────────────────────────────────────
+router.post('/solver/video', async (req, res) => {
+  const query = (req.body?.query || req.body?.topicKeyword || req.body?.question || '').toString().trim()
+  if (!query) return res.status(400).json({ error: 'query required' })
+
+  const cacheKey = 'video:' + query.toLowerCase()
+  const cached = cacheGet(cacheKey)
+  if (cached !== null && cached !== undefined) return res.json({ ...cached, cached: true })
+
+  try {
+    const videoId = await findEducationalVideoId(query)
+    const payload = { videoId, cached: false }
+    cacheSet(cacheKey, { videoId })
+    res.json(payload)
+  } catch (e) {
+    console.warn('[solver/video]', e.message)
+    res.json({ videoId: null, error: e.message })
+  }
+})
+
+/**
+ * Scrape the first reasonable-looking video ID from a search results page.
+ * No API key required — uses the public HTML search endpoint. Results are
+ * keyed by ytInitialData embedded in the page.
+ */
+async function findEducationalVideoId(query) {
+  const enriched = query + ' educational explanation for students'
+  const url = `https://www.youtube.com/results?search_query=${encodeURIComponent(enriched)}`
+  const r = await fetch(url, {
+    headers: {
+      'User-Agent':      'Mozilla/5.0 (compatible; KairoEdu/1.0)',
+      'Accept-Language': 'en-US,en;q=0.9',
+    },
+  })
+  if (!r.ok) return null
+  const html = await r.text()
+
+  // The page contains many "videoId":"<ID>" strings. The first few are the
+  // top results. Pick the first one that isn't an obvious short/ad placeholder.
+  const ids = []
+  const re = /"videoId":"([a-zA-Z0-9_-]{11})"/g
+  let m
+  while ((m = re.exec(html)) !== null && ids.length < 10) {
+    if (!ids.includes(m[1])) ids.push(m[1])
+  }
+  if (ids.length === 0) return null
+
+  // Prefer videos that aren't already in the cache as known-bad (future use).
+  // For now just return the first hit — search results are already ranked.
+  return ids[0]
+}
+
+// ────────────────────────────────────────────────────────────────────────────
 // /api/ai/solver — legacy combined endpoint, kept for backwards compat.
 // New frontend code should use /solver/text + /solver/images in parallel.
 // This endpoint is timeout-prone on Vercel Hobby — see memory:vercel_timeouts.
@@ -458,18 +517,46 @@ router.post('/solver', async (req, res) => {
   }
 })
 
+// Strip filler words that make Wikipedia search match the wrong article.
+// "Photosynthesis step by step" → "photosynthesis" so the relevance
+// algorithm doesn't fixate on "step" and drag us to "The Natural Step".
+function cleanQuestionForSearch(q) {
+  return q
+    .toLowerCase()
+    .replace(/\b(step[s]? by step|step[- ]?by[- ]?step)\b/g, '')
+    .replace(/\b(explain|describe|tell me about|what is|what are|how does|how do|why is|why does|can you|please)\b/g, '')
+    .replace(/\b(in detail|in depth|for class \d+|for students|simple terms|simply)\b/g, '')
+    .replace(/[?.,!]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+async function wikiSearchFirstTitle(query) {
+  if (!query) return null
+  try {
+    const url = `https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=${encodeURIComponent(query)}&srlimit=1&origin=*`
+    const r = await fetch(url, { headers: { 'User-Agent': 'KairoEdu/1.0' } })
+    if (!r.ok) return null
+    const d = await r.json()
+    return d?.query?.search?.[0]?.title || null
+  } catch { return null }
+}
+
 /**
  * GRACEFUL DEGRADE: build a solver plan from Wikipedia when every AI model
  * fails (rate limited, provider down, etc.). Student gets a real answer
  * sourced from the article — kept short, with a clear "AI was busy" prefix.
  */
 async function synthesizePlanFromWikipedia(question) {
-  // 1. Search Wikipedia for the best article match.
-  const searchUrl = `https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=${encodeURIComponent(question)}&srlimit=1&origin=*`
-  const sr = await fetch(searchUrl, { headers: { 'User-Agent': 'KairoEdu/1.0' } })
-  if (!sr.ok) return null
-  const sdata = await sr.json()
-  const title = sdata?.query?.search?.[0]?.title
+  // Strip filler words so the Wikipedia search matches on the actual topic.
+  // "Photosynthesis step by step" was matching "The Natural Step" article
+  // because "step" got too much relevance weight.
+  const cleaned = cleanQuestionForSearch(question)
+
+  // 1. Search Wikipedia — try the cleaned form first, fall back to the raw
+  //    question if cleaning stripped too much.
+  let title = await wikiSearchFirstTitle(cleaned)
+  if (!title) title = await wikiSearchFirstTitle(question)
   if (!title) return null
 
   // 2. Get the article summary.
@@ -507,6 +594,7 @@ async function synthesizePlanFromWikipedia(question) {
     formulas:        [],
     relatedConcepts: [],
     imageQueries:    [title],
+    videoQuery:      title + ' explained',
     modelUsed:       'wikipedia-fallback',
   }
 }

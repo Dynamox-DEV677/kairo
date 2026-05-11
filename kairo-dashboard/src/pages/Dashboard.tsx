@@ -107,6 +107,9 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
   const [lastQuestion, setLastQuestion] = useState('')
   const [hasContent, setHasContent]   = useState(false)
   const [selectedModel, setSelectedModel] = useState(DEFAULT_MODEL)
+  // Locked while a Kairo's Solver answer is on screen — context belongs to
+  // the model that produced it. Cleared on "new chat" (next ask() call).
+  const [solverActive, setSolverActive] = useState(false)
 
   // Expose setActive to other pages (used by Adaptive Path's "jump to feature" buttons)
   useEffect(() => {
@@ -175,7 +178,13 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
             onLogout={onLogout}
           />
         ) : (
-          <TopBar title={PAGE_TITLES[active] || 'Dashboard'} onModelChange={setSelectedModel} profile={profile} />
+          <TopBar
+            title={PAGE_TITLES[active] || 'Dashboard'}
+            onModelChange={setSelectedModel}
+            profile={profile}
+            modelLocked={active === 'doubt' && solverActive}
+            modelLockReason="Model locked — this chat's answer was generated with the current model. Start a new question to switch."
+          />
         )}
 
         <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
@@ -185,6 +194,7 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
             <div style={pageStyle('doubt')}>
               <KairoSolver
                 model={selectedModel}
+                onActiveChange={setSolverActive}
                 onNavigate={(target) => {
                   // "labs:gravity" -> jump to labs page + dispatch event so the
                   // KairoLabs page knows which lab to open.

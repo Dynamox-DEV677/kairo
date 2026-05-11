@@ -50,6 +50,7 @@ interface TextPlan {
   relatedConcepts: string[]
   cached?:         boolean
   imageQueries:    string[]   // backend now ships these so /images skips the LLM call
+  videoQuery?:     string     // search query for the explainer video
   modelUsed?:      string     // 'wikipedia-fallback' when AI was unavailable
 }
 
@@ -58,11 +59,16 @@ interface SolverResponse extends TextPlan {
   imagesBusy:      boolean       // true while images are still loading
   imagesCached:    boolean
   imagesError?:    string
+  videoId:         string | null
+  videoBusy:       boolean       // true while video search is in flight
 }
 
 interface KairoSolverProps {
   model?: string
   onNavigate?: (page: string) => void
+  /** Fired with true once a question is asked (locks model selector),
+   *  false when the user clears or starts a fresh question. */
+  onActiveChange?: (active: boolean) => void
 }
 
 const SUGGESTIONS = [
@@ -73,7 +79,7 @@ const SUGGESTIONS = [
   'Solve x² - 5x + 6 = 0',
 ]
 
-export default function KairoSolver({ onNavigate }: KairoSolverProps) {
+export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverProps) {
   const [input, setInput]               = useState('')
   const [busy, setBusy]                 = useState(false)
   const [topic, setTopic]               = useState('')
@@ -93,6 +99,7 @@ export default function KairoSolver({ onNavigate }: KairoSolverProps) {
     setTopic(question)
     setInput('')
     setBusy(true)
+    onActiveChange?.(true)   // lock model selector
     if (taRef.current) taRef.current.style.height = 'auto'
 
     const ctrl = new AbortController()
@@ -134,14 +141,33 @@ export default function KairoSolver({ onNavigate }: KairoSolverProps) {
       const text = await fetchTextWithRetry()
       setRetryHint('')
 
-      // Paint text immediately, mark images as still loading
+      // Kick off the video search in parallel — it doesn't depend on images.
+      const videoPromise = fetch('/api/ai/solver/video', {
+        method: 'POST', headers,
+        body: JSON.stringify({
+          query:        text.videoQuery || text.topicKeyword || question,
+          topicKeyword: text.topicKeyword,
+        }),
+        signal: ctrl.signal,
+      })
+        .then(r => r.ok ? r.json() : { videoId: null })
+        .catch(() => ({ videoId: null }))
+
+      // Paint text immediately, mark images + video as still loading
       setResp({
         ...text,
         imageSlides: [],
         imagesBusy:  text.imageQueries.length > 0,
         imagesCached: false,
+        videoId:     null,
+        videoBusy:   true,
       })
       setBusy(false)   // unlock input — user can keep reading
+
+      // When the video lands, merge it in (independent of images).
+      videoPromise.then((v: any) => {
+        setResp(prev => prev ? { ...prev, videoId: v?.videoId || null, videoBusy: false } : prev)
+      })
 
       // No queries? skip the second call entirely.
       if (text.imageQueries.length === 0) return
@@ -220,13 +246,15 @@ export default function KairoSolver({ onNavigate }: KairoSolverProps) {
           gridTemplateColumns: 'minmax(0, 1.4fr) minmax(0, 1fr)',
           gap: 14, paddingBottom: 14,
         }}>
-          {/* LEFT — slideshow (busy until text arrives OR images arrive) */}
-          <Slideshow
+          {/* LEFT — video on top, slideshow strip below */}
+          <LeftPanel
+            videoId={resp?.videoId ?? null}
+            videoBusy={resp?.videoBusy === true}
             slides={resp?.imageSlides || []}
-            busy={(busy && !resp) || resp?.imagesBusy === true}
+            imagesBusy={(busy && !resp) || resp?.imagesBusy === true}
             topic={topic}
             questionType={resp?.questionType}
-            err={resp?.imagesError}
+            imagesErr={resp?.imagesError}
           />
 
           {/* RIGHT — explanation */}
@@ -331,10 +359,119 @@ function Hero({ onPick }: { onPick: (q: string) => void }) {
 }
 
 // ════════════════════════════════════════════════════════════════════════════
-// SLIDESHOW — left panel
+// LEFT PANEL — video player (top) + slideshow strip (bottom)
 // ════════════════════════════════════════════════════════════════════════════
-function Slideshow({ slides, busy, topic, questionType, err }: {
-  slides: ImageSlide[]; busy: boolean; topic: string; questionType?: string; err?: string
+function LeftPanel({
+  videoId, videoBusy,
+  slides, imagesBusy, topic, questionType, imagesErr,
+}: {
+  videoId:    string | null
+  videoBusy:  boolean
+  slides:     ImageSlide[]
+  imagesBusy: boolean
+  topic:      string
+  questionType?: string
+  imagesErr?: string
+}) {
+  return (
+    <div style={{
+      display: 'grid',
+      gridTemplateRows: 'minmax(0, 2.2fr) minmax(0, 1fr)',
+      gap: 12, minHeight: 0,
+    }}>
+      <VideoPlayer videoId={videoId} busy={videoBusy} topic={topic} />
+      <Slideshow
+        slides={slides} busy={imagesBusy} topic={topic}
+        questionType={questionType} err={imagesErr}
+        compact
+      />
+    </div>
+  )
+}
+
+function VideoPlayer({ videoId, busy, topic }: {
+  videoId: string | null; busy: boolean; topic: string
+}) {
+  return (
+    <div style={{
+      background: '#000', border: '1px solid #1e1e1e',
+      borderRadius: 18, overflow: 'hidden', position: 'relative',
+      minHeight: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
+    }}>
+      {/* Topic chip — "Kairo Lesson" framing, doesn't name the source */}
+      <div style={{
+        position: 'absolute', top: 12, left: 14, zIndex: 4,
+        padding: '6px 12px', borderRadius: 7,
+        background: 'rgba(13,13,13,0.85)', backdropFilter: 'blur(12px)',
+        border: '1px solid rgba(99,102,241,0.3)',
+        fontSize: 10.5, color: '#a5b4fc', fontWeight: 700,
+        textTransform: 'uppercase', letterSpacing: 1.5,
+        maxWidth: '70%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+        display: 'flex', alignItems: 'center', gap: 6,
+      }}>
+        <Sparkles size={11} /> Kairo lesson · {topic}
+      </div>
+
+      {busy && (
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, color: '#a1a1aa' }}>
+          <motion.div
+            animate={{ scale: [1, 1.08, 1] }}
+            transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
+            style={{
+              width: 52, height: 52, borderRadius: 13,
+              background: 'linear-gradient(135deg, #6366f1, #ec4899)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+            <Loader2 size={22} color="#fff" style={{ animation: 'spin 0.8s linear infinite' }} />
+          </motion.div>
+          <div style={{ fontSize: 12.5, fontWeight: 600 }}>Loading lesson video…</div>
+        </div>
+      )}
+
+      {!busy && !videoId && (
+        <div style={{ color: '#52525b', fontSize: 12.5, padding: 16, textAlign: 'center' }}>
+          No video available for this topic — the slideshow below has visuals.
+        </div>
+      )}
+
+      {videoId && (
+        <>
+          <iframe
+            // youtube-nocookie + modestbranding + rel=0 keeps branding minimal.
+            // autoplay=1 with mute=1 is allowed by all browsers' autoplay policies.
+            src={`https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&mute=1&modestbranding=1&rel=0&controls=1&playsinline=1&iv_load_policy=3`}
+            title="Lesson video"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+            style={{
+              width: '100%', height: '100%',
+              border: 'none', borderRadius: 0,
+            }}
+          />
+          {/* Subtle top-right Kairo overlay — visually reframes the player.
+              Does NOT cover playback controls or the video itself. */}
+          <div style={{
+            position: 'absolute', bottom: 8, right: 12, zIndex: 4,
+            padding: '3px 8px', borderRadius: 5,
+            background: 'rgba(13,13,13,0.6)', backdropFilter: 'blur(8px)',
+            border: '1px solid rgba(99,102,241,0.25)',
+            fontSize: 9, color: '#a5b4fc', fontWeight: 700,
+            textTransform: 'uppercase', letterSpacing: 1,
+            pointerEvents: 'none',
+          }}>
+            Kairo
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// SLIDESHOW — bottom strip
+// ════════════════════════════════════════════════════════════════════════════
+function Slideshow({ slides, busy, topic, questionType, err, compact = false }: {
+  slides: ImageSlide[]; busy: boolean; topic: string; questionType?: string; err?: string; compact?: boolean
 }) {
   const [idx, setIdx] = useState(0)
   const containerRef = useRef<HTMLDivElement>(null)

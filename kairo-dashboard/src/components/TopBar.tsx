@@ -38,9 +38,11 @@ interface TopBarProps {
   title: string
   onModelChange?: (modelId: string) => void
   profile?: ProfileLike
+  modelLocked?: boolean
+  modelLockReason?: string
 }
 
-export default function TopBar({ title, onModelChange, profile }: TopBarProps) {
+export default function TopBar({ title, onModelChange, profile, modelLocked, modelLockReason }: TopBarProps) {
   const [modelOpen, setModelOpen] = useState(false)
   const [modeOpen, setModeOpen] = useState(false)
   const [model, setModel] = useState(MODELS[0])
@@ -239,22 +241,38 @@ export default function TopBar({ title, onModelChange, profile }: TopBarProps) {
         {/* Divider */}
         <div style={{ width: 1, height: 20, background: '#1e1e1e' }} />
 
-        {/* Model selector */}
-        <div style={{ position: 'relative' }}>
+        {/* Model selector — locked when an active solver session is on screen
+            because the answer was generated against a specific model and
+            switching mid-thread would break the context. */}
+        <div style={{ position: 'relative' }} title={modelLocked ? (modelLockReason || 'Model locked for this chat') : undefined}>
           <motion.button
-            whileHover={{ scale: 1.02 }}
-            onClick={() => { setModelOpen(o => !o); setModeOpen(false) }}
+            whileHover={{ scale: modelLocked ? 1 : 1.02 }}
+            onClick={() => {
+              if (modelLocked) return
+              setModelOpen(o => !o); setModeOpen(false)
+            }}
             style={{
               display: 'flex', alignItems: 'center', gap: 7,
               padding: '6px 11px', borderRadius: 7,
-              background: '#161616', border: '1px solid #1e1e1e',
-              cursor: 'pointer', fontFamily: 'inherit', fontSize: 12,
+              background: '#161616', border: `1px solid ${modelLocked ? 'rgba(251,191,36,0.35)' : '#1e1e1e'}`,
+              cursor: modelLocked ? 'not-allowed' : 'pointer',
+              fontFamily: 'inherit', fontSize: 12,
+              opacity: modelLocked ? 0.72 : 1,
             }}
           >
             <span style={{ width: 6, height: 6, borderRadius: '50%', background: model.color, boxShadow: `0 0 5px ${model.color}`, flexShrink: 0 }} />
             <span style={{ color: '#71717a', fontSize: 10, fontWeight: 600 }}>{model.provider}</span>
             <span style={{ color: '#fafafa', fontWeight: 500 }}>{model.name}</span>
-            <ChevronDown size={11} color="#52525b" style={{ transform: modelOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }} />
+            {modelLocked ? (
+              <span title={modelLockReason} style={{ display: 'flex', alignItems: 'center' }}>
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+              </span>
+            ) : (
+              <ChevronDown size={11} color="#52525b" style={{ transform: modelOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }} />
+            )}
           </motion.button>
 
           <AnimatePresence>
