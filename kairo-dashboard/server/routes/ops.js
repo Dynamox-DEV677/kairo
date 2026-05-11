@@ -137,6 +137,126 @@ router.get('/health', (_req, res) => {
   res.json({ ok: true, ts: Date.now() })
 })
 
+// ─── /api/ops/diagnose — deeper "is anything actually broken?" check ───────
+// Jarvis (or any monitor) hits this to get a structured punch list. Probes:
+//   - Every GLB model URL (HEAD)
+//   - Solver text endpoint with a tiny canned question (POST + latency)
+//   - Solver images endpoint with the resulting queries (POST + latency)
+//   - DB reachable (count(users))
+//   - Each required env var present
+// Returns: { checks: [...], summary: 'N ok, M degraded, K failed' }
+router.get('/diagnose', async (_req, res) => {
+  const start = Date.now()
+  const checks = []
+  const push = (name, status, details = '', latencyMs) =>
+    checks.push({ name, status, details, latencyMs })
+
+  // ── Env checks ───────────────────────────────────────────────────────────
+  const REQUIRED_ENV = [
+    'SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY', 'OPENROUTER_API_KEY',
+  ]
+  for (const key of REQUIRED_ENV) {
+    if (process.env[key] || process.env['VITE_' + key]) {
+      push(`env: ${key}`, 'ok')
+    } else {
+      push(`env: ${key}`, 'failed', 'missing — feature dependent on this key will 503')
+    }
+  }
+
+  // ── GLB models reachable? ────────────────────────────────────────────────
+  const GLBS = [
+    'https://cdn.jsdelivr.net/gh/Dynamox-DEV677/kairo@main/models-cdn/beating-heart.glb',
+    'https://cdn.jsdelivr.net/gh/Dynamox-DEV677/kairo@main/models-cdn/maple_tree.glb',
+    'https://cdn.jsdelivr.net/gh/Dynamox-DEV677/kairo@main/models-cdn/red_apple.glb',
+    'https://cdn.jsdelivr.net/gh/Dynamox-DEV677/kairo@main/models-cdn/newtons_cradle.glb',
+  ]
+  await Promise.all(GLBS.map(async (url) => {
+    const t = Date.now()
+    try {
+      const r = await fetch(url, { method: 'HEAD' })
+      const name = `GLB: ${url.split('/').pop()}`
+      if (r.ok) push(name, 'ok', `${r.headers.get('content-length') || '?'} bytes`, Date.now() - t)
+      else      push(name, 'failed', `HTTP ${r.status}`, Date.now() - t)
+    } catch (e) {
+      push(`GLB: ${url.split('/').pop()}`, 'failed', e.message)
+    }
+  }))
+
+  // ── Solver text endpoint health ──────────────────────────────────────────
+  let solverQueries = []
+  const selfBase = `http://localhost:${process.env.PORT || 4000}`
+  const isVercel  = !!process.env.VERCEL_URL
+  const apiBase   = isVercel ? `https://${process.env.VERCEL_URL}` : selfBase
+  try {
+    const t = Date.now()
+    const r = await fetch(`${apiBase}/api/ai/solver/text`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ question: 'What is gravity?' }),
+    })
+    const ms = Date.now() - t
+    if (r.ok) {
+      const d = await r.json()
+      solverQueries = d.imageQueries || []
+      push('Solver /text', ms < 9000 ? 'ok' : 'degraded',
+        `model=${d.modelUsed || '?'}, queries=${solverQueries.length}`, ms)
+    } else if (r.status === 429) {
+      push('Solver /text', 'degraded', 'free pool rate-limited right now', ms)
+    } else {
+      push('Solver /text', 'failed', `HTTP ${r.status}`, ms)
+    }
+  } catch (e) {
+    push('Solver /text', 'failed', e.message)
+  }
+
+  // ── Solver images endpoint (only if /text gave us queries) ──────────────
+  if (solverQueries.length > 0) {
+    try {
+      const t = Date.now()
+      const r = await fetch(`${apiBase}/api/ai/solver/images`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ queries: solverQueries.slice(0, 3), topicKeyword: 'Gravity' }),
+      })
+      const ms = Date.now() - t
+      if (r.ok) {
+        const d = await r.json()
+        push('Solver /images', d.imageSlides?.length > 0 ? 'ok' : 'degraded',
+          `${d.imageSlides?.length || 0} slides`, ms)
+      } else {
+        push('Solver /images', 'failed', `HTTP ${r.status}`, ms)
+      }
+    } catch (e) {
+      push('Solver /images', 'failed', e.message)
+    }
+  } else {
+    push('Solver /images', 'skipped', 'no queries from /text — skipped probe')
+  }
+
+  // ── Supabase reachability ────────────────────────────────────────────────
+  try {
+    const t = Date.now()
+    const { count, error } = await supabaseAdmin.from('users').select('*', { count: 'exact', head: true })
+    if (error) push('Supabase users count', 'failed', error.message, Date.now() - t)
+    else       push('Supabase users count', 'ok', `${count} rows`, Date.now() - t)
+  } catch (e) {
+    push('Supabase users count', 'failed', e.message)
+  }
+
+  // ── Summary ─────────────────────────────────────────────────────────────
+  const ok     = checks.filter(c => c.status === 'ok').length
+  const degraded = checks.filter(c => c.status === 'degraded').length
+  const failed = checks.filter(c => c.status === 'failed').length
+
+  res.json({
+    ts:        new Date().toISOString(),
+    durationMs: Date.now() - start,
+    summary:   `${ok} ok · ${degraded} degraded · ${failed} failed`,
+    overall:   failed > 0 ? 'failed' : degraded > 0 ? 'degraded' : 'healthy',
+    checks,
+  })
+})
+
 // ─── /api/ops/error — frontend reports unhandled errors ────────────────────
 router.post('/error', (req, res) => {
   const { message, stack, source, line, col, page, userAgent } = req.body || {}
