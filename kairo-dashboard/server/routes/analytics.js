@@ -260,16 +260,65 @@ Generate a personalized "Today's Study Card". Return ONLY valid JSON:
   "pomodoro_plan": "25 min study + 5 min break recommendation"
 }`
 
-    const raw = await aiCall({
-      taskType: 'study_today',
-      messages: [{ role: 'user', content: prompt }],
-      maxTokens: 600,
-    })
+    // AI is best-effort here — if free models are 429'd, fall back to a
+    // sensible default card rather than 500'ing the dashboard.
+    let card
+    try {
+      const raw = await aiCall({
+        taskType: 'study_today',
+        messages: [{ role: 'user', content: prompt }],
+        maxTokens: 600,
+      })
+      card = parseJSON(raw)
+    } catch (aiErr) {
+      console.warn('[study-today] AI failed, using default card:', aiErr.message)
+      card = null
+    }
 
-    const card = parseJSON(raw)
-    res.json({ ...card, date: today, day: dayOfWeek, weak_subjects: weakSubjects })
+    // Default card derived from real data when AI is unavailable.
+    if (!card || !card.greeting) {
+      const focusSubject = weakSubjects[0]?.subject || todayTasks[0]?.subject || 'Maths'
+      const todayTaskFirst = todayTasks[0]
+      card = {
+        greeting: `Good morning! Ready to make ${dayOfWeek} count?`,
+        focus_subject: focusSubject,
+        focus_topic: todayTaskFirst?.topic || `Revise key formulas for ${focusSubject}`,
+        priority_tasks: todayTasks.length > 0
+          ? todayTasks.slice(0, 3).map(t => ({
+              task: `${t.subject}: ${t.topic}`,
+              duration: `${t.hours} hr`,
+              type: 'study',
+            }))
+          : [
+              { task: `Revise ${focusSubject} basics`,     duration: '45 min', type: 'study' },
+              { task: 'One past-paper question set',        duration: '30 min', type: 'practice' },
+              { task: 'Review yesterday\'s mistakes',       duration: '15 min', type: 'review' },
+            ],
+        quick_win: 'Solve 5 quick MCQs from any chapter — builds momentum in 10 minutes.',
+        motivation_quote: 'Small consistent progress beats a single perfect day.',
+        daily_goal: `Spend ${todayTasks.length > 0 ? todayTasks.reduce((a, t) => a + (t.hours || 1), 0) : 2} focused hours on study today.`,
+        pomodoro_plan: '25 min study + 5 min break, repeat 4 times, then a longer 15-min break.',
+      }
+    }
+
+    res.json({ ...card, date: today, day: dayOfWeek, weak_subjects: weakSubjects, ai_available: !!card.greeting && card.motivation_quote !== 'Small consistent progress beats a single perfect day.' })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    // Last-resort guard — never 500 this endpoint.
+    console.error('[study-today] hard fail:', e.message)
+    res.json({
+      greeting: 'Good morning!',
+      focus_subject: 'Today',
+      focus_topic: 'Pick one chapter and dive in.',
+      priority_tasks: [],
+      quick_win: 'Read for 15 minutes — momentum follows.',
+      motivation_quote: 'Show up. The rest follows.',
+      daily_goal: 'Make some real progress today.',
+      pomodoro_plan: '25 min study + 5 min break.',
+      date: new Date().toISOString().slice(0, 10),
+      day: new Date().toLocaleDateString('en-IN', { weekday: 'long' }),
+      weak_subjects: [],
+      ai_available: false,
+    })
   }
 })
 

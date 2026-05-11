@@ -5,13 +5,14 @@
  */
 import express from 'express'
 import { searchManyParallel } from '../services/imageSearch.js'
+import { supabaseAdmin } from '../services/supabase.js'
 
 const router = express.Router()
 const OR_URL = 'https://openrouter.ai/api/v1/chat/completions'
 
-// In-memory cache for solver responses. Keyed by lowercased+trimmed question.
-// 24h TTL + 300 entries: when free models are throttled, cached repeats sail
-// through unchanged. Cache survives the function's warm window on Vercel.
+// ── L1: in-memory cache (per-function-instance) ────────────────────────────
+// First line of defense — same Vercel function warm window hits this. Fast,
+// no network roundtrip. 24h TTL, 300 entries.
 const SOLVER_CACHE = new Map()
 const SOLVER_CACHE_TTL_MS = 24 * 60 * 60 * 1000
 const SOLVER_CACHE_MAX = 300
@@ -32,6 +33,60 @@ function cacheSet(key, data) {
     if (oldest) SOLVER_CACHE.delete(oldest)
   }
   SOLVER_CACHE.set(key, { ts: Date.now(), data })
+}
+
+// ── L2: persistent cache in Supabase (shared across instances/users) ───────
+// Survives deploys, shared by every student. Lookup is ~50ms. Write is
+// best-effort (failures don't block the response).
+async function dbCacheGet(questionKey) {
+  try {
+    const { data, error } = await supabaseAdmin
+      .from('solver_cache')
+      .select('plan, model_used, source, hit_count')
+      .eq('question_key', questionKey)
+      .maybeSingle()
+    if (error || !data) return null
+    return data
+  } catch { return null }
+}
+
+async function dbCacheSet(questionKey, questionRaw, plan, source) {
+  try {
+    await supabaseAdmin.from('solver_cache').upsert({
+      question_key: questionKey,
+      question_raw: questionRaw.slice(0, 500),
+      plan,
+      model_used: plan.modelUsed || null,
+      source,                                    // 'ai' or 'wikipedia'
+      hit_count: 0,
+    }, { onConflict: 'question_key' })
+  } catch (e) {
+    console.warn('[solver] dbCacheSet failed:', e.message)
+  }
+}
+
+async function dbCacheBumpHit(questionKey) {
+  // Best-effort — no await needed; don't block the response.
+  supabaseAdmin
+    .rpc('increment_solver_hit', { qk: questionKey })
+    .then(() => {}, () => {
+      // RPC may not exist yet — fall back to direct update
+      supabaseAdmin.from('solver_cache').select('hit_count').eq('question_key', questionKey).maybeSingle()
+        .then(({ data }) => data
+          ? supabaseAdmin.from('solver_cache').update({ hit_count: (data.hit_count || 0) + 1 }).eq('question_key', questionKey)
+          : null)
+        .then(() => {}, () => {})
+    })
+}
+
+/** Normalize a question for cache keying. Lowercase, strip filler words, collapse whitespace. */
+function normalizeKey(question) {
+  return question
+    .toLowerCase()
+    .replace(/[?!.,;:'"]/g, '')
+    .replace(/\b(please|can you|could you|i want to|i need to|tell me about|tell me|explain|describe|what is|what are|what's|how does|how do|how to|why is|why does|in detail|in depth|step by step|simply|simple terms|for class \d+|for students)\b/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
 }
 
 router.post('/chat', async (req, res) => {
@@ -282,9 +337,22 @@ async function callModel(model, question, apiKey, timeout = 7000) {
 
 
 async function getSolverPlan(question) {
-  const cacheKey = 'plan:' + question.toLowerCase()
-  const cached = cacheGet(cacheKey)
-  if (cached) return cached
+  // Two-tier cache: L1 (memory, per-instance, fast) → L2 (Supabase, shared).
+  const qKey       = normalizeKey(question)
+  const cacheKey   = 'plan:' + qKey
+
+  // L1: same Vercel function warm window — instant.
+  const memHit = cacheGet(cacheKey)
+  if (memHit) return memHit
+
+  // L2: Supabase — shared across every function instance and every user.
+  // ~50ms roundtrip but cuts every repeat question down from 5s+ to fast.
+  const dbHit = await dbCacheGet(qKey)
+  if (dbHit?.plan) {
+    cacheSet(cacheKey, dbHit.plan)   // promote into L1 for next time
+    dbCacheBumpHit(qKey)              // fire-and-forget
+    return dbHit.plan
+  }
 
   const apiKey = process.env.OPENROUTER_API_KEY
   if (!apiKey) throw new Error('OPENROUTER_API_KEY not configured on server.')
@@ -319,7 +387,8 @@ async function getSolverPlan(question) {
     try {
       const wikiPlan = await synthesizePlanFromWikipedia(question)
       if (wikiPlan) {
-        cacheSet(cacheKey, wikiPlan)
+        cacheSet(cacheKey, wikiPlan)               // L1
+        dbCacheSet(qKey, question, wikiPlan, 'wikipedia')  // L2, fire-and-forget
         return wikiPlan
       }
     } catch (e) {
@@ -360,7 +429,8 @@ async function getSolverPlan(question) {
     videoQuery:      sanitizeOneLine(plan.videoQuery || plan.topicKeyword || ''),
     modelUsed:       model,
   }
-  cacheSet(cacheKey, normalized)
+  cacheSet(cacheKey, normalized)                                  // L1
+  dbCacheSet(qKey, question, normalized, 'ai').catch(() => {})    // L2 (fire-and-forget)
   return normalized
 }
 
