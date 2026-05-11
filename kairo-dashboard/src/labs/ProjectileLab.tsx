@@ -3,8 +3,9 @@
  * Traces parabolic path with a glowing trail.
  */
 import { useRef, useEffect, useMemo } from 'react'
-import { Canvas, useFrame } from '@react-three/fiber'
-import { OrbitControls, Stars, Grid } from '@react-three/drei'
+import { useFrame } from '@react-three/fiber'
+import { OrbitControls, Grid } from '@react-three/drei'
+import LabScene from './LabScene'
 import * as THREE from 'three'
 import LabShell from './LabShell'
 
@@ -15,12 +16,8 @@ interface SimProps {
 
 function ProjectileSim({ params, playing }: SimProps) {
   return (
-    <Canvas camera={{ position: [12, 7, 14], fov: 55 }}
-      style={{ background: 'linear-gradient(180deg,#0a0a18 0%,#0a0a0a 70%)' }}>
-      <ambientLight intensity={0.45} />
-      <directionalLight position={[6, 10, 4]} intensity={1.1} color="#a5b4fc" />
-      <Stars radius={50} depth={25} count={1000} factor={3} fade />
-      <mesh rotation={[-Math.PI / 2, 0, 0]}>
+    <LabScene cameraPos={[12, 7, 14]} cameraFov={55} tint="#0c1428" particles={45}>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
         <planeGeometry args={[60, 60]} />
         <meshStandardMaterial color="#1a1a2e" />
       </mesh>
@@ -29,7 +26,7 @@ function ProjectileSim({ params, playing }: SimProps) {
       <Cannon angle={params.angle} />
       <Projectile {...params} playing={playing} />
       <OrbitControls enablePan={false} minDistance={8} maxDistance={50} />
-    </Canvas>
+    </LabScene>
   )
 }
 

@@ -6,7 +6,7 @@
  * - Tick marks on the floor (xy-plane) so you can read off coordinates.
  */
 import { useMemo } from 'react'
-import { Canvas } from '@react-three/fiber'
+import LabScene from './LabScene'
 import { OrbitControls, Text, Line } from '@react-three/drei'
 import * as THREE from 'three'
 import LabShell from './LabShell'
@@ -129,12 +129,13 @@ function GraphsSim({ params }: SimProps) {
   const zSpan = Math.max(Math.abs(zMin), Math.abs(zMax), 1)
 
   return (
-    <Canvas camera={{ position: [R * 1.7, zSpan * 1.4 + 2, R * 1.7], fov: 50 }}
-      style={{ background: 'radial-gradient(circle at 30% 20%, #0c0c1f 0%, #050510 70%)' }}>
-      <ambientLight intensity={0.7} />
-      <directionalLight position={[R, zSpan + 4, R]} intensity={1.0} />
-      <directionalLight position={[-R, zSpan, -R]} intensity={0.4} color="#a5b4fc" />
-
+    <LabScene
+      cameraPos={[R * 1.7, zSpan * 1.4 + 2, R * 1.7]}
+      cameraFov={50}
+      tint="#0c0c1f"
+      particles={25}
+      stars={false}
+    >
       {/* Bounding box & tick marks */}
       <BoundingBox range={R} zMin={zMin} zMax={zMax} />
 
@@ -159,7 +160,7 @@ function GraphsSim({ params }: SimProps) {
       </Text>
 
       <OrbitControls enablePan={false} minDistance={4} maxDistance={40} />
-    </Canvas>
+    </LabScene>
   )
 }
 

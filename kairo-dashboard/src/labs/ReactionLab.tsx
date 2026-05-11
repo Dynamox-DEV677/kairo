@@ -4,8 +4,9 @@
  * Atoms physically rearrange when "reaction" param triggers.
  */
 import { useRef, useMemo } from 'react'
-import { Canvas, useFrame } from '@react-three/fiber'
-import { OrbitControls, Stars, Text } from '@react-three/drei'
+import { useFrame } from '@react-three/fiber'
+import { OrbitControls, Text } from '@react-three/drei'
+import LabScene from './LabScene'
 import * as THREE from 'three'
 import LabShell from './LabShell'
 
@@ -33,17 +34,16 @@ const ATOMS: AtomState[] = [
 
 function ReactionSim({ params, playing }: SimProps) {
   return (
-    <Canvas camera={{ position: [0, 1.5, 9], fov: 55 }} style={{ background: 'radial-gradient(circle at center, #1a0a18 0%, #0a0a18 70%)' }}>
-      <ambientLight intensity={0.5} />
-      <directionalLight position={[5, 6, 4]} intensity={1.2} color="#a5b4fc" />
+    <LabScene cameraPos={[0, 1.5, 9]} cameraFov={55} tint="#1a0a18" particles={45}>
+      {/* Heat-source glow — orange light intensity tied to temperature slider */}
       <pointLight position={[0, 0, 0]} intensity={params.temperature / 200} color="#fb923c" distance={8} />
-      <Stars radius={40} depth={20} count={500} factor={2} fade />
       <ReactionAtoms params={params} playing={playing} />
-      <Text position={[-3, -3, 0]} fontSize={0.4} color="#a1a1aa">CH₄ + 2O₂</Text>
-      <Text position={[0, -3, 0]} fontSize={0.4} color="#fbbf24">→</Text>
-      <Text position={[3, -3, 0]} fontSize={0.4} color="#a1a1aa">CO₂ + 2H₂O</Text>
+      {/* Equation labels — use ASCII subscripts (drei font lacks Unicode subscripts) */}
+      <Text position={[-3, -3, 0]} fontSize={0.4} color="#a1a1aa" anchorX="center">CH4 + 2O2</Text>
+      <Text position={[ 0, -3, 0]} fontSize={0.4} color="#fbbf24" anchorX="center">→</Text>
+      <Text position={[ 3, -3, 0]} fontSize={0.4} color="#a1a1aa" anchorX="center">CO2 + 2H2O</Text>
       <OrbitControls enablePan={false} minDistance={6} maxDistance={20} />
-    </Canvas>
+    </LabScene>
   )
 }
 

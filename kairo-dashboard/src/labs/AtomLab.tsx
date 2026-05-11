@@ -3,8 +3,9 @@
  * Element name updates from a small periodic-table lookup.
  */
 import { useRef, useMemo } from 'react'
-import { Canvas, useFrame } from '@react-three/fiber'
-import { OrbitControls, Stars } from '@react-three/drei'
+import { useFrame } from '@react-three/fiber'
+import { OrbitControls } from '@react-three/drei'
+import LabScene from './LabScene'
 import { Text } from '@react-three/drei'
 import * as THREE from 'three'
 import LabShell from './LabShell'
@@ -48,10 +49,9 @@ function AtomSim({ params, playing }: SimProps) {
   const elem = ELEMENTS[params.protons] || { sym: '?', name: 'Unknown' }
 
   return (
-    <Canvas camera={{ position: [0, 1, 9], fov: 55 }} style={{ background: 'radial-gradient(circle at center, #1a1a2e 0%, #0a0a18 70%)' }}>
-      <ambientLight intensity={0.4} />
+    <LabScene cameraPos={[0, 1, 9]} cameraFov={55} tint="#1a1a2e" particles={50}>
+      {/* Pink nucleus glow — punches through the LabScene's neutral lighting */}
       <pointLight position={[0, 0, 0]} intensity={2.5} color="#ec4899" distance={6} />
-      <Stars radius={40} depth={20} count={800} factor={2} fade />
       <Nucleus protons={params.protons} neutrons={params.neutrons} />
       {shells.map((count, i) => (
         <Shell key={i} radius={2 + i * 1.2} electrons={count} shellIdx={i} playing={playing} />
@@ -63,7 +63,7 @@ function AtomSim({ params, playing }: SimProps) {
         {elem.name}
       </Text>
       <OrbitControls enablePan={false} minDistance={4} maxDistance={20} />
-    </Canvas>
+    </LabScene>
   )
 }
 

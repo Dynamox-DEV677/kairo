@@ -3,10 +3,10 @@
  * Shows dot product, cross product (drawn as third arrow), and angle.
  */
 import { useMemo } from 'react'
-import { Canvas } from '@react-three/fiber'
 import { OrbitControls, Grid, Text } from '@react-three/drei'
 import * as THREE from 'three'
 import LabShell from './LabShell'
+import LabScene from './LabScene'
 
 interface SimProps {
   params: { ax: number; ay: number; az: number; bx: number; by: number; bz: number }
@@ -22,9 +22,7 @@ function VectorsSim({ params }: SimProps) {
   const angle = aLen > 0 && bLen > 0 ? Math.acos(Math.min(1, Math.max(-1, dot / (aLen * bLen)))) * 180 / Math.PI : 0
 
   return (
-    <Canvas camera={{ position: [5, 4, 5], fov: 55 }} style={{ background: 'radial-gradient(circle at center, #0a0a18 0%, #0a0a0a 70%)' }}>
-      <ambientLight intensity={0.6} />
-      <directionalLight position={[5, 6, 4]} intensity={1} />
+    <LabScene cameraPos={[5, 4, 5]} cameraFov={55} tint="#0a0a18" particles={30} stars={false}>
       <Grid args={[20, 20]} cellSize={0.5} cellColor="#27272a" sectionSize={1} sectionColor="#3f3f46" fadeDistance={20} infiniteGrid />
       {/* Axes */}
       <Axis dir={new THREE.Vector3(1,0,0)} color="#ef4444" label="X" />
@@ -39,7 +37,7 @@ function VectorsSim({ params }: SimProps) {
         {`A·B = ${dot.toFixed(2)}    |A×B| = ${cross.length().toFixed(2)}    θ = ${angle.toFixed(1)}°`}
       </Text>
       <OrbitControls enablePan={false} minDistance={4} maxDistance={20} />
-    </Canvas>
+    </LabScene>
   )
 }
 
