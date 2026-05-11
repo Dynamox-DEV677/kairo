@@ -293,6 +293,51 @@ CRITICAL: Output ONLY the JSON. Do not wrap in code fences. Do not say "Here is 
 // Used by both /solver/text and /solver/images so the frontend's two parallel
 // calls share one cached LLM result instead of paying for it twice.
 /**
+ * Call Groq directly — completely separate quota from OpenRouter. Free forever
+ * (14,400 req/day on the free tier), sub-second inference, no card required.
+ * Only active if GROQ_API_KEY env var is set; otherwise this is dead code.
+ *
+ * Get a free key at: https://console.groq.com/keys
+ */
+async function callGroq(question, apiKey, timeout = 7000) {
+  const ctrl = new AbortController()
+  const timer = setTimeout(() => ctrl.abort(), timeout)
+  try {
+    const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      signal: ctrl.signal,
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type':  'application/json',
+      },
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',   // fast + smart, JSON-friendly
+        messages: [
+          { role: 'system', content: SOLVER_SYSTEM },
+          { role: 'user',   content: question },
+        ],
+        temperature: 0.3,
+        max_tokens:  1400,
+        response_format: { type: 'json_object' },
+      }),
+    })
+    if (!resp.ok) {
+      const t = await resp.text()
+      throw new Error(`groq HTTP ${resp.status}: ${t.slice(0, 120)}`)
+    }
+    const data = await resp.json()
+    const raw = data?.choices?.[0]?.message?.content || ''
+    const plan = parseJsonLoose(raw)
+    if (!plan || !plan.textExplanation) {
+      throw new Error(`groq malformed JSON (len=${raw.length})`)
+    }
+    return { plan, model: 'groq/llama-3.3-70b' }
+  } finally {
+    clearTimeout(timer)
+  }
+}
+
+/**
  * Call one specific OpenRouter model with a hard per-call timeout. Throws
  * on any failure so Promise.any can pick the first successful winner.
  */
@@ -371,11 +416,17 @@ async function getSolverPlan(question) {
     'openai/gpt-oss-120b:free',
   ].filter(Boolean)
 
+  // Build the race — every OpenRouter model + optional Groq.
+  // Groq has its own quota separate from OpenRouter, so when OR is throttled
+  // Groq still works. The very first racer to return valid JSON wins.
+  const tasks = RACE_MODELS.map(m => callModel(m, question, apiKey, 7000))
+  if (process.env.GROQ_API_KEY) {
+    tasks.push(callGroq(question, process.env.GROQ_API_KEY, 7000))
+  }
+
   let winner
   try {
-    winner = await Promise.any(
-      RACE_MODELS.map(m => callModel(m, question, apiKey, 7000))
-    )
+    winner = await Promise.any(tasks)
   } catch (aggregate) {
     const errs = aggregate.errors?.map(e => e.message).join(' · ') || 'unknown'
     console.error('[solver] all models failed:', errs)
@@ -619,27 +670,26 @@ async function wikiSearchFirstTitle(query) {
  */
 async function synthesizePlanFromWikipedia(question) {
   // Strip filler words so the Wikipedia search matches on the actual topic.
-  // "Photosynthesis step by step" was matching "The Natural Step" article
-  // because "step" got too much relevance weight.
   const cleaned = cleanQuestionForSearch(question)
 
-  // 1. Search Wikipedia — try the cleaned form first, fall back to the raw
-  //    question if cleaning stripped too much.
+  // 1. Search Wikipedia — try the cleaned form first, fall back to raw.
   let title = await wikiSearchFirstTitle(cleaned)
   if (!title) title = await wikiSearchFirstTitle(question)
   if (!title) return null
 
-  // 2. Get the article summary.
-  const summaryUrl = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`
-  const sum = await fetch(summaryUrl, { headers: { 'User-Agent': 'KairoEdu/1.0' } })
-  if (!sum.ok) return null
-  const summary = await sum.json()
-  const extract = summary?.extract
+  // 2. Pull a LONGER extract — 12 sentences vs the summary endpoint's 2.
+  //    Plus the article's link list for related-concept chips.
+  const extractsUrl = `https://en.wikipedia.org/w/api.php?action=query&format=json&prop=extracts|info|pageprops&exsentences=12&explaintext=1&inprop=url&titles=${encodeURIComponent(title)}&origin=*`
+  const exr = await fetch(extractsUrl, { headers: { 'User-Agent': 'KairoEdu/1.0' } })
+  if (!exr.ok) return null
+  const exd = await exr.json()
+  const page = Object.values(exd?.query?.pages || {})[0]
+  const extract = page?.extract
   if (!extract) return null
 
-  const pageUrl = summary.content_urls?.desktop?.page || `https://en.wikipedia.org/wiki/${encodeURIComponent(title)}`
+  const pageUrl = page.fullurl || `https://en.wikipedia.org/wiki/${encodeURIComponent(title)}`
 
-  // 3. Detect if any Kairo Lab matches the topic.
+  // 3. Detect if any Kairo Lab matches.
   let labRoute = null
   const lower = title.toLowerCase() + ' ' + extract.toLowerCase()
   for (const [k, hints] of Object.entries(KAIRO_LABS)) {
@@ -647,22 +697,45 @@ async function synthesizePlanFromWikipedia(question) {
     if (tokens.some(t => lower.includes(t))) { labRoute = k; break }
   }
 
+  // 4. Pull a few related article titles for the "Explore further" chips.
+  let relatedConcepts = []
+  try {
+    const linksUrl = `https://en.wikipedia.org/w/api.php?action=query&format=json&prop=links&pllimit=10&plnamespace=0&titles=${encodeURIComponent(title)}&origin=*`
+    const lr = await fetch(linksUrl, { headers: { 'User-Agent': 'KairoEdu/1.0' } })
+    if (lr.ok) {
+      const ld = await lr.json()
+      const links = Object.values(ld?.query?.pages || {})[0]?.links || []
+      relatedConcepts = links
+        .map(l => l.title)
+        .filter(t => t && !/(list of|disambiguation)/i.test(t))
+        .slice(0, 5)
+    }
+  } catch { /* non-fatal */ }
+
+  // 5. Split the extract into nice paragraphs and pick the first 2-3 as the
+  //    "What it is" body, then surface the rest behind a "More" link.
+  const paragraphs = extract.split(/\n\n+/).filter(p => p.trim().length > 20)
+  const intro = paragraphs.slice(0, 2).join('\n\n') || extract.slice(0, 800)
+  const moreDetail = paragraphs.slice(2, 5).join('\n\n')
+
   return {
     questionType:    'general',
     topicKeyword:    title,
     supports3D:      !!labRoute,
     labRoute,
     textExplanation: [
-      `> ⚠ AI tutors are busy right now, so here's the Wikipedia summary on **${title}**.`,
+      `## ${title}`,
       ``,
-      `## What it is`,
-      extract,
+      intro,
       ``,
-      `## Read more`,
-      `[Full Wikipedia article →](${pageUrl})`,
-    ].join('\n'),
+      moreDetail ? `## More detail` : '',
+      moreDetail,
+      ``,
+      `---`,
+      `*Sourced from Wikipedia · [Read the full article →](${pageUrl})*`,
+    ].filter(Boolean).join('\n'),
     formulas:        [],
-    relatedConcepts: [],
+    relatedConcepts,
     imageQueries:    [title],
     videoQuery:      title + ' explained',
     modelUsed:       'wikipedia-fallback',
