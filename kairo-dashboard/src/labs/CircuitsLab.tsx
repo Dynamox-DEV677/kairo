@@ -3,10 +3,11 @@
  * Animated dots show "current" flowing. Bulb brightness scales with I = V/R.
  */
 import { useRef, useMemo } from 'react'
-import { Canvas, useFrame } from '@react-three/fiber'
+import { useFrame } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 import * as THREE from 'three'
 import LabShell from './LabShell'
+import LabScene from './LabScene'
 
 interface SimProps {
   params: { voltage: number; resistance: number }
@@ -15,16 +16,21 @@ interface SimProps {
 
 function CircuitsSim({ params, playing }: SimProps) {
   return (
-    <Canvas camera={{ position: [0, 0, 9], fov: 50 }} style={{ background: '#0a0a18' }}>
-      <ambientLight intensity={0.5} />
-      <pointLight position={[0, 0, 5]} intensity={0.8} color="#a5b4fc" />
+    <LabScene
+      cameraPos={[0, 0, 9]}
+      cameraFov={50}
+      tint="#0c1428"
+      fogColor="#0a0a18"
+      particles={40}
+      stars={false}
+    >
       <Wire />
       <Battery voltage={params.voltage} />
       <Resistor resistance={params.resistance} />
       <Bulb current={params.voltage / params.resistance} />
       <CurrentDots {...params} playing={playing} />
       <OrbitControls enablePan={false} minDistance={6} maxDistance={20} />
-    </Canvas>
+    </LabScene>
   )
 }
 
@@ -95,31 +101,69 @@ function Bulb({ current }: { current: number }) {
 
 function CurrentDots({ voltage, resistance, playing }: any) {
   const ref = useRef<THREE.InstancedMesh>(null)
+  const haloRef = useRef<THREE.InstancedMesh>(null)
   const offsetRef = useRef(0)
   const I = voltage / resistance
-  const N = 24
+  const N = 36
+
+  // Bigger dots + glow halo when current is higher
+  const dotScale  = Math.min(1.4, 0.7 + I * 0.08)
+  const haloScale = dotScale * 2.2
+  // Hue shifts cool (blue) → warm (yellow) as current rises
+  const dotColor  = new THREE.Color().lerpColors(
+    new THREE.Color('#22d3ee'), new THREE.Color('#fbbf24'),
+    Math.min(1, I / 8)
+  )
 
   useFrame((_, dt) => {
     if (!ref.current || !playing) return
-    offsetRef.current += dt * I * 0.15   // current speed
+    // Current speed proportional to I — faster current at high voltage / low R
+    offsetRef.current += dt * Math.min(1.2, I * 0.06)
     if (offsetRef.current > 1) offsetRef.current %= 1
     const tmp = new THREE.Object3D()
     for (let i = 0; i < N; i++) {
       const t = (i / N + offsetRef.current) % 1
       const idx = Math.floor(t * PATH_POINTS.length)
       const p = PATH_POINTS[idx]
-      tmp.position.set(p[0], p[1], p[2] + 0.05)
+      // Main dot
+      tmp.position.set(p[0], p[1], p[2] + 0.06)
+      tmp.scale.setScalar(dotScale)
       tmp.updateMatrix()
       ref.current.setMatrixAt(i, tmp.matrix)
+      // Halo at same position, larger + transparent
+      if (haloRef.current) {
+        tmp.scale.setScalar(haloScale)
+        tmp.updateMatrix()
+        haloRef.current.setMatrixAt(i, tmp.matrix)
+      }
     }
     ref.current.instanceMatrix.needsUpdate = true
+    if (haloRef.current) haloRef.current.instanceMatrix.needsUpdate = true
   })
 
   return (
-    <instancedMesh ref={ref} args={[undefined, undefined, N]}>
-      <sphereGeometry args={[0.08, 8, 8]} />
-      <meshBasicMaterial color="#34d399" />
-    </instancedMesh>
+    <>
+      {/* Outer glow halo — additive blending, larger */}
+      <instancedMesh ref={haloRef} args={[undefined, undefined, N]}>
+        <sphereGeometry args={[0.06, 8, 8]} />
+        <meshBasicMaterial
+          color={dotColor}
+          transparent opacity={0.18}
+          depthWrite={false}
+          blending={THREE.AdditiveBlending}
+        />
+      </instancedMesh>
+      {/* Core electron dot — bright, emissive */}
+      <instancedMesh ref={ref} args={[undefined, undefined, N]}>
+        <sphereGeometry args={[0.06, 10, 10]} />
+        <meshStandardMaterial
+          color={dotColor}
+          emissive={dotColor}
+          emissiveIntensity={1.4}
+          roughness={0.2}
+        />
+      </instancedMesh>
+    </>
   )
 }
 

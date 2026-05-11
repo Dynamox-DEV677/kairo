@@ -15,9 +15,10 @@
  *   start_height — 4 to 14 m
  */
 import { Suspense, useState, useRef, useEffect, useMemo } from 'react'
-import { Canvas, useFrame } from '@react-three/fiber'
-import { OrbitControls, Stars, Grid, useGLTF, Html } from '@react-three/drei'
+import { useFrame } from '@react-three/fiber'
+import { OrbitControls, Grid, useGLTF, Html, Line } from '@react-three/drei'
 import LabShell from './LabShell'
+import LabScene from './LabScene'
 import * as THREE from 'three'
 
 // jsDelivr CDN — keeps GLBs out of the Vercel build pipeline.
@@ -76,32 +77,12 @@ interface SimProps {
 
 function GravitySim({ params, playing }: SimProps) {
   return (
-    <Canvas
-      shadows
-      camera={{ position: [10, 6, 10], fov: 50 }}
-      style={{ background: 'linear-gradient(180deg, #0a0a18 0%, #0a0a0a 60%, #1a1a2e 100%)' }}
-    >
-      <ambientLight intensity={0.4} />
-      <directionalLight
-        position={[8, 12, 5]}
-        intensity={1.2}
-        color="#a5b4fc"
-        castShadow
-        shadow-mapSize={[1024, 1024]}
-      />
-      <pointLight position={[-5, 3, -5]} intensity={0.4} color="#7c3aed" />
-
-      {/* Stars background — atmospheric */}
-      <Stars radius={50} depth={30} count={1500} factor={3} saturation={0} fade speed={0.3} />
-
+    <LabScene cameraPos={[10, 6, 10]} cameraFov={50} tint="#1a1a2e" particles={60}>
       {/* Ground */}
       <Ground />
 
       <Suspense fallback={<LoaderChip />}>
-        {/* Tree (left side) — real maple GLB */}
         <Tree treeHeight={params.start_height} />
-
-        {/* Falling apple — real apple GLB */}
         <FallingApple
           gravity={params.gravity}
           airDrag={params.air_drag}
@@ -110,7 +91,7 @@ function GravitySim({ params, playing }: SimProps) {
         />
       </Suspense>
 
-      {/* Drop guide */}
+      {/* Drop guide with metre markers */}
       <DropGuide startHeight={params.start_height} />
 
       {/* Camera controls — touch/mouse */}
@@ -121,7 +102,7 @@ function GravitySim({ params, playing }: SimProps) {
         minPolarAngle={Math.PI / 6}
         maxPolarAngle={Math.PI / 2.2}
       />
-    </Canvas>
+    </LabScene>
   )
 }
 
@@ -176,14 +157,20 @@ function Tree({ treeHeight }: { treeHeight: number }) {
 function FallingApple({ gravity, airDrag, startHeight, playing }: {
   gravity: number; airDrag: number; startHeight: number; playing: boolean
 }) {
-  const meshRef = useRef<THREE.Mesh>(null)
-  const trailRef = useRef<{ y: number }>({ y: startHeight })
+  const meshRef  = useRef<THREE.Group>(null)
+  const velRef   = useRef<THREE.Group>(null)   // velocity arrow group
+  const gravRef  = useRef<THREE.Group>(null)   // gravity force arrow group (always points down)
   const stateRef = useRef({ y: startHeight, v: 0, time: 0 })
+
+  // Motion-trail state: keep the last N (y) positions as little ghosts.
+  const TRAIL_LEN = 10
+  const trailRefs = useRef<Array<THREE.Mesh | null>>(Array(TRAIL_LEN).fill(null))
+  const trailHist = useRef<number[]>(Array(TRAIL_LEN).fill(startHeight))
 
   // Reset when params change
   useEffect(() => {
     stateRef.current = { y: startHeight, v: 0, time: 0 }
-    trailRef.current.y = startHeight
+    trailHist.current = Array(TRAIL_LEN).fill(startHeight)
   }, [startHeight, gravity, airDrag])
 
   useFrame((_, delta) => {
@@ -191,29 +178,54 @@ function FallingApple({ gravity, airDrag, startHeight, playing }: {
     const dt = Math.min(delta, 0.05)
     const s = stateRef.current
 
-    // Stop when on ground (apple radius ~ 0.25)
     if (s.y <= 0.25) {
       s.y = 0.25; s.v = 0
-      // Auto-restart loop after 1.5s rest
       s.time += dt
       if (s.time > 2.0) {
         stateRef.current = { y: startHeight, v: 0, time: 0 }
+        trailHist.current = Array(TRAIL_LEN).fill(startHeight)
       }
-      if (meshRef.current) meshRef.current.position.y = s.y
-      return
+    } else {
+      const accel = gravity - airDrag * s.v
+      s.v += accel * dt
+      s.y -= s.v * dt
+      s.time += dt
+      if (s.y < 0.25) s.y = 0.25
     }
-
-    // a = g - airDrag * v (simplified linear drag)
-    const accel = gravity - airDrag * s.v
-    s.v += accel * dt
-    s.y -= s.v * dt
-    s.time += dt
-    if (s.y < 0.25) s.y = 0.25
 
     if (meshRef.current) {
       meshRef.current.position.y = s.y
-      // tiny x wobble for visual life
       meshRef.current.rotation.x += s.v * dt * 0.3
+    }
+
+    // Shift trail history every other frame for a smoother look
+    trailHist.current.unshift(s.y)
+    trailHist.current.pop()
+    trailRefs.current.forEach((m, i) => {
+      if (m) {
+        m.position.y = trailHist.current[i] ?? s.y
+        // Fade out — older positions are smaller + more transparent
+        const t = 1 - i / TRAIL_LEN
+        m.scale.setScalar(0.35 + t * 0.65)
+        const mat = m.material as THREE.MeshBasicMaterial
+        if (mat) mat.opacity = t * 0.45
+      }
+    })
+
+    // Velocity arrow: length proportional to v, points downward (the apple
+    // is falling), capped at a sensible visual scale.
+    if (velRef.current) {
+      const vLen = Math.min(Math.abs(s.v) * 0.08, 1.4)
+      velRef.current.scale.y = vLen
+      velRef.current.position.y = s.y - 0.25 - vLen / 2
+      velRef.current.visible = vLen > 0.05
+    }
+    // Gravity arrow: constant length (it's not changing in this sim),
+    // sits to the right of the apple, always pointing down.
+    if (gravRef.current) {
+      gravRef.current.position.y = s.y
+      // Hide when on the ground
+      gravRef.current.visible = s.y > 0.4
     }
   })
 
@@ -221,8 +233,57 @@ function FallingApple({ gravity, airDrag, startHeight, playing }: {
   const { cloned } = useFittedClone(APPLE_MODEL_URL, 0.55)
 
   return (
-    <group ref={meshRef as any} position={[-3, startHeight, 0]}>
-      <primitive object={cloned} />
+    <group position={[-3, 0, 0]}>
+      {/* Motion-trail ghosts — small spheres at past positions */}
+      {Array.from({ length: TRAIL_LEN }).map((_, i) => (
+        <mesh key={i} ref={el => { trailRefs.current[i] = el }} position={[0, startHeight, 0]}>
+          <sphereGeometry args={[0.18, 12, 12]} />
+          <meshBasicMaterial color="#ef4444" transparent opacity={0} />
+        </mesh>
+      ))}
+
+      {/* The apple itself */}
+      <group ref={meshRef} position={[0, startHeight, 0]}>
+        <primitive object={cloned} />
+      </group>
+
+      {/* Velocity arrow — magnitude follows v, points down */}
+      <group ref={velRef} position={[0, startHeight, 0]}>
+        <mesh position={[0, 0, 0]}>
+          <cylinderGeometry args={[0.05, 0.05, 1, 12]} />
+          <meshStandardMaterial color="#fbbf24" emissive="#fbbf24" emissiveIntensity={0.6} />
+        </mesh>
+        <mesh position={[0, -0.55, 0]}>
+          <coneGeometry args={[0.15, 0.3, 12]} rotation={[Math.PI, 0, 0]} />
+          <meshStandardMaterial color="#fbbf24" emissive="#fbbf24" emissiveIntensity={0.6} />
+        </mesh>
+        <Html position={[0.35, -0.1, 0]} center>
+          <div style={{
+            background: 'rgba(13,13,13,0.85)', padding: '2px 6px', borderRadius: 4,
+            fontFamily: 'monospace', fontSize: 9, color: '#fbbf24', whiteSpace: 'nowrap',
+            border: '1px solid rgba(251,191,36,0.4)', pointerEvents: 'none',
+          }}>v</div>
+        </Html>
+      </group>
+
+      {/* Gravity arrow — constant, to the right of the apple */}
+      <group ref={gravRef} position={[0.7, startHeight, 0]}>
+        <mesh>
+          <cylinderGeometry args={[0.04, 0.04, 0.9, 12]} />
+          <meshStandardMaterial color="#ec4899" emissive="#ec4899" emissiveIntensity={0.5} />
+        </mesh>
+        <mesh position={[0, -0.5, 0]} rotation={[Math.PI, 0, 0]}>
+          <coneGeometry args={[0.13, 0.26, 12]} />
+          <meshStandardMaterial color="#ec4899" emissive="#ec4899" emissiveIntensity={0.5} />
+        </mesh>
+        <Html position={[0.25, -0.05, 0]} center>
+          <div style={{
+            background: 'rgba(13,13,13,0.85)', padding: '2px 6px', borderRadius: 4,
+            fontFamily: 'monospace', fontSize: 9, color: '#ec4899', whiteSpace: 'nowrap',
+            border: '1px solid rgba(236,72,153,0.4)', pointerEvents: 'none',
+          }}>g</div>
+        </Html>
+      </group>
     </group>
   )
 }

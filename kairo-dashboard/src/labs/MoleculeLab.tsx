@@ -2,10 +2,23 @@
  * Molecule Lab — pick a molecule, view 3D structure with bond lines + atom labels.
  */
 import { useMemo, useRef } from 'react'
-import { Canvas, useFrame } from '@react-three/fiber'
-import { OrbitControls, Stars, Text } from '@react-three/drei'
+import { useFrame } from '@react-three/fiber'
+import { OrbitControls, Text } from '@react-three/drei'
 import * as THREE from 'three'
 import LabShell from './LabShell'
+import LabScene from './LabScene'
+
+// drei's <Text> uses a bundled Roboto subset that doesn't always include
+// Unicode subscripts. Convert ₀-₉ to plain digits for in-scene labels so we
+// never see tofu boxes. Markdown text in the side panel uses real fonts.
+const SUBSCRIPT_MAP: Record<string, string> = {
+  '₀': '0', '₁': '1', '₂': '2', '₃': '3', '₄': '4',
+  '₅': '5', '₆': '6', '₇': '7', '₈': '8', '₉': '9',
+  '⁺': '+', '⁻': '-',
+}
+function asciifyFormula(s: string) {
+  return s.replace(/[₀-₉⁺⁻]/g, c => SUBSCRIPT_MAP[c] ?? c)
+}
 
 interface Atom { sym: string; pos: [number, number, number]; color: string; radius: number }
 interface Bond { a: number; b: number; order: 1 | 2 | 3 }
@@ -275,14 +288,13 @@ interface SimProps {
 function MoleculeSim({ params, playing }: SimProps) {
   const mol = MOLECULES[params.molecule] || MOLECULES.water
   return (
-    <Canvas camera={{ position: [4, 3, 6], fov: 50 }} style={{ background: 'radial-gradient(circle at center, #1a1a2e 0%, #0a0a18 70%)' }}>
-      <ambientLight intensity={0.55} />
-      <directionalLight position={[5, 6, 4]} intensity={1.2} color="#a5b4fc" />
-      <Stars radius={40} depth={20} count={500} factor={2} fade />
+    <LabScene cameraPos={[4, 3, 6]} cameraFov={50} tint="#1a1a2e" particles={50}>
       <RotatingMolecule mol={mol} playing={playing} />
-      <Text position={[0, -3, 0]} fontSize={0.45} color="#fafafa">{mol.formula}</Text>
+      <Text position={[0, -3, 0]} fontSize={0.45} color="#fafafa" anchorX="center">
+        {asciifyFormula(mol.formula)}
+      </Text>
       <OrbitControls enablePan={false} minDistance={3} maxDistance={15} autoRotate={playing} autoRotateSpeed={0.6} />
-    </Canvas>
+    </LabScene>
   )
 }
 

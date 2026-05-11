@@ -5,10 +5,11 @@
  * are no embedded clips.
  */
 import { Suspense, useRef, useEffect, useMemo } from 'react'
-import { Canvas, useFrame } from '@react-three/fiber'
-import { OrbitControls, Stars, Text, useGLTF, useAnimations, Html } from '@react-three/drei'
+import { useFrame } from '@react-three/fiber'
+import { OrbitControls, Text, useGLTF, useAnimations, Html } from '@react-three/drei'
 import * as THREE from 'three'
 import LabShell from './LabShell'
+import LabScene from './LabScene'
 
 // Served from jsDelivr's CDN directly off the GitHub repo so the 12MB GLB
 // never has to ride along with the Vercel build. Free, fast, globally cached.
@@ -22,17 +23,13 @@ interface SimProps {
 
 function HeartSim({ params, playing }: SimProps) {
   return (
-    <Canvas
-      shadows
-      camera={{ position: [0, 0.5, 7], fov: 45 }}
-      style={{ background: 'radial-gradient(circle at center, #1c0a14 0%, #0a0a18 70%)' }}
+    <LabScene
+      cameraPos={[0, 0.5, 7]}
+      cameraFov={45}
+      tint="#1c0a14"
+      fogColor="#0a0a18"
+      particles={40}
     >
-      <ambientLight intensity={0.7} />
-      <directionalLight position={[4, 6, 5]} intensity={1.4} color="#fde68a" castShadow />
-      <directionalLight position={[-4, 2, 4]} intensity={0.6} color="#ffffff" />
-      <pointLight position={[0, 3, 5]} intensity={0.8} color="#f87171" />
-      <Stars radius={50} depth={20} count={400} factor={2} fade />
-
       <Suspense fallback={<HeartFallback />}>
         <HeartModel bpm={params.bpm} playing={playing} />
       </Suspense>
@@ -43,7 +40,7 @@ function HeartSim({ params, playing }: SimProps) {
       </Text>
 
       <OrbitControls enablePan={false} minDistance={3} maxDistance={20} />
-    </Canvas>
+    </LabScene>
   )
 }
 

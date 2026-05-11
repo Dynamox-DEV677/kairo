@@ -11,10 +11,11 @@
  *   - Cytoskeleton: thin lines crossing the interior
  */
 import { useState, useRef, useMemo } from 'react'
-import { Canvas, useFrame } from '@react-three/fiber'
-import { OrbitControls, Stars, Text } from '@react-three/drei'
+import { useFrame } from '@react-three/fiber'
+import { OrbitControls, Text } from '@react-three/drei'
 import * as THREE from 'three'
 import LabShell from './LabShell'
+import LabScene from './LabScene'
 
 interface SimProps { params: any; playing: boolean }
 
@@ -26,14 +27,7 @@ function CellSim({ playing }: SimProps) {
   })
 
   return (
-    <Canvas camera={{ position: [5, 3.5, 8], fov: 50 }}
-      style={{ background: 'radial-gradient(circle at 30% 30%, #1a1830 0%, #0a0a18 70%)' }}>
-      <ambientLight intensity={0.6} />
-      <pointLight position={[6, 8, 5]} intensity={1.3} color="#fde68a" />
-      <pointLight position={[-6, -3, 4]} intensity={0.7} color="#a5b4fc" />
-      <pointLight position={[2, -4, -4]} intensity={0.4} color="#f472b6" />
-      <Stars radius={40} depth={20} count={300} factor={2} fade />
-
+    <LabScene cameraPos={[5, 3.5, 8]} cameraFov={50} tint="#1a1830" particles={70}>
       <CellMembrane />
       <Cytoplasm playing={playing} />
 
@@ -49,7 +43,7 @@ function CellSim({ playing }: SimProps) {
       <HoverLabel hover={hover} />
 
       <OrbitControls enablePan={false} minDistance={5} maxDistance={22} />
-    </Canvas>
+    </LabScene>
   )
 }
 

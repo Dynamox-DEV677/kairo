@@ -4,10 +4,11 @@
  * cradle is the still GLB model.
  */
 import { Suspense, useRef, useEffect, useMemo } from 'react'
-import { Canvas, useFrame } from '@react-three/fiber'
-import { OrbitControls, Stars, useGLTF, useAnimations, Html, Bounds } from '@react-three/drei'
+import { useFrame } from '@react-three/fiber'
+import { OrbitControls, useGLTF, useAnimations, Html, Bounds } from '@react-three/drei'
 import * as THREE from 'three'
 import LabShell from './LabShell'
+import LabScene from './LabScene'
 
 // jsDelivr CDN — keeps GLBs out of the Vercel build pipeline.
 const CRADLE_MODEL_URL = 'https://cdn.jsdelivr.net/gh/Dynamox-DEV677/kairo@main/models-cdn/newtons_cradle.glb'
@@ -19,21 +20,14 @@ interface SimProps {
 
 function PendulumSim({ params, playing }: SimProps) {
   return (
-    <Canvas camera={{ position: [0, 1, 7], fov: 50 }}
-      style={{ background: 'radial-gradient(circle at 30% 30%,#0c0c1f 0%,#050510 70%)' }}>
-      <ambientLight intensity={0.55} />
-      <directionalLight position={[5, 8, 5]} intensity={1.1} color="#fde68a" castShadow />
-      <directionalLight position={[-5, 4, -3]} intensity={0.5} color="#a5b4fc" />
-      <Stars radius={40} depth={20} count={800} factor={3} fade speed={0.2} />
-
+    <LabScene cameraPos={[0, 1, 7]} cameraFov={50} tint="#0c0c1f" particles={50}>
       <Suspense fallback={<LoaderChip />}>
         <Bounds fit clip observe margin={1.15}>
           <Cradle {...params} playing={playing} />
         </Bounds>
       </Suspense>
-
       <OrbitControls enablePan={false} minDistance={3} maxDistance={20} />
-    </Canvas>
+    </LabScene>
   )
 }
 
