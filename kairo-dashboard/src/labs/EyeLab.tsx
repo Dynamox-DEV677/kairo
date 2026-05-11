@@ -64,14 +64,19 @@ const PARTS: PartCatalog = {
   },
 }
 
+function AutoRotateGroup({ enabled, children }: { enabled: boolean; children: React.ReactNode }) {
+  // Lives inside the Canvas, so useFrame is legal here.
+  const ref = useRef<THREE.Group>(null)
+  useFrame((_, dt) => {
+    if (!enabled || !ref.current) return
+    ref.current.rotation.y += dt * 0.18
+  })
+  return <group ref={ref}>{children}</group>
+}
+
 function EyeSim({ playing }: { params: any; playing: boolean }) {
   const [hovered,  setHovered]  = useState<string | null>(null)
   const [selected, setSelected] = useState<string | null>(null)
-  const groupRef = useRef<THREE.Group>(null)
-  useFrame((_, dt) => {
-    if (!playing || !groupRef.current || hovered || selected) return
-    groupRef.current.rotation.y += dt * 0.18
-  })
 
   const isHover = (id: string) => hovered === id || selected === id
   const isDim   = (id: string) => !!selected && selected !== id
@@ -87,7 +92,7 @@ function EyeSim({ playing }: { params: any; playing: boolean }) {
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%' }}>
       <LabScene cameraPos={[3, 0.5, 4]} cameraFov={45} tint={LAB_PALETTE.biology} particles={50} stars={false}>
-        <group ref={groupRef}>
+        <AutoRotateGroup enabled={playing && !hovered && !selected}>
           {/* Sclera — see-through outer shell so we can see inside */}
           <mesh {...partProps('sclera')}>
             <sphereGeometry args={[1.5, 64, 64]} />
@@ -162,7 +167,7 @@ function EyeSim({ playing }: { params: any; playing: boolean }) {
               emissiveIntensity={isHover('optic_nerve') ? 1.4 : 0.4}
               roughness={0.5} />
           </mesh>
-        </group>
+        </AutoRotateGroup>
         <OrbitControls enablePan={false} minDistance={3} maxDistance={12} />
       </LabScene>
 

@@ -108,25 +108,30 @@ function Lobe({ lobe, isHover, isSelected, onHover, onSelect }: any) {
   )
 }
 
+function AutoRotateGroup({ enabled, speed = 0.15, children }: { enabled: boolean; speed?: number; children: React.ReactNode }) {
+  // Hooks live inside the Canvas via this wrapper component.
+  const ref = useRef<THREE.Group>(null)
+  useFrame((_, dt) => {
+    if (!enabled || !ref.current) return
+    ref.current.rotation.y += dt * speed
+  })
+  return <group ref={ref}>{children}</group>
+}
+
 function BrainSim({ playing }: { params: any; playing: boolean }) {
   const [hovered, setHovered]   = useState<string | null>(null)
   const [selected, setSelected] = useState<string | null>(null)
-  const groupRef = useRef<THREE.Group>(null)
-  useFrame((_, dt) => {
-    if (!playing || !groupRef.current || hovered || selected) return
-    groupRef.current.rotation.y += dt * 0.15
-  })
 
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%' }}>
       <LabScene cameraPos={[0, 1, 6]} cameraFov={50} tint={LAB_PALETTE.biology} particles={60} stars={false}>
-        <group ref={groupRef}>
+        <AutoRotateGroup enabled={playing && !hovered && !selected}>
           {LOBES.map(lobe => (
             <Lobe key={lobe.id} lobe={lobe}
               isHover={hovered === lobe.id} isSelected={selected === lobe.id}
               onHover={setHovered} onSelect={setSelected} />
           ))}
-        </group>
+        </AutoRotateGroup>
         <OrbitControls enablePan={false} minDistance={3.5} maxDistance={14} />
       </LabScene>
 
