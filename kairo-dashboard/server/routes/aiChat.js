@@ -235,6 +235,54 @@ CRITICAL: Output ONLY the JSON. Do not wrap in code fences. Do not say "Here is 
 // ─── Internal: do the LLM classification, return the plan + cache it ────
 // Used by both /solver/text and /solver/images so the frontend's two parallel
 // calls share one cached LLM result instead of paying for it twice.
+/**
+ * Call one specific OpenRouter model with a hard per-call timeout. Throws
+ * on any failure so Promise.any can pick the first successful winner.
+ *
+ *   model    OpenRouter model id (e.g. "openai/gpt-oss-20b:free")
+ *   question the user's question
+ *   apiKey   OpenRouter key (already validated by caller)
+ *   timeout  abort after this many ms (default 7000 — fits Vercel's 10s budget)
+ */
+async function callModel(model, question, apiKey, timeout = 7000) {
+  const ctrl = new AbortController()
+  const t = setTimeout(() => ctrl.abort(), timeout)
+  try {
+    const resp = await fetch(OR_URL, {
+      method: 'POST',
+      signal: ctrl.signal,
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type':  'application/json',
+        'HTTP-Referer':  process.env.ALLOWED_ORIGIN || 'https://kairo-daily-edu.vercel.app',
+        'X-Title':       'Kairo Solver',
+      },
+      body: JSON.stringify({
+        model,
+        messages: [
+          { role: 'system', content: SOLVER_SYSTEM },
+          { role: 'user',   content: question },
+        ],
+        temperature: 0.3,
+        max_tokens:  1400,
+      }),
+    })
+    if (!resp.ok) {
+      const t = await resp.text()
+      throw new Error(`${model} HTTP ${resp.status}: ${t.slice(0, 120)}`)
+    }
+    const data = await resp.json()
+    const raw = data?.choices?.[0]?.message?.content || ''
+    const plan = parseJsonLoose(raw)
+    if (!plan || !plan.textExplanation) {
+      throw new Error(`${model} malformed JSON (len=${raw.length})`)
+    }
+    return { plan, model }
+  } finally {
+    clearTimeout(t)
+  }
+}
+
 async function getSolverPlan(question) {
   const cacheKey = 'plan:' + question.toLowerCase()
   const cached = cacheGet(cacheKey)
@@ -243,94 +291,51 @@ async function getSolverPlan(question) {
   const apiKey = process.env.OPENROUTER_API_KEY
   if (!apiKey) throw new Error('OPENROUTER_API_KEY not configured on server.')
 
-  // Fallback chain — if the primary model is rate-limited or returns malformed
-  // output, try the next one. parseJsonLoose handles models that don't honour
-  // response_format=json_object by extracting the first balanced { ... }.
-  const FALLBACK_CHAIN = [
-    process.env.SOLVER_MODEL,                              // override (if set)
-    'openai/gpt-oss-20b:free',                             // fast, json-mode capable
-    'meta-llama/llama-3.3-70b-instruct:free',              // good json adherence
-    'google/gemma-4-31b-it:free',                          // small, fast
-    'openai/gpt-oss-120b:free',                            // smarter but slower (last resort)
+  // Race three fast free models in parallel. Promise.any resolves on the
+  // first one to SUCCESS — failures and timeouts are ignored. This fits in
+  // 7s wall-clock max, well under Vercel's 10s function ceiling. Even if
+  // one model is rate-limited or slow, another usually wins.
+  const RACE_MODELS = [
+    process.env.SOLVER_MODEL,                      // operator override
+    'openai/gpt-oss-20b:free',
+    'google/gemma-4-31b-it:free',
+    'meta-llama/llama-3.3-70b-instruct:free',
   ].filter(Boolean)
 
-  const lastError = { model: null, status: null, body: '' }
-  for (const model of FALLBACK_CHAIN) {
-    try {
-      const llmResp = await fetch(OR_URL, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type':  'application/json',
-          'HTTP-Referer':  process.env.ALLOWED_ORIGIN || 'https://kairo-daily-edu.vercel.app',
-          'X-Title':       'Kairo Solver',
-        },
-        // Drop response_format — not every model supports it on OpenRouter,
-        // and parseJsonLoose handles the fence-stripping anyway.
-        body: JSON.stringify({
-          model,
-          messages: [
-            { role: 'system', content: SOLVER_SYSTEM },
-            { role: 'user',   content: question },
-          ],
-          temperature: 0.3,
-          max_tokens:  1400,
-        }),
-      })
-
-      if (!llmResp.ok) {
-        const errText = await llmResp.text()
-        lastError.model = model
-        lastError.status = llmResp.status
-        lastError.body = errText.slice(0, 200)
-        console.warn('[solver] model', model, 'returned', llmResp.status)
-        continue   // try next model in chain
-      }
-
-      const llmData = await llmResp.json()
-      const raw = llmData?.choices?.[0]?.message?.content || ''
-      const plan = parseJsonLoose(raw)
-      if (!plan || !plan.textExplanation) {
-        lastError.model = model
-        lastError.status = 200
-        lastError.body = 'malformed JSON'
-        console.warn('[solver] model', model, 'returned malformed JSON, len=', raw.length)
-        continue
-      }
-
-      // Validate labRoute
-      let labRoute = plan.labRoute || null
-      if (labRoute && !KAIRO_LABS[labRoute]) labRoute = null
-
-      const normalized = {
-        questionType:    plan.questionType || 'general',
-        topicKeyword:    sanitizeOneLine(plan.topicKeyword || '') || null,
-        supports3D:      !!plan.supports3D,
-        labRoute,
-        textExplanation: sanitizeMarkdown(plan.textExplanation),
-        formulas:        Array.isArray(plan.formulas)
-          ? plan.formulas.slice(0, 8).map(f => sanitizeOneLine(String(f)))
-          : [],
-        relatedConcepts: Array.isArray(plan.relatedConcepts)
-          ? plan.relatedConcepts.slice(0, 6).map(c => sanitizeOneLine(String(c)))
-          : [],
-        imageQueries:    Array.isArray(plan.imageQueries)
-          ? plan.imageQueries.slice(0, 6).map(q => sanitizeOneLine(String(q)))
-          : [],
-        modelUsed:       model,
-      }
-      cacheSet(cacheKey, normalized)
-      return normalized
-    } catch (e) {
-      lastError.model = model
-      lastError.body = e.message
-      console.warn('[solver] model', model, 'threw:', e.message)
-      continue
-    }
+  let winner
+  try {
+    winner = await Promise.any(RACE_MODELS.map(m => callModel(m, question, apiKey, 7000)))
+  } catch (aggregate) {
+    const errs = aggregate.errors?.map(e => e.message).join(' · ') || 'unknown'
+    console.error('[solver] all models failed:', errs)
+    throw new Error('All AI models failed: ' + errs.slice(0, 300))
   }
 
-  // Every model failed.
-  throw new Error(`All AI models failed. Last: ${lastError.model} (${lastError.status}) ${lastError.body}`)
+  const { plan, model } = winner
+  console.log('[solver] winner:', model)
+
+  let labRoute = plan.labRoute || null
+  if (labRoute && !KAIRO_LABS[labRoute]) labRoute = null
+
+  const normalized = {
+    questionType:    plan.questionType || 'general',
+    topicKeyword:    sanitizeOneLine(plan.topicKeyword || '') || null,
+    supports3D:      !!plan.supports3D,
+    labRoute,
+    textExplanation: sanitizeMarkdown(plan.textExplanation),
+    formulas:        Array.isArray(plan.formulas)
+      ? plan.formulas.slice(0, 8).map(f => sanitizeOneLine(String(f)))
+      : [],
+    relatedConcepts: Array.isArray(plan.relatedConcepts)
+      ? plan.relatedConcepts.slice(0, 6).map(c => sanitizeOneLine(String(c)))
+      : [],
+    imageQueries:    Array.isArray(plan.imageQueries)
+      ? plan.imageQueries.slice(0, 6).map(q => sanitizeOneLine(String(q)))
+      : [],
+    modelUsed:       model,
+  }
+  cacheSet(cacheKey, normalized)
+  return normalized
 }
 
 // ────────────────────────────────────────────────────────────────────────────
