@@ -50,6 +50,7 @@ interface TextPlan {
   relatedConcepts: string[]
   cached?:         boolean
   imageQueries:    string[]   // backend now ships these so /images skips the LLM call
+  modelUsed?:      string     // 'wikipedia-fallback' when AI was unavailable
 }
 
 interface SolverResponse extends TextPlan {
@@ -558,7 +559,15 @@ function ExplanationPanel({ resp, busy, error, retryHint, onOpenLab, onAskRelate
         display: 'flex', alignItems: 'center', gap: 6,
       }}>
         <Sparkles size={12} /> Kairo says
-        {resp?.cached && (
+        {resp?.modelUsed === 'wikipedia-fallback' && (
+          <span style={{
+            marginLeft: 'auto',
+            padding: '2px 7px', borderRadius: 4,
+            background: 'rgba(251,191,36,0.10)', color: '#fbbf24',
+            fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.8,
+          }}>Wikipedia mode</span>
+        )}
+        {resp?.cached && resp?.modelUsed !== 'wikipedia-fallback' && (
           <span style={{
             marginLeft: 'auto',
             padding: '2px 7px', borderRadius: 4,

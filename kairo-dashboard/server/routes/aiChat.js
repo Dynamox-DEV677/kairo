@@ -311,14 +311,27 @@ async function getSolverPlan(question) {
     const errs = aggregate.errors?.map(e => e.message).join(' · ') || 'unknown'
     console.error('[solver] all models failed:', errs)
 
-    // Detect "everything is 429" so the frontend can show a soft retry hint.
+    // GRACEFUL DEGRADE: When every AI model fails, fall back to Wikipedia's
+    // article summary. Student still gets a useful answer — better than an
+    // error screen. Mark the plan with modelUsed='wikipedia-fallback' so the
+    // UI can show "AI is busy, this is Wikipedia's answer instead".
+    try {
+      const wikiPlan = await synthesizePlanFromWikipedia(question)
+      if (wikiPlan) {
+        cacheSet(cacheKey, wikiPlan)
+        return wikiPlan
+      }
+    } catch (e) {
+      console.warn('[solver] wikipedia fallback also failed:', e.message)
+    }
+
+    // Wikipedia fallback also failed — only THEN do we surface an error.
     const all429 = aggregate.errors?.every(e => /HTTP 429/.test(e.message || ''))
     if (all429) {
-      const err = new Error('Free AI is busy right now — usually clears in a few seconds.')
+      const err = new Error('Free AI is busy and Wikipedia is unreachable. Try again in a minute.')
       err.statusCode = 429
       throw err
     }
-
     throw new Error('All AI models failed: ' + errs.slice(0, 300))
   }
 
@@ -444,6 +457,59 @@ router.post('/solver', async (req, res) => {
     res.status(code).json({ error: e.message })
   }
 })
+
+/**
+ * GRACEFUL DEGRADE: build a solver plan from Wikipedia when every AI model
+ * fails (rate limited, provider down, etc.). Student gets a real answer
+ * sourced from the article — kept short, with a clear "AI was busy" prefix.
+ */
+async function synthesizePlanFromWikipedia(question) {
+  // 1. Search Wikipedia for the best article match.
+  const searchUrl = `https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=${encodeURIComponent(question)}&srlimit=1&origin=*`
+  const sr = await fetch(searchUrl, { headers: { 'User-Agent': 'KairoEdu/1.0' } })
+  if (!sr.ok) return null
+  const sdata = await sr.json()
+  const title = sdata?.query?.search?.[0]?.title
+  if (!title) return null
+
+  // 2. Get the article summary.
+  const summaryUrl = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`
+  const sum = await fetch(summaryUrl, { headers: { 'User-Agent': 'KairoEdu/1.0' } })
+  if (!sum.ok) return null
+  const summary = await sum.json()
+  const extract = summary?.extract
+  if (!extract) return null
+
+  const pageUrl = summary.content_urls?.desktop?.page || `https://en.wikipedia.org/wiki/${encodeURIComponent(title)}`
+
+  // 3. Detect if any Kairo Lab matches the topic.
+  let labRoute = null
+  const lower = title.toLowerCase() + ' ' + extract.toLowerCase()
+  for (const [k, hints] of Object.entries(KAIRO_LABS)) {
+    const tokens = hints.toLowerCase().split(/[\s,]+/).filter(t => t.length > 4)
+    if (tokens.some(t => lower.includes(t))) { labRoute = k; break }
+  }
+
+  return {
+    questionType:    'general',
+    topicKeyword:    title,
+    supports3D:      !!labRoute,
+    labRoute,
+    textExplanation: [
+      `> ⚠ AI tutors are busy right now, so here's the Wikipedia summary on **${title}**.`,
+      ``,
+      `## What it is`,
+      extract,
+      ``,
+      `## Read more`,
+      `[Full Wikipedia article →](${pageUrl})`,
+    ].join('\n'),
+    formulas:        [],
+    relatedConcepts: [],
+    imageQueries:    [title],
+    modelUsed:       'wikipedia-fallback',
+  }
+}
 
 /**
  * Repair LaTeX/markdown that came back through JSON.parse with single-backslash
