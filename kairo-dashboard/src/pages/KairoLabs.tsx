@@ -6,7 +6,7 @@ import { useState, useEffect, lazy, Suspense } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Beaker, Atom, Heart, Activity, Sparkles, Lock,
-  ArrowRight, Loader2, Globe, Dna,
+  ArrowRight, Loader2, Globe, Dna, Rocket, Brain,
 } from 'lucide-react'
 
 // Lazy-load each R3F lab — only fetched when student opens it.
@@ -24,6 +24,8 @@ const VectorsLab    = lazy(() => import('../labs/VectorsLab'))
 const GraphsLab     = lazy(() => import('../labs/GraphsLab'))
 const DnaLab        = lazy(() => import('../labs/DnaLab'))
 const SolarSystemLab = lazy(() => import('../labs/SolarSystemLab'))
+const SaturnVLab    = lazy(() => import('../labs/SaturnVLab'))
+const BrainLab      = lazy(() => import('../labs/BrainLab'))
 
 interface Lab {
   id:        string
@@ -106,12 +108,22 @@ const LABS: Lab[] = [
     subject: 'Biology', icon: Dna, ready: true, Component: DnaLab,
     desc: 'Click any base (A·T·G·C) or backbone strand. See A-T (2 H-bonds) vs G-C (3 H-bonds).',
   },
+  {
+    id: 'brain', title: 'Human Brain', topic: 'Nervous System',
+    subject: 'Biology', icon: Brain, ready: true, Component: BrainLab,
+    desc: 'Real anatomical 3D brain. Click frontal, parietal, temporal, occipital lobes, cerebellum, or brain stem.',
+  },
 
   // ─── Space ──────────────────────────────────────────────────────────────
   {
     id: 'solar', title: 'Solar System', topic: 'Astronomy',
     subject: 'Space', icon: Globe, ready: true, Component: SolarSystemLab,
-    desc: '8 planets orbiting the Sun. Click any body to learn what makes it unique.',
+    desc: '8 planets, the Moon, the ISS, asteroid belt, and a comet. Click any body to learn what makes it unique.',
+  },
+  {
+    id: 'saturnv', title: 'Saturn V Rocket', topic: 'Rocketry · Apollo',
+    subject: 'Space', icon: Rocket, ready: true, Component: SaturnVLab,
+    desc: 'The 111-metre rocket that took humans to the Moon. Click each stage to see what it did.',
   },
 ]
 

@@ -5,7 +5,7 @@
  */
 import { useMemo, useRef, useState } from 'react'
 import { useFrame, type ThreeEvent } from '@react-three/fiber'
-import { OrbitControls, Stars, useTexture } from '@react-three/drei'
+import { OrbitControls, Stars, useTexture, useGLTF } from '@react-three/drei'
 import { AnimatePresence } from 'framer-motion'
 import * as THREE from 'three'
 import LabShell from './LabShell'
@@ -13,6 +13,7 @@ import LabScene from './LabScene'
 import { PartInfoCard, PartHoverChip, PartIdleHint, LAB_PALETTE, type PartCatalog } from './LabKit'
 
 const TEX_BASE = 'https://cdn.jsdelivr.net/gh/Dynamox-DEV677/kairo@main/models-cdn/space-textures'
+const ISS_MODEL_URL = 'https://cdn.jsdelivr.net/gh/Dynamox-DEV677/kairo@main/models-cdn/iss.glb'
 
 interface Body {
   id:     string
@@ -130,6 +131,13 @@ const PARTS: PartCatalog = {
     analogy: 'A cosmic snowball that grows a tail near the Sun.',
     related: ['Halley\'s Comet', 'Oort Cloud', 'Solar wind tail'],
   },
+  iss: {
+    id: 'iss', label: 'International Space Station', color: '#e2e8f0',
+    function: 'A 420-tonne research lab orbiting Earth at ~400 km altitude, completing one orbit every 90 minutes.',
+    whyItMatters: 'The largest object humans have ever built in space — continuously occupied by astronauts since November 2000.',
+    analogy: 'A football-field-sized science lab racing around Earth at 28,000 km/h.',
+    related: ['Microgravity research', 'Orbital mechanics', 'International collaboration'],
+  },
 }
 
 // ─── Planet mesh ───────────────────────────────────────────────────────────
@@ -181,9 +189,69 @@ function Planet({ body, isHover, isSelected, onHover, onSelect }: any) {
           isHover={isHover} isSelected={isSelected}
           onHover={onHover} onSelect={onSelect} />
       ))}
+      {/* ISS only orbits Earth */}
+      {body.id === 'earth' && (
+        <ISS onHover={onHover} onSelect={onSelect} />
+      )}
     </group>
   )
 }
+
+// ─── ISS (International Space Station) ─────────────────────────────────────
+function ISS({ onHover, onSelect }: any) {
+  const groupRef = useRef<THREE.Group>(null)
+  const tRef = useRef(Math.random() * Math.PI * 2)
+  const { scene } = useGLTF(ISS_MODEL_URL)
+
+  // Clone once, scale to a visible size in the solar-system scale,
+  // and bias emissive so it reads against Earth.
+  const cloned = useMemo(() => {
+    const c = scene.clone(true)
+    c.traverse((obj: any) => {
+      if (obj.isMesh) {
+        obj.castShadow = false
+        obj.receiveShadow = false
+      }
+    })
+    // Fit ISS to a small size so it reads as a satellite, not a co-planet
+    const box = new THREE.Box3().setFromObject(c)
+    const size = new THREE.Vector3()
+    box.getSize(size)
+    const longest = Math.max(size.x, size.y, size.z) || 1
+    c.scale.setScalar(0.18 / longest)
+    return c
+  }, [scene])
+
+  // Orbit Earth at small radius — fast, since real ISS orbit is ~90 min
+  const ORBIT_R = 0.55
+  const PERIOD  = 2.5  // seconds per orbit (visualised — way faster than real)
+
+  useFrame((_, dt) => {
+    if (!groupRef.current) return
+    tRef.current += (Math.PI * 2 / PERIOD) * dt
+    groupRef.current.position.x = Math.cos(tRef.current) * ORBIT_R
+    groupRef.current.position.z = Math.sin(tRef.current) * ORBIT_R
+    groupRef.current.position.y = Math.sin(tRef.current * 0.7) * 0.05
+    // Always orient tangent to the orbit, like the real ISS
+    groupRef.current.rotation.y = -tRef.current + Math.PI / 2
+  })
+
+  return (
+    <group ref={groupRef}
+      onPointerOver={(e: ThreeEvent<PointerEvent>) => { e.stopPropagation(); onHover('iss'); document.body.style.cursor='pointer' }}
+      onPointerOut={() => { onHover(null); document.body.style.cursor='default' }}
+      onClick={(e: ThreeEvent<MouseEvent>) => { e.stopPropagation(); onSelect('iss') }}>
+      <primitive object={cloned} />
+      {/* Tiny halo so the ISS is easy to spot at a glance */}
+      <mesh>
+        <sphereGeometry args={[0.08, 12, 12]} />
+        <meshBasicMaterial color="#e2e8f0" transparent opacity={0.15} />
+      </mesh>
+    </group>
+  )
+}
+
+useGLTF.preload(ISS_MODEL_URL)
 
 // ─── Sun ───────────────────────────────────────────────────────────────────
 function Sun({ onHover, onSelect, hovered, selected }: any) {
@@ -335,7 +403,7 @@ function SolarSim({ playing }: { params: any; playing: boolean }) {
       </LabScene>
 
       <PartHoverChip hovered={hovered} selected={selected} catalog={PARTS} />
-      <PartIdleHint hovered={hovered} selected={selected} hint="Click the Sun, a planet, the Moon, asteroid belt, or comet" />
+      <PartIdleHint hovered={hovered} selected={selected} hint="Click the Sun, a planet, the Moon, the ISS, asteroid belt, or comet" />
       <AnimatePresence>
         {selected && PARTS[selected] && (
           <PartInfoCard part={PARTS[selected]} onClose={() => setSelected(null)} />
@@ -357,11 +425,11 @@ export default function SolarSystemLab({ onBack }: { onBack?: () => void }) {
   return (
     <LabShell
       title="Solar System" subject="Space" topic="Astronomy · Class 6-12"
-      description="Photo-textured planets orbit the Sun while spinning on their own axes. Earth has the Moon, Saturn has its rings, the asteroid belt drifts between Mars and Jupiter, and a comet on an elliptical orbit grows a tail near the Sun. Click anything to learn what makes it unique."
+      description="Photo-textured planets orbit the Sun while spinning on their own axes. Earth has the Moon AND the International Space Station; Saturn has its rings; the asteroid belt drifts between Mars and Jupiter; a comet on an elliptical orbit grows a tail near the Sun. Click anything to learn what makes it unique."
       Sim={SolarSim}
       defaultParams={{}}
       controls={[]}
-      aiPrompt={() => `Interactive 3D solar system with photo-textured bodies. Walk through: Sun (G-type star, fusion-powered), inner rocky planets (Mercury → Mars), the asteroid belt, gas + ice giants (Jupiter → Neptune), Earth's Moon, and a comet on an elliptical orbit. Cover why the inner planets are rocky vs outer being gas/ice (frost line). End with the Goldilocks zone and why Earth has life.`}
+      aiPrompt={() => `Interactive 3D solar system with photo-textured bodies. Walk through: Sun (G-type star, fusion-powered), inner rocky planets (Mercury → Mars), the asteroid belt, gas + ice giants (Jupiter → Neptune), Earth's Moon, the International Space Station orbiting Earth, and a comet on an elliptical orbit. Cover why the inner planets are rocky vs outer being gas/ice (frost line). End with the Goldilocks zone, why Earth has life, and how the ISS is humanity's permanent foothold in space.`}
       onBack={onBack}
     />
   )
