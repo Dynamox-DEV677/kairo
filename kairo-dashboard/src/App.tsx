@@ -2,13 +2,20 @@
 import './index.css'
 import Dashboard from './pages/Dashboard'
 import Login, { type AuthProfile } from './pages/Login'
+import Landing from './pages/Landing'
 import { GenerationProvider } from './lib/generationContext'
 import { supabase } from './lib/supabase'
 import { refreshIfStale } from './lib/api'
 
+// "landing" = cinematic marketing page (default for new visitors)
+// "login"   = sign-in / sign-up flow
+// "app"     = logged-in dashboard
+type View = 'landing' | 'login' | 'app'
+
 export default function App() {
   const [profile, setProfile] = useState<AuthProfile | null>(null)
   const [checking, setChecking] = useState(true)
+  const [view, setView] = useState<View>('landing')
 
   // Listen for auth-expired (refresh token died) — bounce to login screen
   useEffect(() => {
@@ -129,7 +136,11 @@ export default function App() {
   }
 
   if (!profile) {
-    return <Login onLogin={handleLogin} />
+    // Returning users skip the landing if they explicitly opened it as login
+    if (view === 'login') {
+      return <Login onLogin={handleLogin} />
+    }
+    return <Landing onGetStarted={() => setView('login')} />
   }
 
   return (
