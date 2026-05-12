@@ -52,6 +52,7 @@ const GRAD = {
 
 export default function KairoOS() {
   const [snap, setSnap] = useState<DashboardSnapshot | null>(null)
+  const [pulse, setPulse] = useState(false)   // brief visual flash on recompute
 
   function reload() {
     setSnap(getDashboard())
@@ -67,7 +68,12 @@ export default function KairoOS() {
     return () => window.removeEventListener('storage', onStorage)
   }, [])
 
-  function onRefresh()  { setSnap(refresh()) }
+  function onRefresh() {
+    setSnap(refresh())
+    // Brief flash so the user knows the button did something even when data is unchanged
+    setPulse(true)
+    setTimeout(() => setPulse(false), 700)
+  }
   function onWipe() {
     if (confirm("Wipe your Kairo OS data on this device? This can't be undone.")) {
       clearTwin()
@@ -89,8 +95,15 @@ export default function KairoOS() {
   }
 
   return (
+    // The Dashboard wraps every page in a `position:absolute; inset:0; flex`
+    // container — pages must own their own scroll. Without `overflow-y:auto`
+    // here, content past the viewport is clipped and the user can't reach
+    // recommendations / timeline / footer.
     <div style={{
-      minHeight: '100%',
+      width: '100%',
+      height: '100%',
+      overflowY: 'auto',
+      WebkitOverflowScrolling: 'touch',
       background: C.bg,
       backgroundImage:
         `radial-gradient(at 12% 0%, rgba(124,58,237,0.10) 0%, transparent 36%),
@@ -105,7 +118,7 @@ export default function KairoOS() {
 
       <div style={{ maxWidth: 1240, margin: '0 auto' }}>
 
-        <Header twin={snap.twin!} onRefresh={onRefresh} onWipe={onWipe} />
+        <Header twin={snap.twin!} onRefresh={onRefresh} onWipe={onWipe} pulse={pulse} />
 
         {snap.observations.length > 0 && (
           <TwinVoice obs={snap.observations[0]} />
@@ -154,9 +167,9 @@ export default function KairoOS() {
 // ════════════════════════════════════════════════════════════════════════════
 // HEADER
 // ════════════════════════════════════════════════════════════════════════════
-function Header({ twin, onRefresh, onWipe }: { twin: Twin; onRefresh: () => void; onWipe: () => void }) {
+function Header({ twin, onRefresh, onWipe, pulse }: { twin: Twin; onRefresh: () => void; onWipe: () => void; pulse: boolean }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14 }}>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14, flexWrap: 'wrap' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
         <div style={{
           width: 44, height: 44, borderRadius: 12,
@@ -176,15 +189,23 @@ function Header({ twin, onRefresh, onWipe }: { twin: Twin; onRefresh: () => void
             Your learning intelligence
           </h1>
           <div style={{ fontSize: 11.5, color: C.textFaint, marginTop: 2 }}>
-            Updated {formatRelative(twin.computedAt)}  ·  {twin.streakDays} day streak  ·  stored on this device
+            {pulse ? (
+              <span style={{ color: C.green, fontWeight: 600 }}>● Recomputed just now</span>
+            ) : (
+              <>Updated {formatRelative(twin.computedAt)}  ·  {twin.streakDays} day streak  ·  stored on this device</>
+            )}
           </div>
         </div>
       </div>
 
       <div style={{ display: 'flex', gap: 8 }}>
-        <button onClick={onRefresh} style={chipBtn()}>
-          <RefreshCw size={13} />
-          Recompute
+        <button onClick={onRefresh} style={{
+          ...chipBtn(),
+          transition: 'all 0.2s ease',
+          ...(pulse ? { borderColor: C.green, color: C.green, boxShadow: `0 0 12px ${C.green}55` } : {}),
+        }}>
+          <RefreshCw size={13} style={{ transform: pulse ? 'rotate(360deg)' : 'none', transition: 'transform 0.7s ease' }} />
+          {pulse ? 'Recomputed' : 'Recompute'}
         </button>
         <button onClick={onWipe} style={{ ...chipBtn(), color: C.red, borderColor: 'rgba(248,113,113,0.4)' }}>
           <Trash2 size={13} />
@@ -876,7 +897,8 @@ function PageSkeleton() {
 function EmptyState({ onRefresh, onSeed }: { onRefresh: () => void; onSeed: () => void }) {
   return (
     <div style={{
-      minHeight: '70vh', display: 'flex', flexDirection: 'column',
+      width: '100%', height: '100%', overflowY: 'auto',
+      display: 'flex', flexDirection: 'column',
       alignItems: 'center', justifyContent: 'center', gap: 12, padding: 40,
       background: C.bg,
       backgroundImage:
