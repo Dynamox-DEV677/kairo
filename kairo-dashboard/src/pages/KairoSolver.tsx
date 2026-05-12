@@ -113,7 +113,11 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
     // Auto-retry the /text call up to 2 times on 429 with a short backoff.
     // OpenRouter's free pool throttles in seconds-long bursts, so a single
     // wait+retry almost always succeeds.
+    // OpenRouter's free pool throttles in seconds-long bursts but recovers
+    // fast. Retry up to 4 times with increasing backoff — total worst-case
+    // wait is ~20s but the AVERAGE retry succeeds in 5-7s.
     async function fetchTextWithRetry(attempt = 0): Promise<TextPlan> {
+      const MAX_ATTEMPTS = 4
       const r = await fetch('/api/ai/solver/text', {
         method: 'POST', headers,
         body: JSON.stringify({ question }),
@@ -121,17 +125,20 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
       })
       if (r.ok) return r.json()
       const errBody = await r.json().catch(() => ({}))
-      if ((r.status === 429 || errBody.rateLimited) && attempt < 2) {
-        const waitMs = 2500 + attempt * 2000   // 2.5s, then 4.5s
-        setRetryHint(`Free AI is busy — retrying in ${(waitMs / 1000).toFixed(1)}s…`)
+      const isRateLimit = r.status === 429 || errBody.rateLimited
+      if (isRateLimit && attempt < MAX_ATTEMPTS) {
+        // 2.5s, 4.5s, 6.5s, 8.5s
+        const waitMs = 2500 + attempt * 2000
+        const remaining = MAX_ATTEMPTS - attempt
+        setRetryHint(`Free AI is busy — retrying in ${(waitMs / 1000).toFixed(1)}s (${remaining} more ${remaining === 1 ? 'try' : 'tries'})`)
         await new Promise(res => setTimeout(res, waitMs))
         setRetryHint('Retrying…')
         if (ctrl.signal.aborted) throw new DOMException('aborted', 'AbortError')
         return fetchTextWithRetry(attempt + 1)
       }
-      if (r.status === 429 || errBody.rateLimited) {
+      if (isRateLimit) {
         throw new Error(
-          "Free AI is still busy. Try again in a minute, or ask a different question."
+          "Free AI is overloaded right now. Wait 30-60 seconds and ask again — or try a different question."
         )
       }
       throw new Error(errBody.error || `Text endpoint returned ${r.status}`)
@@ -719,11 +726,31 @@ function ExplanationPanel({ resp, busy, error, retryHint, onOpenLab, onAskRelate
 
       {error && (
         <div style={{
-          padding: '10px 14px', borderRadius: 10,
-          background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.25)',
-          color: '#f87171', fontSize: 12,
+          padding: '14px 16px', borderRadius: 12,
+          background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.28)',
+          display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap',
         }}>
-          ⚠ {error}
+          <div style={{ flex: 1, minWidth: 200 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: '#f87171', textTransform: 'uppercase', letterSpacing: 1.4, marginBottom: 4 }}>
+              ⚠ Couldn't fetch an answer
+            </div>
+            <div style={{ fontSize: 13, color: '#e4e4e7', lineHeight: 1.55 }}>
+              {error}
+            </div>
+          </div>
+          {topic && !busy && (
+            <button
+              onClick={() => ask(topic)}
+              style={{
+                padding: '8px 14px', borderRadius: 9,
+                background: 'linear-gradient(135deg, #7c3aed 0%, #4f46e5 50%, #2563eb 100%)',
+                color: '#fff', fontFamily: 'inherit', fontWeight: 700, fontSize: 12,
+                border: 'none', cursor: 'pointer', flexShrink: 0,
+                boxShadow: '0 6px 18px rgba(124,58,237,0.4)',
+              }}>
+              Try again
+            </button>
+          )}
         </div>
       )}
 

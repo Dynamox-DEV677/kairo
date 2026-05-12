@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { Camera, User, Bell, Shield, Trash2, Check } from 'lucide-react'
+import { confirmDialog } from '../components/ConfirmModal'
 
 const BOARDS = ['CBSE', 'ICSE', 'Maharashtra', 'Tamil Nadu', 'Karnataka', 'UP Board', 'Bihar Board']
 const CLASSES = ['6', '7', '8', '9', '10', '11', '12']
@@ -35,11 +36,17 @@ export default function Settings() {
     setTimeout(() => setSaved(false), 2000)
   }
 
-  function clearData() {
-    if (confirm('Clear all saved data? This cannot be undone.')) {
-      localStorage.clear()
-      window.location.reload()
-    }
+  async function clearData() {
+    const ok = await confirmDialog({
+      title:        'Clear all saved data?',
+      body:         'Your local Kairo profile, settings, and Twin data will be erased from this device. Your account on the server is not affected.',
+      confirmLabel: 'Yes, clear everything',
+      cancelLabel:  'Keep my data',
+      tone:         'danger',
+    })
+    if (!ok) return
+    localStorage.clear()
+    window.location.reload()
   }
 
   const inp = {

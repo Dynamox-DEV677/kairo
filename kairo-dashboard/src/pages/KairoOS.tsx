@@ -20,6 +20,7 @@ import {
   type Twin, type Observation, type Recommendation, type TwinEvent,
   type MasteryRow,
 } from '../lib/twin'
+import { confirmDialog } from '../components/ConfirmModal'
 
 // ════════════════════════════════════════════════════════════════════════════
 // TOKENS
@@ -74,11 +75,17 @@ export default function KairoOS() {
     setPulse(true)
     setTimeout(() => setPulse(false), 700)
   }
-  function onWipe() {
-    if (confirm("Wipe your Kairo OS data on this device? This can't be undone.")) {
-      clearTwin()
-      reload()
-    }
+  async function onWipe() {
+    const ok = await confirmDialog({
+      title:        'Wipe your Twin?',
+      body:         "Everything Kairo OS has learned about you on this device will be permanently erased. Schools, marks, and other school data are not affected.",
+      confirmLabel: 'Yes, wipe my Twin',
+      cancelLabel:  'Keep my Twin',
+      tone:         'danger',
+    })
+    if (!ok) return
+    clearTwin()
+    reload()
   }
 
   function onAct(id: string)     { actOnRecommendation(id);     reload() }
