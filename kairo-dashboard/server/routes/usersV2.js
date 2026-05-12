@@ -13,7 +13,11 @@ import { Router } from 'express'
 import bcrypt     from 'bcryptjs'
 import { supabaseAdmin, requireSupabase }      from '../services/supabase.js'
 import { requireSupabaseAuth, requireRole }    from '../middleware/supabaseAuth.js'
-import { joinedSchoolEmail }                    from '../services/welcomeEmail.js'
+import {
+  sendWelcomeJoinEmail,
+  sendWelcomePersonalEmail,
+  sendSignInEmail,
+} from '../email/index.js'
 import { getClientIp, isIpInRange }            from '../middleware/schoolAuth.js'
 
 const router = Router()
@@ -218,7 +222,7 @@ router.post('/register', async (req, res) => {
     console.log(`[Users] ✓ Registered: ${name} (${effectiveRole}, ${initialStatus}) → ${school.school_name}${autoPromoted ? ' [auto-promoted to admin]' : ''}`)
 
     // Welcome email — fire and forget
-    joinedSchoolEmail({
+    sendWelcomeJoinEmail({
       to:               email.trim().toLowerCase(),
       name:             name.trim(),
       role:             effectiveRole,
@@ -362,6 +366,14 @@ router.post('/register-personal', async (req, res) => {
 
     console.log(`[Users] ✓ Registered personal: ${name} (${authUser.id})`)
 
+    // Welcome email for personal users — fire and forget
+    sendWelcomePersonalEmail({
+      to:        email.trim().toLowerCase(),
+      name:      name.trim(),
+      className: class_name || null,
+      board:     board || null,
+    }).catch(() => {})
+
     res.status(201).json({
       message: 'Personal account created.',
       user: { ...profile, class_name: class_name || null, board: board || null },
@@ -463,6 +475,17 @@ router.post('/login', async (req, res) => {
       userId: data.user.id, schoolId: profile.school_id,
       email, ipAddress: clientIp, userAgent, success: true,
     })
+
+    // 7. Sign-in security alert — fire and forget so the response isn't delayed.
+    //    We send on every successful login; users rely on this as an early-
+    //    warning system for account compromise.
+    sendSignInEmail({
+      to:        email.trim().toLowerCase(),
+      name:      profile.name || null,
+      userAgent: userAgent || '',
+      ip:        clientIp || null,
+      time:      new Date(),
+    }).catch(() => {})
 
     res.json({
       message:       'Login successful.',

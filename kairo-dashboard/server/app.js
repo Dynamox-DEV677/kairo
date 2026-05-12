@@ -40,8 +40,12 @@ import gamificationRoutes  from './routes/gamification.js'
 // ── v4 routes (Supabase multi-tenant SaaS) ────────────────────────────────────
 import schoolRoutes        from './routes/schools.js'
 import usersV2Routes       from './routes/usersV2.js'
+import passwordResetRoutes from './routes/passwordReset.js'
 import notesRoutes         from './routes/notes.js'
 import notificationsRoutes from './routes/notifications.js'
+
+// ── Dev / ops: email template preview (gated by env) ──────────────────────────
+import devEmailPreviewRoutes from './routes/devEmailPreview.js'
 
 // ── v5 routes (School Management Core) ────────────────────────────────────────
 import tasksRoutes         from './routes/tasks.js'
@@ -138,9 +142,13 @@ app.use('/api/gamification',   gamificationRoutes)
 
 // v4 — Supabase multi-tenant SaaS
 app.use('/api/schools',        schoolRoutes)
+app.use('/api/users',          passwordResetRoutes)    // forgot-password, reset-password (mounted first so /forgot-password resolves before any catch-alls)
 app.use('/api/users',          usersV2Routes)
 app.use('/api/notes',          notesRoutes)
 app.use('/api/notifications',  notificationsRoutes)
+
+// Dev / ops — email previews (no auth, 404 in prod unless KAIRO_ALLOW_EMAIL_PREVIEW=1)
+app.use('/api/dev/emails',     devEmailPreviewRoutes)
 
 // v5 — School Management Core
 app.use('/api/tasks',          tasksRoutes)
@@ -221,12 +229,21 @@ app.get('/api', (_req, res) => {
       ],
       users_v2: [
         'POST /api/users/register',
+        'POST /api/users/register-personal',
         'POST /api/users/login',
+        'POST /api/users/forgot-password',
+        'POST /api/users/reset-password',
         'GET  /api/users/profile',
         'PUT  /api/users/profile',
         'POST /api/users/join-school',
         'GET  /api/users/school-members',
         'POST /api/users/logout',
+      ],
+      dev_emails: [
+        'GET /api/dev/emails',
+        'GET /api/dev/emails/:id',
+        'GET /api/dev/emails/:id?fmt=text',
+        'GET /api/dev/emails/:id?raw=1',
       ],
       notes:  ['POST /api/notes', 'GET /api/notes', 'GET /api/notes/:id', 'PUT /api/notes/:id', 'DELETE /api/notes/:id', 'GET /api/notes/:id/pdf', 'GET /api/notes/subjects'],
       notifications: ['POST /api/notifications', 'GET /api/notifications', 'GET /api/notifications/all', 'DELETE /api/notifications/:id'],
