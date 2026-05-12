@@ -19,6 +19,7 @@
 import { Router } from 'express'
 import { PREVIEW, listPreviews, renderPreviewHtml, renderPreviewText } from '../email/preview.js'
 import { THEME } from '../email/theme.js'
+import { getTransporter, getFromAddress, send } from '../email/transport.js'
 
 const router = Router()
 
@@ -27,6 +28,97 @@ function previewAllowed() {
   if (process.env.KAIRO_ALLOW_EMAIL_PREVIEW === '1') return true
   return process.env.NODE_ENV !== 'production'
 }
+
+// ── /status — ALWAYS available, even in production ─────────────────────────
+// Tells you exactly why the email system isn't sending. Hit this first when
+// debugging "no email arrived" issues.
+router.get('/status', async (_req, res) => {
+  const hasEmail = !!process.env.KAIRO_EMAIL
+  const hasPwd   = !!(process.env.KAIRO_EMAIL_APP_PASSWORD || '').replace(/\s+/g, '')
+  const t        = getTransporter()
+
+  let verifyResult = null
+  let verifyError  = null
+  if (t) {
+    try {
+      // Nodemailer .verify() does an SMTP handshake — confirms the credentials
+      // are valid without actually sending mail.
+      await t.verify()
+      verifyResult = 'ok'
+    } catch (e) {
+      verifyResult = 'failed'
+      verifyError  = e.message
+    }
+  }
+
+  res.json({
+    configured: hasEmail && hasPwd,
+    env: {
+      KAIRO_EMAIL_set:              hasEmail,
+      KAIRO_EMAIL_APP_PASSWORD_set: hasPwd,
+      ALLOWED_ORIGIN:               process.env.ALLOWED_ORIGIN || '(not set — will fall back to default)',
+    },
+    from_address:      getFromAddress(),
+    transporter_ready: !!t,
+    smtp_verify:       verifyResult,           // 'ok' | 'failed' | null
+    smtp_error:        verifyError,            // human-readable error if verify failed
+    hint: !hasEmail || !hasPwd
+      ? 'Set KAIRO_EMAIL and KAIRO_EMAIL_APP_PASSWORD in Vercel env vars and redeploy.'
+      : verifyResult === 'failed'
+      ? 'SMTP credentials rejected. The App Password is wrong, expired, or 2FA was disabled. Generate a new App Password at myaccount.google.com → Security → App passwords.'
+      : verifyResult === 'ok'
+      ? 'All systems go. Hit /api/dev/emails/test-send?to=you@example.com to send a real test email.'
+      : 'Transporter not built (config issue).',
+  })
+})
+
+// ── /test-send — actually attempts to send a real email ────────────────────
+// Use this to verify end-to-end delivery: `?to=you@example.com`
+// Available in dev / when KAIRO_ALLOW_EMAIL_PREVIEW=1. Otherwise 404.
+router.get('/test-send', async (req, res) => {
+  if (!previewAllowed()) return res.status(404).json({ error: 'Not found.' })
+
+  const to = (req.query.to || '').toString().trim()
+  if (!to || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)) {
+    return res.status(400).json({ error: 'Pass ?to=your-email@example.com' })
+  }
+
+  const t = getTransporter()
+  if (!t) {
+    return res.status(400).json({
+      ok:    false,
+      error: 'Email is not configured. Check /api/dev/emails/status for details.',
+    })
+  }
+
+  // Send the welcome-personal template as a real test email
+  const sample = PREVIEW['welcome-personal'].sample
+  const html   = PREVIEW['welcome-personal'].renderHtml(sample)
+  const text   = PREVIEW['welcome-personal'].renderText(sample)
+
+  const info = await send({
+    to,
+    subject: '[Kairo Test] Email system is working',
+    html,
+    text,
+  })
+
+  if (!info) {
+    return res.status(500).json({
+      ok:    false,
+      error: 'Send returned null. Check server logs for the actual SMTP error.',
+    })
+  }
+
+  res.json({
+    ok:          true,
+    message:     `Test email sent to ${to}. Check your inbox (and Spam / Promotions).`,
+    message_id:  info.messageId,
+    accepted:    info.accepted,
+    rejected:    info.rejected,
+    response:    info.response,
+  })
+})
 
 router.use((req, res, next) => {
   if (!previewAllowed()) return res.status(404).json({ error: 'Not found.' })
