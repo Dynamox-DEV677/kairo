@@ -138,7 +138,9 @@ function Rocket({ playing, hovered, selected, onHover, onSelect }: {
   const { scene } = useGLTF(SATURN_V_URL)
   const groupRef = useRef<THREE.Group>(null)
 
-  // Clone, fit to TARGET_SIZE on the Y axis, center on origin.
+  // Clone, auto-orient (longest axis → Y), fit to TARGET_SIZE, center on origin.
+  // This GLB has its long axis on Z (Sketchfab Maya/FBX export quirk) — without
+  // this rotation the rocket renders lying on its side pointing at the camera.
   const { cloned, height, halfX } = useMemo(() => {
     const c = scene.clone(true)
     c.traverse((obj: any) => {
@@ -147,7 +149,8 @@ function Rocket({ playing, hovered, selected, onHover, onSelect }: {
         obj.receiveShadow = true
       }
     })
-    // Mesh-only bounds (rigged GLBs have stray empties / bones that wreck Box3).
+
+    // 1. Measure mesh-only bounds in source orientation.
     const meshBox = new THREE.Box3()
     let meshes = 0
     c.traverse((obj: any) => {
@@ -156,14 +159,33 @@ function Rocket({ playing, hovered, selected, onHover, onSelect }: {
         meshes++
       }
     })
-    const box = meshes > 0 ? meshBox : new THREE.Box3().setFromObject(c)
-    const size = new THREE.Vector3()
-    box.getSize(size)
-    const longest = Math.max(size.x, size.y, size.z) || 1
+    const sourceBox = meshes > 0 ? meshBox : new THREE.Box3().setFromObject(c)
+    const srcSize = new THREE.Vector3()
+    sourceBox.getSize(srcSize)
+
+    // 2. Detect longest axis. If it's not Y, rotate so it becomes Y (up).
+    //    Z-longest is common in Maya/FBX exports → rotate -90° around X.
+    //    X-longest is rare but possible → rotate -90° around Z.
+    if (srcSize.z > srcSize.y && srcSize.z > srcSize.x) {
+      c.rotateX(-Math.PI / 2)        // +Z → +Y (stand up)
+    } else if (srcSize.x > srcSize.y && srcSize.x > srcSize.z) {
+      c.rotateZ(Math.PI / 2)         // +X → +Y
+    }
+
+    // 3. Re-measure after rotation, then fit + center.
+    c.updateMatrixWorld(true)
+    const rotatedBox = new THREE.Box3()
+    c.traverse((obj: any) => {
+      if (obj.isMesh && obj.geometry) rotatedBox.union(new THREE.Box3().setFromObject(obj))
+    })
+    const rotSize = new THREE.Vector3()
+    rotatedBox.getSize(rotSize)
+    const longest = Math.max(rotSize.x, rotSize.y, rotSize.z) || 1
     const factor = TARGET_SIZE / longest
     c.scale.setScalar(factor)
 
-    // Recompute, center.
+    // 4. Recompute, center on origin.
+    c.updateMatrixWorld(true)
     const scaledBox = new THREE.Box3()
     c.traverse((obj: any) => {
       if (obj.isMesh && obj.geometry) scaledBox.union(new THREE.Box3().setFromObject(obj))
