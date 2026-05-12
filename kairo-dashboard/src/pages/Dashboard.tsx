@@ -45,6 +45,7 @@ import ExplainMistake from './ExplainMistake'
 import PerformancePredictor from './PerformancePredictor'
 import PanicMode from './PanicMode'
 import KairoLabs from './KairoLabs'
+import KairoOS from './KairoOS'
 import { DEFAULT_MODEL } from '../lib/openrouter'
 
 import type { AuthProfile } from './Login'
@@ -89,6 +90,7 @@ const PAGE_TITLES: Record<string, string> = {
   'perf-predictor': 'Performance Predictor',
   panic:            'Exam Panic Mode',
   labs:             'Kairo Labs',
+  'kairo-os':       'Kairo OS',
   settings:         'Settings',
 }
 
@@ -324,6 +326,9 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
 
             {/* Kairo Labs */}
             <div style={pageStyle('labs')}><KairoLabs /></div>
+
+            {/* Kairo OS — AI Academic Twin */}
+            <div style={pageStyle('kairo-os')}><KairoOS /></div>
 
           </div>
 

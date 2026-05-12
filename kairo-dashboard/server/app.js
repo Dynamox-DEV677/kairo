@@ -73,6 +73,9 @@ import knowledgeRoutes     from './routes/knowledge.js'
 // ── v12 routes (Payments + Subscriptions) ────────────────────────────────────
 import paymentRoutes       from './routes/payments.js'
 
+// ── v13 routes (Kairo OS · AI Academic Twin) ─────────────────────────────────
+import twinRoutes          from './routes/twin.js'
+
 // ─── Validate env ─────────────────────────────────────────────────────────────
 if (!process.env.ENCRYPTION_SECRET || process.env.ENCRYPTION_SECRET.length < 32) {
   // Use a fallback so the server doesn't crash — set ENCRYPTION_SECRET in prod for real security
@@ -175,6 +178,9 @@ app.use('/api/knowledge',      knowledgeRoutes)
 
 // v12 — Payments + subscription lifecycle
 app.use('/api/payments',       paymentRoutes)
+
+// v13 — Kairo OS · AI Academic Twin
+app.use('/api/twin',           twinRoutes)
 
 // ─── Health check ─────────────────────────────────────────────────────────────
 app.get('/health', (_req, res) => {

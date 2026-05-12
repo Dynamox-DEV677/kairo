@@ -7,7 +7,7 @@ import {
   GraduationCap, Shield, Sparkles, DollarSign, Bot, UserCheck, Grid3x3, Building2,
   Edit3, Lightbulb, FunctionSquare, Brain, TrendingUp, Star, Timer, Megaphone,
   Target, Activity, Zap, Compass, Network, Mic, Swords, Share2, AlertTriangle,
-  Beaker,
+  Beaker, Cpu,
 } from 'lucide-react'
 import { useGeneration } from '../lib/generationContext'
 import { getRecentChats, deleteRecentChat, timeAgo } from '../lib/recentChats'
@@ -24,6 +24,7 @@ interface NavItem {
 // ── Role-isolated navigation ─────────────────────────────────────────────────
 // Each role sees ONLY their own tools — no cross-access.
 const STUDENT_NAV: NavItem[] = [
+  { label: 'Kairo OS',        icon: Cpu,             to: 'kairo-os',      color: '#a78bfa' },
   { label: "Kairo's Solver",    icon: MessageCircle,   to: 'doubt',         color: '#818cf8' },
   { label: 'AI Memory',       icon: Brain,           to: 'memory',        color: '#a78bfa' },
   { label: 'Kairo Labs',      icon: Beaker,          to: 'labs',          color: '#ec4899' },
