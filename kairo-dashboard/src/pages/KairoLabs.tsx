@@ -6,7 +6,7 @@ import { useState, useEffect, lazy, Suspense } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Beaker, Atom, Heart, Activity, Sparkles, Lock,
-  ArrowRight, Loader2, Brain, Eye, Globe, Dna,
+  ArrowRight, Loader2, Globe, Dna,
 } from 'lucide-react'
 
 // Lazy-load each R3F lab — only fetched when student opens it.
@@ -23,8 +23,6 @@ const CellLab       = lazy(() => import('../labs/CellLab'))
 const VectorsLab    = lazy(() => import('../labs/VectorsLab'))
 const GraphsLab     = lazy(() => import('../labs/GraphsLab'))
 const DnaLab        = lazy(() => import('../labs/DnaLab'))
-const BrainLab      = lazy(() => import('../labs/BrainLab'))
-const EyeLab        = lazy(() => import('../labs/EyeLab'))
 const SolarSystemLab = lazy(() => import('../labs/SolarSystemLab'))
 
 interface Lab {
@@ -107,16 +105,6 @@ const LABS: Lab[] = [
     id: 'dna', title: 'DNA Double Helix', topic: 'Genetics',
     subject: 'Biology', icon: Dna, ready: true, Component: DnaLab,
     desc: 'Click any base (A·T·G·C) or backbone strand. See A-T (2 H-bonds) vs G-C (3 H-bonds).',
-  },
-  {
-    id: 'brain', title: 'Human Brain', topic: 'Nervous System',
-    subject: 'Biology', icon: Brain, ready: true, Component: BrainLab,
-    desc: 'Click the 4 lobes + cerebellum + brainstem. See what each region controls.',
-  },
-  {
-    id: 'eye', title: 'Human Eye', topic: 'Sense Organs',
-    subject: 'Biology', icon: Eye, ready: true, Component: EyeLab,
-    desc: 'Cross-section eye. Click the cornea, iris, lens, retina, optic nerve.',
   },
 
   // ─── Space ──────────────────────────────────────────────────────────────

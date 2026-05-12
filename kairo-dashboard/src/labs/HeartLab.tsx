@@ -4,17 +4,16 @@
  * with at a speed scaled by BPM, falls back to a manual lub-dub if there
  * are no embedded clips.
  */
-import { Suspense, useRef, useEffect, useMemo } from 'react'
+import { Suspense, useRef, useMemo } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { OrbitControls, Text, useGLTF, useAnimations, Html } from '@react-three/drei'
+import { OrbitControls, Text, useGLTF, Html } from '@react-three/drei'
 import * as THREE from 'three'
 import LabShell from './LabShell'
 import LabScene from './LabScene'
 
-// Served from jsDelivr's CDN directly off the GitHub repo so the 12MB GLB
-// never has to ride along with the Vercel build. Free, fast, globally cached.
 const HEART_MODEL_URL = 'https://cdn.jsdelivr.net/gh/Dynamox-DEV677/kairo@main/models-cdn/beating-heart.glb'
-const TARGET_SIZE = 4.5   // fit the heart's longest VISIBLE axis to this many world units
+// Larger fit + closer camera so the beat is clearly visible.
+const TARGET_SIZE = 7.0
 
 interface SimProps {
   params: { bpm: number }
@@ -24,7 +23,7 @@ interface SimProps {
 function HeartSim({ params, playing }: SimProps) {
   return (
     <LabScene
-      cameraPos={[0, 0.5, 7]}
+      cameraPos={[0, 0.2, 5.5]}
       cameraFov={45}
       tint="#1c0a14"
       fogColor="#0a0a18"
@@ -34,7 +33,7 @@ function HeartSim({ params, playing }: SimProps) {
         <HeartModel bpm={params.bpm} playing={playing} />
       </Suspense>
 
-      <Text position={[0, -2.6, 0]} fontSize={0.3} color="#fafafa" anchorX="center"
+      <Text position={[0, -3.6, 0]} fontSize={0.36} color="#fafafa" anchorX="center"
         outlineWidth={0.02} outlineColor="#000">
         {params.bpm} BPM
       </Text>
@@ -59,7 +58,7 @@ function HeartFallback() {
 }
 
 function HeartModel({ bpm, playing }: { bpm: number; playing: boolean }) {
-  const { scene, animations } = useGLTF(HEART_MODEL_URL)
+  const { scene } = useGLTF(HEART_MODEL_URL)
   // Outer group — drives the BPM pulse on top of the base fit scale
   const pulseRef = useRef<THREE.Group>(null)
 
@@ -112,58 +111,24 @@ function HeartModel({ bpm, playing }: { bpm: number; playing: boolean }) {
     return { cloned: c, fitScale: factor }
   }, [scene])
 
-  const { actions, mixer } = useAnimations(animations, cloned)
-  const hasAnim = animations.length > 0
-
-  // Play the built-in beat animation if it exists.
-  useEffect(() => {
-    const names = Object.keys(actions)
-    if (names.length === 0) return
-    // Loop every clip the model ships with — a real heart often has multiple
-    // bones animating in parallel.
-    for (const name of names) {
-      const action = actions[name]!
-      action.reset()
-      action.setLoop(THREE.LoopRepeat, Infinity)
-      action.clampWhenFinished = false
-      if (playing) action.play()
-      else action.stop()
-    }
-    return () => {
-      for (const name of names) actions[name]?.stop()
-    }
-  }, [actions, playing])
-
-  // Drive animation timescale by BPM (assume the clip is authored at ~60 BPM).
-  useEffect(() => {
-    const names = Object.keys(actions)
-    if (names.length === 0) return
-    for (const name of names) {
-      const action = actions[name]!
-      action.timeScale = bpm / 60
-    }
-  }, [actions, bpm])
-
-  // useFrame:
-  //   - if the model has clips, advance the mixer (drei does this automatically
-  //     in newer versions but we drive it explicitly to scale by BPM-aware dt)
-  //   - if not, do a manual lub-dub by scaling pulseRef
+  // We deliberately ignore the GLB's embedded animation: it's a bone-deformation
+  // that's nearly invisible to the eye and doesn't scale with BPM in a way the
+  // student can perceive. The manual lub-dub group-scale pulse is way more
+  // legible: every beat the whole heart visibly contracts and relaxes.
   const tRef = useRef(0)
   useFrame((_, dt) => {
-    if (!playing) return
-    if (hasAnim) {
-      // useAnimations attaches a mixer; calling update again is harmless because
-      // drei's <primitive> doesn't auto-tick the mixer for a cloned scene.
-      mixer?.update(dt)
-      return
-    }
-    if (!pulseRef.current) return
+    if (!playing || !pulseRef.current) return
     tRef.current += dt
-    const period = 60 / bpm
-    const phase = (tRef.current % period) / period
+    const period = 60 / bpm                       // seconds per full cycle
+    const phase  = (tRef.current % period) / period   // 0..1 within one beat
+
+    // Two-phase lub-dub: bigger first contraction, smaller secondary.
     let pulse = 0
-    if (phase < 0.18) pulse = 0.10 * Math.sin((phase / 0.18) * Math.PI)
-    else if (phase > 0.28 && phase < 0.46) pulse = 0.05 * Math.sin(((phase - 0.28) / 0.18) * Math.PI)
+    if (phase < 0.18) {
+      pulse = 0.16 * Math.sin((phase / 0.18) * Math.PI)   // "lub" — 16% scale up
+    } else if (phase > 0.30 && phase < 0.48) {
+      pulse = 0.08 * Math.sin(((phase - 0.30) / 0.18) * Math.PI)   // "dub" — 8%
+    }
     pulseRef.current.scale.setScalar(1 + pulse)
   })
 
