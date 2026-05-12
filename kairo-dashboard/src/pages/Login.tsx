@@ -57,11 +57,18 @@ export default function Login({ onLogin }: LoginProps) {
   const transition = { type: 'spring' as const, stiffness: 250, damping: 30 }
 
   return (
+    // Owns its own scroll context — global `body { overflow:hidden }` on mobile
+    // (which exists to keep the bottom nav fixed in the rest of the app) means
+    // this page would otherwise be unscrollable. The `100dvh` keeps the layout
+    // stable when mobile browser chrome shows/hides.
     <div style={{
-      minHeight: '100vh',
+      height: '100dvh',
+      minHeight: '100vh',                          // fallback for older browsers
       background: '#0a0a0a',
       fontFamily: "'Inter', system-ui, sans-serif",
-      display: 'flex', alignItems: 'stretch', justifyContent: 'center',
+      display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
+      overflowY: 'auto',
+      WebkitOverflowScrolling: 'touch',
       paddingTop: 'env(safe-area-inset-top)',
       paddingBottom: 'env(safe-area-inset-bottom)',
     }}>
@@ -73,9 +80,9 @@ export default function Login({ onLogin }: LoginProps) {
         pointerEvents: 'none',
       }} />
 
-      <div style={{ width: '100%', maxWidth: 480, padding: '40px 24px', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ width: '100%', maxWidth: 480, padding: '28px 20px 48px', display: 'flex', flexDirection: 'column' }}>
         {/* Logo */}
-        <div style={{ textAlign: 'center', marginBottom: 28, flexShrink: 0 }}>
+        <div style={{ textAlign: 'center', marginBottom: 22, flexShrink: 0 }}>
           <img src="/kairo_logo.png" alt="Kairo"
             style={{
               width: 64, height: 64, borderRadius: 16, objectFit: 'contain',
@@ -88,10 +95,11 @@ export default function Login({ onLogin }: LoginProps) {
           </p>
         </div>
 
-        {/* Wizard surface */}
+        {/* Wizard surface — let it size to its content (was `flex: 1` which
+            collapsed the children behind a fixed viewport height). */}
         <div style={{
           background: '#111', border: '1px solid #1e1e1e', borderRadius: 18,
-          padding: 28, flex: 1, display: 'flex', flexDirection: 'column',
+          padding: 24,
         }}>
           <AnimatePresence mode="wait">
             {mode === 'choose' && (
