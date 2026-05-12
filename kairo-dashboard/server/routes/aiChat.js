@@ -299,7 +299,15 @@ CRITICAL: Output ONLY the JSON. Do not wrap in code fences. Do not say "Here is 
  *
  * Get a free key at: https://console.groq.com/keys
  */
-async function callGroq(question, apiKey, timeout = 7000) {
+// Groq's stable solver-grade models (Nov 2025). Llama 8B is included as a
+// fast hedge: when 70B is slow under load, 8B usually still responds in <1s.
+const GROQ_MODELS = [
+  'llama-3.3-70b-versatile',     // primary — fast + smart
+  'llama-3.1-8b-instant',        // hedge — sub-second on weak load
+  'openai/gpt-oss-20b',          // Groq's GPT-OSS deployment (different quota)
+]
+
+async function callGroqOne(model, question, apiKey, timeout = 7000) {
   const ctrl = new AbortController()
   const timer = setTimeout(() => ctrl.abort(), timeout)
   try {
@@ -311,7 +319,7 @@ async function callGroq(question, apiKey, timeout = 7000) {
         'Content-Type':  'application/json',
       },
       body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',   // fast + smart, JSON-friendly
+        model,
         messages: [
           { role: 'system', content: SOLVER_SYSTEM },
           { role: 'user',   content: question },
@@ -323,18 +331,29 @@ async function callGroq(question, apiKey, timeout = 7000) {
     })
     if (!resp.ok) {
       const t = await resp.text()
-      throw new Error(`groq HTTP ${resp.status}: ${t.slice(0, 120)}`)
+      throw new Error(`groq/${model} HTTP ${resp.status}: ${t.slice(0, 120)}`)
     }
     const data = await resp.json()
     const raw = data?.choices?.[0]?.message?.content || ''
     const plan = parseJsonLoose(raw)
     if (!plan || !plan.textExplanation) {
-      throw new Error(`groq malformed JSON (len=${raw.length})`)
+      throw new Error(`groq/${model} malformed JSON (len=${raw.length})`)
     }
-    return { plan, model: 'groq/llama-3.3-70b' }
+    return { plan, model: `groq/${model}` }
   } finally {
     clearTimeout(timer)
   }
+}
+
+// Legacy single-model wrapper — kept so existing call sites still work, but
+// the new path is callGroqAll() which races every Groq model in parallel.
+async function callGroq(question, apiKey, timeout = 7000) {
+  return callGroqOne(GROQ_MODELS[0], question, apiKey, timeout)
+}
+
+/** Race every Groq model in parallel. First valid JSON wins. */
+function callGroqAll(question, apiKey, timeout = 7000) {
+  return GROQ_MODELS.map(m => callGroqOne(m, question, apiKey, timeout))
 }
 
 /**
@@ -416,12 +435,16 @@ async function getSolverPlan(question) {
     'openai/gpt-oss-120b:free',
   ].filter(Boolean)
 
-  // Build the race — every OpenRouter model + optional Groq.
+  // Build the race — every OpenRouter model + every Groq model.
   // Groq has its own quota separate from OpenRouter, so when OR is throttled
-  // Groq still works. The very first racer to return valid JSON wins.
+  // Groq still works. Racing multiple Groq models hedges against any single
+  // Groq model being slow/deprecated under load.
   const tasks = RACE_MODELS.map(m => callModel(m, question, apiKey, 7000))
   if (process.env.GROQ_API_KEY) {
-    tasks.push(callGroq(question, process.env.GROQ_API_KEY, 7000))
+    tasks.push(...callGroqAll(question, process.env.GROQ_API_KEY, 7000))
+    console.log(`[solver] racing ${RACE_MODELS.length} OpenRouter + ${GROQ_MODELS.length} Groq models`)
+  } else {
+    console.log(`[solver] racing ${RACE_MODELS.length} OpenRouter models (no Groq key set)`)
   }
 
   let winner
@@ -828,6 +851,85 @@ function parseJsonLoose(text) {
   }
   return null
 }
+
+// ────────────────────────────────────────────────────────────────────────────
+// /api/ai/solver/status — diagnostic. Returns per-provider health so you can
+// see exactly which AI providers are available + working from a browser tab.
+//
+// Public endpoint — exposes which providers exist (yes/no) but never any keys.
+// ────────────────────────────────────────────────────────────────────────────
+router.get('/solver/status', async (_req, res) => {
+  const hasOR    = !!process.env.OPENROUTER_API_KEY
+  const hasGroq  = !!process.env.GROQ_API_KEY
+  const hasModel = !!process.env.SOLVER_MODEL
+
+  // Tiny probe question — picks up any classification issues without burning quota.
+  const probe = 'What is photosynthesis?'
+
+  async function probeProvider(label, taskFn) {
+    const t0 = Date.now()
+    try {
+      const { plan, model } = await Promise.race([
+        taskFn(),
+        new Promise((_, rej) => setTimeout(() => rej(new Error('probe timeout')), 6000)),
+      ])
+      return {
+        provider: label,
+        ok:       true,
+        model,
+        latency_ms: Date.now() - t0,
+        sample_topic: plan.topicKeyword || null,
+      }
+    } catch (e) {
+      return {
+        provider:   label,
+        ok:         false,
+        error:      (e.message || '').slice(0, 200),
+        latency_ms: Date.now() - t0,
+      }
+    }
+  }
+
+  const probes = []
+  if (hasOR) {
+    probes.push(probeProvider('openrouter:gpt-oss-20b', () =>
+      callModel('openai/gpt-oss-20b:free', probe, process.env.OPENROUTER_API_KEY, 5000)
+    ))
+  }
+  if (hasGroq) {
+    for (const m of GROQ_MODELS) {
+      probes.push(probeProvider(`groq:${m}`, () =>
+        callGroqOne(m, probe, process.env.GROQ_API_KEY, 5000)
+      ))
+    }
+  }
+  // Wikipedia fallback probe
+  probes.push((async () => {
+    const t0 = Date.now()
+    try {
+      const plan = await synthesizePlanFromWikipedia(probe)
+      return { provider: 'wikipedia-fallback', ok: !!plan, latency_ms: Date.now() - t0, sample_topic: plan?.topicKeyword || null }
+    } catch (e) {
+      return { provider: 'wikipedia-fallback', ok: false, error: (e.message || '').slice(0, 200), latency_ms: Date.now() - t0 }
+    }
+  })())
+
+  const results = await Promise.all(probes)
+  const anyOk = results.some(r => r.ok)
+
+  res.json({
+    overall: anyOk ? 'healthy' : 'degraded',
+    env: {
+      OPENROUTER_API_KEY_set: hasOR,
+      GROQ_API_KEY_set:       hasGroq,
+      SOLVER_MODEL_override:  hasModel ? process.env.SOLVER_MODEL : null,
+    },
+    providers: results,
+    hint: anyOk
+      ? 'At least one provider is responding. The Solver will use the fastest one.'
+      : 'No providers responded. Check that OPENROUTER_API_KEY and/or GROQ_API_KEY are set in Vercel env vars and that you have redeployed since adding them.',
+  })
+})
 
 export default router
 
