@@ -1,111 +1,25 @@
 /**
  * Kairo OS — the AI Academic Twin dashboard.
  *
- * Reads everything in one round-trip from /api/twin/dashboard:
- *   { twin, mastery[], recommendations[], observations[], recent_events[], sessions[] }
- *
- * Sections (all in one cinematic scroll):
- *   1. Twin Voice           — top observation as a quote
- *   2. AI Pulse              — composite health ring + sub-metrics
- *   3. Learning Style + Pace — proportions bar + pace pill
- *   4. Weakness Heatmap      — subject × topic grid coloured by mastery
- *   5. Retention Curve       — Ebbinghaus-style 7-day forecast
- *   6. Burnout + Consistency — twin "vitals"
- *   7. Recommendations       — adaptive next-actions stream
- *   8. Timeline              — recent events
+ * Reads everything from localStorage via src/lib/twin.ts. No network calls.
+ * Each student's data lives entirely on their own device (Netflix-downloads
+ * model). Wipes cleanly via the "Wipe my Twin" action.
  */
 import { useEffect, useMemo, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Sparkles, Eye, BookOpen, MousePointerClick, Repeat,
-  Activity, Flame, TrendingUp, TrendingDown, Clock, Brain,
-  RefreshCw, X, Check, ChevronRight, Beaker, Layers, Target,
-  AlertTriangle, Award, Loader2,
+  Activity, TrendingUp, TrendingDown, Clock, Brain,
+  RefreshCw, X, Check, Beaker, Layers, Target,
+  AlertTriangle, Award, Trash2,
 } from 'lucide-react'
-import { get, post } from '../lib/api'
-
-// ════════════════════════════════════════════════════════════════════════════
-// TYPES
-// ════════════════════════════════════════════════════════════════════════════
-
-interface WeakTopic   { subject: string; topic: string; mastery?: number; severity?: number; last_studied?: string }
-interface ForgetTopic { subject: string; topic: string; hours_until_forget: number; mastery: number }
-
-interface Twin {
-  user_id:                string
-  style_visual:           number
-  style_text:             number
-  style_interactive:      number
-  style_repetition:       number
-  pace:                   'fast' | 'steady' | 'slow' | 'inconsistent'
-  focus_best_hour:        number | null
-  focus_avg_minutes:      number | null
-  focus_dropoff_after:    number | null
-  retention_score:        number
-  consistency_score:      number
-  burnout_risk:           number
-  confidence:             number
-  performance_trend:      number
-  predicted_exam_score:   number | null
-  predicted_band:         string | null
-  total_xp:               number
-  streak_days:            number
-  last_active_at:         string | null
-  weak_topics:            WeakTopic[]
-  strong_topics:          WeakTopic[]
-  forgetting_soon:        ForgetTopic[]
-  computed_at:            string
-}
-
-interface Mastery {
-  subject:        string
-  topic:          string
-  mastery:        number
-  attempts:       number
-  correct:        number
-  last_studied_at: string | null
-  forget_at:      string | null
-  retention_now:  number
-}
-
-interface Recommendation {
-  id:        string
-  kind:      'revise' | 'lab' | 'flashcard' | 'quiz' | 'break' | 'plan'
-  target:    string | null
-  subject:   string | null
-  reason:    string
-  priority:  number
-  metadata:  any
-  created_at: string
-}
-
-interface Observation {
-  id:         string
-  kind:       'insight' | 'pattern' | 'milestone' | 'concern' | 'celebration'
-  tone:       'supportive' | 'neutral' | 'caution'
-  title:      string
-  body:       string | null
-  importance: number
-  created_at: string
-}
-
-interface TwinEvent {
-  event_type: string
-  subject:    string | null
-  topic:      string | null
-  score:      number | null
-  correct:    boolean | null
-  created_at: string
-}
-
-interface DashboardData {
-  twin:            Twin | null
-  mastery:         Mastery[]
-  recommendations: Recommendation[]
-  observations:    Observation[]
-  recent_events:   TwinEvent[]
-  sessions:        Array<{ started_at: string; duration_min: number | null; focus_score: number | null }>
-}
+import {
+  getDashboard, refresh, track,
+  dismissRecommendation, actOnRecommendation, clearTwin,
+  type DashboardSnapshot,
+  type Twin, type Observation, type Recommendation, type TwinEvent,
+  type MasteryRow,
+} from '../lib/twin'
 
 // ════════════════════════════════════════════════════════════════════════════
 // TOKENS
@@ -119,9 +33,7 @@ const C = {
   text:      '#fafafa',
   textDim:   '#a1a1aa',
   textFaint: '#71717a',
-  textVery:  '#52525b',
   purple:    '#a78bfa',
-  purpleHi:  '#7c3aed',
   blue:      '#60a5fa',
   cyan:      '#22d3ee',
   green:     '#34d399',
@@ -130,11 +42,8 @@ const C = {
 }
 
 const GRAD = {
-  hero:   'linear-gradient(135deg, #7c3aed 0%, #5b21b6 35%, #1e3a8a 75%, #06b6d4 100%)',
   pill:   'linear-gradient(135deg, #7c3aed 0%, #4f46e5 50%, #2563eb 100%)',
   text:   'linear-gradient(90deg, #c4b5fd 0%, #60a5fa 50%, #22d3ee 100%)',
-  health: 'conic-gradient(from -90deg, #a78bfa, #60a5fa, #22d3ee, #34d399, #a78bfa)',
-  red:    'linear-gradient(90deg, #f87171, #fbbf24)',
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -142,39 +51,41 @@ const GRAD = {
 // ════════════════════════════════════════════════════════════════════════════
 
 export default function KairoOS() {
-  const [data, setData]       = useState<DashboardData | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [refreshing, setRefreshing] = useState(false)
-  const [error, setError]     = useState<string | null>(null)
+  const [snap, setSnap] = useState<DashboardSnapshot | null>(null)
 
-  async function load() {
-    try {
-      const res = await get('/twin/dashboard')
-      setData(res)
-      setError(null)
-    } catch (e: any) {
-      setError(e?.message || 'Could not load Kairo OS.')
-    } finally {
-      setLoading(false)
+  function reload() {
+    setSnap(getDashboard())
+  }
+
+  useEffect(() => {
+    reload()
+    // Re-read whenever another tab updates localStorage (multi-tab safety)
+    const onStorage = (e: StorageEvent) => {
+      if (e.key && e.key.startsWith('kairo:twin:')) reload()
+    }
+    window.addEventListener('storage', onStorage)
+    return () => window.removeEventListener('storage', onStorage)
+  }, [])
+
+  function onRefresh()  { setSnap(refresh()) }
+  function onWipe() {
+    if (confirm("Wipe your Kairo OS data on this device? This can't be undone.")) {
+      clearTwin()
+      reload()
     }
   }
 
-  async function refresh() {
-    setRefreshing(true)
-    try {
-      await post('/twin/refresh', {})
-      await load()
-    } finally {
-      setRefreshing(false)
-    }
+  function onAct(id: string)     { actOnRecommendation(id);     reload() }
+  function onDismiss(id: string) { dismissRecommendation(id);   reload() }
+  function onSeed() {
+    seedDemoEvents()
+    reload()
   }
 
-  useEffect(() => { load() }, [])
+  if (!snap) return <PageSkeleton />
 
-  if (loading) return <PageSkeleton />
-
-  if (error || !data?.twin) {
-    return <EmptyState message={error || "Your Twin will appear once you've done a few activities."} onRefresh={refresh} />
+  if (!snap.hasData) {
+    return <EmptyState onRefresh={onRefresh} onSeed={onSeed} />
   }
 
   return (
@@ -191,76 +102,59 @@ export default function KairoOS() {
         @keyframes kr-glow { 0%,100% { opacity: .55 } 50% { opacity: .95 } }
         .kr-spin { animation: kr-spin .8s linear infinite }
       `}</style>
+
       <div style={{ maxWidth: 1240, margin: '0 auto' }}>
 
-        <Header
-          twin={data.twin}
-          onRefresh={refresh}
-          refreshing={refreshing}
-        />
+        <Header twin={snap.twin!} onRefresh={onRefresh} onWipe={onWipe} />
 
-        {/* Top voice — the AI's first observation */}
-        {data.observations.length > 0 && (
-          <TwinVoice obs={data.observations[0]} />
+        {snap.observations.length > 0 && (
+          <TwinVoice obs={snap.observations[0]} />
         )}
 
-        {/* Top row — Pulse + Style + Performance */}
         <div style={{ display: 'grid', gridTemplateColumns: 'minmax(320px, 420px) 1fr', gap: 18, marginTop: 22 }}>
-          <PulseCard twin={data.twin} />
+          <PulseCard twin={snap.twin!} />
           <div style={{ display: 'grid', gridTemplateRows: 'auto auto', gap: 18 }}>
-            <StyleCard twin={data.twin} />
-            <PerformanceCard twin={data.twin} mastery={data.mastery} />
+            <StyleCard twin={snap.twin!} />
+            <PerformanceCard twin={snap.twin!} mastery={snap.mastery} />
           </div>
         </div>
 
-        {/* Middle row — Heatmap + Retention curve */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18, marginTop: 18 }}>
-          <HeatmapCard mastery={data.mastery} />
-          <RetentionCard mastery={data.mastery} forgetting={data.twin.forgetting_soon} />
+          <HeatmapCard mastery={snap.mastery} />
+          <RetentionCard mastery={snap.mastery} forgetting={snap.twin!.forgettingSoon} />
         </div>
 
-        {/* Burnout + Consistency strip */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 18, marginTop: 18 }}>
-          <VitalsTile title="Burnout risk"   value={data.twin.burnout_risk}
-            color={data.twin.burnout_risk > 0.55 ? C.red : data.twin.burnout_risk > 0.3 ? C.amber : C.green}
-            hint={data.twin.burnout_risk > 0.55 ? 'Slow down. Sleep + walks are part of learning.' : 'You\'re pacing well.'} />
-          <VitalsTile title="Consistency"    value={data.twin.consistency_score}
-            color={data.twin.consistency_score > 0.6 ? C.green : data.twin.consistency_score > 0.3 ? C.amber : C.red}
-            hint={`${Math.round(data.twin.consistency_score * 14)} of last 14 days active`} />
-          <VitalsTile title="Confidence"     value={data.twin.confidence}
-            color={data.twin.confidence > 0.6 ? C.green : data.twin.confidence > 0.4 ? C.amber : C.red}
-            hint={`Predicted exam: ${data.twin.predicted_exam_score ?? '—'}${data.twin.predicted_exam_score != null ? '%' : ''}  ·  ${data.twin.predicted_band ?? '—'}`} />
+          <VitalsTile title="Burnout risk" value={snap.twin!.burnoutRisk}
+            color={snap.twin!.burnoutRisk > 0.55 ? C.red : snap.twin!.burnoutRisk > 0.3 ? C.amber : C.green}
+            hint={snap.twin!.burnoutRisk > 0.55 ? "Slow down. Sleep + walks are part of learning." : "You're pacing well."} />
+          <VitalsTile title="Consistency" value={snap.twin!.consistencyScore}
+            color={snap.twin!.consistencyScore > 0.6 ? C.green : snap.twin!.consistencyScore > 0.3 ? C.amber : C.red}
+            hint={`${Math.round(snap.twin!.consistencyScore * 14)} of last 14 days active`} />
+          <VitalsTile title="Confidence" value={snap.twin!.confidence}
+            color={snap.twin!.confidence > 0.6 ? C.green : snap.twin!.confidence > 0.4 ? C.amber : C.red}
+            hint={`Predicted exam: ${snap.twin!.predictedExamScore ?? '—'}${snap.twin!.predictedExamScore != null ? '%' : ''}  ·  ${snap.twin!.predictedBand ?? '—'}`} />
         </div>
 
-        {/* Recommendations + Observations stream */}
         <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 18, marginTop: 18 }}>
-          <RecommendationsCard recs={data.recommendations} onAct={onAct} onDismiss={onDismiss} />
-          <ObservationsCard obs={data.observations.slice(1)} />
+          <RecommendationsCard recs={snap.recommendations} onAct={onAct} onDismiss={onDismiss} />
+          <ObservationsCard obs={snap.observations.slice(1)} />
         </div>
 
-        {/* Timeline */}
         <div style={{ marginTop: 18 }}>
-          <TimelineCard events={data.recent_events} />
+          <TimelineCard events={snap.recentEvents} />
         </div>
 
+        <PrivacyFooter onWipe={onWipe} eventCount={snap.recentEvents.length} />
       </div>
     </div>
   )
-
-  async function onAct(id: string) {
-    await post(`/twin/recommendations/${id}/act`, {}).catch(() => {})
-    setData(d => d && { ...d, recommendations: d.recommendations.filter(r => r.id !== id) })
-  }
-  async function onDismiss(id: string) {
-    await post(`/twin/recommendations/${id}/dismiss`, {}).catch(() => {})
-    setData(d => d && { ...d, recommendations: d.recommendations.filter(r => r.id !== id) })
-  }
 }
 
 // ════════════════════════════════════════════════════════════════════════════
 // HEADER
 // ════════════════════════════════════════════════════════════════════════════
-function Header({ twin, onRefresh, refreshing }: { twin: Twin; onRefresh: () => void; refreshing: boolean }) {
+function Header({ twin, onRefresh, onWipe }: { twin: Twin; onRefresh: () => void; onWipe: () => void }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
@@ -274,8 +168,7 @@ function Header({ twin, onRefresh, refreshing }: { twin: Twin; onRefresh: () => 
         <div>
           <div style={{
             fontSize: 11, fontWeight: 700, letterSpacing: 2.2, textTransform: 'uppercase',
-            background: GRAD.text, WebkitBackgroundClip: 'text', backgroundClip: 'text',
-            color: 'transparent',
+            background: GRAD.text, WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent',
           }}>
             Kairo OS  ·  Academic Twin
           </div>
@@ -283,53 +176,47 @@ function Header({ twin, onRefresh, refreshing }: { twin: Twin; onRefresh: () => 
             Your learning intelligence
           </h1>
           <div style={{ fontSize: 11.5, color: C.textFaint, marginTop: 2 }}>
-            Updated {formatRelative(twin.computed_at)}  ·  {twin.streak_days} day streak
+            Updated {formatRelative(twin.computedAt)}  ·  {twin.streakDays} day streak  ·  stored on this device
           </div>
         </div>
       </div>
 
-      <button
-        onClick={onRefresh}
-        disabled={refreshing}
-        style={{
-          display: 'flex', alignItems: 'center', gap: 8,
-          background: 'transparent', border: `1px solid ${C.border}`,
-          borderRadius: 10, padding: '9px 14px', cursor: 'pointer',
-          color: C.textDim, fontFamily: 'inherit', fontSize: 12, fontWeight: 600,
-        }}
-      >
-        {refreshing ? <Loader2 size={13} className="kr-spin" /> : <RefreshCw size={13} />}
-        Recompute Twin
-      </button>
+      <div style={{ display: 'flex', gap: 8 }}>
+        <button onClick={onRefresh} style={chipBtn()}>
+          <RefreshCw size={13} />
+          Recompute
+        </button>
+        <button onClick={onWipe} style={{ ...chipBtn(), color: C.red, borderColor: 'rgba(248,113,113,0.4)' }}>
+          <Trash2 size={13} />
+          Wipe Twin
+        </button>
+      </div>
     </div>
   )
 }
 
+function chipBtn(): React.CSSProperties {
+  return {
+    display: 'flex', alignItems: 'center', gap: 8,
+    background: 'transparent', border: `1px solid ${C.border}`,
+    borderRadius: 10, padding: '9px 14px', cursor: 'pointer',
+    color: C.textDim, fontFamily: 'inherit', fontSize: 12, fontWeight: 600,
+  }
+}
+
 // ════════════════════════════════════════════════════════════════════════════
-// TWIN VOICE — the AI's headline observation, styled like a quote
+// TWIN VOICE
 // ════════════════════════════════════════════════════════════════════════════
 function TwinVoice({ obs }: { obs: Observation }) {
-  const toneColor = obs.tone === 'caution' ? C.amber
-    : obs.tone === 'neutral' ? C.blue
-    : C.purple
+  const toneColor = obs.tone === 'caution' ? C.amber : obs.tone === 'neutral' ? C.blue : C.purple
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-      style={{
-        marginTop: 22,
-        padding: '18px 22px',
-        background: `linear-gradient(135deg, rgba(124,58,237,0.08), rgba(34,211,238,0.05))`,
-        border: `1px solid rgba(124,58,237,0.32)`,
-        borderRadius: 14,
-        display: 'flex', alignItems: 'flex-start', gap: 14,
-        position: 'relative', overflow: 'hidden',
-      }}
-    >
-      <div style={{
-        position: 'absolute', inset: 0,
-        background: `radial-gradient(at 0% 0%, rgba(124,58,237,0.18), transparent 40%)`,
-        pointerEvents: 'none',
-      }} />
+    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} style={{
+      marginTop: 22, padding: '18px 22px',
+      background: `linear-gradient(135deg, rgba(124,58,237,0.08), rgba(34,211,238,0.05))`,
+      border: `1px solid rgba(124,58,237,0.32)`, borderRadius: 14,
+      display: 'flex', alignItems: 'flex-start', gap: 14, position: 'relative', overflow: 'hidden',
+    }}>
+      <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(at 0% 0%, rgba(124,58,237,0.18), transparent 40%)`, pointerEvents: 'none' }} />
       <div style={{
         width: 38, height: 38, borderRadius: 12, flexShrink: 0,
         background: GRAD.pill, display: 'grid', placeItems: 'center',
@@ -338,10 +225,7 @@ function TwinVoice({ obs }: { obs: Observation }) {
         <Sparkles size={18} color="#fff" />
       </div>
       <div style={{ position: 'relative', flex: 1 }}>
-        <div style={{
-          fontSize: 10, fontWeight: 700, color: toneColor,
-          textTransform: 'uppercase', letterSpacing: 1.6,
-        }}>
+        <div style={{ fontSize: 10, fontWeight: 700, color: toneColor, textTransform: 'uppercase', letterSpacing: 1.6 }}>
           Kairo  ·  {obs.kind}
         </div>
         <div style={{ fontSize: 16, fontWeight: 700, color: C.text, marginTop: 4, letterSpacing: -0.2 }}>
@@ -358,34 +242,28 @@ function TwinVoice({ obs }: { obs: Observation }) {
 }
 
 // ════════════════════════════════════════════════════════════════════════════
-// PULSE CARD — the big animated ring
+// PULSE
 // ════════════════════════════════════════════════════════════════════════════
 function PulseCard({ twin }: { twin: Twin }) {
-  // Composite "health" score 0..1 — average of retention, consistency, confidence, inverted burnout
-  const score = (
-    twin.retention_score   * 0.30 +
-    twin.consistency_score * 0.25 +
-    twin.confidence        * 0.25 +
-    (1 - twin.burnout_risk)* 0.20
-  )
+  const score = twin.retentionScore * 0.30
+              + twin.consistencyScore * 0.25
+              + twin.confidence * 0.25
+              + (1 - twin.burnoutRisk) * 0.20
   const pct = Math.round(score * 100)
   const label = pct >= 75 ? 'Thriving' : pct >= 60 ? 'On track' : pct >= 45 ? 'Recovering' : 'Needs care'
 
   return (
     <Card>
       <CardTitle icon={<Activity size={13} />}>AI Pulse</CardTitle>
-
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '14px 0 8px' }}>
         <Ring score={score} />
       </div>
-
       <div style={{ textAlign: 'center', marginTop: 4 }}>
         <div style={{ fontSize: 32, fontWeight: 800, color: C.text, letterSpacing: -1 }}>
           {pct}<span style={{ fontSize: 16, color: C.textFaint, marginLeft: 4 }}>/ 100</span>
         </div>
         <div style={{
-          display: 'inline-block', marginTop: 4,
-          padding: '4px 10px', borderRadius: 999,
+          display: 'inline-block', marginTop: 4, padding: '4px 10px', borderRadius: 999,
           fontSize: 10.5, fontWeight: 700, letterSpacing: 1.4, textTransform: 'uppercase',
           background: pct >= 75 ? 'rgba(52,211,153,0.12)' : pct >= 60 ? 'rgba(96,165,250,0.12)'
                     : pct >= 45 ? 'rgba(251,191,36,0.12)' : 'rgba(248,113,113,0.12)',
@@ -394,31 +272,26 @@ function PulseCard({ twin }: { twin: Twin }) {
           ● {label}
         </div>
       </div>
-
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginTop: 18 }}>
-        <SubMetric label="Retention"   value={Math.round(twin.retention_score * 100)} unit="%" />
-        <SubMetric label="Consistency" value={Math.round(twin.consistency_score * 100)} unit="%" />
-        <SubMetric label="Confidence"  value={Math.round(twin.confidence * 100)} unit="%" />
-        <SubMetric label="Streak"      value={twin.streak_days} unit="d" />
+        <SubMetric label="Retention"   value={Math.round(twin.retentionScore * 100)}   unit="%" />
+        <SubMetric label="Consistency" value={Math.round(twin.consistencyScore * 100)} unit="%" />
+        <SubMetric label="Confidence"  value={Math.round(twin.confidence * 100)}       unit="%" />
+        <SubMetric label="Streak"      value={twin.streakDays}                          unit="d" />
       </div>
     </Card>
   )
 }
 
 function Ring({ score }: { score: number }) {
-  // SVG ring with conic-gradient-like stroke using stroke-dasharray
   const r = 78
   const c = 2 * Math.PI * r
   const offset = c * (1 - Math.max(0, Math.min(1, score)))
-
   return (
     <div style={{ position: 'relative', width: 200, height: 200 }}>
-      {/* Soft halo */}
       <div style={{
         position: 'absolute', inset: -20,
         background: `radial-gradient(closest-side, rgba(124,58,237,0.42), transparent 70%)`,
-        filter: 'blur(20px)',
-        animation: 'kr-glow 4s ease-in-out infinite',
+        filter: 'blur(20px)', animation: 'kr-glow 4s ease-in-out infinite',
       }} />
       <svg width="200" height="200" style={{ position: 'relative', display: 'block' }}>
         <defs>
@@ -429,15 +302,12 @@ function Ring({ score }: { score: number }) {
             <stop offset="100%" stopColor="#22d3ee"/>
           </linearGradient>
         </defs>
-        {/* Track */}
         <circle cx="100" cy="100" r={r} fill="none" stroke={C.borderSoft} strokeWidth="14" />
-        {/* Progress */}
         <circle cx="100" cy="100" r={r} fill="none"
           stroke="url(#ringGrad)" strokeWidth="14" strokeLinecap="round"
           strokeDasharray={c} strokeDashoffset={offset}
           transform="rotate(-90 100 100)"
           style={{ transition: 'stroke-dashoffset 1.4s cubic-bezier(.2,.6,.2,1)' }} />
-        {/* Inner sparkle */}
         <circle cx="100" cy="100" r="4" fill="#c4b5fd">
           <animate attributeName="r" values="3;5;3" dur="2s" repeatCount="indefinite"/>
           <animate attributeName="opacity" values="0.4;1;0.4" dur="2s" repeatCount="indefinite"/>
@@ -449,13 +319,8 @@ function Ring({ score }: { score: number }) {
 
 function SubMetric({ label, value, unit }: { label: string; value: number; unit: string }) {
   return (
-    <div style={{
-      background: C.panel2, border: `1px solid ${C.borderSoft}`,
-      borderRadius: 10, padding: '10px 8px', textAlign: 'center',
-    }}>
-      <div style={{ fontSize: 9.5, fontWeight: 700, color: C.textFaint, textTransform: 'uppercase', letterSpacing: 1.2 }}>
-        {label}
-      </div>
+    <div style={{ background: C.panel2, border: `1px solid ${C.borderSoft}`, borderRadius: 10, padding: '10px 8px', textAlign: 'center' }}>
+      <div style={{ fontSize: 9.5, fontWeight: 700, color: C.textFaint, textTransform: 'uppercase', letterSpacing: 1.2 }}>{label}</div>
       <div style={{ fontSize: 16, fontWeight: 800, color: C.text, marginTop: 4 }}>
         {value}<span style={{ fontSize: 11, color: C.textFaint, marginLeft: 1 }}>{unit}</span>
       </div>
@@ -464,29 +329,24 @@ function SubMetric({ label, value, unit }: { label: string; value: number; unit:
 }
 
 // ════════════════════════════════════════════════════════════════════════════
-// LEARNING STYLE
+// STYLE
 // ════════════════════════════════════════════════════════════════════════════
 function StyleCard({ twin }: { twin: Twin }) {
   const segments = [
-    { id: 'visual',      label: 'Visual',      value: twin.style_visual,      icon: Eye,             color: C.purple },
-    { id: 'interactive', label: 'Interactive', value: twin.style_interactive, icon: MousePointerClick, color: C.blue },
-    { id: 'text',        label: 'Reading',     value: twin.style_text,        icon: BookOpen,        color: C.cyan },
-    { id: 'repetition',  label: 'Repetition',  value: twin.style_repetition,  icon: Repeat,          color: C.green },
+    { id: 'visual',      label: 'Visual',      value: twin.styleVisual,      icon: Eye,               color: C.purple },
+    { id: 'interactive', label: 'Interactive', value: twin.styleInteractive, icon: MousePointerClick, color: C.blue },
+    { id: 'text',        label: 'Reading',     value: twin.styleText,        icon: BookOpen,          color: C.cyan },
+    { id: 'repetition',  label: 'Repetition',  value: twin.styleRepetition,  icon: Repeat,            color: C.green },
   ]
   const top = [...segments].sort((a, b) => b.value - a.value)[0]
-
   return (
     <Card>
       <CardTitle icon={<Layers size={13} />}>Learning style</CardTitle>
-
-      {/* Big composition bar */}
       <div style={{ display: 'flex', height: 14, borderRadius: 10, overflow: 'hidden', marginTop: 12 }}>
         {segments.map(s => (
           <div key={s.id} style={{ width: `${s.value * 100}%`, background: s.color, transition: 'width 0.8s ease' }} />
         ))}
       </div>
-
-      {/* Legend */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginTop: 14 }}>
         {segments.map(s => {
           const I = s.icon
@@ -499,9 +359,7 @@ function StyleCard({ twin }: { twin: Twin }) {
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <I size={12} color={s.color} />
-                <span style={{ fontSize: 10.5, color: isTop ? s.color : C.textDim, fontWeight: 700, letterSpacing: 0.4, textTransform: 'uppercase' }}>
-                  {s.label}
-                </span>
+                <span style={{ fontSize: 10.5, color: isTop ? s.color : C.textDim, fontWeight: 700, letterSpacing: 0.4, textTransform: 'uppercase' }}>{s.label}</span>
               </div>
               <div style={{ fontSize: 18, fontWeight: 800, color: C.text, marginTop: 4 }}>
                 {Math.round(s.value * 100)}<span style={{ fontSize: 11, color: C.textFaint }}>%</span>
@@ -510,7 +368,6 @@ function StyleCard({ twin }: { twin: Twin }) {
           )
         })}
       </div>
-
       <div style={{
         marginTop: 14, padding: '10px 12px', borderRadius: 10,
         background: 'rgba(124,58,237,0.06)', border: `1px solid rgba(124,58,237,0.22)`,
@@ -524,11 +381,11 @@ function StyleCard({ twin }: { twin: Twin }) {
 }
 
 // ════════════════════════════════════════════════════════════════════════════
-// PERFORMANCE — trend + pace + exam prediction
+// PERFORMANCE
 // ════════════════════════════════════════════════════════════════════════════
-function PerformanceCard({ twin, mastery }: { twin: Twin; mastery: Mastery[] }) {
-  const trendUp = twin.performance_trend > 0.05
-  const trendDn = twin.performance_trend < -0.05
+function PerformanceCard({ twin, mastery }: { twin: Twin; mastery: (MasteryRow & { retentionNow: number })[] }) {
+  const trendUp = twin.performanceTrend > 0.05
+  const trendDn = twin.performanceTrend < -0.05
   const TrendIcon = trendUp ? TrendingUp : trendDn ? TrendingDown : Activity
   const trendColor = trendUp ? C.green : trendDn ? C.red : C.blue
   const masteredCount = mastery.filter(m => m.mastery >= 0.7).length
@@ -536,31 +393,11 @@ function PerformanceCard({ twin, mastery }: { twin: Twin; mastery: Mastery[] }) 
   return (
     <Card>
       <CardTitle icon={<TrendingUp size={13} />}>Trajectory</CardTitle>
-
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginTop: 12 }}>
-        <BigStat
-          label="Trend"
-          value={`${twin.performance_trend > 0 ? '+' : ''}${(twin.performance_trend * 100).toFixed(0)}`}
-          unit="%"
-          color={trendColor}
-          icon={<TrendIcon size={14} color={trendColor} />}
-        />
-        <BigStat
-          label="Predicted exam"
-          value={twin.predicted_exam_score ?? '—'}
-          unit={twin.predicted_exam_score != null ? '%' : ''}
-          color={C.purple}
-          subtitle={twin.predicted_band ? `Grade ${twin.predicted_band}` : 'Need more data'}
-        />
-        <BigStat
-          label="Mastered"
-          value={masteredCount}
-          unit={` topic${masteredCount === 1 ? '' : 's'}`}
-          color={C.cyan}
-          subtitle={`${mastery.length} total tracked`}
-        />
+        <BigStat label="Trend" value={`${twin.performanceTrend > 0 ? '+' : ''}${(twin.performanceTrend * 100).toFixed(0)}`} unit="%" color={trendColor} icon={<TrendIcon size={14} color={trendColor} />} />
+        <BigStat label="Predicted exam" value={twin.predictedExamScore ?? '—'} unit={twin.predictedExamScore != null ? '%' : ''} color={C.purple} subtitle={twin.predictedBand ? `Grade ${twin.predictedBand}` : 'Need more data'} />
+        <BigStat label="Mastered" value={masteredCount} unit={` topic${masteredCount === 1 ? '' : 's'}`} color={C.cyan} subtitle={`${mastery.length} total tracked`} />
       </div>
-
       <div style={{
         marginTop: 14, padding: '10px 12px', borderRadius: 10,
         background: C.panel2, border: `1px solid ${C.borderSoft}`,
@@ -568,8 +405,8 @@ function PerformanceCard({ twin, mastery }: { twin: Twin; mastery: Mastery[] }) 
       }}>
         <Clock size={14} color={C.purple} />
         <div style={{ flex: 1, fontSize: 12, color: C.textDim, lineHeight: 1.55 }}>
-          {twin.focus_best_hour != null ? (
-            <>You score highest around <span style={{ color: C.text, fontWeight: 700 }}>{twin.focus_best_hour}:00</span>{twin.focus_avg_minutes ? ` · avg session ${twin.focus_avg_minutes} min` : ''}</>
+          {twin.focusBestHour != null ? (
+            <>You score highest around <span style={{ color: C.text, fontWeight: 700 }}>{twin.focusBestHour}:00</span>{twin.focusAvgMinutes ? ` · avg session ${twin.focusAvgMinutes} min` : ''}</>
           ) : (
             <>Build a study habit and Kairo will pinpoint your best hour.</>
           )}
@@ -578,9 +415,7 @@ function PerformanceCard({ twin, mastery }: { twin: Twin; mastery: Mastery[] }) 
           fontSize: 9.5, fontWeight: 700, letterSpacing: 1.4, textTransform: 'uppercase',
           padding: '3px 8px', borderRadius: 6,
           background: paceColor(twin.pace) + '18', color: paceColor(twin.pace),
-        }}>
-          {twin.pace}
-        </span>
+        }}>{twin.pace}</span>
       </div>
     </Card>
   )
@@ -595,37 +430,29 @@ function paceColor(pace: string) {
 
 function BigStat({ label, value, unit, color, icon, subtitle }: any) {
   return (
-    <div style={{
-      background: C.panel2, border: `1px solid ${C.borderSoft}`,
-      borderRadius: 10, padding: '12px 10px',
-    }}>
+    <div style={{ background: C.panel2, border: `1px solid ${C.borderSoft}`, borderRadius: 10, padding: '12px 10px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
         {icon}
-        <span style={{ fontSize: 9.5, fontWeight: 700, color: C.textFaint, textTransform: 'uppercase', letterSpacing: 1.2 }}>
-          {label}
-        </span>
+        <span style={{ fontSize: 9.5, fontWeight: 700, color: C.textFaint, textTransform: 'uppercase', letterSpacing: 1.2 }}>{label}</span>
       </div>
       <div style={{ fontSize: 24, fontWeight: 800, color: color || C.text, marginTop: 4, letterSpacing: -0.5 }}>
         {value}<span style={{ fontSize: 12, color: C.textFaint, marginLeft: 1, fontWeight: 600 }}>{unit}</span>
       </div>
-      {subtitle && (
-        <div style={{ fontSize: 10.5, color: C.textFaint, marginTop: 2 }}>{subtitle}</div>
-      )}
+      {subtitle && (<div style={{ fontSize: 10.5, color: C.textFaint, marginTop: 2 }}>{subtitle}</div>)}
     </div>
   )
 }
 
 // ════════════════════════════════════════════════════════════════════════════
-// WEAKNESS HEATMAP
+// HEATMAP
 // ════════════════════════════════════════════════════════════════════════════
-function HeatmapCard({ mastery }: { mastery: Mastery[] }) {
+function HeatmapCard({ mastery }: { mastery: (MasteryRow & { retentionNow: number })[] }) {
   const bySubject = useMemo(() => {
-    const m = new Map<string, Mastery[]>()
+    const m = new Map<string, MasteryRow[]>()
     for (const row of mastery) {
       if (!m.has(row.subject)) m.set(row.subject, [])
       m.get(row.subject)!.push(row)
     }
-    // Sort topics within subject by mastery asc (weakest first)
     for (const [, rows] of m) rows.sort((a, b) => a.mastery - b.mastery)
     return [...m.entries()].sort((a, b) => avgMastery(a[1]) - avgMastery(b[1]))
   }, [mastery])
@@ -643,18 +470,13 @@ function HeatmapCard({ mastery }: { mastery: Mastery[] }) {
     <Card>
       <CardTitle icon={<Target size={13} />}>
         Weakness heatmap
-        <span style={{ marginLeft: 'auto', fontSize: 10, color: C.textFaint, fontWeight: 600 }}>
-          {mastery.length} topic{mastery.length === 1 ? '' : 's'}
-        </span>
+        <span style={{ marginLeft: 'auto', fontSize: 10, color: C.textFaint, fontWeight: 600 }}>{mastery.length} topic{mastery.length === 1 ? '' : 's'}</span>
       </CardTitle>
-
       <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 12, maxHeight: 320, overflowY: 'auto' }}>
         {bySubject.map(([subject, rows]) => (
           <div key={subject}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-              <span style={{ fontSize: 11, fontWeight: 700, color: C.textDim, textTransform: 'uppercase', letterSpacing: 1.3 }}>
-                {subject}
-              </span>
+              <span style={{ fontSize: 11, fontWeight: 700, color: C.textDim, textTransform: 'uppercase', letterSpacing: 1.3 }}>{subject}</span>
               <span style={{ fontSize: 11, color: C.textFaint }}>{Math.round(avgMastery(rows) * 100)}% avg</span>
             </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
@@ -675,8 +497,6 @@ function HeatmapCard({ mastery }: { mastery: Mastery[] }) {
           </div>
         ))}
       </div>
-
-      {/* Legend */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 12, paddingTop: 12, borderTop: `1px solid ${C.borderSoft}` }}>
         <span style={{ fontSize: 10, color: C.textFaint, fontWeight: 600 }}>WEAK</span>
         <div style={{ flex: 1, height: 6, borderRadius: 999, background: 'linear-gradient(90deg, #f87171, #fbbf24 50%, #34d399)' }} />
@@ -686,44 +506,32 @@ function HeatmapCard({ mastery }: { mastery: Mastery[] }) {
   )
 }
 
-function avgMastery(rows: Mastery[]) {
-  if (rows.length === 0) return 0
-  return rows.reduce((a, b) => a + b.mastery, 0) / rows.length
+function avgMastery(rows: MasteryRow[]) {
+  return rows.length === 0 ? 0 : rows.reduce((a, b) => a + b.mastery, 0) / rows.length
 }
 
 function masteryColor(m: number, alpha: number) {
-  // 0 → red, 0.5 → amber, 1 → green
-  if (m < 0.4) {
-    return alpha === 1 ? '#fca5a5' : `rgba(248,113,113,${alpha})`
-  }
-  if (m < 0.7) {
-    return alpha === 1 ? '#fcd34d' : `rgba(251,191,36,${alpha})`
-  }
+  if (m < 0.4)  return alpha === 1 ? '#fca5a5' : `rgba(248,113,113,${alpha})`
+  if (m < 0.7)  return alpha === 1 ? '#fcd34d' : `rgba(251,191,36,${alpha})`
   return alpha === 1 ? '#86efac' : `rgba(52,211,153,${alpha})`
 }
 
 // ════════════════════════════════════════════════════════════════════════════
-// RETENTION CURVE
+// RETENTION
 // ════════════════════════════════════════════════════════════════════════════
-function RetentionCard({ mastery, forgetting }: { mastery: Mastery[]; forgetting: ForgetTopic[] }) {
-  // Build 7-day points: average retention across top 10 topics
-  const top = useMemo(() =>
-    [...mastery].sort((a, b) => b.mastery - a.mastery).slice(0, 10)
-  , [mastery])
+function RetentionCard({ mastery, forgetting }: { mastery: (MasteryRow & { retentionNow: number })[]; forgetting: Twin['forgettingSoon'] }) {
+  const top = useMemo(() => [...mastery].sort((a, b) => b.mastery - a.mastery).slice(0, 10), [mastery])
 
   const points = useMemo(() => {
     if (top.length === 0) return []
-    const series = []
+    const series: { d: number; retention: number }[] = []
     for (let d = 0; d < 7; d++) {
-      // Approximate retention by EXP-decay from current using strength.
-      // We don't have strength on every row, but mastery is a good proxy.
-      const avg = top.reduce((acc, t) => {
-        // Steeper drop for low-mastery topics
-        const halfLifeDays = 2 + t.mastery * 12        // 2..14 days
-        const r = Math.pow(0.5, d / halfLifeDays)
-        return acc + r * t.retention_now
+      const a = top.reduce((acc, t) => {
+        const halfLife = 2 + t.mastery * 12
+        const r = Math.pow(0.5, d / halfLife)
+        return acc + r * t.retentionNow
       }, 0) / top.length
-      series.push({ d, retention: avg })
+      series.push({ d, retention: a })
     }
     return series
   }, [top])
@@ -737,7 +545,6 @@ function RetentionCard({ mastery, forgetting }: { mastery: Mastery[]; forgetting
     )
   }
 
-  // Plot path
   const W = 480, H = 140, P = 22
   const xs = (d: number) => P + (W - 2*P) * (d / 6)
   const ys = (r: number) => H - P - (H - 2*P) * r
@@ -748,11 +555,8 @@ function RetentionCard({ mastery, forgetting }: { mastery: Mastery[]; forgetting
     <Card>
       <CardTitle icon={<Brain size={13} />}>
         Memory retention
-        <span style={{ marginLeft: 'auto', fontSize: 10, color: C.textFaint, fontWeight: 600 }}>
-          7-day forecast
-        </span>
+        <span style={{ marginLeft: 'auto', fontSize: 10, color: C.textFaint, fontWeight: 600 }}>7-day forecast</span>
       </CardTitle>
-
       <div style={{ marginTop: 12 }}>
         <svg viewBox={`0 0 ${W} ${H}`} width="100%" style={{ display: 'block' }}>
           <defs>
@@ -765,16 +569,13 @@ function RetentionCard({ mastery, forgetting }: { mastery: Mastery[]; forgetting
               <stop offset="100%" stopColor="#22d3ee"/>
             </linearGradient>
           </defs>
-          {/* Threshold line */}
           <line x1={P} y1={ys(0.6)} x2={W - P} y2={ys(0.6)} stroke={C.borderSoft} strokeDasharray="3 4" />
           <text x={W - P + 2} y={ys(0.6) + 3} fill={C.textFaint} fontSize="9" fontFamily="inherit">60%</text>
-
           <path d={areaPath} fill="url(#retArea)" />
           <path d={linePath} fill="none" stroke="url(#retLine)" strokeWidth="2.5" strokeLinejoin="round" />
           {points.map(p => (
             <circle key={p.d} cx={xs(p.d)} cy={ys(p.retention)} r="3.5" fill="#fff" stroke="#a78bfa" strokeWidth="2" />
           ))}
-          {/* Day labels */}
           {points.map(p => (
             <text key={`l-${p.d}`} x={xs(p.d)} y={H - 6} fill={C.textFaint} fontSize="9" textAnchor="middle" fontFamily="inherit">
               {p.d === 0 ? 'Today' : `+${p.d}d`}
@@ -782,24 +583,16 @@ function RetentionCard({ mastery, forgetting }: { mastery: Mastery[]; forgetting
           ))}
         </svg>
       </div>
-
       {forgetting.length > 0 && (
         <div style={{ marginTop: 14, paddingTop: 12, borderTop: `1px solid ${C.borderSoft}` }}>
-          <div style={{ fontSize: 10, color: C.textFaint, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.4, marginBottom: 8 }}>
-            Revise soon
-          </div>
+          <div style={{ fontSize: 10, color: C.textFaint, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.4, marginBottom: 8 }}>Revise soon</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             {forgetting.slice(0, 3).map(f => (
-              <div key={f.topic} style={{
-                display: 'flex', alignItems: 'center', gap: 10,
-                fontSize: 12, color: C.textDim,
-              }}>
-                <span style={{
-                  width: 4, height: 18, background: f.hours_until_forget < 24 ? C.red : C.amber, borderRadius: 2,
-                }} />
+              <div key={f.topic} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 12, color: C.textDim }}>
+                <span style={{ width: 4, height: 18, background: f.hoursUntilForget < 24 ? C.red : C.amber, borderRadius: 2 }} />
                 <span style={{ color: C.text, fontWeight: 600, textTransform: 'capitalize', flex: 1 }}>{f.topic}</span>
                 <span style={{ color: C.textFaint, fontSize: 10.5 }}>
-                  {f.hours_until_forget < 24 ? `${Math.round(f.hours_until_forget)}h` : `${Math.round(f.hours_until_forget / 24)}d`}
+                  {f.hoursUntilForget < 24 ? `${Math.round(f.hoursUntilForget)}h` : `${Math.round(f.hoursUntilForget / 24)}d`}
                 </span>
               </div>
             ))}
@@ -811,24 +604,16 @@ function RetentionCard({ mastery, forgetting }: { mastery: Mastery[]; forgetting
 }
 
 // ════════════════════════════════════════════════════════════════════════════
-// VITALS TILE — burnout / consistency / confidence
+// VITALS
 // ════════════════════════════════════════════════════════════════════════════
 function VitalsTile({ title, value, color, hint }: { title: string; value: number; color: string; hint: string }) {
   const pct = Math.max(0, Math.min(100, Math.round(value * 100)))
   return (
-    <div style={{
-      background: C.panel, border: `1px solid ${C.border}`, borderRadius: 14,
-      padding: '16px 18px',
-    }}>
+    <div style={{ background: C.panel, border: `1px solid ${C.border}`, borderRadius: 14, padding: '16px 18px' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <span style={{ fontSize: 11, fontWeight: 700, color: C.textDim, textTransform: 'uppercase', letterSpacing: 1.4 }}>
-          {title}
-        </span>
-        <span style={{ fontSize: 22, fontWeight: 800, color, letterSpacing: -0.5 }}>
-          {title === 'Confidence' ? `${pct}%` : `${pct}%`}
-        </span>
+        <span style={{ fontSize: 11, fontWeight: 700, color: C.textDim, textTransform: 'uppercase', letterSpacing: 1.4 }}>{title}</span>
+        <span style={{ fontSize: 22, fontWeight: 800, color, letterSpacing: -0.5 }}>{pct}%</span>
       </div>
-      {/* Bar */}
       <div style={{ marginTop: 10, height: 7, background: C.panel2, borderRadius: 999, overflow: 'hidden' }}>
         <div style={{
           height: '100%', width: `${pct}%`,
@@ -837,9 +622,7 @@ function VitalsTile({ title, value, color, hint }: { title: string; value: numbe
           transition: 'width 0.9s cubic-bezier(.2,.6,.2,1)',
         }} />
       </div>
-      <div style={{ fontSize: 11.5, color: C.textFaint, marginTop: 9, lineHeight: 1.5 }}>
-        {hint}
-      </div>
+      <div style={{ fontSize: 11.5, color: C.textFaint, marginTop: 9, lineHeight: 1.5 }}>{hint}</div>
     </div>
   )
 }
@@ -856,14 +639,11 @@ function RecommendationsCard({ recs, onAct, onDismiss }: { recs: Recommendation[
       </Card>
     )
   }
-
   return (
     <Card>
       <CardTitle icon={<Sparkles size={13} />}>
         Recommended next
-        <span style={{ marginLeft: 'auto', fontSize: 10, color: C.textFaint, fontWeight: 600 }}>
-          Ranked by priority
-        </span>
+        <span style={{ marginLeft: 'auto', fontSize: 10, color: C.textFaint, fontWeight: 600 }}>Ranked by priority</span>
       </CardTitle>
       <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 10 }}>
         <AnimatePresence>
@@ -877,20 +657,14 @@ function RecommendationsCard({ recs, onAct, onDismiss }: { recs: Recommendation[
                 position: 'relative', overflow: 'hidden',
               }}>
               <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, background: recKindColor(r.kind) }} />
-              <div style={{
-                width: 32, height: 32, borderRadius: 8, flexShrink: 0,
-                background: recKindColor(r.kind) + '18',
-                display: 'grid', placeItems: 'center',
-              }}>
+              <div style={{ width: 32, height: 32, borderRadius: 8, flexShrink: 0, background: recKindColor(r.kind) + '18', display: 'grid', placeItems: 'center' }}>
                 <RecIcon kind={r.kind} />
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 11, fontWeight: 700, color: recKindColor(r.kind), textTransform: 'uppercase', letterSpacing: 1.2 }}>
                   {r.kind}{r.subject ? ` · ${r.subject}` : ''}
                 </div>
-                <div style={{ fontSize: 13, color: C.text, lineHeight: 1.5, marginTop: 2 }}>
-                  {r.reason}
-                </div>
+                <div style={{ fontSize: 13, color: C.text, lineHeight: 1.5, marginTop: 2 }}>{r.reason}</div>
               </div>
               <button onClick={() => onAct(r.id)} title="Mark done" style={iconBtnStyle()}>
                 <Check size={13} color={C.green} />
@@ -910,8 +684,7 @@ function iconBtnStyle(): React.CSSProperties {
   return {
     width: 28, height: 28, borderRadius: 7,
     background: 'transparent', border: `1px solid ${C.borderSoft}`,
-    cursor: 'pointer', display: 'grid', placeItems: 'center',
-    flexShrink: 0,
+    cursor: 'pointer', display: 'grid', placeItems: 'center', flexShrink: 0,
   }
 }
 
@@ -936,7 +709,7 @@ function RecIcon({ kind }: { kind: string }) {
 }
 
 // ════════════════════════════════════════════════════════════════════════════
-// OBSERVATIONS STREAM
+// OBSERVATIONS
 // ════════════════════════════════════════════════════════════════════════════
 function ObservationsCard({ obs }: { obs: Observation[] }) {
   if (obs.length === 0) {
@@ -954,21 +727,10 @@ function ObservationsCard({ obs }: { obs: Observation[] }) {
         {obs.slice(0, 6).map(o => {
           const tone = o.tone === 'caution' ? C.amber : o.tone === 'neutral' ? C.blue : C.purple
           return (
-            <div key={o.id} style={{
-              padding: '11px 12px', borderRadius: 10,
-              background: C.panel2, border: `1px solid ${C.borderSoft}`,
-            }}>
-              <div style={{ fontSize: 10, fontWeight: 700, color: tone, textTransform: 'uppercase', letterSpacing: 1.2 }}>
-                {o.kind}
-              </div>
-              <div style={{ fontSize: 13, color: C.text, fontWeight: 600, marginTop: 2, lineHeight: 1.4 }}>
-                {o.title}
-              </div>
-              {o.body && (
-                <div style={{ fontSize: 11.5, color: C.textDim, marginTop: 4, lineHeight: 1.55 }}>
-                  {o.body}
-                </div>
-              )}
+            <div key={o.id} style={{ padding: '11px 12px', borderRadius: 10, background: C.panel2, border: `1px solid ${C.borderSoft}` }}>
+              <div style={{ fontSize: 10, fontWeight: 700, color: tone, textTransform: 'uppercase', letterSpacing: 1.2 }}>{o.kind}</div>
+              <div style={{ fontSize: 13, color: C.text, fontWeight: 600, marginTop: 2, lineHeight: 1.4 }}>{o.title}</div>
+              {o.body && (<div style={{ fontSize: 11.5, color: C.textDim, marginTop: 4, lineHeight: 1.55 }}>{o.body}</div>)}
             </div>
           )
         })}
@@ -993,20 +755,18 @@ function TimelineCard({ events }: { events: TwinEvent[] }) {
     <Card>
       <CardTitle icon={<Activity size={13} />}>
         Recent activity
-        <span style={{ marginLeft: 'auto', fontSize: 10, color: C.textFaint, fontWeight: 600 }}>
-          Last {events.length} events
-        </span>
+        <span style={{ marginLeft: 'auto', fontSize: 10, color: C.textFaint, fontWeight: 600 }}>Last {events.length} events</span>
       </CardTitle>
       <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 4, maxHeight: 280, overflowY: 'auto' }}>
         {events.map((e, i) => (
           <div key={i} style={{
             display: 'flex', alignItems: 'center', gap: 12,
             padding: '8px 10px', borderRadius: 8,
-            borderLeft: `2px solid ${eventColor(e.event_type)}`,
+            borderLeft: `2px solid ${eventColor(e.type)}`,
             background: i % 2 === 0 ? 'transparent' : C.panel2 + '88',
           }}>
-            <span style={{ fontSize: 9.5, fontWeight: 700, color: eventColor(e.event_type), textTransform: 'uppercase', letterSpacing: 1.2, width: 110 }}>
-              {labelFor(e.event_type)}
+            <span style={{ fontSize: 9.5, fontWeight: 700, color: eventColor(e.type), textTransform: 'uppercase', letterSpacing: 1.2, width: 110 }}>
+              {labelFor(e.type)}
             </span>
             <span style={{ fontSize: 12, color: C.text, fontWeight: 500, flex: 1 }}>
               {e.topic ? <span style={{ textTransform: 'capitalize' }}>{e.topic}</span> : '—'}
@@ -1017,11 +777,9 @@ function TimelineCard({ events }: { events: TwinEvent[] }) {
                 {Math.round(e.score)}%
               </span>
             )}
-            {e.correct === true && <Check size={12} color={C.green} />}
-            {e.correct === false && <X size={12} color={C.red} />}
-            <span style={{ fontSize: 10.5, color: C.textFaint, width: 70, textAlign: 'right' }}>
-              {formatRelative(e.created_at)}
-            </span>
+            {e.correct === true  && <Check size={12} color={C.green} />}
+            {e.correct === false && <X     size={12} color={C.red} />}
+            <span style={{ fontSize: 10.5, color: C.textFaint, width: 70, textAlign: 'right' }}>{formatRelative(e.ts)}</span>
           </div>
         ))}
       </div>
@@ -1040,23 +798,43 @@ function eventColor(t: string) {
   return C.textDim
 }
 
-function labelFor(t: string) {
-  return t.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+function labelFor(t: string) { return t.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) }
+
+// ════════════════════════════════════════════════════════════════════════════
+// PRIVACY FOOTER
+// ════════════════════════════════════════════════════════════════════════════
+function PrivacyFooter({ onWipe, eventCount }: { onWipe: () => void; eventCount: number }) {
+  return (
+    <div style={{
+      marginTop: 26, padding: '14px 18px', borderRadius: 12,
+      background: 'rgba(124,58,237,0.04)', border: `1px solid rgba(124,58,237,0.18)`,
+      display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap',
+    }}>
+      <Sparkles size={14} color={C.purple} />
+      <div style={{ flex: 1, minWidth: 260, fontSize: 12, color: C.textDim, lineHeight: 1.55 }}>
+        <span style={{ color: C.text, fontWeight: 700 }}>Stored on this device only.</span>{' '}
+        Your Kairo OS profile ({eventCount} events) lives in your browser's localStorage —
+        none of this is uploaded to Kairo's servers. Clearing your browser data wipes it.
+      </div>
+      <button onClick={onWipe} style={{
+        ...chipBtn(), color: C.red, borderColor: 'rgba(248,113,113,0.4)', flexShrink: 0,
+      }}>
+        <Trash2 size={13} />
+        Wipe my Twin
+      </button>
+    </div>
+  )
 }
 
 // ════════════════════════════════════════════════════════════════════════════
-// SHARED PRIMITIVES
+// PRIMITIVES
 // ════════════════════════════════════════════════════════════════════════════
 function Card({ children }: { children: React.ReactNode }) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
-      style={{
-        background: C.panel, border: `1px solid ${C.border}`, borderRadius: 14,
-        padding: 18, position: 'relative', overflow: 'hidden',
-      }}>
-      {children}
-    </motion.div>
+    <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} style={{
+      background: C.panel, border: `1px solid ${C.border}`, borderRadius: 14,
+      padding: 18, position: 'relative', overflow: 'hidden',
+    }}>{children}</motion.div>
   )
 }
 
@@ -1068,9 +846,7 @@ function CardTitle({ children, icon }: { children: React.ReactNode; icon?: React
         fontSize: 11, fontWeight: 700, color: C.textDim,
         textTransform: 'uppercase', letterSpacing: 1.4,
         display: 'flex', alignItems: 'center', flex: 1, gap: 6,
-      }}>
-        {children}
-      </span>
+      }}>{children}</span>
     </div>
   )
 }
@@ -1083,31 +859,31 @@ function EmptyInline({ icon, text }: { icon: React.ReactNode; text: string }) {
       display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10,
     }}>
       <div style={{ opacity: 0.55 }}>{icon}</div>
-      <p style={{ margin: 0, fontSize: 12.5, color: C.textFaint, textAlign: 'center', maxWidth: 340, lineHeight: 1.55 }}>
-        {text}
-      </p>
+      <p style={{ margin: 0, fontSize: 12.5, color: C.textFaint, textAlign: 'center', maxWidth: 340, lineHeight: 1.55 }}>{text}</p>
     </div>
   )
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// STATES
-// ════════════════════════════════════════════════════════════════════════════
 function PageSkeleton() {
   return (
-    <div style={{ padding: 40, color: C.textDim, display: 'flex', alignItems: 'center', gap: 10 }}>
-      <Loader2 size={16} className="kr-spin" /> Loading your Twin…
-      <style>{`@keyframes kr-spin { to { transform: rotate(360deg) } } .kr-spin { animation: kr-spin .8s linear infinite } @keyframes kr-glow { 0%,100% { opacity: .55 } 50% { opacity: .95 } }`}</style>
+    <div style={{ padding: 40, color: C.textDim }}>
+      <style>{`@keyframes kr-spin { to { transform: rotate(360deg) } } .kr-spin { animation: kr-spin .8s linear infinite }`}</style>
+      Loading your Twin…
     </div>
   )
 }
 
-function EmptyState({ message, onRefresh }: { message: string; onRefresh: () => void }) {
+function EmptyState({ onRefresh, onSeed }: { onRefresh: () => void; onSeed: () => void }) {
   return (
     <div style={{
-      minHeight: '70vh', display: 'flex', flexDirection: 'column', alignItems: 'center',
-      justifyContent: 'center', gap: 12, padding: 40,
+      minHeight: '70vh', display: 'flex', flexDirection: 'column',
+      alignItems: 'center', justifyContent: 'center', gap: 12, padding: 40,
+      background: C.bg,
+      backgroundImage:
+        `radial-gradient(at 12% 0%, rgba(124,58,237,0.10) 0%, transparent 36%),
+         radial-gradient(at 88% 100%, rgba(37,99,235,0.10) 0%, transparent 42%)`,
     }}>
+      <style>{`@keyframes kr-glow { 0%,100% { opacity: .55 } 50% { opacity: .95 } }`}</style>
       <div style={{
         width: 60, height: 60, borderRadius: 16,
         background: GRAD.pill, display: 'grid', placeItems: 'center',
@@ -1117,33 +893,89 @@ function EmptyState({ message, onRefresh }: { message: string; onRefresh: () => 
       </div>
       <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: C.text }}>Kairo OS is waking up</h2>
       <p style={{ margin: 0, fontSize: 13, color: C.textFaint, maxWidth: 420, textAlign: 'center', lineHeight: 1.6 }}>
-        {message}
+        Take a quiz, open a lab, or review flashcards. Every interaction starts shaping your Academic Twin —
+        which lives entirely on this device, never on our servers.
       </p>
-      <button onClick={onRefresh} style={{
-        marginTop: 6, padding: '10px 18px', borderRadius: 10,
-        background: GRAD.pill, color: '#fff', fontWeight: 700, fontSize: 13,
-        border: 'none', cursor: 'pointer',
-      }}>
-        Try again
-      </button>
-      <style>{`@keyframes kr-spin { to { transform: rotate(360deg) } } .kr-spin { animation: kr-spin .8s linear infinite } @keyframes kr-glow { 0%,100% { opacity: .55 } 50% { opacity: .95 } }`}</style>
+      <div style={{ display: 'flex', gap: 10, marginTop: 6 }}>
+        <button onClick={onRefresh} style={{
+          padding: '10px 18px', borderRadius: 10,
+          background: GRAD.pill, color: '#fff', fontWeight: 700, fontSize: 13,
+          border: 'none', cursor: 'pointer',
+        }}>Check again</button>
+        <button onClick={onSeed} style={chipBtn()}>
+          <Sparkles size={13} />
+          Try with demo data
+        </button>
+      </div>
     </div>
   )
 }
 
 // ════════════════════════════════════════════════════════════════════════════
+// DEMO SEED — for new users to see what the dashboard looks like
+// ════════════════════════════════════════════════════════════════════════════
+function seedDemoEvents() {
+  const demo: Array<Parameters<typeof track>[0] & { _daysAgo?: number }> = [
+    { type: 'lab_opened',     subject: 'Biology',   topic: 'cell',                                       _daysAgo: 9 },
+    { type: 'quiz_answered',  subject: 'Math',      topic: 'quadratic equations', correct: false, score: 40, difficulty: 0.6, _daysAgo: 8 },
+    { type: 'quiz_answered',  subject: 'Math',      topic: 'quadratic equations', correct: true,  score: 70, difficulty: 0.6, _daysAgo: 8 },
+    { type: 'flashcard_review', subject: 'Chemistry', topic: 'periodic table',  correct: true, _daysAgo: 7 },
+    { type: 'lab_opened',     subject: 'Space',     topic: 'solar system',                              _daysAgo: 6 },
+    { type: 'quiz_answered',  subject: 'Physics',   topic: 'newton laws',         correct: true,  score: 80, difficulty: 0.5, _daysAgo: 5 },
+    { type: 'quiz_answered',  subject: 'Physics',   topic: 'newton laws',         correct: true,  score: 90, difficulty: 0.5, _daysAgo: 5 },
+    { type: 'essay_graded',   subject: 'English',   topic: 'persuasive essay',                          _daysAgo: 4 },
+    { type: 'lab_opened',     subject: 'Biology',   topic: 'dna',                                        _daysAgo: 3 },
+    { type: 'quiz_answered',  subject: 'Math',      topic: 'vectors',             correct: false, score: 30, difficulty: 0.7, _daysAgo: 2 },
+    { type: 'quiz_answered',  subject: 'Math',      topic: 'vectors',             correct: false, score: 50, difficulty: 0.7, _daysAgo: 2 },
+    { type: 'flashcard_review', subject: 'Chemistry', topic: 'periodic table',  correct: true, _daysAgo: 1 },
+    { type: 'lab_opened',     subject: 'Biology',   topic: 'heart',                                      _daysAgo: 1 },
+    { type: 'quiz_completed', subject: 'Math',      topic: 'quadratic equations', score: 75,             _daysAgo: 0 },
+  ]
+  // Use track normally, then post-process timestamps by reading + re-saving.
+  // (Cheap hack: avoids exposing a private "track at time T" API.)
+  for (const d of demo) {
+    const { _daysAgo, ...args } = d
+    track(args as any)
+    // Backdate the just-pushed event
+    try {
+      const state = JSON.parse(localStorage.getItem(localStorageKeyForDemo())!)
+      const ev = state.events[state.events.length - 1]
+      if (ev && _daysAgo) {
+        ev.ts = Date.now() - _daysAgo * 86_400_000
+        localStorage.setItem(localStorageKeyForDemo(), JSON.stringify(state))
+      }
+    } catch { /* ignore */ }
+  }
+}
+
+// Demo seed helper — read the same storage key the lib uses.
+function localStorageKeyForDemo(): string {
+  // duplicate the key derivation so we don't need to export the internal
+  try {
+    const tok = localStorage.getItem('kairo_token')
+    if (tok) {
+      const payload = JSON.parse(atob(tok.split('.')[1]))
+      if (payload?.sub) {
+        let h = 0x811c9dc5
+        const s = String(payload.sub)
+        for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 0x01000193)
+        return 'kairo:twin:' + ((h >>> 0).toString(36)).padStart(7, '0')
+      }
+    }
+  } catch { /* ignore */ }
+  return 'kairo:twin:_local'
+}
+
+// ════════════════════════════════════════════════════════════════════════════
 // HELPERS
 // ════════════════════════════════════════════════════════════════════════════
-function formatRelative(iso: string | null) {
-  if (!iso) return '—'
-  const ms = Date.now() - new Date(iso).getTime()
-  const s = Math.floor(ms / 1000)
-  if (s < 45)       return 'just now'
-  const m = Math.floor(s / 60)
-  if (m < 60)       return `${m}m ago`
-  const h = Math.floor(m / 60)
-  if (h < 24)       return `${h}h ago`
-  const d = Math.floor(h / 24)
-  if (d < 30)       return `${d}d ago`
-  return new Date(iso).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })
+function formatRelative(ms: number | null) {
+  if (!ms) return '—'
+  const diff = Date.now() - ms
+  const s = Math.floor(diff / 1000)
+  if (s < 45) return 'just now'
+  const m = Math.floor(s / 60); if (m < 60) return `${m}m ago`
+  const h = Math.floor(m / 60); if (h < 24) return `${h}h ago`
+  const d = Math.floor(h / 24); if (d < 30) return `${d}d ago`
+  return new Date(ms).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })
 }

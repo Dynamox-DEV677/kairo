@@ -245,27 +245,52 @@ export async function recomputeTwin(userId) {
 
   const since = new Date(Date.now() - LOOKBACK_DAYS * 86_400_000).toISOString()
 
-  // 1. Pull recent events
-  const { data: events = [] } = await supabaseAdmin
+  // 1. Pull recent events.
+  //    NB: Supabase returns `data: null` on error (e.g. table doesn't exist).
+  //    `data: X = []` destructuring ONLY defaults when X is undefined, so we
+  //    fall back manually below — that way we degrade to an empty twin
+  //    instead of throwing "events is not iterable".
+  const eventsRes = await supabaseAdmin
     .from('twin_events')
     .select('event_type, subject, topic, score, correct, duration_ms, modality, created_at')
     .eq('user_id', userId)
     .gte('created_at', since)
     .order('created_at', { ascending: false })
     .limit(2000)
+  const events = eventsRes.data || []
+  if (eventsRes.error) {
+    console.warn(`[twin/compute] twin_events read failed (${eventsRes.error.code}): ${eventsRes.error.message}`)
+  }
 
   // 2. Current mastery state
-  const { data: masteryRows = [] } = await supabaseAdmin
+  const masteryRes = await supabaseAdmin
     .from('knowledge_mastery')
     .select('*')
     .eq('user_id', userId)
+  const masteryRows = masteryRes.data || []
+  if (masteryRes.error) {
+    console.warn(`[twin/compute] knowledge_mastery read failed (${masteryRes.error.code}): ${masteryRes.error.message}`)
+  }
 
   // 3. Recent sessions (for focus + burnout)
-  const { data: sessions = [] } = await supabaseAdmin
+  const sessionsRes = await supabaseAdmin
     .from('study_sessions')
     .select('started_at, duration_min, focus_score')
     .eq('user_id', userId)
     .gte('started_at', since)
+  const sessions = sessionsRes.data || []
+  if (sessionsRes.error) {
+    console.warn(`[twin/compute] study_sessions read failed (${sessionsRes.error.code}): ${sessionsRes.error.message}`)
+  }
+
+  // If ALL three failed AND they're missing-table errors, the schema hasn't
+  // been applied yet — surface a clear error to the caller.
+  const missingTable = (e) => e && (e.code === '42P01' || /relation .* does not exist/.test(e.message || ''))
+  if (missingTable(eventsRes.error) && missingTable(masteryRes.error) && missingTable(sessionsRes.error)) {
+    const err = new Error('Kairo OS schema not installed. Run kairo-dashboard/server/db/twin_schema.sql in your Supabase SQL editor.')
+    err.code = 'TWIN_SCHEMA_MISSING'
+    throw err
+  }
 
   // 4. Compute each dimension
   const style       = computeLearningStyle(events)

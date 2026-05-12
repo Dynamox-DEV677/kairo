@@ -155,12 +155,16 @@ function buildObservations(twin, masteryRows, recentEvents) {
  */
 export async function recomputeObservations(userId) {
   if (!userId) return []
-  // Pull twin + mastery + a small slice of recent events
-  const [{ data: twin }, { data: masteryRows = [] }, { data: events = [] }] = await Promise.all([
+  // Pull twin + mastery + a small slice of recent events.
+  // Defensive against null .data (returned when a table doesn't exist).
+  const [twinRes, masteryRes, eventsRes] = await Promise.all([
     supabaseAdmin.from('academic_twins').select('*').eq('user_id', userId).maybeSingle(),
     supabaseAdmin.from('knowledge_mastery').select('*').eq('user_id', userId).order('mastery', { ascending: false }),
     supabaseAdmin.from('twin_events').select('event_type, created_at').eq('user_id', userId).order('created_at', { ascending: false }).limit(50),
   ])
+  const twin        = twinRes.data
+  const masteryRows = masteryRes.data || []
+  const events      = eventsRes.data || []
   if (!twin) return []
 
   const obs = buildObservations(twin, masteryRows, events)

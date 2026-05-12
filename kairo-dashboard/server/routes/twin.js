@@ -36,7 +36,7 @@ router.use(requireSupabaseAuth)
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 async function readOpenRecs(userId, limit = 10) {
-  const { data = [] } = await supabaseAdmin
+  const res = await supabaseAdmin
     .from('twin_recommendations')
     .select('*')
     .eq('user_id', userId)
@@ -44,12 +44,12 @@ async function readOpenRecs(userId, limit = 10) {
     .is('dismissed_at', null)
     .order('priority', { ascending: false })
     .limit(limit)
-  return data
+  return res.data || []
 }
 
 async function readRecentObs(userId, limit = 10) {
   const now = new Date().toISOString()
-  const { data = [] } = await supabaseAdmin
+  const res = await supabaseAdmin
     .from('twin_observations')
     .select('*')
     .eq('user_id', userId)
@@ -57,7 +57,7 @@ async function readRecentObs(userId, limit = 10) {
     .order('importance', { ascending: false })
     .order('created_at', { ascending: false })
     .limit(limit)
-  return data
+  return res.data || []
 }
 
 // ── GET /api/twin ───────────────────────────────────────────────────────────
@@ -85,14 +85,18 @@ router.post('/refresh', async (req, res) => {
 router.get('/dashboard', async (req, res) => {
   try {
     const userId = req.user.id
-    const twin   = await getTwin(userId)
+    const twin   = await getTwin(userId).catch(e => {
+      if (e.code === 'TWIN_SCHEMA_MISSING') throw e
+      console.warn('[twin/dashboard] getTwin failed:', e.message)
+      return null
+    })
 
     const [
-      { data: mastery = [] },
+      masteryRes,
       recommendations,
       observations,
-      { data: recentEvents = [] },
-      { data: sessions = [] },
+      eventsRes,
+      sessionsRes,
     ] = await Promise.all([
       supabaseAdmin.from('knowledge_mastery').select('*').eq('user_id', userId),
       readOpenRecs(userId, 8),
@@ -111,6 +115,10 @@ router.get('/dashboard', async (req, res) => {
         .limit(14),
     ])
 
+    const mastery       = masteryRes.data || []
+    const recentEvents  = eventsRes.data  || []
+    const sessions      = sessionsRes.data || []
+
     // Attach current retention to each mastery row (helps the heatmap)
     const masteryWithRet = mastery.map(m => ({
       ...m,
@@ -128,6 +136,13 @@ router.get('/dashboard', async (req, res) => {
     })
   } catch (e) {
     console.error('[twin/dashboard]', e.message)
+    if (e.code === 'TWIN_SCHEMA_MISSING') {
+      return res.status(503).json({
+        error: e.message,
+        setup_required: true,
+        sql_file: 'kairo-dashboard/server/db/twin_schema.sql',
+      })
+    }
     res.status(500).json({ error: e.message })
   }
 })
@@ -135,11 +150,12 @@ router.get('/dashboard', async (req, res) => {
 // ── GET /api/twin/mastery ───────────────────────────────────────────────────
 router.get('/mastery', async (req, res) => {
   try {
-    const { data = [] } = await supabaseAdmin
+    const r = await supabaseAdmin
       .from('knowledge_mastery')
       .select('*')
       .eq('user_id', req.user.id)
       .order('mastery', { ascending: false })
+    const data = r.data || []
     res.json({ mastery: data.map(m => ({ ...m, retention_now: +retentionFor(m).toFixed(3) })) })
   } catch (e) {
     res.status(500).json({ error: e.message })
@@ -150,12 +166,13 @@ router.get('/mastery', async (req, res) => {
 // Returns a [days × topics] grid of predicted retention for the next 7 days.
 router.get('/retention', async (req, res) => {
   try {
-    const { data: rows = [] } = await supabaseAdmin
+    const r = await supabaseAdmin
       .from('knowledge_mastery')
       .select('subject, topic, last_studied_at, strength, mastery')
       .eq('user_id', req.user.id)
       .order('mastery', { ascending: false })
       .limit(20)
+    const rows = r.data || []
 
     const now = new Date()
     const days = []

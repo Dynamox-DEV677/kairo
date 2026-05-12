@@ -73,8 +73,12 @@ import knowledgeRoutes     from './routes/knowledge.js'
 // ── v12 routes (Payments + Subscriptions) ────────────────────────────────────
 import paymentRoutes       from './routes/payments.js'
 
-// ── v13 routes (Kairo OS · AI Academic Twin) ─────────────────────────────────
-import twinRoutes          from './routes/twin.js'
+// ── v13 routes (Kairo OS) — DEPRECATED ───────────────────────────────────────
+// Kairo OS data now lives in the user's browser (localStorage). See
+// src/lib/twin.ts for the live implementation. The server-side route +
+// services are kept around for the optional future "cross-device sync" feature
+// but are NOT mounted on the app — calls to /api/twin/* will 404.
+// import twinRoutes          from './routes/twin.js'
 
 // ─── Validate env ─────────────────────────────────────────────────────────────
 if (!process.env.ENCRYPTION_SECRET || process.env.ENCRYPTION_SECRET.length < 32) {
@@ -180,7 +184,8 @@ app.use('/api/knowledge',      knowledgeRoutes)
 app.use('/api/payments',       paymentRoutes)
 
 // v13 — Kairo OS · AI Academic Twin
-app.use('/api/twin',           twinRoutes)
+// DEPRECATED: data now lives client-side in src/lib/twin.ts. Route disabled.
+// app.use('/api/twin',           twinRoutes)
 
 // ─── Health check ─────────────────────────────────────────────────────────────
 app.get('/health', (_req, res) => {
