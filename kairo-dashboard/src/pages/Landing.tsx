@@ -28,6 +28,7 @@ import {
 } from 'lucide-react'
 import LabPreview3D, { type LabVariant } from '../components/LabPreview3D'
 import HeroCore3D from '../components/HeroCore3D'
+import DepthDust from '../components/DepthDust'
 
 // ════════════════════════════════════════════════════════════════════════════
 // TOKENS
@@ -86,6 +87,9 @@ export default function Landing({ onGetStarted }: LandingProps) {
 
       {/* Continuous background atmospheric layer that bleeds across every section */}
       <AtmosphereLayer />
+
+      {/* Persistent dust layer — drifts across the entire scroll, scroll- + mouse-reactive */}
+      <DepthDust intensity={0.85} zIndex={0} />
 
       <TopNav onGetStarted={onGetStarted} />
 
@@ -469,6 +473,19 @@ function GlobalKeyframes() {
 }
 
 function Section({ children, style = {}, id }: { children: React.ReactNode; style?: React.CSSProperties; id?: string }) {
+  const ref = useRef<HTMLDivElement>(null)
+  // Drive a subtle scroll-linked dolly entrance: as the section's TOP crosses
+  // the viewport, content scales 0.96 → 1, blur 4 → 0, opacity 0.7 → 1.
+  // This is what makes the page feel like one continuous "camera move" rather
+  // than disjoint stacked panels.
+  const { scrollYProgress } = useScroll({
+    target: ref, offset: ['start end', 'start center'],
+  })
+  const scale   = useTransform(scrollYProgress, [0, 1], [0.965, 1])
+  const opacity = useTransform(scrollYProgress, [0, 0.4, 1], [0.6, 0.92, 1])
+  const blur    = useTransform(scrollYProgress, [0, 1], [4, 0])
+  const blurStr = useTransform(blur, v => `blur(${v}px)`)
+
   return (
     <section
       id={id}
@@ -480,7 +497,16 @@ function Section({ children, style = {}, id }: { children: React.ReactNode; styl
         margin: '0 auto',
         ...style,
       }}>
-      {children}
+      <motion.div
+        ref={ref}
+        style={{
+          scale,
+          opacity,
+          filter: blurStr,
+          transformOrigin: 'center top',
+        }}>
+        {children}
+      </motion.div>
     </section>
   )
 }

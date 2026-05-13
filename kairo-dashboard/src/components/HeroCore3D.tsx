@@ -134,14 +134,20 @@ function CoreScene({ scrollRef, pointerXRef, pointerYRef }: {
     const px = smoothX.current
     const py = smoothY.current
 
-    // ── Root group: scale down + drift up on scroll, tilt with mouse ──
+    // ── Root group: cinematic recede + tumble on scroll ──────
+    //  • Scale falls 1 → 0.55 (more dramatic depth recession)
+    //  • Drifts up + slightly back (Z-axis recede)
+    //  • Tumbles forward on X axis (15° tilt) as if camera is craning over
+    //  • Mouse tilt layered on top, multiplied by (1 - mp) so it fades as
+    //    the user scrolls — preventing fights with the scroll-tumble
     if (rootRef.current) {
-      const scale = 1 - mp * 0.32        // recede
+      const scale = 1 - mp * 0.45
       rootRef.current.scale.setScalar(scale)
-      rootRef.current.position.y = -mp * 0.6   // drift up out of frame
-      // Mouse-driven parallax tilt (subtle, Apple-feel)
-      rootRef.current.rotation.x = -py * 0.18
-      rootRef.current.rotation.z =  px * 0.12
+      rootRef.current.position.y = -mp * 1.1
+      rootRef.current.position.z = -mp * 1.4
+      const interactivity = 1 - mp * 0.85
+      rootRef.current.rotation.x = -mp * 0.32  + (-py * 0.18) * interactivity
+      rootRef.current.rotation.z =  mp * 0.20  + ( px * 0.12) * interactivity
     }
 
     // ── Core mesh: continuous rotation, breath, fade.
