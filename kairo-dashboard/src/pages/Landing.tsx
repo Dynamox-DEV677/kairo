@@ -100,6 +100,8 @@ export default function Landing({ onGetStarted }: LandingProps) {
 
       <LabsSection />
 
+      <LogoInterlude />
+
       <AdaptationSection />
 
       <RolesSection />
@@ -122,12 +124,26 @@ export default function Landing({ onGetStarted }: LandingProps) {
 // AMBIENT ATMOSPHERE — sits behind every section, gives the page depth
 // ════════════════════════════════════════════════════════════════════════════
 function AtmosphereLayer() {
+  // Logo watermark positions scattered down the scroll. Each tagged with a
+  // size + opacity + animation phase. The brief calls for "the logo should
+  // become instantly recognizable", so opacities are stronger than typical
+  // watermark territory (0.10–0.16 vs 0.03–0.05) — still subtle, but visible.
+  const watermarks = [
+    { top: '50%',  left: '6%',   size: 200, opacity: 0.13, delay: 0  },
+    { top: '105%', left: '88%',  size: 260, opacity: 0.11, delay: 4  },
+    { top: '170%', left: '50%',  size: 360, opacity: 0.14, delay: 2  },
+    { top: '245%', left: '10%',  size: 220, opacity: 0.10, delay: 6  },
+    { top: '310%', left: '85%',  size: 280, opacity: 0.12, delay: 3  },
+    { top: '380%', left: '50%',  size: 320, opacity: 0.13, delay: 5  },
+    { top: '450%', left: '15%',  size: 200, opacity: 0.10, delay: 1  },
+  ]
+
   return (
     <div aria-hidden style={{
       position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none',
       overflow: 'hidden',
     }}>
-      {/* Slow drifting blobs */}
+      {/* Slow drifting glow blobs */}
       <div style={{
         position: 'absolute', top: '15%', left: '-10%',
         width: 600, height: 600, borderRadius: '50%',
@@ -150,21 +166,81 @@ function AtmosphereLayer() {
         animation: 'kr-float 16s ease-in-out -6s infinite',
       }}/>
 
-      {/* Faint logo watermark mid-scroll */}
-      <div style={{
-        position: 'absolute', top: '180%', left: '50%',
-        transform: 'translateX(-50%)',
-        opacity: 0.05, pointerEvents: 'none',
-      }}>
-        <KairoLogo size={240} />
-      </div>
-      <div style={{
-        position: 'absolute', top: '340%', left: '12%',
-        opacity: 0.04, pointerEvents: 'none',
-      }}>
-        <KairoLogo size={180} />
-      </div>
+      {/* Logo watermarks — gently float + pulse, scattered the full scroll */}
+      {watermarks.map((w, i) => (
+        <div key={i} style={{
+          position: 'absolute',
+          top: w.top, left: w.left,
+          transform: 'translate(-50%, -50%)',
+          opacity: w.opacity,
+          filter: 'drop-shadow(0 0 18px rgba(124,58,237,0.55))',
+          animation: `kr-float ${12 + (i % 4) * 2}s ease-in-out -${w.delay}s infinite, kr-glow ${7 + (i % 3) * 1.5}s ease-in-out -${w.delay / 2}s infinite`,
+        }}>
+          <KairoLogo size={w.size} />
+        </div>
+      ))}
     </div>
+  )
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// LOGO INTERLUDE — cinematic full-bleed logo moment between sections
+// ════════════════════════════════════════════════════════════════════════════
+function LogoInterlude() {
+  return (
+    <section style={{
+      padding: '140px 24px',
+      position: 'relative',
+      textAlign: 'center',
+      maxWidth: 1280, margin: '0 auto',
+    }}>
+      <motion.div
+        initial={{ opacity: 0, scale: 0.86 }}
+        whileInView={{ opacity: 1, scale: 1 }}
+        viewport={{ once: true, amount: 0.3 }}
+        transition={{ duration: 1.4, ease: [0.21,0.86,0.41,1] as any }}
+        style={{ position: 'relative', display: 'inline-block' }}>
+
+        {/* Massive glow halo behind the logo */}
+        <div style={{
+          position: 'absolute', inset: '-60%',
+          background: 'radial-gradient(circle, rgba(124,58,237,0.32) 0%, rgba(37,99,235,0.16) 35%, transparent 70%)',
+          filter: 'blur(40px)',
+          animation: 'kr-glow 5s ease-in-out infinite',
+          pointerEvents: 'none',
+        }}/>
+
+        {/* The hero-sized logo */}
+        <div style={{
+          position: 'relative',
+          filter: 'drop-shadow(0 0 48px rgba(124,58,237,0.7))',
+        }}>
+          <KairoLogo size={220} />
+        </div>
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.5 }}
+        transition={{ duration: 0.8, delay: 0.4 }}
+        style={{ marginTop: 40, position: 'relative' }}>
+        <div style={{
+          fontSize: 11, fontWeight: 700, letterSpacing: 4,
+          textTransform: 'uppercase', color: C.purple,
+          marginBottom: 14,
+        }}>
+          Kairo
+        </div>
+        <h2 className="kr-h2" style={{
+          margin: 0, fontSize: 54, fontWeight: 800, letterSpacing: -1.5,
+          color: C.text, lineHeight: 1.05, maxWidth: 760, marginInline: 'auto',
+        }}>
+          One ecosystem.<br/>
+          <span className="kr-grad-text">Every learning moment.</span>
+        </h2>
+      </motion.div>
+    </section>
   )
 }
 
