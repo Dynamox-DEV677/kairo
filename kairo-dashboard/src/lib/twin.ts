@@ -120,14 +120,64 @@ export interface Recommendation {
   createdAt:  number
 }
 
+// ─── Domain records — every other Kairo system reads/writes here ──────────────
+export interface Doubt {
+  id:        string
+  ts:        number
+  question:  string
+  answer?:   string       // full markdown answer if available
+  topic?:    string       // normalised
+  subject?:  string
+  source:    'solver' | 'manual' | 'voice'
+}
+
+export interface Concept {
+  id:        string
+  name:      string                // normalised, lowercase
+  subject?:  string
+  related:   string[]              // ids of related concepts
+  encounteredAt: number            // first seen
+  reinforcedAt:  number            // last revisit
+  visits:    number
+  mastery:   number                // 0..1 — derived from related quiz/lab events
+}
+
+export interface Formula {
+  id:        string
+  ts:        number
+  name:      string                // "Newton's 2nd Law"
+  expr:      string                // "F = m·a"
+  subject?:  string
+  topic?:    string
+  source:    'solver' | 'manual' | 'lab'
+}
+
+export interface Flashcard {
+  id:        string
+  ts:        number
+  front:     string
+  back:      string
+  subject?:  string
+  topic?:    string
+  reviews:   number
+  ease:      number                // SRS ease factor (default 2.5)
+  dueAt:     number                // next review time
+  source:    'manual' | 'auto-from-doubt' | 'auto-from-mistake'
+}
+
 export interface TwinState {
-  version:        2                 // bump when shape changes
+  version:        3                 // bumped from 2 — added domain arrays
   userKey:        string
   events:         TwinEvent[]
   mastery:        MasteryRow[]
   twin:           Twin | null
   observations:   Observation[]
   recommendations: Recommendation[]
+  // ─── Unified domain memory ─────────────────────────────────────────────
+  doubts:         Doubt[]           // every question asked to Solver
+  concepts:       Concept[]         // concept graph nodes
+  formulas:       Formula[]         // collected formulas
+  flashcards:     Flashcard[]       // SRS deck
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -175,13 +225,17 @@ function storageKey(): string {
 
 function emptyState(): TwinState {
   return {
-    version:         2,
+    version:         3,
     userKey:         getUserKey(),
     events:          [],
     mastery:         [],
     twin:            null,
     observations:    [],
     recommendations: [],
+    doubts:          [],
+    concepts:        [],
+    formulas:        [],
+    flashcards:      [],
   }
 }
 
@@ -190,10 +244,29 @@ export function loadState(): TwinState {
   try {
     const raw = localStorage.getItem(storageKey())
     if (!raw) return emptyState()
-    const parsed = JSON.parse(raw) as TwinState
-    // Defensive — in case the JSON shape is older
-    if (parsed.version !== 2) return emptyState()
-    return parsed
+    const parsed = JSON.parse(raw) as any
+    // Migration: bump v2 (twin-only) → v3 (twin + domain arrays).
+    // We KEEP v2 events/mastery/twin so users don't lose their model.
+    if (parsed.version === 2) {
+      return {
+        ...emptyState(),
+        events:          parsed.events          ?? [],
+        mastery:         parsed.mastery         ?? [],
+        twin:            parsed.twin            ?? null,
+        observations:    parsed.observations    ?? [],
+        recommendations: parsed.recommendations ?? [],
+      }
+    }
+    if (parsed.version !== 3) return emptyState()
+    // Defensive: ensure all domain arrays exist on every load
+    return {
+      ...emptyState(),
+      ...parsed,
+      doubts:     parsed.doubts     ?? [],
+      concepts:   parsed.concepts   ?? [],
+      formulas:   parsed.formulas   ?? [],
+      flashcards: parsed.flashcards ?? [],
+    }
   } catch {
     return emptyState()
   }
@@ -919,4 +992,300 @@ export const kairoTrack = track
 // what's in their device. Privacy by visibility.
 export function dumpState(): TwinState {
   return loadState()
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// UNIFIED MEMORY API — every other Kairo system reads/writes through here
+// ════════════════════════════════════════════════════════════════════════════
+//
+// The Twin's `events` array captures behavioural signal (correctness, timing,
+// modality). These domain APIs sit on top for the human-readable surface:
+//   - recordDoubt:     question + answer text from Solver
+//   - recordMistake:   typed mistake with context (auto-feeds Mistake Analysis)
+//   - recordConcept:   conceptual node + edges (auto-feeds Concept Map)
+//   - recordFormula:   collected equation (auto-feeds Formula Sheet)
+//   - recordFlashcard: SRS card (auto-feeds Flashcards page)
+//
+// Each `record*` ALSO calls track() internally so the Twin's existing model
+// (mastery, retention, style) keeps evolving without duplicate code.
+
+// ── DOUBTS (Solver history) ─────────────────────────────────────────────────
+export function recordDoubt(args: {
+  question:  string
+  answer?:   string
+  topic?:    string
+  subject?:  string
+  source?:   Doubt['source']
+}): Doubt {
+  const state = loadState()
+  const doubt: Doubt = {
+    id:        uid(),
+    ts:        Date.now(),
+    question:  args.question,
+    answer:    args.answer,
+    topic:     normalizeTopic(args.topic),
+    subject:   args.subject,
+    source:    args.source || 'solver',
+  }
+  state.doubts.unshift(doubt)
+  state.doubts = state.doubts.slice(0, 200)     // cap at 200 most-recent
+  saveState(state)
+
+  // Also feed the twin
+  track({
+    type: 'concept_viewed',
+    subject: args.subject,
+    topic:   args.topic,
+    modality: args.source === 'voice' ? 'repetition' : 'text',   // 'repetition' = audio-like in Twin model
+    payload: { doubtId: doubt.id, question: args.question.slice(0, 120) },
+  })
+  return doubt
+}
+
+export function listDoubts(limit = 50): Doubt[] {
+  return loadState().doubts.slice(0, limit)
+}
+
+// ── MISTAKES (subset of events where correct=false) ─────────────────────────
+export interface MistakeRow {
+  topic:      string
+  subject:    string
+  count:      number             // total wrong attempts on this topic
+  lastAt:     number
+  recentScores: number[]         // for context
+  severity:   number             // 0..1 — higher = more attention needed
+  events:     TwinEvent[]        // full underlying wrong-answer events
+}
+
+export function getMistakes(): MistakeRow[] {
+  const state = loadState()
+  // Group wrong events by topic.
+  const byTopic = new Map<string, TwinEvent[]>()
+  for (const e of state.events) {
+    const isWrong = e.correct === false || (typeof e.score === 'number' && e.score < 40)
+    if (!isWrong || !e.topic) continue
+    const k = `${e.subject || 'General'}:${e.topic}`
+    if (!byTopic.has(k)) byTopic.set(k, [])
+    byTopic.get(k)!.push(e)
+  }
+  const rows: MistakeRow[] = []
+  for (const [k, evs] of byTopic.entries()) {
+    const [subject, topic] = k.split(':')
+    const lastAt = Math.max(...evs.map(e => e.ts))
+    const recentScores = evs
+      .filter(e => typeof e.score === 'number')
+      .sort((a, b) => b.ts - a.ts)
+      .slice(0, 5)
+      .map(e => e.score!)
+    // Severity grows with count + recency; decays with recent right answers
+    const mastery = state.mastery.find(m => m.subject === subject && m.topic === topic)
+    const baseMastery = mastery?.mastery ?? 0.3
+    const severity = Math.max(0, Math.min(1, (evs.length / 8) * (1 - baseMastery)))
+    rows.push({ topic, subject, count: evs.length, lastAt, recentScores, severity, events: evs })
+  }
+  return rows.sort((a, b) => b.severity - a.severity)
+}
+
+/** Record an explicit mistake. Used by Mistake Analysis "Add manually". */
+export function recordMistake(args: {
+  topic:    string
+  subject?: string
+  detail?:  string
+  difficulty?: number
+}) {
+  track({
+    type: 'mistake',
+    subject: args.subject || 'General',
+    topic: args.topic,
+    correct: false,
+    score: 0,
+    difficulty: args.difficulty ?? 0.5,
+    payload: { detail: args.detail || null, manual: true },
+  })
+}
+
+// ── CONCEPTS (graph nodes auto-built from history) ──────────────────────────
+export function recordConcept(args: {
+  name:      string
+  subject?:  string
+  related?:  string[]
+}): Concept {
+  const state = loadState()
+  const id = 'c-' + normalizeTopic(args.name)?.replace(/\s+/g, '-')
+  const existing = state.concepts.find(c => c.id === id)
+  if (existing) {
+    existing.visits++
+    existing.reinforcedAt = Date.now()
+    if (args.related) {
+      const merged = new Set([...existing.related, ...args.related.map(r => 'c-' + normalizeTopic(r)?.replace(/\s+/g, '-'))])
+      existing.related = [...merged].filter(Boolean) as string[]
+    }
+    saveState(state)
+    return existing
+  }
+  const concept: Concept = {
+    id:           id!,
+    name:         normalizeTopic(args.name)!,
+    subject:      args.subject,
+    related:      (args.related || []).map(r => 'c-' + normalizeTopic(r)?.replace(/\s+/g, '-')).filter(Boolean) as string[],
+    encounteredAt: Date.now(),
+    reinforcedAt:  Date.now(),
+    visits:       1,
+    mastery:      0.3,
+  }
+  state.concepts.push(concept)
+  saveState(state)
+  return concept
+}
+
+/** Build a concept graph from BOTH explicit concepts AND twin events.
+ *  Every topic that appears in events becomes a node; topics in the same
+ *  subject+session are linked. Returns nodes + edges ready for visualization. */
+export function getConceptGraph(): { nodes: ConceptNode[]; edges: ConceptEdge[] } {
+  const state = loadState()
+  const nodes = new Map<string, ConceptNode>()
+
+  // Seed nodes from explicit concepts
+  for (const c of state.concepts) {
+    nodes.set(c.id, {
+      id:       c.id,
+      name:     c.name,
+      subject:  c.subject || 'General',
+      visits:   c.visits,
+      mastery:  c.mastery,
+      lastSeen: c.reinforcedAt,
+    })
+  }
+  // Add nodes from events (auto-discovery)
+  for (const e of state.events) {
+    if (!e.topic) continue
+    const id = 'c-' + e.topic.replace(/\s+/g, '-')
+    if (!nodes.has(id)) {
+      const mastery = state.mastery.find(m => m.subject === e.subject && m.topic === e.topic)
+      nodes.set(id, {
+        id, name: e.topic,
+        subject: e.subject || 'General',
+        visits: 1, mastery: mastery?.mastery ?? 0.3,
+        lastSeen: e.ts,
+      })
+    } else {
+      const n = nodes.get(id)!
+      n.visits++
+      if (e.ts > n.lastSeen) n.lastSeen = e.ts
+    }
+  }
+
+  // Edges: topics that co-occur within the same 30-min window get linked
+  const edges = new Set<string>()
+  const eventsByTime = [...state.events].filter(e => e.topic).sort((a, b) => a.ts - b.ts)
+  for (let i = 0; i < eventsByTime.length; i++) {
+    for (let j = i + 1; j < eventsByTime.length; j++) {
+      const a = eventsByTime[i], b = eventsByTime[j]
+      if (b.ts - a.ts > 30 * 60_000) break
+      if (a.topic === b.topic) continue
+      const ka = 'c-' + a.topic!.replace(/\s+/g, '-')
+      const kb = 'c-' + b.topic!.replace(/\s+/g, '-')
+      const edge = ka < kb ? `${ka}|${kb}` : `${kb}|${ka}`
+      edges.add(edge)
+    }
+  }
+  // Add explicit related edges
+  for (const c of state.concepts) {
+    for (const r of c.related) {
+      const edge = c.id < r ? `${c.id}|${r}` : `${r}|${c.id}`
+      edges.add(edge)
+    }
+  }
+
+  return {
+    nodes: [...nodes.values()],
+    edges: [...edges].map(e => {
+      const [from, to] = e.split('|')
+      return { from, to }
+    }),
+  }
+}
+
+export interface ConceptNode {
+  id:        string
+  name:      string
+  subject:   string
+  visits:    number
+  mastery:   number
+  lastSeen:  number
+}
+export interface ConceptEdge { from: string; to: string }
+
+// ── FORMULAS ────────────────────────────────────────────────────────────────
+export function recordFormula(args: { name: string; expr: string; subject?: string; topic?: string; source?: Formula['source'] }): Formula {
+  const state = loadState()
+  const f: Formula = {
+    id: uid(), ts: Date.now(),
+    name: args.name, expr: args.expr,
+    subject: args.subject, topic: normalizeTopic(args.topic),
+    source: args.source || 'solver',
+  }
+  state.formulas.unshift(f)
+  state.formulas = state.formulas.slice(0, 200)
+  saveState(state)
+  return f
+}
+
+export function listFormulas(subject?: string): Formula[] {
+  const all = loadState().formulas
+  return subject ? all.filter(f => f.subject === subject) : all
+}
+
+// ── FLASHCARDS ──────────────────────────────────────────────────────────────
+export function recordFlashcard(args: { front: string; back: string; subject?: string; topic?: string; source?: Flashcard['source'] }): Flashcard {
+  const state = loadState()
+  const c: Flashcard = {
+    id: uid(), ts: Date.now(),
+    front: args.front, back: args.back,
+    subject: args.subject, topic: normalizeTopic(args.topic),
+    reviews: 0, ease: 2.5,
+    dueAt: Date.now(),
+    source: args.source || 'manual',
+  }
+  state.flashcards.unshift(c)
+  saveState(state)
+  return c
+}
+
+export function listFlashcards(): Flashcard[]   { return loadState().flashcards }
+export function listConcepts():  Concept[]      { return loadState().concepts  }
+
+// ── STUDY HISTORY (unified timeline for Knowledge Graph etc.) ──────────────
+export interface HistoryEntry {
+  ts:       number
+  kind:     'event' | 'doubt' | 'concept' | 'formula' | 'flashcard'
+  title:    string
+  subject?: string
+  topic?:   string
+  meta?:    Record<string, any>
+}
+
+export function getStudyHistory(limit = 100): HistoryEntry[] {
+  const s = loadState()
+  const items: HistoryEntry[] = []
+  for (const e of s.events) {
+    items.push({
+      ts: e.ts, kind: 'event',
+      title: labelEvent(e),
+      subject: e.subject, topic: e.topic,
+      meta: { score: e.score, correct: e.correct },
+    })
+  }
+  for (const d of s.doubts)     items.push({ ts: d.ts, kind: 'doubt',     title: d.question, subject: d.subject, topic: d.topic })
+  for (const c of s.concepts)   items.push({ ts: c.reinforcedAt, kind: 'concept', title: c.name, subject: c.subject })
+  for (const f of s.formulas)   items.push({ ts: f.ts, kind: 'formula',   title: f.name,     subject: f.subject, topic: f.topic })
+  for (const fc of s.flashcards) items.push({ ts: fc.ts, kind: 'flashcard', title: fc.front, subject: fc.subject, topic: fc.topic })
+  items.sort((a, b) => b.ts - a.ts)
+  return items.slice(0, limit)
+}
+
+function labelEvent(e: TwinEvent): string {
+  const verb = e.type.replace(/_/g, ' ')
+  if (e.topic) return `${verb}: ${e.topic}`
+  return verb
 }

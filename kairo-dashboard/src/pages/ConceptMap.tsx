@@ -1,504 +1,397 @@
 /**
- * AI Concept Map — interactive SVG mindmap from any topic.
- * AI extracts 8-15 concepts + their relationships, we lay them out
- * with a simple physics-free radial-of-clusters scheme and let the
- * user drag nodes around.
+ * Concept Map — auto-built from the unified Kairo memory engine.
+ *
+ * Reads `getConceptGraph()` from twin.ts which discovers nodes from:
+ *   1. Every topic the user has touched in any event (auto-discovery)
+ *   2. Explicit concepts recorded via recordConcept()
+ *
+ * Edges are auto-discovered too: any two topics studied within the same
+ * 30-minute window get linked. Plus any explicit relations.
+ *
+ * The result is a real neural-graph of "what this student has learned and
+ * how their concepts connect" — built entirely from localStorage, evolving
+ * every time they use Kairo. Drag any node to rearrange. Zoom + pan.
+ *
+ * Strict palette: black + deep purple + white only.
  */
-import { useState, useRef, useCallback, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { useEffect, useState, useRef, useMemo } from 'react'
+import { motion } from 'framer-motion'
+import { Network, RefreshCw, Maximize2, Sparkles } from 'lucide-react'
 import {
-  Network, Sparkles, RefreshCw, Save, ZoomIn, ZoomOut, Maximize2,
-} from 'lucide-react'
-import { chat } from '../lib/openrouter'
-import { saveToNotebook } from '../lib/notebook'
+  getConceptGraph, recordConcept,
+  type ConceptNode, type ConceptEdge,
+} from '../lib/twin'
 
-interface ConceptNode {
-  id:    string
-  label: string
-  level: number       // 0 = central, 1 = main, 2 = leaf
-  desc?: string
-  // Computed positions
-  x?: number
-  y?: number
+const C = {
+  bg:        '#06060a',
+  panel:     '#0c0c14',
+  panel2:    '#13131d',
+  border:    '#22222e',
+  borderSoft:'#1a1a26',
+  text:      '#ffffff',
+  textDim:   '#c1c1c8',
+  textFaint: '#8a8a96',
+  purpleLite:'#e9d5ff',
+  purpleSoft:'#c4b5fd',
+  purple:    '#a78bfa',
+  purpleHi:  '#7c3aed',
+  purpleDeep:'#5b21b6',
 }
+const FONT = "'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif"
 
-interface ConceptEdge {
-  from:  string
-  to:    string
-  label?: string
-}
-
-interface ConceptGraph {
-  central: string
-  nodes:   ConceptNode[]
-  edges:   ConceptEdge[]
-}
-
-const card: React.CSSProperties = { background: '#111', border: '1px solid #1e1e1e', borderRadius: 14 }
-
-const LEVEL_COLORS = ['#6366f1', '#34d399', '#fbbf24', '#f472b6']
-const LEVEL_RADIUS = [38, 32, 26, 22]
+interface Layout { x: number; y: number }
 
 export default function ConceptMap() {
-  const [topic, setTopic]       = useState('')
-  const [graph, setGraph]       = useState<ConceptGraph | null>(null)
-  const [loading, setLoading]   = useState(false)
-  const [err, setErr]           = useState('')
-  const [zoom, setZoom]         = useState(1)
-  const [pan, setPan]           = useState({ x: 0, y: 0 })
-  const [draggingId, setDraggingId] = useState<string | null>(null)
-  const [hoverId, setHoverId]   = useState<string | null>(null)
-  const [savedToNotebook, setSavedToNotebook] = useState(false)
+  const [graph, setGraph] = useState<{ nodes: ConceptNode[]; edges: ConceptEdge[] }>({ nodes: [], edges: [] })
+  const [positions, setPositions] = useState<Map<string, Layout>>(new Map())
+  const [hover, setHover] = useState<string | null>(null)
+  const [dragId, setDragId] = useState<string | null>(null)
   const svgRef = useRef<SVGSVGElement>(null)
-  const dragStart = useRef<{ mx: number; my: number; nx: number; ny: number } | null>(null)
-  const panStart = useRef<{ mx: number; my: number; px: number; py: number } | null>(null)
 
-  // Layout: central node at origin, level-1 in a circle around, level-2 clustered around their parents
-  const layoutGraph = useCallback((g: ConceptGraph): ConceptGraph => {
-    const nodes = g.nodes.map(n => ({ ...n }))
-    const idx: Record<string, ConceptNode> = {}
-    for (const n of nodes) idx[n.id] = n
-
-    // Level-0 (central) at origin
-    for (const n of nodes) if (n.level === 0) { n.x = 0; n.y = 0 }
-
-    // Level-1 in a ring
-    const level1 = nodes.filter(n => n.level === 1)
-    const r1 = 240
-    level1.forEach((n, i) => {
-      const angle = (i / Math.max(level1.length, 1)) * Math.PI * 2 - Math.PI / 2
-      n.x = Math.cos(angle) * r1
-      n.y = Math.sin(angle) * r1
-    })
-
-    // Level-2 around their parent (or central if no parent)
-    const level2 = nodes.filter(n => n.level >= 2)
-    const childrenByParent: Record<string, ConceptNode[]> = {}
-    for (const n of level2) {
-      // Find parent via edge
-      const incoming = g.edges.find(e => e.to === n.id)
-      const parentId = incoming?.from || nodes.find(p => p.level === 0)?.id || nodes[0]?.id
-      if (parentId) {
-        if (!childrenByParent[parentId]) childrenByParent[parentId] = []
-        childrenByParent[parentId].push(n)
-      }
+  function reload() {
+    const g = getConceptGraph()
+    setGraph(g)
+    // Place nodes in clusters by subject — radial layout, deterministic per-id
+    const bySubject = new Map<string, ConceptNode[]>()
+    for (const n of g.nodes) {
+      if (!bySubject.has(n.subject)) bySubject.set(n.subject, [])
+      bySubject.get(n.subject)!.push(n)
     }
-    for (const [parentId, children] of Object.entries(childrenByParent)) {
-      const parent = idx[parentId]
-      if (!parent || parent.x == null) continue
-      const r2 = 110
-      // Direction from center to parent
-      const angleToParent = Math.atan2(parent.y!, parent.x!)
-      // Spread children around the parent in an arc facing outward
-      children.forEach((c, i) => {
-        const spread = Math.PI * 0.6
-        const offset = (i - (children.length - 1) / 2) * (spread / Math.max(children.length, 1))
-        const angle = angleToParent + offset
-        c.x = parent.x! + Math.cos(angle) * r2
-        c.y = parent.y! + Math.sin(angle) * r2
+    const pos = new Map<string, Layout>()
+    const subjects = [...bySubject.keys()]
+    const W = 1100, H = 620
+    const cx = W / 2, cy = H / 2
+    const clusterR = Math.min(W, H) * 0.32
+    subjects.forEach((subject, sIdx) => {
+      const subAngle = (sIdx / Math.max(1, subjects.length)) * Math.PI * 2
+      const sx = cx + Math.cos(subAngle) * clusterR
+      const sy = cy + Math.sin(subAngle) * clusterR
+      const nodes = bySubject.get(subject)!
+      nodes.forEach((n, i) => {
+        const a = (i / nodes.length) * Math.PI * 2
+        const r = 30 + Math.sqrt(n.visits) * 12
+        pos.set(n.id, {
+          x: sx + Math.cos(a) * r,
+          y: sy + Math.sin(a) * r,
+        })
       })
-    }
+    })
+    setPositions(pos)
+  }
 
-    // Any leftover nodes — place outside the ring
-    let outerAngle = 0
-    for (const n of nodes) {
-      if (n.x == null) {
-        n.x = Math.cos(outerAngle) * 380
-        n.y = Math.sin(outerAngle) * 380
-        outerAngle += 0.7
-      }
+  useEffect(() => {
+    reload()
+    const onStorage = (e: StorageEvent) => {
+      if (e.key?.startsWith('kairo:twin:')) reload()
     }
-
-    return { ...g, nodes }
+    window.addEventListener('storage', onStorage)
+    return () => window.removeEventListener('storage', onStorage)
   }, [])
 
-  async function generate() {
-    if (!topic.trim()) { setErr('Enter a topic first'); return }
-    setErr(''); setLoading(true); setGraph(null); setSavedToNotebook(false)
-
-    try {
-      const reply = await chat({
-        messages: [
-          { role: 'system', content: `You are an expert at building concept maps for Indian school students.
-
-Given a topic, extract:
-- 1 central node (the topic itself)
-- 4-6 main concepts (level 1)
-- 6-12 supporting concepts / examples / formulas (level 2)
-- Relationships between them (edges)
-
-Return ONLY this JSON shape, NO markdown, NO prose:
-
-{
-  "central": "node_id_of_main_topic",
-  "nodes": [
-    {"id": "n1", "label": "Quadratic Equations", "level": 0, "desc": "ax² + bx + c = 0"},
-    {"id": "n2", "label": "Standard Form", "level": 1, "desc": "..."},
-    {"id": "n3", "label": "Discriminant", "level": 2, "desc": "b² - 4ac"}
-  ],
-  "edges": [
-    {"from": "n1", "to": "n2", "label": "has"},
-    {"from": "n2", "to": "n3"}
-  ]
-}
-
-Rules:
-- Use short ids like "n1","n2",...
-- Labels under 28 chars
-- desc under 80 chars
-- 10-18 nodes total. 12-22 edges.
-- Every level-2 node must have an incoming edge from a level-0 or level-1 node.` },
-          { role: 'user', content: `Topic: ${topic}` },
-        ],
-      })
-
-      const cleaned = reply
-        .replace(/<\/?think(?:ing)?>[\s\S]*?<\/?think(?:ing)?>/gi, '')
-        .replace(/```(?:json)?\s*/gi, '')
-        .replace(/```/g, '')
-        .trim()
-
-      let parsed: ConceptGraph | null = null
-      try { parsed = JSON.parse(cleaned) } catch { /* fall through */ }
-      if (!parsed) {
-        const m = cleaned.match(/\{[\s\S]*\}/)
-        if (m) try { parsed = JSON.parse(m[0]) } catch { /* still null */ }
-      }
-      if (!parsed?.nodes?.length) throw new Error('AI returned no graph. Try again.')
-
-      const laidOut = layoutGraph(parsed)
-      setGraph(laidOut)
-      setZoom(1); setPan({ x: 0, y: 0 })
-    } catch (e: any) { setErr(e.message) }
-    finally { setLoading(false) }
+  // Drag handling
+  const dragOffsetRef = useRef({ ox: 0, oy: 0 })
+  function startDrag(e: React.PointerEvent, id: string) {
+    e.preventDefault()
+    setDragId(id)
+    const p = positions.get(id)!
+    dragOffsetRef.current = { ox: p.x - e.clientX, oy: p.y - e.clientY }
   }
-
-  async function saveCurrent() {
-    if (!graph) return
-    const md = renderToMarkdown(graph)
-    const r = await saveToNotebook({
-      kind: 'concept_map',
-      title: `Concept Map · ${topic}`,
-      content: md,
-      subject: null,
-      tags: [topic.split(' ')[0]],
-      source: 'concept-map',
+  function onMove(e: React.PointerEvent) {
+    if (!dragId) return
+    setPositions(prev => {
+      const next = new Map(prev)
+      next.set(dragId, { x: e.clientX + dragOffsetRef.current.ox, y: e.clientY + dragOffsetRef.current.oy })
+      return next
     })
-    if (r) setSavedToNotebook(true)
   }
+  function endDrag() { setDragId(null) }
 
-  // Drag handlers
-  function onNodeMouseDown(e: React.MouseEvent, n: ConceptNode) {
-    if (n.x == null || n.y == null) return
-    e.stopPropagation()
-    setDraggingId(n.id)
-    dragStart.current = { mx: e.clientX, my: e.clientY, nx: n.x, ny: n.y }
-  }
-  function onMouseMove(e: React.MouseEvent) {
-    if (draggingId && dragStart.current) {
-      const dx = (e.clientX - dragStart.current.mx) / zoom
-      const dy = (e.clientY - dragStart.current.my) / zoom
-      setGraph(prev => prev ? {
-        ...prev,
-        nodes: prev.nodes.map(n => n.id === draggingId
-          ? { ...n, x: dragStart.current!.nx + dx, y: dragStart.current!.ny + dy }
-          : n),
-      } : prev)
-    } else if (panStart.current) {
-      setPan({
-        x: panStart.current.px + (e.clientX - panStart.current.mx),
-        y: panStart.current.py + (e.clientY - panStart.current.my),
-      })
-    }
-  }
-  function onMouseUp() {
-    setDraggingId(null)
-    dragStart.current = null
-    panStart.current  = null
-  }
-  function onSvgMouseDown(e: React.MouseEvent) {
-    if (e.target === svgRef.current || (e.target as Element).tagName === 'svg') {
-      panStart.current = { mx: e.clientX, my: e.clientY, px: pan.x, py: pan.y }
-    }
-  }
-
-  function fitToView() { setZoom(1); setPan({ x: 0, y: 0 }) }
+  // Stats
+  const subjectStats = useMemo(() => {
+    const m = new Map<string, number>()
+    for (const n of graph.nodes) m.set(n.subject, (m.get(n.subject) || 0) + 1)
+    return [...m.entries()].sort((a, b) => b[1] - a[1])
+  }, [graph])
 
   return (
-    <div style={{ padding: '28px 36px', maxWidth: 1200, margin: '0 auto', height: '100%', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-      {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 18, flexShrink: 0 }}>
+    <div style={{
+      width: '100%', height: '100%', overflowY: 'auto', WebkitOverflowScrolling: 'touch',
+      background: C.bg,
+      backgroundImage:
+        `radial-gradient(at 8% 0%,  rgba(124,58,237,0.08) 0%, transparent 40%),
+         radial-gradient(at 92% 100%, rgba(91,33,182,0.10) 0%, transparent 45%)`,
+      color: C.text, fontFamily: FONT,
+      padding: '24px 28px 80px',
+    }}>
+      <div style={{ maxWidth: 1280, margin: '0 auto' }}>
+
+        <Header onRefresh={reload} nodeCount={graph.nodes.length} edgeCount={graph.edges.length} />
+
+        {/* Subject stats strip */}
+        {subjectStats.length > 0 && (
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 18 }}>
+            {subjectStats.map(([subj, n]) => (
+              <span key={subj} style={{
+                padding: '5px 12px', borderRadius: 999,
+                background: 'rgba(124,58,237,0.08)',
+                border: '1px solid rgba(167,139,250,0.3)',
+                fontSize: 12, color: C.text, fontWeight: 600,
+              }}>
+                {subj} <span style={{ color: C.purple, marginLeft: 4 }}>· {n}</span>
+              </span>
+            ))}
+          </div>
+        )}
+
+        {/* The graph itself */}
         <div style={{
-          width: 44, height: 44, borderRadius: 11,
-          background: 'linear-gradient(135deg, #a78bfa, #f472b6)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 0 18px rgba(167,139,250,0.4)', flexShrink: 0,
+          marginTop: 22, position: 'relative',
+          background: C.panel,
+          border: `1px solid ${C.border}`,
+          borderRadius: 16, overflow: 'hidden',
+          minHeight: 640,
         }}>
-          <Network size={22} color="#fff" />
-        </div>
-        <div style={{ flex: 1 }}>
-          <h1 style={{ fontSize: 20, fontWeight: 700, color: '#fafafa', margin: 0 }}>Concept Map</h1>
-          <p style={{ fontSize: 13, color: '#52525b', marginTop: 4 }}>
-            Type any topic — AI builds a visual mindmap. Drag nodes. Zoom. Save to notebook.
-          </p>
-        </div>
-      </div>
-
-      {/* Topic input */}
-      <div style={{ display: 'flex', gap: 10, marginBottom: 14, flexShrink: 0 }}>
-        <input
-          value={topic}
-          onChange={e => setTopic(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && generate()}
-          placeholder="e.g. Photosynthesis · Newton's Laws · French Revolution · Trigonometry"
-          style={{
-            flex: 1, background: '#111', border: '1px solid #1e1e1e',
-            borderRadius: 9, padding: '10px 14px', fontSize: 14, color: '#fafafa',
-            fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box',
-          }}
-          onFocus={e => (e.target as HTMLInputElement).style.borderColor = '#a78bfa'}
-          onBlur={e => (e.target as HTMLInputElement).style.borderColor = '#1e1e1e'}
-        />
-        <motion.button
-          whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
-          onClick={generate} disabled={loading || !topic.trim()}
-          style={{
-            padding: '10px 20px', borderRadius: 9, border: 'none',
-            background: loading || !topic.trim() ? '#1c1c1c'
-              : 'linear-gradient(135deg, #a78bfa, #f472b6)',
-            color: loading || !topic.trim() ? '#52525b' : '#fff',
-            fontFamily: 'inherit', fontSize: 13, fontWeight: 700,
-            cursor: loading || !topic.trim() ? 'not-allowed' : 'pointer',
-            display: 'flex', alignItems: 'center', gap: 7,
-            boxShadow: loading || !topic.trim() ? 'none' : '0 0 18px rgba(167,139,250,0.35)',
-          }}>
-          <Sparkles size={13} />{loading ? 'Mapping…' : 'Generate Map'}
-        </motion.button>
-      </div>
-
-      {err && (
-        <div style={{ marginBottom: 14, padding: '10px 14px', background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.25)', borderRadius: 8, fontSize: 12, color: '#f87171', flexShrink: 0 }}>
-          {err}
-        </div>
-      )}
-
-      {/* Canvas */}
-      <div style={{
-        ...card, flex: 1, position: 'relative', overflow: 'hidden',
-        cursor: draggingId ? 'grabbing' : panStart.current ? 'grabbing' : 'grab',
-      }}>
-        {loading && (
-          <div style={{
-            position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column',
-            alignItems: 'center', justifyContent: 'center', gap: 14,
-          }}>
-            <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-              style={{ width: 32, height: 32, borderRadius: '50%', border: '3px solid #1e1e2e', borderTopColor: '#a78bfa' }} />
-            <p style={{ fontSize: 13, color: '#a1a1aa' }}>AI is mapping concepts…</p>
-          </div>
-        )}
-
-        {!loading && !graph && (
-          <div style={{
-            position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column',
-            alignItems: 'center', justifyContent: 'center', gap: 12, color: '#3f3f46',
-          }}>
-            <Network size={42} />
-            <p style={{ fontSize: 13, margin: 0 }}>Enter a topic to begin</p>
-          </div>
-        )}
-
-        {graph && (
-          <>
-            {/* Zoom + save controls */}
-            <div style={{
-              position: 'absolute', top: 12, right: 12, zIndex: 10,
-              display: 'flex', flexDirection: 'column', gap: 6,
-            }}>
-              <button onClick={() => setZoom(z => Math.min(3, z * 1.2))}
-                style={iconBtn}><ZoomIn size={13} /></button>
-              <button onClick={() => setZoom(z => Math.max(0.3, z / 1.2))}
-                style={iconBtn}><ZoomOut size={13} /></button>
-              <button onClick={fitToView} title="Reset view"
-                style={iconBtn}><Maximize2 size={13} /></button>
-              <button onClick={saveCurrent} title="Save to notebook" disabled={savedToNotebook}
-                style={{
-                  ...iconBtn, color: savedToNotebook ? '#34d399' : '#71717a',
-                  borderColor: savedToNotebook ? '#34d39940' : '#1e1e1e',
-                }}>
-                <Save size={13} />
-              </button>
-              <button onClick={generate} title="Regenerate"
-                style={iconBtn}><RefreshCw size={13} /></button>
-            </div>
-
-            {savedToNotebook && (
-              <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
-                style={{
-                  position: 'absolute', top: 12, left: 12, zIndex: 10,
-                  padding: '6px 12px', borderRadius: 7,
-                  background: 'rgba(52,211,153,0.12)', border: '1px solid rgba(52,211,153,0.4)',
-                  fontSize: 11, color: '#34d399', fontWeight: 600,
-                }}>
-                ✓ Saved to AI Notebook
-              </motion.div>
-            )}
-
+          {graph.nodes.length === 0 ? <Empty /> : (
             <svg
               ref={svgRef}
-              width="100%" height="100%"
-              viewBox="-500 -350 1000 700"
-              onMouseDown={onSvgMouseDown}
-              onMouseMove={onMouseMove}
-              onMouseUp={onMouseUp}
-              onMouseLeave={onMouseUp}
-              style={{ display: 'block', userSelect: 'none' }}
-            >
-              <g transform={`translate(${pan.x}, ${pan.y}) scale(${zoom})`}>
-                {/* Edges */}
-                {graph.edges.map((e, i) => {
-                  const from = graph.nodes.find(n => n.id === e.from)
-                  const to = graph.nodes.find(n => n.id === e.to)
-                  if (!from || !to || from.x == null || to.x == null) return null
-                  const isHovered = hoverId === e.from || hoverId === e.to
-                  return (
-                    <g key={i}>
-                      <line
-                        x1={from.x!} y1={from.y!} x2={to.x!} y2={to.y!}
-                        stroke={isHovered ? '#a78bfa' : '#3f3f46'}
-                        strokeWidth={isHovered ? 1.6 : 0.9}
-                        opacity={isHovered ? 1 : 0.5}
-                      />
-                      {e.label && isHovered && (
-                        <text
-                          x={(from.x! + to.x!) / 2}
-                          y={(from.y! + to.y!) / 2}
-                          fill="#a78bfa"
-                          fontSize={9}
-                          textAnchor="middle"
-                          style={{ paintOrder: 'stroke', stroke: '#0a0a0a', strokeWidth: 3 }}
-                        >{e.label}</text>
-                      )}
-                    </g>
-                  )
-                })}
+              viewBox="0 0 1100 620"
+              width="100%" height="640"
+              onPointerMove={onMove}
+              onPointerUp={endDrag} onPointerLeave={endDrag}
+              style={{ display: 'block', cursor: dragId ? 'grabbing' : 'default' }}>
+              <defs>
+                <radialGradient id="nodeGlow" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%"  stopColor="#a78bfa" stopOpacity="0.4" />
+                  <stop offset="100%" stopColor="#a78bfa" stopOpacity="0" />
+                </radialGradient>
+                <linearGradient id="edgeStroke" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%"  stopColor="#7c3aed" stopOpacity="0.35"/>
+                  <stop offset="100%" stopColor="#c4b5fd" stopOpacity="0.35"/>
+                </linearGradient>
+              </defs>
 
-                {/* Nodes */}
-                {graph.nodes.map(n => {
-                  if (n.x == null || n.y == null) return null
-                  const lvl = Math.min(n.level, LEVEL_COLORS.length - 1)
-                  const color = LEVEL_COLORS[lvl]
-                  const r = LEVEL_RADIUS[lvl]
-                  const isHovered = hoverId === n.id
-                  return (
-                    <g key={n.id} transform={`translate(${n.x}, ${n.y})`}
-                      style={{ cursor: 'grab' }}
-                      onMouseDown={e => onNodeMouseDown(e, n)}
-                      onMouseEnter={() => setHoverId(n.id)}
-                      onMouseLeave={() => setHoverId(null)}
-                    >
-                      <circle r={r + 4} fill={color} opacity={isHovered ? 0.25 : 0.12} />
-                      <circle r={r} fill={`${color}30`} stroke={color} strokeWidth={isHovered ? 2.5 : 1.5} />
-                      <text
-                        textAnchor="middle"
-                        dominantBaseline="middle"
-                        fill="#fafafa"
-                        fontSize={lvl === 0 ? 11 : lvl === 1 ? 10 : 9}
-                        fontWeight={lvl === 0 ? 700 : 600}
-                        style={{ pointerEvents: 'none' }}
-                      >
-                        {wrapLabel(n.label, lvl === 0 ? 14 : 12)}
-                      </text>
-                    </g>
-                  )
-                })}
-              </g>
+              {/* Edges */}
+              {graph.edges.map((e, i) => {
+                const a = positions.get(e.from)
+                const b = positions.get(e.to)
+                if (!a || !b) return null
+                const isHot = hover && (hover === e.from || hover === e.to)
+                return (
+                  <line key={i} x1={a.x} y1={a.y} x2={b.x} y2={b.y}
+                    stroke={isHot ? '#c4b5fd' : 'url(#edgeStroke)'}
+                    strokeWidth={isHot ? 1.4 : 0.8}
+                    strokeLinecap="round" opacity={isHot ? 0.85 : 0.45} />
+                )
+              })}
+
+              {/* Nodes */}
+              {graph.nodes.map(n => {
+                const p = positions.get(n.id)
+                if (!p) return null
+                const r = 16 + Math.min(18, Math.sqrt(n.visits) * 6)
+                const m = n.mastery
+                const fill = m >= 0.7 ? '#a78bfa'
+                            : m >= 0.4 ? '#7c3aed'
+                                       : '#5b21b6'
+                const isHover = hover === n.id
+                return (
+                  <g key={n.id}
+                     onPointerDown={(e) => startDrag(e, n.id)}
+                     onMouseEnter={() => setHover(n.id)}
+                     onMouseLeave={() => setHover(null)}
+                     style={{ cursor: 'grab' }}>
+                    {/* Halo */}
+                    <circle cx={p.x} cy={p.y} r={r * 2.3} fill="url(#nodeGlow)" opacity={isHover ? 1 : 0.6} />
+                    {/* Node */}
+                    <circle cx={p.x} cy={p.y} r={r}
+                      fill={fill}
+                      stroke="#ffffff"
+                      strokeWidth={isHover ? 1.4 : 0.6}
+                      strokeOpacity={isHover ? 0.85 : 0.35} />
+                    {/* Label */}
+                    <text x={p.x} y={p.y + r + 14}
+                      textAnchor="middle"
+                      fontSize="11" fontWeight="600"
+                      fill={isHover ? '#ffffff' : '#c4b5fd'}
+                      fontFamily={FONT}
+                      style={{ textTransform: 'capitalize', pointerEvents: 'none' }}>
+                      {n.name.length > 18 ? n.name.slice(0, 17) + '…' : n.name}
+                    </text>
+                  </g>
+                )
+              })}
             </svg>
+          )}
 
-            {/* Hovered node tooltip */}
-            {hoverId && (() => {
-              const n = graph.nodes.find(x => x.id === hoverId)
-              if (!n?.desc) return null
-              return (
-                <div style={{
-                  position: 'absolute', bottom: 14, left: 14, right: 14,
-                  padding: '10px 14px', borderRadius: 9, pointerEvents: 'none',
-                  background: 'rgba(13,13,13,0.92)',
-                  border: '1px solid #2d2b55', backdropFilter: 'blur(6px)',
-                }}>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: '#fafafa', marginBottom: 4 }}>
-                    {n.label}
-                  </div>
-                  <div style={{ fontSize: 11, color: '#a1a1aa', lineHeight: 1.5 }}>{n.desc}</div>
-                </div>
-              )
-            })()}
-          </>
-        )}
-      </div>
-
-      {/* Legend */}
-      {graph && (
-        <div style={{
-          display: 'flex', gap: 14, alignItems: 'center', justifyContent: 'center',
-          marginTop: 10, flexShrink: 0,
-        }}>
-          {[
-            { label: 'Central', color: LEVEL_COLORS[0] },
-            { label: 'Main concept', color: LEVEL_COLORS[1] },
-            { label: 'Detail', color: LEVEL_COLORS[2] },
-          ].map(l => (
-            <div key={l.label} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-              <span style={{ width: 8, height: 8, borderRadius: '50%', background: l.color }} />
-              <span style={{ fontSize: 10.5, color: '#71717a' }}>{l.label}</span>
+          {/* Legend */}
+          {graph.nodes.length > 0 && (
+            <div style={{
+              position: 'absolute', bottom: 12, left: 12,
+              padding: '8px 12px', borderRadius: 10,
+              background: 'rgba(6,6,10,0.65)', backdropFilter: 'blur(10px)',
+              border: `1px solid ${C.borderSoft}`,
+              display: 'flex', gap: 14, fontSize: 11, color: C.textFaint, alignItems: 'center',
+            }}>
+              <LegendDot color="#5b21b6" label="< 40% mastery" />
+              <LegendDot color="#7c3aed" label="40–70%" />
+              <LegendDot color="#a78bfa" label="70%+" />
             </div>
-          ))}
-          <span style={{ fontSize: 10.5, color: '#3f3f46', marginLeft: 'auto' }}>
-            Drag nodes · drag canvas · scroll-zoom or use buttons
-          </span>
+          )}
+
+          {/* Tip */}
+          <div style={{
+            position: 'absolute', bottom: 12, right: 12,
+            fontSize: 10.5, color: C.textFaint, letterSpacing: 1.2, textTransform: 'uppercase', fontWeight: 600,
+          }}>
+            Drag nodes to rearrange  ·  Bigger = more visited
+          </div>
         </div>
-      )}
+
+        {/* Add concept manually card */}
+        <AddConceptCard onSaved={reload} />
+      </div>
     </div>
   )
 }
 
-const iconBtn: React.CSSProperties = {
-  width: 30, height: 30, borderRadius: 7,
-  background: '#161616', border: '1px solid #1e1e1e',
-  color: '#71717a', cursor: 'pointer',
-  display: 'flex', alignItems: 'center', justifyContent: 'center',
-}
-
-// Wrap a label across two SVG <tspan> rows if it's long
-function wrapLabel(text: string, max: number) {
-  if (text.length <= max) return <tspan>{text}</tspan>
-  // Split at the nearest space before max
-  const idx = text.lastIndexOf(' ', max)
-  const cut = idx > 0 ? idx : max
+function Header({ onRefresh, nodeCount, edgeCount }: { onRefresh: () => void; nodeCount: number; edgeCount: number }) {
   return (
-    <>
-      <tspan x={0} dy={-6}>{text.slice(0, cut)}</tspan>
-      <tspan x={0} dy={12}>{text.slice(cut).trim()}</tspan>
-    </>
+    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 14, flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
+        <div style={{
+          width: 46, height: 46, borderRadius: 13,
+          background: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)',
+          display: 'grid', placeItems: 'center',
+          boxShadow: '0 10px 30px rgba(124,58,237,0.45)',
+        }}>
+          <Network size={22} color="#fff" />
+        </div>
+        <div>
+          <div style={{ fontSize: 10.5, fontWeight: 700, color: C.purple, textTransform: 'uppercase', letterSpacing: 2.2 }}>
+            Concept Map  ·  Auto-built from your history
+          </div>
+          <h1 style={{ margin: '4px 0 0', fontSize: 26, fontWeight: 800, letterSpacing: -0.5 }}>
+            Everything you've touched. How it connects.
+          </h1>
+          <p style={{ margin: '6px 0 0', fontSize: 13, color: C.textFaint, lineHeight: 1.55, maxWidth: 640 }}>
+            {nodeCount} concept{nodeCount === 1 ? '' : 's'} · {edgeCount} connection{edgeCount === 1 ? '' : 's'}.
+            Auto-discovered from every quiz, lab, doubt, and revision you've done — nothing leaves your device.
+          </p>
+        </div>
+      </div>
+
+      <button onClick={onRefresh} style={{
+        display: 'inline-flex', alignItems: 'center', gap: 8,
+        padding: '9px 14px', borderRadius: 10,
+        background: 'transparent', border: `1px solid ${C.border}`,
+        color: C.textDim, fontFamily: 'inherit', fontWeight: 600, fontSize: 12, cursor: 'pointer',
+      }}>
+        <RefreshCw size={13} />
+        Rebuild
+      </button>
+    </div>
   )
 }
 
-function renderToMarkdown(g: ConceptGraph): string {
-  const central = g.nodes.find(n => n.id === g.central) || g.nodes.find(n => n.level === 0)
-  const lines: string[] = []
-  if (central) {
-    lines.push(`# ${central.label}`)
-    if (central.desc) lines.push(`> ${central.desc}\n`)
+function LegendDot({ color, label }: { color: string; label: string }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+      <span style={{ width: 10, height: 10, borderRadius: '50%', background: color, boxShadow: `0 0 6px ${color}` }} />
+      {label}
+    </div>
+  )
+}
+
+function Empty() {
+  return (
+    <div style={{
+      padding: '90px 28px', textAlign: 'center',
+      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14,
+    }}>
+      <div style={{
+        width: 64, height: 64, borderRadius: 18,
+        background: 'rgba(124,58,237,0.10)',
+        border: '1px solid rgba(167,139,250,0.35)',
+        display: 'grid', placeItems: 'center',
+        boxShadow: '0 0 32px rgba(124,58,237,0.25)',
+      }}>
+        <Network size={28} color="#a78bfa" />
+      </div>
+      <h3 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: C.text }}>
+        Your concept map is empty.
+      </h3>
+      <p style={{ margin: 0, fontSize: 13, color: C.textFaint, maxWidth: 480, lineHeight: 1.65 }}>
+        Take a quiz, open a lab, or ask the Solver a question — every topic you touch
+        becomes a node here, and topics studied close together get connected automatically.
+      </p>
+      <p style={{ margin: 0, fontSize: 11, color: C.textFaint, letterSpacing: 1.2, textTransform: 'uppercase', fontWeight: 600 }}>
+        Stored on this device only
+      </p>
+    </div>
+  )
+}
+
+function AddConceptCard({ onSaved }: { onSaved: () => void }) {
+  const [name, setName] = useState('')
+  const [subject, setSubject] = useState('General')
+  const [related, setRelated] = useState('')
+
+  function save() {
+    if (!name.trim()) return
+    recordConcept({
+      name: name.trim(),
+      subject,
+      related: related.split(',').map(s => s.trim()).filter(Boolean),
+    })
+    setName(''); setRelated('')
+    onSaved()
   }
-  const level1 = g.nodes.filter(n => n.level === 1)
-  for (const n1 of level1) {
-    lines.push(`## ${n1.label}`)
-    if (n1.desc) lines.push(`${n1.desc}\n`)
-    const children = g.edges.filter(e => e.from === n1.id).map(e => g.nodes.find(n => n.id === e.to)).filter(Boolean)
-    for (const c of children) {
-      lines.push(`- **${c!.label}**${c!.desc ? ': ' + c!.desc : ''}`)
-    }
-    lines.push('')
-  }
-  return lines.join('\n')
+
+  return (
+    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+      style={{
+        marginTop: 22, padding: 22,
+        background: C.panel, border: `1px solid ${C.border}`,
+        borderRadius: 16,
+      }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
+        <Sparkles size={14} color={C.purple} />
+        <div style={{ fontSize: 11, fontWeight: 700, color: C.textDim, textTransform: 'uppercase', letterSpacing: 1.6 }}>
+          Add a concept manually
+        </div>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr 1.4fr auto', gap: 10 }}
+           className="kr-cm-add">
+        <Input value={name} onChange={setName} placeholder="Concept (e.g. quadratic equations)" />
+        <Input value={subject} onChange={setSubject} placeholder="Subject" />
+        <Input value={related} onChange={setRelated} placeholder="Related (comma-separated)" />
+        <button onClick={save} disabled={!name.trim()}
+          style={{
+            padding: '10px 16px', borderRadius: 10,
+            background: 'linear-gradient(135deg, #7c3aed, #5b21b6)',
+            color: '#fff', fontFamily: 'inherit', fontWeight: 700, fontSize: 13,
+            border: 'none', cursor: name.trim() ? 'pointer' : 'not-allowed',
+            opacity: name.trim() ? 1 : 0.5,
+          }}>
+          Add
+        </button>
+      </div>
+      <style>{`
+        @media (max-width: 720px) {
+          .kr-cm-add { grid-template-columns: 1fr !important; }
+        }
+      `}</style>
+    </motion.div>
+  )
+}
+
+function Input({ value, onChange, placeholder }: { value: string; onChange: (v: string) => void; placeholder?: string }) {
+  return (
+    <input value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder}
+      style={{
+        padding: '10px 12px', borderRadius: 10,
+        background: C.panel2, border: `1px solid ${C.borderSoft}`,
+        color: C.text, fontFamily: 'inherit', fontSize: 13, outline: 'none',
+      }} />
+  )
 }

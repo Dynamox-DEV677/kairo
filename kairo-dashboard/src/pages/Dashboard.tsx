@@ -23,13 +23,12 @@ import WritingTools from './WritingTools'
 import ConceptTools from './ConceptTools'
 import FormulaSheet from './FormulaSheet'
 import AdaptiveQuiz from './AdaptiveQuiz'
-import Analytics from './Analytics'
-import Gamification from './Gamification'
+// Analytics + Gamification (My Progress) removed per spec — folded into Kairo OS
 import Pomodoro from './Pomodoro'
 import Announcement from './Announcement'
 import SchoolHub from './SchoolHub'
 import ParentDashboard from './ParentDashboard'
-import MemoryBrain from './MemoryBrain'
+// MemoryBrain removed per spec — folded into Kairo OS
 import FocusMode from './FocusMode'
 import CameraStudy from './CameraStudy'
 import MistakeAnalysis from './MistakeAnalysis'
@@ -37,13 +36,13 @@ import RevisionSimulator from './RevisionSimulator'
 import Notebook from './Notebook'
 import AdaptivePath from './AdaptivePath'
 import ConceptMap from './ConceptMap'
-import VoiceTutor from './VoiceTutor'
+// VoiceTutor removed per spec — folded into Kairo Solver
 import BattleMode from './BattleMode'
 import KnowledgeGraph from './KnowledgeGraph'
 import TeacherAssistant from './TeacherAssistant'
 import ExplainMistake from './ExplainMistake'
 import PerformancePredictor from './PerformancePredictor'
-import PanicMode from './PanicMode'
+// PanicMode removed per spec — exam scheduling now lives in Kairo Solver
 import KairoLabs from './KairoLabs'
 import KairoOS from './KairoOS'
 import { DEFAULT_MODEL } from '../lib/openrouter'
@@ -69,12 +68,11 @@ const PAGE_TITLES: Record<string, string> = {
   concept:          'Concept Tools',
   formula:          'Formula Sheet',
   quiz:             'Adaptive Quiz',
-  analytics:        'Analytics',
-  gamification:     'My Progress',
+  // analytics + gamification removed — folded into Kairo OS
   pomodoro:         'Pomodoro Timer',
   announcement:     'Announcements',
   school:           'School Hub',
-  memory:           'AI Memory',
+  // memory removed — folded into Kairo OS
   focus:            'Focus Mode',
   camera:           'Camera Study',
   mistakes:         'Mistake Analysis',
@@ -82,13 +80,13 @@ const PAGE_TITLES: Record<string, string> = {
   notebook:         'AI Notebook',
   adaptive:         'Adaptive Path',
   'concept-map':    'Concept Map',
-  voice:            'Voice Tutor',
+  // voice removed — folded into Kairo Solver
   battle:           'Battle Mode',
   knowledge:        'Knowledge Graph',
   'teacher-ai':     'AI Teacher Assistant',
   'explain-mistake': 'Explain My Mistake',
   'perf-predictor': 'Performance Predictor',
-  panic:            'Exam Panic Mode',
+  // panic removed — exam scheduling folded into Kairo Solver
   labs:             'Kairo Labs',
   'kairo-os':       'Kairo OS',
   settings:         'Settings',
@@ -261,11 +259,9 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
             {/* Adaptive Quiz */}
             <div style={pageStyle('quiz')}><AdaptiveQuiz /></div>
 
-            {/* Analytics */}
-            <div style={pageStyle('analytics')}><Analytics /></div>
-
-            {/* Gamification */}
-            <div style={pageStyle('gamification')}><Gamification /></div>
+            {/* NOTE: 5 pages removed per spec — Analytics, Gamification (My
+                Progress), MemoryBrain (AI Memory), VoiceTutor, PanicMode.
+                Their functionality now lives inside Kairo OS / Kairo Solver. */}
 
             {/* Pomodoro */}
             <div style={pageStyle('pomodoro')}><Pomodoro /></div>
@@ -275,9 +271,6 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
 
             {/* School Hub */}
             <div style={pageStyle('school')}>{profile && <SchoolHub profile={profile} />}</div>
-
-            {/* AI Memory Brain */}
-            <div style={pageStyle('memory')}><MemoryBrain /></div>
 
             {/* Focus Mode */}
             <div style={pageStyle('focus')}><FocusMode /></div>
@@ -300,9 +293,6 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
             {/* Concept Map */}
             <div style={pageStyle('concept-map')}><ConceptMap /></div>
 
-            {/* Voice Tutor */}
-            <div style={pageStyle('voice')}><VoiceTutor /></div>
-
             {/* Battle Mode */}
             <div style={pageStyle('battle')}><BattleMode /></div>
 
@@ -320,9 +310,6 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
 
             {/* Performance Predictor */}
             <div style={pageStyle('perf-predictor')}><PerformancePredictor /></div>
-
-            {/* Exam Panic Mode */}
-            <div style={pageStyle('panic')}><PanicMode /></div>
 
             {/* Kairo Labs */}
             <div style={pageStyle('labs')}><KairoLabs /></div>

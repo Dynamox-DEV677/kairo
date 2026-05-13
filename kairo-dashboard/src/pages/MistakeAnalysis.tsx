@@ -1,395 +1,371 @@
 /**
- * AI Mistake Analysis — surfaces patterns from ai_memory.mistakes + weak_topics
+ * Mistake Analysis — auto-populated from the unified Kairo memory engine.
  *
- * Sections:
- *  - Top stats (total mistakes, repeat offenders, subjects affected)
- *  - Subject distribution (donut)
- *  - Top recurring mistakes (sorted by hits × |signal|)
- *  - Mistakes over time (last 30 days bar chart)
- *  - Forgotten chapters (high hits but old last_seen)
- *  - "AI Insight" — sends data back to AI, asks for patterns + action plan
+ * Every wrong answer or low-score event the user has produced anywhere in
+ * Kairo (quiz, battle, revision sim, adaptive quiz, solver) flows into the
+ * Twin's event log. This page reads `getMistakes()` from twin.ts which groups
+ * them by topic, computes severity, and surfaces a ranked list of weak areas.
+ *
+ * Strict monochrome palette: black + deep purple + white only.
  */
-import { useState, useEffect, useCallback, useMemo } from 'react'
-import { motion } from 'framer-motion'
-import {
-  AlertTriangle, TrendingDown, Target, Clock,
-  Sparkles, RefreshCw, BookOpen, Activity,
-} from 'lucide-react'
-import ReactMarkdown from 'react-markdown'
-import remarkGfm from 'remark-gfm'
-import { api } from '../lib/api'
-import { chat } from '../lib/openrouter'
+import { useEffect, useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Activity, AlertTriangle, Sparkles, Repeat, Plus } from 'lucide-react'
+import { getMistakes, recordMistake, type MistakeRow } from '../lib/twin'
 
-interface MemoryEntry {
-  id: string
-  type: string
-  subject: string | null
-  topic: string | null
-  content: string | null
-  signal: number
-  hits: number
-  last_seen: string
-  created_at: string
+const C = {
+  bg:        '#06060a',
+  panel:     '#0c0c14',
+  panel2:    '#13131d',
+  border:    '#22222e',
+  borderSoft:'#1a1a26',
+  text:      '#ffffff',
+  textDim:   '#c1c1c8',
+  textFaint: '#8a8a96',
+  purpleLite:'#e9d5ff',
+  purpleSoft:'#c4b5fd',
+  purple:    '#a78bfa',
+  purpleHi:  '#7c3aed',
+  purpleDeep:'#5b21b6',
 }
-
-const card: React.CSSProperties = {
-  background: '#111', border: '1px solid #1e1e1e', borderRadius: 14,
-}
-
-const SUBJECT_COLORS = ['#6366f1', '#34d399', '#fbbf24', '#f472b6', '#38bdf8', '#fb923c', '#a78bfa', '#f87171']
+const GRAD_PILL = 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)'
+const FONT = "'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif"
 
 export default function MistakeAnalysis() {
-  const [data, setData]       = useState<{ mistakes: MemoryEntry[]; weak: MemoryEntry[]; all: MemoryEntry[] } | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [insight, setInsight] = useState('')
-  const [insightBusy, setInsightBusy] = useState(false)
-  const [err, setErr]         = useState('')
+  const [rows, setRows] = useState<MistakeRow[]>([])
+  const [adding, setAdding] = useState(false)
 
-  const load = useCallback(async () => {
-    setLoading(true); setErr('')
-    try { setData(await api('/memory')) }
-    catch (e: any) { setErr(e.message) }
-    finally { setLoading(false) }
+  function reload() { setRows(getMistakes()) }
+  useEffect(() => {
+    reload()
+    const onStorage = (e: StorageEvent) => {
+      if (e.key && e.key.startsWith('kairo:twin:')) reload()
+    }
+    window.addEventListener('storage', onStorage)
+    return () => window.removeEventListener('storage', onStorage)
   }, [])
 
-  useEffect(() => { load() }, [load])
-
-  // Combine mistakes + weak topics for analysis
-  const struggles = useMemo(() => {
-    if (!data) return []
-    const seen = new Set<string>()
-    const merged: MemoryEntry[] = []
-    for (const m of [...data.mistakes, ...data.weak]) {
-      if (!seen.has(m.id)) { seen.add(m.id); merged.push(m) }
-    }
-    return merged
-  }, [data])
-
-  // Subject distribution
-  const subjectDist = useMemo(() => {
-    const counts: Record<string, number> = {}
-    for (const m of struggles) {
-      const s = m.subject || 'Uncategorized'
-      counts[s] = (counts[s] || 0) + m.hits
-    }
-    const total = Object.values(counts).reduce((a, b) => a + b, 0)
-    return Object.entries(counts)
-      .sort(([, a], [, b]) => b - a)
-      .map(([subject, count], i) => ({
-        subject,
-        count,
-        pct:   total > 0 ? (count / total) * 100 : 0,
-        color: SUBJECT_COLORS[i % SUBJECT_COLORS.length],
-      }))
-  }, [struggles])
-
-  // Top repeat offenders by urgency = hits × |signal|
-  const repeats = useMemo(() => struggles
-    .map(m => ({ ...m, urgency: m.hits * Math.abs(m.signal) }))
-    .sort((a, b) => b.urgency - a.urgency)
-    .slice(0, 8), [struggles])
-
-  // Last 30-day bar chart by created_at
-  const timeline = useMemo(() => {
-    const days: { date: string; count: number }[] = []
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    for (let i = 29; i >= 0; i--) {
-      const d = new Date(today)
-      d.setDate(d.getDate() - i)
-      days.push({ date: d.toISOString().slice(0, 10), count: 0 })
-    }
-    const byDay: Record<string, number> = {}
-    for (const m of data?.mistakes || []) {
-      const k = m.created_at.slice(0, 10)
-      byDay[k] = (byDay[k] || 0) + 1
-    }
-    return days.map(d => ({ ...d, count: byDay[d.date] || 0 }))
-  }, [data])
-
-  const maxCount = Math.max(...timeline.map(d => d.count), 1)
-
-  // Forgotten chapters — high hits + last_seen > 14 days ago
-  const forgotten = useMemo(() => {
-    const cutoff = Date.now() - 14 * 24 * 60 * 60 * 1000
-    return struggles
-      .filter(m => m.hits >= 2 && new Date(m.last_seen).getTime() < cutoff)
-      .slice(0, 6)
-  }, [struggles])
-
-  async function generateInsight() {
-    if (!data || struggles.length === 0) return
-    setInsightBusy(true); setErr('')
-    try {
-      const summary = struggles.slice(0, 30).map(m =>
-        `- ${m.subject || 'General'} | ${m.topic || m.content} | seen ${m.hits}× | signal ${m.signal.toFixed(2)}`
-      ).join('\n')
-
-      const reply = await chat({
-        messages: [
-          { role: 'system', content: `You are an expert AI tutor for Indian school students. Analyze a student's mistake history and produce a tight, actionable report. Use markdown with headings:\n## Patterns I See\n## Root Causes (your best guesses)\n## What to Practice This Week (3-5 specific items, in priority order)\n## A Mantra\nBe direct, warm, and specific. No fluff.` },
-          { role: 'user',   content: `Here are the topics I've been struggling with (signal -1 = always wrong, +1 = mastered):\n\n${summary}\n\nGive me your honest analysis and an action plan I can start tonight.` },
-        ],
-      })
-      setInsight(reply)
-    } catch (e: any) { setErr(e.message) }
-    finally { setInsightBusy(false) }
-  }
+  const totalMistakes   = rows.reduce((a, r) => a + r.count, 0)
+  const recurringTopics = rows.filter(r => r.count >= 3).length
+  const highSeverity    = rows.filter(r => r.severity > 0.55).length
 
   return (
-    <div style={{ padding: '28px 36px', maxWidth: 1100, margin: '0 auto', height: '100%', overflowY: 'auto' }}>
-      {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 24 }}>
+    <div style={{
+      width: '100%', height: '100%', overflowY: 'auto', WebkitOverflowScrolling: 'touch',
+      background: C.bg,
+      backgroundImage:
+        `radial-gradient(at 8% 0%,  rgba(124,58,237,0.08) 0%, transparent 40%),
+         radial-gradient(at 92% 100%, rgba(91,33,182,0.10) 0%, transparent 45%)`,
+      color: C.text, fontFamily: FONT,
+      padding: '24px 28px 80px',
+    }}>
+      <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+        <Header onAddManual={() => setAdding(true)} />
+
+        <div className="kr-mst-kpi" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14, marginTop: 22 }}>
+          <Kpi label="Total mistakes"   value={totalMistakes}    hint="across every Kairo activity" />
+          <Kpi label="Recurring topics" value={recurringTopics}  hint="≥ 3 wrong attempts" />
+          <Kpi label="High-severity"    value={highSeverity}     hint="needs attention now" highlight={highSeverity > 0} />
+        </div>
+
+        <div style={{ marginTop: 22 }}>
+          <Heatmap rows={rows} />
+        </div>
+
+        <div style={{ marginTop: 22, display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {rows.length === 0 && <EmptyState />}
+          <AnimatePresence>
+            {rows.map((r, i) => (
+              <MistakeCard key={`${r.subject}-${r.topic}`} row={r} delay={i * 0.04} />
+            ))}
+          </AnimatePresence>
+        </div>
+      </div>
+
+      <AnimatePresence>
+        {adding && <AddMistakeModal onClose={() => setAdding(false)} onSaved={() => { setAdding(false); reload() }} />}
+      </AnimatePresence>
+
+      <style>{`
+        @media (max-width: 720px) {
+          .kr-mst-kpi { grid-template-columns: 1fr !important; }
+        }
+      `}</style>
+    </div>
+  )
+}
+
+function Header({ onAddManual }: { onAddManual: () => void }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 14, flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
         <div style={{
-          width: 44, height: 44, borderRadius: 11,
-          background: 'linear-gradient(135deg, #f87171, #fb923c)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 0 18px rgba(248,113,113,0.35)', flexShrink: 0,
+          width: 46, height: 46, borderRadius: 13, background: GRAD_PILL,
+          display: 'grid', placeItems: 'center', boxShadow: '0 10px 30px rgba(124,58,237,0.45)',
         }}>
           <Activity size={22} color="#fff" />
         </div>
-        <div style={{ flex: 1 }}>
-          <h1 style={{ fontSize: 20, fontWeight: 700, color: '#fafafa', margin: 0 }}>Mistake Analysis</h1>
-          <p style={{ fontSize: 13, color: '#52525b', marginTop: 4 }}>
-            Where you keep slipping — and what to fix first.
+        <div>
+          <div style={{ fontSize: 10.5, fontWeight: 700, color: C.purple, textTransform: 'uppercase', letterSpacing: 2.2 }}>
+            Mistake Analysis  ·  Auto-tracked
+          </div>
+          <h1 style={{ margin: '4px 0 0', fontSize: 26, fontWeight: 800, letterSpacing: -0.5 }}>
+            What Kairo has spotted you struggle with.
+          </h1>
+          <p style={{ margin: '6px 0 0', fontSize: 13, color: C.textFaint, lineHeight: 1.55, maxWidth: 640 }}>
+            Pulled from every quiz, battle, revision, lab, and adaptive test — grouped by topic, ranked by how much attention each needs right now.
           </p>
         </div>
-        <button
-          onClick={load}
-          disabled={loading}
-          style={{
-            padding: '8px 14px', borderRadius: 8, border: '1px solid #1e1e1e',
-            background: '#161616', color: '#71717a', cursor: 'pointer',
-            fontFamily: 'inherit', fontSize: 12, display: 'flex', alignItems: 'center', gap: 6,
-          }}>
-          <RefreshCw size={12} style={{ animation: loading ? 'spin 0.8s linear infinite' : 'none' }} />
-          Refresh
-        </button>
       </div>
 
-      {err && (
-        <div style={{ marginBottom: 16, padding: '10px 14px', background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.25)', borderRadius: 8, fontSize: 12, color: '#f87171' }}>
-          {err}
-        </div>
-      )}
-
-      {loading && !data && (
-        <div style={{ textAlign: 'center', padding: '80px 0', color: '#52525b' }}>Analyzing your mistakes…</div>
-      )}
-
-      {data && struggles.length === 0 && (
-        <div style={{ ...card, padding: '60px 32px', textAlign: 'center' }}>
-          <div style={{
-            width: 64, height: 64, borderRadius: 18, margin: '0 auto 18px',
-            background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.25)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            <Sparkles size={28} color="#34d399" />
-          </div>
-          <h3 style={{ fontSize: 17, fontWeight: 700, color: '#fafafa', margin: 0, marginBottom: 8 }}>
-            No mistakes tracked yet
-          </h3>
-          <p style={{ fontSize: 13, color: '#71717a', maxWidth: 460, margin: '0 auto', lineHeight: 1.6 }}>
-            Take quizzes, get essays graded, or use Kairo's Solver — Kairo will start tracking patterns and surface them here.
-          </p>
-        </div>
-      )}
-
-      {data && struggles.length > 0 && (
-        <>
-          {/* Top stats */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 22 }}>
-            <Stat icon={AlertTriangle} label="Total mistakes" value={data.mistakes.reduce((s, m) => s + m.hits, 0)} color="#f87171" />
-            <Stat icon={Target}        label="Repeat offenders" value={repeats.filter(m => m.hits >= 2).length} color="#fb923c" />
-            <Stat icon={BookOpen}      label="Subjects affected" value={subjectDist.length} color="#fbbf24" />
-            <Stat icon={Clock}         label="Forgotten" value={forgotten.length} color="#a78bfa" />
-          </div>
-
-          {/* AI Insight section */}
-          <div style={{ ...card, padding: 22, marginBottom: 22 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-              <Sparkles size={15} color="#a5b4fc" />
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 13, fontWeight: 700, color: '#fafafa' }}>AI Insight</div>
-                <div style={{ fontSize: 11, color: '#52525b' }}>Let AI read your mistake history and tell you what to fix first</div>
-              </div>
-              <button onClick={generateInsight} disabled={insightBusy}
-                style={{
-                  padding: '8px 16px', borderRadius: 8, border: 'none',
-                  background: insightBusy ? '#1c1c1c' : 'linear-gradient(135deg,#6366f1,#7c3aed)',
-                  color: insightBusy ? '#52525b' : '#fff',
-                  fontFamily: 'inherit', fontSize: 12, fontWeight: 600,
-                  cursor: insightBusy ? 'not-allowed' : 'pointer',
-                  display: 'flex', alignItems: 'center', gap: 6,
-                }}>
-                <Sparkles size={12} />{insightBusy ? 'Analyzing…' : insight ? 'Regenerate' : 'Generate Insight'}
-              </button>
-            </div>
-            {insight && (
-              <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
-                className="prose-ai"
-                style={{
-                  background: '#0d0d0d', border: '1px solid #1e1e2e',
-                  borderRadius: 10, padding: 16, fontSize: 13, color: '#e4e4e7', lineHeight: 1.65,
-                }}>
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>{insight}</ReactMarkdown>
-              </motion.div>
-            )}
-            {!insight && !insightBusy && (
-              <p style={{ fontSize: 12, color: '#52525b', fontStyle: 'italic', margin: 0 }}>
-                Click "Generate Insight" to get a personalized analysis of your weak areas.
-              </p>
-            )}
-          </div>
-
-          {/* Two-col: Subject distribution + Repeat offenders */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 22 }}>
-            {/* Subject distribution */}
-            <div style={{ ...card, padding: 18 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-                <BookOpen size={14} color="#fbbf24" />
-                <div style={{ fontSize: 13, fontWeight: 700, color: '#fafafa' }}>Subject Distribution</div>
-              </div>
-              {subjectDist.map(s => (
-                <div key={s.subject} style={{ marginBottom: 10 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                    <span style={{ fontSize: 12, color: '#d4d4d8' }}>{s.subject}</span>
-                    <span style={{ fontSize: 11, color: '#71717a' }}>
-                      {s.count} · {s.pct.toFixed(0)}%
-                    </span>
-                  </div>
-                  <div style={{ height: 8, background: '#0d0d0d', borderRadius: 4, overflow: 'hidden' }}>
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${s.pct}%` }}
-                      transition={{ duration: 0.6, ease: 'easeOut' }}
-                      style={{ height: '100%', background: s.color }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Repeat offenders */}
-            <div style={{ ...card, padding: 18 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-                <TrendingDown size={14} color="#f87171" />
-                <div style={{ fontSize: 13, fontWeight: 700, color: '#fafafa' }}>Top Recurring Mistakes</div>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                {repeats.slice(0, 7).map((m, i) => (
-                  <div key={m.id} style={{
-                    display: 'flex', alignItems: 'center', gap: 10,
-                    padding: '8px 10px', background: '#0d0d0d',
-                    border: '1px solid #1a1a1a', borderRadius: 7,
-                  }}>
-                    <div style={{
-                      width: 22, height: 22, borderRadius: 5,
-                      background: 'rgba(248,113,113,0.12)', border: '1px solid rgba(248,113,113,0.3)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: 10, fontWeight: 700, color: '#f87171', flexShrink: 0,
-                    }}>{i + 1}</div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{
-                        fontSize: 12.5, color: '#fafafa', overflow: 'hidden',
-                        textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                      }}>{m.topic || m.content}</div>
-                      <div style={{ fontSize: 10, color: '#52525b', marginTop: 1 }}>
-                        {m.subject ? m.subject + ' · ' : ''}{m.hits}× · urgency {m.urgency.toFixed(1)}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Timeline */}
-          <div style={{ ...card, padding: 18, marginBottom: 22 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-              <Clock size={14} color="#818cf8" />
-              <div>
-                <div style={{ fontSize: 13, fontWeight: 700, color: '#fafafa' }}>Mistakes — Last 30 Days</div>
-                <div style={{ fontSize: 11, color: '#52525b' }}>Each bar = mistakes logged that day</div>
-              </div>
-            </div>
-            <div style={{
-              display: 'grid', gridTemplateColumns: 'repeat(30, 1fr)',
-              gap: 2, alignItems: 'end', height: 80,
-            }}>
-              {timeline.map(d => (
-                <div key={d.date} title={`${d.date}: ${d.count} mistakes`}
-                  style={{
-                    height: `${(d.count / maxCount) * 100}%`,
-                    minHeight: 2,
-                    background: d.count === 0 ? '#1a1a1a'
-                      : d.count > maxCount * 0.66 ? '#f87171'
-                      : d.count > maxCount * 0.33 ? '#fb923c'
-                      : '#fbbf24',
-                    borderRadius: 2,
-                    transition: 'height 0.3s',
-                  }} />
-              ))}
-            </div>
-            <div style={{
-              display: 'flex', justifyContent: 'space-between',
-              fontSize: 10, color: '#3f3f46', marginTop: 6,
-            }}>
-              <span>30 days ago</span>
-              <span>today</span>
-            </div>
-          </div>
-
-          {/* Forgotten chapters */}
-          {forgotten.length > 0 && (
-            <div style={{ ...card, padding: 18 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-                <Clock size={14} color="#a78bfa" />
-                <div>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: '#fafafa' }}>Forgotten Chapters</div>
-                  <div style={{ fontSize: 11, color: '#52525b' }}>You struggled here, then haven't touched it in 2+ weeks</div>
-                </div>
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 8 }}>
-                {forgotten.map(m => {
-                  const days = Math.floor((Date.now() - new Date(m.last_seen).getTime()) / (24 * 60 * 60 * 1000))
-                  return (
-                    <div key={m.id} style={{
-                      padding: '10px 12px', background: 'rgba(167,139,250,0.06)',
-                      border: '1px solid rgba(167,139,250,0.2)', borderRadius: 8,
-                    }}>
-                      <div style={{ fontSize: 12.5, color: '#fafafa', fontWeight: 600, marginBottom: 4 }}>
-                        {m.topic || m.content}
-                      </div>
-                      <div style={{ fontSize: 10, color: '#a78bfa' }}>
-                        {m.subject ? m.subject + ' · ' : ''}last seen {days}d ago · seen {m.hits}×
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-          )}
-        </>
-      )}
+      <button onClick={onAddManual} style={{
+        display: 'inline-flex', alignItems: 'center', gap: 8,
+        padding: '9px 14px', borderRadius: 10,
+        background: 'rgba(124,58,237,0.08)',
+        border: '1px solid rgba(167,139,250,0.4)',
+        color: C.text, fontFamily: 'inherit', fontWeight: 600, fontSize: 12,
+        cursor: 'pointer',
+      }}>
+        <Plus size={13} color={C.purple} />
+        Log a mistake
+      </button>
     </div>
   )
 }
 
-// ─── Stat ─────────────────────────────────────────────────────────────────────
-function Stat({ icon: Icon, label, value, color }: { icon: any; label: string; value: number; color: string }) {
+function Kpi({ label, value, hint, highlight }: { label: string; value: number; hint: string; highlight?: boolean }) {
   return (
-    <div style={{ ...card, padding: 16 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 10 }}>
+    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} style={{
+      background: C.panel,
+      border: `1px solid ${highlight ? 'rgba(167,139,250,0.45)' : C.border}`,
+      borderRadius: 14, padding: '16px 18px', position: 'relative', overflow: 'hidden',
+      boxShadow: highlight ? '0 0 32px rgba(124,58,237,0.18)' : 'none',
+    }}>
+      {highlight && (
         <div style={{
-          width: 32, height: 32, borderRadius: 8,
-          background: `${color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }}>
-          <Icon size={15} color={color} />
-        </div>
-        <span style={{ fontSize: 11, color: '#71717a', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1 }}>{label}</span>
+          position: 'absolute', top: -30, right: -30,
+          width: 130, height: 130, borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(124,58,237,0.30) 0%, transparent 70%)',
+          pointerEvents: 'none', filter: 'blur(10px)',
+        }} />
+      )}
+      <div style={{ fontSize: 11, fontWeight: 700, color: C.textFaint, textTransform: 'uppercase', letterSpacing: 1.4 }}>
+        {label}
       </div>
-      <div style={{ fontSize: 28, fontWeight: 700, color: '#fafafa', lineHeight: 1 }}>{value}</div>
+      <div style={{ fontSize: 36, fontWeight: 800, color: C.text, marginTop: 4, letterSpacing: -1, lineHeight: 1 }}>
+        {value}
+      </div>
+      <div style={{ fontSize: 11.5, color: C.textFaint, marginTop: 6 }}>{hint}</div>
+    </motion.div>
+  )
+}
+
+function Heatmap({ rows }: { rows: MistakeRow[] }) {
+  const bySubject = new Map<string, MistakeRow[]>()
+  for (const r of rows) {
+    if (!bySubject.has(r.subject)) bySubject.set(r.subject, [])
+    bySubject.get(r.subject)!.push(r)
+  }
+  if (bySubject.size === 0) return null
+  return (
+    <div style={{ background: C.panel, border: `1px solid ${C.border}`, borderRadius: 14, padding: '16px 18px' }}>
+      <div style={{ fontSize: 11, fontWeight: 700, color: C.textDim, textTransform: 'uppercase', letterSpacing: 1.6, marginBottom: 12 }}>
+        Heatmap by subject
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {[...bySubject.entries()].map(([subject, items]) => (
+          <div key={subject}>
+            <div style={{ fontSize: 11, color: C.textFaint, fontWeight: 600, letterSpacing: 1.2, textTransform: 'uppercase', marginBottom: 6 }}>
+              {subject}
+            </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+              {items.map(it => {
+                const sev = it.severity
+                const bg = `rgba(167,139,250,${0.10 + sev * 0.45})`
+                const bd = `rgba(167,139,250,${0.3  + sev * 0.45})`
+                return (
+                  <span key={it.topic} style={{
+                    padding: '5px 9px', borderRadius: 7,
+                    background: bg, border: `1px solid ${bd}`,
+                    fontSize: 11.5, fontWeight: 500, color: C.text,
+                    whiteSpace: 'nowrap', textTransform: 'capitalize',
+                  }}>
+                    {it.topic} <span style={{ marginLeft: 4, color: C.textFaint, fontSize: 10 }}>× {it.count}</span>
+                  </span>
+                )
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   )
+}
+
+function MistakeCard({ row, delay }: { row: MistakeRow; delay: number }) {
+  const severityLabel = row.severity > 0.55 ? 'High' : row.severity > 0.30 ? 'Medium' : 'Low'
+  const severityColor = row.severity > 0.55 ? C.purpleHi : row.severity > 0.30 ? C.purple : C.purpleSoft
+  const avgScore = row.recentScores.length ? Math.round(row.recentScores.reduce((a, b) => a + b, 0) / row.recentScores.length) : null
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+      transition={{ delay, duration: 0.4 }}
+      style={{
+        background: C.panel, border: `1px solid ${C.border}`, borderRadius: 14,
+        padding: '16px 18px', display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap',
+      }}>
+      <div style={{ width: 4, height: 44, borderRadius: 2, background: severityColor, boxShadow: `0 0 14px ${severityColor}88` }} />
+      <div style={{ flex: 1, minWidth: 220 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+          <span style={{ fontSize: 10.5, fontWeight: 700, color: C.textFaint, textTransform: 'uppercase', letterSpacing: 1.6 }}>
+            {row.subject}
+          </span>
+          <span style={{
+            padding: '2px 8px', borderRadius: 6,
+            background: `${severityColor}22`, border: `1px solid ${severityColor}55`,
+            fontSize: 10, fontWeight: 700, color: severityColor,
+            textTransform: 'uppercase', letterSpacing: 1.2,
+          }}>
+            {severityLabel} severity
+          </span>
+        </div>
+        <div style={{ fontSize: 17, fontWeight: 700, color: C.text, marginTop: 4, textTransform: 'capitalize', letterSpacing: -0.2 }}>
+          {row.topic}
+        </div>
+        <div style={{ fontSize: 12, color: C.textFaint, marginTop: 5, lineHeight: 1.5 }}>
+          {row.count} wrong attempt{row.count === 1 ? '' : 's'}
+          {avgScore != null && <> · recent avg <strong style={{ color: C.text }}>{avgScore}%</strong></>}
+          {' · last '}{formatRelative(row.lastAt)}
+        </div>
+      </div>
+      <div style={{ display: 'flex', gap: 8 }}>
+        <button style={chipBtn(C.purple)}><Repeat size={13} />Revise now</button>
+        <button style={chipBtn(severityColor, 'outline')}><Sparkles size={13} />Explain</button>
+      </div>
+    </motion.div>
+  )
+}
+
+function chipBtn(tint: string, variant: 'solid' | 'outline' = 'solid'): React.CSSProperties {
+  return {
+    display: 'inline-flex', alignItems: 'center', gap: 6,
+    padding: '8px 12px', borderRadius: 9,
+    background: variant === 'solid' ? `${tint}1c` : 'transparent',
+    border: `1px solid ${variant === 'solid' ? tint + '55' : C.border}`,
+    color: variant === 'solid' ? tint : C.textDim,
+    fontFamily: 'inherit', fontSize: 12, fontWeight: 600,
+    cursor: 'pointer',
+  }
+}
+
+function EmptyState() {
+  return (
+    <div style={{
+      padding: '40px 24px', background: C.panel, border: `1px dashed ${C.border}`,
+      borderRadius: 14, textAlign: 'center',
+    }}>
+      <AlertTriangle size={32} color={C.purple} style={{ opacity: 0.6 }} />
+      <h3 style={{ margin: '14px 0 6px', fontSize: 16, fontWeight: 700, color: C.text }}>
+        Nothing here yet — clean record.
+      </h3>
+      <p style={{ margin: 0, fontSize: 13, color: C.textFaint, maxWidth: 460, marginInline: 'auto', lineHeight: 1.6 }}>
+        Mistakes from quizzes, Battle Mode, Adaptive Quiz, and Revision Sim will appear here automatically once they happen.
+        You can also log one manually with the button above.
+      </p>
+    </div>
+  )
+}
+
+function AddMistakeModal({ onClose, onSaved }: { onClose: () => void; onSaved: () => void }) {
+  const [topic, setTopic] = useState('')
+  const [subject, setSubject] = useState('General')
+  const [detail, setDetail] = useState('')
+  function save() {
+    if (!topic.trim()) return
+    recordMistake({ topic: topic.trim(), subject, detail })
+    onSaved()
+  }
+  return (
+    <motion.div
+      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      onClick={onClose}
+      style={{
+        position: 'fixed', inset: 0, zIndex: 999,
+        background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)',
+        display: 'grid', placeItems: 'center', padding: 16,
+      }}>
+      <motion.div
+        initial={{ y: 12, scale: 0.96 }} animate={{ y: 0, scale: 1 }}
+        onClick={e => e.stopPropagation()}
+        style={{
+          width: '100%', maxWidth: 460,
+          background: C.panel,
+          border: '1px solid rgba(167,139,250,0.35)',
+          borderRadius: 18, padding: 22,
+          color: C.text, fontFamily: 'inherit',
+          boxShadow: '0 24px 60px rgba(124,58,237,0.35)',
+        }}>
+        <h3 style={{ margin: 0, fontSize: 18, fontWeight: 800 }}>Log a mistake</h3>
+        <p style={{ margin: '4px 0 14px', fontSize: 12.5, color: C.textFaint }}>
+          What did you get wrong? Kairo will use this to build patterns + suggest revisions.
+        </p>
+        <Label>Topic *</Label>
+        <Input value={topic} onChange={setTopic} placeholder="e.g. quadratic equations" autoFocus />
+        <Label>Subject</Label>
+        <Input value={subject} onChange={setSubject} placeholder="Math · Physics · Biology …" />
+        <Label>What went wrong (optional)</Label>
+        <Input value={detail} onChange={setDetail} placeholder="forgot the discriminant formula" multiline />
+        <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 18 }}>
+          <button onClick={onClose} style={chipBtn(C.textDim, 'outline')}>Cancel</button>
+          <button onClick={save} disabled={!topic.trim()} style={{
+            padding: '9px 18px', borderRadius: 10,
+            background: GRAD_PILL,
+            color: '#fff', fontFamily: 'inherit', fontWeight: 700, fontSize: 13,
+            border: 'none', cursor: topic.trim() ? 'pointer' : 'not-allowed',
+            opacity: topic.trim() ? 1 : 0.5,
+          }}>
+            Save mistake
+          </button>
+        </div>
+      </motion.div>
+    </motion.div>
+  )
+}
+
+function Label({ children }: { children: React.ReactNode }) {
+  return (
+    <div style={{
+      fontSize: 10.5, fontWeight: 700, color: C.textFaint,
+      textTransform: 'uppercase', letterSpacing: 1.4, margin: '12px 0 6px',
+    }}>
+      {children}
+    </div>
+  )
+}
+
+function Input({ value, onChange, placeholder, autoFocus, multiline }: {
+  value: string; onChange: (v: string) => void; placeholder?: string; autoFocus?: boolean; multiline?: boolean
+}) {
+  const sharedStyle: React.CSSProperties = {
+    width: '100%', boxSizing: 'border-box',
+    padding: '10px 12px', borderRadius: 10,
+    background: C.panel2, border: `1px solid ${C.borderSoft}`,
+    color: C.text, fontFamily: 'inherit', fontSize: 13, outline: 'none',
+  }
+  return multiline ? (
+    <textarea value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder}
+      rows={3} style={{ ...sharedStyle, resize: 'vertical', minHeight: 64 }} />
+  ) : (
+    <input value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder}
+      autoFocus={autoFocus} style={sharedStyle} />
+  )
+}
+
+function formatRelative(ms: number): string {
+  const d = Date.now() - ms
+  const s = Math.floor(d / 1000); if (s < 60) return 'just now'
+  const m = Math.floor(s / 60); if (m < 60) return `${m}m ago`
+  const h = Math.floor(m / 60); if (h < 24) return `${h}h ago`
+  const dd = Math.floor(h / 24); if (dd < 30) return `${dd}d ago`
+  return new Date(ms).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })
 }
