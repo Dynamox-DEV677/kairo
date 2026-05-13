@@ -61,12 +61,12 @@ export default function HeroCore3D({ scrollProgress, pointerXRef, pointerYRef, c
         dpr={[1, 1.5]}
         frameloop={active ? 'always' : 'never'}
         gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
-        camera={{ position: [0, 0, 5.5], fov: 38 }}
+        camera={{ position: [0, 0, 8.0], fov: 36 }}
         style={{ background: 'transparent' }}>
-        <ambientLight intensity={0.4} />
-        <directionalLight position={[3, 4, 5]} intensity={0.85} color="#c4b5fd" />
-        <pointLight position={[-4, 2, 4]} intensity={1.2} color="#22d3ee" />
-        <pointLight position={[4, -2, 3]} intensity={0.9} color="#ec4899" />
+        <ambientLight intensity={0.3} />
+        <directionalLight position={[3, 4, 5]} intensity={0.65} color="#c4b5fd" />
+        <pointLight position={[-4, 2, 4]} intensity={0.8} color="#22d3ee" />
+        <pointLight position={[4, -2, 3]} intensity={0.6} color="#ec4899" />
 
         <CoreScene
           scrollRef={scrollRef}
@@ -144,7 +144,9 @@ function CoreScene({ scrollRef, pointerXRef, pointerYRef }: {
       rootRef.current.rotation.z =  px * 0.12
     }
 
-    // ── Core mesh: continuous rotation, breath, fade ────────────
+    // ── Core mesh: continuous rotation, breath, fade.
+    //    Emissive dropped from 0.9 to 0.32 + base 0.05 so the core stays
+    //    visible but doesn't wash out the white headline that sits on top.
     if (coreRef.current) {
       const speed = 0.18 + mp * 0.9    // spins faster as it leaves
       coreRef.current.rotation.x += dt * speed
@@ -152,7 +154,7 @@ function CoreScene({ scrollRef, pointerXRef, pointerYRef }: {
       const breath = 1 + Math.sin(t * 1.2) * 0.04
       coreRef.current.scale.setScalar(breath)
       const mat = coreRef.current.material as THREE.MeshStandardMaterial
-      mat.emissiveIntensity = 0.9 * fade + 0.1
+      mat.emissiveIntensity = 0.32 * fade + 0.05
     }
 
     // ── Wireframe overlay: counter-rotates slightly ─────────────
@@ -162,34 +164,34 @@ function CoreScene({ scrollRef, pointerXRef, pointerYRef }: {
       const breath = 1.05 + Math.sin(t * 1.2 + 0.3) * 0.04
       wireRef.current.scale.setScalar(breath)
       const mat = wireRef.current.material as THREE.MeshBasicMaterial
-      mat.opacity = 0.55 * fade
+      mat.opacity = 0.32 * fade           // was 0.55 — softer wireframe so it sits behind text
     }
 
     // ── Tilted orbit rings ──────────────────────────────────────
     if (ring1Ref.current) {
       ring1Ref.current.rotation.z = t * 0.22
       const mat = ring1Ref.current.material as THREE.MeshBasicMaterial
-      mat.opacity = 0.6 * fade
+      mat.opacity = 0.35 * fade           // was 0.6
     }
     if (ring2Ref.current) {
       ring2Ref.current.rotation.z = -t * 0.16
       const mat = ring2Ref.current.material as THREE.MeshBasicMaterial
-      mat.opacity = 0.4 * fade
+      mat.opacity = 0.25 * fade           // was 0.4
     }
 
-    // ── Soft halo ──────────────────────────────────────────────
+    // ── Soft halo — pulled WAY down so it doesn't bloom into the text ──
     if (haloRef.current) {
       const pulse = 1 + Math.sin(t * 1.6) * 0.06
       haloRef.current.scale.setScalar(pulse * (1 - mp * 0.2))
       const mat = haloRef.current.material as THREE.MeshBasicMaterial
-      mat.opacity = 0.35 * fade
+      mat.opacity = 0.14 * fade           // was 0.35
     }
 
     // ── Sparks: orbit subtly + twinkle ──────────────────────────
     if (sparksRef.current) {
       sparksRef.current.rotation.y = t * 0.08
       const mat = sparksRef.current.material as THREE.PointsMaterial
-      mat.opacity = (0.5 + 0.5 * Math.sin(t * 2.3)) * fade
+      mat.opacity = (0.35 + 0.35 * Math.sin(t * 2.3)) * fade
       mat.size = 0.06 + Math.sin(t * 1.6) * 0.01
     }
   })

@@ -773,7 +773,18 @@ function HeroSection({ onGetStarted }: { onGetStarted: () => void }) {
         <HeroCore3D scrollProgress={scrollYProgress} pointerXRef={pointerXRef} pointerYRef={pointerYRef} />
       </motion.div>
 
-      <motion.div style={{ opacity: heroFade, textAlign: 'center', maxWidth: 1100, padding: '0 24px', position: 'relative', zIndex: 2 }}>
+      {/* Text-readability vignette — sits between the 3D core (z:1) and the
+          text content (z:2). A dark horizontal band that darkens the area
+          where the headline sits, so white text always reads crisp against
+          the bright icosahedron. Fades to transparent at edges so the core
+          still fills the periphery. */}
+      <div aria-hidden style={{
+        position: 'absolute', inset: 0, zIndex: 2, pointerEvents: 'none',
+        background:
+          `radial-gradient(ellipse 70% 38% at 50% 48%, rgba(6,6,10,0.65) 0%, rgba(6,6,10,0.35) 45%, transparent 75%)`,
+      }}/>
+
+      <motion.div style={{ opacity: heroFade, textAlign: 'center', maxWidth: 1100, padding: '0 24px', position: 'relative', zIndex: 3 }}>
         {/* Brand badge — "Kairo OS is live" */}
         <motion.div
           initial={{ opacity: 0, y: 16, filter: 'blur(8px)' }}
