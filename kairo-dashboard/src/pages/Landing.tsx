@@ -551,6 +551,8 @@ function KairoLogo({ size = 32, glow = false }: { size?: number; glow?: boolean 
       width={size}
       height={size}
       draggable={false}
+      decoding="async"
+      loading="eager"
       style={{
         width: size, height: size,
         objectFit: 'contain',
