@@ -543,6 +543,13 @@ function forgettingSoon(mastery: MasteryRow[], max = 8): ForgetTopic[] {
 // OBSERVATIONS — rule-based supportive insights
 // ════════════════════════════════════════════════════════════════════════════
 
+// Pick "a" or "an" based on the first sound of the next word.
+// Naive but covers every word we actually use ('interactive' → 'an',
+// 'visual' / 'text' / 'repetition' → 'a').
+function aOrAn(word: string) {
+  return /^[aeiouAEIOU]/.test(word) ? 'an' : 'a'
+}
+
 function buildObservations(twin: Twin, mastery: MasteryRow[], events: TwinEvent[]): Omit<Observation, 'id' | 'createdAt' | 'expiresAt'>[] {
   const out: Omit<Observation, 'id' | 'createdAt' | 'expiresAt'>[] = []
 
@@ -555,7 +562,7 @@ function buildObservations(twin: Twin, mastery: MasteryRow[], events: TwinEvent[
   styleEntries.sort((a, b) => b[1] - a[1])
   const [topId, topScore, topHint] = styleEntries[0]
   if (topScore > 0.42) {
-    out.push({ kind: 'insight', tone: 'supportive', title: `You're a ${topId} learner`, body: topHint, importance: 0.6 })
+    out.push({ kind: 'insight', tone: 'supportive', title: `You're ${aOrAn(topId)} ${topId} learner`, body: topHint, importance: 0.6 })
   }
 
   if (twin.focusBestHour != null) {
@@ -821,22 +828,23 @@ export function recompute(state: TwinState) {
     forgettingSoon:     forgetSoon,
   }
 
-  // Observations — keep only fresh ones, prepend the new batch
+  // Observations — REPLACE every recompute.
+  //
+  // We used to merge stillFresh (within 72h TTL) with newly-computed obs and
+  // dedup by title — but mutually exclusive obs (e.g. "Scores are dipping"
+  // vs "Your scores are trending up") have DIFFERENT titles, so the cache
+  // would surface both simultaneously after a trend flip. Always rebuilding
+  // from current state guarantees the dashboard reflects what's true NOW.
+  //
+  // Milestone obs (e.g. "7-day streak") still get regenerated next time the
+  // condition holds — and they're tone-supportive so re-seeing them is fine.
   const ttlMs = OBS_TTL_HOURS * 3600_000
-  const stillFresh = state.observations.filter(o => o.expiresAt > now).slice(0, 20)
-  const fresh = buildObservations(state.twin, state.mastery, events).map(o => ({
+  state.observations = buildObservations(state.twin, state.mastery, events).map(o => ({
     ...o,
     id:        uid(),
     createdAt: now,
     expiresAt: now + ttlMs,
-  }))
-  // De-dup by title — don't pile up identical observations across recomputes
-  const seen = new Set(stillFresh.map(o => o.title))
-  const merged = [
-    ...fresh.filter(o => !seen.has(o.title)),
-    ...stillFresh,
-  ].slice(0, 16)
-  state.observations = merged
+  })).slice(0, 16)
 
   // Recommendations — replace each time (recompute is cheap and they expire fast)
   state.recommendations = buildRecommendations(state.twin).map(r => ({
