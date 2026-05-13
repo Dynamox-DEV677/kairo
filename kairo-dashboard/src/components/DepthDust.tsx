@@ -29,12 +29,13 @@ interface Particle {
 }
 
 const COUNT = 80
+// Monochrome scale: white + 4 purple shades (light → deep). NO blue/cyan.
 const PALETTE = [
-  [196, 181, 253],  // light purple
-  [167, 139, 250],  // purple
-  [96,  165, 250],  // blue
-  [34,  211, 238],  // cyan
   [255, 255, 255],  // white
+  [233, 213, 255],  // very light lavender
+  [196, 181, 253],  // light purple
+  [167, 139, 250],  // mid purple
+  [124,  58, 237],  // deep purple
 ]
 
 export default function DepthDust({

@@ -31,32 +31,42 @@ import HeroCore3D from '../components/HeroCore3D'
 import DepthDust from '../components/DepthDust'
 
 // ════════════════════════════════════════════════════════════════════════════
-// TOKENS
+// TOKENS — strict monochrome palette: BLACK · DEEP PURPLE · WHITE only
 // ════════════════════════════════════════════════════════════════════════════
 const C = {
-  bg:       '#06060a',
-  panel:    '#0e0e16',
-  panel2:   '#13131d',
-  border:   '#222232',
+  bg:        '#06060a',   // pure dark
+  panel:     '#0c0c14',
+  panel2:    '#12121c',
+  border:    '#22222e',
   borderSoft:'#1a1a26',
-  text:     '#fafafa',
-  textDim:  '#a1a1aa',
-  textFaint:'#71717a',
-  textVery: '#52525b',
-  purple:   '#a78bfa',
-  purpleHi: '#7c3aed',
-  blue:     '#60a5fa',
-  cyan:     '#22d3ee',
-  green:    '#34d399',
-  amber:    '#fbbf24',
-  pink:     '#ec4899',
+
+  // Whites
+  text:      '#ffffff',
+  textDim:   '#c1c1c8',
+  textFaint: '#8a8a96',
+  textVery:  '#5a5a66',
+
+  // Purple scale (light → dark)
+  purpleLite:'#e9d5ff',   // very light lavender
+  purpleSoft:'#c4b5fd',
+  purple:    '#a78bfa',   // primary
+  purpleHi:  '#7c3aed',   // bright primary
+  purpleDeep:'#5b21b6',
+  purpleDark:'#3b0764',
+
+  // Status scale uses the SAME purple gradient — quality reads as light/dark intensity, not hue.
+  ok:        '#a78bfa',
+  warn:      '#7c3aed',
+  bad:       '#3b0764',
 }
 
 const GRAD = {
-  hero:  'linear-gradient(135deg, #7c3aed 0%, #5b21b6 35%, #1e3a8a 75%, #06b6d4 100%)',
-  pill:  'linear-gradient(135deg, #7c3aed 0%, #4f46e5 50%, #2563eb 100%)',
-  text:  'linear-gradient(90deg, #c4b5fd 0%, #60a5fa 50%, #22d3ee 100%)',
-  textWarm: 'linear-gradient(90deg, #fbbf24 0%, #ec4899 100%)',
+  // Hero/pill/text gradients are now all purple → deep-purple → black/white
+  hero:     'linear-gradient(135deg, #7c3aed 0%, #5b21b6 40%, #1e0937 80%, #06060a 100%)',
+  pill:     'linear-gradient(135deg, #7c3aed 0%, #5b21b6 60%, #3b0764 100%)',
+  pillHi:   'linear-gradient(135deg, #a78bfa 0%, #7c3aed 50%, #5b21b6 100%)',
+  text:     'linear-gradient(90deg, #ffffff 0%, #c4b5fd 50%, #a78bfa 100%)',
+  textWarm: 'linear-gradient(90deg, #ffffff 0%, #a78bfa 100%)',
 }
 
 const FONT = "'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif"
@@ -226,9 +236,9 @@ function LogoInterlude() {
           pointerEvents: 'none',
         }}/>
 
-        {/* The hero-sized brand badge */}
+        {/* The hero-sized brand badge — fully interactive, ripples on click */}
         <div style={{ position: 'relative' }}>
-          <KairoBadge size={200} intense animated />
+          <InteractiveLogo size={200} />
         </div>
       </motion.div>
 
@@ -261,12 +271,13 @@ function LogoInterlude() {
 // AI PRESENCE WIDGET — floating bottom-right with cycling AI insights
 // ════════════════════════════════════════════════════════════════════════════
 function AIPresenceWidget() {
+  // Tones are all purple shades — quality varies by lightness, never by hue.
   const messages = [
     { icon: Eye,       title: 'Detected visual learning preference.', tone: '#a78bfa' },
-    { icon: Brain,     title: 'Memory retention model updated.',       tone: '#60a5fa' },
-    { icon: Target,    title: 'Weakness prediction recalculated.',     tone: '#fbbf24' },
-    { icon: Sparkles,  title: 'Adaptive path generated for tonight.',  tone: '#34d399' },
-    { icon: Activity,  title: 'Focus pattern: peaks at 8 PM.',         tone: '#22d3ee' },
+    { icon: Brain,     title: 'Memory retention model updated.',       tone: '#c4b5fd' },
+    { icon: Target,    title: 'Weakness prediction recalculated.',     tone: '#7c3aed' },
+    { icon: Sparkles,  title: 'Adaptive path generated for tonight.',  tone: '#a78bfa' },
+    { icon: Activity,  title: 'Focus pattern: peaks at 8 PM.',         tone: '#c4b5fd' },
   ]
   const [idx, setIdx] = useState(0)
   const [open, setOpen] = useState(false)
@@ -771,18 +782,18 @@ function HeroSection({ onGetStarted }: { onGetStarted: () => void }) {
       <GridFloor />
       <div className="kr-noise" />
 
-      {/* Hero corner badges — anchor the brand identity at first glance */}
+      {/* Hero corner badges — interactive: click to ripple energy waves */}
       <div style={{
-        position: 'absolute', top: 110, right: 40, zIndex: 1,
-        opacity: 0.45, animation: 'kr-float 9s ease-in-out infinite',
+        position: 'absolute', top: 110, right: 40, zIndex: 4,
+        opacity: 0.85, animation: 'kr-float 9s ease-in-out infinite',
       }}>
-        <KairoBadge size={68} />
+        <InteractiveLogo size={68} />
       </div>
       <div style={{
-        position: 'absolute', bottom: 80, left: 40, zIndex: 1,
-        opacity: 0.40, animation: 'kr-float 11s ease-in-out -3s infinite',
+        position: 'absolute', bottom: 80, left: 40, zIndex: 4,
+        opacity: 0.80, animation: 'kr-float 11s ease-in-out -3s infinite',
       }}>
-        <KairoBadge size={52} />
+        <InteractiveLogo size={52} />
       </div>
 
       {/* 3D AI Core — sits behind the headline, scaled to fill the hero.
@@ -827,8 +838,8 @@ function HeroSection({ onGetStarted }: { onGetStarted: () => void }) {
           }}>
             <span style={{
               width: 6, height: 6, borderRadius: '50%',
-              background: C.green,
-              boxShadow: `0 0 12px ${C.green}`,
+              background: C.purple,
+              boxShadow: `0 0 12px ${C.purple}`,
               animation: 'kr-pulse 2.4s ease-in-out infinite',
             }} />
             New  ·  Kairo OS is live
@@ -1058,7 +1069,7 @@ function HeroDashboardMock() {
                 <linearGradient id="ringg" x1="0%" y1="0%" x2="100%" y2="100%">
                   <stop offset="0%"  stopColor="#c4b5fd"/>
                   <stop offset="50%" stopColor="#7c3aed"/>
-                  <stop offset="100%" stopColor="#22d3ee"/>
+                  <stop offset="100%" stopColor="#c4b5fd"/>
                 </linearGradient>
               </defs>
               <circle cx="60" cy="60" r="48" fill="none" stroke={C.borderSoft} strokeWidth="9"/>
@@ -1071,7 +1082,7 @@ function HeroDashboardMock() {
               <div style={{ fontSize: 28, fontWeight: 800, color: C.text }}>76</div>
             </div>
           </div>
-          <div style={{ fontSize: 10, fontWeight: 700, color: C.green, letterSpacing: 1.4, textTransform: 'uppercase' }}>● Thriving</div>
+          <div style={{ fontSize: 10, fontWeight: 700, color: C.purple, letterSpacing: 1.4, textTransform: 'uppercase' }}>● Thriving</div>
         </div>
 
         {/* Right — stats + bars */}
@@ -1102,9 +1113,9 @@ function HeroDashboardMock() {
             <div style={{ fontSize: 10, color: C.textFaint, fontWeight: 700, letterSpacing: 1.4, marginBottom: 8 }}>LEARNING STYLE</div>
             <div style={{ display: 'flex', height: 8, borderRadius: 8, overflow: 'hidden' }}>
               <span style={{ width: '29%', background: C.purple }}/>
-              <span style={{ width: '50%', background: C.blue }}/>
-              <span style={{ width: '7%',  background: C.cyan }}/>
-              <span style={{ width: '14%', background: C.green }}/>
+              <span style={{ width: '50%', background: C.purpleSoft }}/>
+              <span style={{ width: '7%',  background: C.purpleLite }}/>
+              <span style={{ width: '14%', background: C.purple }}/>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8, fontSize: 10, color: C.textDim }}>
               <span>Visual 29</span><span>Interactive 50</span><span>Reading 7</span><span>Repetition 14</span>
@@ -1126,7 +1137,7 @@ function HeroDashboardMock() {
                 { t: 'newton laws',     m: 0.78 },
                 { t: 'cell biology',    m: 0.84 },
               ].map(t => {
-                const col = t.m < 0.4 ? C.red : t.m < 0.7 ? C.amber : C.green
+                const col = t.m < 0.4 ? C.purpleDeep : t.m < 0.7 ? C.purpleHi : C.purpleSoft
                 return (
                   <span key={t.t} style={{
                     padding: '3px 8px', borderRadius: 6,
@@ -1325,7 +1336,7 @@ function EcosystemDiagram() {
         <defs>
           <linearGradient id="ring2" x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%"  stopColor="#7c3aed" stopOpacity="0.5"/>
-            <stop offset="100%" stopColor="#22d3ee" stopOpacity="0.5"/>
+            <stop offset="100%" stopColor="#c4b5fd" stopOpacity="0.5"/>
           </linearGradient>
         </defs>
         <circle cx="200" cy="200" r={R} fill="none" stroke="url(#ring2)" strokeWidth="1.2" strokeDasharray="4 6"/>
@@ -1436,14 +1447,14 @@ function SolverMock() {
           aspectRatio: '4/3',
           borderRadius: 10, overflow: 'hidden',
           background:
-            `radial-gradient(at 50% 50%, rgba(52,211,153,0.32), transparent 65%),
-             linear-gradient(135deg, #064e3b 0%, #022c22 100%)`,
-          border: `1px solid rgba(52,211,153,0.32)`,
+            `radial-gradient(at 50% 50%, rgba(167,139,250,0.32), transparent 65%),
+             linear-gradient(135deg, #1e0937 0%, #0c0418 100%)`,
+          border: `1px solid rgba(167,139,250,0.32)`,
           position: 'relative',
           display: 'grid', placeItems: 'center',
         }}>
-          <Beaker size={48} color={C.green} style={{ opacity: 0.75 }} />
-          <div style={{ position: 'absolute', bottom: 8, left: 10, right: 10, fontSize: 10, color: '#a7f3d0', fontWeight: 600 }}>
+          <Beaker size={48} color={C.purpleSoft} style={{ opacity: 0.75 }} />
+          <div style={{ position: 'absolute', bottom: 8, left: 10, right: 10, fontSize: 10, color: C.purpleLite, fontWeight: 600 }}>
             Image  ·  Chloroplast diagram
           </div>
         </div>
@@ -1453,7 +1464,7 @@ function SolverMock() {
           background: C.panel2, border: `1px solid ${C.borderSoft}`,
           fontSize: 11, lineHeight: 1.6, color: C.textDim,
         }}>
-          <span style={{ color: C.text, fontWeight: 700 }}>Photosynthesis</span> is how plants convert light into chemical energy. It happens in <span style={{ color: C.green }}>chloroplasts</span>, mostly in the leaves...
+          <span style={{ color: C.text, fontWeight: 700 }}>Photosynthesis</span> is how plants convert light into chemical energy. It happens in <span style={{ color: C.purple }}>chloroplasts</span>, mostly in the leaves...
           <div style={{ marginTop: 8, padding: '6px 8px', background: 'rgba(124,58,237,0.10)', border: '1px solid rgba(124,58,237,0.3)', borderRadius: 6, fontSize: 10, color: C.purple }}>
             6 CO₂ + 6 H₂O → C₆H₁₂O₆ + 6 O₂
           </div>
@@ -1462,7 +1473,7 @@ function SolverMock() {
 
       {/* Bottom — image strip + video chip */}
       <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
-        {[C.amber, C.blue, C.cyan, C.pink].map((col, i) => (
+        {[C.purpleHi, C.purpleSoft, C.purpleLite, C.purpleHi].map((col, i) => (
           <div key={i} style={{
             flex: 1, aspectRatio: '1/1',
             borderRadius: 6,
@@ -1479,13 +1490,15 @@ function SolverMock() {
 // LABS
 // ════════════════════════════════════════════════════════════════════════════
 function LabsSection() {
+  // Each lab gets a distinct purple shade — depth scale across the spectrum
+  // gives visual variation while honouring the strict B/W/purple-only rule.
   const labs: Array<{ name: string; subject: string; icon: any; tint: string; variant: LabVariant }> = [
-    { name: 'Solar System',     subject: 'Space',     icon: Globe,    tint: '#a78bfa', variant: 'solar'   },
-    { name: 'Human Heart',      subject: 'Biology',   icon: Heart,    tint: '#f87171', variant: 'heart'   },
-    { name: 'DNA Helix',        subject: 'Biology',   icon: Activity, tint: '#34d399', variant: 'dna'     },
-    { name: 'Atomic Structure', subject: 'Chemistry', icon: Atom,     tint: '#60a5fa', variant: 'atom'    },
-    { name: 'Vectors 3D',       subject: 'Math',      icon: Compass,  tint: '#fbbf24', variant: 'vectors' },
-    { name: 'Saturn V Rocket',  subject: 'Space',     icon: Zap,      tint: '#ec4899', variant: 'rocket'  },
+    { name: 'Solar System',     subject: 'Space',     icon: Globe,    tint: '#c4b5fd', variant: 'solar'   },
+    { name: 'Human Heart',      subject: 'Biology',   icon: Heart,    tint: '#a78bfa', variant: 'heart'   },
+    { name: 'DNA Helix',        subject: 'Biology',   icon: Activity, tint: '#9333ea', variant: 'dna'     },
+    { name: 'Atomic Structure', subject: 'Chemistry', icon: Atom,     tint: '#d8b4fe', variant: 'atom'    },
+    { name: 'Vectors 3D',       subject: 'Math',      icon: Compass,  tint: '#7c3aed', variant: 'vectors' },
+    { name: 'Saturn V Rocket',  subject: 'Space',     icon: Zap,      tint: '#5b21b6', variant: 'rocket'  },
   ]
   return (
     <Section id="labs">
@@ -1585,12 +1598,12 @@ function LabCard3D({ name, subject, icon: I, tint, variant, delay }: {
         padding: '4px 9px', borderRadius: 999,
         background: 'rgba(6,6,10,0.55)', backdropFilter: 'blur(8px)',
         border: `1px solid ${C.borderSoft}`,
-        fontSize: 9.5, fontWeight: 700, color: C.green,
+        fontSize: 9.5, fontWeight: 700, color: C.purple,
         letterSpacing: 1.4, textTransform: 'uppercase',
       }}>
         <span style={{
           width: 6, height: 6, borderRadius: '50%',
-          background: C.green, boxShadow: `0 0 8px ${C.green}`,
+          background: C.purple, boxShadow: `0 0 8px ${C.purple}`,
           animation: 'kr-pulse 2s ease-in-out infinite',
         }}/>
         Live
@@ -1662,7 +1675,7 @@ function RetentionCurve() {
         </linearGradient>
         <linearGradient id="line2" x1="0" y1="0" x2="1" y2="0">
           <stop offset="0%" stopColor="#c4b5fd"/>
-          <stop offset="100%" stopColor="#22d3ee"/>
+          <stop offset="100%" stopColor="#c4b5fd"/>
         </linearGradient>
       </defs>
       <line x1={P} y1={ys(0.6)} x2={W - P} y2={ys(0.6)} stroke={C.borderSoft} strokeDasharray="3 4"/>
@@ -1873,9 +1886,9 @@ function FinalCTASection({ onGetStarted }: { onGetStarted: () => void }) {
           filter: 'blur(40px)', pointerEvents: 'none',
         }}/>
 
-        {/* Big brand badge */}
+        {/* Big interactive brand badge — click for ripple */}
         <div style={{ position: 'relative', marginBottom: 30, display: 'inline-block' }}>
-          <KairoBadge size={110} intense animated />
+          <InteractiveLogo size={110} />
         </div>
 
         <h2 className="kr-h2" style={{
@@ -1929,25 +1942,247 @@ function FinalCTASection({ onGetStarted }: { onGetStarted: () => void }) {
 }
 
 // ════════════════════════════════════════════════════════════════════════════
-// FOOTER
+// FOOTER — premium Apple-style brand strip + powered-by + columns
 // ════════════════════════════════════════════════════════════════════════════
 function Footer() {
+  const ecosystem = [
+    { label: 'Kairo Labs',         href: '#labs' },
+    { label: 'AI Solver',          href: '/solver' },
+    { label: 'Adaptive Learning',  href: '/adaptive' },
+    { label: 'Memory Brain',       href: '/memory' },
+    { label: 'Battle Mode',        href: '/battle' },
+    { label: 'Notebook',           href: '/notebook' },
+  ]
+  const audiences = [
+    { label: 'For Students',  href: '/students' },
+    { label: 'For Teachers',  href: '/teachers' },
+    { label: 'For Parents',   href: '/parents' },
+    { label: 'For Schools',   href: '/schools' },
+  ]
+  const support = [
+    { label: 'Help Center',         href: '/help' },
+    { label: 'Contact Support',     href: '/contact' },
+    { label: 'Status',              href: '/status' },
+    { label: 'School Partnerships', href: '/partnerships' },
+  ]
+  const legal = [
+    { label: 'Privacy',             href: '/privacy' },
+    { label: 'Terms of Service',    href: '/terms' },
+    { label: 'Data Protection',     href: '/dpdp' },
+    { label: 'Cookies',             href: '/cookies' },
+  ]
+
   return (
     <footer style={{
-      padding: '32px 32px 40px', maxWidth: 1280, margin: '0 auto',
+      position: 'relative',
+      paddingTop: 80, paddingBottom: 32,
       borderTop: `1px solid ${C.borderSoft}`,
+      background:
+        `radial-gradient(at 12% 0%, rgba(124,58,237,0.10) 0%, transparent 45%),
+         radial-gradient(at 88% 100%, rgba(91,33,182,0.10) 0%, transparent 50%),
+         linear-gradient(180deg, transparent 0%, rgba(6,6,10,0.7) 50%, ${C.bg} 100%)`,
     }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <KairoBadge size={28} animated={false} />
-          <span style={{ fontSize: 13, fontWeight: 700, color: C.textDim }}>
-            KAIRO  ·  ACCELERATE YOUR ACADEMICS
-          </span>
+      <div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 32px' }}>
+
+        {/* Top brand row */}
+        <div style={{
+          display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between',
+          gap: 40, flexWrap: 'wrap', paddingBottom: 56,
+          borderBottom: `1px solid ${C.borderSoft}`,
+        }}>
+          <div style={{ maxWidth: 380 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <InteractiveLogo size={48} />
+              <span className="kr-grad-text" style={{ fontSize: 26, fontWeight: 800, letterSpacing: -0.8 }}>
+                Kairo
+              </span>
+            </div>
+            <p style={{
+              marginTop: 14, marginBottom: 0,
+              fontSize: 14, color: C.textDim, lineHeight: 1.65,
+            }}>
+              The future of intelligent education. Built for Class 9–12 students
+              in India — CBSE, ICSE, and state boards.
+            </p>
+            <div style={{ marginTop: 16, fontSize: 11, color: C.purple, fontWeight: 700, letterSpacing: 2.4, textTransform: 'uppercase' }}>
+              Accelerate Your Academics
+            </div>
+          </div>
+
+          {/* Powered-by strip */}
+          <div>
+            <div style={{ fontSize: 10.5, fontWeight: 700, color: C.textFaint, textTransform: 'uppercase', letterSpacing: 2, marginBottom: 14 }}>
+              Powered by
+            </div>
+            <div style={{ display: 'flex', gap: 22, flexWrap: 'wrap', alignItems: 'center' }}>
+              {['OpenRouter','Groq','Supabase','Vercel','Three.js'].map((b, i) => (
+                <PoweredByChip key={i} name={b} />
+              ))}
+            </div>
+          </div>
         </div>
-        <div style={{ fontSize: 11, color: C.textFaint }}>
-          © {new Date().getFullYear()} Kairo · Built for Indian classrooms.
+
+        {/* Column links */}
+        <div className="kr-footer-cols" style={{
+          display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 32,
+          padding: '48px 0 40px',
+        }}>
+          <FooterCol title="Ecosystem"  items={ecosystem} />
+          <FooterCol title="For"        items={audiences} />
+          <FooterCol title="Support"    items={support} />
+          <FooterCol title="Legal"      items={legal} />
+        </div>
+
+        {/* Bottom bar */}
+        <div style={{
+          paddingTop: 28, borderTop: `1px solid ${C.borderSoft}`,
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+          gap: 14, flexWrap: 'wrap',
+        }}>
+          <div style={{ fontSize: 11, color: C.textFaint }}>
+            © {new Date().getFullYear()} Kairo. Built for Indian classrooms.
+          </div>
+          <div style={{ display: 'flex', gap: 18 }}>
+            {['English (India)', 'हिन्दी (soon)'].map((l, i) => (
+              <span key={i} style={{ fontSize: 11, color: C.textFaint, letterSpacing: 0.2 }}>{l}</span>
+            ))}
+          </div>
         </div>
       </div>
+
+      {/* Mobile column collapse */}
+      <style>{`
+        @media (max-width: 768px) {
+          .kr-footer-cols {
+            grid-template-columns: 1fr 1fr !important;
+            gap: 28px !important;
+          }
+        }
+        @media (max-width: 480px) {
+          .kr-footer-cols { grid-template-columns: 1fr !important; }
+        }
+      `}</style>
     </footer>
+  )
+}
+
+function FooterCol({ title, items }: { title: string; items: Array<{ label: string; href: string }> }) {
+  return (
+    <div>
+      <div style={{
+        fontSize: 10.5, fontWeight: 700, color: C.textFaint,
+        textTransform: 'uppercase', letterSpacing: 2, marginBottom: 18,
+      }}>
+        {title}
+      </div>
+      <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {items.map((it, i) => (
+          <li key={i}>
+            <a href={it.href} style={{
+              fontSize: 13, color: C.textDim, textDecoration: 'none',
+              transition: 'color .2s ease',
+            }}
+            onMouseEnter={e => (e.currentTarget.style.color = C.purple)}
+            onMouseLeave={e => (e.currentTarget.style.color = C.textDim)}>
+              {it.label}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
+// Powered-by chip: text in light grey, gentle purple glow on hover.
+// Monochrome (no logo image) keeps the strict palette.
+function PoweredByChip({ name }: { name: string }) {
+  return (
+    <a href="#" onClick={e => e.preventDefault()}
+      style={{
+        fontSize: 13, fontWeight: 600, color: C.textDim,
+        letterSpacing: 0.2,
+        padding: '7px 12px', borderRadius: 8,
+        border: `1px solid ${C.borderSoft}`,
+        background: 'rgba(124,58,237,0.03)',
+        textDecoration: 'none',
+        transition: 'all .25s ease',
+        display: 'inline-flex', alignItems: 'center', gap: 7,
+      }}
+      onMouseEnter={e => {
+        e.currentTarget.style.color = C.text
+        e.currentTarget.style.borderColor = 'rgba(167,139,250,0.4)'
+        e.currentTarget.style.boxShadow = '0 0 18px rgba(124,58,237,0.25)'
+        e.currentTarget.style.background = 'rgba(124,58,237,0.08)'
+      }}
+      onMouseLeave={e => {
+        e.currentTarget.style.color = C.textDim
+        e.currentTarget.style.borderColor = C.borderSoft
+        e.currentTarget.style.boxShadow = 'none'
+        e.currentTarget.style.background = 'rgba(124,58,237,0.03)'
+      }}>
+      <span style={{
+        width: 5, height: 5, borderRadius: '50%',
+        background: C.purpleSoft,
+        boxShadow: `0 0 6px ${C.purple}`,
+      }}/>
+      {name}
+    </a>
+  )
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// INTERACTIVE LOGO — Kairo brand mark that ripples on click, glows on hover
+// ════════════════════════════════════════════════════════════════════════════
+function InteractiveLogo({ size = 48 }: { size?: number }) {
+  const [ripples, setRipples] = useState<{ id: number; x: number; y: number }[]>([])
+  const [hover, setHover] = useState(false)
+  const idRef = useRef(0)
+
+  function onClick(e: React.MouseEvent<HTMLDivElement>) {
+    const r = e.currentTarget.getBoundingClientRect()
+    const x = e.clientX - r.left
+    const y = e.clientY - r.top
+    const id = ++idRef.current
+    setRipples(prev => [...prev, { id, x, y }])
+    setTimeout(() => setRipples(prev => prev.filter(p => p.id !== id)), 900)
+  }
+
+  return (
+    <div
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      onClick={onClick}
+      style={{
+        position: 'relative',
+        width: size, height: size,
+        cursor: 'pointer',
+        display: 'inline-block',
+        transition: 'transform .25s cubic-bezier(.2,.6,.2,1)',
+        transform: hover ? 'scale(1.08)' : 'scale(1)',
+      }}>
+      <KairoBadge size={size} intense={hover} animated />
+
+      {/* Ripple energy waves */}
+      {ripples.map(r => (
+        <span key={r.id} style={{
+          position: 'absolute',
+          left: r.x, top: r.y,
+          width: 0, height: 0,
+          borderRadius: '50%',
+          border: `2px solid ${C.purple}`,
+          transform: 'translate(-50%, -50%)',
+          pointerEvents: 'none',
+          animation: 'kr-ripple 0.9s ease-out forwards',
+          boxShadow: `0 0 16px ${C.purple}88`,
+        }}/>
+      ))}
+
+      <style>{`
+        @keyframes kr-ripple {
+          0%   { width: 0;   height: 0;   opacity: 1; border-width: 2px; }
+          100% { width: ${size * 2.4}px; height: ${size * 2.4}px; opacity: 0; border-width: 0.5px; }
+        }
+      `}</style>
+    </div>
   )
 }
