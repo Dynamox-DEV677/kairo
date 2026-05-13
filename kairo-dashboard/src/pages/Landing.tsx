@@ -18,14 +18,15 @@
  *  10. Future          emotional pause section
  *  11. Final CTA       large cinematic ending
  */
-import { useRef } from 'react'
-import { motion, useScroll, useTransform } from 'framer-motion'
+import { useRef, useState, useEffect } from 'react'
+import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion'
 import {
   ArrowRight, Sparkles, Cpu, Beaker, Brain, Eye, MousePointerClick,
   BookOpen, Repeat, GraduationCap, Users, Building2, ShieldCheck,
   Zap, Atom, Activity, Layers, Target, Mic, Camera, Network,
   TrendingUp, Bot, Heart, Globe, FunctionSquare, Compass,
 } from 'lucide-react'
+import LabPreview3D, { type LabVariant } from '../components/LabPreview3D'
 
 // ════════════════════════════════════════════════════════════════════════════
 // TOKENS
@@ -78,8 +79,12 @@ export default function Landing({ onGetStarted }: LandingProps) {
       overflowX: 'hidden',
       overflowY: 'auto',
       WebkitOverflowScrolling: 'touch',
+      position: 'relative',
     }}>
       <GlobalKeyframes />
+
+      {/* Continuous background atmospheric layer that bleeds across every section */}
+      <AtmosphereLayer />
 
       <TopNav onGetStarted={onGetStarted} />
 
@@ -106,7 +111,181 @@ export default function Landing({ onGetStarted }: LandingProps) {
       <FinalCTASection onGetStarted={onGetStarted} />
 
       <Footer />
+
+      {/* Floating AI presence widget — surfaces "intelligent" feedback */}
+      <AIPresenceWidget />
     </div>
+  )
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// AMBIENT ATMOSPHERE — sits behind every section, gives the page depth
+// ════════════════════════════════════════════════════════════════════════════
+function AtmosphereLayer() {
+  return (
+    <div aria-hidden style={{
+      position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none',
+      overflow: 'hidden',
+    }}>
+      {/* Slow drifting blobs */}
+      <div style={{
+        position: 'absolute', top: '15%', left: '-10%',
+        width: 600, height: 600, borderRadius: '50%',
+        background: 'radial-gradient(circle, rgba(124,58,237,0.18) 0%, transparent 70%)',
+        filter: 'blur(40px)',
+        animation: 'kr-float 14s ease-in-out infinite',
+      }}/>
+      <div style={{
+        position: 'absolute', top: '60%', right: '-10%',
+        width: 700, height: 700, borderRadius: '50%',
+        background: 'radial-gradient(circle, rgba(37,99,235,0.14) 0%, transparent 70%)',
+        filter: 'blur(50px)',
+        animation: 'kr-float 18s ease-in-out -3s infinite',
+      }}/>
+      <div style={{
+        position: 'absolute', top: '120%', left: '40%',
+        width: 500, height: 500, borderRadius: '50%',
+        background: 'radial-gradient(circle, rgba(34,211,238,0.10) 0%, transparent 70%)',
+        filter: 'blur(40px)',
+        animation: 'kr-float 16s ease-in-out -6s infinite',
+      }}/>
+
+      {/* Faint logo watermark mid-scroll */}
+      <div style={{
+        position: 'absolute', top: '180%', left: '50%',
+        transform: 'translateX(-50%)',
+        opacity: 0.05, pointerEvents: 'none',
+      }}>
+        <KairoLogo size={240} />
+      </div>
+      <div style={{
+        position: 'absolute', top: '340%', left: '12%',
+        opacity: 0.04, pointerEvents: 'none',
+      }}>
+        <KairoLogo size={180} />
+      </div>
+    </div>
+  )
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// AI PRESENCE WIDGET — floating bottom-right with cycling AI insights
+// ════════════════════════════════════════════════════════════════════════════
+function AIPresenceWidget() {
+  const messages = [
+    { icon: Eye,       title: 'Detected visual learning preference.', tone: '#a78bfa' },
+    { icon: Brain,     title: 'Memory retention model updated.',       tone: '#60a5fa' },
+    { icon: Target,    title: 'Weakness prediction recalculated.',     tone: '#fbbf24' },
+    { icon: Sparkles,  title: 'Adaptive path generated for tonight.',  tone: '#34d399' },
+    { icon: Activity,  title: 'Focus pattern: peaks at 8 PM.',         tone: '#22d3ee' },
+  ]
+  const [idx, setIdx] = useState(0)
+  const [open, setOpen] = useState(false)
+
+  useEffect(() => {
+    // Slight delay before the widget appears at all
+    const t = setTimeout(() => setOpen(true), 1800)
+    return () => clearTimeout(t)
+  }, [])
+
+  useEffect(() => {
+    if (!open) return
+    const id = setInterval(() => setIdx(i => (i + 1) % messages.length), 4200)
+    return () => clearInterval(id)
+  }, [open, messages.length])
+
+  const cur = messages[idx]
+  const Icon = cur.icon
+
+  return (
+    <div style={{
+      position: 'fixed', bottom: 20, right: 20, zIndex: 99,
+      maxWidth: 340, pointerEvents: 'none',
+    }}>
+      <AnimatePresence mode="wait">
+        {open && (
+          <motion.div
+            key={idx}
+            initial={{ opacity: 0, y: 18, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0,  scale: 1 }}
+            exit={{ opacity: 0, y: -8,    scale: 0.97 }}
+            transition={{ duration: 0.4, ease: [0.21,0.86,0.41,1] as any }}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 10,
+              padding: '11px 14px',
+              borderRadius: 14,
+              background: 'rgba(13,13,21,0.85)',
+              backdropFilter: 'blur(20px)',
+              WebkitBackdropFilter: 'blur(20px)',
+              border: `1px solid ${cur.tone}44`,
+              boxShadow: `0 18px 48px ${cur.tone}22, 0 0 0 1px rgba(255,255,255,0.02) inset`,
+            }}>
+            <div style={{
+              width: 30, height: 30, borderRadius: 9, flexShrink: 0,
+              background: `${cur.tone}1c`, border: `1px solid ${cur.tone}55`,
+              display: 'grid', placeItems: 'center',
+              boxShadow: `0 0 14px ${cur.tone}55`,
+            }}>
+              <Icon size={14} color={cur.tone} />
+            </div>
+            <div style={{ minWidth: 0, flex: 1 }}>
+              <div style={{
+                fontSize: 9.5, fontWeight: 700, color: cur.tone,
+                letterSpacing: 1.6, textTransform: 'uppercase',
+              }}>
+                Kairo  ·  Live
+              </div>
+              <div style={{ fontSize: 12.5, color: C.text, marginTop: 1, fontWeight: 500, lineHeight: 1.35 }}>
+                {cur.title}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  )
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// MAGNETIC BUTTON — the CTAs follow the cursor slightly on hover
+// ════════════════════════════════════════════════════════════════════════════
+function MagneticButton({
+  as = 'button',
+  children,
+  strength = 0.25,
+  ...rest
+}: {
+  as?: 'button' | 'a'
+  children: React.ReactNode
+  strength?: number
+  [key: string]: any
+}) {
+  const ref = useRef<HTMLElement>(null)
+  function onMouseMove(e: React.MouseEvent) {
+    if (!ref.current) return
+    const r = ref.current.getBoundingClientRect()
+    const x = (e.clientX - (r.left + r.width / 2)) * strength
+    const y = (e.clientY - (r.top  + r.height / 2)) * strength
+    ref.current.style.transform = `translate(${x}px, ${y}px)`
+  }
+  function onMouseLeave() {
+    if (!ref.current) return
+    ref.current.style.transform = 'translate(0, 0)'
+  }
+  const Tag: any = as
+  return (
+    <Tag
+      ref={ref as any}
+      onMouseMove={onMouseMove}
+      onMouseLeave={onMouseLeave}
+      style={{
+        display: 'inline-flex',
+        transition: 'transform .25s cubic-bezier(.2,.6,.2,1), box-shadow .25s ease',
+        willChange: 'transform',
+      }}
+      {...rest}>
+      {children}
+    </Tag>
   )
 }
 
@@ -179,7 +358,14 @@ function GlobalKeyframes() {
         .kr-section { padding: 64px 20px !important; }
         .kr-2col { grid-template-columns: 1fr !important; gap: 32px !important; }
         .kr-features-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)) !important; }
+        .kr-labs-grid { grid-template-columns: 1fr !important; gap: 14px !important; }
       }
+      @media (min-width: 769px) and (max-width: 1024px) {
+        .kr-labs-grid { grid-template-columns: repeat(2, 1fr) !important; }
+      }
+
+      /* Make sure every section composes ABOVE the atmosphere layer */
+      section { position: relative; z-index: 1; }
     `}</style>
   )
 }
@@ -318,6 +504,7 @@ function HeroSection({ onGetStarted }: { onGetStarted: () => void }) {
       {/* Layered backdrops */}
       <ParticleField />
       <AuroraLayer />
+      <LightRays />
       <GridFloor />
       <div className="kr-noise" />
 
@@ -382,7 +569,7 @@ function HeroSection({ onGetStarted }: { onGetStarted: () => void }) {
             marginTop: 38, display: 'flex', gap: 14,
             justifyContent: 'center', flexWrap: 'wrap',
           }}>
-          <button
+          <MagneticButton
             onClick={onGetStarted}
             className="kr-btn-glow"
             style={{
@@ -391,12 +578,13 @@ function HeroSection({ onGetStarted }: { onGetStarted: () => void }) {
               color: '#fff', fontWeight: 700, fontSize: 15,
               border: 'none', cursor: 'pointer',
               boxShadow: '0 14px 40px rgba(124,58,237,0.45)',
-              display: 'inline-flex', alignItems: 'center', gap: 8,
+              alignItems: 'center', gap: 8,
               fontFamily: 'inherit', letterSpacing: 0.2,
             }}>
             Start Learning <ArrowRight size={16} />
-          </button>
-          <a
+          </MagneticButton>
+          <MagneticButton
+            as="a"
             href="#labs"
             className="kr-btn-glow"
             style={{
@@ -405,11 +593,11 @@ function HeroSection({ onGetStarted }: { onGetStarted: () => void }) {
               color: C.text, fontWeight: 600, fontSize: 15,
               border: `1px solid ${C.border}`, cursor: 'pointer',
               textDecoration: 'none',
-              display: 'inline-flex', alignItems: 'center', gap: 8,
+              alignItems: 'center', gap: 8,
               fontFamily: 'inherit', backdropFilter: 'blur(10px)',
             }}>
             <Beaker size={16} color={C.purple} /> Explore Kairo Labs
-          </a>
+          </MagneticButton>
         </motion.div>
 
         {/* Floating UI preview */}
@@ -478,6 +666,28 @@ function AuroraLayer() {
          radial-gradient(at 86% 30%, rgba(37,99,235,0.22) 0%, transparent 42%),
          radial-gradient(at 50% 100%, rgba(34,211,238,0.16) 0%, transparent 50%)`,
     }} />
+  )
+}
+
+// Subtle volumetric light rays sweeping the hero
+function LightRays() {
+  return (
+    <div aria-hidden style={{
+      position: 'absolute', inset: 0, pointerEvents: 'none',
+      overflow: 'hidden',
+    }}>
+      {[0, 1, 2].map(i => (
+        <div key={i} style={{
+          position: 'absolute',
+          top: '-20%', left: `${20 + i * 22}%`,
+          width: 2, height: '140%',
+          background: `linear-gradient(180deg, transparent 0%, rgba(196,181,253,${0.25 - i * 0.05}) 30%, rgba(96,165,250,${0.15 - i * 0.03}) 60%, transparent 100%)`,
+          transform: `rotate(${12 + i * 2}deg)`,
+          filter: 'blur(2px)',
+          animation: `kr-glow ${6 + i}s ease-in-out -${i}s infinite`,
+        }}/>
+      ))}
+    </div>
   )
 }
 
@@ -953,13 +1163,13 @@ function SolverMock() {
 // LABS
 // ════════════════════════════════════════════════════════════════════════════
 function LabsSection() {
-  const labs = [
-    { name: 'Solar System',    subject: 'Space',     icon: Globe,          tint: '#a78bfa' },
-    { name: 'Human Heart',     subject: 'Biology',   icon: Heart,          tint: '#f87171' },
-    { name: 'DNA Helix',       subject: 'Biology',   icon: Activity,       tint: '#34d399' },
-    { name: 'Atomic Structure',subject: 'Chemistry', icon: Atom,           tint: '#60a5fa' },
-    { name: 'Vectors 3D',      subject: 'Math',      icon: Compass,        tint: '#fbbf24' },
-    { name: 'Saturn V Rocket', subject: 'Space',     icon: Zap,            tint: '#ec4899' },
+  const labs: Array<{ name: string; subject: string; icon: any; tint: string; variant: LabVariant }> = [
+    { name: 'Solar System',     subject: 'Space',     icon: Globe,    tint: '#a78bfa', variant: 'solar'   },
+    { name: 'Human Heart',      subject: 'Biology',   icon: Heart,    tint: '#f87171', variant: 'heart'   },
+    { name: 'DNA Helix',        subject: 'Biology',   icon: Activity, tint: '#34d399', variant: 'dna'     },
+    { name: 'Atomic Structure', subject: 'Chemistry', icon: Atom,     tint: '#60a5fa', variant: 'atom'    },
+    { name: 'Vectors 3D',       subject: 'Math',      icon: Compass,  tint: '#fbbf24', variant: 'vectors' },
+    { name: 'Saturn V Rocket',  subject: 'Space',     icon: Zap,      tint: '#ec4899', variant: 'rocket'  },
   ]
   return (
     <Section id="labs">
@@ -970,55 +1180,100 @@ function LabsSection() {
           <span className="kr-grad-text">Real 3D simulations.</span>
         </h2>
         <p style={{ marginTop: 18, fontSize: 16, color: C.textDim, lineHeight: 1.6, maxWidth: 640, margin: '18px auto 0' }}>
-          Drag to rotate. Click any part. Slide controls. Built with React Three Fiber +
-          compressed GLB models that load in seconds on any device.
+          Hover any card — that's a live WebGL preview, not a screenshot.
+          Open the lab to drag, rotate, click parts, slide controls.
         </p>
       </motion.div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 18 }}
-           className="kr-2col">
-        {labs.map((lab, i) => {
-          const I = lab.icon
-          return (
-            <motion.div key={i} {...fadeUp(i * 0.07)}
-              className="kr-card"
-              style={{
-                aspectRatio: '4/3',
-                padding: 22, display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
-                background: `linear-gradient(135deg, ${lab.tint}1f 0%, transparent 60%), ${C.panel}`,
-              }}>
-              <div style={{
-                position: 'absolute', top: -30, right: -30,
-                width: 140, height: 140, borderRadius: '50%',
-                background: `radial-gradient(circle, ${lab.tint}33 0%, transparent 70%)`,
-                pointerEvents: 'none', filter: 'blur(10px)',
-              }}/>
-              <div style={{
-                width: 50, height: 50, borderRadius: 14,
-                background: `${lab.tint}22`,
-                border: `1px solid ${lab.tint}44`,
-                display: 'grid', placeItems: 'center',
-                boxShadow: `0 0 24px ${lab.tint}55`,
-              }}>
-                <I size={22} color={lab.tint} />
-              </div>
-              <div>
-                <div style={{ fontSize: 11, fontWeight: 700, color: lab.tint, letterSpacing: 1.4, textTransform: 'uppercase' }}>
-                  {lab.subject}
-                </div>
-                <div style={{ fontSize: 22, fontWeight: 700, color: C.text, marginTop: 4 }}>
-                  {lab.name}
-                </div>
-              </div>
-            </motion.div>
-          )
-        })}
+      <div className="kr-labs-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 18 }}>
+        {labs.map((lab, i) => <LabCard3D key={i} {...lab} delay={i * 0.07} />)}
       </div>
 
       <motion.div {...fadeUp(0.1)} style={{ textAlign: 'center', marginTop: 32, fontSize: 13, color: C.textFaint }}>
         + 9 more labs across Physics, Chemistry, Biology, Math, and Space
       </motion.div>
     </Section>
+  )
+}
+
+// One lab card with a live R3F preview embedded
+function LabCard3D({ name, subject, icon: I, tint, variant, delay }: {
+  name: string; subject: string; icon: any; tint: string; variant: LabVariant; delay: number
+}) {
+  const [hover, setHover] = useState(false)
+  return (
+    <motion.div
+      {...fadeUp(delay)}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      style={{
+        position: 'relative',
+        aspectRatio: '4/3',
+        borderRadius: 16,
+        overflow: 'hidden',
+        border: `1px solid ${hover ? `${tint}55` : C.border}`,
+        background: `linear-gradient(135deg, ${tint}10 0%, transparent 55%), ${C.panel}`,
+        transition: 'transform .4s cubic-bezier(.2,.6,.2,1), border-color .4s ease, box-shadow .4s ease',
+        transform: hover ? 'translateY(-4px) scale(1.005)' : 'none',
+        boxShadow: hover
+          ? `0 32px 80px ${tint}33, 0 0 0 1px ${tint}22 inset`
+          : `0 10px 28px rgba(0,0,0,0.4)`,
+      }}>
+      {/* 3D preview */}
+      <LabPreview3D variant={variant} tint={tint} />
+
+      {/* Tint radial halo */}
+      <div style={{
+        position: 'absolute', inset: 0, pointerEvents: 'none',
+        background: `radial-gradient(circle at 50% 50%, ${tint}1f 0%, transparent 55%)`,
+        opacity: hover ? 1 : 0.7,
+        transition: 'opacity .4s ease',
+      }}/>
+
+      {/* Bottom-left badge stack */}
+      <div style={{
+        position: 'absolute', left: 18, bottom: 18, right: 18,
+        display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end',
+        pointerEvents: 'none', zIndex: 2,
+      }}>
+        <div>
+          <div style={{ fontSize: 10.5, fontWeight: 700, color: tint, letterSpacing: 1.5, textTransform: 'uppercase' }}>
+            {subject}
+          </div>
+          <div style={{ fontSize: 19, fontWeight: 700, color: C.text, marginTop: 4, letterSpacing: -0.2 }}>
+            {name}
+          </div>
+        </div>
+        <div style={{
+          width: 36, height: 36, borderRadius: 9,
+          background: `${tint}22`, border: `1px solid ${tint}44`,
+          display: 'grid', placeItems: 'center',
+          backdropFilter: 'blur(6px)',
+          boxShadow: hover ? `0 0 18px ${tint}80` : `0 0 8px ${tint}44`,
+          transition: 'box-shadow .4s ease',
+        }}>
+          <I size={16} color={tint} />
+        </div>
+      </div>
+
+      {/* Live indicator dot */}
+      <div style={{
+        position: 'absolute', top: 14, right: 14, zIndex: 2,
+        display: 'flex', alignItems: 'center', gap: 6,
+        padding: '4px 9px', borderRadius: 999,
+        background: 'rgba(6,6,10,0.55)', backdropFilter: 'blur(8px)',
+        border: `1px solid ${C.borderSoft}`,
+        fontSize: 9.5, fontWeight: 700, color: C.green,
+        letterSpacing: 1.4, textTransform: 'uppercase',
+      }}>
+        <span style={{
+          width: 6, height: 6, borderRadius: '50%',
+          background: C.green, boxShadow: `0 0 8px ${C.green}`,
+          animation: 'kr-pulse 2s ease-in-out infinite',
+        }}/>
+        Live
+      </div>
+    </motion.div>
   )
 }
 
@@ -1323,19 +1578,19 @@ function FinalCTASection({ onGetStarted }: { onGetStarted: () => void }) {
           marginTop: 44, display: 'flex', gap: 14, justifyContent: 'center', flexWrap: 'wrap',
           position: 'relative',
         }}>
-          <button onClick={onGetStarted}
+          <MagneticButton onClick={onGetStarted}
             className="kr-btn-glow"
             style={{
               padding: '17px 36px', borderRadius: 13,
               background: GRAD.pill, color: '#fff',
               fontWeight: 700, fontSize: 16, border: 'none', cursor: 'pointer',
               boxShadow: '0 18px 56px rgba(124,58,237,0.55)',
-              display: 'inline-flex', alignItems: 'center', gap: 8,
+              alignItems: 'center', gap: 8,
               fontFamily: 'inherit',
             }}>
             Join Kairo <ArrowRight size={18} />
-          </button>
-          <a href="#labs"
+          </MagneticButton>
+          <MagneticButton as="a" href="#labs"
             className="kr-btn-glow"
             style={{
               padding: '17px 34px', borderRadius: 13,
@@ -1343,11 +1598,11 @@ function FinalCTASection({ onGetStarted }: { onGetStarted: () => void }) {
               fontWeight: 600, fontSize: 16,
               border: `1px solid ${C.border}`, cursor: 'pointer',
               textDecoration: 'none',
-              display: 'inline-flex', alignItems: 'center', gap: 8,
+              alignItems: 'center', gap: 8,
               fontFamily: 'inherit', backdropFilter: 'blur(8px)',
             }}>
             <Beaker size={18} color={C.purple} /> Explore Labs
-          </a>
+          </MagneticButton>
         </div>
       </motion.div>
     </Section>
