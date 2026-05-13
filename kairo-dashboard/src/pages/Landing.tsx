@@ -92,24 +92,32 @@ export default function Landing({ onGetStarted }: LandingProps) {
 
       <ProofStrip />
 
+      <SectionDivider size={42} />
       <ProblemSection />
 
+      <SectionDivider size={42} />
       <OSSection />
 
+      <SectionDivider size={42} />
       <SolverSection />
 
+      <SectionDivider size={48} />
       <LabsSection />
 
       <LogoInterlude />
 
       <AdaptationSection />
 
+      <SectionDivider size={42} />
       <RolesSection />
 
+      <SectionDivider size={42} />
       <FeaturesSection />
 
+      <SectionDivider size={48} />
       <FutureSection />
 
+      <SectionDivider size={56} />
       <FinalCTASection onGetStarted={onGetStarted} />
 
       <Footer />
@@ -166,17 +174,18 @@ function AtmosphereLayer() {
         animation: 'kr-float 16s ease-in-out -6s infinite',
       }}/>
 
-      {/* Logo watermarks — gently float + pulse, scattered the full scroll */}
+      {/* Kairo badge watermarks — round glowing brand marks scattered the
+          full scroll. Gentle float on staggered delays so they never breathe
+          in sync. The badge is the page's recurring identity motif. */}
       {watermarks.map((w, i) => (
         <div key={i} style={{
           position: 'absolute',
           top: w.top, left: w.left,
           transform: 'translate(-50%, -50%)',
-          opacity: w.opacity,
-          filter: 'drop-shadow(0 0 18px rgba(124,58,237,0.55))',
-          animation: `kr-float ${12 + (i % 4) * 2}s ease-in-out -${w.delay}s infinite, kr-glow ${7 + (i % 3) * 1.5}s ease-in-out -${w.delay / 2}s infinite`,
+          opacity: w.opacity * 1.8,                // badges are darker than bare SVG so we lift opacity
+          animation: `kr-float ${12 + (i % 4) * 2}s ease-in-out -${w.delay}s infinite`,
         }}>
-          <KairoLogo size={w.size} />
+          <KairoBadge size={w.size} animated={i % 2 === 0} />
         </div>
       ))}
     </div>
@@ -201,7 +210,7 @@ function LogoInterlude() {
         transition={{ duration: 1.4, ease: [0.21,0.86,0.41,1] as any }}
         style={{ position: 'relative', display: 'inline-block' }}>
 
-        {/* Massive glow halo behind the logo */}
+        {/* Massive glow halo behind the badge */}
         <div style={{
           position: 'absolute', inset: '-60%',
           background: 'radial-gradient(circle, rgba(124,58,237,0.32) 0%, rgba(37,99,235,0.16) 35%, transparent 70%)',
@@ -210,12 +219,9 @@ function LogoInterlude() {
           pointerEvents: 'none',
         }}/>
 
-        {/* The hero-sized logo */}
-        <div style={{
-          position: 'relative',
-          filter: 'drop-shadow(0 0 48px rgba(124,58,237,0.7))',
-        }}>
-          <KairoLogo size={220} />
+        {/* The hero-sized brand badge */}
+        <div style={{ position: 'relative' }}>
+          <KairoBadge size={200} intense animated />
         </div>
       </motion.div>
 
@@ -378,6 +384,10 @@ function GlobalKeyframes() {
       @keyframes kr-float  { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-14px) } }
       @keyframes kr-drift  { 0% { transform: translate3d(0,0,0); } 100% { transform: translate3d(40px, -120px, 0); } }
       @keyframes kr-shimmer { 0% { background-position: -200% 0 } 100% { background-position: 200% 0 } }
+      @keyframes kr-badge-pulse {
+        0%, 100% { filter: drop-shadow(0 0 10px rgba(124,58,237,0.55)); }
+        50%      { filter: drop-shadow(0 0 24px rgba(124,58,237,0.95)) drop-shadow(0 0 36px rgba(37,99,235,0.55)); }
+      }
       .kr-grad-text {
         background: ${GRAD.text};
         -webkit-background-clip: text;
@@ -507,7 +517,7 @@ function TopNav({ onGetStarted }: { onGetStarted: () => void }) {
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <KairoLogo size={32} />
+          <KairoBadge size={32} animated={false} />
           <span style={{ fontWeight: 800, fontSize: 18, letterSpacing: -0.4 }}>Kairo</span>
         </div>
         <button
@@ -560,6 +570,85 @@ function KairoLogo({ size = 32 }: { size?: number }) {
 }
 
 // ════════════════════════════════════════════════════════════════════════════
+// KAIRO BADGE — the round, glowing brand mark used as a motif throughout
+// ════════════════════════════════════════════════════════════════════════════
+// Uses two stacked layers for the gradient border: an outer gradient circle
+// + an inner dark circle just inside it. Pure CSS, no SVG-mask hacks.
+function KairoBadge({
+  size      = 64,
+  glow      = true,
+  intense   = false,
+  animated  = true,
+}: { size?: number; glow?: boolean; intense?: boolean; animated?: boolean }) {
+  const rim = `linear-gradient(135deg, #c4b5fd 0%, #7c3aed 40%, #2563eb 75%, #22d3ee 100%)`
+  return (
+    <div style={{
+      position: 'relative',
+      width: size, height: size,
+      display: 'inline-block',
+      // Outer glow halo
+      filter: glow
+        ? `drop-shadow(0 0 ${intense ? size * 0.28 : size * 0.18}px rgba(124,58,237,${intense ? 0.85 : 0.55}))`
+        : 'none',
+      animation: animated ? 'kr-badge-pulse 5s ease-in-out infinite' : undefined,
+    }}>
+      {/* Outer gradient ring */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        borderRadius: '50%',
+        background: rim,
+      }}/>
+      {/* Inner dark fill — sits ~6% inside, leaving a glowing rim */}
+      <div style={{
+        position: 'absolute', inset: `${size * 0.045}px`,
+        borderRadius: '50%',
+        background: 'radial-gradient(circle, #1a1530 0%, #07070d 95%)',
+        boxShadow: 'inset 0 0 22px rgba(124,58,237,0.25)',
+      }}/>
+      {/* Centered logo glyph */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        display: 'grid', placeItems: 'center',
+      }}>
+        <KairoLogo size={size * 0.62} />
+      </div>
+    </div>
+  )
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// SECTION DIVIDER — small glowing badge + hairline between sections
+// ════════════════════════════════════════════════════════════════════════════
+function SectionDivider({ size = 40 }: { size?: number }) {
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      gap: 22, padding: '32px 24px',
+      maxWidth: 1280, margin: '0 auto',
+      position: 'relative', zIndex: 1,
+    }}>
+      <div style={{
+        flex: 1, height: 1,
+        background: 'linear-gradient(90deg, transparent, rgba(124,58,237,0.35), transparent)',
+        maxWidth: 240,
+      }}/>
+      <motion.div
+        initial={{ opacity: 0, scale: 0.6 }}
+        whileInView={{ opacity: 1, scale: 1 }}
+        viewport={{ once: true, amount: 0.5 }}
+        transition={{ duration: 0.6 }}>
+        <KairoBadge size={size} />
+      </motion.div>
+      <div style={{
+        flex: 1, height: 1,
+        background: 'linear-gradient(90deg, transparent, rgba(124,58,237,0.35), transparent)',
+        maxWidth: 240,
+      }}/>
+    </div>
+  )
+}
+
+// ════════════════════════════════════════════════════════════════════════════
 // HERO
 // ════════════════════════════════════════════════════════════════════════════
 function HeroSection({ onGetStarted }: { onGetStarted: () => void }) {
@@ -583,6 +672,20 @@ function HeroSection({ onGetStarted }: { onGetStarted: () => void }) {
       <LightRays />
       <GridFloor />
       <div className="kr-noise" />
+
+      {/* Hero corner badges — anchor the brand identity at first glance */}
+      <div style={{
+        position: 'absolute', top: 110, right: 40, zIndex: 1,
+        opacity: 0.45, animation: 'kr-float 9s ease-in-out infinite',
+      }}>
+        <KairoBadge size={68} />
+      </div>
+      <div style={{
+        position: 'absolute', bottom: 80, left: 40, zIndex: 1,
+        opacity: 0.40, animation: 'kr-float 11s ease-in-out -3s infinite',
+      }}>
+        <KairoBadge size={52} />
+      </div>
 
       <motion.div style={{ y: heroY, opacity: heroFade, textAlign: 'center', maxWidth: 1100, padding: '0 24px', position: 'relative', zIndex: 2 }}>
         {/* Brand badge */}
@@ -1630,9 +1733,9 @@ function FinalCTASection({ onGetStarted }: { onGetStarted: () => void }) {
           filter: 'blur(40px)', pointerEvents: 'none',
         }}/>
 
-        {/* Big logo */}
+        {/* Big brand badge */}
         <div style={{ position: 'relative', marginBottom: 30, display: 'inline-block' }}>
-          <KairoLogo size={92} />
+          <KairoBadge size={110} intense animated />
         </div>
 
         <h2 className="kr-h2" style={{
@@ -1696,7 +1799,7 @@ function Footer() {
     }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <KairoLogo size={24} />
+          <KairoBadge size={28} animated={false} />
           <span style={{ fontSize: 13, fontWeight: 700, color: C.textDim }}>
             KAIRO  ·  ACCELERATE YOUR ACADEMICS
           </span>
