@@ -132,18 +132,18 @@ export default function Landing({ onGetStarted }: LandingProps) {
 // AMBIENT ATMOSPHERE — sits behind every section, gives the page depth
 // ════════════════════════════════════════════════════════════════════════════
 function AtmosphereLayer() {
-  // Logo watermark positions scattered down the scroll. Each tagged with a
-  // size + opacity + animation phase. The brief calls for "the logo should
-  // become instantly recognizable", so opacities are stronger than typical
-  // watermark territory (0.10–0.16 vs 0.03–0.05) — still subtle, but visible.
+  // Logo watermark positions scattered down the scroll. The PNG renders the
+  // real intertwined-leaves brand mark, so opacity needs to be a bit lower
+  // than the previous fake-badge had (0.16–0.22) — the leaves are visually
+  // busier than a solid dark badge frame.
   const watermarks = [
-    { top: '50%',  left: '6%',   size: 200, opacity: 0.13, delay: 0  },
-    { top: '105%', left: '88%',  size: 260, opacity: 0.11, delay: 4  },
-    { top: '170%', left: '50%',  size: 360, opacity: 0.14, delay: 2  },
-    { top: '245%', left: '10%',  size: 220, opacity: 0.10, delay: 6  },
-    { top: '310%', left: '85%',  size: 280, opacity: 0.12, delay: 3  },
-    { top: '380%', left: '50%',  size: 320, opacity: 0.13, delay: 5  },
-    { top: '450%', left: '15%',  size: 200, opacity: 0.10, delay: 1  },
+    { top: '50%',  left: '6%',   size: 220, opacity: 0.18, delay: 0  },
+    { top: '105%', left: '88%',  size: 280, opacity: 0.16, delay: 4  },
+    { top: '170%', left: '50%',  size: 380, opacity: 0.20, delay: 2  },
+    { top: '245%', left: '10%',  size: 240, opacity: 0.15, delay: 6  },
+    { top: '310%', left: '85%',  size: 300, opacity: 0.17, delay: 3  },
+    { top: '380%', left: '50%',  size: 340, opacity: 0.19, delay: 5  },
+    { top: '450%', left: '15%',  size: 220, opacity: 0.15, delay: 1  },
   ]
 
   return (
@@ -174,18 +174,20 @@ function AtmosphereLayer() {
         animation: 'kr-float 16s ease-in-out -6s infinite',
       }}/>
 
-      {/* Kairo badge watermarks — round glowing brand marks scattered the
-          full scroll. Gentle float on staggered delays so they never breathe
-          in sync. The badge is the page's recurring identity motif. */}
+      {/* Kairo logo watermarks — the real intertwined-leaves brand mark,
+          scattered across the full scroll. Gentle float on staggered delays
+          so they never breathe in sync. Glow drop-shadow makes them shimmer
+          against the dark background. */}
       {watermarks.map((w, i) => (
         <div key={i} style={{
           position: 'absolute',
           top: w.top, left: w.left,
           transform: 'translate(-50%, -50%)',
-          opacity: w.opacity * 1.8,                // badges are darker than bare SVG so we lift opacity
+          opacity: w.opacity,
+          filter: 'drop-shadow(0 0 30px rgba(192,132,252,0.4))',
           animation: `kr-float ${12 + (i % 4) * 2}s ease-in-out -${w.delay}s infinite`,
         }}>
-          <KairoBadge size={w.size} animated={i % 2 === 0} />
+          <KairoLogo size={w.size} />
         </div>
       ))}
     </div>
@@ -385,8 +387,8 @@ function GlobalKeyframes() {
       @keyframes kr-drift  { 0% { transform: translate3d(0,0,0); } 100% { transform: translate3d(40px, -120px, 0); } }
       @keyframes kr-shimmer { 0% { background-position: -200% 0 } 100% { background-position: 200% 0 } }
       @keyframes kr-badge-pulse {
-        0%, 100% { filter: drop-shadow(0 0 10px rgba(124,58,237,0.55)); }
-        50%      { filter: drop-shadow(0 0 24px rgba(124,58,237,0.95)) drop-shadow(0 0 36px rgba(37,99,235,0.55)); }
+        0%, 100% { filter: drop-shadow(0 0 14px rgba(192,132,252,0.45)) drop-shadow(0 0 28px rgba(236,72,153,0.20)); }
+        50%      { filter: drop-shadow(0 0 28px rgba(192,132,252,0.85)) drop-shadow(0 0 48px rgba(236,72,153,0.45)); }
       }
       .kr-grad-text {
         background: ${GRAD.text};
@@ -538,80 +540,66 @@ function TopNav({ onGetStarted }: { onGetStarted: () => void }) {
   )
 }
 
-function KairoLogo({ size = 32 }: { size?: number }) {
-  const id = `klg-${Math.random().toString(36).slice(2, 7)}`
+// The actual Kairo brand mark — intertwined leaves + colored balls.
+// Lives at /public/kairo_logo.png so it ships in the build, deduped via
+// browser HTTP cache regardless of how many times we render it.
+function KairoLogo({ size = 32, glow = false }: { size?: number; glow?: boolean }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 64 64" style={{ display: 'block' }}>
-      <defs>
-        <linearGradient id={`${id}-s`} x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%"   stopColor="#c4b5fd"/>
-          <stop offset="50%"  stopColor="#7c3aed"/>
-          <stop offset="100%" stopColor="#22d3ee"/>
-        </linearGradient>
-        <radialGradient id={`${id}-h`} cx="50%" cy="50%" r="50%">
-          <stop offset="0%"  stopColor="#7c3aed" stopOpacity="0.6"/>
-          <stop offset="100%" stopColor="#7c3aed" stopOpacity="0"/>
-        </radialGradient>
-      </defs>
-      <circle cx="32" cy="32" r="30" fill={`url(#${id}-h)`}/>
-      <circle cx="32" cy="32" r="22" fill="none" stroke={`url(#${id}-s)`} strokeWidth="1.4" strokeOpacity="0.6">
-        <animateTransform attributeName="transform" type="rotate" from="0 32 32" to="360 32 32" dur="22s" repeatCount="indefinite"/>
-      </circle>
-      <g stroke={`url(#${id}-s)`} strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round" fill="none">
-        <path d="M22 17 L22 47"/>
-        <path d="M22 32 L36 17"/>
-        <path d="M22 32 L36 47"/>
-      </g>
-      <circle cx="42" cy="32" r="2.5" fill="#c4b5fd">
-        <animate attributeName="opacity" values="0.35;1;0.35" dur="2.4s" repeatCount="indefinite"/>
-      </circle>
-    </svg>
+    <img
+      src="/kairo_logo.png"
+      alt="Kairo"
+      width={size}
+      height={size}
+      draggable={false}
+      style={{
+        width: size, height: size,
+        objectFit: 'contain',
+        display: 'block',
+        userSelect: 'none',
+        pointerEvents: 'none',
+        filter: glow ? `drop-shadow(0 0 ${size * 0.25}px rgba(192,132,252,0.55))` : undefined,
+      }}
+    />
   )
 }
 
 // ════════════════════════════════════════════════════════════════════════════
-// KAIRO BADGE — the round, glowing brand mark used as a motif throughout
+// KAIRO BADGE — the real logo wrapped in an animated glow halo
 // ════════════════════════════════════════════════════════════════════════════
-// Uses two stacked layers for the gradient border: an outer gradient circle
-// + an inner dark circle just inside it. Pure CSS, no SVG-mask hacks.
+// Earlier this was a dark circular frame around a fake K-glyph; now it's just
+// the real Kairo logo + a configurable glow halo. The leaves design is iconic
+// enough to carry its own brand identity without a fake "badge" frame.
 function KairoBadge({
   size      = 64,
   glow      = true,
   intense   = false,
   animated  = true,
 }: { size?: number; glow?: boolean; intense?: boolean; animated?: boolean }) {
-  const rim = `linear-gradient(135deg, #c4b5fd 0%, #7c3aed 40%, #2563eb 75%, #22d3ee 100%)`
   return (
     <div style={{
       position: 'relative',
       width: size, height: size,
       display: 'inline-block',
-      // Outer glow halo
       filter: glow
-        ? `drop-shadow(0 0 ${intense ? size * 0.28 : size * 0.18}px rgba(124,58,237,${intense ? 0.85 : 0.55}))`
+        ? `drop-shadow(0 0 ${intense ? size * 0.32 : size * 0.22}px rgba(192,132,252,${intense ? 0.85 : 0.55}))
+           drop-shadow(0 0 ${intense ? size * 0.55 : size * 0.40}px rgba(124,58,237,${intense ? 0.55 : 0.35}))`
         : 'none',
       animation: animated ? 'kr-badge-pulse 5s ease-in-out infinite' : undefined,
     }}>
-      {/* Outer gradient ring */}
-      <div style={{
-        position: 'absolute', inset: 0,
-        borderRadius: '50%',
-        background: rim,
-      }}/>
-      {/* Inner dark fill — sits ~6% inside, leaving a glowing rim */}
-      <div style={{
-        position: 'absolute', inset: `${size * 0.045}px`,
-        borderRadius: '50%',
-        background: 'radial-gradient(circle, #1a1530 0%, #07070d 95%)',
-        boxShadow: 'inset 0 0 22px rgba(124,58,237,0.25)',
-      }}/>
-      {/* Centered logo glyph */}
-      <div style={{
-        position: 'absolute', inset: 0,
-        display: 'grid', placeItems: 'center',
-      }}>
-        <KairoLogo size={size * 0.62} />
-      </div>
+      <img
+        src="/kairo_logo.png"
+        alt="Kairo"
+        width={size}
+        height={size}
+        draggable={false}
+        style={{
+          width: size, height: size,
+          objectFit: 'contain',
+          display: 'block',
+          userSelect: 'none',
+          pointerEvents: 'none',
+        }}
+      />
     </div>
   )
 }
