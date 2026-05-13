@@ -27,6 +27,7 @@ import {
   TrendingUp, Bot, Heart, Globe, FunctionSquare, Compass,
 } from 'lucide-react'
 import LabPreview3D, { type LabVariant } from '../components/LabPreview3D'
+import HeroCore3D from '../components/HeroCore3D'
 
 // ════════════════════════════════════════════════════════════════════════════
 // TOKENS
@@ -454,6 +455,15 @@ function GlobalKeyframes() {
 
       /* Make sure every section composes ABOVE the atmosphere layer */
       section { position: relative; z-index: 1; }
+
+      /* Smooth scroll behavior (lightweight, no JS library needed) */
+      html { scroll-behavior: smooth; }
+
+      /* Headline rendering quality boost */
+      .kr-h1, .kr-h2 {
+        font-feature-settings: 'ss01', 'cv11', 'kern';
+        text-rendering: optimizeLegibility;
+      }
     `}</style>
   )
 }
@@ -499,6 +509,57 @@ function fadeUp(delay = 0) {
     viewport:   { once: true, amount: 0.2 },
     transition: { duration: 0.7, delay, ease: [0.21, 0.86, 0.41, 1] as any },
   }
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// SCROLL HEADLINE — every section h2 gets blur-to-focus entrance + scroll-linked
+// scale + parallax. Apple-style motion at every section break.
+// ════════════════════════════════════════════════════════════════════════════
+function ScrollHeadline({
+  children, eyebrow, align = 'center', maxWidth,
+}: {
+  children: React.ReactNode
+  eyebrow?: string
+  align?:  'center' | 'left'
+  maxWidth?: number
+}) {
+  const ref = useRef<HTMLDivElement>(null)
+  const { scrollYProgress } = useScroll({
+    target: ref, offset: ['start end', 'end start'],
+  })
+  // Phase 1: scale grows from .96 → 1.04 as the headline enters the viewport;
+  // phase 2: parallax-shifts upward as it leaves.
+  const scale = useTransform(scrollYProgress, [0, 0.5, 1], [0.96, 1.02, 1.04])
+  const y     = useTransform(scrollYProgress, [0, 1], ['0%', '-12%'])
+
+  return (
+    <motion.div
+      ref={ref}
+      style={{
+        y,
+        textAlign: align,
+        marginBottom: 48,
+        ...(maxWidth ? { maxWidth, margin: align === 'center' ? '0 auto 48px' : `0 0 48px` } : {}),
+      }}>
+      {eyebrow && (
+        <motion.div
+          initial={{ opacity: 0, y: 12, filter: 'blur(6px)' }}
+          whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+          viewport={{ once: true, amount: 0.3 }}
+          transition={{ duration: 0.6 }}>
+          <Eyebrow>{eyebrow}</Eyebrow>
+        </motion.div>
+      )}
+      <motion.div
+        initial={{ opacity: 0, y: 24, filter: 'blur(14px)' }}
+        whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+        viewport={{ once: true, amount: 0.25 }}
+        transition={{ duration: 1.0, ease: [0.21, 0.86, 0.41, 1] as any }}
+        style={{ scale, transformOrigin: 'center bottom' }}>
+        {children}
+      </motion.div>
+    </motion.div>
+  )
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -644,8 +705,29 @@ function SectionDivider({ size = 40 }: { size?: number }) {
 function HeroSection({ onGetStarted }: { onGetStarted: () => void }) {
   const ref = useRef<HTMLDivElement>(null)
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] })
-  const heroY     = useTransform(scrollYProgress, [0, 1], ['0%', '40%'])
-  const heroFade  = useTransform(scrollYProgress, [0, 0.6], [1, 0])
+
+  // Layered parallax: each element travels at a different speed for depth
+  const titleY    = useTransform(scrollYProgress, [0, 1], ['0%', '-30%'])
+  const titleScale= useTransform(scrollYProgress, [0, 1], [1, 1.18])
+  const titleBlur = useTransform(scrollYProgress, [0.4, 1], [0, 8])
+  const titleBlurStr = useTransform(titleBlur, v => `blur(${v}px)`)
+  const subY      = useTransform(scrollYProgress, [0, 1], ['0%', '-15%'])
+  const heroFade  = useTransform(scrollYProgress, [0, 0.7], [1, 0])
+  const coreY     = useTransform(scrollYProgress, [0, 1], ['0%', '20%'])
+
+  // Mouse parallax — feeds HeroCore3D and adds subtle hero tilt
+  const pointerXRef = useRef(0)
+  const pointerYRef = useRef(0)
+  useEffect(() => {
+    function onMove(e: MouseEvent) {
+      const cx = window.innerWidth / 2
+      const cy = window.innerHeight / 2
+      pointerXRef.current = (e.clientX - cx) / cx
+      pointerYRef.current = (e.clientY - cy) / cy
+    }
+    window.addEventListener('mousemove', onMove, { passive: true })
+    return () => window.removeEventListener('mousemove', onMove)
+  }, [])
 
   return (
     <section ref={ref} style={{
@@ -677,11 +759,26 @@ function HeroSection({ onGetStarted }: { onGetStarted: () => void }) {
         <KairoBadge size={52} />
       </div>
 
-      <motion.div style={{ y: heroY, opacity: heroFade, textAlign: 'center', maxWidth: 1100, padding: '0 24px', position: 'relative', zIndex: 2 }}>
-        {/* Brand badge */}
+      {/* 3D AI Core — sits behind the headline, scaled to fill the hero.
+          Materializes from scale 0 on mount, scroll-recedes thereafter. */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.4 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 0.05, duration: 1.4, ease: [0.21,0.86,0.41,1] as any }}
+        style={{
+          y: coreY,
+          position: 'absolute', inset: 0,
+          pointerEvents: 'none', zIndex: 1,
+        }}>
+        <HeroCore3D scrollProgress={scrollYProgress} pointerXRef={pointerXRef} pointerYRef={pointerYRef} />
+      </motion.div>
+
+      <motion.div style={{ opacity: heroFade, textAlign: 'center', maxWidth: 1100, padding: '0 24px', position: 'relative', zIndex: 2 }}>
+        {/* Brand badge — "Kairo OS is live" */}
         <motion.div
-          initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1, duration: 0.6 }}
+          initial={{ opacity: 0, y: 16, filter: 'blur(8px)' }}
+          animate={{ opacity: 1, y: 0,  filter: 'blur(0px)' }}
+          transition={{ delay: 0.4, duration: 0.7 }}
           style={{ display: 'inline-flex', alignItems: 'center', gap: 8, marginBottom: 28 }}>
           <span style={{
             padding: '6px 14px', borderRadius: 999,
@@ -701,26 +798,34 @@ function HeroSection({ onGetStarted }: { onGetStarted: () => void }) {
           </span>
         </motion.div>
 
-        {/* Massive headline */}
+        {/* Massive headline — blur-to-focus reveal + scroll-linked scale */}
         <motion.h1
-          initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2, duration: 0.8, ease: [0.21,0.86,0.41,1] as any }}
+          initial={{ opacity: 0, y: 30, scale: 0.96, filter: 'blur(18px)' }}
+          animate={{ opacity: 1, y: 0,  scale: 1,    filter: 'blur(0px)' }}
+          transition={{ delay: 0.6, duration: 1.2, ease: [0.21,0.86,0.41,1] as any }}
           className="kr-h1"
           style={{
+            y: titleY,
+            scale: titleScale,
+            filter: titleBlurStr,
+            transformOrigin: 'center top',
             margin: 0,
             fontSize: 92, lineHeight: 1.02, fontWeight: 800,
             letterSpacing: -2.5,
             color: C.text,
+            textShadow: '0 8px 60px rgba(124,58,237,0.35)',
           }}>
           The future of <br/>
           <span className="kr-grad-text">intelligent education.</span>
         </motion.h1>
 
-        {/* Subhead */}
+        {/* Subhead — fades in slower, parallaxes slower than title */}
         <motion.p
-          initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.45, duration: 0.7 }}
+          initial={{ opacity: 0, y: 18, filter: 'blur(8px)' }}
+          animate={{ opacity: 1, y: 0,  filter: 'blur(0px)' }}
+          transition={{ delay: 0.95, duration: 0.9 }}
           style={{
+            y: subY,
             marginTop: 26, marginBottom: 0,
             fontSize: 19, color: C.textDim,
             maxWidth: 700, marginLeft: 'auto', marginRight: 'auto',
@@ -732,8 +837,9 @@ function HeroSection({ onGetStarted }: { onGetStarted: () => void }) {
 
         {/* CTAs */}
         <motion.div
-          initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.65, duration: 0.7 }}
+          initial={{ opacity: 0, y: 18, filter: 'blur(8px)' }}
+          animate={{ opacity: 1, y: 0,  filter: 'blur(0px)' }}
+          transition={{ delay: 1.25, duration: 0.85 }}
           style={{
             marginTop: 38, display: 'flex', gap: 14,
             justifyContent: 'center', flexWrap: 'wrap',
@@ -769,18 +875,23 @@ function HeroSection({ onGetStarted }: { onGetStarted: () => void }) {
           </MagneticButton>
         </motion.div>
 
-        {/* Floating UI preview */}
+        {/* Floating UI preview — a small "Kairo OS" glimpse below the headline,
+            sized down so the 3D core stays the visual centerpiece. */}
         <motion.div
-          initial={{ opacity: 0, y: 48 }} animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.95, duration: 1.0, ease: [0.21,0.86,0.41,1] as any }}
+          initial={{ opacity: 0, y: 60, scale: 0.92, filter: 'blur(14px)' }}
+          animate={{ opacity: 1, y: 0,  scale: 1,    filter: 'blur(0px)' }}
+          transition={{ delay: 1.55, duration: 1.2, ease: [0.21,0.86,0.41,1] as any }}
           style={{
-            marginTop: 80,
+            marginTop: 64,
             position: 'relative',
-            maxWidth: 980, margin: '80px auto 0',
+            maxWidth: 820, margin: '64px auto 0',
             padding: 0,
-            animation: 'kr-float 7s ease-in-out infinite',
+            animation: 'kr-float 8s ease-in-out infinite',
+            perspective: '1200px',
           }}>
-          <HeroDashboardMock />
+          <div style={{ transform: 'rotateX(6deg)', transformStyle: 'preserve-3d' }}>
+            <HeroDashboardMock />
+          </div>
         </motion.div>
       </motion.div>
 
@@ -1048,13 +1159,12 @@ function ProblemSection() {
   ]
   return (
     <Section>
-      <motion.div {...fadeUp()} style={{ textAlign: 'center', marginBottom: 48 }}>
-        <Eyebrow>The problem</Eyebrow>
+      <ScrollHeadline eyebrow="The problem">
         <h2 className="kr-h2" style={{ margin: 0, fontSize: 56, fontWeight: 800, letterSpacing: -1.5, color: C.text, lineHeight: 1.05 }}>
           Three things textbooks +<br/>
           tuitions <span className="kr-grad-text-warm">can’t fix</span>.
         </h2>
-      </motion.div>
+      </ScrollHeadline>
 
       <div className="kr-2col" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 18 }}>
         {cards.map((c, i) => {
@@ -1342,8 +1452,7 @@ function LabsSection() {
   ]
   return (
     <Section id="labs">
-      <motion.div {...fadeUp()} style={{ textAlign: 'center', marginBottom: 56 }}>
-        <Eyebrow>Kairo Labs</Eyebrow>
+      <ScrollHeadline eyebrow="Kairo Labs">
         <h2 className="kr-h2" style={{ margin: 0, fontSize: 56, fontWeight: 800, letterSpacing: -1.5, color: C.text, lineHeight: 1.05 }}>
           Not videos.<br/>
           <span className="kr-grad-text">Real 3D simulations.</span>
@@ -1352,7 +1461,7 @@ function LabsSection() {
           Hover any card — that's a live WebGL preview, not a screenshot.
           Open the lab to drag, rotate, click parts, slide controls.
         </p>
-      </motion.div>
+      </ScrollHeadline>
 
       <div className="kr-labs-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 18 }}>
         {labs.map((lab, i) => <LabCard3D key={i} {...lab} delay={i * 0.07} />)}
@@ -1365,14 +1474,19 @@ function LabsSection() {
   )
 }
 
-// One lab card with a live R3F preview embedded
+// One lab card with a live R3F preview embedded.
+// Entrance is a cinematic emerge-from-darkness: scale 0.85 + 3D Y-rotate +
+// blur-to-focus. Each card staggers 100ms behind the previous one.
 function LabCard3D({ name, subject, icon: I, tint, variant, delay }: {
   name: string; subject: string; icon: any; tint: string; variant: LabVariant; delay: number
 }) {
   const [hover, setHover] = useState(false)
   return (
     <motion.div
-      {...fadeUp(delay)}
+      initial={{ opacity: 0, y: 40, scale: 0.88, rotateY: -8, filter: 'blur(18px)' }}
+      whileInView={{ opacity: 1, y: 0, scale: 1, rotateY: 0, filter: 'blur(0px)' }}
+      viewport={{ once: true, amount: 0.25 }}
+      transition={{ delay, duration: 1.0, ease: [0.21, 0.86, 0.41, 1] as any }}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
       style={{
@@ -1387,6 +1501,8 @@ function LabCard3D({ name, subject, icon: I, tint, variant, delay }: {
         boxShadow: hover
           ? `0 32px 80px ${tint}33, 0 0 0 1px ${tint}22 inset`
           : `0 10px 28px rgba(0,0,0,0.4)`,
+        transformStyle: 'preserve-3d',
+        perspective: '1000px',
       }}>
       {/* 3D preview */}
       <LabPreview3D variant={variant} tint={tint} />
@@ -1452,13 +1568,12 @@ function LabCard3D({ name, subject, icon: I, tint, variant, delay }: {
 function AdaptationSection() {
   return (
     <Section>
-      <motion.div {...fadeUp()} style={{ textAlign: 'center', maxWidth: 820, margin: '0 auto 56px' }}>
-        <Eyebrow>Adaptive intelligence</Eyebrow>
+      <ScrollHeadline eyebrow="Adaptive intelligence" maxWidth={820}>
         <h2 className="kr-h2" style={{ margin: 0, fontSize: 56, fontWeight: 800, letterSpacing: -1.5, color: C.text, lineHeight: 1.05 }}>
           Kairo <span className="kr-grad-text">learns you</span>.<br/>
           Then teaches you back.
         </h2>
-      </motion.div>
+      </ScrollHeadline>
 
       {/* Animated retention graph */}
       <motion.div {...fadeUp(0.1)} style={{
@@ -1552,12 +1667,11 @@ function RolesSection() {
   ]
   return (
     <Section>
-      <motion.div {...fadeUp()} style={{ textAlign: 'center', marginBottom: 56 }}>
-        <Eyebrow>One platform · four roles</Eyebrow>
+      <ScrollHeadline eyebrow="One platform · four roles">
         <h2 className="kr-h2" style={{ margin: 0, fontSize: 56, fontWeight: 800, letterSpacing: -1.5, color: C.text, lineHeight: 1.05 }}>
           A connected <span className="kr-grad-text">ecosystem</span>.
         </h2>
-      </motion.div>
+      </ScrollHeadline>
 
       <div className="kr-2col" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 18 }}>
         {roles.map((r, i) => {
@@ -1616,13 +1730,12 @@ function FeaturesSection() {
   ]
   return (
     <Section>
-      <motion.div {...fadeUp()} style={{ textAlign: 'center', marginBottom: 48 }}>
-        <Eyebrow>40+ features</Eyebrow>
+      <ScrollHeadline eyebrow="40+ features">
         <h2 className="kr-h2" style={{ margin: 0, fontSize: 56, fontWeight: 800, letterSpacing: -1.5, color: C.text, lineHeight: 1.05 }}>
           One app.<br/>
           <span className="kr-grad-text">Every learning tool you’ll need.</span>
         </h2>
-      </motion.div>
+      </ScrollHeadline>
 
       <div
         className="kr-features-grid"
