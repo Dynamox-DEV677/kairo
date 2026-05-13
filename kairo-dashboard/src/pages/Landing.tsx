@@ -103,38 +103,22 @@ export default function Landing({ onGetStarted }: LandingProps) {
 
       <TopNav onGetStarted={onGetStarted} />
 
+      {/* No more SectionDividers — they were 80-100px of vertical
+          padding each + a centred badge, contributing massively to the
+          "stacked panels separated by black voids" feeling. The Section
+          dolly entrance + section padding now carries the rhythm. */}
       <HeroSection onGetStarted={onGetStarted} />
-
       <ProofStrip />
-
-      <SectionDivider size={42} />
       <ProblemSection />
-
-      <SectionDivider size={42} />
       <OSSection />
-
-      <SectionDivider size={42} />
       <SolverSection />
-
-      <SectionDivider size={48} />
       <LabsSection />
-
       <LogoInterlude />
-
       <AdaptationSection />
-
-      <SectionDivider size={42} />
       <RolesSection />
-
-      <SectionDivider size={42} />
       <FeaturesSection />
-
-      <SectionDivider size={48} />
       <FutureSection />
-
-      <SectionDivider size={56} />
       <FinalCTASection onGetStarted={onGetStarted} />
-
       <Footer />
 
       {/* Floating AI presence widget — surfaces "intelligent" feedback */}
@@ -215,7 +199,7 @@ function AtmosphereLayer() {
 function LogoInterlude() {
   return (
     <section style={{
-      padding: '140px 24px',
+      padding: '72px 24px',                 // was 140px — half the vertical air
       position: 'relative',
       textAlign: 'center',
       maxWidth: 1280, margin: '0 auto',
@@ -485,16 +469,17 @@ function GlobalKeyframes() {
 
 function Section({ children, style = {}, id }: { children: React.ReactNode; style?: React.CSSProperties; id?: string }) {
   const ref = useRef<HTMLDivElement>(null)
-  // Drive a subtle scroll-linked dolly entrance: as the section's TOP crosses
-  // the viewport, content scales 0.96 → 1, blur 4 → 0, opacity 0.7 → 1.
-  // This is what makes the page feel like one continuous "camera move" rather
-  // than disjoint stacked panels.
+  // Drive a scroll-linked entrance: as the section's TOP crosses the viewport
+  // the content RISES upward (translateY 60→0), scales 0.94→1, blurs 6→0,
+  // opacity 0.4→1. This converts each section from a static panel into a
+  // shot that's actively brought into focus by the scroll.
   const { scrollYProgress } = useScroll({
     target: ref, offset: ['start end', 'start center'],
   })
-  const scale   = useTransform(scrollYProgress, [0, 1], [0.965, 1])
-  const opacity = useTransform(scrollYProgress, [0, 0.4, 1], [0.6, 0.92, 1])
-  const blur    = useTransform(scrollYProgress, [0, 1], [4, 0])
+  const y       = useTransform(scrollYProgress, [0, 1], [60, 0])
+  const scale   = useTransform(scrollYProgress, [0, 1], [0.94, 1])
+  const opacity = useTransform(scrollYProgress, [0, 0.35, 1], [0.4, 0.88, 1])
+  const blur    = useTransform(scrollYProgress, [0, 1], [6, 0])
   const blurStr = useTransform(blur, v => `blur(${v}px)`)
 
   return (
@@ -502,7 +487,9 @@ function Section({ children, style = {}, id }: { children: React.ReactNode; styl
       id={id}
       className="kr-section"
       style={{
-        padding: '120px 32px',
+        // Tightened to 56px from 120 — drastically reduces the "stacked
+        // panels separated by black voids" feeling the user called out.
+        padding: '56px 32px',
         position: 'relative',
         maxWidth: 1280,
         margin: '0 auto',
@@ -511,6 +498,7 @@ function Section({ children, style = {}, id }: { children: React.ReactNode; styl
       <motion.div
         ref={ref}
         style={{
+          y,
           scale,
           opacity,
           filter: blurStr,
@@ -1945,31 +1933,33 @@ function FinalCTASection({ onGetStarted }: { onGetStarted: () => void }) {
 // FOOTER — premium Apple-style brand strip + powered-by + columns
 // ════════════════════════════════════════════════════════════════════════════
 function Footer() {
-  const ecosystem = [
-    { label: 'Kairo Labs',         href: '#labs' },
-    { label: 'AI Solver',          href: '/solver' },
-    { label: 'Adaptive Learning',  href: '/adaptive' },
-    { label: 'Memory Brain',       href: '/memory' },
-    { label: 'Battle Mode',        href: '/battle' },
-    { label: 'Notebook',           href: '/notebook' },
-  ]
-  const audiences = [
-    { label: 'For Students',  href: '/students' },
-    { label: 'For Teachers',  href: '/teachers' },
-    { label: 'For Parents',   href: '/parents' },
-    { label: 'For Schools',   href: '/schools' },
-  ]
   const support = [
     { label: 'Help Center',         href: '/help' },
     { label: 'Contact Support',     href: '/contact' },
-    { label: 'Status',              href: '/status' },
-    { label: 'School Partnerships', href: '/partnerships' },
+    { label: 'FAQs',                href: '/faqs' },
+    { label: 'Bug Reports',         href: '/bugs' },
+    { label: 'Report School Issue', href: '/report' },
   ]
-  const legal = [
-    { label: 'Privacy',             href: '/privacy' },
-    { label: 'Terms of Service',    href: '/terms' },
-    { label: 'Data Protection',     href: '/dpdp' },
-    { label: 'Cookies',             href: '/cookies' },
+  const platform = [
+    { label: 'AI Solver',          href: '#solver' },
+    { label: 'Kairo Labs',         href: '#labs' },
+    { label: 'Adaptive Learning',  href: '/adaptive' },
+    { label: 'Memory Brain',       href: '/memory' },
+    { label: 'Voice Tutor',        href: '/voice' },
+  ]
+  const schoolSystem = [
+    { label: 'School Dashboard',   href: '/school' },
+    { label: 'Parent Mode',        href: '/parent' },
+    { label: 'Teacher Tools',      href: '/teacher' },
+    { label: 'Student Analytics',  href: '/analytics' },
+    { label: 'Homework System',    href: '/homework' },
+  ]
+  const company = [
+    { label: 'About Kairo',        href: '/about' },
+    { label: 'Careers',            href: '/careers' },
+    { label: 'Privacy Policy',     href: '/privacy' },
+    { label: 'Terms of Service',   href: '/terms' },
+    { label: 'Community',          href: '/community' },
   ]
 
   return (
@@ -2022,15 +2012,16 @@ function Footer() {
           </div>
         </div>
 
-        {/* Column links */}
+        {/* Column links — 5-column grid: Support + Contact + Platform + School System + Company */}
         <div className="kr-footer-cols" style={{
-          display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 32,
+          display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 32,
           padding: '48px 0 40px',
         }}>
-          <FooterCol title="Ecosystem"  items={ecosystem} />
-          <FooterCol title="For"        items={audiences} />
-          <FooterCol title="Support"    items={support} />
-          <FooterCol title="Legal"      items={legal} />
+          <FooterCol title="Support"        items={support} />
+          <FooterContactCol />
+          <FooterCol title="Platform"       items={platform} />
+          <FooterCol title="School System"  items={schoolSystem} />
+          <FooterCol title="Company"        items={company} />
         </div>
 
         {/* Bottom bar */}
@@ -2052,17 +2043,85 @@ function Footer() {
 
       {/* Mobile column collapse */}
       <style>{`
-        @media (max-width: 768px) {
+        @media (max-width: 1024px) {
           .kr-footer-cols {
-            grid-template-columns: 1fr 1fr !important;
+            grid-template-columns: repeat(3, 1fr) !important;
             gap: 28px !important;
           }
         }
-        @media (max-width: 480px) {
+        @media (max-width: 640px) {
+          .kr-footer-cols {
+            grid-template-columns: 1fr 1fr !important;
+          }
+        }
+        @media (max-width: 420px) {
           .kr-footer-cols { grid-template-columns: 1fr !important; }
         }
       `}</style>
     </footer>
+  )
+}
+
+// Contact column — single email card with copy-to-clipboard on click
+function FooterContactCol() {
+  const [copied, setCopied] = useState(false)
+  const email = 'quro.cor@gmail.com'
+  function copy() {
+    if (typeof navigator === 'undefined') return
+    navigator.clipboard?.writeText(email).then(() => {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 1800)
+    }).catch(() => {})
+  }
+  return (
+    <div>
+      <div style={{
+        fontSize: 10.5, fontWeight: 700, color: C.textFaint,
+        textTransform: 'uppercase', letterSpacing: 2, marginBottom: 18,
+      }}>
+        Contact
+      </div>
+
+      <button
+        onClick={copy}
+        style={{
+          background: 'rgba(124,58,237,0.06)',
+          border: `1px solid ${C.borderSoft}`,
+          borderRadius: 12,
+          padding: '12px 14px',
+          width: '100%',
+          textAlign: 'left',
+          cursor: 'pointer',
+          fontFamily: 'inherit',
+          color: C.text,
+          transition: 'all .25s ease',
+          position: 'relative',
+        }}
+        onMouseEnter={e => {
+          e.currentTarget.style.borderColor = 'rgba(167,139,250,0.45)'
+          e.currentTarget.style.boxShadow = '0 0 22px rgba(124,58,237,0.25)'
+          e.currentTarget.style.background = 'rgba(124,58,237,0.10)'
+        }}
+        onMouseLeave={e => {
+          e.currentTarget.style.borderColor = C.borderSoft
+          e.currentTarget.style.boxShadow = 'none'
+          e.currentTarget.style.background = 'rgba(124,58,237,0.06)'
+        }}>
+        <div style={{ fontSize: 9.5, fontWeight: 700, color: C.purple, textTransform: 'uppercase', letterSpacing: 1.6 }}>
+          {copied ? 'Copied ✓' : 'Email us'}
+        </div>
+        <div style={{ fontSize: 13, marginTop: 4, color: C.text, fontWeight: 600, overflowWrap: 'anywhere' }}>
+          {email}
+        </div>
+      </button>
+
+      <p style={{
+        marginTop: 12, marginBottom: 0,
+        fontSize: 11, color: C.textFaint, lineHeight: 1.6,
+      }}>
+        Replies usually within 24h.
+      </p>
+    </div>
   )
 }
 
