@@ -299,12 +299,16 @@ CRITICAL: Output ONLY the JSON. Do not wrap in code fences. Do not say "Here is 
  *
  * Get a free key at: https://console.groq.com/keys
  */
-// Groq's stable solver-grade models (Nov 2025). Llama 8B is included as a
+// Groq's stable solver-grade models (May 2026). Llama 8B is included as a
 // fast hedge: when 70B is slow under load, 8B usually still responds in <1s.
+//
+// NB: groq's deployment of `openai/gpt-oss-20b` was previously in this list,
+// but the diagnostic showed it returns HTTP 400 "Failed to generate JSON"
+// consistently — that deployment doesn't honor `response_format: json_object`
+// reliably. Removed so the Promise.any race isn't slowed by its 2s failure.
 const GROQ_MODELS = [
   'llama-3.3-70b-versatile',     // primary — fast + smart
   'llama-3.1-8b-instant',        // hedge — sub-second on weak load
-  'openai/gpt-oss-20b',          // Groq's GPT-OSS deployment (different quota)
 ]
 
 async function callGroqOne(model, question, apiKey, timeout = 7000) {
