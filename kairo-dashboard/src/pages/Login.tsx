@@ -297,6 +297,7 @@ function PersonalSignup({ onLogin, onBack }: any) {
   const [avatar, setAvatar]     = useState<string | null>(null)
   const [busy, setBusy]         = useState(false)
   const [err, setErr]           = useState('')
+  const [exists, setExists]     = useState(false)   // shows "Sign in instead" CTA
 
   function handleAvatar(file: File | null) {
     if (!file) { setAvatar(null); return }
@@ -318,7 +319,7 @@ function PersonalSignup({ onLogin, onBack }: any) {
   async function submit() {
     const v = validate()
     if (v) { setErr(v); return }
-    setBusy(true); setErr('')
+    setBusy(true); setErr(''); setExists(false)
     try {
       const data = await post('/users/register-personal', {
         name:          name.trim(),
@@ -343,10 +344,46 @@ function PersonalSignup({ onLogin, onBack }: any) {
       localStorage.setItem('kairo_profile', JSON.stringify(profile))
       onLogin(profile)
     } catch (e: any) {
-      const msg = e.message || 'Something went wrong.'
-      setErr(msg.toLowerCase().includes('already exists')
-        ? 'That email is already registered. Try Sign In instead.'
-        : msg)
+      const msg = (e.message || 'Something went wrong.').toLowerCase()
+      // 409 — account already exists. Silently try to SIGN IN with the
+      // same email + password. Same person, same creds → just log them in.
+      if (msg.includes('already exists') || msg.includes('409')) {
+        try {
+          const { data: signed, error: signErr } = await supabase.auth.signInWithPassword({
+            email:    email.trim().toLowerCase(),
+            password,
+          })
+          if (signErr || !signed?.session) throw signErr || new Error('no session')
+
+          // Success — fetch the profile row and continue as a normal login.
+          const { data: userRow } = await supabase
+            .from('users').select('id, name, role, school_id, avatar_url, class_name, board')
+            .eq('id', signed.user!.id).maybeSingle()
+
+          const profile: AuthProfile = {
+            id:            signed.user!.id,
+            name:          (userRow as any)?.name || name.trim(),
+            role:          'student',
+            avatar_url:    (userRow as any)?.avatar_url,
+            cls:           (userRow as any)?.class_name,
+            board:         (userRow as any)?.board || board,
+            access_token:  signed.session.access_token,
+            refresh_token: signed.session.refresh_token,
+          }
+          localStorage.setItem('kairo_token',   signed.session.access_token)
+          localStorage.setItem('kairo_refresh', signed.session.refresh_token)
+          localStorage.setItem('kairo_profile', JSON.stringify(profile))
+          onLogin(profile)
+          return
+        } catch {
+          // Sign-in failed (wrong password). Show the "go to sign in" CTA.
+          setErr('This email is already registered. Use the same password you signed up with, or tap "Sign In" below.')
+          setExists(true)
+          setBusy(false)
+          return
+        }
+      }
+      setErr(e.message || 'Something went wrong.')
       setBusy(false)
     }
   }
@@ -393,7 +430,11 @@ function PersonalSignup({ onLogin, onBack }: any) {
         </div>
       </Field>
       {err && <ErrLine msg={err} />}
-      <PrimaryBtn busy={busy} onClick={submit} icon={Sparkles}>Create my account</PrimaryBtn>
+      {exists ? (
+        <PrimaryBtn busy={false} onClick={onBack} icon={ArrowRight}>Go to Sign In</PrimaryBtn>
+      ) : (
+        <PrimaryBtn busy={busy} onClick={submit} icon={Sparkles}>Create my account</PrimaryBtn>
+      )}
       <p style={{ fontSize: 11, color: '#52525b', textAlign: 'center', marginTop: 12, lineHeight: 1.5 }}>
         Already have an account?{' '}
         <button onClick={onBack} style={{
