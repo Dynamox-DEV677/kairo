@@ -85,6 +85,19 @@ export default function KairoOS() {
     setSnap(getDashboard())
   }
 
+  // ⚠️ ALL hooks must run before any conditional early-return (React rule).
+  // Keep the desktop dashboard's useEffect here even when the mobile fork
+  // takes over rendering — the snap state is shared by both branches.
+  useEffect(() => {
+    reload()
+    // Re-read whenever another tab updates localStorage (multi-tab safety)
+    const onStorage = (e: StorageEvent) => {
+      if (e.key && e.key.startsWith('kairo:twin:')) reload()
+    }
+    window.addEventListener('storage', onStorage)
+    return () => window.removeEventListener('storage', onStorage)
+  }, [])
+
   // ── Mobile fork: render the native phone-first layout instead of the
   // desktop grid. The dashboard data still lives in localStorage so this
   // is just a different view of the same twin.
@@ -105,16 +118,6 @@ export default function KairoOS() {
       </>
     )
   }
-
-  useEffect(() => {
-    reload()
-    // Re-read whenever another tab updates localStorage (multi-tab safety)
-    const onStorage = (e: StorageEvent) => {
-      if (e.key && e.key.startsWith('kairo:twin:')) reload()
-    }
-    window.addEventListener('storage', onStorage)
-    return () => window.removeEventListener('storage', onStorage)
-  }, [])
 
   function onRefresh() {
     setSnap(refresh())

@@ -28,8 +28,8 @@ interface NavItem {
 
 // ─── Item lists (role-aware, ordered by use frequency) ──────────────────────
 const STUDENT_BOTTOM: NavItem[] = [
+  { to: 'kairo-os',  label: 'Kairo',    icon: Brain },
   { to: 'doubt',     label: 'Solve',    icon: MessageCircle },
-  { to: 'memory',    label: 'Brain',    icon: Brain },
   { to: 'battle',    label: 'Battle',   icon: Swords },
   { to: 'notebook',  label: 'Notes',    icon: BookOpen },
 ]
@@ -53,13 +53,13 @@ const PARENT_BOTTOM: NavItem[] = [
   { to: 'doubt', label: 'Home', icon: MessageCircle },
 ]
 
-// Drawer groupings (full feature list)
+// Drawer groupings (full feature list — deprecated pages removed)
 const DRAWER_STUDENT = [
   {
     title: 'Core',
     items: [
-      { to: 'doubt',          label: "Kairo's Solver",      icon: MessageCircle },
-      { to: 'memory',         label: 'AI Memory',          icon: Brain },
+      { to: 'kairo-os',       label: 'Kairo OS',           icon: Brain },
+      { to: 'doubt',          label: "Kairo's Solver",     icon: MessageCircle },
       { to: 'mistakes',       label: 'Mistake Analysis',   icon: Activity },
       { to: 'explain-mistake',label: 'Explain Mistake',    icon: AlertTriangle },
       { to: 'simulator',      label: 'Revision Simulator', icon: Zap },
@@ -72,7 +72,6 @@ const DRAWER_STUDENT = [
       { to: 'flashcards',   label: 'Flashcards',     icon: BookMarked },
       { to: 'camera',       label: 'Camera Study',   icon: Camera },
       { to: 'concept-map',  label: 'Concept Map',    icon: Network },
-      { to: 'voice',        label: 'Voice Tutor',    icon: Mic },
       { to: 'knowledge',    label: 'Knowledge Graph', icon: Network },
       { to: 'essay',        label: 'Grader',         icon: FileText },
     ],
@@ -92,9 +91,6 @@ const DRAWER_STUDENT = [
     items: [
       { to: 'battle',          label: 'Battle Mode',       icon: Swords },
       { to: 'perf-predictor',  label: 'Performance Predictor', icon: TrendingUp },
-      { to: 'panic',           label: 'Panic Mode',        icon: Zap },
-      { to: 'analytics',       label: 'Analytics',         icon: TrendingUp },
-      { to: 'gamification',    label: 'My Progress',       icon: Star },
       { to: 'notebook',        label: 'AI Notebook',       icon: BookOpen },
     ],
   },

@@ -511,18 +511,22 @@ html, body, #root {
    ════════════════════════════════════════════════════════════════════════ */
 .kairo-mobile .cw-input-bar {
   position: fixed !important;
-  left: 0; right: 0;
-  bottom: calc(76px + env(safe-area-inset-bottom)) !important;
+  left: 8px; right: 8px;
+  bottom: calc(96px + env(safe-area-inset-bottom)) !important;
   z-index: 88;
-  padding: 10px 12px calc(12px + env(safe-area-inset-bottom) / 2) !important;
-  border-top: 1px solid rgba(167, 139, 250, 0.18) !important;
-  background: rgba(6, 6, 10, 0.85) !important;
-  backdrop-filter: blur(16px) saturate(180%);
-  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  padding: 10px 12px !important;
+  border: 1px solid rgba(167, 139, 250, 0.22) !important;
+  border-radius: 18px !important;
+  background: rgba(6, 6, 10, 0.88) !important;
+  backdrop-filter: blur(18px) saturate(180%);
+  -webkit-backdrop-filter: blur(18px) saturate(180%);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.45);
 }
 .kairo-mobile .cw-scroll {
-  /* Leave room for the floating input bar (~70px) + the dock (~80px) */
-  padding-bottom: calc(170px + env(safe-area-inset-bottom)) !important;
+  /* Leave room for input bar (~70px) + floating dock (~96px) + breathing.
+     The Solver page also renders suggested-question chips at the bottom
+     that were getting hidden behind the dock — give them clearance too. */
+  padding-bottom: calc(200px + env(safe-area-inset-bottom)) !important;
   padding-left: 14px !important;
   padding-right: 14px !important;
   padding-top: 14px !important;
@@ -531,7 +535,7 @@ html, body, #root {
    Lift the input bar above the keyboard. (Safari/Chrome iOS 16.4+) */
 @supports (bottom: env(keyboard-inset-height)) {
   .kairo-mobile .cw-input-bar {
-    bottom: calc(env(keyboard-inset-height, 0px) + 76px + env(safe-area-inset-bottom)) !important;
+    bottom: calc(env(keyboard-inset-height, 0px) + 96px + env(safe-area-inset-bottom)) !important;
   }
 }
 

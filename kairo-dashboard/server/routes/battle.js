@@ -40,6 +40,14 @@ const DAILY_TOPICS = [
   { subject: 'Chemistry',   topic: 'Acids & Bases',          difficulty: 'medium' },
 ]
 
+/** Detect "table missing" / schema-cache errors. */
+function isMissingTable(err) {
+  const msg = String(err?.message || err || '').toLowerCase()
+  return msg.includes('does not exist')
+      || msg.includes('schema cache')
+      || msg.includes('battle_scores')
+}
+
 // Submit a battle result
 router.post('/submit', async (req, res) => {
   const { score, total, difficulty = 'medium', topic, subject, daily = false } = req.body || {}
@@ -49,9 +57,14 @@ router.post('/submit', async (req, res) => {
   if (!['easy', 'medium', 'hard'].includes(difficulty)) {
     return res.status(400).json({ error: 'difficulty must be easy/medium/hard' })
   }
-  if (!req.schoolId) return res.status(400).json({ error: 'You must be in a school to play.' })
 
   const xp = score * (XP_PER_CORRECT[difficulty] || 14)
+
+  // Personal users (no school) — record nothing server-side. The client
+  // already mirrors to localStorage via battleLocal.ts.
+  if (!req.schoolId) {
+    return res.json({ message: 'Saved locally (no school)', xp_gained: xp })
+  }
 
   try {
     const { data, error } = await supabaseAdmin
@@ -71,9 +84,13 @@ router.post('/submit', async (req, res) => {
       .select('id, xp, played_on')
       .single()
 
-    if (error) throw new Error(error.message)
+    if (error) {
+      if (isMissingTable(error)) return res.json({ message: 'no-op', xp_gained: xp })
+      throw new Error(error.message)
+    }
     res.status(201).json({ message: 'Score saved', id: data.id, xp_gained: xp })
   } catch (e) {
+    if (isMissingTable(e)) return res.json({ message: 'no-op', xp_gained: xp })
     res.status(500).json({ error: e.message })
   }
 })
@@ -100,7 +117,10 @@ router.get('/leaderboard', async (req, res) => {
     }
 
     const { data: rows, error } = await q
-    if (error) throw new Error(error.message)
+    if (error) {
+      if (isMissingTable(error)) return res.json({ range, leaders: [], you: null, table_missing: true })
+      throw new Error(error.message)
+    }
 
     // Aggregate per user
     const byUser = {}
@@ -138,12 +158,23 @@ router.get('/leaderboard', async (req, res) => {
 
     res.json({ range, leaders: enriched, you: enriched.find(e => e.user_id === req.user.id) || null })
   } catch (e) {
+    if (isMissingTable(e)) return res.json({ range, leaders: [], you: null, table_missing: true })
     res.status(500).json({ error: e.message })
   }
 })
 
 // My stats
 router.get('/me', async (req, res) => {
+  // Empty payload — used when the user has no school OR the table is missing
+  const empty = {
+    total_xp:     0,
+    battles:      0,
+    avg_accuracy: 0,
+    streak:       0,
+    best:         null,
+    recent:       [],
+  }
+  if (!req.schoolId) return res.json(empty)
   try {
     const { data: rows, error } = await supabaseAdmin
       .from('battle_scores')
@@ -152,7 +183,10 @@ router.get('/me', async (req, res) => {
       .order('created_at', { ascending: false })
       .limit(60)
 
-    if (error) throw new Error(error.message)
+    if (error) {
+      if (isMissingTable(error)) return res.json(empty)
+      throw new Error(error.message)
+    }
 
     const totalXp = (rows || []).reduce((s, r) => s + (r.xp || 0), 0)
     const battles = rows.length
@@ -190,6 +224,7 @@ router.get('/me', async (req, res) => {
       recent:      rows.slice(0, 10),
     })
   } catch (e) {
+    if (isMissingTable(e)) return res.json(empty)
     res.status(500).json({ error: e.message })
   }
 })
