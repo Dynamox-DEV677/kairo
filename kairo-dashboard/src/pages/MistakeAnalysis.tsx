@@ -10,8 +10,11 @@
  */
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Activity, AlertTriangle, Sparkles, Repeat, Plus } from 'lucide-react'
+import { Activity, AlertTriangle, Sparkles, Repeat, Plus, X, Loader2 } from 'lucide-react'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import { getMistakes, recordMistake, type MistakeRow } from '../lib/twin'
+import { chat } from '../lib/openrouter'
 
 const C = {
   bg:        '#06060a',
@@ -34,6 +37,31 @@ const FONT = "'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans
 export default function MistakeAnalysis() {
   const [rows, setRows] = useState<MistakeRow[]>([])
   const [adding, setAdding] = useState(false)
+  // Single AI-result modal — shared by both Revise + Explain actions
+  const [aiModal, setAiModal] = useState<{ title: string; body: string; loading: boolean } | null>(null)
+
+  async function openAiAction(kind: 'revise' | 'explain', row: MistakeRow) {
+    const title = kind === 'revise'
+      ? `Revision plan: ${row.topic}`
+      : `Why you struggle with: ${row.topic}`
+    setAiModal({ title, body: '', loading: true })
+
+    const prompt = kind === 'revise'
+      ? `Build a 15-minute focused revision plan for an Indian high-school student on the topic "${row.topic}" (subject: ${row.subject}). The student has gotten this wrong ${row.count} times recently. Output a clean markdown plan with: 1) Concept refresher (3-4 bullets, plain language), 2) One worked example, 3) The single common mistake to watch for, 4) A self-check question with answer hidden under <details>. Keep total under 220 words.`
+      : `Explain WHY a student typically gets "${row.topic}" wrong (subject: ${row.subject}). The student has gotten this wrong ${row.count} times. Cover: (a) the most common conceptual misconception, (b) the typical reasoning error, (c) one corrected line of thinking. Clean markdown, no preamble, under 200 words.`
+
+    try {
+      const reply = await chat({
+        messages: [
+          { role: 'system', content: 'You are Kairo, a supportive tutor for Class 9-12 Indian students. Output clean markdown. No preamble.' },
+          { role: 'user',   content: prompt },
+        ],
+      })
+      setAiModal({ title, body: reply || '_AI returned no response. Try again in a few seconds._', loading: false })
+    } catch (e: any) {
+      setAiModal({ title, body: `_Couldn't reach the AI. ${e?.message || 'Try again.'}_`, loading: false })
+    }
+  }
 
   function reload() { setRows(getMistakes()) }
   useEffect(() => {
@@ -76,7 +104,11 @@ export default function MistakeAnalysis() {
           {rows.length === 0 && <EmptyState />}
           <AnimatePresence>
             {rows.map((r, i) => (
-              <MistakeCard key={`${r.subject}-${r.topic}`} row={r} delay={i * 0.04} />
+              <MistakeCard
+                key={`${r.subject}-${r.topic}`} row={r} delay={i * 0.04}
+                onRevise={() => openAiAction('revise', r)}
+                onExplain={() => openAiAction('explain', r)}
+              />
             ))}
           </AnimatePresence>
         </div>
@@ -84,6 +116,7 @@ export default function MistakeAnalysis() {
 
       <AnimatePresence>
         {adding && <AddMistakeModal onClose={() => setAdding(false)} onSaved={() => { setAdding(false); reload() }} />}
+        {aiModal && <AiResultModal {...aiModal} onClose={() => setAiModal(null)} />}
       </AnimatePresence>
 
       <style>{`
@@ -202,7 +235,10 @@ function Heatmap({ rows }: { rows: MistakeRow[] }) {
   )
 }
 
-function MistakeCard({ row, delay }: { row: MistakeRow; delay: number }) {
+function MistakeCard({ row, delay, onRevise, onExplain }: {
+  row: MistakeRow; delay: number
+  onRevise: () => void; onExplain: () => void
+}) {
   const severityLabel = row.severity > 0.55 ? 'High' : row.severity > 0.30 ? 'Medium' : 'Low'
   const severityColor = row.severity > 0.55 ? C.purpleHi : row.severity > 0.30 ? C.purple : C.purpleSoft
   const avgScore = row.recentScores.length ? Math.round(row.recentScores.reduce((a, b) => a + b, 0) / row.recentScores.length) : null
@@ -239,9 +275,64 @@ function MistakeCard({ row, delay }: { row: MistakeRow; delay: number }) {
         </div>
       </div>
       <div style={{ display: 'flex', gap: 8 }}>
-        <button style={chipBtn(C.purple)}><Repeat size={13} />Revise now</button>
-        <button style={chipBtn(severityColor, 'outline')}><Sparkles size={13} />Explain</button>
+        <button onClick={onRevise} style={chipBtn(C.purple)}><Repeat size={13} />Revise now</button>
+        <button onClick={onExplain} style={chipBtn(severityColor, 'outline')}><Sparkles size={13} />Explain</button>
       </div>
+    </motion.div>
+  )
+}
+
+// ─── AI result modal — shared for Revise + Explain ─────────────────────────
+function AiResultModal({ title, body, loading, onClose }: {
+  title: string; body: string; loading: boolean; onClose: () => void
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      onClick={onClose}
+      style={{
+        position: 'fixed', inset: 0, zIndex: 999,
+        background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)',
+        display: 'grid', placeItems: 'center', padding: 16,
+        overflowY: 'auto',
+      }}>
+      <motion.div
+        initial={{ y: 12, scale: 0.96 }} animate={{ y: 0, scale: 1 }}
+        onClick={e => e.stopPropagation()}
+        style={{
+          width: '100%', maxWidth: 620,
+          background: C.panel,
+          border: '1px solid rgba(167,139,250,0.35)',
+          borderRadius: 18, padding: 24,
+          color: C.text, fontFamily: 'inherit',
+          boxShadow: '0 24px 60px rgba(124,58,237,0.35)',
+          position: 'relative', maxHeight: '88vh', overflowY: 'auto',
+        }}>
+        <button onClick={onClose} aria-label="Close" style={{
+          position: 'absolute', top: 14, right: 14,
+          width: 30, height: 30, borderRadius: 8,
+          background: 'transparent', border: `1px solid ${C.border}`,
+          color: C.textFaint, cursor: 'pointer', display: 'grid', placeItems: 'center',
+        }}>
+          <X size={14} />
+        </button>
+
+        <div style={{ fontSize: 10.5, fontWeight: 700, color: C.purple, textTransform: 'uppercase', letterSpacing: 2 }}>
+          Kairo  ·  AI tutor
+        </div>
+        <h3 style={{ margin: '4px 0 14px', fontSize: 19, fontWeight: 800, letterSpacing: -0.3 }}>{title}</h3>
+
+        {loading ? (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, color: C.textDim, padding: '14px 0' }}>
+            <Loader2 size={16} className="kr-spin" /> Thinking…
+            <style>{`@keyframes kr-spin { to { transform: rotate(360deg) } } .kr-spin { animation: kr-spin .8s linear infinite }`}</style>
+          </div>
+        ) : (
+          <div style={{ fontSize: 14, color: C.textDim, lineHeight: 1.7 }}>
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>{body}</ReactMarkdown>
+          </div>
+        )}
+      </motion.div>
     </motion.div>
   )
 }

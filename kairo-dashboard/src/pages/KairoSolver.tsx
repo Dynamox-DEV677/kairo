@@ -25,13 +25,13 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
   Send, StopCircle, Sparkles, Image as ImageIcon, Loader2,
   ChevronLeft, ChevronRight, Beaker, ExternalLink, BookOpen, Atom,
-  Mic, MicOff,
+  Mic, MicOff, Calendar, X,
 } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
-import { recordDoubt } from '../lib/twin'
+import { recordDoubt, recordFormula, recordConcept } from '../lib/twin'
 
 interface ImageSlide {
   url:         string
@@ -90,6 +90,7 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
   const [retryHint, setRetryHint]       = useState('')   // visible during 429 backoff
   const [voiceOn, setVoiceOn]           = useState(false)
   const [voiceSupported, setVoiceSupported] = useState(false)
+  const [examModal, setExamModal]       = useState(false)
   const abortRef = useRef<AbortController | null>(null)
   const taRef = useRef<HTMLTextAreaElement>(null)
   const recogRef = useRef<any>(null)
@@ -225,8 +226,9 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
 
       // ── Persist to unified memory engine ──────────────────────────────
       // Every successful answer flows into twin.doubts + emits a concept_viewed
-      // event, which downstream pages (Notebook, Concept Map, Mistake Analysis)
-      // read from. Fire-and-forget — failures should never block the UI.
+      // event + records concept + extracts formulas. Downstream pages
+      // (Notebook, Concept Map, Mistake Analysis, Formula Sheet) all read
+      // from these. Fire-and-forget — failures should never block the UI.
       try {
         recordDoubt({
           question,
@@ -234,6 +236,24 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
           topic:   text.topicKeyword || undefined,
           source:  voiceOn ? 'voice' : 'solver',
         })
+        // Concept graph: index this topic + its related concepts
+        if (text.topicKeyword) {
+          recordConcept({
+            name:    text.topicKeyword,
+            related: text.relatedConcepts || [],
+          })
+        }
+        // Formula sheet auto-collection: every formula the AI returned
+        // gets stored. Parser is forgiving — accepts "F = m·a" or
+        // "Newton's 2nd Law: F = ma" or just "F = ma".
+        for (const raw of (text.formulas || [])) {
+          if (!raw || typeof raw !== 'string') continue
+          const parts = raw.split(/[:—–]\s+/, 2)
+          const name = parts.length === 2 ? parts[0].trim() : (text.topicKeyword || 'Formula')
+          const expr = (parts.length === 2 ? parts[1] : raw).trim()
+          if (expr.length < 2 || expr.length > 200) continue
+          recordFormula({ name, expr, topic: text.topicKeyword || undefined, source: 'solver' })
+        }
       } catch { /* ignore */ }
 
       // When the video lands, merge it in (independent of images).
@@ -386,6 +406,21 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
             {voiceOn ? 'Listening' : 'Voice'}
           </button>
         )}
+        {/* Exam plan button — replaces the deleted Panic Mode page */}
+        {!busy && (
+          <button onClick={() => setExamModal(true)} title="Plan your exam"
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: 6,
+              padding: '8px 12px', borderRadius: 10,
+              background: 'transparent',
+              border: '1px solid #22222e',
+              color: '#a1a1aa', fontFamily: 'inherit', fontSize: 12, fontWeight: 600,
+              cursor: 'pointer',
+            }}>
+            <Calendar size={14} />
+            Exam
+          </button>
+        )}
         {busy ? (
           <button onClick={stop} style={btnStop}>
             <StopCircle size={14} /> Stop
@@ -403,7 +438,122 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
           .kr-voice-pulse { animation: kr-voice-pulse 1.2s ease-in-out infinite }
         `}</style>
       </div>
+
+      {/* Exam planner modal — saves to localStorage so Kairo OS countdown works */}
+      <AnimatePresence>
+        {examModal && <ExamPlanModal onClose={() => setExamModal(false)} />}
+      </AnimatePresence>
     </div>
+  )
+}
+
+// ─── Exam plan modal (replaces deleted PanicMode page) ──────────────────────
+function ExamPlanModal({ onClose }: { onClose: () => void }) {
+  const [subject, setSubject] = useState('')
+  const [date, setDate]       = useState('')
+  const [topics, setTopics]   = useState('')
+  function save() {
+    if (!subject.trim() || !date) return
+    try {
+      const key = 'kairo:exams'
+      const list = JSON.parse(localStorage.getItem(key) || '[]')
+      list.push({
+        id:       Math.random().toString(36).slice(2, 10),
+        subject:  subject.trim(),
+        date,
+        topics:   topics.split(',').map(t => t.trim()).filter(Boolean),
+        createdAt: Date.now(),
+      })
+      localStorage.setItem(key, JSON.stringify(list))
+      onClose()
+    } catch { onClose() }
+  }
+  const daysLeft = date ? Math.max(0, Math.ceil((new Date(date).getTime() - Date.now()) / 86_400_000)) : 0
+  return (
+    <motion.div
+      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      onClick={onClose}
+      style={{
+        position: 'fixed', inset: 0, zIndex: 999,
+        background: 'rgba(0,0,0,0.78)', backdropFilter: 'blur(8px)',
+        display: 'grid', placeItems: 'center', padding: 16,
+      }}>
+      <motion.div
+        initial={{ y: 12, scale: 0.96 }} animate={{ y: 0, scale: 1 }}
+        onClick={e => e.stopPropagation()}
+        style={{
+          width: '100%', maxWidth: 460,
+          background: '#0c0c14',
+          border: '1px solid rgba(167,139,250,0.35)',
+          borderRadius: 18, padding: 24,
+          color: '#fafafa', fontFamily: 'inherit',
+          boxShadow: '0 24px 60px rgba(124,58,237,0.35)',
+          position: 'relative',
+        }}>
+        <button onClick={onClose} aria-label="Close" style={{
+          position: 'absolute', top: 14, right: 14,
+          width: 30, height: 30, borderRadius: 8,
+          background: 'transparent', border: '1px solid #22222e',
+          color: '#71717a', cursor: 'pointer', display: 'grid', placeItems: 'center',
+        }}>
+          <X size={14} />
+        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+          <Calendar size={16} color="#a78bfa" />
+          <span style={{ fontSize: 10.5, fontWeight: 700, color: '#a78bfa', textTransform: 'uppercase', letterSpacing: 2 }}>
+            Plan an exam
+          </span>
+        </div>
+        <h3 style={{ margin: 0, fontSize: 18, fontWeight: 800 }}>Add an exam to your countdown</h3>
+        <p style={{ margin: '4px 0 14px', fontSize: 12.5, color: '#71717a' }}>
+          Saved on this device. Kairo OS will show the countdown + adjust your weak-topic revisions toward the exam date.
+        </p>
+        <ExamLabel>Subject *</ExamLabel>
+        <ExamInput value={subject} onChange={setSubject} placeholder="e.g. Physics" autoFocus />
+        <ExamLabel>Date *</ExamLabel>
+        <ExamInput type="date" value={date} onChange={setDate} />
+        {date && (
+          <p style={{ margin: '6px 0 0', fontSize: 11.5, color: daysLeft <= 7 ? '#c4b5fd' : '#71717a' }}>
+            {daysLeft === 0 ? 'Today' : daysLeft === 1 ? 'Tomorrow' : `${daysLeft} days from today`}
+          </p>
+        )}
+        <ExamLabel>Topics to focus on (optional)</ExamLabel>
+        <ExamInput value={topics} onChange={setTopics} placeholder="comma-separated, e.g. vectors, optics" />
+        <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 18 }}>
+          <button onClick={onClose} style={{
+            padding: '9px 16px', borderRadius: 9,
+            background: 'transparent', border: '1px solid #22222e',
+            color: '#a1a1aa', fontFamily: 'inherit', fontSize: 12.5, fontWeight: 600, cursor: 'pointer',
+          }}>Cancel</button>
+          <button onClick={save} disabled={!subject.trim() || !date} style={{
+            padding: '9px 20px', borderRadius: 9,
+            background: 'linear-gradient(135deg, #7c3aed, #5b21b6)',
+            color: '#fff', fontFamily: 'inherit', fontSize: 13, fontWeight: 700,
+            border: 'none', cursor: subject.trim() && date ? 'pointer' : 'not-allowed',
+            opacity: subject.trim() && date ? 1 : 0.5,
+          }}>Save exam</button>
+        </div>
+      </motion.div>
+    </motion.div>
+  )
+}
+
+function ExamLabel({ children }: { children: React.ReactNode }) {
+  return <div style={{
+    fontSize: 10.5, fontWeight: 700, color: '#71717a',
+    textTransform: 'uppercase', letterSpacing: 1.4, margin: '12px 0 6px',
+  }}>{children}</div>
+}
+function ExamInput({ value, onChange, placeholder, autoFocus, type }: { value: string; onChange: (v: string) => void; placeholder?: string; autoFocus?: boolean; type?: string }) {
+  return (
+    <input type={type || 'text'} value={value} onChange={e => onChange(e.target.value)}
+      placeholder={placeholder} autoFocus={autoFocus}
+      style={{
+        width: '100%', boxSizing: 'border-box',
+        padding: '10px 12px', borderRadius: 10,
+        background: '#13131d', border: '1px solid #1a1a26',
+        color: '#fafafa', fontFamily: 'inherit', fontSize: 13, outline: 'none',
+      }} />
   )
 }
 

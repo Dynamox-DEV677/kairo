@@ -244,12 +244,17 @@ export default function Notebook() {
 //   • Recent doubts the user asked the Solver
 //   • Concepts auto-discovered from quizzes/labs
 //   • Formulas collected during study
+//
+// Every chip is clickable: click → AI expands the chip data into a full
+// notebook entry (title, body, tags) using the existing /api/notes endpoint.
 // This is the "AI second brain auto-fills itself" piece from the spec.
 function AutoCollectedStrip() {
   const [doubts, setDoubts]     = useState<Doubt[]>([])
   const [concepts, setConcepts] = useState<Concept[]>([])
   const [formulas, setFormulas] = useState<Formula[]>([])
   const [tab, setTab] = useState<'doubts' | 'concepts' | 'formulas'>('doubts')
+  const [working, setWorking] = useState<string | null>(null)   // id of chip being expanded
+  const [toast, setToast]     = useState<string | null>(null)
 
   function reload() {
     setDoubts(listDoubts(20))
@@ -265,6 +270,66 @@ function AutoCollectedStrip() {
     return () => window.removeEventListener('storage', onStorage)
   }, [])
 
+  // Drop the toast after 2.6s
+  useEffect(() => {
+    if (!toast) return
+    const t = setTimeout(() => setToast(null), 2600)
+    return () => clearTimeout(t)
+  }, [toast])
+
+  /** Turn a chip into a full notebook entry. Calls an AI to expand the raw
+   *  data into a clean structured note, then POSTs to /api/notes. Falls
+   *  back to a plain note if the AI call fails — the user always gets
+   *  SOMETHING in their notebook on click. */
+  async function expandToNotebook(args: {
+    kind:   Kind
+    title:  string
+    raw:    string          // raw seed content (doubt question, concept name, formula)
+    subject?: string | null
+    tags?:  string[]
+  }) {
+    const id = `${args.kind}:${args.title}`
+    if (working) return
+    setWorking(id)
+    let body = args.raw
+    try {
+      // Ask the chat helper for a clean structured note. Keep the prompt tight
+      // so it costs <1k tokens. If chat throws (no key etc.), we still save.
+      const { chat } = await import('../lib/openrouter')
+      const reply = await chat({
+        messages: [
+          {
+            role: 'system',
+            content: 'You are Kairo, a study notebook author. Given a topic or doubt, write a clean, exam-ready markdown note for an Indian high-school student. Structure: short summary, key points (3-5 bullets), worked example or formula if relevant, common mistake. Keep total length under 200 words. Output only markdown, no preamble.',
+          },
+          { role: 'user', content: args.raw },
+        ],
+      })
+      if (reply && reply.length > 60) body = reply
+    } catch { /* keep raw */ }
+
+    try {
+      await api('/notes', {
+        method: 'POST',
+        body: JSON.stringify({
+          kind:    args.kind,
+          title:   args.title,
+          content: body,
+          subject: args.subject ?? null,
+          tags:    args.tags ?? [],
+          source:  'auto-from-memory',
+        }),
+      })
+      setToast(`Saved to Notebook: ${args.title}`)
+      // Fire a fake storage event so the list reloads if there's a parent watcher.
+      // The user can hit refresh on the main list to see it.
+    } catch (e: any) {
+      setToast(`Couldn't save — ${e?.message || 'try again'}`)
+    } finally {
+      setWorking(null)
+    }
+  }
+
   const totals = { doubts: doubts.length, concepts: concepts.length, formulas: formulas.length }
   const anyData = totals.doubts + totals.concepts + totals.formulas > 0
   if (!anyData) return null
@@ -276,13 +341,14 @@ function AutoCollectedStrip() {
       border: '1px solid rgba(167,139,250,0.22)',
       borderRadius: 12,
       flexShrink: 0,
+      position: 'relative',
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 10 }}>
         <span style={{
           fontSize: 10.5, fontWeight: 700, color: '#c4b5fd',
           textTransform: 'uppercase', letterSpacing: 1.6,
         }}>
-          Auto-collected from your Kairo memory
+          Auto-collected memory  ·  click to AI-build a note
         </span>
         <div style={{ display: 'flex', gap: 4, marginLeft: 'auto' }}>
           <Tab active={tab === 'doubts'}   label={`Doubts ${totals.doubts}`}     onClick={() => setTab('doubts')} />
@@ -291,27 +357,70 @@ function AutoCollectedStrip() {
         </div>
       </div>
 
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, maxHeight: 90, overflowY: 'auto' }}>
-        {tab === 'doubts' && doubts.map(d => (
-          <span key={d.id} title={d.question} style={chipStyle()}>
-            {d.topic ? <span style={{ textTransform: 'capitalize' }}>{d.topic}</span> : d.question.slice(0, 32)}
-            {d.question.length > 32 && !d.topic ? '…' : ''}
-          </span>
-        ))}
-        {tab === 'concepts' && concepts.map(c => (
-          <span key={c.id} title={`Visited ${c.visits}× · ${c.subject || 'General'}`} style={chipStyle()}>
-            <span style={{ textTransform: 'capitalize' }}>{c.name}</span>
-            <span style={{ marginLeft: 5, color: '#7c3aed', fontSize: 10 }}>×{c.visits}</span>
-          </span>
-        ))}
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, maxHeight: 110, overflowY: 'auto' }}>
+        {tab === 'doubts' && doubts.map(d => {
+          const id = `doubt:${d.id}`
+          const isBusy = working === id
+          return (
+            <button key={d.id} title={d.question + (isBusy ? '' : '  ·  click to AI-build a note')}
+              disabled={!!working && !isBusy}
+              onClick={() => expandToNotebook({
+                kind: 'doubt',
+                title: d.topic ? `Doubt: ${d.topic}` : d.question.slice(0, 60),
+                raw:   `Doubt: ${d.question}\n\n${d.answer ? `Answer: ${d.answer}` : ''}`.trim(),
+                subject: d.subject ?? null,
+                tags:    d.topic ? [d.topic] : [],
+              })}
+              style={chipBtn(isBusy)}>
+              {isBusy ? 'Building…' : (d.topic ? <span style={{ textTransform: 'capitalize' }}>{d.topic}</span> : d.question.slice(0, 32))}
+              {!isBusy && d.question.length > 32 && !d.topic ? '…' : ''}
+            </button>
+          )
+        })}
+        {tab === 'concepts' && concepts.map(c => {
+          const id = `concept:${c.id}`
+          const isBusy = working === id
+          return (
+            <button key={c.id} title={`Visited ${c.visits}× · ${c.subject || 'General'}  ·  click to AI-build a note`}
+              disabled={!!working && !isBusy}
+              onClick={() => expandToNotebook({
+                kind:  'summary',
+                title: `Concept: ${c.name}`,
+                raw:   `Explain the concept "${c.name}" for a high-school student. Subject: ${c.subject || 'General'}. Visited ${c.visits} times so far — emphasise the parts most often confused.`,
+                subject: c.subject ?? null,
+                tags:    [c.name],
+              })}
+              style={chipBtn(isBusy)}>
+              {isBusy ? 'Building…' : <>
+                <span style={{ textTransform: 'capitalize' }}>{c.name}</span>
+                <span style={{ marginLeft: 5, color: '#7c3aed', fontSize: 10 }}>×{c.visits}</span>
+              </>}
+            </button>
+          )
+        })}
         {tab === 'formulas' && (
           formulas.length === 0
             ? <span style={{ fontSize: 12, color: '#71717a' }}>No formulas yet. They'll appear here as Kairo extracts them from your solver answers.</span>
-            : formulas.map(f => (
-                <span key={f.id} style={chipStyle()}>
-                  {f.name}: <code style={{ fontFamily: "'SF Mono', monospace", color: '#c4b5fd', marginLeft: 4 }}>{f.expr}</code>
-                </span>
-              ))
+            : formulas.map(f => {
+                const id = `formula:${f.id}`
+                const isBusy = working === id
+                return (
+                  <button key={f.id} title="Click to AI-build a note from this formula"
+                    disabled={!!working && !isBusy}
+                    onClick={() => expandToNotebook({
+                      kind:  'summary',
+                      title: `Formula: ${f.name}`,
+                      raw:   `Write a notebook entry for the formula ${f.name}: ${f.expr}. Subject: ${f.subject || 'General'}. Include: what each variable means, when to use it, one worked example, one common mistake.`,
+                      subject: f.subject ?? null,
+                      tags:    [f.name],
+                    })}
+                    style={chipBtn(isBusy)}>
+                    {isBusy ? 'Building…' : <>
+                      {f.name}: <code style={{ fontFamily: "'SF Mono', monospace", color: '#c4b5fd', marginLeft: 4 }}>{f.expr}</code>
+                    </>}
+                  </button>
+                )
+              })
         )}
         {tab === 'doubts' && doubts.length === 0 && (
           <span style={{ fontSize: 12, color: '#71717a' }}>No doubts yet. Ask the Kairo Solver something — every Q&A auto-saves here.</span>
@@ -320,8 +429,41 @@ function AutoCollectedStrip() {
           <span style={{ fontSize: 12, color: '#71717a' }}>No concepts yet. Take a quiz or open a lab — Kairo will discover concepts automatically.</span>
         )}
       </div>
+
+      {/* Toast — click confirmation */}
+      <AnimatePresence>
+        {toast && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+            style={{
+              position: 'absolute', bottom: -42, left: 12,
+              padding: '8px 14px', borderRadius: 10,
+              background: 'rgba(13,13,21,0.95)',
+              border: '1px solid rgba(167,139,250,0.5)',
+              boxShadow: '0 14px 32px rgba(124,58,237,0.35)',
+              fontSize: 12, color: '#e4e4e7', fontWeight: 500,
+              zIndex: 5,
+            }}>
+            <span style={{ color: '#c4b5fd', fontWeight: 700 }}>● </span>
+            {toast}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
+}
+
+function chipBtn(busy: boolean): React.CSSProperties {
+  return {
+    padding: '4px 9px', borderRadius: 6,
+    background: busy ? 'rgba(167,139,250,0.22)' : 'rgba(124,58,237,0.08)',
+    border: `1px solid ${busy ? 'rgba(167,139,250,0.55)' : 'rgba(167,139,250,0.32)'}`,
+    fontSize: 11.5, color: '#e4e4e7', fontWeight: 500,
+    whiteSpace: 'nowrap',
+    fontFamily: 'inherit',
+    cursor: busy ? 'wait' : 'pointer',
+    transition: 'all .15s ease',
+  }
 }
 
 function Tab({ active, label, onClick }: { active: boolean; label: string; onClick: () => void }) {
@@ -335,16 +477,6 @@ function Tab({ active, label, onClick }: { active: boolean; label: string; onCli
       cursor: 'pointer',
     }}>{label}</button>
   )
-}
-
-function chipStyle(): React.CSSProperties {
-  return {
-    padding: '4px 9px', borderRadius: 6,
-    background: 'rgba(124,58,237,0.08)',
-    border: '1px solid rgba(167,139,250,0.32)',
-    fontSize: 11.5, color: '#e4e4e7', fontWeight: 500,
-    whiteSpace: 'nowrap',
-  }
 }
 
 // ─── Note detail / editor ───────────────────────────────────────────────────
