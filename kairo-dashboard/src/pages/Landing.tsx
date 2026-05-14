@@ -441,12 +441,29 @@ function GlobalKeyframes() {
 
       /* Mobile-friendly type scaling */
       @media (max-width: 768px) {
-        .kr-h1 { font-size: 44px !important; line-height: 1.05 !important; }
-        .kr-h2 { font-size: 32px !important; line-height: 1.1 !important; }
-        .kr-section { padding: 64px 20px !important; }
+        .kr-h1 { font-size: clamp(30px, 8.5vw, 40px) !important; line-height: 1.08 !important; letter-spacing: -0.8px !important; }
+        .kr-h2 { font-size: clamp(22px, 6.5vw, 30px) !important; line-height: 1.15 !important; }
+        .kr-section { padding: 56px 18px !important; }
         .kr-2col { grid-template-columns: 1fr !important; gap: 32px !important; }
         .kr-features-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)) !important; }
         .kr-labs-grid { grid-template-columns: 1fr !important; gap: 14px !important; }
+        .landing-hero {
+          padding-top: 90px !important;
+          padding-bottom: 40px !important;
+        }
+        .landing-hero p {
+          font-size: 14px !important;
+          line-height: 1.55 !important;
+          margin-top: 18px !important;
+          padding: 0 8px;
+        }
+        /* Hide the floating logo badges on small screens — too crowded */
+        .landing-hero > div[style*="position: absolute"][style*="top: 110px"],
+        .landing-hero > div[style*="position: absolute"][style*="bottom: 80px"] {
+          display: none !important;
+        }
+        /* The 3D AI core scales down so it doesn't blow out the hero */
+        .landing-hero canvas { transform: scale(0.7); }
       }
       @media (min-width: 769px) and (max-width: 1024px) {
         .kr-labs-grid { grid-template-columns: repeat(2, 1fr) !important; }
@@ -748,7 +765,7 @@ function HeroSection({ onGetStarted }: { onGetStarted: () => void }) {
   }, [])
 
   return (
-    <section ref={ref} style={{
+    <section ref={ref} className="landing-hero" style={{
       position: 'relative',
       minHeight: '100vh',
       paddingTop: 110,
@@ -839,7 +856,7 @@ function HeroSection({ onGetStarted }: { onGetStarted: () => void }) {
             filter: titleBlurStr,
             transformOrigin: 'center top',
             margin: 0,
-            fontSize: 92, lineHeight: 1.02, fontWeight: 800,
+            fontSize: 'clamp(30px, 7.5vw, 92px)', lineHeight: 1.02, fontWeight: 800,
             letterSpacing: -2.5,
             color: C.text,
             textShadow: '0 8px 60px rgba(124,58,237,0.35)',
@@ -856,9 +873,10 @@ function HeroSection({ onGetStarted }: { onGetStarted: () => void }) {
           style={{
             y: subY,
             marginTop: 26, marginBottom: 0,
-            fontSize: 19, color: C.textDim,
+            fontSize: 'clamp(14px, 2.2vw, 19px)', color: C.textDim,
             maxWidth: 700, marginLeft: 'auto', marginRight: 'auto',
             lineHeight: 1.55, fontWeight: 400,
+            padding: '0 12px',
           }}>
           Kairo combines AI tutoring, adaptive learning, immersive 3D simulations,
           and school intelligence into one connected ecosystem.

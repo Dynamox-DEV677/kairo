@@ -213,7 +213,7 @@ export default function ChatWindow({ onNewMessage, onNavigate, model = DEFAULT_M
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
       {/* Messages area */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '24px 28px' }}>
+      <div className="cw-scroll" style={{ flex: 1, overflowY: 'auto', padding: '24px 28px' }}>
 
         {/* Empty state */}
         <AnimatePresence>
@@ -377,7 +377,7 @@ export default function ChatWindow({ onNewMessage, onNavigate, model = DEFAULT_M
       </AnimatePresence>
 
       {/* Input bar */}
-      <div style={{
+      <div className="cw-input-bar" style={{
         padding: '14px 20px 18px',
         borderTop: '1px solid #1a1a1a',
         background: 'rgba(10,10,10,0.9)',

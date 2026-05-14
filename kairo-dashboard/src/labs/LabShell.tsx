@@ -234,8 +234,8 @@ Keep total length 180-280 words. Tone: friendly, specific, exam-aware.` },
         </div>
       </div>
 
-      {/* Body — split layout */}
-      <div style={{
+      {/* Body — split layout (stacks vertically on mobile via .lab-body) */}
+      <div className="lab-body" style={{
         flex: 1, display: 'grid',
         gridTemplateColumns: showSim && showText ? '1fr 1fr' : '1fr',
         gap: 0, overflow: 'hidden',

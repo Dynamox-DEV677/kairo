@@ -32,7 +32,6 @@ const STUDENT_NAV: NavItem[] = [
   { label: 'Kairo Labs',      icon: Beaker,          to: 'labs',             color: '#a78bfa' },
   { label: 'Mistake Analysis',icon: Activity,        to: 'mistakes',         color: '#c4b5fd' },
   { label: 'Revision Sim',    icon: Zap,             to: 'simulator',        color: '#a78bfa' },
-  { label: 'Adaptive Path',   icon: Compass,         to: 'adaptive',         color: '#c4b5fd' },
   { label: 'Concept Map',     icon: Network,         to: 'concept-map',      color: '#a78bfa' },
   { label: 'AI Notebook',     icon: BookOpen,        to: 'notebook',         color: '#c4b5fd' },
   { label: 'Battle Mode',     icon: Swords,          to: 'battle',           color: '#a78bfa' },

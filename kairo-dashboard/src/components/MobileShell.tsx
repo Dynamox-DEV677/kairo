@@ -63,7 +63,6 @@ const DRAWER_STUDENT = [
       { to: 'mistakes',       label: 'Mistake Analysis',   icon: Activity },
       { to: 'explain-mistake',label: 'Explain Mistake',    icon: AlertTriangle },
       { to: 'simulator',      label: 'Revision Simulator', icon: Zap },
-      { to: 'adaptive',       label: 'Adaptive Path',      icon: Compass },
     ],
   },
   {

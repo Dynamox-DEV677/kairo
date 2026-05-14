@@ -503,3 +503,203 @@ html, body, #root {
   font-size: 11px !important;
   padding: 7px 10px !important;
 }
+
+/* ════════════════════════════════════════════════════════════════════════
+   ChatWindow — make Solver input float above the dock + keyboard.
+   The input bar becomes fixed-position on mobile so it always sits at
+   the very bottom of the visual viewport, with safe-area padding.
+   ════════════════════════════════════════════════════════════════════════ */
+.kairo-mobile .cw-input-bar {
+  position: fixed !important;
+  left: 0; right: 0;
+  bottom: calc(76px + env(safe-area-inset-bottom)) !important;
+  z-index: 88;
+  padding: 10px 12px calc(12px + env(safe-area-inset-bottom) / 2) !important;
+  border-top: 1px solid rgba(167, 139, 250, 0.18) !important;
+  background: rgba(6, 6, 10, 0.85) !important;
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+}
+.kairo-mobile .cw-scroll {
+  /* Leave room for the floating input bar (~70px) + the dock (~80px) */
+  padding-bottom: calc(170px + env(safe-area-inset-bottom)) !important;
+  padding-left: 14px !important;
+  padding-right: 14px !important;
+  padding-top: 14px !important;
+}
+/* When iOS keyboard pops up, env(keyboard-inset-height) becomes positive.
+   Lift the input bar above the keyboard. (Safari/Chrome iOS 16.4+) */
+@supports (bottom: env(keyboard-inset-height)) {
+  .kairo-mobile .cw-input-bar {
+    bottom: calc(env(keyboard-inset-height, 0px) + 76px + env(safe-area-inset-bottom)) !important;
+  }
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   Notebook — floating Generate CTA on mobile
+   ════════════════════════════════════════════════════════════════════════ */
+.nb-fab { display: none; }              /* desktop never shows it */
+
+@media (max-width: 768px) {
+  .nb-fab {
+    position: fixed !important;
+    right: 16px;
+    bottom: calc(96px + env(safe-area-inset-bottom));
+    z-index: 95;
+    min-height: 52px; min-width: 52px;
+    padding: 14px 18px;
+    border-radius: 999px;
+    border: none;
+    background: linear-gradient(135deg, #c4b5fd 0%, #7c3aed 60%, #5b21b6 100%);
+    color: #000;
+    font-family: inherit;
+    font-size: 14px; font-weight: 800;
+    letter-spacing: 0.2px;
+    display: flex !important;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    box-shadow:
+      0 10px 28px rgba(124, 58, 237, 0.45),
+      0 0 24px rgba(196, 181, 253, 0.40),
+      inset 0 1px 0 rgba(255, 255, 255, 0.25);
+    animation: nb-fab-breath 3.5s ease-in-out infinite;
+  }
+  .nb-fab:active { transform: scale(0.96); }
+
+  /* Hide the inline header button on mobile — the FAB replaces it */
+  .nb-newbtn-inline { display: none !important; }
+
+  /* Notebook page wrapper — allow vertical scroll, drop the desktop height lock */
+  .nb-page {
+    height: auto !important;
+    min-height: 100%;
+    padding-bottom: calc(176px + env(safe-area-inset-bottom)) !important;
+  }
+  .nb-header {
+    flex-wrap: wrap;
+    gap: 10px !important;
+  }
+  .nb-header h1 { font-size: 18px !important; }
+  .nb-header p  { font-size: 12px !important; }
+}
+
+@keyframes nb-fab-breath {
+  0%, 100% {
+    box-shadow:
+      0 10px 28px rgba(124, 58, 237, 0.45),
+      0 0 24px rgba(196, 181, 253, 0.40),
+      inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  }
+  50% {
+    box-shadow:
+      0 14px 34px rgba(124, 58, 237, 0.55),
+      0 0 36px rgba(196, 181, 253, 0.55),
+      inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  }
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   Concept Tools — stack everything vertically on mobile
+   ════════════════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  /* Concept Tools 2-col container */
+  [class*="ConceptTools"] [style*="display: grid"][style*="gridTemplateColumns"] {
+    grid-template-columns: 1fr !important;
+  }
+}
+.kairo-mobile .ct-split,
+.kairo-mobile [style*="gridTemplateColumns: '380px 1fr'"],
+.kairo-mobile [style*="gridTemplateColumns: '320px 1fr'"],
+.kairo-mobile [style*="gridTemplateColumns: '300px 1fr'"] {
+  grid-template-columns: 1fr !important;
+  gap: 12px !important;
+}
+
+/* Kairo Labs canvas wrappers — full-width, fixed aspect ratio on mobile */
+.kairo-mobile [data-r3f-canvas-host],
+.kairo-mobile [class*="lab-canvas"],
+.kairo-mobile [class*="LabCanvas"] {
+  width: 100% !important;
+  height: clamp(280px, 55vh, 460px) !important;
+  border-radius: 14px !important;
+}
+
+/* Lab controls — collapse into a bottom-stacked panel on mobile */
+.kairo-mobile [data-lab-controls],
+.kairo-mobile [class*="lab-controls"] {
+  position: static !important;
+  width: 100% !important;
+  margin-top: 12px !important;
+}
+
+/* Landing page hero — kill desktop dense block on mobile */
+@media (max-width: 768px) {
+  .landing-hero h1,
+  .landing-hero [class*="title"] {
+    font-size: clamp(28px, 8vw, 40px) !important;
+    line-height: 1.1 !important;
+    letter-spacing: -0.6px !important;
+  }
+  .landing-hero p,
+  .landing-hero [class*="subtitle"] {
+    font-size: 14px !important;
+    line-height: 1.55 !important;
+    max-width: 100% !important;
+  }
+  .landing-hero {
+    padding: 80px 18px 40px !important;
+    text-align: center;
+  }
+}
+
+/* Universal scroll fix — pages that used to lock overflow:hidden */
+.kairo-mobile [style*="overflowY: 'hidden'"][style*="height: '100%'"],
+.kairo-mobile [style*="overflow: 'hidden'"][style*="height: '100%'"][style*="display: 'flex'"] {
+  overflow-y: auto !important;
+  height: auto !important;
+  min-height: 100%;
+}
+
+/* Catch FormulaSheet-style root `display: 'flex'` + `height: '100%'` + `overflow: 'hidden'`
+   layouts and unlock vertical scroll. */
+.kairo-mobile .fs-split { height: auto !important; }
+.kairo-mobile [style*="display: 'flex'"][style*="height: '100%'"][style*="overflow: 'hidden'"] {
+  height: auto !important;
+  min-height: 100%;
+  overflow: visible !important;
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   Lab Shell — full-bleed canvas on top, AI explanation panel below,
+   instead of the cramped desktop 1fr/1fr split.
+   ════════════════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .lab-body {
+    grid-template-columns: 1fr !important;
+    grid-template-rows: clamp(280px, 55vh, 460px) auto !important;
+    overflow: auto !important;
+  }
+  /* The canvas pane keeps its fixed height; the text pane scrolls beneath */
+  .lab-body > div:first-child {
+    height: clamp(280px, 55vh, 460px) !important;
+    border-bottom: 1px solid rgba(167, 139, 250, 0.18);
+  }
+  /* The text pane gets normal flow + extra bottom padding for the dock */
+  .lab-body > div:nth-child(2) {
+    overflow: visible !important;
+    padding-bottom: calc(120px + env(safe-area-inset-bottom)) !important;
+  }
+  /* Sim overlay controls — compact + readable, no clipping */
+  .lab-body > div:first-child > div:last-child {
+    padding: 10px 12px !important;
+    gap: 8px !important;
+  }
+  /* Param sliders never break out of the canvas pane on phones */
+  .lab-body input[type="range"] {
+    flex: 1 1 100% !important;
+    min-width: 0 !important;
+    width: 100% !important;
+  }
+}

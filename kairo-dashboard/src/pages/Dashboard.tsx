@@ -34,7 +34,7 @@ import CameraStudy from './CameraStudy'
 import MistakeAnalysis from './MistakeAnalysis'
 import RevisionSimulator from './RevisionSimulator'
 import Notebook from './Notebook'
-import AdaptivePath from './AdaptivePath'
+// AdaptivePath removed — deprecated mobile route
 import ConceptMap from './ConceptMap'
 // VoiceTutor removed per spec — folded into Kairo Solver
 import BattleMode from './BattleMode'
@@ -286,9 +286,6 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
 
             {/* AI Notebook */}
             <div style={pageStyle('notebook')}><Notebook /></div>
-
-            {/* Adaptive Path */}
-            <div style={pageStyle('adaptive')}><AdaptivePath /></div>
 
             {/* Concept Map */}
             <div style={pageStyle('concept-map')}><ConceptMap /></div>

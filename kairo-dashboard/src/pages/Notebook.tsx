@@ -99,9 +99,9 @@ export default function Notebook() {
   }
 
   return (
-    <div style={{ padding: '28px 36px', maxWidth: 1200, margin: '0 auto', height: '100%', overflowY: 'hidden', display: 'flex', flexDirection: 'column' }}>
+    <div className="nb-page" style={{ padding: '28px 36px', maxWidth: 1200, margin: '0 auto', height: '100%', overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
       {/* Header — monochrome purple per strict palette rule */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 20, flexShrink: 0 }}>
+      <div className="nb-header" style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 20, flexShrink: 0 }}>
         <div style={{
           width: 44, height: 44, borderRadius: 11,
           background: 'linear-gradient(135deg, #7c3aed, #5b21b6)',
@@ -116,7 +116,7 @@ export default function Notebook() {
             Your second brain — every flashcard, summary, and doubt saved automatically.
           </p>
         </div>
-        <button onClick={() => setCreating(true)} style={{
+        <button className="nb-newbtn-inline" onClick={() => setCreating(true)} style={{
           padding: '9px 14px', borderRadius: 9, border: 'none',
           background: 'linear-gradient(135deg, #7c3aed, #5b21b6)', color: '#fff',
           fontFamily: 'inherit', fontSize: 12, fontWeight: 600, cursor: 'pointer',
@@ -132,6 +132,16 @@ export default function Notebook() {
           <RefreshCw size={12} style={{ animation: loading ? 'spin 0.8s linear infinite' : 'none' }} />
         </button>
       </div>
+
+      {/* Mobile-only floating Generate CTA — always visible above the dock */}
+      <button
+        className="nb-fab"
+        onClick={() => setCreating(true)}
+        aria-label="Create a new note"
+      >
+        <Plus size={18} strokeWidth={2.6} />
+        <span>Generate</span>
+      </button>
 
       {/* Auto-collected from unified memory engine — doubts + concepts + formulas */}
       <AutoCollectedStrip />

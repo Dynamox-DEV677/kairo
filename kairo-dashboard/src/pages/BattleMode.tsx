@@ -12,6 +12,10 @@ import {
 import { api } from '../lib/api'
 import { chat } from '../lib/openrouter'
 import { track } from '../lib/twin'
+import {
+  getDailyLocal, getStatsLocal, getLeaderboardLocal,
+  submitLocal, isMissingBackend,
+} from '../lib/battleLocal'
 
 interface Q { q: string; options: string[]; answer: number; explain: string }
 interface DailyChallenge {
@@ -70,7 +74,9 @@ export default function BattleMode() {
   const aiTimerRef  = useRef<number | null>(null)
   const liveStartedAtRef = useRef<number>(0)
 
-  // Initial load
+  // Initial load — try server, fall back to localStorage if the battle
+  // tables don't exist or the route is unreachable. Either way the UI
+  // gets data, no error toast.
   const load = useCallback(async () => {
     try {
       const [d, s, l] = await Promise.all([
@@ -79,7 +85,19 @@ export default function BattleMode() {
         api(`/battle/leaderboard?range=${tab}`),
       ])
       setDaily(d); setStats(s); setLeaders(l.leaders || []); setMe(l.you)
-    } catch (e: any) { setErr(e.message) }
+      setErr('')
+    } catch (e: any) {
+      if (isMissingBackend(e)) {
+        // Silent fallback — load from device storage instead.
+        setDaily(getDailyLocal())
+        setStats(getStatsLocal() as any)
+        const lb = getLeaderboardLocal()
+        setLeaders(lb.leaders as any); setMe(lb.you as any)
+        setErr('')
+      } else {
+        setErr(e.message)
+      }
+    }
   }, [tab])
   useEffect(() => { load() }, [load])
 
@@ -247,23 +265,29 @@ Tips: each tip is one specific actionable line (max 18 words) — reference the 
 
     if (mode === 'daily') {
       setSubmitting(true)
+      const payload = {
+        score: correct,
+        total: questions.length,
+        difficulty: daily?.challenge.difficulty || 'medium',
+        topic: daily?.challenge.topic,
+        subject: daily?.challenge.subject,
+        daily: true,
+      }
       try {
-        await api('/battle/submit', {
-          method: 'POST',
-          body: JSON.stringify({
-            score: correct,
-            total: questions.length,
-            difficulty: daily?.challenge.difficulty || 'medium',
-            topic: daily?.challenge.topic,
-            subject: daily?.challenge.subject,
-            daily: true,
-          }),
-        })
-      } catch (e: any) { setErr(e.message) }
+        await api('/battle/submit', { method: 'POST', body: JSON.stringify(payload) })
+        setErr('')
+      } catch (e: any) {
+        if (isMissingBackend(e)) {
+          // Save to device storage so streak / XP still persist
+          submitLocal(payload as any)
+        } else {
+          setErr(e.message)
+        }
+      }
       finally {
         setSubmitting(false)
         setPhase('results')
-        load()  // Refresh stats + leaderboard
+        load()
       }
     } else {
       // Sparring: skip the leaderboard submit, but always ask the judge
