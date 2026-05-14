@@ -6,6 +6,8 @@ import Landing from './pages/Landing'
 import { GenerationProvider } from './lib/generationContext'
 import { supabase } from './lib/supabase'
 import { refreshIfStale } from './lib/api'
+import { pullFromCloud, syncToCloudNow } from './lib/twin'
+import SprintOverlay, { SPRINT_MIN_MS } from './components/SprintOverlay'
 
 // "landing" = cinematic marketing page (default for new visitors)
 // "login"   = sign-in / sign-up flow
@@ -16,6 +18,9 @@ export default function App() {
   const [profile, setProfile] = useState<AuthProfile | null>(null)
   const [checking, setChecking] = useState(true)
   const [view, setView] = useState<View>('landing')
+  const [sprintingIn, setSprintingIn] = useState(false)
+  const [sprintHead, setSprintHead]   = useState<string | undefined>()
+  const [sprintSub,  setSprintSub]    = useState<string | undefined>()
 
   // Listen for auth-expired (refresh token died) — bounce to login screen
   useEffect(() => {
@@ -33,6 +38,54 @@ export default function App() {
     refreshIfStale()
     const id = setInterval(() => { refreshIfStale() }, 10 * 60 * 1000)
     return () => clearInterval(id)
+  }, [profile])
+
+  // Cross-device auto-pull: when a fresh login lands on a device that has no
+  // local Twin yet, pull the snapshot from the cloud and play the sprint
+  // animation so the moment feels intentional.
+  useEffect(() => {
+    if (!profile || profile.localMode) return
+
+    // Skip if we've already auto-pulled in this session
+    if (sessionStorage.getItem('kairo:sync:pulled') === '1') return
+
+    let cancelled = false
+    const startedAt = Date.now()
+
+    ;(async () => {
+      // Show the overlay optimistically so the user sees activity immediately.
+      setSprintHead('Welcome back — pulling your data')
+      setSprintSub(`We\'ll have your study history on this device in a moment.`)
+      setSprintingIn(true)
+
+      const r = await pullFromCloud()
+
+      // Hold the animation a minimum SPRINT_MIN_MS so it doesn't feel glitchy.
+      const elapsed   = Date.now() - startedAt
+      const remaining = Math.max(0, SPRINT_MIN_MS - elapsed)
+      await new Promise(res => setTimeout(res, remaining))
+      if (cancelled) return
+
+      if (r.ok && r.restored) {
+        // Show success copy briefly before dismissing
+        setSprintHead('Your data has arrived.')
+        setSprintSub(`${r.stats?.events ?? 0} events · ${r.stats?.flashcards ?? 0} flashcards · ${r.stats?.formulas ?? 0} formulas restored.`)
+        await new Promise(res => setTimeout(res, 900))
+      } else if (!r.ok && r.reason !== 'not-signed-in') {
+        // Soft-fail — just dismiss the overlay
+        console.warn('[sync] auto-pull failed:', r.reason)
+      }
+
+      if (cancelled) return
+      sessionStorage.setItem('kairo:sync:pulled', '1')
+      setSprintingIn(false)
+
+      // Also push any local-only state back up (e.g. user studied while offline)
+      syncToCloudNow().catch(() => {})
+    })()
+
+    return () => { cancelled = true }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profile])
 
   // On mount — try to restore session from localStorage
@@ -146,6 +199,12 @@ export default function App() {
   return (
     <GenerationProvider>
       <Dashboard profile={profile} onLogout={handleLogout} />
+      <SprintOverlay
+        open={sprintingIn}
+        banner="Welcome back"
+        headline={sprintHead}
+        subhead={sprintSub}
+      />
     </GenerationProvider>
   )
 }

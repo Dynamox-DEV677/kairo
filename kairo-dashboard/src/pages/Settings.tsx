@@ -146,9 +146,24 @@ export default function Settings() {
       </Section>
 
       {/* Cross-device backup */}
-      <Section icon={<FileJson size={14} />} title="Backup & restore">
+      <Section icon={<FileJson size={14} />} title="Backup & sync">
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14,
+          padding: '12px 14px', borderRadius: 10,
+          background: 'rgba(167,139,250,0.08)',
+          border: '1px solid rgba(167,139,250,0.32)',
+        }}>
+          <div style={{ width: 8, height: 8, borderRadius: 999, background: '#c4b5fd', boxShadow: '0 0 12px #c4b5fd' }} />
+          <span style={{ fontSize: 12.5, color: '#fafafa', fontWeight: 700 }}>
+            Auto-sync is on
+          </span>
+          <span style={{ fontSize: 11.5, color: '#a1a1aa', marginLeft: 'auto' }}>
+            Every change uploads in the background.
+          </span>
+        </div>
+
         <p style={{ fontSize: 13, color: '#71717a', marginBottom: 14, lineHeight: 1.6 }}>
-          Your Kairo OS twin (mastery, mistakes, doubts, formulas, flashcards) lives only on this device. To move it to another phone or laptop, export a JSON file here and import it there.
+          Your study history syncs to your Kairo account automatically. Sign in on any phone or laptop and you'll see the sprint animation as your data arrives.
         </p>
 
         <div style={{
@@ -161,7 +176,7 @@ export default function Settings() {
           <ChevronsRight size={13} color="#71717a" />
           <Smartphone size={16} color="#c4b5fd" />
           <span style={{ fontSize: 12, color: '#a1a1aa', marginLeft: 4 }}>
-            Export here → Import on your other device. No server involved.
+            Need a manual file backup too? Open the tool below.
           </span>
         </div>
 

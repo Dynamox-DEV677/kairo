@@ -265,6 +265,77 @@ router.get('/timeline', async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }) }
 })
 
+// ── GET /api/twin/snapshot ──────────────────────────────────────────────────
+// Returns the latest cloud snapshot for the current user, or null if none.
+// Used by the client on first load to hydrate a fresh device.
+router.get('/snapshot', async (req, res) => {
+  try {
+    const { data, error } = await supabaseAdmin
+      .from('twin_snapshots')
+      .select('blob, schema_ver, events_count, device_label, updated_at')
+      .eq('user_id', req.user.id)
+      .maybeSingle()
+    if (error) throw new Error(error.message)
+    if (!data) return res.json({ snapshot: null })
+    res.json({
+      snapshot: {
+        blob:         data.blob,
+        schemaVer:    data.schema_ver,
+        eventsCount:  data.events_count,
+        deviceLabel:  data.device_label,
+        updatedAt:    data.updated_at,
+      },
+    })
+  } catch (e) {
+    // Missing table = setup not done. Treat as "no snapshot" so the UI degrades.
+    if (/relation .* does not exist/i.test(e.message || '')) {
+      console.warn('[twin/snapshot] table missing — run twin_snapshot_schema.sql')
+      return res.json({ snapshot: null, setup_required: true })
+    }
+    res.status(500).json({ error: e.message })
+  }
+})
+
+// ── POST /api/twin/snapshot ─────────────────────────────────────────────────
+// Body: { blob, deviceLabel?, eventsCount? }
+// Upserts the current user's single rolling snapshot.
+router.post('/snapshot', async (req, res) => {
+  try {
+    const { blob, deviceLabel, eventsCount } = req.body || {}
+    if (!blob || typeof blob !== 'object') {
+      return res.status(400).json({ error: 'blob is required and must be an object' })
+    }
+    // Reject huge payloads — 1.5 MB is way more than any real twin needs.
+    const sizeBytes = JSON.stringify(blob).length
+    if (sizeBytes > 1_500_000) {
+      return res.status(413).json({ error: 'snapshot too large', size_bytes: sizeBytes })
+    }
+
+    const { error } = await supabaseAdmin
+      .from('twin_snapshots')
+      .upsert({
+        user_id:       req.user.id,
+        blob,
+        schema_ver:    'kairo-twin-backup-v1',
+        device_label:  (deviceLabel || '').toString().slice(0, 120) || null,
+        events_count:  Number.isFinite(+eventsCount) ? +eventsCount : null,
+        updated_at:    new Date().toISOString(),
+      }, { onConflict: 'user_id' })
+
+    if (error) throw new Error(error.message)
+    res.json({ ok: true, updated_at: new Date().toISOString() })
+  } catch (e) {
+    if (/relation .* does not exist/i.test(e.message || '')) {
+      return res.status(503).json({
+        error: 'twin_snapshots table not present',
+        setup_required: true,
+        sql_file: 'kairo-dashboard/server/db/twin_snapshot_schema.sql',
+      })
+    }
+    res.status(500).json({ error: e.message })
+  }
+})
+
 // ── POST /api/twin/event ────────────────────────────────────────────────────
 // Manual event ingestion — useful for the frontend to log lab opens,
 // concept views, etc. directly. Triggers an async refresh.

@@ -281,11 +281,15 @@ function saveState(state: TwinState) {
       .filter(e => now - e.ts < EVENT_TTL_MS)
       .slice(-MAX_EVENTS)
     localStorage.setItem(storageKey(), JSON.stringify(state))
+    // Fire-and-forget debounced cloud sync. Defined later in this file; safe
+    // because hoisting means the function exists by the time saveState runs.
+    try { scheduleSyncToCloud?.() } catch { /* ignore */ }
   } catch (e) {
     // Quota exceeded — last-ditch attempt: keep only the most recent 200 events
     try {
       state.events = state.events.slice(-200)
       localStorage.setItem(storageKey(), JSON.stringify(state))
+      try { scheduleSyncToCloud?.() } catch { /* ignore */ }
     } catch { /* give up silently — user is offline-only and storage-full */ }
   }
 }
@@ -426,6 +430,159 @@ function dedupeBy<T>(arr: T[], keyFn: (x: T) => string): T[] {
     out.push(x)
   }
   return out
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// CLOUD SYNC — auto-mirror the twin to /api/twin/snapshot so it follows the
+// student across devices.
+//
+//   - The cloud is a MIRROR, not the source of truth. Local storage stays
+//     authoritative on each device. We just push/pull the rolling snapshot.
+//   - Upload is debounced (5s after last change) so we batch chatty events.
+//   - Pull happens once on app boot if local is empty and a cloud snapshot
+//     exists. Subsequent edits then push back up.
+// ════════════════════════════════════════════════════════════════════════════
+
+const SYNC_DEBOUNCE_MS = 5_000
+let   syncTimer: number | null = null
+let   syncEnabled: boolean      = true
+let   onSyncEvent: ((kind: 'pulling' | 'pulled' | 'pushed' | 'idle' | 'error', detail?: any) => void) | null = null
+
+/** Subscribe to sync lifecycle events (one observer at a time — the App shell). */
+export function onSync(handler: typeof onSyncEvent) {
+  onSyncEvent = handler
+}
+
+function emitSync(kind: 'pulling' | 'pulled' | 'pushed' | 'idle' | 'error', detail?: any) {
+  try { onSyncEvent?.(kind, detail) } catch { /* ignore observer errors */ }
+}
+
+/** Manually pause / resume sync. The UI keeps a toggle in Settings. */
+export function setSyncEnabled(on: boolean) {
+  syncEnabled = on
+  try { localStorage.setItem('kairo:sync:enabled', on ? '1' : '0') } catch { /* ignore */ }
+  if (on) scheduleSyncToCloud()
+}
+export function getSyncEnabled(): boolean {
+  if (typeof window === 'undefined') return false
+  try {
+    const raw = localStorage.getItem('kairo:sync:enabled')
+    if (raw === null) return true               // default ON
+    return raw === '1'
+  } catch { return true }
+}
+
+function deviceLabel(): string {
+  if (typeof navigator === 'undefined') return 'unknown'
+  const ua = navigator.userAgent
+  const m  =
+    /iPhone|iPad/.test(ua)  ? 'iOS'      :
+    /Android/.test(ua)       ? 'Android'  :
+    /Macintosh/.test(ua)     ? 'Mac'      :
+    /Windows/.test(ua)       ? 'Windows'  :
+    /Linux/.test(ua)         ? 'Linux'    : 'web'
+  return `${m} · ${new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}`
+}
+
+/** Schedule a debounced upload to the cloud. Safe to call on every save. */
+export function scheduleSyncToCloud() {
+  if (typeof window === 'undefined') return
+  if (!syncEnabled) return
+  if (syncTimer) window.clearTimeout(syncTimer)
+  syncTimer = window.setTimeout(() => { syncToCloudNow().catch(() => {}) }, SYNC_DEBOUNCE_MS)
+}
+
+/** Force an immediate upload. Used on logout / manual "sync now". */
+export async function syncToCloudNow(): Promise<{ ok: boolean; reason?: string }> {
+  if (typeof window === 'undefined') return { ok: false, reason: 'no-window' }
+  // We only sync when the user is signed in (api.ts attaches the bearer).
+  const token = localStorage.getItem('kairo_token')
+  if (!token) return { ok: false, reason: 'not-signed-in' }
+  try {
+    const { post } = await import('./api')
+    const state    = loadState()
+    await post('/twin/snapshot', {
+      blob:         state,
+      deviceLabel:  deviceLabel(),
+      eventsCount:  state.events.length,
+    })
+    emitSync('pushed', { events: state.events.length, at: Date.now() })
+    return { ok: true }
+  } catch (e: any) {
+    const reason = String(e?.message || e || 'unknown')
+    emitSync('error', { phase: 'push', reason })
+    return { ok: false, reason }
+  }
+}
+
+/**
+ * Pull the latest snapshot from the cloud and hydrate localStorage.
+ * Used on app boot when local is empty (first time on this device).
+ *
+ * Returns { ok, restored: boolean, stats? }. `restored: false` means
+ * either no snapshot exists yet OR the local state was already populated
+ * and we deliberately didn't clobber it.
+ */
+export async function pullFromCloud(opts: { force?: boolean } = {}): Promise<{
+  ok:        boolean
+  restored:  boolean
+  reason?:   string
+  stats?:    { events: number; doubts: number; concepts: number; formulas: number; flashcards: number; mastery: number }
+}> {
+  if (typeof window === 'undefined') return { ok: false, restored: false, reason: 'no-window' }
+  const token = localStorage.getItem('kairo_token')
+  if (!token) return { ok: false, restored: false, reason: 'not-signed-in' }
+
+  // Don't pull if local already has data, unless force is set.
+  if (!opts.force) {
+    const current = loadState()
+    if (current.events.length > 0 || current.flashcards.length > 0 || current.doubts.length > 0) {
+      return { ok: true, restored: false, reason: 'local-not-empty' }
+    }
+  }
+
+  emitSync('pulling')
+  try {
+    const { get } = await import('./api')
+    const r = await get('/twin/snapshot') as { snapshot: any | null }
+    const snap = r?.snapshot
+    if (!snap || !snap.blob) {
+      emitSync('idle')
+      return { ok: true, restored: false, reason: 'no-cloud-snapshot' }
+    }
+
+    const incoming = snap.blob as TwinState
+    const localKey = getUserKey()
+    const next: TwinState = {
+      ...emptyState(),
+      ...incoming,
+      userKey:    localKey,
+      doubts:     incoming.doubts     ?? [],
+      concepts:   incoming.concepts   ?? [],
+      formulas:   incoming.formulas   ?? [],
+      flashcards: incoming.flashcards ?? [],
+    }
+    saveState(next)
+    const stats = {
+      events:     next.events.length,
+      doubts:     next.doubts.length,
+      concepts:   next.concepts.length,
+      formulas:   next.formulas.length,
+      flashcards: next.flashcards.length,
+      mastery:    next.mastery.length,
+    }
+    emitSync('pulled', stats)
+    return { ok: true, restored: true, stats }
+  } catch (e: any) {
+    const reason = String(e?.message || e || 'unknown')
+    emitSync('error', { phase: 'pull', reason })
+    return { ok: false, restored: false, reason }
+  }
+}
+
+// Initialise enabled flag from localStorage at module load.
+if (typeof window !== 'undefined') {
+  syncEnabled = getSyncEnabled()
 }
 
 // ════════════════════════════════════════════════════════════════════════════
