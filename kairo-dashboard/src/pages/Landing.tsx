@@ -469,26 +469,25 @@ function GlobalKeyframes() {
 
 function Section({ children, style = {}, id }: { children: React.ReactNode; style?: React.CSSProperties; id?: string }) {
   const ref = useRef<HTMLDivElement>(null)
-  // Drive a scroll-linked entrance: as the section's TOP crosses the viewport
-  // the content RISES upward (translateY 60→0), scales 0.94→1, blurs 6→0,
-  // opacity 0.4→1. This converts each section from a static panel into a
-  // shot that's actively brought into focus by the scroll.
+  // Scroll-linked entrance: content RISES (translateY 40→0), scales (0.96→1),
+  // opacity fades (0.55→1) as the section enters the viewport.
+  //
+  // NOTE: the previous version also drove a 6→0 blur tied to scroll, but at
+  // mid-scroll 10+ sections would all be in some partial blur state — the
+  // page read as fuzzy everywhere. Dropped the blur. Y + scale + opacity
+  // carry the entrance cleanly without harming text readability.
   const { scrollYProgress } = useScroll({
     target: ref, offset: ['start end', 'start center'],
   })
-  const y       = useTransform(scrollYProgress, [0, 1], [60, 0])
-  const scale   = useTransform(scrollYProgress, [0, 1], [0.94, 1])
-  const opacity = useTransform(scrollYProgress, [0, 0.35, 1], [0.4, 0.88, 1])
-  const blur    = useTransform(scrollYProgress, [0, 1], [6, 0])
-  const blurStr = useTransform(blur, v => `blur(${v}px)`)
+  const y       = useTransform(scrollYProgress, [0, 1], [40, 0])
+  const scale   = useTransform(scrollYProgress, [0, 1], [0.97, 1])
+  const opacity = useTransform(scrollYProgress, [0, 0.4, 1], [0.55, 0.95, 1])
 
   return (
     <section
       id={id}
       className="kr-section"
       style={{
-        // Tightened to 56px from 120 — drastically reduces the "stacked
-        // panels separated by black voids" feeling the user called out.
         padding: '56px 32px',
         position: 'relative',
         maxWidth: 1280,
@@ -497,13 +496,7 @@ function Section({ children, style = {}, id }: { children: React.ReactNode; styl
       }}>
       <motion.div
         ref={ref}
-        style={{
-          y,
-          scale,
-          opacity,
-          filter: blurStr,
-          transformOrigin: 'center top',
-        }}>
+        style={{ y, scale, opacity, transformOrigin: 'center top' }}>
         {children}
       </motion.div>
     </section>
