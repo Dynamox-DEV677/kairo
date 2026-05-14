@@ -284,10 +284,10 @@ function MobileTopBar({
 }
 
 // ════════════════════════════════════════════════════════════════════════════
-// Bottom nav — sticky, 4 role tabs + More button
+// Floating glass dock — premium 4-tab + More overflow nav
 // ════════════════════════════════════════════════════════════════════════════
 function BottomNav({
-  active, setActive, isDark, profile, onOpenMore,
+  active, setActive, profile, onOpenMore,
 }: MobileShellProps & { onOpenMore: () => void }) {
   const items = getBottomNav(profile?.role)
   // Parent gets no bottom nav (uses standalone dashboard)
@@ -296,56 +296,75 @@ function BottomNav({
   return (
     <div style={{
       position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 90,
-      paddingBottom: 'env(safe-area-inset-bottom)',
-      background: isDark ? 'rgba(13,13,13,0.94)' : 'rgba(255,255,255,0.94)',
-      backdropFilter: 'blur(14px)',
-      borderTop: `1px solid ${isDark ? '#1a1a1a' : '#e4e4e7'}`,
+      paddingBottom: 'calc(env(safe-area-inset-bottom) + 10px)',
+      paddingLeft: 12, paddingRight: 12,
+      display: 'flex', justifyContent: 'center',
+      pointerEvents: 'none',
     }}>
       <div style={{
-        display: 'grid', gridTemplateColumns: `repeat(${items.length + 1}, 1fr)`,
-        height: 60,
+        pointerEvents: 'auto',
+        display: 'flex', alignItems: 'stretch', gap: 4,
+        padding: '6px 8px',
+        background: 'rgba(14, 14, 22, 0.72)',
+        backdropFilter: 'blur(24px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+        border: '1px solid rgba(167, 139, 250, 0.22)',
+        borderRadius: 22,
+        boxShadow: '0 20px 60px rgba(0,0,0,0.55), 0 0 40px rgba(124, 58, 237, 0.15), inset 0 1px 0 rgba(255,255,255,0.05)',
+        maxWidth: 360, width: '100%',
       }}>
         {items.map(item => {
           const isActive = active === item.to
           const Icon = item.icon
           return (
             <button key={item.to}
+              data-bottom-tab="true"
               onClick={() => setActive(item.to)}
               aria-label={item.label}
               style={{
+                flex: 1,
                 background: 'none', border: 'none', cursor: 'pointer',
                 display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                gap: 3, padding: '6px 0', position: 'relative',
-                color: isActive ? '#6366f1' : (isDark ? '#71717a' : '#71717a'),
+                gap: 2, padding: '8px 0', position: 'relative',
+                color: isActive ? '#fafafa' : '#71717a',
                 fontFamily: 'inherit',
                 WebkitTapHighlightColor: 'transparent',
+                borderRadius: 14,
               }}>
               {isActive && (
-                <motion.div layoutId="bottom-nav-pill"
+                <motion.div layoutId="dock-pill"
+                  transition={{ type: 'spring', stiffness: 380, damping: 32 }}
                   style={{
-                    position: 'absolute', top: 4, width: 32, height: 3, borderRadius: 2,
-                    background: '#6366f1',
+                    position: 'absolute', inset: 0,
+                    background: 'linear-gradient(135deg, rgba(196,181,253,0.18), rgba(124,58,237,0.16))',
+                    border: '1px solid rgba(196,181,253,0.30)',
+                    borderRadius: 14,
+                    boxShadow: '0 4px 14px rgba(124,58,237,0.30)',
                   }} />
               )}
-              <Icon size={20} />
+              <Icon size={20} style={{ position: 'relative', strokeWidth: isActive ? 2.4 : 1.8 }} />
               <span style={{
-                fontSize: 10, fontWeight: 600,
-                color: isActive ? '#6366f1' : (isDark ? '#a1a1aa' : '#71717a'),
+                position: 'relative',
+                fontSize: 10, fontWeight: 700, letterSpacing: 0.2,
+                color: isActive ? '#fafafa' : '#a1a1aa',
               }}>{item.label}</span>
             </button>
           )
         })}
         <button onClick={onOpenMore}
+          data-bottom-tab="true"
           aria-label="More"
           style={{
+            flex: 1,
             background: 'none', border: 'none', cursor: 'pointer',
             display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-            gap: 3, padding: '6px 0', color: isDark ? '#71717a' : '#71717a',
+            gap: 2, padding: '8px 0', color: '#71717a',
             fontFamily: 'inherit',
             WebkitTapHighlightColor: 'transparent',
+            borderRadius: 14,
           }}>
-          <MoreHorizontal size={20} />
-          <span style={{ fontSize: 10, fontWeight: 600, color: isDark ? '#a1a1aa' : '#71717a' }}>More</span>
+          <MoreHorizontal size={20} style={{ strokeWidth: 1.8 }} />
+          <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: 0.2, color: '#a1a1aa' }}>More</span>
         </button>
       </div>
     </div>

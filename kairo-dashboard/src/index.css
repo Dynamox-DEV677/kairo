@@ -117,16 +117,22 @@ html, body, #root {
 }
 
 /* Re-pad every page when the shell is in mobile mode.
-   Pages set their own inline padding, so we use the descendant attribute selector
-   to clamp horizontal padding + add bottom clearance for the bottom-nav (60px + safe-area). */
-.kairo-mobile [style*="padding: '28px 36px'"],
-.kairo-mobile [style*="padding:28px 36px"] {
-  padding: 16px 16px calc(76px + env(safe-area-inset-bottom)) !important;
+   React serialises inline `style={{ padding: '28px 36px' }}` to
+   `style="padding: 28px 36px"` (no quotes, with space). */
+.kairo-mobile [style*="padding: 28px 36px"],
+.kairo-mobile [style*="padding:28px 36px"],
+.kairo-mobile [style*="padding: '28px 36px'"] {
+  padding: 14px 16px calc(116px + env(safe-area-inset-bottom)) !important;
 }
 
-/* Pages with vertical padding only */
-.kairo-mobile [style*="padding: '28px"] {
-  padding-bottom: calc(76px + env(safe-area-inset-bottom)) !important;
+/* Pages with vertical padding only — catches '28px 0', '24px 0 80px', etc. */
+.kairo-mobile [style*="padding: 28px"] {
+  padding-bottom: calc(116px + env(safe-area-inset-bottom)) !important;
+  padding-left: 14px !important;
+  padding-right: 14px !important;
+}
+.kairo-mobile [style*="padding: 24px"] {
+  padding-bottom: calc(116px + env(safe-area-inset-bottom)) !important;
 }
 
 /* Fix max-width clamping on mobile so we use the full width */
@@ -166,9 +172,9 @@ html, body, #root {
   grid-template-columns: repeat(2, 1fr) !important;
 }
 
-/* Pages with inset:0 — lift them above the bottom nav (60px nav + 12px gap + safe-area) */
+/* Pages with inset:0 — lift them above the floating dock (96px dock incl margin + safe-area) */
 .kairo-mobile [style*="position: 'absolute'"][style*="inset: 0"] {
-  bottom: calc(72px + env(safe-area-inset-bottom)) !important;
+  bottom: calc(96px + env(safe-area-inset-bottom)) !important;
 }
 
 /* ChatWindow's input border — give the input area its own breathing room from the nav */
@@ -197,4 +203,303 @@ html, body, #root {
 /* Bottom nav active-pill animation already handled in component, just ensure layout transitions are GPU-accelerated */
 .kairo-mobile [data-mobile-page] {
   will-change: opacity, transform;
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   MOBILE OS — premium native-app design system
+   ════════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* 8-pt spacing scale */
+  --s-1: 4px;  --s-2: 8px;  --s-3: 12px; --s-4: 16px;
+  --s-5: 20px; --s-6: 24px; --s-7: 32px; --s-8: 40px; --s-9: 56px;
+
+  /* Radii */
+  --r-sm: 10px; --r-md: 14px; --r-lg: 18px; --r-xl: 24px;
+
+  /* Palette — black + white + purple only */
+  --c-bg:        #06060a;
+  --c-bg-elev1:  #0e0e16;
+  --c-bg-elev2:  #13131d;
+  --c-line:      #1a1a26;
+  --c-line-soft: #14141c;
+  --c-text:      #fafafa;
+  --c-dim:       #a1a1aa;
+  --c-faint:     #71717a;
+  --c-ghost:     #52525b;
+  --c-purple-soft: #e9d5ff;
+  --c-purple-lite: #c4b5fd;
+  --c-purple:      #a78bfa;
+  --c-purple-hi:   #7c3aed;
+  --c-purple-deep: #5b21b6;
+  --c-purple-dark: #3b0764;
+
+  /* Premium glow */
+  --gl-purple: 0 8px 28px rgba(124, 58, 237, 0.35);
+  --gl-soft:   0 4px 18px rgba(124, 58, 237, 0.22);
+  --gl-inner:  inset 0 0 60px rgba(124, 58, 237, 0.05);
+}
+
+/* Force the entire mobile shell into the Inter / SF stack — feels native */
+.kairo-mobile,
+.kairo-mobile * {
+  font-family: 'Inter', 'SF Pro Display', 'SF Pro Text', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Re-enable serif only for the long-form note body (Charter) */
+.kairo-mobile .note-body,
+.kairo-mobile textarea[data-serif="true"] {
+  font-family: 'Charter', 'Iowan Old Style', Georgia, serif !important;
+}
+
+/* ── No-overflow guardrail (most common bug in the screenshots) ── */
+.kairo-mobile {
+  overflow-x: hidden;
+}
+.kairo-mobile [data-mobile-page] {
+  overflow-x: hidden;
+}
+
+/* Make sure no inline-style content can break the viewport */
+.kairo-mobile h1,
+.kairo-mobile h2,
+.kairo-mobile h3,
+.kairo-mobile p,
+.kairo-mobile span,
+.kairo-mobile div {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+/* Pills / chips that contain short labels — never break them onto multiple lines */
+.kairo-mobile [style*="borderRadius: 999"]:not([class*="kr-card"]) {
+  white-space: nowrap;
+}
+
+/* ── KairoOS dashboard: force 2-col stat grids to stay 2-col (not collapse to 1) on phones
+   so the stat tiles stay readable side-by-side. Already handled, but apply a stronger rule. */
+.kairo-mobile .kr-vitals-row {
+  grid-template-columns: 1fr !important;
+  gap: var(--s-3) !important;
+}
+.kairo-mobile .kr-pulse-row,
+.kairo-mobile .kr-half-row,
+.kairo-mobile .kr-recs-row {
+  grid-template-columns: 1fr !important;
+  gap: var(--s-3) !important;
+}
+
+/* Style modality 4-tile → 2x2 grid on phone (not 4 squashed) */
+.kairo-mobile .kr-style-grid {
+  grid-template-columns: repeat(2, 1fr) !important;
+  gap: var(--s-2) !important;
+}
+
+/* Performance card 3-stat grid → keep 3-col but compress fonts */
+.kairo-mobile .kr-perf-grid {
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: var(--s-2) !important;
+}
+.kairo-mobile .kr-perf-grid > button > div:nth-child(2) {
+  font-size: 18px !important;
+  letter-spacing: -0.4px !important;
+}
+
+/* Sub-metrics tiles below Pulse ring */
+.kairo-mobile .kr-submetrics {
+  grid-template-columns: repeat(4, 1fr) !important;
+  gap: var(--s-2) !important;
+}
+.kairo-mobile .kr-submetrics > button { padding: 8px 4px !important; }
+.kairo-mobile .kr-submetrics > button > div:first-child { font-size: 9px !important; letter-spacing: 0.8px !important; }
+.kairo-mobile .kr-submetrics > button > div:nth-child(2) { font-size: 14px !important; }
+
+/* Flashcards stat tiles: 4-col stack on phone is unreadable → 2x2 grid */
+.kairo-mobile .fc-stats-row,
+.kairo-mobile [style*="gridTemplateColumns: 'repeat(4, 1fr)'"][style*="marginTop: 22"] {
+  grid-template-columns: repeat(2, 1fr) !important;
+  gap: var(--s-2) !important;
+}
+
+/* Recommendation card body — let the icon stay compact, headlines breathe */
+.kairo-mobile .kr-rec-item {
+  padding: 12px 14px !important;
+  gap: 10px !important;
+}
+.kairo-mobile .kr-rec-item > div:nth-child(3) {
+  min-width: 0;
+}
+.kairo-mobile .kr-rec-item > div:nth-child(3) > div:nth-child(2) {
+  font-size: 13.5px !important;
+  line-height: 1.45 !important;
+}
+
+/* Section "title + subtitle" rows should not overflow horizontally */
+.kairo-mobile section, .kairo-mobile [class*="Section"] {
+  min-width: 0;
+}
+
+/* Heatmap chips stay on one line, but wrap to next row when needed */
+.kairo-mobile .kr-heatmap-list button {
+  font-size: 11.5px !important;
+  padding: 6px 10px !important;
+}
+
+/* ── Premium glass card utility (opt-in via .glass-card) ── */
+.glass-card {
+  background: linear-gradient(180deg, rgba(167, 139, 250, 0.06) 0%, rgba(14, 14, 22, 0.55) 100%);
+  border: 1px solid rgba(167, 139, 250, 0.16);
+  border-radius: var(--r-lg);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  box-shadow: var(--gl-inner);
+}
+
+/* ── Floating-dock buttons on mobile: large tap targets, breathing room ── */
+.kairo-mobile [role="tablist"] button,
+.kairo-mobile [data-bottom-tab] {
+  min-height: 48px !important;
+  min-width: 48px !important;
+}
+
+/* Make all buttons at least 44px tall (Apple HIG) */
+.kairo-mobile button {
+  min-height: 44px;
+}
+/* …except inline pill chips, icon-only mini buttons, and tabs */
+.kairo-mobile button[data-mini="true"],
+.kairo-mobile button[class*="kr-pill"],
+.kairo-mobile button[style*="borderRadius: 999"] {
+  min-height: 32px;
+}
+
+/* Inputs: 16px font + breathable padding */
+.kairo-mobile input[type="text"],
+.kairo-mobile input[type="email"],
+.kairo-mobile input[type="password"],
+.kairo-mobile input:not([type]),
+.kairo-mobile textarea {
+  font-size: 16px !important;
+  padding: 12px 14px !important;
+}
+
+/* Headings rhythm */
+.kairo-mobile h1 { font-size: 22px !important; line-height: 1.2 !important; letter-spacing: -0.5px !important; font-weight: 800 !important; }
+.kairo-mobile h2 { font-size: 17px !important; line-height: 1.25 !important; letter-spacing: -0.3px !important; font-weight: 800 !important; }
+.kairo-mobile h3 { font-size: 14px !important; line-height: 1.35 !important; font-weight: 700 !important; }
+
+/* Cards: tighten on phone, kill heavy borders */
+.kairo-mobile .kr-card,
+.kairo-mobile [style*="borderRadius: 14"][style*="background: '#0e0e16'"],
+.kairo-mobile [style*="borderRadius: 14"][style*="background:'#0e0e16'"] {
+  padding: 14px !important;
+  border-color: rgba(167, 139, 250, 0.10) !important;
+}
+
+/* Horizontal-scrollable chip rows (typed by .h-scroll) — hide scrollbar */
+.kairo-mobile .h-scroll,
+.kairo-mobile [data-h-scroll="true"] {
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  display: flex;
+  gap: 10px;
+  padding-right: 16px;
+  margin-right: -16px;
+}
+.kairo-mobile .h-scroll::-webkit-scrollbar,
+.kairo-mobile [data-h-scroll="true"]::-webkit-scrollbar { display: none; }
+.kairo-mobile .h-scroll > *,
+.kairo-mobile [data-h-scroll="true"] > * { scroll-snap-align: start; flex-shrink: 0; }
+
+/* Kairo Labs lab cards on mobile: ensure no horizontal overflow */
+.kairo-mobile [style*="gridTemplateColumns"][style*="auto-fill, minmax(320px"],
+.kairo-mobile [style*="gridTemplateColumns"][style*="auto-fill, minmax(280px"] {
+  grid-template-columns: 1fr !important;
+}
+
+/* Adaptive Path stat tiles — force responsive */
+.kairo-mobile [style*="gridTemplateColumns: 'repeat(3, 1fr)'"][style*="gap: 12"] {
+  grid-template-columns: repeat(3, 1fr) !important;
+}
+
+/* Sidebar mock should never appear on mobile (the dock owns nav) */
+.kairo-mobile [data-sidebar],
+.kairo-mobile [data-sidebar-mock] {
+  display: none !important;
+}
+
+/* Sheet animation helper */
+@keyframes kr-sheet-up {
+  from { transform: translateY(100%); opacity: 0.6; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+@keyframes kr-sheet-down {
+  from { transform: translateY(0);    opacity: 1; }
+  to   { transform: translateY(100%); opacity: 0.6; }
+}
+
+/* Hide noisy "More" overflow scrollbar in nav sheet */
+.kr-sheet { overflow-y: auto; scrollbar-width: none; }
+.kr-sheet::-webkit-scrollbar { display: none; }
+
+/* Formula Sheet split layout — stack on mobile */
+.kairo-mobile .fs-split {
+  grid-template-columns: 1fr !important;
+  gap: 10px !important;
+}
+.kairo-mobile .fs-split > div:first-child {
+  min-height: auto !important;
+  max-height: 280px;
+}
+
+/* Writing Tools tabs row — let the tabs wrap on narrow phones */
+.kairo-mobile [style*="display: flex"][style*="gap: 4"][style*="background: '#0d0d0d'"] {
+  flex-wrap: wrap !important;
+  gap: 6px !important;
+}
+
+/* Notebook + Writing Tools page wrappers — kill cramped padding */
+.kairo-mobile [style*="maxWidth: 900"][style*="margin: '0 auto'"],
+.kairo-mobile [style*="maxWidth: 1100"][style*="margin: '0 auto'"],
+.kairo-mobile [style*="maxWidth: 820"][style*="margin: '0 auto'"] {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+/* Editor right-rail (clarity score panel) — stack below editor on mobile */
+.kairo-mobile [style*="gridTemplateColumns: '1fr 320px'"],
+.kairo-mobile [style*="gridTemplateColumns:'1fr 320px'"] {
+  grid-template-columns: 1fr !important;
+  gap: 12px !important;
+}
+
+/* Mistake-Analysis-style 2-col + heatmap rows — stack */
+.kairo-mobile [style*="gridTemplateColumns: 'minmax(320px"],
+.kairo-mobile [style*="gridTemplateColumns:'minmax(320px"] {
+  grid-template-columns: 1fr !important;
+  gap: 12px !important;
+}
+
+/* Stat tiles using min-width auto-fill should always wrap on mobile */
+.kairo-mobile [style*="gridTemplateColumns"][style*="auto-fill, minmax(220px"],
+.kairo-mobile [style*="gridTemplateColumns"][style*="auto-fill, minmax(180px"] {
+  grid-template-columns: 1fr !important;
+}
+
+/* Header chip row in KairoOS (Recompute / Backup / Wipe) — keep on one line */
+.kairo-mobile .kr-header > div:nth-child(2) {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px !important;
+}
+.kairo-mobile .kr-header button {
+  font-size: 11px !important;
+  padding: 7px 10px !important;
 }

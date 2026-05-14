@@ -1,0 +1,586 @@
+/**
+ * KairoOSMobile — true mobile-native home screen.
+ *
+ * NOT a squeezed-down dashboard. Designed for one-handed thumb scroll
+ * with a vertical flow: hero greeting → Pulse big stat → quick actions
+ * → recommendations carousel → vitals row → revise-soon list.
+ *
+ * Inspired by Arc Search / Linear / Perplexity Mobile / Nothing OS.
+ */
+import { useMemo, useState, useEffect } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import {
+  Sparkles, MessageCircle, Swords, BookMarked, Beaker,
+  TrendingUp, AlertTriangle, ChevronRight, Repeat, Brain,
+  Flame, Activity, Zap, ChevronsRight, BookOpen, Target,
+  RefreshCw, FileJson,
+} from 'lucide-react'
+import {
+  getDashboard, refresh,
+  type DashboardSnapshot, type Twin, type MasteryRow,
+} from '../lib/twin'
+
+// ────────────────────────────────────────────────────────────────────────────
+// PALETTE
+// ────────────────────────────────────────────────────────────────────────────
+const C = {
+  bg:        '#06060a',
+  panel:     '#0e0e16',
+  panel2:    '#13131d',
+  border:    '#1a1a26',
+  text:      '#fafafa',
+  textDim:   '#a1a1aa',
+  textFaint: '#71717a',
+  textGhost: '#52525b',
+  purple:    '#a78bfa',
+  purpleHi:  '#7c3aed',
+  purpleDeep:'#5b21b6',
+  purpleLite:'#c4b5fd',
+  purpleSoft:'#e9d5ff',
+}
+
+interface Props {
+  onOpenDetail?: (kind: string, payload?: any) => void
+  onNavigate:    (route: string) => void
+  onOpenBackup:  () => void
+}
+
+export default function KairoOSMobile({ onNavigate, onOpenBackup }: Props) {
+  const [snap, setSnap] = useState<DashboardSnapshot | null>(null)
+  const [pulsing, setPulsing] = useState(false)
+
+  function reload() { setSnap(getDashboard()) }
+  function recompute() {
+    setSnap(refresh()); setPulsing(true); setTimeout(() => setPulsing(false), 700)
+  }
+
+  useEffect(() => { reload() }, [])
+
+  if (!snap || !snap.hasData) {
+    return <EmptyState />
+  }
+
+  const twin = snap.twin!
+  const mastery = snap.mastery
+  const score = twin.retentionScore * 0.30
+              + twin.consistencyScore * 0.25
+              + twin.confidence * 0.25
+              + (1 - twin.burnoutRisk) * 0.20
+  const pct = Math.round(score * 100)
+  const label = pct >= 75 ? 'Thriving' : pct >= 60 ? 'On track' : pct >= 45 ? 'Recovering' : 'Needs care'
+  const greeting = greetingFor()
+  const masteredCount = mastery.filter(m => m.mastery >= 0.7).length
+
+  return (
+    <div style={{
+      width: '100%', height: '100%', overflowY: 'auto',
+      WebkitOverflowScrolling: 'touch',
+      background: C.bg,
+      backgroundImage:
+        `radial-gradient(at 50% -10%, rgba(124,58,237,0.18) 0%, transparent 40%),
+         radial-gradient(at 50% 110%, rgba(91,33,182,0.10) 0%, transparent 40%)`,
+      paddingBottom: 'calc(120px + env(safe-area-inset-bottom))',
+    }}>
+      <style>{`
+        @keyframes km-glow { 0%,100% { opacity: 0.45 } 50% { opacity: 0.95 } }
+        @keyframes km-pulse { 0%,100% { transform: scale(1) } 50% { transform: scale(1.04) } }
+      `}</style>
+
+      {/* ───── Greeting hero ───── */}
+      <div style={{ padding: '24px 18px 0' }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: C.purpleLite, letterSpacing: 2, textTransform: 'uppercase', marginBottom: 4 }}>
+          {greeting}
+        </div>
+        <h1 style={{
+          margin: 0, fontSize: 26, fontWeight: 800, color: C.text,
+          letterSpacing: -0.6, lineHeight: 1.1,
+        }}>
+          Let's lock something in today.
+        </h1>
+        <p style={{ margin: '6px 0 0', fontSize: 13.5, color: C.textFaint, lineHeight: 1.5 }}>
+          {twin.streakDays > 0
+            ? <>You're on a <strong style={{ color: C.purpleLite }}>{twin.streakDays}-day streak</strong>. Keep it going.</>
+            : <>Tap any card below to start studying.</>}
+        </p>
+      </div>
+
+      {/* ───── PULSE HERO CARD ───── */}
+      <div style={{ padding: '20px 18px 0' }}>
+        <PulseHero pct={pct} label={label} twin={twin} pulsing={pulsing} onRecompute={recompute} />
+      </div>
+
+      {/* ───── Quick actions strip ───── */}
+      <div style={{ padding: '18px 0 0' }}>
+        <SectionLabel>Quick actions</SectionLabel>
+        <div className="h-scroll" style={{
+          padding: '0 18px',
+        }}>
+          <QuickAction label="Solve a doubt"  icon={MessageCircle} onClick={() => onNavigate('doubt')} accent={C.purple} />
+          <QuickAction label="Battle"          icon={Swords}        onClick={() => onNavigate('battle')} accent={C.purpleLite} />
+          <QuickAction label="Flashcards"     icon={BookMarked}    onClick={() => onNavigate('flashcards')} accent={C.purpleSoft} />
+          <QuickAction label="Open a lab"     icon={Beaker}        onClick={() => onNavigate('labs')} accent={C.purple} />
+          <QuickAction label="Take notes"      icon={BookOpen}      onClick={() => onNavigate('notebook')} accent={C.purpleLite} />
+          <QuickAction label="Backup"          icon={FileJson}      onClick={onOpenBackup}              accent={C.purpleSoft} />
+        </div>
+      </div>
+
+      {/* ───── Recommendation (only the top one as a hero) ───── */}
+      {snap.recommendations[0] && (
+        <div style={{ padding: '24px 18px 0' }}>
+          <SectionLabel>Recommended now</SectionLabel>
+          <TopRecommendation rec={snap.recommendations[0]} onClick={() => onNavigate('memory')} />
+        </div>
+      )}
+
+      {/* ───── Vitals row (3 chips horizontal scroll) ───── */}
+      <div style={{ padding: '24px 0 0' }}>
+        <SectionLabel>Vitals today</SectionLabel>
+        <div className="h-scroll" style={{ padding: '0 18px' }}>
+          <VitalChip
+            title="Burnout"      pct={Math.round(twin.burnoutRisk * 100)}
+            tone={twin.burnoutRisk > 0.55 ? 'danger' : twin.burnoutRisk > 0.3 ? 'warn' : 'good'}
+            icon={Activity}
+          />
+          <VitalChip
+            title="Consistency"  pct={Math.round(twin.consistencyScore * 100)}
+            tone={twin.consistencyScore > 0.6 ? 'good' : twin.consistencyScore > 0.3 ? 'warn' : 'danger'}
+            icon={Flame}
+          />
+          <VitalChip
+            title="Confidence"   pct={Math.round(twin.confidence * 100)}
+            tone={twin.confidence > 0.6 ? 'good' : twin.confidence > 0.4 ? 'warn' : 'danger'}
+            icon={Zap}
+          />
+          <VitalChip
+            title="Retention"    pct={Math.round(twin.retentionScore * 100)}
+            tone={twin.retentionScore > 0.6 ? 'good' : twin.retentionScore > 0.3 ? 'warn' : 'danger'}
+            icon={Brain}
+          />
+          <VitalChip
+            title="Streak"       pct={twin.streakDays} unit="d"
+            tone={twin.streakDays >= 7 ? 'good' : twin.streakDays >= 3 ? 'warn' : 'neutral'}
+            icon={Flame}
+          />
+        </div>
+      </div>
+
+      {/* ───── Trajectory tile ───── */}
+      <div style={{ padding: '24px 18px 0' }}>
+        <SectionLabel>Trajectory</SectionLabel>
+        <TrajectoryCard
+          trend={twin.performanceTrend}
+          predicted={twin.predictedExamScore}
+          band={twin.predictedBand}
+          mastered={masteredCount}
+          tracked={mastery.length}
+        />
+      </div>
+
+      {/* ───── Revise soon list ───── */}
+      {twin.forgettingSoon.length > 0 && (
+        <div style={{ padding: '24px 18px 0' }}>
+          <SectionLabel>Revise soon</SectionLabel>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {twin.forgettingSoon.slice(0, 5).map(f => (
+              <ReviseRow key={f.topic} topic={f.topic} subject={f.subject} hours={f.hoursUntilForget} onClick={() => onNavigate('simulator')} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ───── Weak topics chips ───── */}
+      {mastery.length > 0 && (
+        <div style={{ padding: '24px 18px 24px' }}>
+          <SectionLabel>Weak spots</SectionLabel>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
+            {[...mastery].sort((a, b) => a.mastery - b.mastery).slice(0, 8).map(m => (
+              <TopicChip key={`${m.subject}-${m.topic}`} row={m} onClick={() => onNavigate('mistakes')} />
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// PULSE HERO
+// ════════════════════════════════════════════════════════════════════════════
+function PulseHero({ pct, label, twin, pulsing, onRecompute }: {
+  pct: number; label: string; twin: Twin; pulsing: boolean; onRecompute: () => void
+}) {
+  const score = Math.max(0, Math.min(1, pct / 100))
+  const r = 86
+  const c = 2 * Math.PI * r
+  const offset = c * (1 - score)
+  const tone = pct >= 75 ? C.purpleLite : pct >= 60 ? C.purple : pct >= 45 ? C.purpleHi : C.purpleDeep
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      style={{
+        position: 'relative', padding: 22, borderRadius: 22,
+        background: `linear-gradient(180deg, ${C.panel} 0%, ${C.bg} 100%)`,
+        border: '1px solid rgba(167,139,250,0.22)',
+        boxShadow: '0 18px 50px rgba(124,58,237,0.18), inset 0 1px 0 rgba(255,255,255,0.04)',
+        overflow: 'hidden',
+      }}
+    >
+      {/* Backdrop orb */}
+      <div style={{
+        position: 'absolute', top: '-30%', left: '50%', transform: 'translateX(-50%)',
+        width: 280, height: 280, borderRadius: '50%',
+        background: 'radial-gradient(closest-side, rgba(124,58,237,0.42), transparent 70%)',
+        filter: 'blur(40px)', animation: 'km-glow 5s ease-in-out infinite',
+        pointerEvents: 'none',
+      }} />
+
+      <div style={{ position: 'relative', display: 'flex', alignItems: 'flex-start', gap: 16 }}>
+        <div style={{ position: 'relative', width: 200, height: 200, flexShrink: 0 }}>
+          <svg viewBox="0 0 200 200" style={{ width: '100%', height: '100%' }}>
+            <defs>
+              <linearGradient id="km-ring" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%"   stopColor={C.purpleSoft}/>
+                <stop offset="50%"  stopColor={C.purple}/>
+                <stop offset="100%" stopColor={C.purpleDeep}/>
+              </linearGradient>
+            </defs>
+            <circle cx={100} cy={100} r={r} fill="none" stroke={C.panel2} strokeWidth={14} />
+            <circle cx={100} cy={100} r={r} fill="none"
+              stroke="url(#km-ring)" strokeWidth={14} strokeLinecap="round"
+              strokeDasharray={c} strokeDashoffset={offset}
+              transform="rotate(-90 100 100)"
+              style={{ transition: 'stroke-dashoffset 1.4s cubic-bezier(.2,.6,.2,1)' }} />
+            <text x={100} y={104} textAnchor="middle" fontSize={48} fontWeight={800}
+                  fill={C.text} fontFamily="inherit" letterSpacing={-1.5}>
+              {pct}
+            </text>
+            <text x={100} y={128} textAnchor="middle" fontSize={11} fontWeight={700}
+                  fill={C.textFaint} fontFamily="inherit" letterSpacing={1.4}>
+              / 100
+            </text>
+          </svg>
+        </div>
+
+        <div style={{ flex: 1, minWidth: 0, paddingTop: 6 }}>
+          <div style={{ fontSize: 10, fontWeight: 700, color: tone, letterSpacing: 1.8, textTransform: 'uppercase', marginBottom: 4 }}>
+            AI Pulse
+          </div>
+          <div style={{ fontSize: 19, fontWeight: 800, color: C.text, lineHeight: 1.15, letterSpacing: -0.4 }}>
+            {label}
+          </div>
+          <div style={{ fontSize: 11.5, color: C.textFaint, marginTop: 8, lineHeight: 1.45 }}>
+            Retention × consistency × confidence — refreshed live.
+          </div>
+
+          <button onClick={onRecompute}
+            style={{
+              marginTop: 14, padding: '8px 12px', borderRadius: 10,
+              background: pulsing ? 'rgba(196,181,253,0.20)' : 'rgba(167,139,250,0.10)',
+              border: '1px solid rgba(167,139,250,0.32)',
+              color: pulsing ? C.purpleSoft : C.purpleLite,
+              fontFamily: 'inherit', fontSize: 11, fontWeight: 700,
+              display: 'inline-flex', alignItems: 'center', gap: 6, cursor: 'pointer',
+              letterSpacing: 0.3, transition: 'all 0.2s',
+              minHeight: 36,
+            }}>
+            <RefreshCw size={11} style={{ transform: pulsing ? 'rotate(360deg)' : 'none', transition: 'transform 0.7s' }} />
+            {pulsing ? 'Done' : 'Recompute'}
+          </button>
+        </div>
+      </div>
+
+      <div style={{
+        position: 'relative', display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)',
+        gap: 8, marginTop: 18,
+      }}>
+        <MiniMetric label="Streak"      value={twin.streakDays} unit="d" />
+        <MiniMetric label="Best hour"   value={twin.focusBestHour ?? '—'} unit={twin.focusBestHour != null ? ':00' : ''} />
+      </div>
+    </motion.div>
+  )
+}
+
+function MiniMetric({ label, value, unit }: { label: string; value: any; unit?: string }) {
+  return (
+    <div style={{
+      padding: '10px 12px', borderRadius: 12,
+      background: 'rgba(167,139,250,0.06)',
+      border: '1px solid rgba(167,139,250,0.16)',
+    }}>
+      <div style={{ fontSize: 9.5, fontWeight: 700, color: C.purpleLite, textTransform: 'uppercase', letterSpacing: 1.4 }}>
+        {label}
+      </div>
+      <div style={{ fontSize: 18, fontWeight: 800, color: C.text, marginTop: 2, letterSpacing: -0.4 }}>
+        {value}<span style={{ fontSize: 11, color: C.textFaint, marginLeft: 1 }}>{unit}</span>
+      </div>
+    </div>
+  )
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// SECTION HELPERS
+// ════════════════════════════════════════════════════════════════════════════
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <div style={{
+      padding: '0 18px', fontSize: 11, fontWeight: 700,
+      color: C.textFaint, textTransform: 'uppercase', letterSpacing: 1.8,
+      marginBottom: 10,
+    }}>
+      {children}
+    </div>
+  )
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// QUICK ACTION (horizontal-scroll chip)
+// ════════════════════════════════════════════════════════════════════════════
+function QuickAction({ label, icon: Icon, onClick, accent }: { label: string; icon: any; onClick: () => void; accent: string }) {
+  return (
+    <motion.button
+      whileTap={{ scale: 0.95 }}
+      onClick={onClick}
+      style={{
+        flexShrink: 0,
+        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
+        minWidth: 78, padding: '12px 10px',
+        background: 'rgba(167,139,250,0.05)',
+        border: '1px solid rgba(167,139,250,0.18)',
+        borderRadius: 16,
+        color: C.text, fontFamily: 'inherit', cursor: 'pointer',
+        WebkitTapHighlightColor: 'transparent',
+      }}
+    >
+      <div style={{
+        width: 36, height: 36, borderRadius: 12,
+        background: `linear-gradient(135deg, ${accent}, ${C.purpleHi})`,
+        display: 'grid', placeItems: 'center',
+        boxShadow: `0 6px 18px ${accent}44`,
+      }}>
+        <Icon size={18} color="#000" strokeWidth={2.2} />
+      </div>
+      <span style={{ fontSize: 11, fontWeight: 700, color: C.textDim, letterSpacing: 0.2, textAlign: 'center', lineHeight: 1.1 }}>
+        {label}
+      </span>
+    </motion.button>
+  )
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// TOP RECOMMENDATION
+// ════════════════════════════════════════════════════════════════════════════
+function TopRecommendation({ rec, onClick }: { rec: any; onClick: () => void }) {
+  const Icon = rec.kind === 'revise' ? Repeat
+    : rec.kind === 'lab' ? Beaker
+    : rec.kind === 'flashcard' ? BookMarked
+    : rec.kind === 'quiz' ? Target
+    : rec.kind === 'break' ? AlertTriangle
+    : Sparkles
+  return (
+    <motion.button
+      whileTap={{ scale: 0.98 }}
+      onClick={onClick}
+      style={{
+        width: '100%',
+        textAlign: 'left',
+        padding: '16px 16px',
+        background: 'linear-gradient(135deg, rgba(124,58,237,0.14), rgba(167,139,250,0.06))',
+        border: '1px solid rgba(167,139,250,0.32)',
+        borderRadius: 18,
+        cursor: 'pointer', fontFamily: 'inherit',
+        WebkitTapHighlightColor: 'transparent',
+        display: 'flex', alignItems: 'center', gap: 12,
+        boxShadow: '0 10px 30px rgba(124,58,237,0.20)',
+      }}
+    >
+      <div style={{
+        width: 44, height: 44, borderRadius: 13, flexShrink: 0,
+        background: 'linear-gradient(135deg, #c4b5fd, #7c3aed)',
+        display: 'grid', placeItems: 'center',
+        boxShadow: '0 6px 18px rgba(124,58,237,0.40)',
+      }}>
+        <Icon size={20} color="#000" strokeWidth={2.2} />
+      </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 10, fontWeight: 700, color: C.purpleLite, textTransform: 'uppercase', letterSpacing: 1.4 }}>
+          {rec.kind}{rec.subject ? ` · ${rec.subject}` : ''}
+        </div>
+        <div style={{ fontSize: 14, color: C.text, fontWeight: 700, marginTop: 3, lineHeight: 1.35 }}>
+          {rec.reason}
+        </div>
+      </div>
+      <ChevronRight size={18} color={C.purpleLite} style={{ flexShrink: 0 }} />
+    </motion.button>
+  )
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// VITAL CHIP (horizontal-scroll metric)
+// ════════════════════════════════════════════════════════════════════════════
+function VitalChip({ title, pct, unit = '%', tone, icon: Icon }: { title: string; pct: number; unit?: string; tone: 'good' | 'warn' | 'danger' | 'neutral'; icon: any }) {
+  const accent = tone === 'good' ? C.purpleLite : tone === 'warn' ? C.purple : tone === 'danger' ? C.purpleHi : C.purpleSoft
+  return (
+    <div style={{
+      flexShrink: 0,
+      minWidth: 130, padding: '14px 14px',
+      borderRadius: 16,
+      background: `linear-gradient(180deg, rgba(167,139,250,0.06) 0%, ${C.panel2} 100%)`,
+      border: '1px solid rgba(167,139,250,0.16)',
+      display: 'flex', flexDirection: 'column', gap: 6,
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <Icon size={11} color={accent} />
+        <span style={{ fontSize: 10, fontWeight: 700, color: accent, textTransform: 'uppercase', letterSpacing: 1.4 }}>{title}</span>
+      </div>
+      <div style={{ fontSize: 22, fontWeight: 800, color: C.text, lineHeight: 1, letterSpacing: -0.6 }}>
+        {pct}<span style={{ fontSize: 11, color: C.textFaint, marginLeft: 1, fontWeight: 700 }}>{unit}</span>
+      </div>
+    </div>
+  )
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// TRAJECTORY
+// ════════════════════════════════════════════════════════════════════════════
+function TrajectoryCard({ trend, predicted, band, mastered, tracked }: {
+  trend: number; predicted: number | null; band: string | null; mastered: number; tracked: number
+}) {
+  const up = trend > 0.05
+  return (
+    <div style={{
+      padding: 16, borderRadius: 18,
+      background: `linear-gradient(180deg, ${C.panel} 0%, ${C.bg} 100%)`,
+      border: '1px solid rgba(167,139,250,0.16)',
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div style={{
+          width: 44, height: 44, borderRadius: 12,
+          background: 'linear-gradient(135deg, #c4b5fd, #7c3aed)',
+          display: 'grid', placeItems: 'center', flexShrink: 0,
+        }}>
+          <TrendingUp size={20} color="#000" />
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 10, fontWeight: 700, color: C.purpleLite, textTransform: 'uppercase', letterSpacing: 1.4 }}>
+            Predicted exam
+          </div>
+          <div style={{ fontSize: 22, fontWeight: 800, color: C.text, lineHeight: 1.1, letterSpacing: -0.4 }}>
+            {predicted != null ? `${predicted}%` : '—'}
+            {band && <span style={{ fontSize: 12, color: C.textFaint, marginLeft: 6, fontWeight: 700 }}>{band}</span>}
+          </div>
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', gap: 12, marginTop: 16, paddingTop: 14, borderTop: '1px solid rgba(167,139,250,0.10)' }}>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: 10, color: C.textFaint, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.2 }}>Trend</div>
+          <div style={{ fontSize: 16, fontWeight: 800, color: up ? C.purpleLite : trend < -0.05 ? C.purpleHi : C.textDim, marginTop: 2 }}>
+            {trend > 0 ? '+' : ''}{(trend * 100).toFixed(0)}%
+          </div>
+        </div>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: 10, color: C.textFaint, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.2 }}>Mastered</div>
+          <div style={{ fontSize: 16, fontWeight: 800, color: C.text, marginTop: 2 }}>
+            {mastered}<span style={{ fontSize: 11, color: C.textFaint, fontWeight: 600, marginLeft: 3 }}>/ {tracked}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// REVISE ROW + TOPIC CHIP
+// ════════════════════════════════════════════════════════════════════════════
+function ReviseRow({ topic, subject, hours, onClick }: { topic: string; subject: string; hours: number; onClick: () => void }) {
+  const urgent = hours < 24
+  return (
+    <motion.button
+      whileTap={{ scale: 0.98 }}
+      onClick={onClick}
+      style={{
+        width: '100%', display: 'flex', alignItems: 'center', gap: 12,
+        padding: '12px 14px', borderRadius: 14,
+        background: urgent ? 'rgba(167,139,250,0.08)' : C.panel,
+        border: `1px solid ${urgent ? 'rgba(167,139,250,0.30)' : 'rgba(167,139,250,0.10)'}`,
+        cursor: 'pointer', fontFamily: 'inherit', color: C.text, textAlign: 'left',
+        WebkitTapHighlightColor: 'transparent',
+      }}
+    >
+      <div style={{
+        width: 4, height: 36, borderRadius: 2,
+        background: urgent ? C.purpleHi : C.purpleLite,
+        flexShrink: 0,
+      }} />
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 13.5, fontWeight: 700, color: C.text, textTransform: 'capitalize', lineHeight: 1.3 }}>
+          {topic}
+        </div>
+        <div style={{ fontSize: 11, color: C.textFaint, marginTop: 2 }}>
+          {subject} · forgetting in {hours < 24 ? `${Math.round(hours)}h` : `${Math.round(hours / 24)}d`}
+        </div>
+      </div>
+      <ChevronsRight size={15} color={C.purple} />
+    </motion.button>
+  )
+}
+
+function TopicChip({ row, onClick }: { row: MasteryRow & { retentionNow?: number }; onClick: () => void }) {
+  const color = row.mastery < 0.4 ? C.purpleHi : row.mastery < 0.7 ? C.purple : C.purpleLite
+  return (
+    <motion.button
+      whileTap={{ scale: 0.95 }}
+      onClick={onClick}
+      style={{
+        padding: '7px 12px', borderRadius: 999,
+        background: `${color}14`, border: `1px solid ${color}44`,
+        color, fontSize: 12, fontWeight: 600,
+        fontFamily: 'inherit', cursor: 'pointer',
+        textTransform: 'capitalize',
+        WebkitTapHighlightColor: 'transparent',
+      }}
+    >
+      {row.topic}
+      <span style={{ marginLeft: 6, opacity: 0.75, fontSize: 11 }}>{Math.round(row.mastery * 100)}%</span>
+    </motion.button>
+  )
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// EMPTY STATE
+// ════════════════════════════════════════════════════════════════════════════
+function EmptyState() {
+  return (
+    <div style={{
+      width: '100%', height: '100%',
+      display: 'flex', flexDirection: 'column',
+      alignItems: 'center', justifyContent: 'center',
+      gap: 14, padding: '40px 24px',
+      background: C.bg,
+      paddingBottom: 'calc(120px + env(safe-area-inset-bottom))',
+    }}>
+      <div style={{
+        width: 72, height: 72, borderRadius: 20,
+        background: 'linear-gradient(135deg, #c4b5fd, #7c3aed)',
+        display: 'grid', placeItems: 'center',
+        boxShadow: '0 14px 38px rgba(124,58,237,0.45)',
+      }}>
+        <Brain size={32} color="#000" />
+      </div>
+      <h2 style={{ margin: 0, fontSize: 20, fontWeight: 800, color: C.text }}>Kairo OS is waking up</h2>
+      <p style={{ margin: 0, fontSize: 13, color: C.textFaint, maxWidth: 320, textAlign: 'center', lineHeight: 1.55 }}>
+        Take a quiz, open a lab, or ask the Solver. Your dashboard fills itself in as Kairo learns how you study.
+      </p>
+    </div>
+  )
+}
+
+function greetingFor() {
+  const h = new Date().getHours()
+  if (h < 5)  return 'Late night ·'
+  if (h < 12) return 'Good morning ·'
+  if (h < 17) return 'Good afternoon ·'
+  if (h < 21) return 'Good evening ·'
+  return 'Burning midnight oil ·'
+}

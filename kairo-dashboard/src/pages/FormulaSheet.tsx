@@ -282,7 +282,7 @@ function TwinFormulaCard({ f }: { f: TwinFormula }) {
 // ─── AI CHAPTER SHEETS ─────────────────────────────────────────────────────
 function SheetsView({ sheets, loading, selected, setSelected, showForm, setShowForm, form, setForm, generating, generate, remove, err }: any) {
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '280px 1fr', gap: 14 }}>
+    <div className="fs-split" style={{ display: 'grid', gridTemplateColumns: '280px 1fr', gap: 14 }}>
       <div style={{
         background: C.panel, border: `1px solid ${C.border}`,
         borderRadius: 14, display: 'flex', flexDirection: 'column',

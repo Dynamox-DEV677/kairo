@@ -454,7 +454,7 @@ function FeaturedLab({ lab, onOpen }: { lab: Lab; onOpen: () => void }) {
         filter: 'blur(30px)', pointerEvents: 'none',
       }} />
 
-      <div style={{ position: 'relative', padding: '30px 32px', display: 'grid', gridTemplateColumns: '1fr auto', gap: 24, alignItems: 'center', transform: 'translateZ(40px)' }}>
+      <div className="kl-featured-grid" style={{ position: 'relative', padding: 'clamp(18px, 4vw, 30px)', display: 'grid', gridTemplateColumns: '1fr auto', gap: 'clamp(14px, 3vw, 24px)', alignItems: 'center', transform: 'translateZ(40px)' }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
             <span style={{
@@ -466,7 +466,7 @@ function FeaturedLab({ lab, onOpen }: { lab: Lab; onOpen: () => void }) {
             </span>
             <span style={{ fontSize: 11, color: '#71717a' }}>{lab.topic}</span>
           </div>
-          <h2 style={{ margin: 0, fontSize: 30, fontWeight: 800, color: '#fafafa', letterSpacing: -0.6, lineHeight: 1.1 }}>
+          <h2 style={{ margin: 0, fontSize: 'clamp(18px, 5.5vw, 30px)', fontWeight: 800, color: '#fafafa', letterSpacing: -0.6, lineHeight: 1.1 }}>
             {lab.title}
           </h2>
           <p style={{ margin: '10px 0 18px', fontSize: 14, color: '#c4c4c8', lineHeight: 1.65, maxWidth: 520 }}>
@@ -483,15 +483,16 @@ function FeaturedLab({ lab, onOpen }: { lab: Lab; onOpen: () => void }) {
           </div>
         </div>
 
-        <div style={{
-          width: 160, height: 160, borderRadius: 28, flexShrink: 0,
+        <div className="kl-featured-plate" style={{
+          width: 'clamp(96px, 22vw, 160px)', height: 'clamp(96px, 22vw, 160px)',
+          borderRadius: 'clamp(18px, 4vw, 28px)', flexShrink: 0,
           background: `linear-gradient(135deg, ${color}40, ${color}08)`,
           border: `1px solid ${color}40`,
           display: 'grid', placeItems: 'center',
           boxShadow: `inset 0 0 40px ${color}30, 0 16px 40px ${color}26`,
           transform: 'translateZ(60px) rotateY(-8deg)',
         }}>
-          <Icon size={68} color={color} strokeWidth={1.4} />
+          <Icon size={64} color={color} strokeWidth={1.4} style={{ width: '50%', height: '50%' }} />
         </div>
       </div>
     </motion.button>

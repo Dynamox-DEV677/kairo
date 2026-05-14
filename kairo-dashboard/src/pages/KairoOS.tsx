@@ -24,6 +24,8 @@ import {
 } from '../lib/twin'
 import { confirmDialog } from '../components/ConfirmModal'
 import TwinBackupModal from '../components/TwinBackupModal'
+import { useIsMobile } from '../lib/useIsMobile'
+import KairoOSMobile from './KairoOSMobile'
 
 // ════════════════════════════════════════════════════════════════════════════
 // TOKENS
@@ -73,6 +75,7 @@ type DetailKind =
   | { type: 'forgetting'; subject: string; topic: string }
 
 export default function KairoOS() {
+  const isMobile = useIsMobile(768)
   const [snap, setSnap] = useState<DashboardSnapshot | null>(null)
   const [pulse, setPulse] = useState(false)   // brief visual flash on recompute
   const [detail, setDetail] = useState<DetailKind | null>(null)
@@ -80,6 +83,27 @@ export default function KairoOS() {
 
   function reload() {
     setSnap(getDashboard())
+  }
+
+  // ── Mobile fork: render the native phone-first layout instead of the
+  // desktop grid. The dashboard data still lives in localStorage so this
+  // is just a different view of the same twin.
+  if (isMobile) {
+    return (
+      <>
+        <KairoOSMobile
+          onNavigate={(route) => {
+            const setActive = (window as any).__kairoSetActive
+            if (typeof setActive === 'function') setActive(route)
+          }}
+          onOpenBackup={() => setBackupOpen(true)}
+        />
+        <TwinBackupModal
+          open={backupOpen}
+          onClose={() => setBackupOpen(false)}
+        />
+      </>
+    )
   }
 
   useEffect(() => {
@@ -147,39 +171,30 @@ export default function KairoOS() {
 
         /* ── Responsive: collapse all grids to single column on phones ── */
         @media (max-width: 760px) {
-          .kr-page { padding: 16px 14px 100px !important; }
+          .kr-page { padding: 14px 16px 116px !important; }
           .kr-pulse-row,
           .kr-half-row,
           .kr-vitals-row,
           .kr-recs-row { grid-template-columns: 1fr !important; gap: 12px !important; }
 
-          /* Tighten card internals */
           .kr-style-grid   { grid-template-columns: repeat(2, 1fr) !important; }
           .kr-perf-grid    { grid-template-columns: repeat(3, 1fr) !important; }
           .kr-submetrics   { gap: 6px !important; }
 
-          /* Pulse ring smaller on phone */
           .kr-pulse-ring   { width: 160px !important; height: 160px !important; }
           .kr-pulse-svg    { width: 160px !important; height: 160px !important; }
 
-          /* Header chips wrap nicely */
           .kr-header       { gap: 10px !important; }
-          .kr-header h1    { font-size: 20px !important; }
+          .kr-header h1    { font-size: 22px !important; }
           .kr-chip-row     { width: 100%; }
 
-          /* Card padding */
           .kr-card         { padding: 14px !important; }
-
-          /* Heatmap maxHeight smaller on phone (less scroll fatigue) */
           .kr-heatmap-list { max-height: 240px !important; }
-
-          /* Timeline + Recommendations cards stay full-width and readable */
           .kr-rec-item     { padding: 10px 12px !important; }
         }
 
-        /* Slightly tighter on very narrow phones */
         @media (max-width: 380px) {
-          .kr-page { padding: 12px 10px 100px !important; }
+          .kr-page { padding: 12px 12px 116px !important; }
           .kr-pulse-ring   { width: 140px !important; height: 140px !important; }
           .kr-pulse-svg    { width: 140px !important; height: 140px !important; }
         }

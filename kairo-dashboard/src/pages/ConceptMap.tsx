@@ -144,21 +144,26 @@ export default function ConceptMap() {
         )}
 
         {/* The graph itself */}
-        <div style={{
+        <div className="cm-graph-box" style={{
           marginTop: 22, position: 'relative',
           background: C.panel,
           border: `1px solid ${C.border}`,
           borderRadius: 16, overflow: 'hidden',
-          minHeight: 640,
+          minHeight: 'clamp(420px, 70vh, 640px)',
         }}>
           {graph.nodes.length === 0 ? <Empty /> : (
             <svg
               ref={svgRef}
               viewBox="0 0 1100 620"
-              width="100%" height="640"
+              width="100%" height="100%"
               onPointerMove={onMove}
               onPointerUp={endDrag} onPointerLeave={endDrag}
-              style={{ display: 'block', cursor: dragId ? 'grabbing' : 'default' }}>
+              preserveAspectRatio="xMidYMid meet"
+              style={{
+                display: 'block', cursor: dragId ? 'grabbing' : 'default',
+                touchAction: 'pinch-zoom',
+                minHeight: 'clamp(420px, 70vh, 640px)',
+              }}>
               <defs>
                 <radialGradient id="nodeGlow" cx="50%" cy="50%" r="50%">
                   <stop offset="0%"  stopColor="#a78bfa" stopOpacity="0.4" />

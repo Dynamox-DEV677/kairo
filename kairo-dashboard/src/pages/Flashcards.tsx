@@ -155,7 +155,7 @@ export default function Flashcards() {
       backgroundImage:
         `radial-gradient(at 12% 0%, rgba(124,58,237,0.10) 0%, transparent 36%),
          radial-gradient(at 88% 100%, rgba(91,33,182,0.10) 0%, transparent 42%)`,
-      padding: '24px 32px 60px',
+      padding: 'clamp(14px, 4vw, 24px) clamp(14px, 4vw, 32px) 60px',
     }}>
       <style>{`
         @keyframes fc-spin { to { transform: rotate(360deg) } }
@@ -359,7 +359,7 @@ function ModeBtn({ active, onClick, children }: { active: boolean; onClick: () =
 // ════════════════════════════════════════════════════════════════════════════
 function StatsRow({ stats }: { stats: { total: number; today: number; mastered: number; due: number } }) {
   return (
-    <div style={{ marginTop: 22, display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
+    <div className="fc-stats-row" style={{ marginTop: 22, display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
       <StatTile icon={<Layers size={13} />}  label="Total cards"  value={stats.total}    accent={C.purpleLite} />
       <StatTile icon={<Zap size={13} />}     label="Added today"   value={stats.today}    accent={C.purple} />
       <StatTile icon={<Brain size={13} />}   label="Mastered"      value={stats.mastered} accent={C.purpleHi} />
