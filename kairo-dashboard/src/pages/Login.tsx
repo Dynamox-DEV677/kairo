@@ -297,7 +297,24 @@ function PersonalSignup({ onLogin, onBack }: any) {
   const [avatar, setAvatar]     = useState<string | null>(null)
   const [busy, setBusy]         = useState(false)
   const [err, setErr]           = useState('')
-  const [exists, setExists]     = useState(false)   // shows "Sign in instead" CTA
+  const [exists, setExists]     = useState(false)   // shows recovery options
+  const [resetSent, setResetSent] = useState(false) // reset-email confirmation
+
+  async function sendPasswordReset() {
+    setBusy(true); setErr('')
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(
+        email.trim().toLowerCase(),
+        { redirectTo: window.location.origin },
+      )
+      if (error) throw new Error(error.message)
+      setResetSent(true)
+    } catch (e: any) {
+      setErr(`Couldn't send reset email: ${e.message || 'try again later'}`)
+    } finally {
+      setBusy(false)
+    }
+  }
 
   function handleAvatar(file: File | null) {
     if (!file) { setAvatar(null); return }
@@ -430,8 +447,33 @@ function PersonalSignup({ onLogin, onBack }: any) {
         </div>
       </Field>
       {err && <ErrLine msg={err} />}
-      {exists ? (
-        <PrimaryBtn busy={false} onClick={onBack} icon={ArrowRight}>Go to Sign In</PrimaryBtn>
+
+      {resetSent ? (
+        <div style={{
+          padding: '14px 16px', borderRadius: 12,
+          background: 'rgba(167,139,250,0.10)',
+          border: '1px solid rgba(167,139,250,0.32)',
+          color: '#c4b5fd', fontSize: 13, lineHeight: 1.55,
+        }}>
+          <strong style={{ color: '#fafafa' }}>Reset link sent ✓</strong>
+          <br />
+          Check <strong>{email}</strong> — click the link in the email, set a new password, then return here and sign in.
+        </div>
+      ) : exists ? (
+        <>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <PrimaryBtn busy={busy} onClick={sendPasswordReset} icon={Mail}>Reset password via email</PrimaryBtn>
+            <button onClick={onBack} type="button" style={{
+              padding: '11px 16px', borderRadius: 10,
+              background: 'transparent', border: '1px solid #2d2d2d',
+              color: '#a1a1aa', fontFamily: 'inherit', fontSize: 13, fontWeight: 600,
+              cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
+            }}>
+              <ArrowRight size={14} /> Go to Sign In
+            </button>
+          </div>
+        </>
       ) : (
         <PrimaryBtn busy={busy} onClick={submit} icon={Sparkles}>Create my account</PrimaryBtn>
       )}
