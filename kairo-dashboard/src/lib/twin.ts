@@ -297,6 +297,138 @@ export function clearTwin() {
 }
 
 // ════════════════════════════════════════════════════════════════════════════
+// BACKUP & RESTORE — export to a JSON blob so the student can move their
+// Twin between devices without any server involvement.
+// ════════════════════════════════════════════════════════════════════════════
+
+/** Wrapper shape that lets us version the export format independently of TwinState. */
+export interface TwinBackup {
+  schema:     'kairo-twin-backup-v1'
+  exportedAt: string                 // ISO timestamp
+  userKey:    string
+  stats:      {
+    events:     number
+    doubts:     number
+    concepts:   number
+    formulas:   number
+    flashcards: number
+    mastery:    number
+  }
+  data:       TwinState
+}
+
+/** Snapshot the current twin to a pretty-printed JSON string. */
+export function exportTwin(): string {
+  const state = loadState()
+  const payload: TwinBackup = {
+    schema:     'kairo-twin-backup-v1',
+    exportedAt: new Date().toISOString(),
+    userKey:    state.userKey,
+    stats: {
+      events:     state.events.length,
+      doubts:     state.doubts.length,
+      concepts:   state.concepts.length,
+      formulas:   state.formulas.length,
+      flashcards: state.flashcards.length,
+      mastery:    state.mastery.length,
+    },
+    data: state,
+  }
+  return JSON.stringify(payload, null, 2)
+}
+
+/** Suggested filename for the export. */
+export function exportFilename(): string {
+  const now = new Date()
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `kairo-twin-${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}.json`
+}
+
+export type ImportMode = 'replace' | 'merge'
+
+export interface ImportResult {
+  ok:     boolean
+  reason?: 'invalid-json' | 'wrong-schema' | 'no-data'
+  stats?: TwinBackup['stats']
+  mode?:  ImportMode
+}
+
+/**
+ * Load a previously-exported JSON blob into the current device's localStorage.
+ *
+ * - replace: wipe whatever is here and use the imported state verbatim.
+ *            The imported userKey is replaced with the current device's
+ *            userKey so the data binds to the logged-in account here.
+ * - merge:   keep existing data and add the imported events / doubts /
+ *            concepts / formulas / flashcards on top, de-duped.
+ *            Mastery rows are kept from the LOCAL device (mastery is a
+ *            derived signal — re-computed on next refresh).
+ */
+export function importTwin(jsonText: string, mode: ImportMode = 'replace'): ImportResult {
+  let parsed: any
+  try { parsed = JSON.parse(jsonText) } catch { return { ok: false, reason: 'invalid-json' } }
+
+  if (!parsed || parsed.schema !== 'kairo-twin-backup-v1' || !parsed.data) {
+    return { ok: false, reason: 'wrong-schema' }
+  }
+  const incoming = parsed.data as TwinState
+  if (!Array.isArray(incoming.events)) return { ok: false, reason: 'no-data' }
+
+  const localKey = getUserKey()
+
+  if (mode === 'replace') {
+    const next: TwinState = {
+      ...emptyState(),
+      ...incoming,
+      userKey:    localKey,                          // bind to local account
+      doubts:     incoming.doubts     ?? [],
+      concepts:   incoming.concepts   ?? [],
+      formulas:   incoming.formulas   ?? [],
+      flashcards: incoming.flashcards ?? [],
+    }
+    saveState(next)
+  } else {
+    // Merge — combine arrays, de-dupe by id (or ts+type for events)
+    const current = loadState()
+    const next: TwinState = {
+      ...current,
+      events:     dedupeBy([...current.events,     ...(incoming.events     ?? [])], e => `${e.ts}|${e.type}|${e.topic ?? ''}`),
+      doubts:     dedupeBy([...current.doubts,     ...(incoming.doubts     ?? [])], d => d.id),
+      concepts:   dedupeBy([...current.concepts,   ...(incoming.concepts   ?? [])], c => c.id),
+      formulas:   dedupeBy([...current.formulas,   ...(incoming.formulas   ?? [])], f => f.id),
+      flashcards: dedupeBy([...current.flashcards, ...(incoming.flashcards ?? [])], f => f.id),
+      userKey:    localKey,
+    }
+    saveState(next)
+  }
+
+  return {
+    ok:    true,
+    mode,
+    stats: parsed.stats ?? {
+      events:     incoming.events.length,
+      doubts:     (incoming.doubts ?? []).length,
+      concepts:   (incoming.concepts ?? []).length,
+      formulas:   (incoming.formulas ?? []).length,
+      flashcards: (incoming.flashcards ?? []).length,
+      mastery:    (incoming.mastery ?? []).length,
+    },
+  }
+}
+
+function dedupeBy<T>(arr: T[], keyFn: (x: T) => string): T[] {
+  const seen = new Set<string>()
+  const out: T[] = []
+  for (const x of arr) {
+    const k = keyFn(x)
+    if (seen.has(k)) continue
+    seen.add(k)
+    out.push(x)
+  }
+  return out
+}
+
+// ════════════════════════════════════════════════════════════════════════════
 // HELPERS
 // ════════════════════════════════════════════════════════════════════════════
 

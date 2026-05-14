@@ -1,7 +1,8 @@
 import { useState, useRef } from 'react'
 import { motion } from 'framer-motion'
-import { Camera, User, Bell, Shield, Trash2, Check } from 'lucide-react'
+import { Camera, User, Bell, Shield, Trash2, Check, FileJson, Smartphone, Laptop, ChevronsRight } from 'lucide-react'
 import { confirmDialog } from '../components/ConfirmModal'
+import TwinBackupModal from '../components/TwinBackupModal'
 
 const BOARDS = ['CBSE', 'ICSE', 'Maharashtra', 'Tamil Nadu', 'Karnataka', 'UP Board', 'Bihar Board']
 const CLASSES = ['6', '7', '8', '9', '10', '11', '12']
@@ -15,6 +16,7 @@ export default function Settings() {
   const [pic, setPic] = useState<string | null>(localStorage.getItem('kairo_profile_pic'))
   const [notifs, setNotifs] = useState(true)
   const [saved, setSaved] = useState(false)
+  const [backupOpen, setBackupOpen] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
 
   function handlePic(e: React.ChangeEvent<HTMLInputElement>) {
@@ -143,6 +145,41 @@ export default function Settings() {
         />
       </Section>
 
+      {/* Cross-device backup */}
+      <Section icon={<FileJson size={14} />} title="Backup & restore">
+        <p style={{ fontSize: 13, color: '#71717a', marginBottom: 14, lineHeight: 1.6 }}>
+          Your Kairo OS twin (mastery, mistakes, doubts, formulas, flashcards) lives only on this device. To move it to another phone or laptop, export a JSON file here and import it there.
+        </p>
+
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14,
+          padding: '12px 14px', borderRadius: 10,
+          background: 'rgba(167,139,250,0.05)',
+          border: '1px solid rgba(167,139,250,0.22)',
+        }}>
+          <Laptop size={16} color="#c4b5fd" />
+          <ChevronsRight size={13} color="#71717a" />
+          <Smartphone size={16} color="#c4b5fd" />
+          <span style={{ fontSize: 12, color: '#a1a1aa', marginLeft: 4 }}>
+            Export here → Import on your other device. No server involved.
+          </span>
+        </div>
+
+        <button
+          onClick={() => setBackupOpen(true)}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 7,
+            padding: '10px 18px', borderRadius: 10, cursor: 'pointer',
+            background: 'linear-gradient(135deg, #c4b5fd, #7c3aed)',
+            border: 'none',
+            color: '#000', fontFamily: 'inherit', fontSize: 13, fontWeight: 800,
+            boxShadow: '0 6px 18px rgba(124,58,237,0.35)',
+          }}
+        >
+          <FileJson size={13} /> Open backup tool
+        </button>
+      </Section>
+
       {/* Privacy */}
       <Section icon={<Shield size={14} />} title="Privacy & Data">
         <p style={{ fontSize: 13, color: '#71717a', marginBottom: 14, lineHeight: 1.6 }}>
@@ -165,6 +202,8 @@ export default function Settings() {
       <div style={{ padding: '20px 0', borderTop: '1px solid #1a1a1a', marginTop: 8 }}>
         <p style={{ fontSize: 11, color: '#27272a' }}>Kairo v1.0 · Built for Indian students · Powered by OpenRouter</p>
       </div>
+
+      <TwinBackupModal open={backupOpen} onClose={() => setBackupOpen(false)} />
     </div>
   )
 }

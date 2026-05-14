@@ -13,7 +13,7 @@ import {
   Activity, TrendingUp, TrendingDown, Clock, Brain,
   RefreshCw, X, Check, Beaker, Layers, Target,
   AlertTriangle, Award, Trash2, ChevronRight, Flame,
-  CalendarDays, Zap, AlertCircle, Trophy,
+  CalendarDays, Zap, AlertCircle, Trophy, FileJson,
 } from 'lucide-react'
 import {
   getDashboard, refresh, track, dumpState,
@@ -23,6 +23,7 @@ import {
   type MasteryRow, type Modality,
 } from '../lib/twin'
 import { confirmDialog } from '../components/ConfirmModal'
+import TwinBackupModal from '../components/TwinBackupModal'
 
 // ════════════════════════════════════════════════════════════════════════════
 // TOKENS
@@ -75,6 +76,7 @@ export default function KairoOS() {
   const [snap, setSnap] = useState<DashboardSnapshot | null>(null)
   const [pulse, setPulse] = useState(false)   // brief visual flash on recompute
   const [detail, setDetail] = useState<DetailKind | null>(null)
+  const [backupOpen, setBackupOpen] = useState(false)
 
   function reload() {
     setSnap(getDashboard())
@@ -146,7 +148,7 @@ export default function KairoOS() {
 
       <div style={{ maxWidth: 1240, margin: '0 auto' }}>
 
-        <Header twin={snap.twin!} onRefresh={onRefresh} onWipe={onWipe} pulse={pulse} />
+        <Header twin={snap.twin!} onRefresh={onRefresh} onWipe={onWipe} pulse={pulse} onBackup={() => setBackupOpen(true)} />
 
         {snap.observations.length > 0 && (
           <TwinVoice obs={snap.observations[0]} />
@@ -202,6 +204,12 @@ export default function KairoOS() {
           />
         )}
       </AnimatePresence>
+
+      <TwinBackupModal
+        open={backupOpen}
+        onClose={() => setBackupOpen(false)}
+        onChange={reload}
+      />
     </div>
   )
 }
@@ -209,7 +217,7 @@ export default function KairoOS() {
 // ════════════════════════════════════════════════════════════════════════════
 // HEADER
 // ════════════════════════════════════════════════════════════════════════════
-function Header({ twin, onRefresh, onWipe, pulse }: { twin: Twin; onRefresh: () => void; onWipe: () => void; pulse: boolean }) {
+function Header({ twin, onRefresh, onWipe, pulse, onBackup }: { twin: Twin; onRefresh: () => void; onWipe: () => void; pulse: boolean; onBackup: () => void }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14, flexWrap: 'wrap' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
@@ -248,6 +256,12 @@ function Header({ twin, onRefresh, onWipe, pulse }: { twin: Twin; onRefresh: () 
         }}>
           <RefreshCw size={13} style={{ transform: pulse ? 'rotate(360deg)' : 'none', transition: 'transform 0.7s ease' }} />
           {pulse ? 'Recomputed' : 'Recompute'}
+        </button>
+        <button onClick={onBackup} title="Backup / restore your Twin to move it between devices" style={{
+          ...chipBtn(), color: C.purple, borderColor: 'rgba(167,139,250,0.4)',
+        }}>
+          <FileJson size={13} />
+          Backup
         </button>
         <button onClick={onWipe} style={{ ...chipBtn(), color: C.red, borderColor: 'rgba(167, 139, 250,0.4)' }}>
           <Trash2 size={13} />
