@@ -79,126 +79,116 @@ export default function KairoOSMobile({ onNavigate, onOpenBackup }: Props) {
       backgroundImage:
         `radial-gradient(at 50% -10%, rgba(124,58,237,0.18) 0%, transparent 40%),
          radial-gradient(at 50% 110%, rgba(91,33,182,0.10) 0%, transparent 40%)`,
-      paddingBottom: 'calc(120px + env(safe-area-inset-bottom))',
     }}>
       <style>{`
         @keyframes km-glow { 0%,100% { opacity: 0.45 } 50% { opacity: 0.95 } }
         @keyframes km-pulse { 0%,100% { transform: scale(1) } 50% { transform: scale(1.04) } }
       `}</style>
 
-      {/* ───── Greeting hero ───── */}
-      <div style={{ padding: '24px 18px 0' }}>
-        <div style={{ fontSize: 11, fontWeight: 700, color: C.purpleLite, letterSpacing: 2, textTransform: 'uppercase', marginBottom: 4 }}>
-          {greeting}
-        </div>
-        <h1 style={{
-          margin: 0, fontSize: 26, fontWeight: 800, color: C.text,
-          letterSpacing: -0.6, lineHeight: 1.1,
-        }}>
-          Let's lock something in today.
-        </h1>
-        <p style={{ margin: '6px 0 0', fontSize: 13.5, color: C.textFaint, lineHeight: 1.5 }}>
-          {twin.streakDays > 0
-            ? <>You're on a <strong style={{ color: C.purpleLite }}>{twin.streakDays}-day streak</strong>. Keep it going.</>
-            : <>Tap any card below to start studying.</>}
-        </p>
-      </div>
+      {/*
+        Consistent vertical rhythm: a single flex column with a 18 px gap
+        between every section. Each section owns ONLY its horizontal padding
+        (sections that host horizontal carousels stay full-width). This kills
+        the random 24/20/18 px padding mix that was leaving big visual holes.
+      */}
+      <div style={{
+        display: 'flex', flexDirection: 'column', gap: 18,
+        paddingTop: 18,
+        paddingBottom: 'calc(128px + env(safe-area-inset-bottom))',
+      }}>
 
-      {/* ───── PULSE HERO CARD ───── */}
-      <div style={{ padding: '20px 18px 0' }}>
-        <PulseHero pct={pct} label={label} twin={twin} pulsing={pulsing} onRecompute={recompute} />
-      </div>
-
-      {/* ───── Quick actions strip ───── */}
-      <div style={{ padding: '18px 0 0' }}>
-        <SectionLabel>Quick actions</SectionLabel>
-        <div className="h-scroll" style={{
-          padding: '0 18px',
-        }}>
-          <QuickAction label="Solve a doubt"  icon={MessageCircle} onClick={() => onNavigate('doubt')} accent={C.purple} />
-          <QuickAction label="Battle"          icon={Swords}        onClick={() => onNavigate('battle')} accent={C.purpleLite} />
-          <QuickAction label="Flashcards"     icon={BookMarked}    onClick={() => onNavigate('flashcards')} accent={C.purpleSoft} />
-          <QuickAction label="Open a lab"     icon={Beaker}        onClick={() => onNavigate('labs')} accent={C.purple} />
-          <QuickAction label="Take notes"      icon={BookOpen}      onClick={() => onNavigate('notebook')} accent={C.purpleLite} />
-          <QuickAction label="Backup"          icon={FileJson}      onClick={onOpenBackup}              accent={C.purpleSoft} />
-        </div>
-      </div>
-
-      {/* ───── Recommendation (only the top one as a hero) ───── */}
-      {snap.recommendations[0] && (
-        <div style={{ padding: '24px 18px 0' }}>
-          <SectionLabel>Recommended now</SectionLabel>
-          <TopRecommendation rec={snap.recommendations[0]} onClick={() => onNavigate('memory')} />
-        </div>
-      )}
-
-      {/* ───── Vitals row (3 chips horizontal scroll) ───── */}
-      <div style={{ padding: '24px 0 0' }}>
-        <SectionLabel>Vitals today</SectionLabel>
-        <div className="h-scroll" style={{ padding: '0 18px' }}>
-          <VitalChip
-            title="Burnout"      pct={Math.round(twin.burnoutRisk * 100)}
-            tone={twin.burnoutRisk > 0.55 ? 'danger' : twin.burnoutRisk > 0.3 ? 'warn' : 'good'}
-            icon={Activity}
-          />
-          <VitalChip
-            title="Consistency"  pct={Math.round(twin.consistencyScore * 100)}
-            tone={twin.consistencyScore > 0.6 ? 'good' : twin.consistencyScore > 0.3 ? 'warn' : 'danger'}
-            icon={Flame}
-          />
-          <VitalChip
-            title="Confidence"   pct={Math.round(twin.confidence * 100)}
-            tone={twin.confidence > 0.6 ? 'good' : twin.confidence > 0.4 ? 'warn' : 'danger'}
-            icon={Zap}
-          />
-          <VitalChip
-            title="Retention"    pct={Math.round(twin.retentionScore * 100)}
-            tone={twin.retentionScore > 0.6 ? 'good' : twin.retentionScore > 0.3 ? 'warn' : 'danger'}
-            icon={Brain}
-          />
-          <VitalChip
-            title="Streak"       pct={twin.streakDays} unit="d"
-            tone={twin.streakDays >= 7 ? 'good' : twin.streakDays >= 3 ? 'warn' : 'neutral'}
-            icon={Flame}
-          />
-        </div>
-      </div>
-
-      {/* ───── Trajectory tile ───── */}
-      <div style={{ padding: '24px 18px 0' }}>
-        <SectionLabel>Trajectory</SectionLabel>
-        <TrajectoryCard
-          trend={twin.performanceTrend}
-          predicted={twin.predictedExamScore}
-          band={twin.predictedBand}
-          mastered={masteredCount}
-          tracked={mastery.length}
-        />
-      </div>
-
-      {/* ───── Revise soon list ───── */}
-      {twin.forgettingSoon.length > 0 && (
-        <div style={{ padding: '24px 18px 0' }}>
-          <SectionLabel>Revise soon</SectionLabel>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {twin.forgettingSoon.slice(0, 5).map(f => (
-              <ReviseRow key={f.topic} topic={f.topic} subject={f.subject} hours={f.hoursUntilForget} onClick={() => onNavigate('simulator')} />
-            ))}
+        {/* ───── Greeting hero ───── */}
+        <section style={{ padding: '0 18px' }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: C.purpleLite, letterSpacing: 2, textTransform: 'uppercase', marginBottom: 4 }}>
+            {greeting}
           </div>
-        </div>
-      )}
+          <h1 style={{
+            margin: 0, fontSize: 24, fontWeight: 800, color: C.text,
+            letterSpacing: -0.6, lineHeight: 1.15,
+          }}>
+            Let's lock something in today.
+          </h1>
+          <p style={{ margin: '6px 0 0', fontSize: 13, color: C.textFaint, lineHeight: 1.5 }}>
+            {twin.streakDays > 0
+              ? <>You're on a <strong style={{ color: C.purpleLite }}>{twin.streakDays}-day streak</strong>. Keep it going.</>
+              : <>Tap any card below to start studying.</>}
+          </p>
+        </section>
 
-      {/* ───── Weak topics chips ───── */}
-      {mastery.length > 0 && (
-        <div style={{ padding: '24px 18px 24px' }}>
-          <SectionLabel>Weak spots</SectionLabel>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
-            {[...mastery].sort((a, b) => a.mastery - b.mastery).slice(0, 8).map(m => (
-              <TopicChip key={`${m.subject}-${m.topic}`} row={m} onClick={() => onNavigate('mistakes')} />
-            ))}
+        {/* ───── Pulse hero card ───── */}
+        <section style={{ padding: '0 18px' }}>
+          <PulseHero pct={pct} label={label} twin={twin} pulsing={pulsing} onRecompute={recompute} />
+        </section>
+
+        {/* ───── Quick actions strip ───── */}
+        <section>
+          <SectionLabel>Quick actions</SectionLabel>
+          <div className="h-scroll" style={{ padding: '0 18px' }}>
+            <QuickAction label="Solve a doubt" icon={MessageCircle} onClick={() => onNavigate('doubt')}      accent={C.purple} />
+            <QuickAction label="Battle"         icon={Swords}        onClick={() => onNavigate('battle')}     accent={C.purpleLite} />
+            <QuickAction label="Flashcards"    icon={BookMarked}    onClick={() => onNavigate('flashcards')} accent={C.purpleSoft} />
+            <QuickAction label="Open a lab"    icon={Beaker}        onClick={() => onNavigate('labs')}       accent={C.purple} />
+            <QuickAction label="Take notes"     icon={BookOpen}      onClick={() => onNavigate('notebook')}   accent={C.purpleLite} />
+            <QuickAction label="Backup"         icon={FileJson}      onClick={onOpenBackup}                    accent={C.purpleSoft} />
           </div>
-        </div>
-      )}
+        </section>
+
+        {/* ───── Recommendation (only the top one as a hero) ───── */}
+        {snap.recommendations[0] && (
+          <section style={{ padding: '0 18px' }}>
+            <SectionLabel inline>Recommended now</SectionLabel>
+            <TopRecommendation rec={snap.recommendations[0]} onClick={() => onNavigate('memory')} />
+          </section>
+        )}
+
+        {/* ───── Vitals row (chip carousel) ───── */}
+        <section>
+          <SectionLabel>Vitals today</SectionLabel>
+          <div className="h-scroll" style={{ padding: '0 18px' }}>
+            <VitalChip title="Burnout"     pct={Math.round(twin.burnoutRisk * 100)}     tone={twin.burnoutRisk > 0.55 ? 'danger' : twin.burnoutRisk > 0.3 ? 'warn' : 'good'} icon={Activity} />
+            <VitalChip title="Consistency" pct={Math.round(twin.consistencyScore * 100)} tone={twin.consistencyScore > 0.6 ? 'good' : twin.consistencyScore > 0.3 ? 'warn' : 'danger'} icon={Flame} />
+            <VitalChip title="Confidence"  pct={Math.round(twin.confidence * 100)}      tone={twin.confidence > 0.6 ? 'good' : twin.confidence > 0.4 ? 'warn' : 'danger'} icon={Zap} />
+            <VitalChip title="Retention"   pct={Math.round(twin.retentionScore * 100)}  tone={twin.retentionScore > 0.6 ? 'good' : twin.retentionScore > 0.3 ? 'warn' : 'danger'} icon={Brain} />
+            <VitalChip title="Streak"      pct={twin.streakDays} unit="d"               tone={twin.streakDays >= 7 ? 'good' : twin.streakDays >= 3 ? 'warn' : 'neutral'} icon={Flame} />
+          </div>
+        </section>
+
+        {/* ───── Trajectory tile ───── */}
+        <section style={{ padding: '0 18px' }}>
+          <SectionLabel inline>Trajectory</SectionLabel>
+          <TrajectoryCard
+            trend={twin.performanceTrend}
+            predicted={twin.predictedExamScore}
+            band={twin.predictedBand}
+            mastered={masteredCount}
+            tracked={mastery.length}
+          />
+        </section>
+
+        {/* ───── Revise soon list ───── */}
+        {twin.forgettingSoon.length > 0 && (
+          <section style={{ padding: '0 18px' }}>
+            <SectionLabel inline>Revise soon</SectionLabel>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {twin.forgettingSoon.slice(0, 5).map(f => (
+                <ReviseRow key={f.topic} topic={f.topic} subject={f.subject} hours={f.hoursUntilForget} onClick={() => onNavigate('simulator')} />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* ───── Weak topics chips ───── */}
+        {mastery.length > 0 && (
+          <section style={{ padding: '0 18px' }}>
+            <SectionLabel inline>Weak spots</SectionLabel>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
+              {[...mastery].sort((a, b) => a.mastery - b.mastery).slice(0, 8).map(m => (
+                <TopicChip key={`${m.subject}-${m.topic}`} row={m} onClick={() => onNavigate('mistakes')} />
+              ))}
+            </div>
+          </section>
+        )}
+      </div>
     </div>
   )
 }
@@ -325,10 +315,11 @@ function MiniMetric({ label, value, unit }: { label: string; value: any; unit?: 
 // ════════════════════════════════════════════════════════════════════════════
 // SECTION HELPERS
 // ════════════════════════════════════════════════════════════════════════════
-function SectionLabel({ children }: { children: React.ReactNode }) {
+function SectionLabel({ children, inline = false }: { children: React.ReactNode; inline?: boolean }) {
   return (
     <div style={{
-      padding: '0 18px', fontSize: 11, fontWeight: 700,
+      padding: inline ? 0 : '0 18px',
+      fontSize: 11, fontWeight: 700,
       color: C.textFaint, textTransform: 'uppercase', letterSpacing: 1.8,
       marginBottom: 10,
     }}>
