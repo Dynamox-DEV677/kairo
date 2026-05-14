@@ -16,6 +16,7 @@ import {
   Trash2, RefreshCw, Target, Award,
 } from 'lucide-react'
 import { api } from '../lib/api'
+import { getMistakes, dumpState, clearTwin } from '../lib/twin'
 
 interface MemoryEntry {
   id:        string
@@ -51,30 +52,76 @@ export default function MemoryBrain() {
 
   const load = useCallback(async () => {
     setLoading(true); setErr('')
-    try { setData(await api('/memory')) }
-    catch (e: any) { setErr(e.message) }
-    finally { setLoading(false) }
+    // localStorage-first — read from twin instead of /api/memory.
+    // The DB cleanup deleted the `memory` table; the twin is now the
+    // canonical store for everything Kairo "remembers" about the user.
+    try {
+      const state    = dumpState()
+      const mistakes = getMistakes()
+
+      // Map mastery rows + mistakes into the MemoryEntry shape this page expects.
+      const all: MemoryEntry[] = []
+      for (const m of state.mastery) {
+        const signal = (m.mastery - 0.5) * 2          // 0..1 → -1..+1
+        all.push({
+          id:        `mastery-${m.subject}-${m.topic}`,
+          type:      signal < -0.2 ? 'weak_topic' : signal > 0.3 ? 'strong_topic' : 'note',
+          subject:   m.subject,
+          topic:     m.topic,
+          content:   null,
+          signal,
+          hits:      m.attempts,
+          last_seen: new Date(m.lastStudiedAt).toISOString(),
+          created_at: new Date(m.lastStudiedAt).toISOString(),
+        })
+      }
+      for (const mi of mistakes) {
+        all.push({
+          id:        `mistake-${mi.subject}-${mi.topic}`,
+          type:      'mistake',
+          subject:   mi.subject,
+          topic:     mi.topic,
+          content:   null,
+          signal:    -Math.min(1, mi.severity + 0.2),
+          hits:      mi.count,
+          last_seen: new Date(mi.lastAt).toISOString(),
+          created_at: new Date(mi.lastAt).toISOString(),
+        })
+      }
+
+      const weak     = all.filter(e => e.signal < -0.2).sort((a, b) => a.signal - b.signal)
+      const strong   = all.filter(e => e.signal > 0.3 ).sort((a, b) => b.signal - a.signal)
+      const ms       = all.filter(e => e.type === 'mistake')
+      const improved = all.filter(e => e.signal > 0.3 && e.hits > 1)
+
+      setData({
+        total:        all.length,
+        weak,
+        strong,
+        mistakes:     ms,
+        improved,
+        preferences:  [],
+        all,
+      })
+    } catch (e: any) {
+      setErr(e.message || 'Failed to read local memory.')
+    } finally {
+      setLoading(false)
+    }
   }, [])
 
   useEffect(() => { load() }, [load])
 
-  async function forget(id: string) {
-    setBusy(id)
-    try {
-      await api(`/memory/${id}`, { method: 'DELETE' })
-      await load()
-    } catch (e: any) { alert(e.message) }
-    finally { setBusy(null) }
+  async function forget(_id: string) {
+    // Forgetting a single derived entry is a no-op — the twin keeps the
+    // underlying event. Use "Wipe Twin" in KairoOS for full reset.
+    alert('Use Kairo OS → Wipe Twin to clear individual entries.')
   }
 
   async function wipeAll() {
     if (!confirm('Forget everything Kairo has learned about you? This cannot be undone.')) return
-    setBusy('all')
-    try {
-      await api('/memory/clear', { method: 'POST' })
-      await load()
-    } catch (e: any) { alert(e.message) }
-    finally { setBusy(null) }
+    clearTwin()
+    await load()
   }
 
   // Recommended revision — top 5 by (hits × |negative signal|)

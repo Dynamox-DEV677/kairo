@@ -629,7 +629,7 @@ function JoinSchool({ onLogin, onBack }: any) {
 }
 
 // ════════════════════════════════════════════════════════════════════════════
-// Create School — 3-step wizard (no payment frontend yet)
+// Create School — 2-step wizard (payment removed; monetisation deferred)
 // ════════════════════════════════════════════════════════════════════════════
 function CreateSchool({ onLogin, onBack }: any) {
   const [step, setStep]           = useState(1)
@@ -638,7 +638,6 @@ function CreateSchool({ onLogin, onBack }: any) {
   const [email, setEmail]         = useState('')
   const [password, setPassword]   = useState('')
   const [show, setShow]           = useState(false)
-  const [plan, setPlan]           = useState<'monthly' | 'yearly' | 'trial'>('yearly')
   const [busy, setBusy]           = useState(false)
   const [err, setErr]             = useState('')
   const [result, setResult]       = useState<any>(null)
@@ -646,7 +645,7 @@ function CreateSchool({ onLogin, onBack }: any) {
   async function createSchool() {
     setBusy(true); setErr('')
     try {
-      // 1. Create the school (status: pending_payment) + admin account
+      // 1. Create the school + admin account (no payment session)
       const data = await post('/schools/register', {
         school_name:    schoolName.trim(),
         school_email:   email.trim().toLowerCase(),
@@ -655,36 +654,23 @@ function CreateSchool({ onLogin, onBack }: any) {
         owner_password: password,
       })
 
-      // 2. Sign the admin in immediately (so the next call has auth)
+      // 2. Sign the admin in immediately
       const { data: signed } = await supabase.auth.signInWithPassword({
         email:    email.trim().toLowerCase(),
         password,
       })
       if (!signed?.session?.access_token) throw new Error('Sign-in failed after school creation.')
 
-      // 3. Create payment session
-      const sessionRes = await fetch('/api/payments/create-session', {
-        method:  'POST',
-        headers: {
-          'Content-Type':  'application/json',
-          Authorization:   `Bearer ${signed.session.access_token}`,
-        },
-        body: JSON.stringify({ plan }),
-      })
-      const session = await sessionRes.json()
-      if (!sessionRes.ok) throw new Error(session.error || 'Could not start payment.')
-
       setResult({
-        passcode:    data.passcode,
-        school_id:   data.school_id,
-        access_token: signed.session.access_token,
+        passcode:      data.passcode,
+        school_id:     data.school_id,
+        access_token:  signed.session.access_token,
         refresh_token: signed.session.refresh_token,
-        owner_email: email.trim().toLowerCase(),
-        owner_name:  name.trim(),
-        school_name: schoolName.trim(),
-        session,
+        owner_email:   email.trim().toLowerCase(),
+        owner_name:    name.trim(),
+        school_name:   schoolName.trim(),
       })
-      setStep(4)
+      setStep(3)
     } catch (e: any) { setErr(e.message); setBusy(false) }
   }
 
@@ -702,7 +688,7 @@ function CreateSchool({ onLogin, onBack }: any) {
   }
 
   if (step === 1) return (
-    <Wizard back={onBack} step={1} of={3} title="Create School" subtitle="Let's set up your school on Kairo.">
+    <Wizard back={onBack} step={1} of={2} title="Create School" subtitle="Let's set up your school on Kairo.">
       <Field label="School Name" icon={Building2}>
         <input autoFocus value={schoolName} onChange={e => setSchoolName(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && schoolName.trim() && setStep(2)}
@@ -717,7 +703,7 @@ function CreateSchool({ onLogin, onBack }: any) {
   )
 
   if (step === 2) return (
-    <Wizard back={() => setStep(1)} step={2} of={3} title="Owner Account" subtitle={`You'll be the admin of ${schoolName}.`}>
+    <Wizard back={() => setStep(1)} step={2} of={2} title="Owner Account" subtitle={`You'll be the admin of ${schoolName}.`}>
       <Field label="Your Name" icon={User}>
         <input autoFocus value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Mrs. Priya Sharma" style={inp} />
       </Field>
@@ -734,65 +720,16 @@ function CreateSchool({ onLogin, onBack }: any) {
         </div>
       </Field>
       {err && <ErrLine msg={err} />}
-      <PrimaryBtn busy={false} onClick={() => {
+      <PrimaryBtn busy={busy} onClick={() => {
         if (!name.trim() || !email.trim() || password.length < 8) {
           setErr('Fill all fields. Password must be 8+ chars.'); return
         }
-        setErr(''); setStep(3)
-      }} icon={ArrowRight}>Continue</PrimaryBtn>
+        setErr(''); createSchool()
+      }} icon={Sparkles}>Create School</PrimaryBtn>
     </Wizard>
   )
 
-  if (step === 3) return (
-    <Wizard back={() => setStep(2)} step={3} of={3} title="Pick a Plan" subtitle="Choose your subscription. Trial works without payment.">
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 14 }}>
-        {PLANS.map(p => {
-          const active = plan === p.id
-          return (
-            <motion.button key={p.id}
-              whileTap={{ scale: 0.99 }}
-              onClick={() => setPlan(p.id as any)}
-              style={{
-                padding: '14px 16px', borderRadius: 11,
-                background: active ? 'rgba(124, 58, 237,0.10)' : '#0d0d0d',
-                border: `1px solid ${active ? '#7c3aed' : '#1e1e1e'}`,
-                cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left',
-                display: 'flex', alignItems: 'center', gap: 12, position: 'relative',
-              }}>
-              {p.popular && (
-                <span style={{
-                  position: 'absolute', top: -8, right: 12,
-                  fontSize: 9, fontWeight: 800, padding: '2px 8px', borderRadius: 4,
-                  background: '#7c3aed', color: '#fff', textTransform: 'uppercase', letterSpacing: 1,
-                }}>Best Value</span>
-              )}
-              <div style={{
-                width: 38, height: 38, borderRadius: 9, flexShrink: 0,
-                background: active ? 'linear-gradient(135deg,#7c3aed,#7c3aed)' : '#1a1a1a',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}>
-                <CreditCard size={16} color={active ? '#fff' : '#a1a1aa'} />
-              </div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 14, fontWeight: 700, color: active ? '#c4b5fd' : '#fafafa' }}>{p.label}</div>
-                <div style={{ fontSize: 11, color: '#71717a', marginTop: 2 }}>
-                  {p.price} <span style={{ color: '#52525b' }}>/ {p.per}</span>
-                  {p.save && <span style={{ marginLeft: 8, color: '#c4b5fd', fontWeight: 600 }}>{p.save}</span>}
-                </div>
-              </div>
-              {active && <Check size={16} color="#7c3aed" />}
-            </motion.button>
-          )
-        })}
-      </div>
-      {err && <ErrLine msg={err} />}
-      <PrimaryBtn busy={busy} onClick={createSchool} icon={Sparkles}>
-        {plan === 'trial' ? 'Start Free Trial' : 'Create School & Pay'}
-      </PrimaryBtn>
-    </Wizard>
-  )
-
-  // Step 4 — passcode reveal + payment status
+  // Step 3 — passcode reveal (was step 4 before payment was removed)
   return (
     <Wizard back={null} step={null} title="School Created" subtitle="Save your join code somewhere safe.">
       <div style={{
@@ -818,35 +755,12 @@ function CreateSchool({ onLogin, onBack }: any) {
         </button>
       </div>
 
-      {result.session.mode === 'demo' && (
-        <div style={{ padding: '12px 14px', borderRadius: 8, background: 'rgba(196, 181, 253,0.06)', border: '1px solid rgba(196, 181, 253,0.25)', marginBottom: 14 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-            <Loader2 size={11} color="#c4b5fd" style={{ animation: 'spin 1s linear infinite' }} />
-            <span style={{ fontSize: 11, fontWeight: 700, color: '#c4b5fd', textTransform: 'uppercase', letterSpacing: 1 }}>Demo activation</span>
-          </div>
-          <p style={{ fontSize: 11, color: '#a1a1aa', margin: 0, lineHeight: 1.5 }}>
-            Razorpay keys aren't set on the server, so we're auto-activating the school in 3 seconds. Set <code style={{ background: '#1a1a1a', padding: '1px 5px', borderRadius: 3 }}>RAZORPAY_KEY_ID</code> in env for real payments.
-          </p>
-        </div>
-      )}
-
-      {result.session.mode === 'trial' && (
-        <div style={{ padding: '12px 14px', borderRadius: 8, background: 'rgba(196, 181, 253,0.06)', border: '1px solid rgba(196, 181, 253,0.3)', marginBottom: 14 }}>
-          <span style={{ fontSize: 11, fontWeight: 700, color: '#c4b5fd', textTransform: 'uppercase', letterSpacing: 1 }}>Trial active</span>
-          <p style={{ fontSize: 11, color: '#a1a1aa', margin: 0, marginTop: 4, lineHeight: 1.5 }}>
-            Your school is active for 14 days. Add payment from Settings before it expires.
-          </p>
-        </div>
-      )}
-
-      {result.session.mode === 'razorpay' && (
-        <div style={{ padding: '12px 14px', borderRadius: 8, background: 'rgba(124, 58, 237,0.06)', border: '1px solid rgba(124, 58, 237,0.3)', marginBottom: 14 }}>
-          <span style={{ fontSize: 11, fontWeight: 700, color: '#c4b5fd', textTransform: 'uppercase', letterSpacing: 1 }}>Payment pending</span>
-          <p style={{ fontSize: 11, color: '#a1a1aa', margin: 0, marginTop: 4, lineHeight: 1.5 }}>
-            Order ID: <code style={{ fontFamily: 'monospace' }}>{result.session.order_id}</code>. Frontend payment page is coming next — for now your school is in pending_payment state.
-          </p>
-        </div>
-      )}
+      <div style={{ padding: '12px 14px', borderRadius: 8, background: 'rgba(196, 181, 253,0.06)', border: '1px solid rgba(196, 181, 253,0.3)', marginBottom: 14 }}>
+        <span style={{ fontSize: 11, fontWeight: 700, color: '#c4b5fd', textTransform: 'uppercase', letterSpacing: 1 }}>Free during launch</span>
+        <p style={{ fontSize: 11, color: '#a1a1aa', margin: 0, marginTop: 4, lineHeight: 1.5 }}>
+          Your school has full access — no payment required while Kairo is in early access. Share the join code with your teachers and students to bring them on board.
+        </p>
+      </div>
 
       <PrimaryBtn busy={false} onClick={continueToDashboard} icon={ArrowRight}>
         Open Admin Dashboard

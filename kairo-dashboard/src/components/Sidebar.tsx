@@ -343,23 +343,7 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
           </button>
         </div>
 
-        {/* Upgrade CTA */}
-        <motion.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          className="gradient-border btn-glow"
-          style={{
-            width: '100%', padding: '9px 14px',
-            borderRadius: 8, background: 'rgba(99,102,241,0.08)',
-            cursor: 'pointer', fontFamily: 'inherit',
-            display: 'flex', alignItems: 'center', gap: 8,
-            fontSize: 12, color: '#818cf8', fontWeight: 600,
-          }}
-        >
-          <Sparkles size={13} />
-          Upgrade to Pro
-          <span style={{ marginLeft: 'auto', fontSize: 10, background: 'rgba(99,102,241,0.2)', padding: '1px 6px', borderRadius: 4 }}>✦</span>
-        </motion.button>
+        {/* Upgrade CTA removed — monetisation deferred until later. */}
 
         {/* Hidden file input for profile pic */}
         <input

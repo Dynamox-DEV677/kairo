@@ -36,11 +36,23 @@ export default function PerformancePredictor() {
   const compute = useCallback(async () => {
     setLoading(true); setErr('')
     try {
-      const [marks, memory, stats] = await Promise.all([
-        api('/marks/my'),
-        api('/memory'),
+      const [marks, stats] = await Promise.all([
+        api('/marks/my').catch(() => ({ marks: [] })),
         api('/battle/me').catch(() => null),
       ])
+      // /api/memory was deleted in the cleanup — derive `weak` topics
+      // from the twin's mastery rows directly.
+      const memory = await (async () => {
+        try {
+          const { dumpState } = await import('../lib/twin')
+          const state = dumpState()
+          return {
+            weak: state.mastery
+              .filter(m => m.mastery < 0.45)
+              .map(m => ({ subject: m.subject, topic: m.topic })),
+          }
+        } catch { return { weak: [] as any[] } }
+      })()
 
       // Group marks by subject, sort chronologically
       const bySubject: Record<string, { obtained: number; max: number; date: string }[]> = {}

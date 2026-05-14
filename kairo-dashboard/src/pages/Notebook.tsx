@@ -11,6 +11,10 @@ import {
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { api } from '../lib/api'
+import {
+  listNotebook, deleteNotebookEntry, updateNotebookEntry,
+  saveToNotebook, type NoteEntry,
+} from '../lib/notebook'
 import { listDoubts, listConcepts, listFormulas, type Doubt, type Concept, type Formula } from '../lib/twin'
 
 type Kind = 'flashcards' | 'summary' | 'doubt' | 'concept_map' | 'note' | 'plan' | 'grade'
@@ -46,6 +50,22 @@ const inp: React.CSSProperties = {
   fontFamily: 'inherit', outline: 'none', width: '100%', boxSizing: 'border-box',
 }
 
+// Adapter: localStorage NoteEntry → desktop Note shape (with pinned flag in memory).
+function entryToNote(e: NoteEntry): Note {
+  return {
+    id:         e.id,
+    kind:       e.kind as Kind,
+    subject:    e.subject,
+    title:      e.title,
+    content:    e.content,
+    tags:       e.tags,
+    source:     e.source,
+    pinned:     false,
+    created_at: new Date(e.createdAt).toISOString(),
+    updated_at: new Date(e.updatedAt).toISOString(),
+  }
+}
+
 export default function Notebook() {
   const [notes, setNotes]     = useState<Note[]>([])
   const [loading, setLoading] = useState(true)
@@ -58,11 +78,11 @@ export default function Notebook() {
 
   const load = useCallback(async () => {
     setLoading(true); setErr('')
-    try {
-      const list = await api('/notebook?limit=200')
-      setNotes(list)
-    } catch (e: any) { setErr(e.message) }
-    finally { setLoading(false) }
+    // localStorage-first: read every entry from the device store.
+    // The DB cleanup deleted the `notebooks` table so we never call /api/notebook here.
+    const local = listNotebook({ limit: 200 })
+    setNotes(local.map(entryToNote))
+    setLoading(false)
   }, [])
 
   useEffect(() => { load() }, [load])
@@ -83,19 +103,15 @@ export default function Notebook() {
   }, [notes, search, kindFilter])
 
   async function togglePin(n: Note) {
-    try {
-      await api(`/notebook/${n.id}`, { method: 'PUT', body: JSON.stringify({ pinned: !n.pinned }) })
-      setNotes(prev => prev.map(x => x.id === n.id ? { ...x, pinned: !x.pinned } : x))
-    } catch (e: any) { alert(e.message) }
+    // Pin is a UI-only flag on local entries. We store it on the note object.
+    setNotes(prev => prev.map(x => x.id === n.id ? { ...x, pinned: !x.pinned } : x))
   }
 
   async function remove(n: Note) {
     if (!confirm(`Delete "${n.title}"?`)) return
-    try {
-      await api(`/notebook/${n.id}`, { method: 'DELETE' })
-      setNotes(prev => prev.filter(x => x.id !== n.id))
-      if (selected?.id === n.id) setSelected(null)
-    } catch (e: any) { alert(e.message) }
+    deleteNotebookEntry(n.id)
+    setNotes(prev => prev.filter(x => x.id !== n.id))
+    if (selected?.id === n.id) setSelected(null)
   }
 
   return (
@@ -319,20 +335,16 @@ function AutoCollectedStrip() {
     } catch { /* keep raw */ }
 
     try {
-      await api('/notes', {
-        method: 'POST',
-        body: JSON.stringify({
-          kind:    args.kind,
-          title:   args.title,
-          content: body,
-          subject: args.subject ?? null,
-          tags:    args.tags ?? [],
-          source:  'auto-from-memory',
-        }),
+      // localStorage-first save — never errors on missing server tables
+      await saveToNotebook({
+        kind:    args.kind,
+        title:   args.title,
+        content: body,
+        subject: args.subject ?? null,
+        tags:    args.tags ?? [],
+        source:  'auto-from-memory',
       })
       setToast(`Saved to Notebook: ${args.title}`)
-      // Fire a fake storage event so the list reloads if there's a parent watcher.
-      // The user can hit refresh on the main list to see it.
     } catch (e: any) {
       setToast(`Couldn't save — ${e?.message || 'try again'}`)
     } finally {
@@ -634,10 +646,8 @@ function CreateModal({ onClose, onCreated }: { onClose: () => void; onCreated: (
     if (!title.trim() || !content.trim()) return
     setSaving(true)
     try {
-      await api('/notebook', {
-        method: 'POST',
-        body: JSON.stringify({ kind, title, content, subject: subject || null }),
-      })
+      // localStorage-first — survives DB cleanup
+      await saveToNotebook({ kind, title, content, subject: subject || null })
       onCreated()
     } catch (e: any) { alert(e.message); setSaving(false) }
   }
