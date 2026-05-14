@@ -74,7 +74,7 @@ export default function Settings() {
             onClick={() => fileRef.current?.click()}
             style={{
               width: 68, height: 68, borderRadius: 18, overflow: 'hidden',
-              background: pic ? 'transparent' : 'linear-gradient(135deg, #6366f1, #7c3aed)',
+              background: pic ? 'transparent' : 'linear-gradient(135deg, #7c3aed, #7c3aed)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               cursor: 'pointer', flexShrink: 0, position: 'relative',
               border: '2px solid #1e1e1e',
@@ -89,7 +89,7 @@ export default function Settings() {
             <p style={{ fontSize: 14, fontWeight: 600, color: '#fafafa', marginBottom: 4 }}>{name || 'Your Name'}</p>
             <button
               onClick={() => fileRef.current?.click()}
-              style={{ fontSize: 12, color: '#6366f1', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', padding: 0, display: 'flex', alignItems: 'center', gap: 5 }}
+              style={{ fontSize: 12, color: '#7c3aed', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', padding: 0, display: 'flex', alignItems: 'center', gap: 5 }}
             >
               <Camera size={11} /> Change photo
             </button>
@@ -123,7 +123,7 @@ export default function Settings() {
           onClick={save}
           style={{
             marginTop: 18, padding: '10px 22px', borderRadius: 9, border: 'none',
-            background: saved ? '#16a34a' : 'linear-gradient(135deg, #6366f1, #7c3aed)',
+            background: saved ? '#7c3aed' : 'linear-gradient(135deg, #7c3aed, #7c3aed)',
             color: '#fff', fontFamily: 'inherit', fontSize: 13, fontWeight: 600,
             cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 7,
             transition: 'background 0.2s',
@@ -153,8 +153,8 @@ export default function Settings() {
           style={{
             display: 'flex', alignItems: 'center', gap: 7,
             padding: '9px 16px', borderRadius: 8, cursor: 'pointer',
-            background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.2)',
-            color: '#f87171', fontFamily: 'inherit', fontSize: 13, fontWeight: 600,
+            background: 'rgba(167, 139, 250,0.08)', border: '1px solid rgba(167, 139, 250,0.2)',
+            color: '#a78bfa', fontFamily: 'inherit', fontSize: 13, fontWeight: 600,
           }}
         >
           <Trash2 size={13} /> Clear all data &amp; reset
@@ -201,7 +201,7 @@ function ToggleRow({ label, desc, value, onChange }: { label: string; desc: stri
         onClick={() => onChange(!value)}
         style={{
           width: 42, height: 24, borderRadius: 12, border: 'none', cursor: 'pointer',
-          background: value ? '#6366f1' : '#1c1c1c',
+          background: value ? '#7c3aed' : '#1c1c1c',
           position: 'relative', transition: 'background 0.2s', flexShrink: 0,
         }}
       >

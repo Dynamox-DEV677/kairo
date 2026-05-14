@@ -35,12 +35,12 @@ interface Action {
 }
 
 const FEATURE_META: Record<Action['feature'], { label: string; icon: any; color: string; route: string }> = {
-  'doubt':       { label: "Ask in Kairo's Solver",   icon: MessageCircle, color: '#818cf8', route: 'doubt' },
-  'flashcards':  { label: 'Generate Flashcards',     icon: BookMarked,    color: '#34d399', route: 'flashcards' },
-  'simulator':   { label: 'Run Revision Simulator',  icon: Zap,           color: '#fb923c', route: 'simulator' },
-  'camera':      { label: 'Snap a Textbook Photo',   icon: Camera,        color: '#f472b6', route: 'camera' },
+  'doubt':       { label: "Ask in Kairo's Solver",   icon: MessageCircle, color: '#a78bfa', route: 'doubt' },
+  'flashcards':  { label: 'Generate Flashcards',     icon: BookMarked,    color: '#c4b5fd', route: 'flashcards' },
+  'simulator':   { label: 'Run Revision Simulator',  icon: Zap,           color: '#c4b5fd', route: 'simulator' },
+  'camera':      { label: 'Snap a Textbook Photo',   icon: Camera,        color: '#c4b5fd', route: 'camera' },
   'memory':      { label: 'Review AI Memory',        icon: Brain,         color: '#a78bfa', route: 'memory' },
-  'study-plan':  { label: 'Re-build Study Plan',     icon: Compass,       color: '#fbbf24', route: 'study-plan' },
+  'study-plan':  { label: 'Re-build Study Plan',     icon: Compass,       color: '#c4b5fd', route: 'study-plan' },
 }
 
 const card: React.CSSProperties = { background: '#111', border: '1px solid #1e1e1e', borderRadius: 14 }
@@ -169,9 +169,9 @@ Return ONLY a JSON object in this exact shape:
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 22 }}>
         <div style={{
           width: 44, height: 44, borderRadius: 11,
-          background: 'linear-gradient(135deg, #6366f1, #38bdf8)',
+          background: 'linear-gradient(135deg, #7c3aed, #38bdf8)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 0 18px rgba(99,102,241,0.4)', flexShrink: 0,
+          boxShadow: '0 0 18px rgba(124, 58, 237,0.4)', flexShrink: 0,
         }}>
           <Compass size={22} color="#fff" />
         </div>
@@ -192,7 +192,7 @@ Return ONLY a JSON object in this exact shape:
       </div>
 
       {err && (
-        <div style={{ marginBottom: 16, padding: '10px 14px', background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.25)', borderRadius: 8, fontSize: 12, color: '#f87171' }}>
+        <div style={{ marginBottom: 16, padding: '10px 14px', background: 'rgba(167, 139, 250,0.08)', border: '1px solid rgba(167, 139, 250,0.25)', borderRadius: 8, fontSize: 12, color: '#a78bfa' }}>
           {err}
         </div>
       )}
@@ -201,14 +201,14 @@ Return ONLY a JSON object in this exact shape:
       {stats && (
         <div style={{ ...card, padding: 18, marginBottom: 16 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-            <Brain size={14} color="#a5b4fc" />
+            <Brain size={14} color="#c4b5fd" />
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 13, fontWeight: 700, color: '#fafafa' }}>Memory Snapshot</div>
               <div style={{ fontSize: 11, color: '#52525b' }}>
                 Difficulty signal: {' '}
                 <span style={{
-                  color: stats.difficulty === 'hard' ? '#f87171'
-                    : stats.difficulty === 'medium' ? '#fbbf24' : '#34d399',
+                  color: stats.difficulty === 'hard' ? '#a78bfa'
+                    : stats.difficulty === 'medium' ? '#c4b5fd' : '#c4b5fd',
                   fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1,
                 }}>{stats.difficulty}</span>
               </div>
@@ -216,10 +216,10 @@ Return ONLY a JSON object in this exact shape:
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
-            <Tile icon={AlertTriangle} label="Weak topics" value={stats.weakCount} color="#fbbf24" />
-            <Tile icon={Target}        label="Repeat mistakes" value={stats.repeatHits} color="#f87171" />
-            <Tile icon={TrendingUp}    label="Improved" value={stats.improvedCount} color="#34d399" />
-            <Tile icon={Sparkles}      label="Strong" value={stats.strongCount} color="#818cf8" />
+            <Tile icon={AlertTriangle} label="Weak topics" value={stats.weakCount} color="#c4b5fd" />
+            <Tile icon={Target}        label="Repeat mistakes" value={stats.repeatHits} color="#a78bfa" />
+            <Tile icon={TrendingUp}    label="Improved" value={stats.improvedCount} color="#c4b5fd" />
+            <Tile icon={Sparkles}      label="Strong" value={stats.strongCount} color="#a78bfa" />
           </div>
         </div>
       )}
@@ -231,12 +231,12 @@ Return ONLY a JSON object in this exact shape:
           onClick={generate} disabled={busy || !mem}
           style={{
             width: '100%', padding: '14px', borderRadius: 11, border: 'none',
-            background: busy || !mem ? '#1c1c1c' : 'linear-gradient(135deg, #6366f1, #38bdf8)',
+            background: busy || !mem ? '#1c1c1c' : 'linear-gradient(135deg, #7c3aed, #38bdf8)',
             color: busy || !mem ? '#52525b' : '#fff',
             fontFamily: 'inherit', fontSize: 15, fontWeight: 700,
             cursor: busy || !mem ? 'not-allowed' : 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-            boxShadow: busy || !mem ? 'none' : '0 0 22px rgba(99,102,241,0.35)',
+            boxShadow: busy || !mem ? 'none' : '0 0 22px rgba(124, 58, 237,0.35)',
           }}>
           <Sparkles size={15} />{busy ? 'Reading your memory…' : 'Generate My Adaptive Path'}
         </motion.button>
@@ -249,10 +249,10 @@ Return ONLY a JSON object in this exact shape:
             {thoughts && (
               <div style={{
                 ...card, padding: 16, marginBottom: 14,
-                background: 'rgba(99,102,241,0.04)', border: '1px solid rgba(99,102,241,0.2)',
+                background: 'rgba(124, 58, 237,0.04)', border: '1px solid rgba(124, 58, 237,0.2)',
               }}>
                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-                  <Sparkles size={14} color="#a5b4fc" style={{ flexShrink: 0, marginTop: 2 }} />
+                  <Sparkles size={14} color="#c4b5fd" style={{ flexShrink: 0, marginTop: 2 }} />
                   <p style={{ fontSize: 13, color: '#e4e4e7', margin: 0, lineHeight: 1.6, fontStyle: 'italic' }}>
                     {thoughts}
                   </p>
@@ -321,8 +321,8 @@ Return ONLY a JSON object in this exact shape:
             <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
               <button onClick={generate} disabled={busy} style={{
                 padding: '8px 16px', borderRadius: 8,
-                border: '1px solid rgba(99,102,241,0.3)',
-                background: 'rgba(99,102,241,0.08)', color: '#a5b4fc',
+                border: '1px solid rgba(124, 58, 237,0.3)',
+                background: 'rgba(124, 58, 237,0.08)', color: '#c4b5fd',
                 cursor: busy ? 'not-allowed' : 'pointer',
                 fontFamily: 'inherit', fontSize: 12, fontWeight: 600,
                 display: 'flex', alignItems: 'center', gap: 6,

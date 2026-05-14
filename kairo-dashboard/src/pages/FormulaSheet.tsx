@@ -1,25 +1,69 @@
-import { useState, useEffect } from 'react'
+/**
+ * Formula Sheet — auto-pulls every formula collected from Solver answers
+ * (via twin.listFormulas()), plus AI-generated chapter sheets from the
+ * legacy /formula endpoint. Strict monochrome palette.
+ */
+import { useState, useEffect, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { BookOpen, Plus, Trash2, ChevronDown, ChevronRight, Copy, Check } from 'lucide-react'
+import {
+  BookOpen, Plus, Trash2, ChevronDown, ChevronRight, Copy, Check,
+  Sparkles, Sigma, Archive, FlaskConical,
+} from 'lucide-react'
 import { post, get, del } from '../lib/api'
+import { listFormulas, type Formula as TwinFormula } from '../lib/twin'
 
 const SCHOOL_ID = 'demo_school'
 
-const card  = { background: '#111', border: '1px solid #1e1e1e', borderRadius: 14, padding: 20 } as React.CSSProperties
-const inp   = { background: '#0d0d0d', border: '1px solid #1e1e1e', borderRadius: 8, padding: '9px 12px', fontSize: 13, color: '#fafafa', fontFamily: 'inherit', outline: 'none', width: '100%' } as React.CSSProperties
-const lbl   = { fontSize: 11, color: '#71717a', display: 'block', marginBottom: 5, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.8 } as React.CSSProperties
-const btn   = (active = true) => ({ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', borderRadius: 9, border: 'none', background: active ? 'linear-gradient(135deg,#6366f1,#7c3aed)' : '#1c1c1c', color: active ? '#fff' : '#52525b', fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: active ? 'pointer' : 'not-allowed' } as React.CSSProperties)
+// ─── Strict monochrome palette ──────────────────────────────────────────────
+const C = {
+  bg:        '#06060a',
+  panel:     '#0e0e16',
+  panel2:    '#13131d',
+  border:    '#22222e',
+  borderSoft:'#1a1a26',
+  text:      '#fafafa',
+  textDim:   '#a1a1aa',
+  textFaint: '#71717a',
+  textGhost: '#52525b',
+  purple:    '#a78bfa',
+  purpleHi:  '#7c3aed',
+  purpleDeep:'#5b21b6',
+  purpleLite:'#c4b5fd',
+  purpleSoft:'#e9d5ff',
+}
+
+const card  = { background: C.panel, border: `1px solid ${C.border}`, borderRadius: 14, padding: 20 } as React.CSSProperties
+const inp   = { background: C.panel2, border: `1px solid ${C.borderSoft}`, borderRadius: 8, padding: '9px 12px', fontSize: 13, color: C.text, fontFamily: 'inherit', outline: 'none', width: '100%' } as React.CSSProperties
+const lbl   = { fontSize: 10, color: C.purple, display: 'block', marginBottom: 5, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1 } as React.CSSProperties
+const btn   = (active = true) => ({
+  display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', borderRadius: 10, border: 'none',
+  background: active ? 'linear-gradient(135deg,#c4b5fd,#7c3aed)' : C.panel2,
+  color: active ? '#000' : C.textGhost,
+  fontFamily: 'inherit', fontSize: 13, fontWeight: 700,
+  cursor: active ? 'pointer' : 'not-allowed',
+  boxShadow: active ? '0 6px 18px rgba(124,58,237,0.35)' : 'none',
+} as React.CSSProperties)
 
 const SUBJECTS = ['Physics','Chemistry','Biology','Mathematics','History','Geography','Economics','English','Computer Science']
 
+type Tab = 'collected' | 'sheets'
+
 export default function FormulaSheet() {
-  const [sheets, setSheets]   = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
-  const [generating, setGenerating] = useState(false)
+  const [tab, setTab] = useState<Tab>('collected')
+
+  // Auto-collected formulas (from solver answers)
+  const [collected, setCollected] = useState<TwinFormula[]>([])
+  function reloadCollected() { setCollected(listFormulas()) }
+  useEffect(() => { reloadCollected() }, [])
+
+  // Backend formula sheets
+  const [sheets, setSheets]     = useState<any[]>([])
+  const [loading, setLoading]   = useState(true)
+  const [generating, setGen]    = useState(false)
   const [selected, setSelected] = useState<any>(null)
   const [showForm, setShowForm] = useState(false)
-  const [form, setForm]       = useState({ subject: 'Physics', chapter: '', class: '10', board: 'CBSE' })
-  const [err, setErr]         = useState('')
+  const [form, setForm]         = useState({ subject: 'Physics', chapter: '', class: '10', board: 'CBSE' })
+  const [err, setErr]           = useState('')
 
   function load() {
     setLoading(true)
@@ -29,14 +73,14 @@ export default function FormulaSheet() {
 
   async function generate() {
     if (!form.subject) { setErr('Select a subject'); return }
-    setGenerating(true); setErr('')
+    setGen(true); setErr('')
     try {
       const sheet = await post('/formula/generate', { school_id: SCHOOL_ID, ...form })
       setSheets(s => [sheet, ...s])
       setSelected(sheet)
       setShowForm(false)
     } catch (e: any) { setErr(e.message) }
-    finally { setGenerating(false) }
+    finally { setGen(false) }
   }
 
   async function remove(id: string) {
@@ -47,43 +91,239 @@ export default function FormulaSheet() {
   }
 
   return (
-    <div style={{ display: 'flex', height: '100%', overflow: 'hidden' }}>
-      {/* Left panel - sheet list */}
-      <div style={{ width: 260, borderRight: '1px solid #1a1a1a', display: 'flex', flexDirection: 'column', overflow: 'hidden', background: '#0d0d0d' }}>
-        <div style={{ padding: '16px 12px', borderBottom: '1px solid #1a1a1a' }}>
-          <div style={{ fontSize: 13, fontWeight: 700, color: '#fafafa', marginBottom: 10 }}>Formula Sheets</div>
-          <button onClick={() => setShowForm(f => !f)} style={{ ...btn(), width: '100%', justifyContent: 'center', padding: '7px 12px' }}>
-            <Plus size={13} /> New Sheet
+    <div style={{
+      width: '100%', height: '100%', overflowY: 'auto',
+      background: C.bg,
+      backgroundImage:
+        `radial-gradient(at 12% 0%, rgba(124,58,237,0.10) 0%, transparent 36%),
+         radial-gradient(at 88% 100%, rgba(91,33,182,0.10) 0%, transparent 42%)`,
+      padding: '24px 32px 60px',
+    }}>
+      <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+        {/* Header */}
+        <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', marginBottom: 22 }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
+            <div style={{
+              width: 52, height: 52, borderRadius: 14,
+              background: 'linear-gradient(135deg, #c4b5fd 0%, #7c3aed 60%, #3b0764 100%)',
+              display: 'grid', placeItems: 'center',
+              boxShadow: '0 14px 38px rgba(124,58,237,0.45)',
+            }}>
+              <Sigma size={24} color="#000" strokeWidth={2.4} />
+            </div>
+            <div>
+              <div style={{
+                fontSize: 11, fontWeight: 700, letterSpacing: 2.2, textTransform: 'uppercase',
+                background: 'linear-gradient(90deg, #c4b5fd, #a78bfa, #7c3aed)', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent',
+              }}>
+                Formula Sheet
+              </div>
+              <h1 style={{ margin: '2px 0 0', fontSize: 26, fontWeight: 800, color: C.text, letterSpacing: -0.5 }}>
+                Every equation you've touched.
+              </h1>
+              <div style={{ fontSize: 12, color: C.textFaint, marginTop: 3 }}>
+                Auto-collected from the Solver · plus AI-built chapter sheets.
+              </div>
+            </div>
+          </div>
+          <div style={{
+            display: 'inline-flex', padding: 3, borderRadius: 12,
+            background: 'rgba(167,139,250,0.05)',
+            border: '1px solid rgba(167,139,250,0.22)',
+          }}>
+            <TabBtn active={tab === 'collected'} onClick={() => setTab('collected')}>
+              <Archive size={12} /> Collected ({collected.length})
+            </TabBtn>
+            <TabBtn active={tab === 'sheets'} onClick={() => setTab('sheets')}>
+              <FlaskConical size={12} /> AI sheets ({sheets.length})
+            </TabBtn>
+          </div>
+        </div>
+
+        {tab === 'collected' ? (
+          <CollectedFormulas formulas={collected} onReload={reloadCollected} />
+        ) : (
+          <SheetsView
+            sheets={sheets} loading={loading} selected={selected} setSelected={setSelected}
+            showForm={showForm} setShowForm={setShowForm}
+            form={form} setForm={setForm}
+            generating={generating} generate={generate}
+            remove={remove} err={err}
+          />
+        )}
+      </div>
+    </div>
+  )
+}
+
+function TabBtn({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button onClick={onClick} style={{
+      display: 'inline-flex', alignItems: 'center', gap: 6,
+      padding: '9px 16px', borderRadius: 9,
+      background: active ? 'linear-gradient(135deg,#7c3aed,#5b21b6)' : 'transparent',
+      border: 'none',
+      color: active ? '#fff' : C.textDim,
+      fontFamily: 'inherit', fontSize: 12, fontWeight: 700,
+      cursor: 'pointer', letterSpacing: 0.3,
+      boxShadow: active ? '0 4px 14px rgba(124,58,237,0.35)' : 'none',
+      transition: 'all 0.18s',
+    }}>{children}</button>
+  )
+}
+
+// ─── COLLECTED FORMULAS — pulled from twin ─────────────────────────────────
+function CollectedFormulas({ formulas, onReload }: { formulas: TwinFormula[]; onReload: () => void }) {
+  const bySubject = useMemo(() => {
+    const m = new Map<string, TwinFormula[]>()
+    for (const f of formulas) {
+      const key = f.subject || 'General'
+      if (!m.has(key)) m.set(key, [])
+      m.get(key)!.push(f)
+    }
+    return [...m.entries()].sort((a, b) => b[1].length - a[1].length)
+  }, [formulas])
+
+  if (formulas.length === 0) {
+    return (
+      <div style={{
+        marginTop: 8, padding: '70px 24px', textAlign: 'center',
+        background: C.panel, border: `1px dashed ${C.border}`, borderRadius: 18,
+      }}>
+        <div style={{
+          width: 56, height: 56, borderRadius: 14, margin: '0 auto 16px',
+          background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.22)',
+          display: 'grid', placeItems: 'center',
+        }}>
+          <Sigma size={24} color={C.purple} style={{ opacity: 0.7 }} />
+        </div>
+        <h3 style={{ margin: '0 0 6px', fontSize: 17, fontWeight: 800, color: C.text }}>
+          No formulas yet
+        </h3>
+        <p style={{ margin: 0, fontSize: 13, color: C.textFaint, maxWidth: 460, marginInline: 'auto', lineHeight: 1.6 }}>
+          Ask the Solver something with an equation in the answer — Kairo extracts it and pins it here automatically.
+        </p>
+      </div>
+    )
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <div style={{ fontSize: 11, color: C.textFaint }}>
+        {formulas.length} formula{formulas.length === 1 ? '' : 's'} pinned from your study sessions · grouped by subject
+        <button onClick={onReload} title="Reload" style={{
+          marginLeft: 8, padding: '3px 8px', borderRadius: 6,
+          background: 'transparent', border: `1px solid ${C.border}`, color: C.textDim,
+          fontSize: 10, cursor: 'pointer',
+        }}>refresh</button>
+      </div>
+      {bySubject.map(([subject, items]) => (
+        <div key={subject} style={{ ...card, padding: 18 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+            <span style={{
+              fontSize: 10, fontWeight: 700, padding: '4px 10px', borderRadius: 999,
+              background: 'rgba(167,139,250,0.14)', color: C.purpleLite,
+              border: '1px solid rgba(167,139,250,0.3)',
+              textTransform: 'uppercase', letterSpacing: 1.4,
+            }}>{subject}</span>
+            <span style={{ fontSize: 11, color: C.textFaint }}>{items.length} formula{items.length === 1 ? '' : 's'}</span>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 10 }}>
+            {items.map(f => <TwinFormulaCard key={f.id} f={f} />)}
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function TwinFormulaCard({ f }: { f: TwinFormula }) {
+  const [copied, setCopied] = useState(false)
+  return (
+    <motion.div
+      whileHover={{ y: -2, borderColor: 'rgba(167,139,250,0.5)', boxShadow: '0 8px 22px rgba(124,58,237,0.18)' }}
+      style={{
+        background: `linear-gradient(135deg, ${C.panel2} 0%, ${C.bg} 100%)`,
+        borderRadius: 11, padding: '14px 14px',
+        border: `1px solid rgba(167,139,250,0.18)`,
+        transition: 'all 0.2s',
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 10 }}>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: 12.5, fontWeight: 700, color: C.text, lineHeight: 1.3 }}>{f.name}</div>
+          {f.topic && <div style={{ fontSize: 10, color: C.textFaint, marginTop: 2, textTransform: 'capitalize' }}>{f.topic}</div>}
+        </div>
+        <button
+          onClick={() => { navigator.clipboard.writeText(f.expr); setCopied(true); setTimeout(() => setCopied(false), 1800) }}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', color: copied ? C.purpleLite : C.textGhost, padding: 2 }}
+          title={copied ? 'Copied' : 'Copy'}
+        >
+          {copied ? <Check size={12} /> : <Copy size={12} />}
+        </button>
+      </div>
+      <div style={{
+        fontSize: 16, fontWeight: 700, color: C.purpleLite,
+        fontFamily: '"JetBrains Mono", ui-monospace, monospace',
+        padding: '10px 12px', borderRadius: 8,
+        background: 'rgba(124,58,237,0.10)',
+        border: `1px solid rgba(124,58,237,0.18)`,
+        wordBreak: 'break-word',
+      }}>
+        {f.expr}
+      </div>
+      <div style={{ fontSize: 9.5, color: C.textGhost, marginTop: 8, textTransform: 'uppercase', letterSpacing: 1, fontWeight: 700 }}>
+        {f.source} · {formatRelative(f.ts)}
+      </div>
+    </motion.div>
+  )
+}
+
+// ─── AI CHAPTER SHEETS ─────────────────────────────────────────────────────
+function SheetsView({ sheets, loading, selected, setSelected, showForm, setShowForm, form, setForm, generating, generate, remove, err }: any) {
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: '280px 1fr', gap: 14 }}>
+      <div style={{
+        background: C.panel, border: `1px solid ${C.border}`,
+        borderRadius: 14, display: 'flex', flexDirection: 'column',
+        overflow: 'hidden', minHeight: 480,
+      }}>
+        <div style={{ padding: '14px 14px', borderBottom: `1px solid ${C.border}` }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: C.purple, textTransform: 'uppercase', letterSpacing: 1.4, marginBottom: 10 }}>
+            AI chapter sheets
+          </div>
+          <button onClick={() => setShowForm(!showForm)} style={{ ...btn(), width: '100%', justifyContent: 'center', padding: '8px 12px' }}>
+            <Plus size={13} /> New sheet
           </button>
         </div>
 
         <AnimatePresence>
           {showForm && (
-            <motion.div initial={{ height: 0 }} animate={{ height: 'auto' }} exit={{ height: 0 }} style={{ overflow: 'hidden', borderBottom: '1px solid #1a1a1a' }}>
-              <div style={{ padding: 12 }}>
+            <motion.div initial={{ height: 0 }} animate={{ height: 'auto' }} exit={{ height: 0 }} style={{ overflow: 'hidden', borderBottom: `1px solid ${C.border}` }}>
+              <div style={{ padding: 14 }}>
                 <label style={lbl}>Subject</label>
-                <select style={{ ...inp, marginBottom: 8 }} value={form.subject} onChange={e => setForm(f => ({ ...f, subject: e.target.value }))}>
+                <select style={{ ...inp, marginBottom: 8 }} value={form.subject} onChange={(e: any) => setForm({ ...form, subject: e.target.value })}>
                   {SUBJECTS.map(s => <option key={s}>{s}</option>)}
                 </select>
                 <label style={lbl}>Chapter (optional)</label>
-                <input style={{ ...inp, marginBottom: 8 }} value={form.chapter} onChange={e => setForm(f => ({ ...f, chapter: e.target.value }))} placeholder="e.g. Thermodynamics" />
+                <input style={{ ...inp, marginBottom: 8 }} value={form.chapter} onChange={(e: any) => setForm({ ...form, chapter: e.target.value })} placeholder="e.g. Thermodynamics" />
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 }}>
                   <div>
                     <label style={lbl}>Class</label>
-                    <select style={inp} value={form.class} onChange={e => setForm(f => ({ ...f, class: e.target.value }))}>
+                    <select style={inp} value={form.class} onChange={(e: any) => setForm({ ...form, class: e.target.value })}>
                       {['8','9','10','11','12'].map(c => <option key={c}>{c}</option>)}
                     </select>
                   </div>
                   <div>
                     <label style={lbl}>Board</label>
-                    <select style={inp} value={form.board} onChange={e => setForm(f => ({ ...f, board: e.target.value }))}>
+                    <select style={inp} value={form.board} onChange={(e: any) => setForm({ ...form, board: e.target.value })}>
                       {['CBSE','ICSE','State Board'].map(b => <option key={b}>{b}</option>)}
                     </select>
                   </div>
                 </div>
-                {err && <p style={{ color: '#f87171', fontSize: 11, marginBottom: 8 }}>{err}</p>}
-                <button onClick={generate} disabled={generating} style={{ ...btn(!generating), width: '100%', justifyContent: 'center', padding: '7px 12px' }}>
-                  {generating ? 'Generating…' : 'Generate'}
+                {err && <p style={{ color: C.purpleLite, fontSize: 11, marginBottom: 8 }}>{err}</p>}
+                <button onClick={generate} disabled={generating} style={{ ...btn(!generating), width: '100%', justifyContent: 'center', padding: '8px 12px' }}>
+                  {generating ? 'Generating…' : <><Sparkles size={12} /> Generate</>}
                 </button>
               </div>
             </motion.div>
@@ -91,22 +331,28 @@ export default function FormulaSheet() {
         </AnimatePresence>
 
         <div style={{ flex: 1, overflowY: 'auto', padding: '8px 6px' }}>
-          {loading && <div style={{ textAlign: 'center', padding: 20, color: '#52525b', fontSize: 12 }}>Loading…</div>}
-          {!loading && sheets.length === 0 && <div style={{ textAlign: 'center', padding: 20, color: '#3f3f46', fontSize: 11 }}>No sheets yet</div>}
-          {sheets.map(s => (
+          {loading && <div style={{ textAlign: 'center', padding: 20, color: C.textGhost, fontSize: 12 }}>Loading…</div>}
+          {!loading && sheets.length === 0 && (
+            <div style={{ textAlign: 'center', padding: 20, color: C.textGhost, fontSize: 11 }}>No AI sheets yet</div>
+          )}
+          {sheets.map((s: any) => (
             <div key={s.id || s._id} onClick={() => setSelected(s)}
-              style={{ padding: '10px 10px', borderRadius: 8, marginBottom: 4, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8,
-                background: selected?.id === s.id || selected?._id === s._id ? '#1e1e2e' : 'transparent',
-                border: `1px solid ${selected?.id === s.id || selected?._id === s._id ? '#6366f130' : 'transparent'}` }}>
-              <BookOpen size={13} color="#818cf8" />
+              style={{
+                padding: '10px 12px', borderRadius: 8, marginBottom: 4,
+                cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8,
+                background: (selected?.id === s.id || selected?._id === s._id) ? 'rgba(167,139,250,0.10)' : 'transparent',
+                border: `1px solid ${(selected?.id === s.id || selected?._id === s._id) ? 'rgba(167,139,250,0.35)' : 'transparent'}`,
+                transition: 'all 0.15s',
+              }}>
+              <BookOpen size={13} color={C.purpleLite} />
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 12, fontWeight: 600, color: '#e4e4e7', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.subject}</div>
-                <div style={{ fontSize: 10, color: '#52525b' }}>{s.chapter || 'All Chapters'}</div>
+                <div style={{ fontSize: 12, fontWeight: 700, color: C.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.subject}</div>
+                <div style={{ fontSize: 10, color: C.textGhost }}>{s.chapter || 'All chapters'}</div>
               </div>
               <button onClick={e => { e.stopPropagation(); remove(s.id || s._id) }}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#3f3f46', padding: 2 }}
-                onMouseEnter={e => (e.currentTarget.style.color = '#f87171')}
-                onMouseLeave={e => (e.currentTarget.style.color = '#3f3f46')}>
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.textGhost, padding: 2 }}
+                onMouseEnter={(e: any) => (e.currentTarget.style.color = C.purpleLite)}
+                onMouseLeave={(e: any) => (e.currentTarget.style.color = C.textGhost)}>
                 <Trash2 size={11} />
               </button>
             </div>
@@ -114,16 +360,19 @@ export default function FormulaSheet() {
         </div>
       </div>
 
-      {/* Right panel - sheet content */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '24px 28px' }}>
-        {!selected && (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#3f3f46' }}>
-            <BookOpen size={48} />
-            <p style={{ marginTop: 16, fontSize: 14 }}>Select or generate a formula sheet</p>
+      {/* Sheet body */}
+      <div style={{
+        background: C.panel, border: `1px solid ${C.border}`, borderRadius: 14,
+        padding: 22, minHeight: 480, overflowY: 'auto',
+      }}>
+        {!selected ? (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 380, color: C.textGhost }}>
+            <BookOpen size={42} color={C.purple} style={{ opacity: 0.6, marginBottom: 14 }} />
+            <p style={{ margin: 0, fontSize: 14, color: C.textFaint }}>Select a sheet or generate a new one</p>
           </div>
+        ) : (
+          <SheetViewer sheet={selected} />
         )}
-
-        {selected && <SheetViewer sheet={selected} />}
       </div>
     </div>
   )
@@ -131,41 +380,38 @@ export default function FormulaSheet() {
 
 function SheetViewer({ sheet }: { sheet: any }) {
   const [openSections, setOpenSections] = useState<Set<number>>(new Set([0]))
-
   function toggle(i: number) {
     setOpenSections(s => {
-      const n = new Set(s)
-      n.has(i) ? n.delete(i) : n.add(i)
-      return n
+      const n = new Set(s); n.has(i) ? n.delete(i) : n.add(i); return n
     })
   }
-
   return (
     <motion.div key={sheet.id || sheet._id} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
       <div style={{ marginBottom: 20 }}>
-        <h2 style={{ fontSize: 18, fontWeight: 700, color: '#fafafa', margin: '0 0 4px' }}>
-          {sheet.subject} — {sheet.chapter || 'All Chapters'}
+        <h2 style={{ fontSize: 19, fontWeight: 800, color: C.text, margin: '0 0 4px', letterSpacing: -0.3 }}>
+          {sheet.subject} — {sheet.chapter || 'All chapters'}
         </h2>
-        <div style={{ fontSize: 12, color: '#52525b' }}>{sheet.sections?.length || 0} sections · {sheet.sections?.reduce((a: number, s: any) => a + s.formulas?.length, 0) || 0} formulas</div>
+        <div style={{ fontSize: 12, color: C.textFaint }}>
+          {sheet.sections?.length || 0} section{(sheet.sections?.length || 0) === 1 ? '' : 's'} · {sheet.sections?.reduce((a: number, s: any) => a + (s.formulas?.length || 0), 0) || 0} formulas
+        </div>
       </div>
 
-      {/* Sections */}
       {sheet.sections?.map((section: any, i: number) => (
-        <div key={i} style={{ ...card, marginBottom: 10, padding: 0, overflow: 'hidden' }}>
+        <div key={i} style={{ ...card, marginBottom: 10, padding: 0, overflow: 'hidden', borderColor: 'rgba(167,139,250,0.18)' }}>
           <button onClick={() => toggle(i)} style={{
             width: '100%', display: 'flex', alignItems: 'center', gap: 10,
             padding: '14px 16px', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit',
-            color: '#e4e4e7', fontSize: 14, fontWeight: 600, textAlign: 'left',
+            color: C.text, fontSize: 14, fontWeight: 700, textAlign: 'left',
           }}>
-            {openSections.has(i) ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+            {openSections.has(i) ? <ChevronDown size={14} color={C.purple} /> : <ChevronRight size={14} color={C.purple} />}
             {section.name}
-            <span style={{ marginLeft: 'auto', fontSize: 11, color: '#52525b' }}>{section.formulas?.length} formulas</span>
+            <span style={{ marginLeft: 'auto', fontSize: 11, color: C.textFaint }}>{section.formulas?.length || 0} formulas</span>
           </button>
           <AnimatePresence>
             {openSections.has(i) && (
               <motion.div initial={{ height: 0 }} animate={{ height: 'auto' }} exit={{ height: 0 }} style={{ overflow: 'hidden' }}>
                 <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-                  {section.formulas?.map((f: any, j: number) => <FormulaCard key={j} formula={f} />)}
+                  {section.formulas?.map((f: any, j: number) => <FormulaRow key={j} formula={f} />)}
                 </div>
               </motion.div>
             )}
@@ -173,35 +419,41 @@ function SheetViewer({ sheet }: { sheet: any }) {
         </div>
       ))}
 
-      {/* Constants */}
       {sheet.constants?.length > 0 && (
         <div style={{ ...card, marginBottom: 10 }}>
-          <div style={{ fontSize: 12, fontWeight: 700, color: '#818cf8', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 12 }}>Constants</div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(180px,1fr))', gap: 8 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: C.purple, textTransform: 'uppercase', letterSpacing: 1.4, marginBottom: 12 }}>Constants</div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 8 }}>
             {sheet.constants.map((c: any, i: number) => (
-              <div key={i} style={{ background: '#0d0d0d', borderRadius: 8, padding: '8px 12px', border: '1px solid #1e1e1e' }}>
-                <div style={{ fontSize: 12, fontWeight: 700, color: '#818cf8' }}>{c.symbol}</div>
-                <div style={{ fontSize: 11, color: '#a1a1aa' }}>{c.name}</div>
-                <div style={{ fontSize: 11, color: '#34d399', marginTop: 2 }}>{c.value}</div>
+              <div key={i} style={{ background: C.panel2, borderRadius: 9, padding: '10px 12px', border: `1px solid ${C.borderSoft}` }}>
+                <div style={{ fontSize: 13, fontWeight: 800, color: C.purpleLite, fontFamily: 'monospace' }}>{c.symbol}</div>
+                <div style={{ fontSize: 11, color: C.textDim, marginTop: 2 }}>{c.name}</div>
+                <div style={{ fontSize: 11, color: C.purple, marginTop: 3, fontFamily: 'monospace' }}>{c.value}</div>
               </div>
             ))}
           </div>
         </div>
       )}
 
-      {/* Tips */}
       {(sheet.tips?.length > 0 || sheet.common_mistakes?.length > 0) && (
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
           {sheet.tips?.length > 0 && (
-            <div style={{ ...card, borderColor: '#34d39930' }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: '#34d399', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>Quick Tips</div>
-              {sheet.tips.map((t: string, i: number) => <div key={i} style={{ fontSize: 12, color: '#a1a1aa', marginBottom: 4 }}>✓ {t}</div>)}
+            <div style={{ ...card, borderColor: 'rgba(167,139,250,0.3)' }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: C.purpleLite, textTransform: 'uppercase', letterSpacing: 1.4, marginBottom: 8 }}>Quick tips</div>
+              {sheet.tips.map((t: string, i: number) => (
+                <div key={i} style={{ fontSize: 12, color: C.textDim, marginBottom: 6, paddingLeft: 14, position: 'relative' }}>
+                  <span style={{ position: 'absolute', left: 0, color: C.purple }}>✓</span>{t}
+                </div>
+              ))}
             </div>
           )}
           {sheet.common_mistakes?.length > 0 && (
-            <div style={{ ...card, borderColor: '#f8717130' }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: '#f87171', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>Common Mistakes</div>
-              {sheet.common_mistakes.map((m: string, i: number) => <div key={i} style={{ fontSize: 12, color: '#a1a1aa', marginBottom: 4 }}>✗ {m}</div>)}
+            <div style={{ ...card, borderColor: 'rgba(196,181,253,0.3)' }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: C.purpleSoft, textTransform: 'uppercase', letterSpacing: 1.4, marginBottom: 8 }}>Common mistakes</div>
+              {sheet.common_mistakes.map((m: string, i: number) => (
+                <div key={i} style={{ fontSize: 12, color: C.textDim, marginBottom: 6, paddingLeft: 14, position: 'relative' }}>
+                  <span style={{ position: 'absolute', left: 0, color: C.purpleSoft }}>✗</span>{m}
+                </div>
+              ))}
             </div>
           )}
         </div>
@@ -210,23 +462,39 @@ function SheetViewer({ sheet }: { sheet: any }) {
   )
 }
 
-function FormulaCard({ formula }: { formula: any }) {
+function FormulaRow({ formula }: { formula: any }) {
   const [copied, setCopied] = useState(false)
   return (
-    <div style={{ background: '#0d0d0d', borderRadius: 10, padding: '12px 14px', border: '1px solid #1e1e1e' }}>
+    <div style={{ background: C.panel2, borderRadius: 10, padding: '12px 14px', border: `1px solid ${C.borderSoft}` }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
-        <div style={{ fontSize: 13, fontWeight: 600, color: '#fafafa' }}>{formula.name}</div>
+        <div style={{ fontSize: 13, fontWeight: 700, color: C.text }}>{formula.name}</div>
         <button onClick={() => { navigator.clipboard.writeText(formula.formula); setCopied(true); setTimeout(() => setCopied(false), 2000) }}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', color: copied ? '#34d399' : '#52525b' }}>
+          style={{ background: 'none', border: 'none', cursor: 'pointer', color: copied ? C.purpleLite : C.textGhost }}>
           {copied ? <Check size={12} /> : <Copy size={12} />}
         </button>
       </div>
-      <div style={{ fontSize: 16, fontWeight: 700, color: '#818cf8', fontFamily: 'monospace', marginBottom: 6, padding: '6px 10px', background: '#818cf810', borderRadius: 6 }}>
+      <div style={{
+        fontSize: 16, fontWeight: 700, color: C.purpleLite,
+        fontFamily: 'monospace', marginBottom: 8,
+        padding: '8px 12px', background: 'rgba(124,58,237,0.10)',
+        border: '1px solid rgba(124,58,237,0.18)', borderRadius: 7,
+      }}>
         {formula.formula}
       </div>
-      {formula.variables && <div style={{ fontSize: 11, color: '#71717a', marginBottom: 4 }}><strong>Variables:</strong> {formula.variables}</div>}
-      {formula.when_to_use && <div style={{ fontSize: 11, color: '#a1a1aa', marginBottom: 4 }}><strong>Use when:</strong> {formula.when_to_use}</div>}
-      {formula.example && <div style={{ fontSize: 11, color: '#34d399' }}><strong>Example:</strong> {formula.example}</div>}
+      {formula.variables && <div style={{ fontSize: 11, color: C.textFaint, marginBottom: 4 }}><strong style={{ color: C.text }}>Variables:</strong> {formula.variables}</div>}
+      {formula.when_to_use && <div style={{ fontSize: 11, color: C.textDim, marginBottom: 4 }}><strong style={{ color: C.text }}>Use when:</strong> {formula.when_to_use}</div>}
+      {formula.example && <div style={{ fontSize: 11, color: C.purpleLite }}><strong style={{ color: C.purpleSoft }}>Example:</strong> {formula.example}</div>}
     </div>
   )
+}
+
+function formatRelative(ts: number) {
+  if (!ts) return '—'
+  const diff = Date.now() - ts
+  const s = Math.floor(diff / 1000)
+  if (s < 45) return 'just now'
+  const m = Math.floor(s / 60); if (m < 60) return `${m}m ago`
+  const h = Math.floor(m / 60); if (h < 24) return `${h}h ago`
+  const d = Math.floor(h / 24); if (d < 30) return `${d}d ago`
+  return new Date(ts).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })
 }

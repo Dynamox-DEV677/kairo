@@ -68,9 +68,9 @@ export default function Ops() {
       <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 22 }}>
         <div style={{
           width: 46, height: 46, borderRadius: 12,
-          background: 'linear-gradient(135deg, #6366f1, #34d399)',
+          background: 'linear-gradient(135deg, #7c3aed, #c4b5fd)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 0 22px rgba(99,102,241,0.4)',
+          boxShadow: '0 0 22px rgba(124, 58, 237,0.4)',
         }}>
           <Activity size={22} color="#fff" />
         </div>
@@ -95,8 +95,8 @@ export default function Ops() {
       {err && (
         <div style={{
           padding: 16, borderRadius: 10, marginBottom: 18,
-          background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.25)',
-          color: '#f87171', fontSize: 13,
+          background: 'rgba(167, 139, 250,0.08)', border: '1px solid rgba(167, 139, 250,0.25)',
+          color: '#a78bfa', fontSize: 13,
         }}>
           ⚠ {err}
         </div>
@@ -109,11 +109,11 @@ export default function Ops() {
             display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
             gap: 12, marginBottom: 20,
           }}>
-            <StatCard icon={Users}    label="Total Users"           value={data.users.total} accent="#a5b4fc" />
-            <StatCard icon={Activity} label="Active (24h)"           value={data.users.activeLast24h} accent="#34d399" />
-            <StatCard icon={Globe}    label="Schools"                value={data.schools.total} sub={`${data.schools.active ?? 0} active`} accent="#fbbf24" />
-            <StatCard icon={Zap}      label="Logins (24h)"           value={data.database.recentLogins24h} accent="#f472b6" />
-            <StatCard icon={Users}    label="New users (7d)"         value={data.database.recentRegistrations7d} accent="#67e8f9" />
+            <StatCard icon={Users}    label="Total Users"           value={data.users.total} accent="#c4b5fd" />
+            <StatCard icon={Activity} label="Active (24h)"           value={data.users.activeLast24h} accent="#c4b5fd" />
+            <StatCard icon={Globe}    label="Schools"                value={data.schools.total} sub={`${data.schools.active ?? 0} active`} accent="#c4b5fd" />
+            <StatCard icon={Zap}      label="Logins (24h)"           value={data.database.recentLogins24h} accent="#c4b5fd" />
+            <StatCard icon={Users}    label="New users (7d)"         value={data.database.recentRegistrations7d} accent="#e9d5ff" />
             <StatCard icon={Layers}   label="Features"               value={data.features.total} accent="#c4b5fd" />
           </div>
 
@@ -126,15 +126,15 @@ export default function Ops() {
           {/* Users by role */}
           <Section title="Users by role" icon={Users}>
             <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap' }}>
-              <RolePill label="Students" count={data.users.students} color="#a5b4fc" />
-              <RolePill label="Teachers" count={data.users.teachers} color="#34d399" />
-              <RolePill label="Admins"   count={data.users.admins}   color="#fbbf24" />
-              <RolePill label="Parents"  count={data.users.parents}  color="#f472b6" />
+              <RolePill label="Students" count={data.users.students} color="#c4b5fd" />
+              <RolePill label="Teachers" count={data.users.teachers} color="#c4b5fd" />
+              <RolePill label="Admins"   count={data.users.admins}   color="#c4b5fd" />
+              <RolePill label="Parents"  count={data.users.parents}  color="#c4b5fd" />
             </div>
           </Section>
 
           {/* Errors */}
-          <Section title={`Recent errors (${data.errors.totalLogged} total)`} icon={AlertTriangle} accent="#f87171">
+          <Section title={`Recent errors (${data.errors.totalLogged} total)`} icon={AlertTriangle} accent="#a78bfa">
             {data.errors.recent.length === 0 ? (
               <p style={{ fontSize: 12, color: '#52525b', margin: 0 }}>No errors logged 🎉</p>
             ) : (
@@ -142,10 +142,10 @@ export default function Ops() {
                 {data.errors.recent.map((e, i) => (
                   <div key={i} style={{
                     padding: '10px 12px', borderRadius: 8,
-                    background: 'rgba(248,113,113,0.05)', border: '1px solid rgba(248,113,113,0.2)',
+                    background: 'rgba(167, 139, 250,0.05)', border: '1px solid rgba(167, 139, 250,0.2)',
                     fontSize: 12,
                   }}>
-                    <div style={{ color: '#f87171', fontWeight: 600 }}>{e.message}</div>
+                    <div style={{ color: '#a78bfa', fontWeight: 600 }}>{e.message}</div>
                     <div style={{ color: '#71717a', marginTop: 3, fontFamily: 'monospace', fontSize: 10.5 }}>
                       {e.page} · {new Date(e.ts).toLocaleString()}
                     </div>
@@ -161,8 +161,8 @@ export default function Ops() {
               {Object.entries(data.features.byAudience).map(([aud, n]) => (
                 <span key={aud} style={{
                   padding: '4px 10px', borderRadius: 100,
-                  background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.25)',
-                  fontSize: 11, color: '#a5b4fc', fontWeight: 600,
+                  background: 'rgba(124, 58, 237,0.08)', border: '1px solid rgba(124, 58, 237,0.25)',
+                  fontSize: 11, color: '#c4b5fd', fontWeight: 600,
                 }}>
                   {aud}: {n}
                 </span>
@@ -216,19 +216,19 @@ function DeployCard({ deploy }: { deploy: DeployInfo }) {
       padding: 16, borderRadius: 12,
       background: '#0d0d0d', border: '1px solid #1e1e1e',
     }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 10, color: '#a5b4fc', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 12 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 10, color: '#c4b5fd', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 12 }}>
         <GitBranch size={11} /> Latest Deploy
       </div>
       <Row label="Branch"   value={deploy.branch || 'local'} mono />
       <Row label="Commit"   value={deploy.commitShort ? `${deploy.commitShort}` : 'unknown'} mono />
       {deploy.commitMessage && <Row label="Message" value={deploy.commitMessage} truncate />}
-      <Row label="Env"      value={deploy.env} accent={deploy.env === 'production' ? '#34d399' : '#fbbf24'} />
+      <Row label="Env"      value={deploy.env} accent={deploy.env === 'production' ? '#c4b5fd' : '#c4b5fd'} />
       <Row label="Region"   value={deploy.region || 'localhost'} mono />
       <Row label="Node"     value={deploy.nodeVersion} mono />
       <Row label="Uptime"   value={formatUptime(deploy.uptimeSeconds)} />
       {deploy.url && (
         <Row label="URL" value={
-          <a href={deploy.url} target="_blank" rel="noreferrer" style={{ color: '#818cf8' }}>{deploy.url}</a>
+          <a href={deploy.url} target="_blank" rel="noreferrer" style={{ color: '#a78bfa' }}>{deploy.url}</a>
         } />
       )}
     </div>
@@ -241,22 +241,22 @@ function DatabaseCard({ db, env }: { db: any; env: Record<string, boolean> }) {
       padding: 16, borderRadius: 12,
       background: '#0d0d0d', border: '1px solid #1e1e1e',
     }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 10, color: '#34d399', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 12 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 10, color: '#c4b5fd', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 12 }}>
         <Database size={11} /> Database & Services
       </div>
-      <Row label="Supabase" value={db.reachable ? <Pill color="#34d399" label="Reachable" /> : <Pill color="#f87171" label={db.error || 'Down'} />} />
-      <Row label="OpenRouter"     value={env.hasOpenRouter   ? <Pill color="#34d399" label="OK" /> : <Pill color="#f87171" label="Missing" />} />
-      <Row label="Gemini (image)" value={env.hasGemini       ? <Pill color="#34d399" label="OK" /> : <Pill color="#a1a1aa" label="Off" />} />
-      <Row label="Pexels"         value={env.hasPexels       ? <Pill color="#34d399" label="OK" /> : <Pill color="#a1a1aa" label="Off" />} />
-      <Row label="Unsplash"       value={env.hasUnsplash     ? <Pill color="#34d399" label="OK" /> : <Pill color="#a1a1aa" label="Off" />} />
-      <Row label="Service Role"   value={env.hasServiceRole  ? <Pill color="#34d399" label="OK" /> : <Pill color="#f87171" label="Missing" />} />
-      <Row label="Razorpay"       value={env.hasRazorpay     ? <Pill color="#34d399" label="Live" /> : <Pill color="#fbbf24" label="Demo" />} />
-      <Row label="PWA"            value={env.pwaEnabled      ? <Pill color="#34d399" label="On" /> : <Pill color="#a1a1aa" label="Off" />} />
+      <Row label="Supabase" value={db.reachable ? <Pill color="#c4b5fd" label="Reachable" /> : <Pill color="#a78bfa" label={db.error || 'Down'} />} />
+      <Row label="OpenRouter"     value={env.hasOpenRouter   ? <Pill color="#c4b5fd" label="OK" /> : <Pill color="#a78bfa" label="Missing" />} />
+      <Row label="Gemini (image)" value={env.hasGemini       ? <Pill color="#c4b5fd" label="OK" /> : <Pill color="#a1a1aa" label="Off" />} />
+      <Row label="Pexels"         value={env.hasPexels       ? <Pill color="#c4b5fd" label="OK" /> : <Pill color="#a1a1aa" label="Off" />} />
+      <Row label="Unsplash"       value={env.hasUnsplash     ? <Pill color="#c4b5fd" label="OK" /> : <Pill color="#a1a1aa" label="Off" />} />
+      <Row label="Service Role"   value={env.hasServiceRole  ? <Pill color="#c4b5fd" label="OK" /> : <Pill color="#a78bfa" label="Missing" />} />
+      <Row label="Razorpay"       value={env.hasRazorpay     ? <Pill color="#c4b5fd" label="Live" /> : <Pill color="#c4b5fd" label="Demo" />} />
+      <Row label="PWA"            value={env.pwaEnabled      ? <Pill color="#c4b5fd" label="On" /> : <Pill color="#a1a1aa" label="Off" />} />
     </div>
   )
 }
 
-function Section({ title, icon: Icon, children, accent = '#a5b4fc' }: any) {
+function Section({ title, icon: Icon, children, accent = '#c4b5fd' }: any) {
   return (
     <div style={{ marginBottom: 18 }}>
       <h2 style={{
@@ -323,7 +323,7 @@ function RolePill({ label, count, color }: any) {
 
 function LiveDot({ lastFetch, err }: { lastFetch: number; err: string }) {
   const stale = !err && Date.now() - lastFetch > 60_000
-  const color = err ? '#f87171' : stale ? '#fbbf24' : '#34d399'
+  const color = err ? '#a78bfa' : stale ? '#c4b5fd' : '#c4b5fd'
   const label = err ? 'Error' : stale ? 'Stale' : 'Live'
   return (
     <div style={{

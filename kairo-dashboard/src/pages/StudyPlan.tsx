@@ -26,13 +26,13 @@ const SUBJECTS = [
   'Political Science', 'Economics', 'Computer Science',
 ]
 const SUBJECT_COLORS: Record<string, string> = {
-  Mathematics: '#818cf8', Physics: '#38bdf8', Chemistry: '#34d399',
-  Biology: '#86efac', English: '#fb923c', Hindi: '#f472b6',
-  History: '#fbbf24', Geography: '#a78bfa',
-  'Political Science': '#67e8f9', Economics: '#facc15',
-  'Computer Science': '#a5f3fc',
+  Mathematics: '#a78bfa', Physics: '#38bdf8', Chemistry: '#c4b5fd',
+  Biology: '#c4b5fd', English: '#c4b5fd', Hindi: '#c4b5fd',
+  History: '#c4b5fd', Geography: '#a78bfa',
+  'Political Science': '#e9d5ff', Economics: '#c4b5fd',
+  'Computer Science': '#e9d5ff',
 }
-const colorFor = (s: string) => SUBJECT_COLORS[s] || '#6366f1'
+const colorFor = (s: string) => SUBJECT_COLORS[s] || '#7c3aed'
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
@@ -190,7 +190,7 @@ Generate the JSON schedule and markdown plan as instructed.`
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 22 }}>
         <div style={{
           width: 44, height: 44, borderRadius: 11,
-          background: 'linear-gradient(135deg, #fb923c, #f472b6)',
+          background: 'linear-gradient(135deg, #c4b5fd, #c4b5fd)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           boxShadow: '0 0 18px rgba(251,146,60,0.35)', flexShrink: 0,
         }}>
@@ -208,12 +208,12 @@ Generate the JSON schedule and markdown plan as instructed.`
       {!loadingMemory && (
         <div style={{
           display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px',
-          background: weakTopics.length ? 'rgba(99,102,241,0.06)' : 'rgba(82,82,91,0.04)',
-          border: `1px solid ${weakTopics.length ? 'rgba(99,102,241,0.2)' : '#1e1e1e'}`,
+          background: weakTopics.length ? 'rgba(124, 58, 237,0.06)' : 'rgba(82,82,91,0.04)',
+          border: `1px solid ${weakTopics.length ? 'rgba(124, 58, 237,0.2)' : '#1e1e1e'}`,
           borderRadius: 10, marginBottom: 18,
         }}>
-          <Brain size={14} color={weakTopics.length ? '#a5b4fc' : '#71717a'} />
-          <span style={{ fontSize: 12, color: weakTopics.length ? '#a5b4fc' : '#71717a' }}>
+          <Brain size={14} color={weakTopics.length ? '#c4b5fd' : '#71717a'} />
+          <span style={{ fontSize: 12, color: weakTopics.length ? '#c4b5fd' : '#71717a' }}>
             {weakTopics.length
               ? <>Pulled <strong>{weakTopics.length} weak topic{weakTopics.length === 1 ? '' : 's'}</strong> from your AI Memory. AI will weight these heavier.</>
               : memoryCount === 0
@@ -311,8 +311,8 @@ Generate the JSON schedule and markdown plan as instructed.`
                 {weakTopics.map((t, i) => (
                   <span key={i} style={{
                     padding: '5px 10px', borderRadius: 6,
-                    background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.25)',
-                    color: '#fbbf24', fontSize: 11, fontWeight: 600,
+                    background: 'rgba(196, 181, 253,0.08)', border: '1px solid rgba(196, 181, 253,0.25)',
+                    color: '#c4b5fd', fontSize: 11, fontWeight: 600,
                     display: 'inline-flex', alignItems: 'center', gap: 5,
                   }}>
                     <Target size={10} /> {t}
@@ -322,7 +322,7 @@ Generate the JSON schedule and markdown plan as instructed.`
             </div>
           )}
 
-          {err && <p style={{ fontSize: 12, color: '#f87171', marginBottom: 12 }}>{err}</p>}
+          {err && <p style={{ fontSize: 12, color: '#a78bfa', marginBottom: 12 }}>{err}</p>}
 
           <motion.button
             whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
@@ -331,12 +331,12 @@ Generate the JSON schedule and markdown plan as instructed.`
               padding: '12px 24px', borderRadius: 10, border: 'none',
               background: busy || subjects.length === 0
                 ? '#1c1c1c'
-                : 'linear-gradient(135deg, #6366f1, #7c3aed)',
+                : 'linear-gradient(135deg, #7c3aed, #7c3aed)',
               color: busy || subjects.length === 0 ? '#52525b' : '#fff',
               fontFamily: 'inherit', fontSize: 14, fontWeight: 700,
               cursor: busy || subjects.length === 0 ? 'not-allowed' : 'pointer',
               display: 'flex', alignItems: 'center', gap: 8,
-              boxShadow: busy || subjects.length === 0 ? 'none' : '0 0 22px rgba(99,102,241,0.35)',
+              boxShadow: busy || subjects.length === 0 ? 'none' : '0 0 22px rgba(124, 58, 237,0.35)',
             }}>
             <Sparkles size={14} />{busy ? 'Optimizing your week…' : 'Generate Smart Schedule'}
           </motion.button>
@@ -350,7 +350,7 @@ Generate the JSON schedule and markdown plan as instructed.`
           {plan.blocks.length > 0 && (
             <div style={{ ...card, padding: 18, marginBottom: 16 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-                <Zap size={15} color="#34d399" />
+                <Zap size={15} color="#c4b5fd" />
                 <div>
                   <div style={{ fontSize: 13, fontWeight: 700, color: '#fafafa' }}>Weekly Schedule</div>
                   <div style={{ fontSize: 11, color: '#52525b' }}>{plan.blocks.length} optimized blocks across the week</div>
@@ -377,8 +377,8 @@ Generate the JSON schedule and markdown plan as instructed.`
                 <Plus size={12} /> Edit Setup
               </button>
               <button onClick={generate} disabled={busy} style={{
-                padding: '8px 14px', borderRadius: 8, border: '1px solid rgba(99,102,241,0.3)',
-                background: 'rgba(99,102,241,0.08)', color: '#a5b4fc', cursor: 'pointer',
+                padding: '8px 14px', borderRadius: 8, border: '1px solid rgba(124, 58, 237,0.3)',
+                background: 'rgba(124, 58, 237,0.08)', color: '#c4b5fd', cursor: 'pointer',
                 fontFamily: 'inherit', fontSize: 12, display: 'flex', alignItems: 'center', gap: 6,
               }}>
                 <RefreshCw size={12} style={{ animation: busy ? 'spin 0.8s linear infinite' : 'none' }} />
@@ -450,11 +450,11 @@ function WeekGrid({ blocks }: { blocks: ScheduleBlock[] }) {
                   <span style={{
                     display: 'inline-block', marginTop: 3,
                     fontSize: 9, padding: '1px 5px', borderRadius: 3,
-                    background: b.type === 'revision' ? 'rgba(251,191,36,0.15)'
-                      : b.type === 'practice' ? 'rgba(52,211,153,0.15)'
+                    background: b.type === 'revision' ? 'rgba(196, 181, 253,0.15)'
+                      : b.type === 'practice' ? 'rgba(196, 181, 253,0.15)'
                       : 'rgba(82,82,91,0.15)',
-                    color: b.type === 'revision' ? '#fbbf24'
-                      : b.type === 'practice' ? '#34d399'
+                    color: b.type === 'revision' ? '#c4b5fd'
+                      : b.type === 'practice' ? '#c4b5fd'
                       : '#a1a1aa',
                     fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5,
                   }}>{b.type}</span>

@@ -263,9 +263,9 @@ export default function VoiceTutor() {
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 18, flexShrink: 0 }}>
         <div style={{
           width: 44, height: 44, borderRadius: 11,
-          background: 'linear-gradient(135deg, #34d399, #38bdf8)',
+          background: 'linear-gradient(135deg, #c4b5fd, #38bdf8)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 0 18px rgba(52,211,153,0.35)', flexShrink: 0,
+          boxShadow: '0 0 18px rgba(196, 181, 253,0.35)', flexShrink: 0,
         }}>
           <Mic size={22} color="#fff" />
         </div>
@@ -279,9 +279,9 @@ export default function VoiceTutor() {
           title={muted ? 'Unmute Kairo' : 'Mute Kairo'}
           style={{
             width: 36, height: 36, borderRadius: 9,
-            background: muted ? 'rgba(248,113,113,0.1)' : '#161616',
-            border: `1px solid ${muted ? 'rgba(248,113,113,0.4)' : '#1e1e1e'}`,
-            color: muted ? '#f87171' : '#71717a', cursor: 'pointer',
+            background: muted ? 'rgba(167, 139, 250,0.1)' : '#161616',
+            border: `1px solid ${muted ? 'rgba(167, 139, 250,0.4)' : '#1e1e1e'}`,
+            color: muted ? '#a78bfa' : '#71717a', cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
           {muted ? <VolumeX size={14} /> : <Volume2 size={14} />}
@@ -301,8 +301,8 @@ export default function VoiceTutor() {
       {(!SpeechRecognitionCtor || !speechSynthAvailable) && (
         <div style={{
           marginBottom: 14, padding: '10px 14px', borderRadius: 8, flexShrink: 0,
-          background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.25)',
-          fontSize: 12, color: '#fbbf24', display: 'flex', gap: 8, alignItems: 'flex-start',
+          background: 'rgba(196, 181, 253,0.06)', border: '1px solid rgba(196, 181, 253,0.25)',
+          fontSize: 12, color: '#c4b5fd', display: 'flex', gap: 8, alignItems: 'flex-start',
         }}>
           <AlertCircle size={13} style={{ flexShrink: 0, marginTop: 1 }} />
           <span>
@@ -339,8 +339,8 @@ export default function VoiceTutor() {
       {err && (
         <div style={{
           marginBottom: 12, padding: '10px 14px', borderRadius: 8, flexShrink: 0,
-          background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.25)',
-          fontSize: 12, color: '#f87171',
+          background: 'rgba(167, 139, 250,0.08)', border: '1px solid rgba(167, 139, 250,0.25)',
+          fontSize: 12, color: '#a78bfa',
         }}>
           {err}
         </div>
@@ -357,10 +357,10 @@ export default function VoiceTutor() {
             }}>
               <div style={{
                 width: 64, height: 64, borderRadius: 18,
-                background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.25)',
+                background: 'rgba(196, 181, 253,0.08)', border: '1px solid rgba(196, 181, 253,0.25)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
-                <Sparkles size={28} color="#34d399" />
+                <Sparkles size={28} color="#c4b5fd" />
               </div>
               <div>
                 <p style={{ fontSize: 14, color: '#a1a1aa', margin: 0, marginBottom: 6, fontWeight: 600 }}>
@@ -381,7 +381,7 @@ export default function VoiceTutor() {
               }}>
               <div style={{
                 width: 28, height: 28, borderRadius: 7, flexShrink: 0,
-                background: t.role === 'user' ? '#6366f1' : 'linear-gradient(135deg,#34d399,#38bdf8)',
+                background: t.role === 'user' ? '#7c3aed' : 'linear-gradient(135deg,#c4b5fd,#38bdf8)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
                 {t.role === 'user' ? <Mic size={13} color="#fff" /> : <Sparkles size={13} color="#fff" />}
@@ -390,7 +390,7 @@ export default function VoiceTutor() {
                 maxWidth: '78%',
                 padding: '10px 14px',
                 borderRadius: t.role === 'user' ? '12px 4px 12px 12px' : '4px 12px 12px 12px',
-                background: t.role === 'user' ? 'linear-gradient(135deg,#6366f1,#7c3aed)' : '#1a1a2e',
+                background: t.role === 'user' ? 'linear-gradient(135deg,#7c3aed,#7c3aed)' : '#1a1a2e',
                 fontSize: 13.5, color: '#fafafa', lineHeight: 1.55,
               }}>
                 {t.text}
@@ -405,15 +405,15 @@ export default function VoiceTutor() {
             }}>
               <div style={{
                 width: 28, height: 28, borderRadius: 7, flexShrink: 0,
-                background: '#6366f1', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: '#7c3aed', display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
                 <Mic size={13} color="#fff" />
               </div>
               <div style={{
                 maxWidth: '78%', padding: '10px 14px',
                 borderRadius: '12px 4px 12px 12px',
-                background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.3)',
-                fontSize: 13.5, color: '#a5b4fc', lineHeight: 1.55, fontStyle: 'italic',
+                background: 'rgba(124, 58, 237,0.15)', border: '1px solid rgba(124, 58, 237,0.3)',
+                fontSize: 13.5, color: '#c4b5fd', lineHeight: 1.55, fontStyle: 'italic',
               }}>
                 {interim}…
               </div>
@@ -425,7 +425,7 @@ export default function VoiceTutor() {
             <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 14 }}>
               <div style={{
                 width: 28, height: 28, borderRadius: 7,
-                background: 'linear-gradient(135deg,#34d399,#38bdf8)',
+                background: 'linear-gradient(135deg,#c4b5fd,#38bdf8)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
                 <Sparkles size={13} color="#fff" />
@@ -433,7 +433,7 @@ export default function VoiceTutor() {
               <div style={{ display: 'flex', gap: 5 }}>
                 {[0, 1, 2].map(i => (
                   <div key={i} style={{
-                    width: 6, height: 6, borderRadius: '50%', background: '#34d399',
+                    width: 6, height: 6, borderRadius: '50%', background: '#c4b5fd',
                     animation: `dot-bounce 1.2s ease-in-out ${i * 0.2}s infinite`,
                   }} />
                 ))}
@@ -458,13 +458,13 @@ export default function VoiceTutor() {
               width: 56, height: 56, borderRadius: '50%',
               border: 'none', flexShrink: 0,
               background: !SpeechRecognitionCtor || thinking ? '#1c1c1c'
-                : listening ? 'linear-gradient(135deg,#f87171,#fb923c)'
-                : 'linear-gradient(135deg,#34d399,#38bdf8)',
+                : listening ? 'linear-gradient(135deg,#a78bfa,#c4b5fd)'
+                : 'linear-gradient(135deg,#c4b5fd,#38bdf8)',
               color: '#fff', cursor: !SpeechRecognitionCtor || thinking ? 'not-allowed' : 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               boxShadow: listening
-                ? `0 0 ${20 + audioLevel * 30}px rgba(248,113,113,${0.4 + audioLevel * 0.4})`
-                : '0 0 18px rgba(52,211,153,0.35)',
+                ? `0 0 ${20 + audioLevel * 30}px rgba(167, 139, 250,${0.4 + audioLevel * 0.4})`
+                : '0 0 18px rgba(196, 181, 253,0.35)',
               transition: 'box-shadow 0.1s',
               position: 'relative',
             }}>
@@ -481,13 +481,13 @@ export default function VoiceTutor() {
                   transition={{ duration: 1.5, repeat: Infinity, ease: 'easeOut' }}
                   style={{
                     position: 'absolute', inset: 0, borderRadius: '50%',
-                    border: '2px solid #f87171', pointerEvents: 'none',
+                    border: '2px solid #a78bfa', pointerEvents: 'none',
                   }} />
                 <motion.div animate={{ scale: [1, 1.7, 1.7], opacity: [0.4, 0, 0] }}
                   transition={{ duration: 1.5, repeat: Infinity, ease: 'easeOut', delay: 0.5 }}
                   style={{
                     position: 'absolute', inset: 0, borderRadius: '50%',
-                    border: '2px solid #fb923c', pointerEvents: 'none',
+                    border: '2px solid #c4b5fd', pointerEvents: 'none',
                   }} />
               </>
             )}
@@ -513,7 +513,7 @@ export default function VoiceTutor() {
           <button onClick={submitText} disabled={!textInput.trim() || listening || thinking}
             style={{
               width: 38, height: 38, borderRadius: 9, flexShrink: 0,
-              background: textInput.trim() ? 'linear-gradient(135deg,#6366f1,#7c3aed)' : '#1c1c1c',
+              background: textInput.trim() ? 'linear-gradient(135deg,#7c3aed,#7c3aed)' : '#1c1c1c',
               border: 'none', color: textInput.trim() ? '#fff' : '#52525b',
               cursor: textInput.trim() ? 'pointer' : 'not-allowed',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -525,8 +525,8 @@ export default function VoiceTutor() {
             <button onClick={stopSpeaking} title="Stop AI voice"
               style={{
                 width: 38, height: 38, borderRadius: 9, flexShrink: 0,
-                background: 'rgba(248,113,113,0.1)', border: '1px solid rgba(248,113,113,0.4)',
-                color: '#f87171', cursor: 'pointer',
+                background: 'rgba(167, 139, 250,0.1)', border: '1px solid rgba(167, 139, 250,0.4)',
+                color: '#a78bfa', cursor: 'pointer',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
               <Square size={13} />
@@ -544,8 +544,8 @@ export default function VoiceTutor() {
             <button onClick={saveSession}
               style={{
                 padding: '7px 13px', borderRadius: 7,
-                border: '1px solid rgba(251,191,36,0.3)',
-                background: 'rgba(251,191,36,0.08)', color: '#fbbf24',
+                border: '1px solid rgba(196, 181, 253,0.3)',
+                background: 'rgba(196, 181, 253,0.08)', color: '#c4b5fd',
                 cursor: 'pointer', fontFamily: 'inherit', fontSize: 11, fontWeight: 600,
                 display: 'flex', alignItems: 'center', gap: 5,
               }}>

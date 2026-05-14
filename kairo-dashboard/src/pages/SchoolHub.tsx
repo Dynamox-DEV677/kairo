@@ -80,7 +80,7 @@ function Spinner() {
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: 48 }}>
       <motion.div
         animate={{ rotate: 360 }} transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }}
-        style={{ width: 28, height: 28, borderRadius: '50%', border: '2px solid #1e1e2e', borderTopColor: '#6366f1' }}
+        style={{ width: 28, height: 28, borderRadius: '50%', border: '2px solid #1e1e2e', borderTopColor: '#7c3aed' }}
       />
     </div>
   )
@@ -99,11 +99,11 @@ function EmptyState({ icon: Icon, title, sub }: { icon: React.ElementType; title
 function ErrBanner({ msg, onDismiss }: { msg: string; onDismiss?: () => void }) {
   return (
     <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
-      style={{ background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: 8,
-        padding: '10px 14px', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, color: '#f87171' }}>
+      style={{ background: 'rgba(124, 58, 237,0.12)', border: '1px solid rgba(124, 58, 237,0.25)', borderRadius: 8,
+        padding: '10px 14px', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, color: '#a78bfa' }}>
       <AlertCircle size={14} style={{ flexShrink: 0 }} />
       <span style={{ flex: 1 }}>{msg}</span>
-      {onDismiss && <button onClick={onDismiss} style={{ background: 'none', border: 'none', color: '#f87171', cursor: 'pointer', padding: 0 }}><X size={13} /></button>}
+      {onDismiss && <button onClick={onDismiss} style={{ background: 'none', border: 'none', color: '#a78bfa', cursor: 'pointer', padding: 0 }}><X size={13} /></button>}
     </motion.div>
   )
 }
@@ -111,11 +111,11 @@ function ErrBanner({ msg, onDismiss }: { msg: string; onDismiss?: () => void }) 
 function SuccessBanner({ msg, onDismiss }: { msg: string; onDismiss?: () => void }) {
   return (
     <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
-      style={{ background: 'rgba(52,211,153,0.12)', border: '1px solid rgba(52,211,153,0.25)', borderRadius: 8,
-        padding: '10px 14px', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, color: '#34d399' }}>
+      style={{ background: 'rgba(196, 181, 253,0.12)', border: '1px solid rgba(196, 181, 253,0.25)', borderRadius: 8,
+        padding: '10px 14px', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, color: '#c4b5fd' }}>
       <CheckCircle size={14} style={{ flexShrink: 0 }} />
       <span style={{ flex: 1 }}>{msg}</span>
-      {onDismiss && <button onClick={onDismiss} style={{ background: 'none', border: 'none', color: '#34d399', cursor: 'pointer', padding: 0 }}><X size={13} /></button>}
+      {onDismiss && <button onClick={onDismiss} style={{ background: 'none', border: 'none', color: '#c4b5fd', cursor: 'pointer', padding: 0 }}><X size={13} /></button>}
     </motion.div>
   )
 }
@@ -130,15 +130,15 @@ function TabBar({ tabs, active, setActive }: {
         <button key={t.id} onClick={() => setActive(t.id)} style={{
           display: 'flex', alignItems: 'center', gap: 6,
           padding: '7px 14px', borderRadius: 8, fontSize: 13, fontWeight: active === t.id ? 600 : 400,
-          border: active === t.id ? '1px solid rgba(99,102,241,0.4)' : '1px solid #1e1e1e',
-          background: active === t.id ? 'rgba(99,102,241,0.12)' : '#111',
-          color: active === t.id ? '#818cf8' : '#71717a',
+          border: active === t.id ? '1px solid rgba(124, 58, 237,0.4)' : '1px solid #1e1e1e',
+          background: active === t.id ? 'rgba(124, 58, 237,0.12)' : '#111',
+          color: active === t.id ? '#a78bfa' : '#71717a',
           cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s', position: 'relative',
         }}>
           <t.icon size={13} />
           {t.label}
           {!!t.badge && (
-            <span style={{ background: '#ef4444', color: '#fff', borderRadius: 10, fontSize: 10,
+            <span style={{ background: '#7c3aed', color: '#fff', borderRadius: 10, fontSize: 10,
               fontWeight: 700, padding: '0 5px', minWidth: 16, textAlign: 'center' }}>
               {t.badge}
             </span>
@@ -159,9 +159,9 @@ function Card({ children, style }: { children: React.ReactNode; style?: React.CS
 
 function RoleBadge({ role }: { role: string }) {
   const cfg: Record<string, { bg: string; color: string; label: string }> = {
-    admin:   { bg: 'rgba(99,102,241,0.15)',  color: '#818cf8', label: 'Admin' },
-    teacher: { bg: 'rgba(251,146,60,0.15)',  color: '#fb923c', label: 'Teacher' },
-    student: { bg: 'rgba(52,211,153,0.15)',  color: '#34d399', label: 'Student' },
+    admin:   { bg: 'rgba(124, 58, 237,0.15)',  color: '#a78bfa', label: 'Admin' },
+    teacher: { bg: 'rgba(251,146,60,0.15)',  color: '#c4b5fd', label: 'Teacher' },
+    student: { bg: 'rgba(196, 181, 253,0.15)',  color: '#c4b5fd', label: 'Student' },
   }
   const c = cfg[role] || { bg: '#1e1e1e', color: '#71717a', label: role }
   return (
@@ -173,12 +173,12 @@ function RoleBadge({ role }: { role: string }) {
 
 function StatusBadge({ status }: { status: string }) {
   const cfg: Record<string, { bg: string; color: string }> = {
-    active:    { bg: 'rgba(52,211,153,0.15)',  color: '#34d399' },
-    pending:   { bg: 'rgba(251,191,36,0.15)',  color: '#fbbf24' },
-    suspended: { bg: 'rgba(239,68,68,0.15)',   color: '#f87171' },
-    submitted: { bg: 'rgba(99,102,241,0.15)',  color: '#818cf8' },
-    graded:    { bg: 'rgba(52,211,153,0.15)',  color: '#34d399' },
-    late:      { bg: 'rgba(239,68,68,0.15)',   color: '#f87171' },
+    active:    { bg: 'rgba(196, 181, 253,0.15)',  color: '#c4b5fd' },
+    pending:   { bg: 'rgba(196, 181, 253,0.15)',  color: '#c4b5fd' },
+    suspended: { bg: 'rgba(124, 58, 237,0.15)',   color: '#a78bfa' },
+    submitted: { bg: 'rgba(124, 58, 237,0.15)',  color: '#a78bfa' },
+    graded:    { bg: 'rgba(196, 181, 253,0.15)',  color: '#c4b5fd' },
+    late:      { bg: 'rgba(124, 58, 237,0.15)',   color: '#a78bfa' },
   }
   const c = cfg[status] || { bg: '#1e1e1e', color: '#71717a' }
   return (
@@ -194,14 +194,14 @@ function Avatar({ name, url, size = 32 }: { name: string; url?: string; size?: n
     : (
       <div style={{
         width: size, height: size, borderRadius: size / 3, flexShrink: 0,
-        background: 'linear-gradient(135deg, #6366f1, #7c3aed)',
+        background: 'linear-gradient(135deg, #7c3aed, #7c3aed)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         fontSize: size * 0.4, fontWeight: 700, color: '#fff',
       }}>{name.charAt(0).toUpperCase()}</div>
     )
 }
 
-function StatCard({ label, value, icon: Icon, color = '#6366f1', sub }: {
+function StatCard({ label, value, icon: Icon, color = '#7c3aed', sub }: {
   label: string; value: number | string; icon: React.ElementType; color?: string; sub?: string
 }) {
   return (
@@ -252,11 +252,11 @@ function Btn({ children, onClick, variant = 'primary', size = 'md', disabled = f
   size?: 'sm' | 'md'; disabled?: boolean; style?: React.CSSProperties
 }) {
   const cfg = {
-    primary: { bg: '#6366f1', hoverBg: '#5558e8', color: '#fff' },
-    danger:  { bg: 'rgba(239,68,68,0.15)', hoverBg: 'rgba(239,68,68,0.25)', color: '#f87171' },
+    primary: { bg: '#7c3aed', hoverBg: '#5558e8', color: '#fff' },
+    danger:  { bg: 'rgba(124, 58, 237,0.15)', hoverBg: 'rgba(124, 58, 237,0.25)', color: '#a78bfa' },
     ghost:   { bg: '#1a1a1a', hoverBg: '#222', color: '#a1a1aa' },
-    success: { bg: 'rgba(52,211,153,0.15)', hoverBg: 'rgba(52,211,153,0.25)', color: '#34d399' },
-    warning: { bg: 'rgba(251,191,36,0.15)', hoverBg: 'rgba(251,191,36,0.25)', color: '#fbbf24' },
+    success: { bg: 'rgba(196, 181, 253,0.15)', hoverBg: 'rgba(196, 181, 253,0.25)', color: '#c4b5fd' },
+    warning: { bg: 'rgba(196, 181, 253,0.15)', hoverBg: 'rgba(196, 181, 253,0.25)', color: '#c4b5fd' },
   }[variant]
   const pad = size === 'sm' ? '5px 10px' : '8px 16px'
   const fs  = size === 'sm' ? 12 : 13
@@ -279,7 +279,7 @@ function Input({ label, value, onChange, placeholder, type = 'text', required }:
   return (
     <div style={{ marginBottom: 14 }}>
       <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#71717a', marginBottom: 5 }}>
-        {label}{required && <span style={{ color: '#f87171', marginLeft: 2 }}>*</span>}
+        {label}{required && <span style={{ color: '#a78bfa', marginLeft: 2 }}>*</span>}
       </label>
       <input type={type} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder}
         style={{
@@ -287,7 +287,7 @@ function Input({ label, value, onChange, placeholder, type = 'text', required }:
           borderRadius: 8, color: '#fafafa', fontSize: 13, fontFamily: 'inherit', outline: 'none',
           boxSizing: 'border-box',
         }}
-        onFocus={e => { (e.currentTarget as HTMLInputElement).style.borderColor = '#6366f1' }}
+        onFocus={e => { (e.currentTarget as HTMLInputElement).style.borderColor = '#7c3aed' }}
         onBlur={e => { (e.currentTarget as HTMLInputElement).style.borderColor = '#2a2a2a' }}
       />
     </div>
@@ -323,7 +323,7 @@ function SchoolHeader({ profile }: { profile: AuthProfile }) {
       {profile.school_logo_url
         ? <img src={profile.school_logo_url} alt="logo"
             style={{ width: 48, height: 48, borderRadius: 12, objectFit: 'cover', border: '1px solid #1e1e1e' }} />
-        : <div style={{ width: 48, height: 48, borderRadius: 12, background: 'linear-gradient(135deg,#6366f1,#7c3aed)',
+        : <div style={{ width: 48, height: 48, borderRadius: 12, background: 'linear-gradient(135deg,#7c3aed,#7c3aed)',
             display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <Building2 size={22} color="#fff" />
           </div>
@@ -440,7 +440,7 @@ function AdminAIAnnounce({ schoolId: _ }: { schoolId: string }) {
       {/* Generate */}
       <div style={{ background: '#0f0f12', border: '1px solid #1e1e2e', borderRadius: 12, padding: 18 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-          <Sparkles size={15} color="#a5b4fc" />
+          <Sparkles size={15} color="#c4b5fd" />
           <h3 style={{ fontSize: 14, fontWeight: 700, color: '#fafafa', margin: 0 }}>Generate</h3>
         </div>
 
@@ -461,9 +461,9 @@ function AdminAIAnnounce({ schoolId: _ }: { schoolId: string }) {
           {(['friendly', 'formal', 'urgent'] as const).map(t => (
             <button key={t} onClick={() => setTone(t)} style={{
               flex: 1, padding: '7px 0', borderRadius: 7,
-              border: `1px solid ${tone === t ? '#6366f1' : '#1e1e2e'}`,
-              background: tone === t ? 'rgba(99,102,241,0.12)' : '#0a0a0a',
-              color: tone === t ? '#a5b4fc' : '#52525b',
+              border: `1px solid ${tone === t ? '#7c3aed' : '#1e1e2e'}`,
+              background: tone === t ? 'rgba(124, 58, 237,0.12)' : '#0a0a0a',
+              color: tone === t ? '#c4b5fd' : '#52525b',
               fontFamily: 'inherit', fontSize: 12, fontWeight: 600, cursor: 'pointer',
             }}>{t}</button>
           ))}
@@ -474,7 +474,7 @@ function AdminAIAnnounce({ schoolId: _ }: { schoolId: string }) {
           disabled={generating || !topic.trim()}
           style={{
             width: '100%', padding: '10px 14px', borderRadius: 8, border: 'none',
-            background: !topic.trim() || generating ? '#1c1c1c' : 'linear-gradient(135deg, #6366f1, #7c3aed)',
+            background: !topic.trim() || generating ? '#1c1c1c' : 'linear-gradient(135deg, #7c3aed, #7c3aed)',
             color: !topic.trim() || generating ? '#52525b' : '#fff',
             fontFamily: 'inherit', fontSize: 13, fontWeight: 600,
             cursor: !topic.trim() || generating ? 'not-allowed' : 'pointer',
@@ -488,7 +488,7 @@ function AdminAIAnnounce({ schoolId: _ }: { schoolId: string }) {
       {/* Preview + Send */}
       <div style={{ background: '#0f0f12', border: '1px solid #1e1e2e', borderRadius: 12, padding: 18 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-          <Send size={14} color="#34d399" />
+          <Send size={14} color="#c4b5fd" />
           <h3 style={{ fontSize: 14, fontWeight: 700, color: '#fafafa', margin: 0 }}>Preview & Send</h3>
         </div>
 
@@ -510,9 +510,9 @@ function AdminAIAnnounce({ schoolId: _ }: { schoolId: string }) {
           {([['all', 'Everyone'], ['student', 'Students'], ['teacher', 'Teachers']] as const).map(([id, label]) => (
             <button key={id} onClick={() => setAudience(id)} style={{
               flex: 1, padding: '7px 0', borderRadius: 7,
-              border: `1px solid ${audience === id ? '#34d399' : '#1e1e2e'}`,
-              background: audience === id ? 'rgba(52,211,153,0.1)' : '#0a0a0a',
-              color: audience === id ? '#34d399' : '#52525b',
+              border: `1px solid ${audience === id ? '#c4b5fd' : '#1e1e2e'}`,
+              background: audience === id ? 'rgba(196, 181, 253,0.1)' : '#0a0a0a',
+              color: audience === id ? '#c4b5fd' : '#52525b',
               fontFamily: 'inherit', fontSize: 12, fontWeight: 600, cursor: 'pointer',
             }}>{label}</button>
           ))}
@@ -537,15 +537,15 @@ function AdminAIAnnounce({ schoolId: _ }: { schoolId: string }) {
           <option value={72}>3 days</option>
         </select>
 
-        {err     && <p style={{ fontSize: 12, color: '#f87171', marginBottom: 10 }}>{err}</p>}
-        {success && <p style={{ fontSize: 12, color: '#34d399', marginBottom: 10 }}>{success}</p>}
+        {err     && <p style={{ fontSize: 12, color: '#a78bfa', marginBottom: 10 }}>{err}</p>}
+        {success && <p style={{ fontSize: 12, color: '#c4b5fd', marginBottom: 10 }}>{success}</p>}
 
         <button
           onClick={send}
           disabled={sending || !draft.trim()}
           style={{
             width: '100%', padding: '10px 14px', borderRadius: 8, border: 'none',
-            background: !draft.trim() || sending ? '#1c1c1c' : 'linear-gradient(135deg, #34d399, #10b981)',
+            background: !draft.trim() || sending ? '#1c1c1c' : 'linear-gradient(135deg, #c4b5fd, #a78bfa)',
             color: !draft.trim() || sending ? '#52525b' : '#fff',
             fontFamily: 'inherit', fontSize: 13, fontWeight: 600,
             cursor: !draft.trim() || sending ? 'not-allowed' : 'pointer',
@@ -578,14 +578,14 @@ function AdminOverview({ schoolId }: { schoolId: string }) {
   return (
     <div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(190px, 1fr))', gap: 12 }}>
-        <StatCard label="Active Users"      value={stats.total_active_users}   icon={Users}     color="#6366f1" />
-        <StatCard label="Students"          value={stats.total_students}        icon={GraduationCap} color="#34d399" />
-        <StatCard label="Teachers"          value={stats.total_teachers}        icon={Shield}    color="#fb923c" />
-        <StatCard label="Pending Approval"  value={stats.pending_students}      icon={Clock}     color="#fbbf24"
+        <StatCard label="Active Users"      value={stats.total_active_users}   icon={Users}     color="#7c3aed" />
+        <StatCard label="Students"          value={stats.total_students}        icon={GraduationCap} color="#c4b5fd" />
+        <StatCard label="Teachers"          value={stats.total_teachers}        icon={Shield}    color="#c4b5fd" />
+        <StatCard label="Pending Approval"  value={stats.pending_students}      icon={Clock}     color="#c4b5fd"
           sub={stats.pending_students > 0 ? 'Go to Pending tab' : undefined} />
-        <StatCard label="Total Tasks"       value={stats.total_tasks}           icon={BookOpen}  color="#818cf8" />
+        <StatCard label="Total Tasks"       value={stats.total_tasks}           icon={BookOpen}  color="#a78bfa" />
         <StatCard label="Open Tasks"        value={stats.open_tasks}            icon={CheckSquare} color="#38bdf8" />
-        <StatCard label="Active Notices"    value={stats.active_notifications}  icon={Bell}      color="#f472b6" />
+        <StatCard label="Active Notices"    value={stats.active_notifications}  icon={Bell}      color="#c4b5fd" />
       </div>
     </div>
   )
@@ -611,7 +611,7 @@ function AdminHealthMonitor() {
   if (!data)   return null
 
   const score = data.health_score
-  const scoreColor = score >= 80 ? '#34d399' : score >= 60 ? '#fbbf24' : '#f87171'
+  const scoreColor = score >= 80 ? '#c4b5fd' : score >= 60 ? '#c4b5fd' : '#a78bfa'
   const scoreLabel = score >= 80 ? 'Excellent' : score >= 60 ? 'Healthy' : score >= 40 ? 'Needs attention' : 'Critical'
 
   return (
@@ -668,7 +668,7 @@ function AdminHealthMonitor() {
       {data.alerts.length > 0 && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
           {data.alerts.map((a: any, i: number) => {
-            const c = a.level === 'high' ? '#f87171' : '#fbbf24'
+            const c = a.level === 'high' ? '#a78bfa' : '#c4b5fd'
             return (
               <div key={i} style={{
                 background: '#111', border: `1px solid ${c}40`, borderRadius: 11,
@@ -706,7 +706,7 @@ function AdminHealthMonitor() {
               <span style={{ fontSize: 24, fontWeight: 800, color: '#fafafa' }}>{s.v}</span>
               <span style={{
                 fontSize: 11, fontWeight: 700,
-                color: s.t > 0 ? '#34d399' : s.t < 0 ? '#f87171' : '#71717a',
+                color: s.t > 0 ? '#c4b5fd' : s.t < 0 ? '#a78bfa' : '#71717a',
               }}>
                 {s.t > 0 ? '+' : ''}{s.t}%
               </span>
@@ -726,13 +726,13 @@ function AdminHealthMonitor() {
                 <span style={{ fontSize: 12, color: '#d4d4d8' }}>{c.class_name}</span>
                 <span style={{
                   fontSize: 11, fontWeight: 700,
-                  color: c.avg_pct >= 75 ? '#34d399' : c.avg_pct >= 60 ? '#fbbf24' : '#f87171',
+                  color: c.avg_pct >= 75 ? '#c4b5fd' : c.avg_pct >= 60 ? '#c4b5fd' : '#a78bfa',
                 }}>{c.avg_pct}%</span>
               </div>
               <div style={{ height: 6, background: '#0d0d0d', borderRadius: 3, overflow: 'hidden' }}>
                 <div style={{
                   height: '100%', width: `${c.avg_pct}%`,
-                  background: c.avg_pct >= 75 ? '#34d399' : c.avg_pct >= 60 ? '#fbbf24' : '#f87171',
+                  background: c.avg_pct >= 75 ? '#c4b5fd' : c.avg_pct >= 60 ? '#c4b5fd' : '#a78bfa',
                 }} />
               </div>
               <div style={{ fontSize: 10, color: '#52525b', marginTop: 2 }}>{c.exam_count} marks logged</div>
@@ -755,7 +755,7 @@ function AdminHealthMonitor() {
               <span style={{ fontSize: 12, color: '#d4d4d8' }}>{t.name}</span>
               <span style={{
                 fontSize: 11, fontWeight: 700,
-                color: t.tasks >= 8 ? '#fb923c' : t.tasks >= 4 ? '#fbbf24' : '#71717a',
+                color: t.tasks >= 8 ? '#c4b5fd' : t.tasks >= 4 ? '#c4b5fd' : '#71717a',
               }}>{t.tasks} task{t.tasks === 1 ? '' : 's'}</span>
             </div>
           ))}
@@ -773,10 +773,10 @@ function AdminHealthMonitor() {
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
             {[
-              { l: 'New',       v: data.leadFunnel.new,       c: '#fbbf24' },
-              { l: 'Contacted', v: data.leadFunnel.contacted, c: '#818cf8' },
-              { l: 'Admitted',  v: data.leadFunnel.admitted,  c: '#34d399' },
-              { l: 'Rejected',  v: data.leadFunnel.rejected,  c: '#f87171' },
+              { l: 'New',       v: data.leadFunnel.new,       c: '#c4b5fd' },
+              { l: 'Contacted', v: data.leadFunnel.contacted, c: '#a78bfa' },
+              { l: 'Admitted',  v: data.leadFunnel.admitted,  c: '#c4b5fd' },
+              { l: 'Rejected',  v: data.leadFunnel.rejected,  c: '#a78bfa' },
             ].map(s => (
               <div key={s.l} style={{
                 padding: 12, background: '#0d0d0d',
@@ -925,9 +925,9 @@ function AdminMembers({ schoolId, selfId }: { schoolId: string; selfId: string }
         {filterBtns.map(f => (
           <button key={f.id} onClick={() => setFilter(f.id)} style={{
             padding: '5px 12px', borderRadius: 6, fontSize: 12, fontWeight: 600,
-            background: filter === f.id ? 'rgba(99,102,241,0.15)' : '#161616',
-            color: filter === f.id ? '#818cf8' : '#71717a',
-            border: filter === f.id ? '1px solid rgba(99,102,241,0.3)' : '1px solid #1e1e1e',
+            background: filter === f.id ? 'rgba(124, 58, 237,0.15)' : '#161616',
+            color: filter === f.id ? '#a78bfa' : '#71717a',
+            border: filter === f.id ? '1px solid rgba(124, 58, 237,0.3)' : '1px solid #1e1e1e',
             cursor: 'pointer', fontFamily: 'inherit',
           }}>{f.label}</button>
         ))}
@@ -1079,9 +1079,9 @@ function AdminNetwork({ schoolId: _schoolId }: { schoolId: string }) {
       {success && <SuccessBanner msg={success} onDismiss={() => setSuccess('')} />}
 
       <Card style={{ marginBottom: 16, padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
-        <Globe size={16} color="#6366f1" />
+        <Globe size={16} color="#7c3aed" />
         <span style={{ fontSize: 13, color: '#71717a' }}>Your current IP:</span>
-        <code style={{ fontSize: 13, color: '#818cf8', background: 'rgba(99,102,241,0.08)',
+        <code style={{ fontSize: 13, color: '#a78bfa', background: 'rgba(124, 58, 237,0.08)',
           padding: '2px 8px', borderRadius: 5 }}>{yourIp || '…'}</code>
         {rules.length > 0 && (
           <span style={{ marginLeft: 'auto', fontSize: 12, color: '#52525b' }}>
@@ -1126,14 +1126,14 @@ function AdminNetwork({ schoolId: _schoolId }: { schoolId: string }) {
               <Card key={r.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px',
                 opacity: r.enabled ? 1 : 0.55 }}>
                 <div style={{ width: 36, height: 36, borderRadius: 8,
-                  background: r.enabled ? 'rgba(52,211,153,0.12)' : 'rgba(239,68,68,0.1)',
+                  background: r.enabled ? 'rgba(196, 181, 253,0.12)' : 'rgba(124, 58, 237,0.1)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  {r.enabled ? <Wifi size={16} color="#34d399" /> : <WifiOff size={16} color="#f87171" />}
+                  {r.enabled ? <Wifi size={16} color="#c4b5fd" /> : <WifiOff size={16} color="#a78bfa" />}
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontWeight: 600, color: '#fafafa', fontSize: 13 }}>{r.label}</div>
                   <div style={{ fontSize: 12, color: '#52525b' }}>
-                    <code style={{ color: '#818cf8' }}>{r.cidr}</code>
+                    <code style={{ color: '#a78bfa' }}>{r.cidr}</code>
                     {r.creator && ` · added by ${r.creator.name}`}
                   </div>
                 </div>
@@ -1141,12 +1141,12 @@ function AdminNetwork({ schoolId: _schoolId }: { schoolId: string }) {
                   <StatusBadge status={r.enabled ? 'active' : 'suspended'} />
                   <button onClick={() => toggle(r)} disabled={!!busy} title={r.enabled ? 'Disable' : 'Enable'}
                     style={{ background: 'none', border: '1px solid #1e1e1e', borderRadius: 6, padding: '4px 8px',
-                      cursor: 'pointer', color: r.enabled ? '#fbbf24' : '#34d399' }}>
+                      cursor: 'pointer', color: r.enabled ? '#c4b5fd' : '#c4b5fd' }}>
                     {r.enabled ? <ToggleRight size={14} /> : <ToggleLeft size={14} />}
                   </button>
                   <button onClick={() => del(r)} disabled={!!busy} title="Delete"
                     style={{ background: 'none', border: '1px solid #1e1e1e', borderRadius: 6, padding: '4px 8px',
-                      cursor: 'pointer', color: '#f87171' }}>
+                      cursor: 'pointer', color: '#a78bfa' }}>
                     <Trash2 size={13} />
                   </button>
                 </div>
@@ -1193,9 +1193,9 @@ function AdminLogs({ schoolId }: { schoolId: string }) {
         <div style={{ display: 'flex', gap: 8 }}>
           <button onClick={() => setFailOnly(f => !f)} style={{
             padding: '5px 12px', borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: 'pointer',
-            background: failOnly ? 'rgba(239,68,68,0.15)' : '#161616',
-            color: failOnly ? '#f87171' : '#71717a',
-            border: failOnly ? '1px solid rgba(239,68,68,0.3)' : '1px solid #1e1e1e',
+            background: failOnly ? 'rgba(124, 58, 237,0.15)' : '#161616',
+            color: failOnly ? '#a78bfa' : '#71717a',
+            border: failOnly ? '1px solid rgba(124, 58, 237,0.3)' : '1px solid #1e1e1e',
             fontFamily: 'inherit',
           }}>
             <AlertTriangle size={11} style={{ marginRight: 4 }} />
@@ -1215,22 +1215,22 @@ function AdminLogs({ schoolId }: { schoolId: string }) {
             {logs.map(l => (
               <Card key={l.id} style={{ padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 12 }}>
                 <div style={{ width: 30, height: 30, borderRadius: 8, flexShrink: 0,
-                  background: l.success ? 'rgba(52,211,153,0.12)' : 'rgba(239,68,68,0.12)',
+                  background: l.success ? 'rgba(196, 181, 253,0.12)' : 'rgba(124, 58, 237,0.12)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   {l.success
-                    ? <CheckCircle size={14} color="#34d399" />
-                    : <AlertCircle size={14} color="#f87171" />
+                    ? <CheckCircle size={14} color="#c4b5fd" />
+                    : <AlertCircle size={14} color="#a78bfa" />
                   }
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: l.success ? '#fafafa' : '#f87171' }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: l.success ? '#fafafa' : '#a78bfa' }}>
                     {l.user?.name || l.email}
                     {l.user && <span style={{ fontWeight: 400, color: '#52525b', fontSize: 11 }}> · {l.email}</span>}
                   </div>
                   <div style={{ fontSize: 11, color: '#52525b', display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                    <code style={{ color: '#818cf8' }}>{l.ip_address}</code>
+                    <code style={{ color: '#a78bfa' }}>{l.ip_address}</code>
                     {!l.success && l.reason && (
-                      <span style={{ color: '#f87171' }}>{reasonLabels[l.reason] || l.reason}</span>
+                      <span style={{ color: '#a78bfa' }}>{reasonLabels[l.reason] || l.reason}</span>
                     )}
                     {l.user && <RoleBadge role={l.user.role} />}
                   </div>
@@ -1340,7 +1340,7 @@ function AdminSettings({ schoolId, profile }: { schoolId: string; profile: AuthP
       {/* School Info */}
       <Card style={{ marginBottom: 16 }}>
         <div style={{ fontSize: 14, fontWeight: 700, color: '#fafafa', marginBottom: 16, display: 'flex', gap: 8 }}>
-          <Building2 size={16} color="#6366f1" /> School Information
+          <Building2 size={16} color="#7c3aed" /> School Information
         </div>
         <Input label="School Name"  value={schoolName}  onChange={setSchoolName}  required />
         <Input label="School Email" value={schoolEmail} onChange={setSchoolEmail} type="email" required />
@@ -1354,7 +1354,7 @@ function AdminSettings({ schoolId, profile }: { schoolId: string; profile: AuthP
             <div style={{ fontSize: 12, color: '#52525b' }}>New students must be approved before accessing school features.</div>
           </div>
           <button onClick={() => setReqApproval(v => !v)} style={{
-            background: 'none', border: 'none', cursor: 'pointer', color: reqApproval ? '#34d399' : '#52525b',
+            background: 'none', border: 'none', cursor: 'pointer', color: reqApproval ? '#c4b5fd' : '#52525b',
           }}>
             {reqApproval ? <ToggleRight size={28} /> : <ToggleLeft size={28} />}
           </button>
@@ -1368,7 +1368,7 @@ function AdminSettings({ schoolId, profile }: { schoolId: string; profile: AuthP
       {/* Danger Zone */}
       <Card style={{ marginBottom: 16 }}>
         <div style={{ fontSize: 14, fontWeight: 700, color: '#fafafa', marginBottom: 4, display: 'flex', gap: 8 }}>
-          <Key size={16} color="#fbbf24" /> School Passcode
+          <Key size={16} color="#c4b5fd" /> School Passcode
         </div>
         <div style={{ fontSize: 12, color: '#52525b', marginBottom: 14 }}>
           Members use this passcode when joining. Regenerating it instantly invalidates the old one.
@@ -1381,7 +1381,7 @@ function AdminSettings({ schoolId, profile }: { schoolId: string; profile: AuthP
       {/* Add Teacher */}
       <Card>
         <div style={{ fontSize: 14, fontWeight: 700, color: '#fafafa', marginBottom: 4, display: 'flex', gap: 8 }}>
-          <UserPlus size={16} color="#fb923c" /> Add Teacher Account
+          <UserPlus size={16} color="#c4b5fd" /> Add Teacher Account
         </div>
         <div style={{ fontSize: 12, color: '#52525b', marginBottom: 14 }}>
           Create a teacher account directly — no school passcode needed.
@@ -1394,7 +1394,7 @@ function AdminSettings({ schoolId, profile }: { schoolId: string; profile: AuthP
       {/* Passcode reveal modal */}
       <Modal open={passkeyModal} onClose={() => setPasskeyModal(false)} title="New School Passcode" width={420}>
         <div style={{ textAlign: 'center', padding: '8px 0 16px' }}>
-          <Key size={32} color="#fbbf24" style={{ marginBottom: 12 }} />
+          <Key size={32} color="#c4b5fd" style={{ marginBottom: 12 }} />
           <div style={{ fontSize: 11, color: '#52525b', marginBottom: 8 }}>Save this passcode — it will never be shown again.</div>
           <div style={{ fontSize: 22, fontWeight: 700, letterSpacing: 2, color: '#fafafa',
             background: '#0d0d0d', border: '1px solid #2a2a2a', borderRadius: 10, padding: '14px 20px',
@@ -1537,7 +1537,7 @@ function CreateTask({ schoolId: _schoolId, onCreated }: { schoolId: string; onCr
           style={{ width: '100%', padding: '9px 12px', background: '#0d0d0d', border: '1px solid #2a2a2a',
             borderRadius: 8, color: '#fafafa', fontSize: 13, fontFamily: 'inherit', outline: 'none',
             resize: 'vertical', boxSizing: 'border-box' }}
-          onFocus={e => { (e.currentTarget as HTMLTextAreaElement).style.borderColor = '#6366f1' }}
+          onFocus={e => { (e.currentTarget as HTMLTextAreaElement).style.borderColor = '#7c3aed' }}
           onBlur={e => { (e.currentTarget as HTMLTextAreaElement).style.borderColor = '#2a2a2a' }}
         />
       </div>
@@ -1657,7 +1657,7 @@ function StudentTasks({ profile }: { profile: AuthProfile }) {
                               </Btn>
                           }
                           {t.my_submission?.score !== undefined && (
-                            <span style={{ fontSize: 12, fontWeight: 700, color: '#34d399' }}>
+                            <span style={{ fontSize: 12, fontWeight: 700, color: '#c4b5fd' }}>
                               {t.my_submission.score}/{t.max_score}
                             </span>
                           )}
@@ -1686,7 +1686,7 @@ function StudentTasks({ profile }: { profile: AuthProfile }) {
                             : <span style={{ fontSize: 12, color: '#52525b' }}>Not submitted</span>
                           }
                           {t.my_submission?.score !== undefined && (
-                            <span style={{ fontSize: 12, fontWeight: 700, color: '#34d399' }}>
+                            <span style={{ fontSize: 12, fontWeight: 700, color: '#c4b5fd' }}>
                               {t.my_submission.score}/{t.max_score}
                             </span>
                           )}
@@ -1719,7 +1719,7 @@ function StudentTasks({ profile }: { profile: AuthProfile }) {
                 style={{ width: '100%', padding: '9px 12px', background: '#0d0d0d', border: '1px solid #2a2a2a',
                   borderRadius: 8, color: '#fafafa', fontSize: 13, fontFamily: 'inherit', outline: 'none',
                   resize: 'vertical', boxSizing: 'border-box' }}
-                onFocus={e => { (e.currentTarget as HTMLTextAreaElement).style.borderColor = '#6366f1' }}
+                onFocus={e => { (e.currentTarget as HTMLTextAreaElement).style.borderColor = '#7c3aed' }}
                 onBlur={e => { (e.currentTarget as HTMLTextAreaElement).style.borderColor = '#2a2a2a' }}
               />
             </div>
@@ -1792,7 +1792,7 @@ function NotifPanel({ schoolId, profile, canSend }: { schoolId: string; profile:
               style={{ width: '100%', padding: '9px 12px', background: '#0d0d0d', border: '1px solid #2a2a2a',
                 borderRadius: 8, color: '#fafafa', fontSize: 13, fontFamily: 'inherit', outline: 'none',
                 resize: 'vertical', boxSizing: 'border-box' }}
-              onFocus={e => { (e.currentTarget as HTMLTextAreaElement).style.borderColor = '#6366f1' }}
+              onFocus={e => { (e.currentTarget as HTMLTextAreaElement).style.borderColor = '#7c3aed' }}
               onBlur={e => { (e.currentTarget as HTMLTextAreaElement).style.borderColor = '#2a2a2a' }}
             />
           </div>
@@ -1828,7 +1828,7 @@ function NotifPanel({ schoolId, profile, canSend }: { schoolId: string; profile:
               const expires = new Date(n.expires_at).getTime()
               const created = new Date(n.created_at).getTime()
               const pct = Math.max(0, Math.min(100, ((expires - now) / (expires - created)) * 100))
-              const barColor = pct > 50 ? '#34d399' : pct > 20 ? '#fbbf24' : '#f87171'
+              const barColor = pct > 50 ? '#c4b5fd' : pct > 20 ? '#c4b5fd' : '#a78bfa'
               return (
                 <Card key={n.id} style={{ padding: '12px 14px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, marginBottom: 8 }}>
@@ -1857,12 +1857,12 @@ function NotifPanel({ schoolId, profile, canSend }: { schoolId: string; profile:
 // ─── MARKS HELPERS & COMPONENTS ──────────────────────────────────────────────
 
 function gradeInfo(pct: number) {
-  if (pct >= 90) return { label: 'A+', color: '#34d399' }
-  if (pct >= 75) return { label: 'A',  color: '#6ee7b7' }
-  if (pct >= 60) return { label: 'B',  color: '#60a5fa' }
-  if (pct >= 45) return { label: 'C',  color: '#fbbf24' }
-  if (pct >= 33) return { label: 'D',  color: '#fb923c' }
-  return { label: 'F', color: '#f87171' }
+  if (pct >= 90) return { label: 'A+', color: '#c4b5fd' }
+  if (pct >= 75) return { label: 'A',  color: '#c4b5fd' }
+  if (pct >= 60) return { label: 'B',  color: '#c4b5fd' }
+  if (pct >= 45) return { label: 'C',  color: '#c4b5fd' }
+  if (pct >= 33) return { label: 'D',  color: '#c4b5fd' }
+  return { label: 'F', color: '#a78bfa' }
 }
 
 // Teacher marks tab: add marks + view school marks
@@ -1950,7 +1950,7 @@ function TeacherMarks({ schoolId, profile }: { schoolId: string; profile: AuthPr
           <div style={{ fontSize: 14, fontWeight: 700, color: '#fafafa', marginBottom: 16 }}>Enter Marks</div>
           <div style={{ marginBottom: 12 }}>
             <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#71717a', marginBottom: 5 }}>
-              Student <span style={{ color: '#f87171' }}>*</span>
+              Student <span style={{ color: '#a78bfa' }}>*</span>
             </label>
             <select value={studentId} onChange={e => setStudentId(e.target.value)}
               style={{ width: '100%', padding: '9px 12px', background: '#0d0d0d', border: '1px solid #2a2a2a',
@@ -2011,7 +2011,7 @@ function TeacherMarks({ schoolId, profile }: { schoolId: string; profile: AuthPr
                     </div>
                     <button onClick={() => deleteMark(m.id)} title="Delete"
                       style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#52525b', padding: 4 }}
-                      onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = '#f87171' }}
+                      onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = '#a78bfa' }}
                       onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = '#52525b' }}>
                       <Trash2 size={13} />
                     </button>
@@ -2078,15 +2078,15 @@ function StudentMarks({ profile, schoolId }: { profile: AuthProfile; schoolId: s
       {/* Parent access code section */}
       <Card style={{ marginBottom: 16 }}>
         <div style={{ fontSize: 14, fontWeight: 700, color: '#fafafa', marginBottom: 4, display: 'flex', gap: 8 }}>
-          <QrCode size={16} color="#818cf8" /> Parent Access Code
+          <QrCode size={16} color="#a78bfa" /> Parent Access Code
         </div>
         <div style={{ fontSize: 12, color: '#52525b', marginBottom: 12 }}>
           Share this code with your parent so they can create a Parent account and view your marks.
         </div>
         {code ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-            <code style={{ fontSize: 20, fontWeight: 800, letterSpacing: 3, color: '#818cf8',
-              background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.2)',
+            <code style={{ fontSize: 20, fontWeight: 800, letterSpacing: 3, color: '#a78bfa',
+              background: 'rgba(124, 58, 237,0.08)', border: '1px solid rgba(124, 58, 237,0.2)',
               borderRadius: 8, padding: '8px 14px', fontFamily: 'monospace' }}>
               {code}
             </code>
@@ -2118,10 +2118,10 @@ function StudentMarks({ profile, schoolId }: { profile: AuthProfile; schoolId: s
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(155px, 1fr))', gap: 10, marginBottom: 16 }}>
               <StatCard label="Overall Avg" value={`${summary.average_percentage}%`} icon={Target}
                 color={gradeInfo(summary.average_percentage).color} sub={gradeInfo(summary.average_percentage).label} />
-              <StatCard label="Total Exams" value={summary.total_exams} icon={BookOpen} color="#818cf8" />
-              <StatCard label="Strong" value={summary.strong_subjects.length} icon={Star} color="#34d399"
+              <StatCard label="Total Exams" value={summary.total_exams} icon={BookOpen} color="#a78bfa" />
+              <StatCard label="Strong" value={summary.strong_subjects.length} icon={Star} color="#c4b5fd"
                 sub={summary.strong_subjects.slice(0,2).join(', ') || '—'} />
-              <StatCard label="Needs Work" value={summary.weak_subjects.length} icon={TrendingDown} color="#f87171"
+              <StatCard label="Needs Work" value={summary.weak_subjects.length} icon={TrendingDown} color="#a78bfa"
                 sub={summary.weak_subjects.slice(0,2).join(', ') || 'none'} />
             </div>
           )}
@@ -2194,7 +2194,7 @@ function AdminMarksAudit({ schoolId }: { schoolId: string }) {
       {/* Parent links summary */}
       <Card style={{ marginBottom: 16 }}>
         <div style={{ fontSize: 14, fontWeight: 700, color: '#fafafa', marginBottom: 10, display: 'flex', gap: 8 }}>
-          <Users size={16} color="#6366f1" /> Parent Links ({links.length})
+          <Users size={16} color="#7c3aed" /> Parent Links ({links.length})
         </div>
         {links.length === 0
           ? <div style={{ fontSize: 13, color: '#52525b' }}>No parents linked yet. Students generate codes from their Marks tab.</div>
@@ -2202,10 +2202,10 @@ function AdminMarksAudit({ schoolId }: { schoolId: string }) {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               {links.map(l => (
                 <div key={l.id} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, color: '#d4d4d8' }}>
-                  <span style={{ fontSize: 11, background: 'rgba(99,102,241,0.12)', color: '#818cf8',
+                  <span style={{ fontSize: 11, background: 'rgba(124, 58, 237,0.12)', color: '#a78bfa',
                     borderRadius: 5, padding: '2px 7px', fontWeight: 600 }}>Parent</span>
                   {l.parent?.name} →
-                  <span style={{ fontSize: 11, background: 'rgba(52,211,153,0.12)', color: '#34d399',
+                  <span style={{ fontSize: 11, background: 'rgba(196, 181, 253,0.12)', color: '#c4b5fd',
                     borderRadius: 5, padding: '2px 7px', fontWeight: 600 }}>Student</span>
                   {l.student?.name}
                   {l.student?.class_name && <span style={{ color: '#52525b' }}>Class {l.student.class_name}</span>}

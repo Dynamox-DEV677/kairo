@@ -49,13 +49,13 @@ Format your response in clean markdown:
 - No <think> tags`
 
 const ACTIONS = [
-  { id: 'solve',     label: 'Solve',         icon: Sparkles,     color: '#6366f1',
+  { id: 'solve',     label: 'Solve',         icon: Sparkles,     color: '#7c3aed',
     prompt: 'Read the question(s) in this image carefully. Solve each one step-by-step with clear working.' + MD_RULES },
-  { id: 'explain',   label: 'Explain',       icon: Lightbulb,    color: '#34d399',
+  { id: 'explain',   label: 'Explain',       icon: Lightbulb,    color: '#c4b5fd',
     prompt: 'Explain the concept(s) shown in this image as if teaching a Class 10 student in India. Use simple language, give an analogy, end with a 3-line summary under "## Summary".' + MD_RULES },
-  { id: 'flashcards', label: 'Flashcards',   icon: BookmarkPlus, color: '#fbbf24',
+  { id: 'flashcards', label: 'Flashcards',   icon: BookmarkPlus, color: '#c4b5fd',
     prompt: 'Create 8-10 high-quality flashcards from the content in this image. Return ONLY a JSON array: [{"front":"question","back":"answer"}]. No other text, no markdown, no explanation.' },
-  { id: 'summarize', label: 'Summarize',     icon: FileText,     color: '#f472b6',
+  { id: 'summarize', label: 'Summarize',     icon: FileText,     color: '#c4b5fd',
     prompt: 'Summarize the content in this image into clear bullet points organized under "## Section Name" headings. Capture all key facts, formulas, and definitions. Keep it tight.' + MD_RULES },
 ]
 
@@ -205,9 +205,9 @@ export default function CameraStudy() {
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 22 }}>
         <div style={{
           width: 44, height: 44, borderRadius: 11,
-          background: 'linear-gradient(135deg, #6366f1, #7c3aed)',
+          background: 'linear-gradient(135deg, #7c3aed, #7c3aed)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 0 18px rgba(99,102,241,0.4)', flexShrink: 0,
+          boxShadow: '0 0 18px rgba(124, 58, 237,0.4)', flexShrink: 0,
         }}>
           <Camera size={22} color="#fff" />
         </div>
@@ -228,14 +228,14 @@ export default function CameraStudy() {
           {VISION_MODELS.map(m => (
             <button key={m.id} onClick={() => setModel(m.id)} style={{
               padding: '10px 14px', borderRadius: 9,
-              border: `1px solid ${model === m.id ? '#6366f1' : '#1e1e1e'}`,
-              background: model === m.id ? 'rgba(99,102,241,0.10)' : '#0d0d0d',
+              border: `1px solid ${model === m.id ? '#7c3aed' : '#1e1e1e'}`,
+              background: model === m.id ? 'rgba(124, 58, 237,0.10)' : '#0d0d0d',
               cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left',
               transition: 'all 0.15s',
             }}>
               <div style={{
                 fontSize: 12, fontWeight: 700,
-                color: model === m.id ? '#a5b4fc' : '#d4d4d8', marginBottom: 3,
+                color: model === m.id ? '#c4b5fd' : '#d4d4d8', marginBottom: 3,
               }}>
                 {m.label}
               </div>
@@ -256,10 +256,10 @@ export default function CameraStudy() {
           }}>
           <div style={{
             width: 60, height: 60, borderRadius: 16, margin: '0 auto 14px',
-            background: 'rgba(99,102,241,0.1)',
+            background: 'rgba(124, 58, 237,0.1)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
-            <Upload size={26} color="#818cf8" />
+            <Upload size={26} color="#a78bfa" />
           </div>
           <p style={{ fontSize: 14, color: '#fafafa', fontWeight: 600, margin: '0 0 6px' }}>
             Drag a photo here, or pick a source
@@ -270,7 +270,7 @@ export default function CameraStudy() {
           <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
             <button onClick={() => fileInputRef.current?.click()} style={{
               padding: '10px 18px', borderRadius: 9, border: 'none',
-              background: 'linear-gradient(135deg, #6366f1, #7c3aed)', color: '#fff',
+              background: 'linear-gradient(135deg, #7c3aed, #7c3aed)', color: '#fff',
               fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: 'pointer',
               display: 'flex', alignItems: 'center', gap: 7,
             }}>
@@ -309,7 +309,7 @@ export default function CameraStudy() {
             <div style={{ display: 'flex', gap: 10, justifyContent: 'center', marginTop: 10 }}>
               <button onClick={snap} style={{
                 padding: '11px 22px', borderRadius: 9, border: 'none',
-                background: 'linear-gradient(135deg,#6366f1,#7c3aed)', color: '#fff',
+                background: 'linear-gradient(135deg,#7c3aed,#7c3aed)', color: '#fff',
                 fontFamily: 'inherit', fontSize: 13, fontWeight: 700, cursor: 'pointer',
                 display: 'flex', alignItems: 'center', gap: 7,
               }}>
@@ -384,7 +384,7 @@ export default function CameraStudy() {
       )}
 
       {err && (
-        <div style={{ marginBottom: 14, padding: '10px 14px', background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.25)', borderRadius: 8, fontSize: 12, color: '#f87171' }}>
+        <div style={{ marginBottom: 14, padding: '10px 14px', background: 'rgba(167, 139, 250,0.08)', border: '1px solid rgba(167, 139, 250,0.25)', borderRadius: 8, fontSize: 12, color: '#a78bfa' }}>
           {err}
         </div>
       )}
@@ -398,8 +398,8 @@ export default function CameraStudy() {
               padding: 22,
             }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-              <CheckCircle2 size={15} color="#34d399" />
-              <span style={{ fontSize: 12, fontWeight: 700, color: '#34d399', textTransform: 'uppercase', letterSpacing: 1.5 }}>
+              <CheckCircle2 size={15} color="#c4b5fd" />
+              <span style={{ fontSize: 12, fontWeight: 700, color: '#c4b5fd', textTransform: 'uppercase', letterSpacing: 1.5 }}>
                 AI Result
               </span>
               <span style={{ marginLeft: 'auto', fontSize: 11, color: '#52525b' }}>

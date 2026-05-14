@@ -48,11 +48,11 @@ interface Pack {
 }
 
 const ARTIFACTS = [
-  { id: 'lesson_plan',    label: 'Lesson Plan',    icon: FileText,      color: '#818cf8' },
-  { id: 'homework',       label: 'Homework',        icon: ClipboardList, color: '#fb923c' },
-  { id: 'flashcards',     label: 'Flashcards',      icon: BookMarked,    color: '#34d399' },
-  { id: 'quiz',           label: 'Quiz',            icon: CheckCircle2,  color: '#fbbf24' },
-  { id: 'revision_sheet', label: 'Revision Sheet',  icon: BookOpen,      color: '#f472b6' },
+  { id: 'lesson_plan',    label: 'Lesson Plan',    icon: FileText,      color: '#a78bfa' },
+  { id: 'homework',       label: 'Homework',        icon: ClipboardList, color: '#c4b5fd' },
+  { id: 'flashcards',     label: 'Flashcards',      icon: BookMarked,    color: '#c4b5fd' },
+  { id: 'quiz',           label: 'Quiz',            icon: CheckCircle2,  color: '#c4b5fd' },
+  { id: 'revision_sheet', label: 'Revision Sheet',  icon: BookOpen,      color: '#c4b5fd' },
 ]
 
 export default function TeacherAssistant() {
@@ -232,9 +232,9 @@ Markdown structure:
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 22 }}>
         <div style={{
           width: 44, height: 44, borderRadius: 11,
-          background: 'linear-gradient(135deg, #818cf8, #a78bfa)',
+          background: 'linear-gradient(135deg, #a78bfa, #a78bfa)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 0 18px rgba(129,140,248,0.4)', flexShrink: 0,
+          boxShadow: '0 0 18px rgba(167, 139, 250,0.4)', flexShrink: 0,
         }}>
           <Bot size={22} color="#fff" />
         </div>
@@ -285,19 +285,19 @@ Markdown structure:
               style={{ width: '100%' }} />
           </div>
 
-          {err && <p style={{ fontSize: 12, color: '#f87171', marginBottom: 12 }}>{err}</p>}
+          {err && <p style={{ fontSize: 12, color: '#a78bfa', marginBottom: 12 }}>{err}</p>}
 
           <motion.button
             whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
             onClick={generate} disabled={busy || !topic.trim()}
             style={{
               width: '100%', padding: '13px', borderRadius: 11, border: 'none',
-              background: busy || !topic.trim() ? '#1c1c1c' : 'linear-gradient(135deg, #818cf8, #a78bfa)',
+              background: busy || !topic.trim() ? '#1c1c1c' : 'linear-gradient(135deg, #a78bfa, #a78bfa)',
               color: busy || !topic.trim() ? '#52525b' : '#fff',
               fontFamily: 'inherit', fontSize: 14, fontWeight: 700,
               cursor: busy || !topic.trim() ? 'not-allowed' : 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-              boxShadow: busy || !topic.trim() ? 'none' : '0 0 22px rgba(129,140,248,0.4)',
+              boxShadow: busy || !topic.trim() ? 'none' : '0 0 22px rgba(167, 139, 250,0.4)',
             }}>
             {busy
               ? <><Loader2 size={14} style={{ animation: 'spin 0.8s linear infinite' }} /> {progress || 'Generating…'}</>
@@ -307,8 +307,8 @@ Markdown structure:
           {busy && (
             <div style={{
               marginTop: 14, padding: '10px 14px', borderRadius: 8,
-              background: 'rgba(129,140,248,0.06)', border: '1px solid rgba(129,140,248,0.2)',
-              fontSize: 11.5, color: '#a5b4fc',
+              background: 'rgba(167, 139, 250,0.06)', border: '1px solid rgba(167, 139, 250,0.2)',
+              fontSize: 11.5, color: '#c4b5fd',
             }}>
               This runs 5 AI calls in sequence — typically 30-60 seconds total.
             </div>
@@ -360,7 +360,7 @@ Markdown structure:
                     color: isActive ? a.color : '#52525b',
                   }}>
                   <a.icon size={12} /> {a.label}
-                  {isSaved && <CheckCircle2 size={11} color="#34d399" />}
+                  {isSaved && <CheckCircle2 size={11} color="#c4b5fd" />}
                 </button>
               )
             })}
@@ -373,7 +373,7 @@ Markdown structure:
               display: 'flex', justifyContent: 'flex-end', gap: 6, marginBottom: 14,
               paddingBottom: 12, borderBottom: '1px solid #1a1a1a',
             }}>
-              <button onClick={saveCurrentTab} disabled={savedTabs.has(activeTab)} style={toolBtn(savedTabs.has(activeTab) ? '#34d399' : '#a5b4fc')}>
+              <button onClick={saveCurrentTab} disabled={savedTabs.has(activeTab)} style={toolBtn(savedTabs.has(activeTab) ? '#c4b5fd' : '#c4b5fd')}>
                 <Save size={11} />{savedTabs.has(activeTab) ? 'Saved' : 'Save to Notebook'}
               </button>
               <button onClick={() => {
@@ -459,9 +459,9 @@ function QuizView({ items }: { items: QuizItem[] }) {
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 10 }}>
         <button onClick={() => setShowAnswers(s => !s)} style={{
           padding: '5px 12px', borderRadius: 6,
-          border: `1px solid ${showAnswers ? '#34d399' : '#1e1e1e'}`,
-          background: showAnswers ? 'rgba(52,211,153,0.1)' : '#161616',
-          color: showAnswers ? '#34d399' : '#71717a',
+          border: `1px solid ${showAnswers ? '#c4b5fd' : '#1e1e1e'}`,
+          background: showAnswers ? 'rgba(196, 181, 253,0.1)' : '#161616',
+          color: showAnswers ? '#c4b5fd' : '#71717a',
           cursor: 'pointer', fontFamily: 'inherit', fontSize: 11, fontWeight: 600,
         }}>{showAnswers ? 'Hide Answers' : 'Reveal Answers'}</button>
       </div>
@@ -471,7 +471,7 @@ function QuizView({ items }: { items: QuizItem[] }) {
             background: '#0d0d0d', border: '1px solid #1a1a1a', borderRadius: 10, padding: 14,
           }}>
             <div style={{ fontSize: 13, fontWeight: 600, color: '#fafafa', marginBottom: 10 }}>
-              <span style={{ color: '#fbbf24', fontWeight: 800, marginRight: 6 }}>Q{i + 1}.</span>
+              <span style={{ color: '#c4b5fd', fontWeight: 800, marginRight: 6 }}>Q{i + 1}.</span>
               {q.q}
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 6, marginBottom: showAnswers ? 10 : 0 }}>
@@ -480,9 +480,9 @@ function QuizView({ items }: { items: QuizItem[] }) {
                 return (
                   <div key={j} style={{
                     padding: '7px 10px', borderRadius: 6, fontSize: 12,
-                    border: `1px solid ${showAnswers && isAnswer ? 'rgba(52,211,153,0.4)' : '#1a1a1a'}`,
-                    background: showAnswers && isAnswer ? 'rgba(52,211,153,0.08)' : '#0a0a0a',
-                    color: showAnswers && isAnswer ? '#34d399' : '#a1a1aa',
+                    border: `1px solid ${showAnswers && isAnswer ? 'rgba(196, 181, 253,0.4)' : '#1a1a1a'}`,
+                    background: showAnswers && isAnswer ? 'rgba(196, 181, 253,0.08)' : '#0a0a0a',
+                    color: showAnswers && isAnswer ? '#c4b5fd' : '#a1a1aa',
                     display: 'flex', alignItems: 'center', gap: 8,
                   }}>
                     <span style={{ fontWeight: 700, fontSize: 10 }}>{String.fromCharCode(65 + j)}</span>
@@ -497,7 +497,7 @@ function QuizView({ items }: { items: QuizItem[] }) {
                 padding: '7px 10px', background: '#0a0a0a',
                 border: '1px solid #1a1a1a', borderRadius: 6,
               }}>
-                <strong style={{ color: '#a5b4fc' }}>Why:</strong> {q.explain}
+                <strong style={{ color: '#c4b5fd' }}>Why:</strong> {q.explain}
               </div>
             )}
           </div>

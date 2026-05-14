@@ -52,10 +52,10 @@ interface Lead {
 }
 
 const STATUS_META: Record<string, { color: string; icon: any; label: string }> = {
-  new:            { color: '#fbbf24', icon: Clock,         label: 'New' },
-  contacted:      { color: '#818cf8', icon: Phone,         label: 'Contacted' },
-  admitted:       { color: '#34d399', icon: CheckCircle,   label: 'Admitted' },
-  rejected:       { color: '#f87171', icon: XCircle,       label: 'Rejected' },
+  new:            { color: '#c4b5fd', icon: Clock,         label: 'New' },
+  contacted:      { color: '#a78bfa', icon: Phone,         label: 'Contacted' },
+  admitted:       { color: '#c4b5fd', icon: CheckCircle,   label: 'Admitted' },
+  rejected:       { color: '#a78bfa', icon: XCircle,       label: 'Rejected' },
   not_interested: { color: '#71717a', icon: XCircle,       label: 'Not Interested' },
 }
 
@@ -130,7 +130,7 @@ export default function AdmissionBot() {
       </div>
 
       {err && (
-        <div style={{ marginBottom: 16, padding: '10px 14px', background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.25)', borderRadius: 8, fontSize: 12, color: '#f87171' }}>
+        <div style={{ marginBottom: 16, padding: '10px 14px', background: 'rgba(167, 139, 250,0.08)', border: '1px solid rgba(167, 139, 250,0.25)', borderRadius: 8, fontSize: 12, color: '#a78bfa' }}>
           {err}
         </div>
       )}
@@ -143,7 +143,7 @@ export default function AdmissionBot() {
             borderRadius: 7, border: 'none', fontFamily: 'inherit',
             fontSize: 12, fontWeight: tab === t.id ? 600 : 400, cursor: 'pointer',
             background: tab === t.id ? '#1e1e2e' : 'transparent',
-            color: tab === t.id ? '#818cf8' : '#52525b',
+            color: tab === t.id ? '#a78bfa' : '#52525b',
             transition: 'all 0.12s',
           }}>
             <t.icon size={13} /> {t.label}
@@ -234,15 +234,15 @@ function ChatTab({ ctx }: { ctx: SchoolCtx }) {
       {/* Chat window */}
       <div style={{ ...card, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         <div style={{ padding: '14px 18px', borderBottom: '1px solid #1a1a1a', display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{ width: 36, height: 36, borderRadius: 10, background: 'linear-gradient(135deg,#6366f1,#7c3aed)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+          <div style={{ width: 36, height: 36, borderRadius: 10, background: 'linear-gradient(135deg,#7c3aed,#7c3aed)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
             {ctx.school_logo
               ? <img src={ctx.school_logo} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               : <Bot size={18} color="#fff" />}
           </div>
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 13, fontWeight: 700, color: '#fafafa' }}>{ctx.school_name}</div>
-            <div style={{ fontSize: 11, color: '#34d399', display: 'flex', alignItems: 'center', gap: 4 }}>
-              <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#34d399', display: 'inline-block' }} /> Online
+            <div style={{ fontSize: 11, color: '#c4b5fd', display: 'flex', alignItems: 'center', gap: 4 }}>
+              <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#c4b5fd', display: 'inline-block' }} /> Online
             </div>
           </div>
         </div>
@@ -254,14 +254,14 @@ function ChatTab({ ctx }: { ctx: SchoolCtx }) {
               <div style={{
                 width: 28, height: 28, borderRadius: 7, flexShrink: 0,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                background: m.role === 'user' ? '#6366f1' : '#1e1e2e',
+                background: m.role === 'user' ? '#7c3aed' : '#1e1e2e',
               }}>
-                {m.role === 'user' ? <User size={13} color="#fff" /> : <Bot size={13} color="#818cf8" />}
+                {m.role === 'user' ? <User size={13} color="#fff" /> : <Bot size={13} color="#a78bfa" />}
               </div>
               <div style={{
                 maxWidth: '75%', padding: '9px 13px',
                 borderRadius: m.role === 'user' ? '12px 4px 12px 12px' : '4px 12px 12px 12px',
-                background: m.role === 'user' ? 'linear-gradient(135deg,#6366f1,#7c3aed)' : '#1a1a1a',
+                background: m.role === 'user' ? 'linear-gradient(135deg,#7c3aed,#7c3aed)' : '#1a1a1a',
                 fontSize: 13, color: '#fafafa', lineHeight: 1.55, whiteSpace: 'pre-wrap',
               }}>
                 {m.content}
@@ -271,11 +271,11 @@ function ChatTab({ ctx }: { ctx: SchoolCtx }) {
           {loading && (
             <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
               <div style={{ width: 28, height: 28, borderRadius: 7, background: '#1e1e2e', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Bot size={13} color="#818cf8" />
+                <Bot size={13} color="#a78bfa" />
               </div>
               <div style={{ padding: '10px 14px', background: '#1a1a1a', borderRadius: '4px 12px 12px 12px', display: 'flex', gap: 5 }}>
                 {[0, 1, 2].map(i => (
-                  <div key={i} style={{ width: 6, height: 6, borderRadius: '50%', background: '#6366f1', animation: `dot-bounce 1.2s ease-in-out ${i * 0.2}s infinite` }} />
+                  <div key={i} style={{ width: 6, height: 6, borderRadius: '50%', background: '#7c3aed', animation: `dot-bounce 1.2s ease-in-out ${i * 0.2}s infinite` }} />
                 ))}
               </div>
             </div>
@@ -294,7 +294,7 @@ function ChatTab({ ctx }: { ctx: SchoolCtx }) {
           <button onClick={send} disabled={!input.trim() || loading} style={{
             width: 38, height: 38, borderRadius: 9, border: 'none',
             cursor: input.trim() ? 'pointer' : 'not-allowed',
-            background: input.trim() ? 'linear-gradient(135deg,#6366f1,#7c3aed)' : '#1c1c1c',
+            background: input.trim() ? 'linear-gradient(135deg,#7c3aed,#7c3aed)' : '#1c1c1c',
             display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
           }}>
             <Send size={14} color={input.trim() ? '#fff' : '#52525b'} />
@@ -324,7 +324,7 @@ function ChatTab({ ctx }: { ctx: SchoolCtx }) {
               ))}
               <button onClick={saveLead} style={{
                 width: '100%', padding: '9px', borderRadius: 8, border: 'none',
-                background: 'linear-gradient(135deg,#6366f1,#7c3aed)', color: '#fff',
+                background: 'linear-gradient(135deg,#7c3aed,#7c3aed)', color: '#fff',
                 fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: 'pointer',
               }}>
                 Submit Enquiry
@@ -344,7 +344,7 @@ function ChatTab({ ctx }: { ctx: SchoolCtx }) {
               fontFamily: 'inherit', fontSize: 12, cursor: 'pointer', marginBottom: 6,
               transition: 'all 0.1s',
             }}
-              onMouseEnter={e => { (e.currentTarget).style.borderColor = '#6366f1'; (e.currentTarget).style.color = '#a5b4fc' }}
+              onMouseEnter={e => { (e.currentTarget).style.borderColor = '#7c3aed'; (e.currentTarget).style.color = '#c4b5fd' }}
               onMouseLeave={e => { (e.currentTarget).style.borderColor = '#1e1e1e'; (e.currentTarget).style.color = '#71717a' }}
             >
               {q}
@@ -395,14 +395,14 @@ function LeadsTab() {
             fontFamily: 'inherit', fontSize: 11, fontWeight: filter === s ? 600 : 400,
             cursor: 'pointer',
             background: filter === s ? '#1e1e2e' : 'transparent',
-            color: filter === s ? '#818cf8' : '#52525b',
+            color: filter === s ? '#a78bfa' : '#52525b',
           }}>
             {s.replace('_', ' ')}
           </button>
         ))}
       </div>
 
-      {err     && <div style={{ marginBottom: 12, padding: '10px 14px', background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.25)', borderRadius: 8, fontSize: 12, color: '#f87171' }}>{err}</div>}
+      {err     && <div style={{ marginBottom: 12, padding: '10px 14px', background: 'rgba(167, 139, 250,0.08)', border: '1px solid rgba(167, 139, 250,0.25)', borderRadius: 8, fontSize: 12, color: '#a78bfa' }}>{err}</div>}
       {loading && <div style={{ textAlign: 'center', padding: '40px 0', color: '#52525b' }}>Loading…</div>}
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -422,7 +422,7 @@ function LeadsTab() {
                 <div style={{ fontSize: 13, fontWeight: 600, color: '#fafafa' }}>
                   {l.parent_name || 'Unknown parent'}
                   {l.child_name ? ` → ${l.child_name}` : ''}
-                  {l.grade ? <span style={{ marginLeft: 6, fontSize: 11, color: '#818cf8' }}>({l.grade})</span> : null}
+                  {l.grade ? <span style={{ marginLeft: 6, fontSize: 11, color: '#a78bfa' }}>({l.grade})</span> : null}
                 </div>
                 <div style={{ fontSize: 11, color: '#52525b', display: 'flex', gap: 12, marginTop: 2, flexWrap: 'wrap' }}>
                   {l.phone && <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Phone size={10} />{l.phone}</span>}
@@ -444,7 +444,7 @@ function LeadsTab() {
                   background: 'none', border: 'none', cursor: 'pointer',
                   color: '#3f3f46', padding: 4, display: 'flex',
                 }}
-                onMouseEnter={e => (e.currentTarget.style.color = '#f87171')}
+                onMouseEnter={e => (e.currentTarget.style.color = '#a78bfa')}
                 onMouseLeave={e => (e.currentTarget.style.color = '#3f3f46')}
               >
                 <Trash2 size={13} />
@@ -476,18 +476,18 @@ function StatsTab() {
   }, [])
 
   if (loading) return <div style={{ textAlign: 'center', padding: '40px 0', color: '#52525b' }}>Loading…</div>
-  if (err)     return <div style={{ color: '#f87171', fontSize: 13 }}>{err}</div>
+  if (err)     return <div style={{ color: '#a78bfa', fontSize: 13 }}>{err}</div>
   if (!stats)  return null
 
   const conversion = stats.total > 0 ? Math.round((stats.admitted / stats.total) * 100) : 0
 
   const tiles = [
-    { label: 'Total leads', value: stats.total,     color: '#818cf8' },
-    { label: 'New',         value: stats.new,        color: '#fbbf24' },
+    { label: 'Total leads', value: stats.total,     color: '#a78bfa' },
+    { label: 'New',         value: stats.new,        color: '#c4b5fd' },
     { label: 'Contacted',   value: stats.contacted,  color: '#a78bfa' },
-    { label: 'Admitted',    value: stats.admitted,   color: '#34d399' },
-    { label: 'Rejected',    value: stats.rejected,   color: '#f87171' },
-    { label: 'Conversion',  value: `${conversion}%`, color: '#22d3ee' },
+    { label: 'Admitted',    value: stats.admitted,   color: '#c4b5fd' },
+    { label: 'Rejected',    value: stats.rejected,   color: '#a78bfa' },
+    { label: 'Conversion',  value: `${conversion}%`, color: '#c4b5fd' },
   ]
 
   return (
@@ -544,10 +544,10 @@ function SettingsTab({ ctx, onSaved }: { ctx: SchoolCtx; onSaved: () => void }) 
     <div>
       <div style={{ ...card, padding: 18, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 12 }}>
         <div style={{
-          width: 36, height: 36, borderRadius: 9, background: 'rgba(99,102,241,0.12)',
+          width: 36, height: 36, borderRadius: 9, background: 'rgba(124, 58, 237,0.12)',
           display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
         }}>
-          <Sparkles size={16} color="#818cf8" />
+          <Sparkles size={16} color="#a78bfa" />
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: 12, fontWeight: 700, color: '#fafafa' }}>Public bot link</div>
@@ -557,7 +557,7 @@ function SettingsTab({ ctx, onSaved }: { ctx: SchoolCtx; onSaved: () => void }) 
         </div>
         <code style={{
           fontSize: 11, padding: '5px 10px', background: '#0d0d0d',
-          border: '1px solid #1e1e1e', borderRadius: 6, color: '#a5b4fc',
+          border: '1px solid #1e1e1e', borderRadius: 6, color: '#c4b5fd',
         }}>{shareUrl}</code>
         <button onClick={() => { navigator.clipboard.writeText(shareUrl); setMsg('Link copied') }}
           style={{
@@ -591,7 +591,7 @@ function SettingsTab({ ctx, onSaved }: { ctx: SchoolCtx; onSaved: () => void }) 
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 18 }}>
           <button onClick={save} disabled={saving} style={{
             padding: '10px 18px', borderRadius: 8, border: 'none',
-            background: saving ? '#1c1c1c' : 'linear-gradient(135deg,#6366f1,#7c3aed)',
+            background: saving ? '#1c1c1c' : 'linear-gradient(135deg,#7c3aed,#7c3aed)',
             color: saving ? '#52525b' : '#fff',
             fontFamily: 'inherit', fontSize: 13, fontWeight: 600,
             cursor: saving ? 'not-allowed' : 'pointer',
@@ -599,8 +599,8 @@ function SettingsTab({ ctx, onSaved }: { ctx: SchoolCtx; onSaved: () => void }) 
           }}>
             <Save size={13} />{saving ? 'Saving…' : 'Save Settings'}
           </button>
-          {msg && <span style={{ fontSize: 12, color: '#34d399' }}>{msg}</span>}
-          {err && <span style={{ fontSize: 12, color: '#f87171' }}>{err}</span>}
+          {msg && <span style={{ fontSize: 12, color: '#c4b5fd' }}>{msg}</span>}
+          {err && <span style={{ fontSize: 12, color: '#a78bfa' }}>{err}</span>}
         </div>
 
         <p style={{ fontSize: 11, color: '#3f3f46', marginTop: 14 }}>

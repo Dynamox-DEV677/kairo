@@ -37,16 +37,16 @@ const C = {
   textDim:   '#a1a1aa',
   textFaint: '#71717a',
   purple:    '#a78bfa',
-  blue:      '#60a5fa',
-  cyan:      '#22d3ee',
-  green:     '#34d399',
-  amber:     '#fbbf24',
-  red:       '#f87171',
+  blue:      '#c4b5fd',
+  cyan:      '#c4b5fd',
+  green:     '#c4b5fd',
+  amber:     '#c4b5fd',
+  red:       '#a78bfa',
 }
 
 const GRAD = {
-  pill:   'linear-gradient(135deg, #7c3aed 0%, #4f46e5 50%, #2563eb 100%)',
-  text:   'linear-gradient(90deg, #c4b5fd 0%, #60a5fa 50%, #22d3ee 100%)',
+  pill:   'linear-gradient(135deg, #7c3aed 0%, #5b21b6 50%, #7c3aed 100%)',
+  text:   'linear-gradient(90deg, #c4b5fd 0%, #c4b5fd 50%, #c4b5fd 100%)',
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -249,7 +249,7 @@ function Header({ twin, onRefresh, onWipe, pulse }: { twin: Twin; onRefresh: () 
           <RefreshCw size={13} style={{ transform: pulse ? 'rotate(360deg)' : 'none', transition: 'transform 0.7s ease' }} />
           {pulse ? 'Recomputed' : 'Recompute'}
         </button>
-        <button onClick={onWipe} style={{ ...chipBtn(), color: C.red, borderColor: 'rgba(248,113,113,0.4)' }}>
+        <button onClick={onWipe} style={{ ...chipBtn(), color: C.red, borderColor: 'rgba(167, 139, 250,0.4)' }}>
           <Trash2 size={13} />
           Wipe Twin
         </button>
@@ -275,7 +275,7 @@ function TwinVoice({ obs }: { obs: Observation }) {
   return (
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} style={{
       marginTop: 22, padding: '18px 22px',
-      background: `linear-gradient(135deg, rgba(124,58,237,0.08), rgba(34,211,238,0.05))`,
+      background: `linear-gradient(135deg, rgba(124,58,237,0.08), rgba(196, 181, 253,0.05))`,
       border: `1px solid rgba(124,58,237,0.32)`, borderRadius: 14,
       display: 'flex', alignItems: 'flex-start', gap: 14, position: 'relative', overflow: 'hidden',
     }}>
@@ -328,8 +328,8 @@ function PulseCard({ twin, openDetail }: { twin: Twin; openDetail: (k: DetailKin
         <div style={{
           display: 'inline-block', marginTop: 4, padding: '4px 10px', borderRadius: 999,
           fontSize: 10.5, fontWeight: 700, letterSpacing: 1.4, textTransform: 'uppercase',
-          background: pct >= 75 ? 'rgba(52,211,153,0.12)' : pct >= 60 ? 'rgba(96,165,250,0.12)'
-                    : pct >= 45 ? 'rgba(251,191,36,0.12)' : 'rgba(248,113,113,0.12)',
+          background: pct >= 75 ? 'rgba(196, 181, 253,0.12)' : pct >= 60 ? 'rgba(196, 181, 253,0.12)'
+                    : pct >= 45 ? 'rgba(196, 181, 253,0.12)' : 'rgba(167, 139, 250,0.12)',
           color:    pct >= 75 ? C.green : pct >= 60 ? C.blue : pct >= 45 ? C.amber : C.red,
         }}>
           ● {label}
@@ -361,8 +361,8 @@ function Ring({ score }: { score: number }) {
           <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%"   stopColor="#c4b5fd"/>
             <stop offset="40%"  stopColor="#7c3aed"/>
-            <stop offset="80%"  stopColor="#3b82f6"/>
-            <stop offset="100%" stopColor="#22d3ee"/>
+            <stop offset="80%"  stopColor="#a78bfa"/>
+            <stop offset="100%" stopColor="#c4b5fd"/>
           </linearGradient>
         </defs>
         <circle cx="100" cy="100" r={r} fill="none" stroke={C.borderSoft} strokeWidth="14" />
@@ -607,7 +607,7 @@ function HeatmapCard({ mastery, openDetail }: { mastery: (MasteryRow & { retenti
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 12, paddingTop: 12, borderTop: `1px solid ${C.borderSoft}` }}>
         <span style={{ fontSize: 10, color: C.textFaint, fontWeight: 600 }}>WEAK</span>
-        <div style={{ flex: 1, height: 6, borderRadius: 999, background: 'linear-gradient(90deg, #f87171, #fbbf24 50%, #34d399)' }} />
+        <div style={{ flex: 1, height: 6, borderRadius: 999, background: 'linear-gradient(90deg, #a78bfa, #c4b5fd 50%, #c4b5fd)' }} />
         <span style={{ fontSize: 10, color: C.textFaint, fontWeight: 600 }}>MASTERED</span>
       </div>
     </Card>
@@ -619,9 +619,9 @@ function avgMastery(rows: MasteryRow[]) {
 }
 
 function masteryColor(m: number, alpha: number) {
-  if (m < 0.4)  return alpha === 1 ? '#fca5a5' : `rgba(248,113,113,${alpha})`
-  if (m < 0.7)  return alpha === 1 ? '#fcd34d' : `rgba(251,191,36,${alpha})`
-  return alpha === 1 ? '#86efac' : `rgba(52,211,153,${alpha})`
+  if (m < 0.4)  return alpha === 1 ? '#c4b5fd' : `rgba(167, 139, 250,${alpha})`
+  if (m < 0.7)  return alpha === 1 ? '#e9d5ff' : `rgba(196, 181, 253,${alpha})`
+  return alpha === 1 ? '#c4b5fd' : `rgba(196, 181, 253,${alpha})`
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -674,7 +674,7 @@ function RetentionCard({ mastery, forgetting, openDetail }: { mastery: (MasteryR
             </linearGradient>
             <linearGradient id="retLine" x1="0" y1="0" x2="1" y2="0">
               <stop offset="0%" stopColor="#c4b5fd"/>
-              <stop offset="100%" stopColor="#22d3ee"/>
+              <stop offset="100%" stopColor="#c4b5fd"/>
             </linearGradient>
           </defs>
           <line x1={P} y1={ys(0.6)} x2={W - P} y2={ys(0.6)} stroke={C.borderSoft} strokeDasharray="3 4" />
@@ -951,7 +951,7 @@ function PrivacyFooter({ onWipe, eventCount }: { onWipe: () => void; eventCount:
         none of this is uploaded to Kairo's servers. Clearing your browser data wipes it.
       </div>
       <button onClick={onWipe} style={{
-        ...chipBtn(), color: C.red, borderColor: 'rgba(248,113,113,0.4)', flexShrink: 0,
+        ...chipBtn(), color: C.red, borderColor: 'rgba(167, 139, 250,0.4)', flexShrink: 0,
       }}>
         <Trash2 size={13} />
         Wipe my Twin

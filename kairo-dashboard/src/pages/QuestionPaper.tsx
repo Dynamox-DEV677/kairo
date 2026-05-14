@@ -127,21 +127,21 @@ export default function QuestionPaper() {
               {['Easy','Medium','Hard','Mixed'].map(d => (
                 <motion.button key={d} whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }} onClick={() => setDifficulty(d)}
                   style={{ padding: '6px 16px', borderRadius: 7, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit',
-                    background: difficulty === d ? 'rgba(99,102,241,0.15)' : '#161616',
-                    border: `1px solid ${difficulty === d ? '#6366f1' : '#1e1e1e'}`,
-                    color: difficulty === d ? '#818cf8' : '#52525b' }}>
+                    background: difficulty === d ? 'rgba(124, 58, 237,0.15)' : '#161616',
+                    border: `1px solid ${difficulty === d ? '#7c3aed' : '#1e1e1e'}`,
+                    color: difficulty === d ? '#a78bfa' : '#52525b' }}>
                   {d}
                 </motion.button>
               ))}
             </div>
           </div>
 
-          {error && <p style={{ fontSize: 12, color: '#f87171', marginBottom: 14 }}>{error}</p>}
+          {error && <p style={{ fontSize: 12, color: '#a78bfa', marginBottom: 14 }}>{error}</p>}
 
           <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} onClick={generate}
             style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '11px 22px', borderRadius: 10, border: 'none',
-              background: 'linear-gradient(135deg, #6366f1, #7c3aed)', color: '#fff', fontFamily: 'inherit', fontSize: 14, fontWeight: 600,
-              cursor: 'pointer', boxShadow: '0 0 20px rgba(99,102,241,0.3)' }}>
+              background: 'linear-gradient(135deg, #7c3aed, #7c3aed)', color: '#fff', fontFamily: 'inherit', fontSize: 14, fontWeight: 600,
+              cursor: 'pointer', boxShadow: '0 0 20px rgba(124, 58, 237,0.3)' }}>
             <Sparkles size={14} /> Generate question paper
           </motion.button>
         </motion.div>
@@ -149,7 +149,7 @@ export default function QuestionPaper() {
 
       {loading && (
         <div style={{ textAlign: 'center', padding: 80 }}>
-          <div style={{ width: 36, height: 36, border: '2px solid #1e1e1e', borderTop: '2px solid #6366f1', borderRadius: '50%', margin: '0 auto 16px', animation: 'spin 0.8s linear infinite' }} />
+          <div style={{ width: 36, height: 36, border: '2px solid #1e1e1e', borderTop: '2px solid #7c3aed', borderRadius: '50%', margin: '0 auto 16px', animation: 'spin 0.8s linear infinite' }} />
           <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
           <p style={{ fontSize: 13, color: '#52525b' }}>Generating your question paper…</p>
         </div>
@@ -163,7 +163,7 @@ export default function QuestionPaper() {
               <button onClick={() => setPaper('')} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 7, fontSize: 12, background: '#161616', border: '1px solid #1e1e1e', color: '#71717a', cursor: 'pointer', fontFamily: 'inherit' }}>
                 <RotateCcw size={12} /> Regenerate
               </button>
-              <button onClick={printPaper} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 7, fontSize: 12, background: '#6366f1', border: 'none', color: '#fff', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600 }}>
+              <button onClick={printPaper} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 7, fontSize: 12, background: '#7c3aed', border: 'none', color: '#fff', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600 }}>
                 <Printer size={12} /> Print / PDF
               </button>
             </div>

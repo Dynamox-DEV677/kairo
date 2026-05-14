@@ -197,7 +197,7 @@ Rules:
     }
   }
 
-  const clarityColor = stats.clarity >= 80 ? '#86efac' : stats.clarity >= 60 ? '#fcd34d' : '#f87171'
+  const clarityColor = stats.clarity >= 80 ? '#c4b5fd' : stats.clarity >= 60 ? '#e9d5ff' : '#a78bfa'
   const clarityLabel = stats.clarity >= 80 ? 'Crystal' : stats.clarity >= 60 ? 'Good' : stats.clarity >= 40 ? 'Cloudy' : 'Foggy'
 
   return (
@@ -228,7 +228,7 @@ Rules:
         </div>
 
         {err && (
-          <div style={{ marginTop: 12, padding: '10px 14px', background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.25)', borderRadius: 8, fontSize: 12, color: '#f87171' }}>
+          <div style={{ marginTop: 12, padding: '10px 14px', background: 'rgba(167, 139, 250,0.08)', border: '1px solid rgba(167, 139, 250,0.25)', borderRadius: 8, fontSize: 12, color: '#a78bfa' }}>
             {err}
           </div>
         )}
@@ -317,8 +317,8 @@ Rules:
           <div style={{ ...card, padding: 14 }}>
             <div style={{ fontSize: 10, fontWeight: 700, color: '#71717a', textTransform: 'uppercase', letterSpacing: 1.4, marginBottom: 10 }}>Issues found</div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-              {stats.longSentences.length > 0 && <IssueChip label={`${stats.longSentences.length} long sentence${stats.longSentences.length === 1 ? '' : 's'}`} color="#f87171" />}
-              {stats.passiveCount > 0       && <IssueChip label={`${stats.passiveCount} passive`} color="#fcd34d" />}
+              {stats.longSentences.length > 0 && <IssueChip label={`${stats.longSentences.length} long sentence${stats.longSentences.length === 1 ? '' : 's'}`} color="#a78bfa" />}
+              {stats.passiveCount > 0       && <IssueChip label={`${stats.passiveCount} passive`} color="#e9d5ff" />}
               {stats.weakVerbs.map(w => <IssueChip key={w} label={`"${w}"`} color="#a78bfa" />)}
               {stats.hedges.map(w  => <IssueChip key={w} label={`hedge: "${w}"`} color="#c4b5fd" />)}
               {stats.repeats.map(r => <IssueChip key={r.word} label={`${r.word} ×${r.count}`} color="#5b21b6" />)}
@@ -326,8 +326,8 @@ Rules:
             {stats.longSentences.length > 0 && (
               <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid #1a1a1a' }}>
                 {stats.longSentences.slice(0, 2).map((s, i) => (
-                  <div key={i} style={{ fontSize: 11, color: '#a1a1aa', marginBottom: 6, padding: '6px 8px', borderRadius: 6, background: 'rgba(248,113,113,0.06)', borderLeft: '2px solid #f87171' }}>
-                    <span style={{ color: '#f87171', fontWeight: 700 }}>{s.words}w · </span>
+                  <div key={i} style={{ fontSize: 11, color: '#a1a1aa', marginBottom: 6, padding: '6px 8px', borderRadius: 6, background: 'rgba(167, 139, 250,0.06)', borderLeft: '2px solid #a78bfa' }}>
+                    <span style={{ color: '#a78bfa', fontWeight: 700 }}>{s.words}w · </span>
                     {s.text}
                   </div>
                 ))}
@@ -337,10 +337,10 @@ Rules:
         )}
 
         {stats.clarity >= 85 && stats.words > 100 && (
-          <div style={{ ...card, padding: 14, borderColor: 'rgba(134,239,172,0.3)', background: 'rgba(134,239,172,0.05)' }}>
+          <div style={{ ...card, padding: 14, borderColor: 'rgba(196, 181, 253,0.3)', background: 'rgba(196, 181, 253,0.05)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <Sparkles size={13} color="#86efac" />
-              <div style={{ fontSize: 12, color: '#86efac', fontWeight: 700 }}>This reads beautifully.</div>
+              <Sparkles size={13} color="#c4b5fd" />
+              <div style={{ fontSize: 12, color: '#c4b5fd', fontWeight: 700 }}>This reads beautifully.</div>
             </div>
           </div>
         )}
@@ -496,7 +496,7 @@ function TopperTool() {
         <textarea style={{ ...inp, height: 160, resize: 'vertical' }} value={text} onChange={e => setText(e.target.value)} placeholder="Write your current answer — any quality is fine…" />
       </div>
       {err && <p style={{ color: '#5b21b6', fontSize: 12, marginBottom: 10 }}>{err}</p>}
-      <button onClick={run} disabled={loading} style={{ ...btn(!loading), background: loading ? '#1c1c1c' : 'linear-gradient(135deg,#f59e0b,#d97706)' }}>
+      <button onClick={run} disabled={loading} style={{ ...btn(!loading), background: loading ? '#1c1c1c' : 'linear-gradient(135deg,#a78bfa,#7c3aed)' }}>
         <Star size={13} /> {loading ? 'Rewriting…' : 'Make it Topper-Level ✦'}
       </button>
       {result?.rewritten && (

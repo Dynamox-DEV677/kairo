@@ -32,7 +32,7 @@ export default function Gamification() {
 
   if (loading) return (
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
-      <div style={{ width: 28, height: 28, borderRadius: '50%', border: '2px solid #1e1e1e', borderTopColor: '#6366f1', animation: 'spin 0.8s linear infinite' }} />
+      <div style={{ width: 28, height: 28, borderRadius: '50%', border: '2px solid #1e1e1e', borderTopColor: '#7c3aed', animation: 'spin 0.8s linear infinite' }} />
     </div>
   )
 
@@ -56,7 +56,7 @@ export default function Gamification() {
             padding: '7px 8px', borderRadius: 7, border: 'none', fontFamily: 'inherit',
             fontSize: 12, fontWeight: tab === t.id ? 600 : 400, cursor: 'pointer',
             background: tab === t.id ? '#1e1e2e' : 'transparent',
-            color: tab === t.id ? '#818cf8' : '#52525b', transition: 'all 0.15s',
+            color: tab === t.id ? '#a78bfa' : '#52525b', transition: 'all 0.15s',
           }}><t.icon size={12} /> {t.label}</button>
         ))}
       </div>
@@ -74,16 +74,16 @@ function ProfileTab({ profile, onAddXP }: any) {
     <div>
       {/* Level Card */}
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-        style={{ ...card, background: 'linear-gradient(135deg,#1e1e2e,#111)', borderColor: '#6366f130', marginBottom: 16 }}>
+        style={{ ...card, background: 'linear-gradient(135deg,#1e1e2e,#111)', borderColor: '#7c3aed30', marginBottom: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
-          <div style={{ width: 70, height: 70, borderRadius: 16, background: `linear-gradient(135deg,#6366f1,#7c3aed)`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          <div style={{ width: 70, height: 70, borderRadius: 16, background: `linear-gradient(135deg,#7c3aed,#7c3aed)`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             <div style={{ fontSize: 22, fontWeight: 800, color: '#fff' }}>{level?.level}</div>
           </div>
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 18, fontWeight: 700, color: '#fafafa' }}>{level?.title}</div>
             <div style={{ fontSize: 12, color: '#71717a', marginBottom: 8 }}>{profile.xp} XP total</div>
             <div style={{ height: 6, background: '#1e1e2e', borderRadius: 3 }}>
-              <div style={{ height: '100%', background: 'linear-gradient(90deg,#6366f1,#7c3aed)', borderRadius: 3, width: `${level?.progress_to_next || 100}%`, transition: 'width 0.5s' }} />
+              <div style={{ height: '100%', background: 'linear-gradient(90deg,#7c3aed,#7c3aed)', borderRadius: 3, width: `${level?.progress_to_next || 100}%`, transition: 'width 0.5s' }} />
             </div>
             <div style={{ fontSize: 10, color: '#52525b', marginTop: 4 }}>
               {level?.next_level ? `${level.progress_to_next}% to Level ${level.next_level.level} (${level.next_level.title})` : 'Max Level! 🎉'}
@@ -96,11 +96,11 @@ function ProfileTab({ profile, onAddXP }: any) {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12, marginBottom: 16 }}>
         {[
           ['Quizzes', profile.quizzes_completed || 0, '#38bdf8'],
-          ['Essays', profile.essays_graded || 0, '#f472b6'],
-          ['Flashcards', profile.flashcards_created || 0, '#34d399'],
-          ['Doubts Asked', profile.doubts_asked || 0, '#fbbf24'],
-          ['Study Plans', profile.study_plans || 0, '#fb923c'],
-          ['Streak 🔥', `${profile.streak || 0} days`, '#f87171'],
+          ['Essays', profile.essays_graded || 0, '#c4b5fd'],
+          ['Flashcards', profile.flashcards_created || 0, '#c4b5fd'],
+          ['Doubts Asked', profile.doubts_asked || 0, '#c4b5fd'],
+          ['Study Plans', profile.study_plans || 0, '#c4b5fd'],
+          ['Streak 🔥', `${profile.streak || 0} days`, '#a78bfa'],
         ].map(([l, v, c]) => (
           <div key={l as string} style={{ ...card, textAlign: 'center', padding: 14 }}>
             <div style={{ fontSize: 20, fontWeight: 700, color: c as string }}>{v}</div>
@@ -114,10 +114,10 @@ function ProfileTab({ profile, onAddXP }: any) {
         <div style={{ fontSize: 12, fontWeight: 700, color: '#71717a', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 12 }}>Earn XP Now</div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
           {[
-            ['Login Bonus', 'login', '+2 XP', '#6366f1'],
-            ['Review Flashcard', 'flashcard_review', '+5 XP', '#34d399'],
+            ['Login Bonus', 'login', '+2 XP', '#7c3aed'],
+            ['Review Flashcard', 'flashcard_review', '+5 XP', '#c4b5fd'],
             ['Ask Doubt', 'doubt_asked', '+5 XP', '#38bdf8'],
-            ['Formula Sheet', 'formula_sheet', '+10 XP', '#f472b6'],
+            ['Formula Sheet', 'formula_sheet', '+10 XP', '#c4b5fd'],
           ].map(([label, action, xp, color]) => (
             <button key={action as string} onClick={() => onAddXP(action)} style={{
               padding: '8px 14px', borderRadius: 8, border: `1px solid ${color}30`,
@@ -143,7 +143,7 @@ function BadgesTab({ badges }: any) {
       <div style={{ fontSize: 13, color: '#71717a', marginBottom: 16 }}>{earned.length}/{badges.length} badges earned</div>
       {earned.length > 0 && (
         <>
-          <div style={{ fontSize: 11, fontWeight: 700, color: '#34d399', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 }}>Earned ✓</div>
+          <div style={{ fontSize: 11, fontWeight: 700, color: '#c4b5fd', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 }}>Earned ✓</div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(180px,1fr))', gap: 10, marginBottom: 20 }}>
             {earned.map((b: any) => <BadgeCard key={b.id} badge={b} earned />)}
           </div>
@@ -160,7 +160,7 @@ function BadgesTab({ badges }: any) {
 function BadgeCard({ badge, earned }: any) {
   return (
     <div style={{ ...card, textAlign: 'center', padding: 16, opacity: earned ? 1 : 0.4, position: 'relative', overflow: 'hidden' }}>
-      {earned && <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: 'linear-gradient(90deg,#6366f1,#34d399)' }} />}
+      {earned && <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: 'linear-gradient(90deg,#7c3aed,#c4b5fd)' }} />}
       <div style={{ fontSize: 28, marginBottom: 8 }}>{badge.icon}</div>
       <div style={{ fontSize: 12, fontWeight: 700, color: '#fafafa', marginBottom: 4 }}>{badge.name}</div>
       <div style={{ fontSize: 11, color: '#71717a' }}>{badge.desc}</div>
@@ -186,7 +186,7 @@ function LeaderboardTab({ leaderboard }: any) {
               <div style={{ fontSize: 13, fontWeight: 600, color: '#fafafa' }}>{entry.user_id === 'default' ? 'You' : entry.user_id}</div>
               <div style={{ fontSize: 11, color: '#52525b' }}>Level {entry.level?.level} · {entry.level?.title}</div>
             </div>
-            <div style={{ fontSize: 18, fontWeight: 700, color: '#818cf8' }}>{entry.xp} XP</div>
+            <div style={{ fontSize: 18, fontWeight: 700, color: '#a78bfa' }}>{entry.xp} XP</div>
           </div>
         )
       })}

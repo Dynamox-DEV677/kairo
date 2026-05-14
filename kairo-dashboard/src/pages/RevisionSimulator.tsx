@@ -26,9 +26,9 @@ interface Question {
 const card: React.CSSProperties = { background: '#111', border: '1px solid #1e1e1e', borderRadius: 14 }
 
 const DIFFICULTIES = [
-  { id: 'easy',   label: 'Easy',   color: '#34d399', secs: 90, count: 8  },
-  { id: 'medium', label: 'Medium', color: '#fbbf24', secs: 60, count: 10 },
-  { id: 'hard',   label: 'Exam',   color: '#f87171', secs: 45, count: 12 },
+  { id: 'easy',   label: 'Easy',   color: '#c4b5fd', secs: 90, count: 8  },
+  { id: 'medium', label: 'Medium', color: '#c4b5fd', secs: 60, count: 10 },
+  { id: 'hard',   label: 'Exam',   color: '#a78bfa', secs: 45, count: 12 },
 ]
 
 type Phase = 'setup' | 'loading' | 'live' | 'review' | 'done'
@@ -244,9 +244,9 @@ function SetupView({
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 22 }}>
         <div style={{
           width: 44, height: 44, borderRadius: 11,
-          background: 'linear-gradient(135deg, #f87171, #fb923c)',
+          background: 'linear-gradient(135deg, #a78bfa, #c4b5fd)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 0 18px rgba(248,113,113,0.35)', flexShrink: 0,
+          boxShadow: '0 0 18px rgba(167, 139, 250,0.35)', flexShrink: 0,
         }}>
           <Zap size={22} color="#fff" />
         </div>
@@ -291,7 +291,7 @@ function SetupView({
       {/* Weak topics picker */}
       <div style={{ ...card, padding: 18, marginBottom: 14 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-          <Brain size={13} color="#a5b4fc" />
+          <Brain size={13} color="#c4b5fd" />
           <label style={{ fontSize: 11, fontWeight: 700, color: '#71717a', textTransform: 'uppercase', letterSpacing: 1.5 }}>
             Topics to target ({pickedTopics.length} picked)
           </label>
@@ -337,9 +337,9 @@ function SetupView({
               return (
                 <button key={t.topic} onClick={() => toggle(t.topic)} style={{
                   padding: '6px 12px', borderRadius: 7,
-                  border: `1px solid ${picked ? '#fbbf24' : '#1e1e1e'}`,
-                  background: picked ? 'rgba(251,191,36,0.1)' : '#0d0d0d',
-                  color: picked ? '#fbbf24' : '#71717a',
+                  border: `1px solid ${picked ? '#c4b5fd' : '#1e1e1e'}`,
+                  background: picked ? 'rgba(196, 181, 253,0.1)' : '#0d0d0d',
+                  color: picked ? '#c4b5fd' : '#71717a',
                   cursor: 'pointer', fontFamily: 'inherit', fontSize: 12, fontWeight: 600,
                   display: 'flex', alignItems: 'center', gap: 6,
                 }}>
@@ -369,7 +369,7 @@ function SetupView({
       </div>
 
       {err && (
-        <div style={{ marginBottom: 14, padding: '10px 14px', background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.25)', borderRadius: 8, fontSize: 12, color: '#f87171' }}>
+        <div style={{ marginBottom: 14, padding: '10px 14px', background: 'rgba(167, 139, 250,0.08)', border: '1px solid rgba(167, 139, 250,0.25)', borderRadius: 8, fontSize: 12, color: '#a78bfa' }}>
           {err}
         </div>
       )}
@@ -380,12 +380,12 @@ function SetupView({
         style={{
           width: '100%', padding: '14px', borderRadius: 11, border: 'none',
           background: pickedTopics.length === 0 ? '#1c1c1c'
-            : 'linear-gradient(135deg, #f87171, #fb923c)',
+            : 'linear-gradient(135deg, #a78bfa, #c4b5fd)',
           color: pickedTopics.length === 0 ? '#52525b' : '#fff',
           fontFamily: 'inherit', fontSize: 15, fontWeight: 700,
           cursor: pickedTopics.length === 0 ? 'not-allowed' : 'pointer',
           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-          boxShadow: pickedTopics.length === 0 ? 'none' : '0 0 24px rgba(248,113,113,0.35)',
+          boxShadow: pickedTopics.length === 0 ? 'none' : '0 0 24px rgba(167, 139, 250,0.35)',
         }}>
         <Zap size={15} /> Start Simulation
       </motion.button>
@@ -405,7 +405,7 @@ function LoadingView() {
         transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
         style={{
           width: 36, height: 36, borderRadius: '50%',
-          border: '3px solid #1e1e2e', borderTopColor: '#f87171',
+          border: '3px solid #1e1e2e', borderTopColor: '#a78bfa',
         }} />
       <p style={{ fontSize: 14, color: '#a1a1aa' }}>AI is crafting your simulation…</p>
       <p style={{ fontSize: 11, color: '#52525b' }}>Targeting your weak topics with exam-grade questions</p>
@@ -416,7 +416,7 @@ function LoadingView() {
 // ─── Live ───────────────────────────────────────────────────────────────────
 function LiveView({ q, idx, total, secsLeft, maxSecs, picked, onPick }: any) {
   const pct = (secsLeft / maxSecs) * 100
-  const dangerColor = secsLeft < 10 ? '#f87171' : secsLeft < 20 ? '#fb923c' : '#34d399'
+  const dangerColor = secsLeft < 10 ? '#a78bfa' : secsLeft < 20 ? '#c4b5fd' : '#c4b5fd'
   return (
     <div style={{ padding: '28px 36px', maxWidth: 760, margin: '0 auto', height: '100%', overflowY: 'auto' }}>
       {/* Top bar: progress + timer */}
@@ -428,7 +428,7 @@ function LiveView({ q, idx, total, secsLeft, maxSecs, picked, onPick }: any) {
           <div style={{ height: 4, background: '#1a1a1a', borderRadius: 2, overflow: 'hidden' }}>
             <motion.div
               animate={{ width: `${((idx + 1) / total) * 100}%` }}
-              style={{ height: '100%', background: 'linear-gradient(90deg, #6366f1, #7c3aed)' }} />
+              style={{ height: '100%', background: 'linear-gradient(90deg, #7c3aed, #7c3aed)' }} />
           </div>
         </div>
         <div style={{
@@ -479,15 +479,15 @@ function LiveView({ q, idx, total, secsLeft, maxSecs, picked, onPick }: any) {
               onClick={() => onPick(i)} disabled={picked !== null && picked !== undefined}
               style={{
                 padding: '13px 16px', borderRadius: 10,
-                border: `1px solid ${isPicked ? '#6366f1' : '#1e1e1e'}`,
-                background: isPicked ? 'rgba(99,102,241,0.1)' : '#111',
+                border: `1px solid ${isPicked ? '#7c3aed' : '#1e1e1e'}`,
+                background: isPicked ? 'rgba(124, 58, 237,0.1)' : '#111',
                 cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left',
                 display: 'flex', alignItems: 'center', gap: 12,
                 transition: 'all 0.15s',
               }}>
               <div style={{
                 width: 26, height: 26, borderRadius: 7, flexShrink: 0,
-                background: isPicked ? '#6366f1' : '#1a1a1a',
+                background: isPicked ? '#7c3aed' : '#1a1a1a',
                 color: isPicked ? '#fff' : '#71717a',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: 12, fontWeight: 700,
@@ -509,7 +509,7 @@ function ResultsView({ questions, answers, onReset }: any) {
   const total = questions.length
   const pct = Math.round((correct / total) * 100)
   const grade = pct >= 90 ? 'A+' : pct >= 75 ? 'A' : pct >= 60 ? 'B' : pct >= 40 ? 'C' : 'D'
-  const gradeColor = pct >= 75 ? '#34d399' : pct >= 60 ? '#fbbf24' : pct >= 40 ? '#fb923c' : '#f87171'
+  const gradeColor = pct >= 75 ? '#c4b5fd' : pct >= 60 ? '#c4b5fd' : pct >= 40 ? '#c4b5fd' : '#a78bfa'
 
   return (
     <div style={{ padding: '28px 36px', maxWidth: 880, margin: '0 auto', height: '100%', overflowY: 'auto' }}>
@@ -546,8 +546,8 @@ function ResultsView({ questions, answers, onReset }: any) {
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-        <Sparkles size={14} color="#a5b4fc" />
-        <div style={{ fontSize: 12, color: '#a5b4fc' }}>
+        <Sparkles size={14} color="#c4b5fd" />
+        <div style={{ fontSize: 12, color: '#c4b5fd' }}>
           Results saved to your AI Memory — Kairo will weight these in future personalization.
         </div>
       </div>
@@ -560,15 +560,15 @@ function ResultsView({ questions, answers, onReset }: any) {
           return (
             <div key={i} style={{
               ...card, padding: 16,
-              borderColor: isCorrect ? 'rgba(52,211,153,0.3)' : 'rgba(248,113,113,0.3)',
+              borderColor: isCorrect ? 'rgba(196, 181, 253,0.3)' : 'rgba(167, 139, 250,0.3)',
             }}>
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 10 }}>
                 <div style={{
                   width: 24, height: 24, borderRadius: 6, flexShrink: 0,
-                  background: isCorrect ? 'rgba(52,211,153,0.15)' : 'rgba(248,113,113,0.15)',
+                  background: isCorrect ? 'rgba(196, 181, 253,0.15)' : 'rgba(167, 139, 250,0.15)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}>
-                  {isCorrect ? <CheckCircle2 size={13} color="#34d399" /> : <XCircle size={13} color="#f87171" />}
+                  {isCorrect ? <CheckCircle2 size={13} color="#c4b5fd" /> : <XCircle size={13} color="#a78bfa" />}
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 10, fontWeight: 700, color: '#71717a', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>
@@ -590,11 +590,11 @@ function ResultsView({ questions, answers, onReset }: any) {
                   return (
                     <div key={j} style={{
                       padding: '7px 10px', borderRadius: 6, fontSize: 12,
-                      border: `1px solid ${isAnswer ? 'rgba(52,211,153,0.4)' :
-                        isPicked && !isAnswer ? 'rgba(248,113,113,0.4)' : '#1a1a1a'}`,
-                      background: isAnswer ? 'rgba(52,211,153,0.08)' :
-                        isPicked && !isAnswer ? 'rgba(248,113,113,0.08)' : '#0d0d0d',
-                      color: isAnswer ? '#34d399' : isPicked && !isAnswer ? '#f87171' : '#a1a1aa',
+                      border: `1px solid ${isAnswer ? 'rgba(196, 181, 253,0.4)' :
+                        isPicked && !isAnswer ? 'rgba(167, 139, 250,0.4)' : '#1a1a1a'}`,
+                      background: isAnswer ? 'rgba(196, 181, 253,0.08)' :
+                        isPicked && !isAnswer ? 'rgba(167, 139, 250,0.08)' : '#0d0d0d',
+                      color: isAnswer ? '#c4b5fd' : isPicked && !isAnswer ? '#a78bfa' : '#a1a1aa',
                       display: 'flex', alignItems: 'center', gap: 8,
                     }}>
                       <span style={{ fontWeight: 700, fontSize: 10 }}>{String.fromCharCode(65 + j)}</span>
@@ -609,7 +609,7 @@ function ResultsView({ questions, answers, onReset }: any) {
                 padding: '8px 10px', background: '#0d0d0d',
                 border: '1px solid #1a1a1a', borderRadius: 7,
               }}>
-                <strong style={{ color: '#a5b4fc' }}>Why:</strong> {q.explain}
+                <strong style={{ color: '#c4b5fd' }}>Why:</strong> {q.explain}
               </div>
             </div>
           )
@@ -621,10 +621,10 @@ function ResultsView({ questions, answers, onReset }: any) {
         <motion.button whileHover={{ scale: 1.03 }} onClick={onReset}
           style={{
             padding: '11px 24px', borderRadius: 10, border: 'none',
-            background: 'linear-gradient(135deg, #f87171, #fb923c)',
+            background: 'linear-gradient(135deg, #a78bfa, #c4b5fd)',
             color: '#fff', fontFamily: 'inherit', fontSize: 14, fontWeight: 700,
             cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 7,
-            boxShadow: '0 0 20px rgba(248,113,113,0.3)',
+            boxShadow: '0 0 20px rgba(167, 139, 250,0.3)',
           }}>
           <RefreshCw size={13} /> Run Another Simulation
         </motion.button>

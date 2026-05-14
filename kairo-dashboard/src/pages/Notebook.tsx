@@ -155,7 +155,7 @@ export default function Notebook() {
       <div style={{ display: 'grid', gridTemplateColumns: selected ? '1fr 1.3fr' : '1fr', gap: 12, flex: 1, minHeight: 0 }}>
         {/* List */}
         <div style={{ overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 6 }}>
-          {err && <div style={{ padding: '10px 14px', background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.25)', borderRadius: 8, fontSize: 12, color: '#f87171' }}>{err}</div>}
+          {err && <div style={{ padding: '10px 14px', background: 'rgba(167, 139, 250,0.08)', border: '1px solid rgba(167, 139, 250,0.25)', borderRadius: 8, fontSize: 12, color: '#a78bfa' }}>{err}</div>}
           {loading && notes.length === 0 && <div style={{ textAlign: 'center', padding: '40px 0', color: '#52525b' }}>Loading…</div>}
           {!loading && filtered.length === 0 && (
             <div style={{ ...card, padding: '40px 24px', textAlign: 'center' }}>
@@ -188,7 +188,7 @@ export default function Notebook() {
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    {n.pinned && <Pin size={10} color="#fbbf24" style={{ flexShrink: 0 }} />}
+                    {n.pinned && <Pin size={10} color="#c4b5fd" style={{ flexShrink: 0 }} />}
                     <div style={{
                       fontSize: 13, fontWeight: 600, color: '#fafafa',
                       overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1,
@@ -544,7 +544,7 @@ function NoteDetail({ note, editing, onClose, onTogglePin, onDelete, onEdit, onS
         </div>
         <div style={{ display: 'flex', gap: 4 }}>
           <button onClick={onTogglePin} title={note.pinned ? 'Unpin' : 'Pin'}
-            style={{ padding: 6, borderRadius: 7, border: '1px solid #1e1e1e', background: '#161616', cursor: 'pointer', color: note.pinned ? '#fbbf24' : '#71717a' }}>
+            style={{ padding: 6, borderRadius: 7, border: '1px solid #1e1e1e', background: '#161616', cursor: 'pointer', color: note.pinned ? '#c4b5fd' : '#71717a' }}>
             {note.pinned ? <Pin size={12} /> : <PinOff size={12} />}
           </button>
           {!editing && (
@@ -555,7 +555,7 @@ function NoteDetail({ note, editing, onClose, onTogglePin, onDelete, onEdit, onS
           )}
           <button onClick={onDelete} title="Delete"
             style={{ padding: 6, borderRadius: 7, border: '1px solid #1e1e1e', background: '#161616', cursor: 'pointer', color: '#71717a' }}
-            onMouseEnter={e => (e.currentTarget.style.color = '#f87171')}
+            onMouseEnter={e => (e.currentTarget.style.color = '#a78bfa')}
             onMouseLeave={e => (e.currentTarget.style.color = '#71717a')}>
             <Trash2 size={12} />
           </button>
@@ -581,7 +581,7 @@ function NoteDetail({ note, editing, onClose, onTogglePin, onDelete, onEdit, onS
           <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
             <button onClick={save} disabled={saving} style={{
               padding: '8px 16px', borderRadius: 8, border: 'none',
-              background: saving ? '#1c1c1c' : 'linear-gradient(135deg,#6366f1,#7c3aed)',
+              background: saving ? '#1c1c1c' : 'linear-gradient(135deg,#7c3aed,#7c3aed)',
               color: saving ? '#52525b' : '#fff',
               fontFamily: 'inherit', fontSize: 12, fontWeight: 600,
               cursor: saving ? 'not-allowed' : 'pointer',
@@ -662,7 +662,7 @@ function CreateModal({ onClose, onCreated }: { onClose: () => void; onCreated: (
           }}>Cancel</button>
           <button onClick={save} disabled={saving || !title.trim() || !content.trim()} style={{
             padding: '8px 14px', borderRadius: 7, border: 'none',
-            background: saving || !title.trim() || !content.trim() ? '#1c1c1c' : 'linear-gradient(135deg,#6366f1,#7c3aed)',
+            background: saving || !title.trim() || !content.trim() ? '#1c1c1c' : 'linear-gradient(135deg,#7c3aed,#7c3aed)',
             color: '#fff', fontFamily: 'inherit', fontSize: 12, fontWeight: 600,
             cursor: saving || !title.trim() || !content.trim() ? 'not-allowed' : 'pointer',
             display: 'flex', alignItems: 'center', gap: 6,

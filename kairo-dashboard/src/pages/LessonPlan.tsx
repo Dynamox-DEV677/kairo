@@ -65,11 +65,11 @@ export default function LessonPlan() {
             placeholder="e.g. Introduction to Quadratic Equations"
             style={{ width: '100%', background: '#0d0d0d', border: '1px solid #1e1e1e', borderRadius: 8, padding: '9px 12px', fontSize: 13, color: '#fafafa', fontFamily: 'inherit', outline: 'none' }} />
         </div>
-        {error && <p style={{ fontSize: 12, color: '#f87171', marginBottom: 14 }}>{error}</p>}
+        {error && <p style={{ fontSize: 12, color: '#a78bfa', marginBottom: 14 }}>{error}</p>}
         <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} onClick={generate} disabled={loading || !topic.trim()}
           style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '11px 22px', borderRadius: 10, border: 'none',
-            background: 'linear-gradient(135deg, #6366f1, #7c3aed)', color: '#fff', fontFamily: 'inherit', fontSize: 14, fontWeight: 600,
-            cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.6 : 1, boxShadow: '0 0 20px rgba(99,102,241,0.3)' }}>
+            background: 'linear-gradient(135deg, #7c3aed, #7c3aed)', color: '#fff', fontFamily: 'inherit', fontSize: 14, fontWeight: 600,
+            cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.6 : 1, boxShadow: '0 0 20px rgba(124, 58, 237,0.3)' }}>
           <Sparkles size={14} />{loading ? 'Building…' : 'Build lesson plan'}
         </motion.button>
       </div>
@@ -77,7 +77,7 @@ export default function LessonPlan() {
       {loading && (
         <div style={{ textAlign: 'center', padding: 60 }}>
           <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginBottom: 14 }}>
-            {[0,1,2].map(i => <div key={i} style={{ width: 8, height: 8, borderRadius: '50%', background: '#6366f1', animation: `dot-bounce 1.2s ease-in-out ${i * 0.2}s infinite` }} />)}
+            {[0,1,2].map(i => <div key={i} style={{ width: 8, height: 8, borderRadius: '50%', background: '#7c3aed', animation: `dot-bounce 1.2s ease-in-out ${i * 0.2}s infinite` }} />)}
           </div>
           <p style={{ fontSize: 13, color: '#52525b' }}>Building lesson plan…</p>
         </div>

@@ -322,7 +322,7 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
         <div style={{
           position: 'absolute', top: '20%', left: '10%',
           width: 400, height: 400, borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(99,102,241,0.10) 0%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(124, 58, 237,0.10) 0%, transparent 70%)',
           pointerEvents: 'none', zIndex: 0,
         }} />
       )}
@@ -573,9 +573,9 @@ function Hero({ onPick }: { onPick: (q: string) => void }) {
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
         style={{
           width: 76, height: 76, borderRadius: 18,
-          background: 'linear-gradient(135deg, #6366f1, #ec4899)',
+          background: 'linear-gradient(135deg, #7c3aed, #a78bfa)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 0 40px rgba(99,102,241,0.45)',
+          boxShadow: '0 0 40px rgba(124, 58, 237,0.45)',
         }}>
         <Sparkles size={32} color="#fff" />
       </motion.div>
@@ -594,9 +594,9 @@ function Hero({ onPick }: { onPick: (q: string) => void }) {
             whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
             style={{
               padding: '8px 14px', borderRadius: 100,
-              background: 'rgba(99,102,241,0.06)',
-              border: '1px solid rgba(99,102,241,0.2)',
-              color: '#a5b4fc', fontFamily: 'inherit', fontSize: 12, fontWeight: 600,
+              background: 'rgba(124, 58, 237,0.06)',
+              border: '1px solid rgba(124, 58, 237,0.2)',
+              color: '#c4b5fd', fontFamily: 'inherit', fontSize: 12, fontWeight: 600,
               cursor: 'pointer',
             }}>
             {s}
@@ -652,8 +652,8 @@ function VideoPlayer({ videoId, busy, topic }: {
         position: 'absolute', top: 12, left: 14, zIndex: 4,
         padding: '6px 12px', borderRadius: 7,
         background: 'rgba(13,13,13,0.85)', backdropFilter: 'blur(12px)',
-        border: '1px solid rgba(99,102,241,0.3)',
-        fontSize: 10.5, color: '#a5b4fc', fontWeight: 700,
+        border: '1px solid rgba(124, 58, 237,0.3)',
+        fontSize: 10.5, color: '#c4b5fd', fontWeight: 700,
         textTransform: 'uppercase', letterSpacing: 1.5,
         maxWidth: '70%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
         display: 'flex', alignItems: 'center', gap: 6,
@@ -668,7 +668,7 @@ function VideoPlayer({ videoId, busy, topic }: {
             transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
             style={{
               width: 52, height: 52, borderRadius: 13,
-              background: 'linear-gradient(135deg, #6366f1, #ec4899)',
+              background: 'linear-gradient(135deg, #7c3aed, #a78bfa)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
             <Loader2 size={22} color="#fff" style={{ animation: 'spin 0.8s linear infinite' }} />
@@ -703,8 +703,8 @@ function VideoPlayer({ videoId, busy, topic }: {
             position: 'absolute', bottom: 8, right: 12, zIndex: 4,
             padding: '3px 8px', borderRadius: 5,
             background: 'rgba(13,13,13,0.6)', backdropFilter: 'blur(8px)',
-            border: '1px solid rgba(99,102,241,0.25)',
-            fontSize: 9, color: '#a5b4fc', fontWeight: 700,
+            border: '1px solid rgba(124, 58, 237,0.25)',
+            fontSize: 9, color: '#c4b5fd', fontWeight: 700,
             textTransform: 'uppercase', letterSpacing: 1,
             pointerEvents: 'none',
           }}>
@@ -758,15 +758,15 @@ function Slideshow({ slides, busy, topic, questionType, err, compact = false }: 
         borderRadius: 18, overflow: 'hidden', position: 'relative',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         minHeight: 0,
-        boxShadow: '0 0 60px rgba(99,102,241,0.06) inset',
+        boxShadow: '0 0 60px rgba(124, 58, 237,0.06) inset',
       }}>
       {/* Topic label */}
       <div style={{
         position: 'absolute', top: 14, left: 14, zIndex: 4,
         padding: '6px 12px', borderRadius: 7,
         background: 'rgba(13,13,13,0.85)', backdropFilter: 'blur(12px)',
-        border: '1px solid rgba(99,102,241,0.3)',
-        fontSize: 10.5, color: '#a5b4fc', fontWeight: 700,
+        border: '1px solid rgba(124, 58, 237,0.3)',
+        fontSize: 10.5, color: '#c4b5fd', fontWeight: 700,
         textTransform: 'uppercase', letterSpacing: 1.5,
         maxWidth: '70%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
         display: 'flex', alignItems: 'center', gap: 6,
@@ -803,7 +803,7 @@ function Slideshow({ slides, busy, topic, questionType, err, compact = false }: 
       )}
 
       {!busy && err && slides.length === 0 && (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, padding: 24, textAlign: 'center', color: '#f87171', maxWidth: 360 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, padding: 24, textAlign: 'center', color: '#a78bfa', maxWidth: 360 }}>
           <ImageIcon size={28} />
           <div style={{ fontSize: 13, fontWeight: 600 }}>Couldn't load images</div>
           <div style={{ fontSize: 11, color: '#71717a' }}>{err}</div>
@@ -843,7 +843,7 @@ function Slideshow({ slides, busy, topic, questionType, err, compact = false }: 
               <div style={{ fontSize: 10, color: '#71717a', display: 'flex', alignItems: 'center', gap: 6 }}>
                 <span style={{
                   padding: '1px 6px', borderRadius: 3,
-                  background: 'rgba(99,102,241,0.15)', color: '#a5b4fc',
+                  background: 'rgba(124, 58, 237,0.15)', color: '#c4b5fd',
                   textTransform: 'uppercase', letterSpacing: 0.8, fontWeight: 700,
                 }}>{current.source}</span>
                 {current.attribution && <span style={{ pointerEvents: 'auto' }}>{current.attribution}</span>}
@@ -865,7 +865,7 @@ function Slideshow({ slides, busy, topic, questionType, err, compact = false }: 
               style={{
                 width: i === idx ? 24 : 8, height: 8, borderRadius: 4,
                 border: 'none', cursor: 'pointer',
-                background: i === idx ? '#a5b4fc' : '#3f3f46',
+                background: i === idx ? '#c4b5fd' : '#3f3f46',
                 transition: 'all 0.3s',
               }}
             />
@@ -900,9 +900,9 @@ function SlideshowSkeleton() {
         transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
         style={{
           width: 64, height: 64, borderRadius: 16,
-          background: 'linear-gradient(135deg, #6366f1, #ec4899)',
+          background: 'linear-gradient(135deg, #7c3aed, #a78bfa)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 0 32px rgba(99,102,241,0.4)',
+          boxShadow: '0 0 32px rgba(124, 58, 237,0.4)',
         }}>
         <Sparkles size={28} color="#fff" />
       </motion.div>
@@ -915,7 +915,7 @@ function SlideshowSkeleton() {
         <motion.div
           animate={{ x: ['-100%', '100%'] }}
           transition={{ duration: 1.4, repeat: Infinity, ease: 'easeInOut' }}
-          style={{ width: '40%', height: '100%', background: 'linear-gradient(90deg, transparent, #6366f1, transparent)' }}
+          style={{ width: '40%', height: '100%', background: 'linear-gradient(90deg, transparent, #7c3aed, transparent)' }}
         />
       </div>
     </div>
@@ -940,7 +940,7 @@ function ExplanationPanel({ resp, busy, error, retryHint, onOpenLab, onAskRelate
       display: 'flex', flexDirection: 'column', gap: 12,
     }}>
       <div style={{
-        fontSize: 10, color: '#a5b4fc', fontWeight: 700,
+        fontSize: 10, color: '#c4b5fd', fontWeight: 700,
         textTransform: 'uppercase', letterSpacing: 1.5,
         display: 'flex', alignItems: 'center', gap: 6,
       }}>
@@ -949,7 +949,7 @@ function ExplanationPanel({ resp, busy, error, retryHint, onOpenLab, onAskRelate
           <span style={{
             marginLeft: 'auto',
             padding: '2px 7px', borderRadius: 4,
-            background: 'rgba(251,191,36,0.10)', color: '#fbbf24',
+            background: 'rgba(196, 181, 253,0.10)', color: '#c4b5fd',
             fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.8,
           }}>Wikipedia mode</span>
         )}
@@ -957,7 +957,7 @@ function ExplanationPanel({ resp, busy, error, retryHint, onOpenLab, onAskRelate
           <span style={{
             marginLeft: 'auto',
             padding: '2px 7px', borderRadius: 4,
-            background: 'rgba(52,211,153,0.10)', color: '#34d399',
+            background: 'rgba(196, 181, 253,0.10)', color: '#c4b5fd',
             fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.8,
           }}>Cached</span>
         )}
@@ -969,11 +969,11 @@ function ExplanationPanel({ resp, busy, error, retryHint, onOpenLab, onAskRelate
       {error && (
         <div style={{
           padding: '14px 16px', borderRadius: 12,
-          background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.28)',
+          background: 'rgba(167, 139, 250,0.08)', border: '1px solid rgba(167, 139, 250,0.28)',
           display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap',
         }}>
           <div style={{ flex: 1, minWidth: 200 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: '#f87171', textTransform: 'uppercase', letterSpacing: 1.4, marginBottom: 4 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: '#a78bfa', textTransform: 'uppercase', letterSpacing: 1.4, marginBottom: 4 }}>
               ⚠ Couldn't fetch an answer
             </div>
             <div style={{ fontSize: 13, color: '#e4e4e7', lineHeight: 1.55 }}>
@@ -985,7 +985,7 @@ function ExplanationPanel({ resp, busy, error, retryHint, onOpenLab, onAskRelate
               onClick={() => ask(topic)}
               style={{
                 padding: '8px 14px', borderRadius: 9,
-                background: 'linear-gradient(135deg, #7c3aed 0%, #4f46e5 50%, #2563eb 100%)',
+                background: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 50%, #7c3aed 100%)',
                 color: '#fff', fontFamily: 'inherit', fontWeight: 700, fontSize: 12,
                 border: 'none', cursor: 'pointer', flexShrink: 0,
                 boxShadow: '0 6px 18px rgba(124,58,237,0.4)',
@@ -1013,10 +1013,10 @@ function ExplanationPanel({ resp, busy, error, retryHint, onOpenLab, onAskRelate
           {resp.formulas.length > 0 && (
             <div style={{
               padding: '12px 14px', borderRadius: 11,
-              background: 'rgba(99,102,241,0.05)', border: '1px solid rgba(99,102,241,0.2)',
+              background: 'rgba(124, 58, 237,0.05)', border: '1px solid rgba(124, 58, 237,0.2)',
             }}>
               <div style={{
-                fontSize: 10, color: '#a5b4fc', fontWeight: 700,
+                fontSize: 10, color: '#c4b5fd', fontWeight: 700,
                 textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 8,
                 display: 'flex', alignItems: 'center', gap: 6,
               }}>
@@ -1041,15 +1041,15 @@ function ExplanationPanel({ resp, busy, error, retryHint, onOpenLab, onAskRelate
               onClick={() => onOpenLab(resp.labRoute!)}
               style={{
                 width: '100%', padding: '12px 16px', borderRadius: 12,
-                background: 'linear-gradient(135deg, rgba(236,72,153,0.18), rgba(99,102,241,0.18))',
-                border: '1px solid rgba(236,72,153,0.4)',
+                background: 'linear-gradient(135deg, rgba(167, 139, 250,0.18), rgba(124, 58, 237,0.18))',
+                border: '1px solid rgba(167, 139, 250,0.4)',
                 color: '#fafafa', fontFamily: 'inherit', cursor: 'pointer', textAlign: 'left',
                 display: 'flex', alignItems: 'center', gap: 12,
-                boxShadow: '0 0 24px rgba(236,72,153,0.15)',
+                boxShadow: '0 0 24px rgba(167, 139, 250,0.15)',
               }}>
               <div style={{
                 width: 36, height: 36, borderRadius: 9, flexShrink: 0,
-                background: 'linear-gradient(135deg, #ec4899, #6366f1)',
+                background: 'linear-gradient(135deg, #a78bfa, #7c3aed)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
                 <Beaker size={16} color="#fff" />
@@ -1060,7 +1060,7 @@ function ExplanationPanel({ resp, busy, error, retryHint, onOpenLab, onAskRelate
                   Tweak parameters, watch it live in 3D
                 </div>
               </div>
-              <ExternalLink size={14} color="#a5b4fc" />
+              <ExternalLink size={14} color="#c4b5fd" />
             </motion.button>
           )}
 
@@ -1081,7 +1081,7 @@ function ExplanationPanel({ resp, busy, error, retryHint, onOpenLab, onAskRelate
                     style={{
                       padding: '6px 11px', borderRadius: 100,
                       background: '#161616', border: '1px solid #1e1e1e',
-                      color: '#a5b4fc', fontFamily: 'inherit', fontSize: 11.5, fontWeight: 600,
+                      color: '#c4b5fd', fontFamily: 'inherit', fontSize: 11.5, fontWeight: 600,
                       cursor: 'pointer',
                     }}>
                     {c}
@@ -1109,7 +1109,7 @@ function ExplanationSkeleton({ retryHint }: { retryHint?: string }) {
       <div style={{ height: 10 }} />
       <div style={{
         display: 'flex', alignItems: 'center', gap: 8,
-        color: retryHint ? '#fbbf24' : '#52525b',
+        color: retryHint ? '#c4b5fd' : '#52525b',
         fontSize: 11,
       }}>
         <Loader2 size={12} style={{ animation: 'spin 0.8s linear infinite' }} />
@@ -1132,7 +1132,7 @@ function iconForType(t?: string) {
 const MD_COMPONENTS = {
   p:  ({ children }: any) => <p style={{ margin: '0 0 10px', lineHeight: 1.75 }}>{children}</p>,
   h1: ({ children }: any) => <h1 style={{ fontSize: 17, fontWeight: 800, color: '#fafafa', margin: '12px 0 8px' }}>{children}</h1>,
-  h2: ({ children }: any) => <h2 style={{ fontSize: 14, fontWeight: 700, color: '#a5b4fc', margin: '14px 0 6px', textTransform: 'uppercase', letterSpacing: 1, display: 'flex', alignItems: 'center', gap: 6 }}>{children}</h2>,
+  h2: ({ children }: any) => <h2 style={{ fontSize: 14, fontWeight: 700, color: '#c4b5fd', margin: '14px 0 6px', textTransform: 'uppercase', letterSpacing: 1, display: 'flex', alignItems: 'center', gap: 6 }}>{children}</h2>,
   h3: ({ children }: any) => <h3 style={{ fontSize: 13, fontWeight: 700, color: '#fafafa', margin: '10px 0 4px' }}>{children}</h3>,
   strong: ({ children }: any) => <strong style={{ color: '#fafafa', fontWeight: 700 }}>{children}</strong>,
   em:     ({ children }: any) => <em style={{ color: '#c4b5fd' }}>{children}</em>,
@@ -1143,25 +1143,25 @@ const MD_COMPONENTS = {
     const isBlock = !!className
     return isBlock
       ? <pre style={{ background: '#0a0a0a', border: '1px solid #1e1e1e', borderRadius: 8, padding: '10px 12px', overflowX: 'auto', margin: '8px 0' }}>
-          <code style={{ fontSize: 12.5, color: '#86efac', fontFamily: 'monospace' }}>{children}</code>
+          <code style={{ fontSize: 12.5, color: '#c4b5fd', fontFamily: 'monospace' }}>{children}</code>
         </pre>
       : <code style={{ background: '#1a1a2e', padding: '2px 6px', borderRadius: 4, fontSize: 12.5, color: '#c4b5fd', fontFamily: 'monospace' }}>{children}</code>
   },
-  blockquote: ({ children }: any) => <blockquote style={{ borderLeft: '3px solid #6366f1', paddingLeft: 12, margin: '8px 0', color: '#a1a1aa', fontStyle: 'italic' }}>{children}</blockquote>,
+  blockquote: ({ children }: any) => <blockquote style={{ borderLeft: '3px solid #7c3aed', paddingLeft: 12, margin: '8px 0', color: '#a1a1aa', fontStyle: 'italic' }}>{children}</blockquote>,
 }
 
 // ─── Styles ───────────────────────────────────────────────────────────────
 const btnSend: React.CSSProperties = {
   padding: '9px 14px', borderRadius: 10,
-  background: 'linear-gradient(135deg, #6366f1, #7c3aed)',
+  background: 'linear-gradient(135deg, #7c3aed, #7c3aed)',
   color: '#fff', border: 'none', fontFamily: 'inherit', fontSize: 12, fontWeight: 700,
   display: 'flex', alignItems: 'center', gap: 6,
-  boxShadow: '0 0 16px rgba(99,102,241,0.35)',
+  boxShadow: '0 0 16px rgba(124, 58, 237,0.35)',
 }
 
 const btnStop: React.CSSProperties = {
   padding: '9px 14px', borderRadius: 10,
-  background: '#7f1d1d', color: '#fff', border: 'none',
+  background: '#3b0764', color: '#fff', border: 'none',
   fontFamily: 'inherit', fontSize: 12, fontWeight: 700, cursor: 'pointer',
   display: 'flex', alignItems: 'center', gap: 6,
 }
@@ -1170,6 +1170,6 @@ const arrowBtn: React.CSSProperties = {
   position: 'absolute', top: '50%', transform: 'translateY(-50%)',
   width: 34, height: 34, borderRadius: 9, zIndex: 4,
   background: 'rgba(13,13,13,0.85)', backdropFilter: 'blur(10px)',
-  border: '1px solid rgba(99,102,241,0.3)', cursor: 'pointer',
+  border: '1px solid rgba(124, 58, 237,0.3)', cursor: 'pointer',
   display: 'flex', alignItems: 'center', justifyContent: 'center',
 }

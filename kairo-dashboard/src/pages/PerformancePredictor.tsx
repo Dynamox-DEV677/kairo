@@ -158,7 +158,7 @@ Keep it under 200 words. No fluff.` },
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 22 }}>
         <div style={{
           width: 44, height: 44, borderRadius: 11,
-          background: 'linear-gradient(135deg, #38bdf8, #818cf8)',
+          background: 'linear-gradient(135deg, #38bdf8, #a78bfa)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           boxShadow: '0 0 18px rgba(56,189,248,0.35)', flexShrink: 0,
         }}>
@@ -181,7 +181,7 @@ Keep it under 200 words. No fluff.` },
       </div>
 
       {err && (
-        <div style={{ marginBottom: 16, padding: '10px 14px', background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.25)', borderRadius: 8, fontSize: 12, color: '#f87171' }}>
+        <div style={{ marginBottom: 16, padding: '10px 14px', background: 'rgba(167, 139, 250,0.08)', border: '1px solid rgba(167, 139, 250,0.25)', borderRadius: 8, fontSize: 12, color: '#a78bfa' }}>
           {err}
         </div>
       )}
@@ -207,18 +207,18 @@ Keep it under 200 words. No fluff.` },
             <div style={{
               position: 'absolute', top: -50, right: -50, width: 220, height: 220,
               borderRadius: '50%',
-              background: overall >= 75 ? 'rgba(52,211,153,0.18)' : overall >= 60 ? 'rgba(251,191,36,0.18)' : 'rgba(248,113,113,0.18)',
+              background: overall >= 75 ? 'rgba(196, 181, 253,0.18)' : overall >= 60 ? 'rgba(196, 181, 253,0.18)' : 'rgba(167, 139, 250,0.18)',
               filter: 'blur(60px)',
             }} />
             <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 24 }}>
               <div style={{
                 width: 110, height: 110, borderRadius: '50%',
-                background: '#0d0d0d', border: `3px solid ${overall >= 75 ? '#34d399' : overall >= 60 ? '#fbbf24' : '#f87171'}`,
+                background: '#0d0d0d', border: `3px solid ${overall >= 75 ? '#c4b5fd' : overall >= 60 ? '#c4b5fd' : '#a78bfa'}`,
                 display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
               }}>
                 <div style={{
                   fontSize: 30, fontWeight: 800, lineHeight: 1,
-                  color: overall >= 75 ? '#34d399' : overall >= 60 ? '#fbbf24' : '#f87171',
+                  color: overall >= 75 ? '#c4b5fd' : overall >= 60 ? '#c4b5fd' : '#a78bfa',
                 }}>{overall}%</div>
                 <div style={{ fontSize: 10, color: '#71717a', marginTop: 4, textTransform: 'uppercase', letterSpacing: 1 }}>predicted</div>
               </div>
@@ -233,8 +233,8 @@ Keep it under 200 words. No fluff.` },
                   <span>Current avg: <strong style={{ color: '#fafafa' }}>{overallCurrent}%</strong></span>
                   <span style={{
                     padding: '2px 8px', borderRadius: 4,
-                    background: overallDelta > 0 ? 'rgba(52,211,153,0.12)' : overallDelta < 0 ? 'rgba(248,113,113,0.12)' : 'rgba(115,115,115,0.12)',
-                    color: overallDelta > 0 ? '#34d399' : overallDelta < 0 ? '#f87171' : '#a1a1aa',
+                    background: overallDelta > 0 ? 'rgba(196, 181, 253,0.12)' : overallDelta < 0 ? 'rgba(167, 139, 250,0.12)' : 'rgba(115,115,115,0.12)',
+                    color: overallDelta > 0 ? '#c4b5fd' : overallDelta < 0 ? '#a78bfa' : '#a1a1aa',
                     fontWeight: 700,
                   }}>
                     {overallDelta > 0 ? '+' : ''}{overallDelta} projected change
@@ -247,7 +247,7 @@ Keep it under 200 words. No fluff.` },
           {/* AI Insight */}
           <div style={{ ...card, padding: 22, marginBottom: 16 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-              <Sparkles size={15} color="#a5b4fc" />
+              <Sparkles size={15} color="#c4b5fd" />
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: 13, fontWeight: 700, color: '#fafafa' }}>AI Coach Read</div>
                 <div style={{ fontSize: 11, color: '#52525b' }}>What to do this week — biggest opportunity, biggest risk, action plan</div>
@@ -255,7 +255,7 @@ Keep it under 200 words. No fluff.` },
               <button onClick={generateInsight} disabled={insightBusy}
                 style={{
                   padding: '8px 16px', borderRadius: 8, border: 'none',
-                  background: insightBusy ? '#1c1c1c' : 'linear-gradient(135deg,#6366f1,#7c3aed)',
+                  background: insightBusy ? '#1c1c1c' : 'linear-gradient(135deg,#7c3aed,#7c3aed)',
                   color: insightBusy ? '#52525b' : '#fff',
                   fontFamily: 'inherit', fontSize: 12, fontWeight: 600,
                   cursor: insightBusy ? 'not-allowed' : 'pointer',
@@ -289,8 +289,8 @@ Keep it under 200 words. No fluff.` },
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {predictions.map(p => {
                 const TrendIcon = p.trajectory === 'up' ? TrendingUp : p.trajectory === 'down' ? TrendingDown : Minus
-                const trendColor = p.trajectory === 'up' ? '#34d399' : p.trajectory === 'down' ? '#f87171' : '#a1a1aa'
-                const riskColor = p.risk === 'high' ? '#f87171' : p.risk === 'medium' ? '#fbbf24' : '#34d399'
+                const trendColor = p.trajectory === 'up' ? '#c4b5fd' : p.trajectory === 'down' ? '#a78bfa' : '#a1a1aa'
+                const riskColor = p.risk === 'high' ? '#a78bfa' : p.risk === 'medium' ? '#c4b5fd' : '#c4b5fd'
                 return (
                   <div key={p.subject} style={{
                     padding: 14, borderRadius: 10, background: '#0d0d0d',
@@ -321,7 +321,7 @@ Keep it under 200 words. No fluff.` },
                         <span>·</span>
                         <span>Predicted <strong style={{ color: riskColor }}>{p.predicted}%</strong></span>
                         {p.weak_count > 0 && (
-                          <span style={{ marginLeft: 'auto', color: '#fbbf24' }}>{p.weak_count} weak topic{p.weak_count === 1 ? '' : 's'}</span>
+                          <span style={{ marginLeft: 'auto', color: '#c4b5fd' }}>{p.weak_count} weak topic{p.weak_count === 1 ? '' : 's'}</span>
                         )}
                       </div>
                     </div>

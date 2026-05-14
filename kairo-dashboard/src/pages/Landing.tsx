@@ -168,7 +168,7 @@ function AtmosphereLayer() {
       <div style={{
         position: 'absolute', top: '120%', left: '40%',
         width: 500, height: 500, borderRadius: '50%',
-        background: 'radial-gradient(circle, rgba(34,211,238,0.10) 0%, transparent 70%)',
+        background: 'radial-gradient(circle, rgba(196, 181, 253,0.10) 0%, transparent 70%)',
         filter: 'blur(40px)',
         animation: 'kr-float 16s ease-in-out -6s infinite',
       }}/>
@@ -387,8 +387,8 @@ function GlobalKeyframes() {
       @keyframes kr-drift  { 0% { transform: translate3d(0,0,0); } 100% { transform: translate3d(40px, -120px, 0); } }
       @keyframes kr-shimmer { 0% { background-position: -200% 0 } 100% { background-position: 200% 0 } }
       @keyframes kr-badge-pulse {
-        0%, 100% { filter: drop-shadow(0 0 14px rgba(192,132,252,0.45)) drop-shadow(0 0 28px rgba(236,72,153,0.20)); }
-        50%      { filter: drop-shadow(0 0 28px rgba(192,132,252,0.85)) drop-shadow(0 0 48px rgba(236,72,153,0.45)); }
+        0%, 100% { filter: drop-shadow(0 0 14px rgba(192,132,252,0.45)) drop-shadow(0 0 28px rgba(167, 139, 250,0.20)); }
+        50%      { filter: drop-shadow(0 0 28px rgba(192,132,252,0.85)) drop-shadow(0 0 48px rgba(167, 139, 250,0.45)); }
       }
       .kr-grad-text {
         background: ${GRAD.text};
@@ -973,7 +973,7 @@ function AuroraLayer() {
       background:
         `radial-gradient(at 14% 18%, rgba(124,58,237,0.28) 0%, transparent 38%),
          radial-gradient(at 86% 30%, rgba(37,99,235,0.22) 0%, transparent 42%),
-         radial-gradient(at 50% 100%, rgba(34,211,238,0.16) 0%, transparent 50%)`,
+         radial-gradient(at 50% 100%, rgba(196, 181, 253,0.16) 0%, transparent 50%)`,
     }} />
   )
 }
@@ -990,7 +990,7 @@ function LightRays() {
           position: 'absolute',
           top: '-20%', left: `${20 + i * 22}%`,
           width: 2, height: '140%',
-          background: `linear-gradient(180deg, transparent 0%, rgba(196,181,253,${0.25 - i * 0.05}) 30%, rgba(96,165,250,${0.15 - i * 0.03}) 60%, transparent 100%)`,
+          background: `linear-gradient(180deg, transparent 0%, rgba(196,181,253,${0.25 - i * 0.05}) 30%, rgba(196, 181, 253,${0.15 - i * 0.03}) 60%, transparent 100%)`,
           transform: `rotate(${12 + i * 2}deg)`,
           filter: 'blur(2px)',
           animation: `kr-glow ${6 + i}s ease-in-out -${i}s infinite`,

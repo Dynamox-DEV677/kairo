@@ -8,10 +8,10 @@ const SCHOOL_ID = 'demo_school'
 const card  = { background: '#111', border: '1px solid #1e1e1e', borderRadius: 14, padding: 20 } as React.CSSProperties
 const inp   = { background: '#0d0d0d', border: '1px solid #1e1e1e', borderRadius: 8, padding: '9px 12px', fontSize: 13, color: '#fafafa', fontFamily: 'inherit', outline: 'none', width: '100%' } as React.CSSProperties
 const lbl   = { fontSize: 11, color: '#71717a', display: 'block', marginBottom: 5, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.8 } as React.CSSProperties
-const btn   = (active = true) => ({ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', borderRadius: 9, border: 'none', background: active ? 'linear-gradient(135deg,#6366f1,#7c3aed)' : '#1c1c1c', color: active ? '#fff' : '#52525b', fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: active ? 'pointer' : 'not-allowed' } as React.CSSProperties)
+const btn   = (active = true) => ({ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', borderRadius: 9, border: 'none', background: active ? 'linear-gradient(135deg,#7c3aed,#7c3aed)' : '#1c1c1c', color: active ? '#fff' : '#52525b', fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: active ? 'pointer' : 'not-allowed' } as React.CSSProperties)
 
 const TYPES = ['general','exam','holiday','event','fee','result','emergency']
-const TYPE_COLORS: Record<string, string> = { general: '#818cf8', exam: '#fbbf24', holiday: '#34d399', event: '#38bdf8', fee: '#fb923c', result: '#a78bfa', emergency: '#f87171' }
+const TYPE_COLORS: Record<string, string> = { general: '#a78bfa', exam: '#c4b5fd', holiday: '#c4b5fd', event: '#38bdf8', fee: '#c4b5fd', result: '#a78bfa', emergency: '#a78bfa' }
 
 export default function Announcement() {
   const [announcements, setAnnouncements] = useState<any[]>([])
@@ -81,7 +81,7 @@ export default function Announcement() {
                 <input style={{ ...inp, marginBottom: 8 }} value={form.topic} onChange={e => setForm(f => ({ ...f, topic: e.target.value }))} placeholder="e.g. Annual Day on Dec 15th" />
                 <label style={lbl}>Additional Details</label>
                 <textarea style={{ ...inp, height: 70, resize: 'none', marginBottom: 8 }} value={form.details} onChange={e => setForm(f => ({ ...f, details: e.target.value }))} placeholder="Date, venue, action needed…" />
-                {err && <p style={{ color: '#f87171', fontSize: 11, marginBottom: 8 }}>{err}</p>}
+                {err && <p style={{ color: '#a78bfa', fontSize: 11, marginBottom: 8 }}>{err}</p>}
                 <button onClick={generate} disabled={generating} style={{ ...btn(!generating), width: '100%', justifyContent: 'center', padding: '7px' }}>
                   {generating ? 'Generating…' : 'Generate'}
                 </button>
@@ -97,13 +97,13 @@ export default function Announcement() {
             <div key={a.id || a._id} onClick={() => setSelected(a)}
               style={{ padding: '10px', borderRadius: 8, marginBottom: 4, cursor: 'pointer',
                 background: selected?.id === a.id || selected?._id === a._id ? '#1e1e2e' : 'transparent',
-                border: `1px solid ${selected?.id === a.id || selected?._id === a._id ? '#6366f130' : 'transparent'}` }}>
+                border: `1px solid ${selected?.id === a.id || selected?._id === a._id ? '#7c3aed30' : 'transparent'}` }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
-                <div style={{ width: 7, height: 7, borderRadius: '50%', background: TYPE_COLORS[a.type] || '#818cf8', flexShrink: 0 }} />
+                <div style={{ width: 7, height: 7, borderRadius: '50%', background: TYPE_COLORS[a.type] || '#a78bfa', flexShrink: 0 }} />
                 <div style={{ fontSize: 12, fontWeight: 600, color: '#e4e4e7', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.title || a.topic}</div>
                 <button onClick={e => { e.stopPropagation(); remove(a.id || a._id) }}
                   style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#3f3f46' }}
-                  onMouseEnter={e => (e.currentTarget.style.color = '#f87171')}
+                  onMouseEnter={e => (e.currentTarget.style.color = '#a78bfa')}
                   onMouseLeave={e => (e.currentTarget.style.color = '#3f3f46')}>
                   <Trash2 size={10} />
                 </button>
@@ -131,7 +131,7 @@ function CopyBtn({ text }: { text: string }) {
   const [copied, setCopied] = useState(false)
   return (
     <button onClick={() => { navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 2000) }}
-      style={{ background: 'none', border: 'none', cursor: 'pointer', color: copied ? '#34d399' : '#52525b', display: 'flex', alignItems: 'center', gap: 4, fontSize: 11 }}>
+      style={{ background: 'none', border: 'none', cursor: 'pointer', color: copied ? '#c4b5fd' : '#52525b', display: 'flex', alignItems: 'center', gap: 4, fontSize: 11 }}>
       {copied ? <><Check size={11} /> Copied</> : <><Copy size={11} /> Copy</>}
     </button>
   )
@@ -141,7 +141,7 @@ function AnnouncementViewer({ a }: { a: any }) {
   return (
     <motion.div key={a.id || a._id} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
-        <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 5, background: `${TYPE_COLORS[a.type]}20`, color: TYPE_COLORS[a.type] || '#818cf8' }}>
+        <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 5, background: `${TYPE_COLORS[a.type]}20`, color: TYPE_COLORS[a.type] || '#a78bfa' }}>
           {a.type?.toUpperCase()}
         </span>
         <span style={{ fontSize: 11, color: '#52525b' }}>{a.audience} · {a.tone}</span>
@@ -156,12 +156,12 @@ function AnnouncementViewer({ a }: { a: any }) {
         <div style={{ fontSize: 13, color: '#a1a1aa', lineHeight: 1.9, whiteSpace: 'pre-wrap' }}>{a.body}</div>
         {a.key_dates?.length > 0 && (
           <div style={{ marginTop: 12, padding: '10px 12px', background: '#0d0d0d', borderRadius: 8 }}>
-            {a.key_dates.map((d: string, i: number) => <div key={i} style={{ fontSize: 11, color: '#fbbf24', marginBottom: 2 }}>📅 {d}</div>)}
+            {a.key_dates.map((d: string, i: number) => <div key={i} style={{ fontSize: 11, color: '#c4b5fd', marginBottom: 2 }}>📅 {d}</div>)}
           </div>
         )}
         {a.action_required && (
-          <div style={{ marginTop: 10, padding: '8px 12px', background: '#f8717115', borderRadius: 8, border: '1px solid #f8717130' }}>
-            <div style={{ fontSize: 11, color: '#f87171' }}>⚠ Action Required: {a.action_required}</div>
+          <div style={{ marginTop: 10, padding: '8px 12px', background: '#a78bfa15', borderRadius: 8, border: '1px solid #a78bfa30' }}>
+            <div style={{ fontSize: 11, color: '#a78bfa' }}>⚠ Action Required: {a.action_required}</div>
           </div>
         )}
       </div>
@@ -171,7 +171,7 @@ function AnnouncementViewer({ a }: { a: any }) {
         {a.whatsapp_message && (
           <div style={{ background: '#111', border: '1px solid #1e1e1e', borderRadius: 14, padding: 16 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 700, color: '#34d399' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 700, color: '#c4b5fd' }}>
                 <MessageCircle size={13} /> WhatsApp Version
               </div>
               <CopyBtn text={a.whatsapp_message} />

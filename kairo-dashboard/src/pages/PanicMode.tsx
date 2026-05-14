@@ -214,9 +214,9 @@ Be direct. Indian exam context. Under 200 words total.` },
           transition={{ duration: 1.4, repeat: Infinity, ease: 'easeInOut' }}
           style={{
             width: 44, height: 44, borderRadius: 11,
-            background: 'linear-gradient(135deg, #f87171, #ef4444)',
+            background: 'linear-gradient(135deg, #a78bfa, #7c3aed)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: '0 0 22px rgba(239,68,68,0.5)', flexShrink: 0,
+            boxShadow: '0 0 22px rgba(124, 58, 237,0.5)', flexShrink: 0,
           }}>
           <AlertTriangle size={22} color="#fff" />
         </motion.div>
@@ -261,8 +261,8 @@ Be direct. Indian exam context. Under 200 words total.` },
           {weakTopics.length > 0 && (
             <div style={{ marginBottom: 16 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-                <Sparkles size={11} color="#a5b4fc" />
-                <span style={{ fontSize: 11, color: '#a5b4fc', fontWeight: 600 }}>
+                <Sparkles size={11} color="#c4b5fd" />
+                <span style={{ fontSize: 11, color: '#c4b5fd', fontWeight: 600 }}>
                   AI will weight these weak topics heavier:
                 </span>
               </div>
@@ -270,27 +270,27 @@ Be direct. Indian exam context. Under 200 words total.` },
                 {weakTopics.map((t, i) => (
                   <span key={i} style={{
                     padding: '4px 9px', borderRadius: 5,
-                    background: 'rgba(99,102,241,0.10)', border: '1px solid rgba(99,102,241,0.25)',
-                    color: '#a5b4fc', fontSize: 10.5, fontWeight: 600,
+                    background: 'rgba(124, 58, 237,0.10)', border: '1px solid rgba(124, 58, 237,0.25)',
+                    color: '#c4b5fd', fontSize: 10.5, fontWeight: 600,
                   }}>{t}</span>
                 ))}
               </div>
             </div>
           )}
 
-          {err && <p style={{ fontSize: 12, color: '#f87171', marginBottom: 12 }}>{err}</p>}
+          {err && <p style={{ fontSize: 12, color: '#a78bfa', marginBottom: 12 }}>{err}</p>}
 
           <motion.button
             whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
             onClick={generate} disabled={busy}
             style={{
               width: '100%', padding: '14px', borderRadius: 11, border: 'none',
-              background: busy ? '#1c1c1c' : 'linear-gradient(135deg, #f87171, #ef4444)',
+              background: busy ? '#1c1c1c' : 'linear-gradient(135deg, #a78bfa, #7c3aed)',
               color: busy ? '#52525b' : '#fff',
               fontFamily: 'inherit', fontSize: 15, fontWeight: 800,
               cursor: busy ? 'not-allowed' : 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-              boxShadow: busy ? 'none' : '0 0 26px rgba(239,68,68,0.4)',
+              boxShadow: busy ? 'none' : '0 0 26px rgba(124, 58, 237,0.4)',
               letterSpacing: 1.5, textTransform: 'uppercase',
             }}>
             {busy
@@ -344,10 +344,10 @@ Be direct. Indian exam context. Under 200 words total.` },
                     borderRadius: 7, border: 'none', fontFamily: 'inherit',
                     fontSize: 12, fontWeight: 600, cursor: 'pointer', flexShrink: 0,
                     background: isActive ? '#1e1e2e' : 'transparent',
-                    color: isActive ? '#f87171' : '#52525b',
+                    color: isActive ? '#a78bfa' : '#52525b',
                   }}>
                   <Icon size={12} /> {t.label}
-                  {isSaved && <span style={{ fontSize: 9, color: '#34d399' }}>✓</span>}
+                  {isSaved && <span style={{ fontSize: 9, color: '#c4b5fd' }}>✓</span>}
                 </button>
               )
             })}
@@ -362,9 +362,9 @@ Be direct. Indian exam context. Under 200 words total.` },
               <button onClick={() => saveTab(activeTab as keyof PanicPack)}
                 disabled={savedTabs.has(activeTab)} style={{
                 padding: '6px 12px', borderRadius: 6,
-                border: `1px solid ${savedTabs.has(activeTab) ? 'rgba(52,211,153,0.4)' : 'rgba(99,102,241,0.3)'}`,
-                background: savedTabs.has(activeTab) ? 'rgba(52,211,153,0.08)' : 'rgba(99,102,241,0.08)',
-                color: savedTabs.has(activeTab) ? '#34d399' : '#a5b4fc',
+                border: `1px solid ${savedTabs.has(activeTab) ? 'rgba(196, 181, 253,0.4)' : 'rgba(124, 58, 237,0.3)'}`,
+                background: savedTabs.has(activeTab) ? 'rgba(196, 181, 253,0.08)' : 'rgba(124, 58, 237,0.08)',
+                color: savedTabs.has(activeTab) ? '#c4b5fd' : '#c4b5fd',
                 cursor: savedTabs.has(activeTab) ? 'default' : 'pointer',
                 fontFamily: 'inherit', fontSize: 11, fontWeight: 600,
                 display: 'flex', alignItems: 'center', gap: 5,

@@ -150,9 +150,9 @@ Now teach me how to never make this mistake again, following your structure exac
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 22 }}>
         <div style={{
           width: 44, height: 44, borderRadius: 11,
-          background: 'linear-gradient(135deg, #f87171, #fb923c)',
+          background: 'linear-gradient(135deg, #a78bfa, #c4b5fd)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 0 18px rgba(248,113,113,0.35)', flexShrink: 0,
+          boxShadow: '0 0 18px rgba(167, 139, 250,0.35)', flexShrink: 0,
         }}>
           <AlertTriangle size={22} color="#fff" />
         </div>
@@ -196,7 +196,7 @@ Now teach me how to never make this mistake again, following your structure exac
               style={{ ...inp, resize: 'vertical', lineHeight: 1.6 }} />
           </div>
 
-          {err && <p style={{ fontSize: 12, color: '#f87171', marginBottom: 12 }}>{err}</p>}
+          {err && <p style={{ fontSize: 12, color: '#a78bfa', marginBottom: 12 }}>{err}</p>}
 
           <motion.button
             whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
@@ -205,12 +205,12 @@ Now teach me how to never make this mistake again, following your structure exac
               width: '100%', padding: '12px', borderRadius: 10, border: 'none',
               background: busy || !question.trim() || !myAnswer.trim()
                 ? '#1c1c1c'
-                : 'linear-gradient(135deg, #f87171, #fb923c)',
+                : 'linear-gradient(135deg, #a78bfa, #c4b5fd)',
               color: busy || !question.trim() || !myAnswer.trim() ? '#52525b' : '#fff',
               fontFamily: 'inherit', fontSize: 14, fontWeight: 700,
               cursor: busy || !question.trim() || !myAnswer.trim() ? 'not-allowed' : 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-              boxShadow: busy || !question.trim() ? 'none' : '0 0 22px rgba(248,113,113,0.35)',
+              boxShadow: busy || !question.trim() ? 'none' : '0 0 22px rgba(167, 139, 250,0.35)',
             }}>
             <Brain size={14} />{busy ? 'Analyzing your mistake…' : 'Explain'}
           </motion.button>
@@ -224,7 +224,7 @@ Now teach me how to never make this mistake again, following your structure exac
               {busy && (
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, padding: '40px 0' }}>
                   <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                    style={{ width: 28, height: 28, borderRadius: '50%', border: '3px solid #1e1e2e', borderTopColor: '#fb923c' }} />
+                    style={{ width: 28, height: 28, borderRadius: '50%', border: '3px solid #1e1e2e', borderTopColor: '#c4b5fd' }} />
                   <p style={{ fontSize: 13, color: '#71717a' }}>Tracing where you went wrong…</p>
                 </div>
               )}
@@ -232,8 +232,8 @@ Now teach me how to never make this mistake again, following your structure exac
               {result && (
                 <>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-                    <Lightbulb size={14} color="#fbbf24" />
-                    <span style={{ fontSize: 11, fontWeight: 700, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 1.5 }}>
+                    <Lightbulb size={14} color="#c4b5fd" />
+                    <span style={{ fontSize: 11, fontWeight: 700, color: '#c4b5fd', textTransform: 'uppercase', letterSpacing: 1.5 }}>
                       Tutor explanation
                     </span>
                     <span style={{ marginLeft: 'auto', fontSize: 10, color: '#52525b' }}>
@@ -250,9 +250,9 @@ Now teach me how to never make this mistake again, following your structure exac
                   <div style={{ display: 'flex', gap: 8, marginTop: 18, paddingTop: 16, borderTop: '1px solid #1a1a1a' }}>
                     <button onClick={saveToBook} disabled={savedToBook} style={{
                       padding: '8px 14px', borderRadius: 8,
-                      border: `1px solid ${savedToBook ? 'rgba(52,211,153,0.4)' : 'rgba(99,102,241,0.3)'}`,
-                      background: savedToBook ? 'rgba(52,211,153,0.08)' : 'rgba(99,102,241,0.08)',
-                      color: savedToBook ? '#34d399' : '#a5b4fc',
+                      border: `1px solid ${savedToBook ? 'rgba(196, 181, 253,0.4)' : 'rgba(124, 58, 237,0.3)'}`,
+                      background: savedToBook ? 'rgba(196, 181, 253,0.08)' : 'rgba(124, 58, 237,0.08)',
+                      color: savedToBook ? '#c4b5fd' : '#c4b5fd',
                       cursor: savedToBook ? 'default' : 'pointer',
                       fontFamily: 'inherit', fontSize: 12, fontWeight: 600,
                       display: 'flex', alignItems: 'center', gap: 6,

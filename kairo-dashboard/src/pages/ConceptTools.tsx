@@ -14,7 +14,7 @@ const TABS = [
 const card  = { background: '#111', border: '1px solid #1e1e1e', borderRadius: 14, padding: 20 } as React.CSSProperties
 const inp   = { background: '#0d0d0d', border: '1px solid #1e1e1e', borderRadius: 8, padding: '9px 12px', fontSize: 13, color: '#fafafa', fontFamily: 'inherit', outline: 'none', width: '100%' } as React.CSSProperties
 const lbl   = { fontSize: 11, color: '#71717a', display: 'block', marginBottom: 5, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.8 } as React.CSSProperties
-const btn   = (active = true, color?: string) => ({ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', borderRadius: 9, border: 'none', background: active ? (color || 'linear-gradient(135deg,#6366f1,#7c3aed)') : '#1c1c1c', color: active ? '#fff' : '#52525b', fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: active ? 'pointer' : 'not-allowed' } as React.CSSProperties)
+const btn   = (active = true, color?: string) => ({ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', borderRadius: 9, border: 'none', background: active ? (color || 'linear-gradient(135deg,#7c3aed,#7c3aed)') : '#1c1c1c', color: active ? '#fff' : '#52525b', fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: active ? 'pointer' : 'not-allowed' } as React.CSSProperties)
 
 const SUBJECTS = ['General','Physics','Chemistry','Biology','Mathematics','History','Geography','English','Hindi','Economics']
 
@@ -35,7 +35,7 @@ export default function ConceptTools() {
             padding: '7px 8px', borderRadius: 7, border: 'none', fontFamily: 'inherit',
             fontSize: 12, fontWeight: tab === t.id ? 600 : 400, cursor: 'pointer',
             background: tab === t.id ? '#1e1e2e' : 'transparent',
-            color: tab === t.id ? '#818cf8' : '#52525b', transition: 'all 0.15s',
+            color: tab === t.id ? '#a78bfa' : '#52525b', transition: 'all 0.15s',
           }}>
             <t.icon size={12} /> {t.label}
           </button>
@@ -96,9 +96,9 @@ function SimplifyTab() {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6 }}>
               {[['class5','Class 5'],['class8','Class 8'],['class12','Class 12']].map(([v, l]) => (
                 <button key={v} onClick={() => setLevel(v)} style={{
-                  padding: '7px', borderRadius: 7, border: `1px solid ${level === v ? '#6366f1' : '#1e1e1e'}`,
-                  background: level === v ? '#6366f110' : 'transparent',
-                  color: level === v ? '#818cf8' : '#71717a', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+                  padding: '7px', borderRadius: 7, border: `1px solid ${level === v ? '#7c3aed' : '#1e1e1e'}`,
+                  background: level === v ? '#7c3aed10' : 'transparent',
+                  color: level === v ? '#a78bfa' : '#71717a', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
                 }}>{l}</button>
               ))}
             </div>
@@ -107,7 +107,7 @@ function SimplifyTab() {
             <label style={lbl}>Concept</label>
             <input style={inp} value={concept} onChange={e => setConcept(e.target.value)} placeholder="e.g. Photosynthesis, Newton's Second Law…" />
           </div>
-          {err && <p style={{ color: '#f87171', fontSize: 12, marginBottom: 8 }}>{err}</p>}
+          {err && <p style={{ color: '#a78bfa', fontSize: 12, marginBottom: 8 }}>{err}</p>}
           <button onClick={simplify} disabled={loading} style={{ ...btn(!loading), width: '100%', justifyContent: 'center' }}>
             <Lightbulb size={13} /> {loading ? 'Simplifying…' : 'Simplify'}
           </button>
@@ -117,7 +117,7 @@ function SimplifyTab() {
             <input style={{ ...inp, marginBottom: 8 }} value={question} onChange={e => setQuestion(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && askDoubt()}
               placeholder="What is the difference between…?" />
-            <button onClick={askDoubt} disabled={loading || !question.trim()} style={{ ...btn(!loading && !!question.trim(), 'linear-gradient(135deg,#0ea5e9,#0284c7)'), width: '100%', justifyContent: 'center' }}>
+            <button onClick={askDoubt} disabled={loading || !question.trim()} style={{ ...btn(!loading && !!question.trim(), 'linear-gradient(135deg,#a78bfa,#0284c7)'), width: '100%', justifyContent: 'center' }}>
               <HelpCircle size={13} /> Ask Doubt
             </button>
           </div>
@@ -127,7 +127,7 @@ function SimplifyTab() {
       <div>
         {result?.explanation && (
           <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} style={card}>
-            <div style={{ fontSize: 12, fontWeight: 700, color: '#34d399', marginBottom: 10, textTransform: 'uppercase', letterSpacing: 0.8 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: '#c4b5fd', marginBottom: 10, textTransform: 'uppercase', letterSpacing: 0.8 }}>
               Explanation
             </div>
             <div style={{ fontSize: 14, color: '#e4e4e7', lineHeight: 1.9, whiteSpace: 'pre-wrap' }}>{result.explanation}</div>
@@ -166,7 +166,7 @@ function MindmapTab() {
   }
 
   function renderNode(node: any, depth = 0): JSX.Element {
-    const colors = ['#818cf8','#34d399','#fbbf24','#f472b6','#38bdf8','#fb923c']
+    const colors = ['#a78bfa','#c4b5fd','#c4b5fd','#c4b5fd','#38bdf8','#c4b5fd']
     const color = colors[depth % colors.length]
     return (
       <div key={node.id} style={{ marginLeft: depth * 20 }}>
@@ -201,7 +201,7 @@ function MindmapTab() {
             <GitBranch size={13} /> {loading ? 'Generating…' : 'Create Mindmap'}
           </button>
         </div>
-        {err && <p style={{ color: '#f87171', fontSize: 12, marginTop: 10, marginBottom: 0 }}>{err}</p>}
+        {err && <p style={{ color: '#a78bfa', fontSize: 12, marginTop: 10, marginBottom: 0 }}>{err}</p>}
       </div>
 
       {loading && <div style={{ textAlign: 'center', padding: 40, color: '#52525b' }}>Generating mindmap…</div>}
@@ -221,7 +221,7 @@ function MindmapTab() {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
               {mindmap.key_formulas?.length > 0 && (
                 <div style={card}>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: '#818cf8', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>Key Formulas</div>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: '#a78bfa', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>Key Formulas</div>
                   {mindmap.key_formulas.map((f: string, i: number) => (
                     <div key={i} style={{ fontSize: 12, color: '#e4e4e7', padding: '4px 0', borderBottom: '1px solid #1e1e1e' }}>{f}</div>
                   ))}
@@ -229,10 +229,10 @@ function MindmapTab() {
               )}
               {mindmap.important_terms?.length > 0 && (
                 <div style={card}>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: '#34d399', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>Important Terms</div>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: '#c4b5fd', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>Important Terms</div>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                     {mindmap.important_terms.map((t: string, i: number) => (
-                      <span key={i} style={{ fontSize: 11, padding: '3px 8px', borderRadius: 5, background: '#34d39910', color: '#34d399', border: '1px solid #34d39930' }}>{t}</span>
+                      <span key={i} style={{ fontSize: 11, padding: '3px 8px', borderRadius: 5, background: '#c4b5fd10', color: '#c4b5fd', border: '1px solid #c4b5fd30' }}>{t}</span>
                     ))}
                   </div>
                 </div>
@@ -241,9 +241,9 @@ function MindmapTab() {
           )}
 
           {mindmap.exam_tips && (
-            <div style={{ ...card, marginTop: 12, borderColor: '#fbbf2430', background: '#1a1500' }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>Exam Tips</div>
-              <p style={{ fontSize: 13, color: '#fcd34d', margin: 0 }}>{mindmap.exam_tips}</p>
+            <div style={{ ...card, marginTop: 12, borderColor: '#c4b5fd30', background: '#1a1500' }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: '#c4b5fd', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>Exam Tips</div>
+              <p style={{ fontSize: 13, color: '#e9d5ff', margin: 0 }}>{mindmap.exam_tips}</p>
             </div>
           )}
         </motion.div>

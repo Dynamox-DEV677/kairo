@@ -6,7 +6,7 @@ type Mode = 'focus' | 'short' | 'long'
 
 const DURATIONS: Record<Mode, number> = { focus: 25 * 60, short: 5 * 60, long: 15 * 60 }
 const MODE_LABELS: Record<Mode, string> = { focus: 'Focus Time', short: 'Short Break', long: 'Long Break' }
-const MODE_COLORS: Record<Mode, string> = { focus: '#6366f1', short: '#34d399', long: '#38bdf8' }
+const MODE_COLORS: Record<Mode, string> = { focus: '#7c3aed', short: '#c4b5fd', long: '#38bdf8' }
 
 const TASKS_PRESET = ['Study Chapter', 'Solve Problems', 'Revise Notes', 'Practice Questions', 'Read Textbook']
 
@@ -142,11 +142,11 @@ export default function Pomodoro() {
 
           <div style={{ display: 'flex', gap: 16, marginTop: 16, width: '100%' }}>
             <div style={{ flex: 1, textAlign: 'center', padding: '8px', background: '#0d0d0d', borderRadius: 8 }}>
-              <div style={{ fontSize: 20, fontWeight: 700, color: '#818cf8' }}>{sessions}</div>
+              <div style={{ fontSize: 20, fontWeight: 700, color: '#a78bfa' }}>{sessions}</div>
               <div style={{ fontSize: 10, color: '#52525b' }}>Sessions</div>
             </div>
             <div style={{ flex: 1, textAlign: 'center', padding: '8px', background: '#0d0d0d', borderRadius: 8 }}>
-              <div style={{ fontSize: 20, fontWeight: 700, color: '#34d399' }}>{Math.floor(sessions * 25 / 60)}h {(sessions * 25) % 60}m</div>
+              <div style={{ fontSize: 20, fontWeight: 700, color: '#c4b5fd' }}>{Math.floor(sessions * 25 / 60)}h {(sessions * 25) % 60}m</div>
               <div style={{ fontSize: 10, color: '#52525b' }}>Focused</div>
             </div>
           </div>
@@ -156,7 +156,7 @@ export default function Pomodoro() {
         <div>
           {/* Tips */}
           <div style={{ background: '#111', border: '1px solid #1e1e1e', borderRadius: 14, padding: 20, marginBottom: 14 }}>
-            <div style={{ fontSize: 12, fontWeight: 700, color: mode === 'focus' ? '#818cf8' : '#34d399', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: mode === 'focus' ? '#a78bfa' : '#c4b5fd', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 }}>
               {mode === 'focus' ? '🧠 Focus Tips' : '☕ Break Tips'}
             </div>
             {mode === 'focus' ? [

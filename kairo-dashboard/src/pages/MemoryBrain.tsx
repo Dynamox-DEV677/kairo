@@ -89,9 +89,9 @@ export default function MemoryBrain() {
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 24 }}>
         <div style={{
           width: 44, height: 44, borderRadius: 11,
-          background: 'linear-gradient(135deg, #6366f1, #7c3aed)',
+          background: 'linear-gradient(135deg, #7c3aed, #7c3aed)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 0 20px rgba(99,102,241,0.4)', flexShrink: 0,
+          boxShadow: '0 0 20px rgba(124, 58, 237,0.4)', flexShrink: 0,
         }}>
           <Brain size={22} color="#fff" />
         </div>
@@ -115,7 +115,7 @@ export default function MemoryBrain() {
       </div>
 
       {err && (
-        <div style={{ marginBottom: 16, padding: '10px 14px', background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.25)', borderRadius: 8, fontSize: 12, color: '#f87171' }}>
+        <div style={{ marginBottom: 16, padding: '10px 14px', background: 'rgba(167, 139, 250,0.08)', border: '1px solid rgba(167, 139, 250,0.25)', borderRadius: 8, fontSize: 12, color: '#a78bfa' }}>
           {err}
         </div>
       )}
@@ -128,10 +128,10 @@ export default function MemoryBrain() {
         <>
           {/* Top stat row */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 22 }}>
-            <Stat icon={Brain}          label="Memories"        value={data.total} color="#6366f1" />
-            <Stat icon={AlertTriangle}  label="Weak Areas"      value={data.weak.length} color="#fbbf24" />
-            <Stat icon={Target}         label="Mistakes Logged" value={data.mistakes.length} color="#f87171" />
-            <Stat icon={Award}          label="Strong Areas"    value={data.strong.length} color="#34d399" />
+            <Stat icon={Brain}          label="Memories"        value={data.total} color="#7c3aed" />
+            <Stat icon={AlertTriangle}  label="Weak Areas"      value={data.weak.length} color="#c4b5fd" />
+            <Stat icon={Target}         label="Mistakes Logged" value={data.mistakes.length} color="#a78bfa" />
+            <Stat icon={Award}          label="Strong Areas"    value={data.strong.length} color="#c4b5fd" />
           </div>
 
           {/* Empty state */}
@@ -139,10 +139,10 @@ export default function MemoryBrain() {
             <div style={{ ...card, padding: '60px 32px', textAlign: 'center' }}>
               <div style={{
                 width: 64, height: 64, borderRadius: 18, margin: '0 auto 18px',
-                background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.3)',
+                background: 'rgba(124, 58, 237,0.1)', border: '1px solid rgba(124, 58, 237,0.3)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
-                <Sparkles size={28} color="#818cf8" />
+                <Sparkles size={28} color="#a78bfa" />
               </div>
               <h3 style={{ fontSize: 17, fontWeight: 700, color: '#fafafa', margin: 0, marginBottom: 8 }}>
                 Your memory is empty
@@ -156,7 +156,7 @@ export default function MemoryBrain() {
 
           {/* Recommended revision */}
           {recommended.length > 0 && (
-            <Section title="Recommended Revision" subtitle="Topics with the most repeated struggles" icon={Target} accent="#fbbf24">
+            <Section title="Recommended Revision" subtitle="Topics with the most repeated struggles" icon={Target} accent="#c4b5fd">
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 10 }}>
                 {recommended.map(m => (
                   <RecCard key={m.id} m={m} />
@@ -169,16 +169,16 @@ export default function MemoryBrain() {
           {(data.weak.length > 0 || data.strong.length > 0) && (
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 22 }}>
               {/* Weak */}
-              <Section title="Weak Areas" subtitle="Practice these next" icon={AlertTriangle} accent="#fbbf24" inline>
+              <Section title="Weak Areas" subtitle="Practice these next" icon={AlertTriangle} accent="#c4b5fd" inline>
                 <EntryList
-                  items={data.weak} accent="#fbbf24" empty="No weak areas yet — well done."
+                  items={data.weak} accent="#c4b5fd" empty="No weak areas yet — well done."
                   onForget={forget} busy={busy}
                 />
               </Section>
               {/* Strong */}
-              <Section title="Strong Areas" subtitle="Topics you've mastered" icon={Award} accent="#34d399" inline>
+              <Section title="Strong Areas" subtitle="Topics you've mastered" icon={Award} accent="#c4b5fd" inline>
                 <EntryList
-                  items={data.strong} accent="#34d399" empty="Take more quizzes to build strengths."
+                  items={data.strong} accent="#c4b5fd" empty="Take more quizzes to build strengths."
                   onForget={forget} busy={busy}
                 />
               </Section>
@@ -187,19 +187,19 @@ export default function MemoryBrain() {
 
           {/* Recently Improved */}
           {data.improved.length > 0 && (
-            <Section title="Recently Improved" subtitle="Topics where your signal turned positive" icon={TrendingUp} accent="#34d399">
-              <EntryList items={data.improved} accent="#34d399" empty="Keep practicing to see improvements." onForget={forget} busy={busy} />
+            <Section title="Recently Improved" subtitle="Topics where your signal turned positive" icon={TrendingUp} accent="#c4b5fd">
+              <EntryList items={data.improved} accent="#c4b5fd" empty="Keep practicing to see improvements." onForget={forget} busy={busy} />
             </Section>
           )}
 
           {/* Wipe-all bar */}
           {data.total > 0 && (
             <div style={{
-              marginTop: 24, padding: '12px 16px', background: 'rgba(248,113,113,0.05)',
-              border: '1px solid rgba(248,113,113,0.2)', borderRadius: 10,
+              marginTop: 24, padding: '12px 16px', background: 'rgba(167, 139, 250,0.05)',
+              border: '1px solid rgba(167, 139, 250,0.2)', borderRadius: 10,
               display: 'flex', alignItems: 'center', gap: 12,
             }}>
-              <Trash2 size={14} color="#f87171" />
+              <Trash2 size={14} color="#a78bfa" />
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: 12, fontWeight: 600, color: '#fafafa' }}>Forget everything</div>
                 <div style={{ fontSize: 11, color: '#71717a', marginTop: 2 }}>
@@ -208,8 +208,8 @@ export default function MemoryBrain() {
               </div>
               <button onClick={wipeAll} disabled={busy === 'all'} style={{
                 padding: '7px 14px', borderRadius: 7,
-                border: '1px solid rgba(248,113,113,0.4)',
-                background: 'rgba(248,113,113,0.1)', color: '#f87171',
+                border: '1px solid rgba(167, 139, 250,0.4)',
+                background: 'rgba(167, 139, 250,0.1)', color: '#a78bfa',
                 fontFamily: 'inherit', fontSize: 12, fontWeight: 600,
                 cursor: busy === 'all' ? 'not-allowed' : 'pointer',
               }}>
@@ -287,7 +287,7 @@ function EntryList({ items, accent, empty, onForget, busy }: {
               <div style={{ fontSize: 10, color: '#52525b', marginTop: 2, display: 'flex', gap: 8 }}>
                 {m.subject && <span>{m.subject}</span>}
                 <span>seen {m.hits}×</span>
-                <span style={{ color: m.signal < 0 ? '#fbbf24' : '#34d399' }}>
+                <span style={{ color: m.signal < 0 ? '#c4b5fd' : '#c4b5fd' }}>
                   signal {m.signal.toFixed(2)}
                 </span>
               </div>
@@ -297,7 +297,7 @@ function EntryList({ items, accent, empty, onForget, busy }: {
                 background: 'none', border: 'none', cursor: 'pointer', padding: 4,
                 color: '#3f3f46', display: 'flex',
               }}
-              onMouseEnter={e => (e.currentTarget.style.color = '#f87171')}
+              onMouseEnter={e => (e.currentTarget.style.color = '#a78bfa')}
               onMouseLeave={e => (e.currentTarget.style.color = '#3f3f46')}>
               <X size={12} />
             </button>
@@ -313,11 +313,11 @@ function RecCard({ m }: { m: MemoryEntry & { urgency: number } }) {
   return (
     <motion.div whileHover={{ y: -2 }} style={{
       ...card, padding: 14,
-      borderColor: `rgba(251,191,36,${0.2 + intensity * 0.3})`,
+      borderColor: `rgba(196, 181, 253,${0.2 + intensity * 0.3})`,
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-        <Target size={12} color="#fbbf24" />
-        <span style={{ fontSize: 10, fontWeight: 700, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 1 }}>
+        <Target size={12} color="#c4b5fd" />
+        <span style={{ fontSize: 10, fontWeight: 700, color: '#c4b5fd', textTransform: 'uppercase', letterSpacing: 1 }}>
           Revisit
         </span>
         {m.subject && <span style={{ fontSize: 10, color: '#52525b' }}>· {m.subject}</span>}
@@ -330,7 +330,7 @@ function RecCard({ m }: { m: MemoryEntry & { urgency: number } }) {
       }}>
         <div style={{
           height: '100%', width: `${intensity * 100}%`,
-          background: 'linear-gradient(90deg, #fbbf24, #fb923c)', borderRadius: 2,
+          background: 'linear-gradient(90deg, #c4b5fd, #c4b5fd)', borderRadius: 2,
         }} />
       </div>
       <div style={{ fontSize: 10, color: '#52525b', marginTop: 6 }}>

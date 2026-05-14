@@ -165,7 +165,7 @@ export default function KairoLabs() {
     return (
       <Suspense fallback={
         <div style={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 14 }}>
-          <Loader2 size={28} color="#a5b4fc" style={{ animation: 'spin 0.8s linear infinite' }} />
+          <Loader2 size={28} color="#c4b5fd" style={{ animation: 'spin 0.8s linear infinite' }} />
           <p style={{ fontSize: 13, color: '#a1a1aa' }}>Loading {activeLab.title}…</p>
         </div>
       }>

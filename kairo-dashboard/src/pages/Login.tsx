@@ -76,7 +76,7 @@ export default function Login({ onLogin }: LoginProps) {
       <div style={{
         position: 'fixed', top: '15%', left: '50%', transform: 'translateX(-50%)',
         width: 600, height: 600, borderRadius: '50%',
-        background: 'radial-gradient(circle, rgba(99,102,241,0.10) 0%, transparent 70%)',
+        background: 'radial-gradient(circle, rgba(124, 58, 237,0.10) 0%, transparent 70%)',
         pointerEvents: 'none',
       }} />
 
@@ -87,10 +87,10 @@ export default function Login({ onLogin }: LoginProps) {
             style={{
               width: 64, height: 64, borderRadius: 16, objectFit: 'contain',
               margin: '0 auto 14px', display: 'block',
-              filter: 'drop-shadow(0 0 20px rgba(99,102,241,0.45))',
+              filter: 'drop-shadow(0 0 20px rgba(124, 58, 237,0.45))',
             }} />
           <h1 style={{ fontSize: 24, fontWeight: 800, color: '#fafafa', margin: 0, letterSpacing: '-0.5px' }}>kairo</h1>
-          <p style={{ fontSize: 11, color: '#6366f1', fontWeight: 700, letterSpacing: 4, marginTop: 4, textTransform: 'uppercase' }}>
+          <p style={{ fontSize: 11, color: '#7c3aed', fontWeight: 700, letterSpacing: 4, marginTop: 4, textTransform: 'uppercase' }}>
             Accelerate Your Academics
           </p>
         </div>
@@ -131,7 +131,7 @@ export default function Login({ onLogin }: LoginProps) {
         </div>
 
         {!supabaseReady && (
-          <p style={{ fontSize: 11, color: '#fbbf24', textAlign: 'center', marginTop: 14, padding: '8px 14px', background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.25)', borderRadius: 8 }}>
+          <p style={{ fontSize: 11, color: '#c4b5fd', textAlign: 'center', marginTop: 14, padding: '8px 14px', background: 'rgba(196, 181, 253,0.08)', border: '1px solid rgba(196, 181, 253,0.25)', borderRadius: 8 }}>
             ⚠ Supabase env vars missing — auth will fail. Add VITE_SUPABASE_URL + VITE_SUPABASE_ANON_KEY.
           </p>
         )}
@@ -167,14 +167,14 @@ function ChoiceCard({ onClick, icon: Icon, title, desc, highlight = false }: any
       whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}
       style={{
         width: '100%', padding: '16px 18px', borderRadius: 12,
-        background: highlight ? 'rgba(99,102,241,0.06)' : '#0d0d0d',
-        border: `1px solid ${highlight ? 'rgba(99,102,241,0.3)' : '#1e1e1e'}`,
+        background: highlight ? 'rgba(124, 58, 237,0.06)' : '#0d0d0d',
+        border: `1px solid ${highlight ? 'rgba(124, 58, 237,0.3)' : '#1e1e1e'}`,
         cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left',
         display: 'flex', alignItems: 'center', gap: 14, marginBottom: 10,
       }}>
       <div style={{
         width: 42, height: 42, borderRadius: 10, flexShrink: 0,
-        background: highlight ? 'linear-gradient(135deg,#6366f1,#7c3aed)' : '#1a1a1a',
+        background: highlight ? 'linear-gradient(135deg,#7c3aed,#7c3aed)' : '#1a1a1a',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}>
         <Icon size={18} color={highlight ? '#fff' : '#a1a1aa'} />
@@ -381,9 +381,9 @@ function PersonalSignup({ onLogin, onBack }: any) {
                 onClick={() => setBoard(active ? '' : b)}
                 style={{
                   padding: '7px 13px', borderRadius: 8,
-                  background: active ? 'rgba(99,102,241,0.12)' : '#0d0d0d',
-                  border: `1px solid ${active ? '#6366f1' : '#1e1e1e'}`,
-                  color: active ? '#a5b4fc' : '#a1a1aa',
+                  background: active ? 'rgba(124, 58, 237,0.12)' : '#0d0d0d',
+                  border: `1px solid ${active ? '#7c3aed' : '#1e1e1e'}`,
+                  color: active ? '#c4b5fd' : '#a1a1aa',
                   fontFamily: 'inherit', fontSize: 12, fontWeight: 600, cursor: 'pointer',
                 }}>
                 {b}
@@ -397,7 +397,7 @@ function PersonalSignup({ onLogin, onBack }: any) {
       <p style={{ fontSize: 11, color: '#52525b', textAlign: 'center', marginTop: 12, lineHeight: 1.5 }}>
         Already have an account?{' '}
         <button onClick={onBack} style={{
-          background: 'none', border: 'none', color: '#a5b4fc',
+          background: 'none', border: 'none', color: '#c4b5fd',
           fontFamily: 'inherit', fontSize: 11, fontWeight: 600, cursor: 'pointer', padding: 0,
         }}>Sign in instead</button>
       </p>
@@ -561,23 +561,23 @@ function JoinSchool({ onLogin, onBack }: any) {
               onClick={() => setRole(r.id as any)}
               style={{
                 padding: '14px 16px', borderRadius: 11,
-                background: active ? 'rgba(99,102,241,0.10)' : '#0d0d0d',
-                border: `1px solid ${active ? '#6366f1' : '#1e1e1e'}`,
+                background: active ? 'rgba(124, 58, 237,0.10)' : '#0d0d0d',
+                border: `1px solid ${active ? '#7c3aed' : '#1e1e1e'}`,
                 cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left',
                 display: 'flex', alignItems: 'center', gap: 12,
               }}>
               <div style={{
                 width: 38, height: 38, borderRadius: 9, flexShrink: 0,
-                background: active ? 'linear-gradient(135deg,#6366f1,#7c3aed)' : '#1a1a1a',
+                background: active ? 'linear-gradient(135deg,#7c3aed,#7c3aed)' : '#1a1a1a',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
                 <Icon size={16} color={active ? '#fff' : '#a1a1aa'} />
               </div>
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 14, fontWeight: 700, color: active ? '#a5b4fc' : '#fafafa' }}>{r.label}</div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: active ? '#c4b5fd' : '#fafafa' }}>{r.label}</div>
                 <div style={{ fontSize: 11, color: '#71717a', marginTop: 2 }}>{r.desc}</div>
               </div>
-              {active && <Check size={16} color="#6366f1" />}
+              {active && <Check size={16} color="#7c3aed" />}
             </motion.button>
           )
         })}
@@ -754,8 +754,8 @@ function CreateSchool({ onLogin, onBack }: any) {
               onClick={() => setPlan(p.id as any)}
               style={{
                 padding: '14px 16px', borderRadius: 11,
-                background: active ? 'rgba(99,102,241,0.10)' : '#0d0d0d',
-                border: `1px solid ${active ? '#6366f1' : '#1e1e1e'}`,
+                background: active ? 'rgba(124, 58, 237,0.10)' : '#0d0d0d',
+                border: `1px solid ${active ? '#7c3aed' : '#1e1e1e'}`,
                 cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left',
                 display: 'flex', alignItems: 'center', gap: 12, position: 'relative',
               }}>
@@ -763,24 +763,24 @@ function CreateSchool({ onLogin, onBack }: any) {
                 <span style={{
                   position: 'absolute', top: -8, right: 12,
                   fontSize: 9, fontWeight: 800, padding: '2px 8px', borderRadius: 4,
-                  background: '#6366f1', color: '#fff', textTransform: 'uppercase', letterSpacing: 1,
+                  background: '#7c3aed', color: '#fff', textTransform: 'uppercase', letterSpacing: 1,
                 }}>Best Value</span>
               )}
               <div style={{
                 width: 38, height: 38, borderRadius: 9, flexShrink: 0,
-                background: active ? 'linear-gradient(135deg,#6366f1,#7c3aed)' : '#1a1a1a',
+                background: active ? 'linear-gradient(135deg,#7c3aed,#7c3aed)' : '#1a1a1a',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
                 <CreditCard size={16} color={active ? '#fff' : '#a1a1aa'} />
               </div>
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 14, fontWeight: 700, color: active ? '#a5b4fc' : '#fafafa' }}>{p.label}</div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: active ? '#c4b5fd' : '#fafafa' }}>{p.label}</div>
                 <div style={{ fontSize: 11, color: '#71717a', marginTop: 2 }}>
                   {p.price} <span style={{ color: '#52525b' }}>/ {p.per}</span>
-                  {p.save && <span style={{ marginLeft: 8, color: '#34d399', fontWeight: 600 }}>{p.save}</span>}
+                  {p.save && <span style={{ marginLeft: 8, color: '#c4b5fd', fontWeight: 600 }}>{p.save}</span>}
                 </div>
               </div>
-              {active && <Check size={16} color="#6366f1" />}
+              {active && <Check size={16} color="#7c3aed" />}
             </motion.button>
           )
         })}
@@ -796,10 +796,10 @@ function CreateSchool({ onLogin, onBack }: any) {
   return (
     <Wizard back={null} step={null} title="School Created" subtitle="Save your join code somewhere safe.">
       <div style={{
-        background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.3)',
+        background: 'rgba(124, 58, 237,0.08)', border: '1px solid rgba(124, 58, 237,0.3)',
         borderRadius: 12, padding: 18, marginBottom: 16, textAlign: 'center',
       }}>
-        <div style={{ fontSize: 10, fontWeight: 700, color: '#a5b4fc', textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 8 }}>
+        <div style={{ fontSize: 10, fontWeight: 700, color: '#c4b5fd', textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 8 }}>
           Your School Join Code
         </div>
         <code style={{
@@ -811,18 +811,18 @@ function CreateSchool({ onLogin, onBack }: any) {
         <button onClick={() => navigator.clipboard.writeText(result.passcode)}
           style={{
             padding: '6px 14px', borderRadius: 6, fontSize: 11,
-            background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.3)',
-            color: '#a5b4fc', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600,
+            background: 'rgba(124, 58, 237,0.15)', border: '1px solid rgba(124, 58, 237,0.3)',
+            color: '#c4b5fd', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600,
           }}>
           Copy code
         </button>
       </div>
 
       {result.session.mode === 'demo' && (
-        <div style={{ padding: '12px 14px', borderRadius: 8, background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.25)', marginBottom: 14 }}>
+        <div style={{ padding: '12px 14px', borderRadius: 8, background: 'rgba(196, 181, 253,0.06)', border: '1px solid rgba(196, 181, 253,0.25)', marginBottom: 14 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-            <Loader2 size={11} color="#fbbf24" style={{ animation: 'spin 1s linear infinite' }} />
-            <span style={{ fontSize: 11, fontWeight: 700, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 1 }}>Demo activation</span>
+            <Loader2 size={11} color="#c4b5fd" style={{ animation: 'spin 1s linear infinite' }} />
+            <span style={{ fontSize: 11, fontWeight: 700, color: '#c4b5fd', textTransform: 'uppercase', letterSpacing: 1 }}>Demo activation</span>
           </div>
           <p style={{ fontSize: 11, color: '#a1a1aa', margin: 0, lineHeight: 1.5 }}>
             Razorpay keys aren't set on the server, so we're auto-activating the school in 3 seconds. Set <code style={{ background: '#1a1a1a', padding: '1px 5px', borderRadius: 3 }}>RAZORPAY_KEY_ID</code> in env for real payments.
@@ -831,8 +831,8 @@ function CreateSchool({ onLogin, onBack }: any) {
       )}
 
       {result.session.mode === 'trial' && (
-        <div style={{ padding: '12px 14px', borderRadius: 8, background: 'rgba(52,211,153,0.06)', border: '1px solid rgba(52,211,153,0.3)', marginBottom: 14 }}>
-          <span style={{ fontSize: 11, fontWeight: 700, color: '#34d399', textTransform: 'uppercase', letterSpacing: 1 }}>Trial active</span>
+        <div style={{ padding: '12px 14px', borderRadius: 8, background: 'rgba(196, 181, 253,0.06)', border: '1px solid rgba(196, 181, 253,0.3)', marginBottom: 14 }}>
+          <span style={{ fontSize: 11, fontWeight: 700, color: '#c4b5fd', textTransform: 'uppercase', letterSpacing: 1 }}>Trial active</span>
           <p style={{ fontSize: 11, color: '#a1a1aa', margin: 0, marginTop: 4, lineHeight: 1.5 }}>
             Your school is active for 14 days. Add payment from Settings before it expires.
           </p>
@@ -840,8 +840,8 @@ function CreateSchool({ onLogin, onBack }: any) {
       )}
 
       {result.session.mode === 'razorpay' && (
-        <div style={{ padding: '12px 14px', borderRadius: 8, background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.3)', marginBottom: 14 }}>
-          <span style={{ fontSize: 11, fontWeight: 700, color: '#a5b4fc', textTransform: 'uppercase', letterSpacing: 1 }}>Payment pending</span>
+        <div style={{ padding: '12px 14px', borderRadius: 8, background: 'rgba(124, 58, 237,0.06)', border: '1px solid rgba(124, 58, 237,0.3)', marginBottom: 14 }}>
+          <span style={{ fontSize: 11, fontWeight: 700, color: '#c4b5fd', textTransform: 'uppercase', letterSpacing: 1 }}>Payment pending</span>
           <p style={{ fontSize: 11, color: '#a1a1aa', margin: 0, marginTop: 4, lineHeight: 1.5 }}>
             Order ID: <code style={{ fontFamily: 'monospace' }}>{result.session.order_id}</code>. Frontend payment page is coming next — for now your school is in pending_payment state.
           </p>
@@ -887,7 +887,7 @@ function Wizard({ back, step, of, title, subtitle, children }: any) {
           {[...Array(of)].map((_, i) => (
             <div key={i} style={{
               flex: 1, height: 3, borderRadius: 2,
-              background: i < step ? '#6366f1' : '#1e1e1e',
+              background: i < step ? '#7c3aed' : '#1e1e1e',
             }} />
           ))}
         </div>
@@ -901,12 +901,12 @@ function SchoolPreview({ school, compact = false }: { school: any; compact?: boo
   return (
     <div style={{
       padding: compact ? '10px 14px' : '14px 16px', borderRadius: 11,
-      background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.3)',
+      background: 'rgba(124, 58, 237,0.06)', border: '1px solid rgba(124, 58, 237,0.3)',
       display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14,
     }}>
       <div style={{
         width: compact ? 34 : 40, height: compact ? 34 : 40, borderRadius: 9, flexShrink: 0,
-        background: school.school_logo_url ? '#fff' : 'linear-gradient(135deg,#6366f1,#7c3aed)',
+        background: school.school_logo_url ? '#fff' : 'linear-gradient(135deg,#7c3aed,#7c3aed)',
         overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}>
         {school.school_logo_url
@@ -917,11 +917,11 @@ function SchoolPreview({ school, compact = false }: { school: any; compact?: boo
         <div style={{ fontSize: compact ? 12 : 13, fontWeight: 700, color: '#fafafa', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {school.school_name}
         </div>
-        <div style={{ fontSize: 10, color: '#a5b4fc', fontWeight: 600, marginTop: 2, textTransform: 'uppercase', letterSpacing: 1 }}>
+        <div style={{ fontSize: 10, color: '#c4b5fd', fontWeight: 600, marginTop: 2, textTransform: 'uppercase', letterSpacing: 1 }}>
           You're joining
         </div>
       </div>
-      <Check size={16} color="#34d399" />
+      <Check size={16} color="#c4b5fd" />
     </div>
   )
 }
@@ -947,10 +947,10 @@ function PrimaryBtn({ busy, onClick, icon: Icon, children }: any) {
       onClick={onClick} disabled={busy}
       style={{
         width: '100%', marginTop: 6, padding: '13px', borderRadius: 11, border: 'none',
-        background: busy ? '#1e1e2e' : 'linear-gradient(135deg, #6366f1, #7c3aed)',
+        background: busy ? '#1e1e2e' : 'linear-gradient(135deg, #7c3aed, #7c3aed)',
         color: busy ? '#52525b' : '#fff', fontFamily: 'inherit', fontSize: 14, fontWeight: 700,
         cursor: busy ? 'not-allowed' : 'pointer',
-        boxShadow: busy ? 'none' : '0 0 22px rgba(99,102,241,0.35)',
+        boxShadow: busy ? 'none' : '0 0 22px rgba(124, 58, 237,0.35)',
         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
       }}>
       {busy
@@ -963,9 +963,9 @@ function PrimaryBtn({ busy, onClick, icon: Icon, children }: any) {
 function ErrLine({ msg }: { msg: string }) {
   return (
     <p style={{
-      fontSize: 12, color: '#f87171', marginTop: -4, marginBottom: 12,
-      padding: '8px 12px', background: 'rgba(248,113,113,0.08)',
-      border: '1px solid rgba(248,113,113,0.25)', borderRadius: 7,
+      fontSize: 12, color: '#a78bfa', marginTop: -4, marginBottom: 12,
+      padding: '8px 12px', background: 'rgba(167, 139, 250,0.08)',
+      border: '1px solid rgba(167, 139, 250,0.25)', borderRadius: 7,
     }}>{msg}</p>
   )
 }
@@ -983,12 +983,12 @@ function AvatarPicker({ avatar, onPick, fallback }: {
         onClick={() => inputRef.current?.click()}
         style={{
           width: 90, height: 90, borderRadius: '50%', cursor: 'pointer',
-          background: avatar ? 'transparent' : 'linear-gradient(135deg,#6366f1,#7c3aed)',
+          background: avatar ? 'transparent' : 'linear-gradient(135deg,#7c3aed,#7c3aed)',
           overflow: 'hidden', position: 'relative',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: 32, fontWeight: 800, color: '#fff',
-          border: '2px solid rgba(99,102,241,0.4)',
-          boxShadow: avatar ? '0 0 22px rgba(99,102,241,0.3)' : 'none',
+          border: '2px solid rgba(124, 58, 237,0.4)',
+          boxShadow: avatar ? '0 0 22px rgba(124, 58, 237,0.3)' : 'none',
           transition: 'box-shadow 0.2s, border-color 0.2s',
         }}
       >
@@ -999,7 +999,7 @@ function AvatarPicker({ avatar, onPick, fallback }: {
         <div style={{
           position: 'absolute', bottom: 0, right: 0,
           width: 26, height: 26, borderRadius: '50%',
-          background: '#6366f1', border: '2px solid #111',
+          background: '#7c3aed', border: '2px solid #111',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: 11,
         }}>

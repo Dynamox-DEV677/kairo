@@ -89,7 +89,7 @@ export default function FocusMode() {
   const dash = C * progress
 
   const bg = ambient
-    ? 'radial-gradient(ellipse at top, #1a1a2e 0%, #0a0a0a 60%), radial-gradient(ellipse at bottom right, rgba(99,102,241,0.18), transparent 50%)'
+    ? 'radial-gradient(ellipse at top, #1a1a2e 0%, #0a0a0a 60%), radial-gradient(ellipse at bottom right, rgba(124, 58, 237,0.18), transparent 50%)'
     : '#0a0a0a'
 
   return (
@@ -114,7 +114,7 @@ export default function FocusMode() {
               position: 'absolute',
               top: `${20 + i * 25}%`, left: `${15 + i * 28}%`,
               width: 260, height: 260, borderRadius: '50%',
-              background: ['#6366f1', '#7c3aed', '#34d399'][i],
+              background: ['#7c3aed', '#7c3aed', '#c4b5fd'][i],
               filter: 'blur(80px)', pointerEvents: 'none',
             }} />
         ))}
@@ -124,9 +124,9 @@ export default function FocusMode() {
       <div style={{ width: '100%', maxWidth: 720, display: 'flex', alignItems: 'center', gap: 14, marginBottom: 32, zIndex: 1 }}>
         <div style={{
           width: 40, height: 40, borderRadius: 10,
-          background: 'linear-gradient(135deg,#6366f1,#7c3aed)',
+          background: 'linear-gradient(135deg,#7c3aed,#7c3aed)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 0 18px rgba(99,102,241,0.4)', flexShrink: 0,
+          boxShadow: '0 0 18px rgba(124, 58, 237,0.4)', flexShrink: 0,
         }}>
           <Target size={20} color="#fff" />
         </div>
@@ -139,9 +139,9 @@ export default function FocusMode() {
           title={ambient ? 'Calm mode off' : 'Calm mode on'}
           style={{
             width: 36, height: 36, borderRadius: 8,
-            background: ambient ? 'rgba(99,102,241,0.15)' : '#161616',
-            border: `1px solid ${ambient ? '#6366f1' : '#1e1e1e'}`,
-            color: ambient ? '#a5b4fc' : '#71717a', cursor: 'pointer',
+            background: ambient ? 'rgba(124, 58, 237,0.15)' : '#161616',
+            border: `1px solid ${ambient ? '#7c3aed' : '#1e1e1e'}`,
+            color: ambient ? '#c4b5fd' : '#71717a', cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
           {ambient ? <Volume2 size={14} /> : <VolumeX size={14} />}
@@ -157,7 +157,7 @@ export default function FocusMode() {
           <circle r={R} fill="none" stroke="#1a1a1a" strokeWidth={6} />
           <motion.circle
             r={R} fill="none"
-            stroke={done ? '#34d399' : 'url(#grad)'}
+            stroke={done ? '#c4b5fd' : 'url(#grad)'}
             strokeWidth={6} strokeLinecap="round"
             strokeDasharray={C}
             animate={{ strokeDashoffset: C - dash }}
@@ -165,7 +165,7 @@ export default function FocusMode() {
           />
           <defs>
             <linearGradient id="grad" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0" stopColor="#6366f1" />
+              <stop offset="0" stopColor="#7c3aed" />
               <stop offset="1" stopColor="#7c3aed" />
             </linearGradient>
           </defs>
@@ -199,9 +199,9 @@ export default function FocusMode() {
             onClick={start}
             style={{
               padding: '12px 28px', borderRadius: 10, border: 'none',
-              background: 'linear-gradient(135deg,#6366f1,#7c3aed)',
+              background: 'linear-gradient(135deg,#7c3aed,#7c3aed)',
               color: '#fff', fontFamily: 'inherit', fontSize: 14, fontWeight: 700,
-              cursor: 'pointer', boxShadow: '0 0 22px rgba(99,102,241,0.4)',
+              cursor: 'pointer', boxShadow: '0 0 22px rgba(124, 58, 237,0.4)',
               display: 'flex', alignItems: 'center', gap: 8,
             }}>
             <Play size={14} />{done ? 'Start Again' : 'Start Focus'}
@@ -211,8 +211,8 @@ export default function FocusMode() {
             whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}
             onClick={pause}
             style={{
-              padding: '12px 28px', borderRadius: 10, border: '1px solid #6366f1',
-              background: 'rgba(99,102,241,0.1)', color: '#a5b4fc',
+              padding: '12px 28px', borderRadius: 10, border: '1px solid #7c3aed',
+              background: 'rgba(124, 58, 237,0.1)', color: '#c4b5fd',
               fontFamily: 'inherit', fontSize: 14, fontWeight: 700, cursor: 'pointer',
               display: 'flex', alignItems: 'center', gap: 8,
             }}>
@@ -233,9 +233,9 @@ export default function FocusMode() {
         {PRESETS.map(p => (
           <button key={p.mins} onClick={() => pickPreset(p.mins)} style={{
             padding: '8px 16px', borderRadius: 8,
-            border: `1px solid ${duration === p.mins * 60 ? '#6366f1' : '#1e1e1e'}`,
-            background: duration === p.mins * 60 ? 'rgba(99,102,241,0.12)' : 'transparent',
-            color: duration === p.mins * 60 ? '#a5b4fc' : '#71717a',
+            border: `1px solid ${duration === p.mins * 60 ? '#7c3aed' : '#1e1e1e'}`,
+            background: duration === p.mins * 60 ? 'rgba(124, 58, 237,0.12)' : 'transparent',
+            color: duration === p.mins * 60 ? '#c4b5fd' : '#71717a',
             fontFamily: 'inherit', fontSize: 12, fontWeight: 600, cursor: 'pointer',
           }}>{p.label}</button>
         ))}
@@ -265,11 +265,11 @@ export default function FocusMode() {
       {/* Lifetime stats */}
       <div style={{
         padding: '12px 18px', borderRadius: 10,
-        background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.25)',
+        background: 'rgba(196, 181, 253,0.08)', border: '1px solid rgba(196, 181, 253,0.25)',
         display: 'flex', alignItems: 'center', gap: 10, zIndex: 1,
       }}>
-        <Award size={14} color="#34d399" />
-        <span style={{ fontSize: 12, color: '#34d399', fontWeight: 600 }}>
+        <Award size={14} color="#c4b5fd" />
+        <span style={{ fontSize: 12, color: '#c4b5fd', fontWeight: 600 }}>
           {totalMin === 0 ? 'No focused minutes yet — start your first session.' :
             `${totalMin} focused minute${totalMin === 1 ? '' : 's'} banked.`}
         </span>
