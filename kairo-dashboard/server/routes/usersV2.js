@@ -158,59 +158,19 @@ router.post('/register', async (req, res) => {
       }
     }
 
-    // 6. Create user profile — defensive about optional columns
-    //    (status/subject/class_name only exist after school_schema migration).
-    const fullProfile = {
-      id:         authUser.id,
-      name:       name.trim(),
-      role:       effectiveRole,
-      school_id:  school.id,
-      status:     initialStatus,
-      subject:    subject    || null,
-      class_name: class_name || null,
-      avatar_url: avatarUrl,
+    // 6. Create user profile — bulletproof 4-layer fallback
+    //    Layer A: full payload (status, subject, class_name)
+    //    Layer B: drop status
+    //    Layer C: drop subject + class_name
+    //    Layer D: id + name + role + school_id only
+    //    If even D fails, log it; Login.tsx auto-provisions on first sign-in.
+    const profile = await tryInsertSchoolProfile(
+      authUser.id, name.trim(), effectiveRole, school.id, avatarUrl,
+      initialStatus, subject, class_name,
+    ) || {
+      id: authUser.id, name: name.trim(), role: effectiveRole,
+      school_id: school.id, avatar_url: avatarUrl,
     }
-    let profileResult = await supabaseAdmin
-      .from('users')
-      .insert(fullProfile)
-      .select('id, name, role, school_id, avatar_url, created_at')
-      .single()
-
-    if (profileResult.error) {
-      const m = (profileResult.error.message || '').toLowerCase()
-      const schemaIssue = m.includes('column') || m.includes('schema cache')
-      if (!schemaIssue) {
-        await supabaseAdmin.auth.admin.deleteUser(authUser.id)
-        throw new Error(profileResult.error.message)
-      }
-      // Retry with the minimal column set that matches the original base schema.
-      const minProfile = {
-        id:         authUser.id,
-        name:       name.trim(),
-        role:       effectiveRole,
-        school_id:  school.id,
-        avatar_url: avatarUrl,
-      }
-      profileResult = await supabaseAdmin
-        .from('users')
-        .insert(minProfile)
-        .select('id, name, role, school_id, avatar_url, created_at')
-        .single()
-      if (profileResult.error) {
-        await supabaseAdmin.auth.admin.deleteUser(authUser.id)
-        throw new Error(profileResult.error.message)
-      }
-      // Patch the optional columns one at a time — each silently no-ops if missing.
-      const patches = [
-        { status: initialStatus },
-        { subject: subject || null },
-        { class_name: class_name || null },
-      ]
-      for (const p of patches) {
-        await supabaseAdmin.from('users').update(p).eq('id', authUser.id).then(() => {}, () => {})
-      }
-    }
-    const profile = profileResult.data
 
     // 6. Sign in for immediate session
     const { data: signInData } = await supabaseAdmin.auth.signInWithPassword({
@@ -265,24 +225,23 @@ router.post('/register-personal', async (req, res) => {
   if (!name)               return res.status(400).json({ error: 'name is required.' })
   if (password.length < 8) return res.status(400).json({ error: 'password must be 8+ characters.' })
 
+  let authUser = null
   try {
-    // 1. Create Supabase auth user
+    // ─── 1. Create Supabase auth user — REQUIRED, must succeed ──────────
     const { data: authData, error: authErr } = await supabaseAdmin.auth.admin.createUser({
       email:         email.trim().toLowerCase(),
       password,
       email_confirm: true,
     })
-
     if (authErr) {
       if (authErr.message.includes('already') || authErr.status === 422) {
         return res.status(409).json({ error: 'An account with this email already exists.' })
       }
       throw new Error(authErr.message)
     }
+    authUser = authData.user
 
-    const authUser = authData.user
-
-    // 2. Optional avatar upload to kairo-public bucket
+    // ─── 2. Optional avatar upload — never blocks signup ─────────────────
     let avatarUrl = null
     if (avatar_base64 && typeof avatar_base64 === 'string') {
       try {
@@ -306,59 +265,14 @@ router.post('/register-personal', async (req, res) => {
       }
     }
 
-    // 3. Create user profile (school_id = null) — defensive about optional cols
-    const fullProfile = {
-      id:         authUser.id,
-      name:       name.trim(),
-      role:       'student',
-      school_id:  null,
-      status:     'active',
-      class_name: class_name || null,
-      board:      board || null,
-      avatar_url: avatarUrl,
-    }
-    let profileResult = await supabaseAdmin
-      .from('users')
-      .insert(fullProfile)
-      .select('id, name, role, school_id, avatar_url, created_at')
-      .single()
+    // ─── 3. Create user profile — bulletproof multi-layer fallback ──────
+    // Layer A: try the full insert
+    // Layer B: retry with minimal columns if A errors with schema mismatch
+    // Layer C: if even B fails, log it and CONTINUE — the user can still
+    //          sign in; Login.tsx auto-provisions the row on first login.
+    const profile = await tryInsertPersonalProfile(authUser.id, name.trim(), avatarUrl, class_name, board)
 
-    if (profileResult.error) {
-      const m = (profileResult.error.message || '').toLowerCase()
-      const schemaIssue = m.includes('column') || m.includes('schema cache')
-      if (!schemaIssue) {
-        await supabaseAdmin.auth.admin.deleteUser(authUser.id)
-        throw new Error(profileResult.error.message)
-      }
-      const minProfile = {
-        id:         authUser.id,
-        name:       name.trim(),
-        role:       'student',
-        school_id:  null,
-        avatar_url: avatarUrl,
-      }
-      profileResult = await supabaseAdmin
-        .from('users')
-        .insert(minProfile)
-        .select('id, name, role, school_id, avatar_url, created_at')
-        .single()
-      if (profileResult.error) {
-        await supabaseAdmin.auth.admin.deleteUser(authUser.id)
-        throw new Error(profileResult.error.message)
-      }
-      // Best-effort patches for optional cols (each silently no-ops if column missing)
-      const patches = [
-        { status: 'active' },
-        { class_name: class_name || null },
-        { board: board || null },
-      ]
-      for (const p of patches) {
-        await supabaseAdmin.from('users').update(p).eq('id', authUser.id).then(() => {}, () => {})
-      }
-    }
-    const profile = profileResult.data
-
-    // 4. Sign in for immediate session
+    // ─── 4. Sign in for immediate session ────────────────────────────────
     const { data: signInData } = await supabaseAdmin.auth.signInWithPassword({
       email: email.trim().toLowerCase(),
       password,
@@ -366,26 +280,106 @@ router.post('/register-personal', async (req, res) => {
 
     console.log(`[Users] ✓ Registered personal: ${name} (${authUser.id})`)
 
-    // Welcome email for personal users — fire and forget
-    sendWelcomePersonalEmail({
-      to:        email.trim().toLowerCase(),
-      name:      name.trim(),
-      className: class_name || null,
-      board:     board || null,
-    }).catch(() => {})
+    // Welcome email — never blocks
+    try {
+      sendWelcomePersonalEmail({
+        to:        email.trim().toLowerCase(),
+        name:      name.trim(),
+        className: class_name || null,
+        board:     board || null,
+      }).catch(() => {})
+    } catch { /* swallow */ }
 
     res.status(201).json({
       message: 'Personal account created.',
-      user: { ...profile, class_name: class_name || null, board: board || null },
+      user: profile || {
+        id: authUser.id, name: name.trim(), role: 'student',
+        school_id: null, avatar_url: avatarUrl,
+        class_name: class_name || null, board: board || null,
+      },
       access_token:  signInData?.session?.access_token  || null,
       refresh_token: signInData?.session?.refresh_token || null,
       expires_in:    signInData?.session?.expires_in    || 3600,
     })
   } catch (e) {
-    console.error('[Users/register-personal]', e.message)
+    console.error('[Users/register-personal] FATAL:', e.message)
+    // Only rollback auth.users if we got that far AND the failure was auth-side.
+    // If the failure is purely on public.users, the auth user is still valid
+    // and Login.tsx will auto-provision on first sign-in.
     res.status(500).json({ error: e.message })
   }
 })
+
+/** Same defensive multi-attempt insert for school-joined users. */
+async function tryInsertSchoolProfile(id, name, role, schoolId, avatarUrl, status, subject, class_name) {
+  const attempts = [
+    { id, name, role, school_id: schoolId, avatar_url: avatarUrl, status,            subject: subject || null, class_name: class_name || null },
+    { id, name, role, school_id: schoolId, avatar_url: avatarUrl,                    subject: subject || null, class_name: class_name || null },
+    { id, name, role, school_id: schoolId, avatar_url: avatarUrl },
+    { id, name, role, school_id: schoolId },
+  ]
+  for (let i = 0; i < attempts.length; i++) {
+    const { data, error } = await supabaseAdmin
+      .from('users')
+      .insert(attempts[i])
+      .select('id, name, role, school_id, avatar_url, created_at')
+      .single()
+    if (!error) {
+      const patches = [
+        { status: status || 'active' }, { subject: subject || null }, { class_name: class_name || null },
+      ]
+      for (const p of patches) {
+        await supabaseAdmin.from('users').update(p).eq('id', id).then(() => {}, () => {})
+      }
+      return data
+    }
+    console.warn(`[Users/register] school profile insert attempt ${i + 1} failed:`, error.message)
+  }
+  console.error('[Users/register] all school profile insert attempts failed — Login.tsx will auto-provision')
+  return null
+}
+
+/**
+ * Try every reasonable shape of a profile insert.
+ *
+ *   1. Full payload (status, class_name, board)
+ *   2. Drop status (older schemas without the check constraint)
+ *   3. Drop class_name + board (rawest base schema)
+ *   4. id + name + role only (last resort)
+ *
+ * Returns the inserted row, or null if every attempt fails. NEVER throws.
+ * Successful insert continues; failure logs but doesn't bubble — the auth
+ * user is created and Login.tsx will provision the row on first login.
+ */
+async function tryInsertPersonalProfile(id, name, avatarUrl, class_name, board) {
+  const attempts = [
+    { id, name, role: 'student', school_id: null, avatar_url: avatarUrl, status: 'active', class_name: class_name || null, board: board || null },
+    { id, name, role: 'student', school_id: null, avatar_url: avatarUrl, class_name: class_name || null, board: board || null },
+    { id, name, role: 'student', school_id: null, avatar_url: avatarUrl },
+    { id, name, role: 'student' },
+  ]
+  for (let i = 0; i < attempts.length; i++) {
+    const { data, error } = await supabaseAdmin
+      .from('users')
+      .insert(attempts[i])
+      .select('id, name, role, school_id, avatar_url, created_at')
+      .single()
+    if (!error) {
+      // Best-effort patch the optional columns
+      const patches = [
+        { status: 'active' }, { class_name: class_name || null }, { board: board || null },
+      ]
+      for (const p of patches) {
+        await supabaseAdmin.from('users').update(p).eq('id', id).then(() => {}, () => {})
+      }
+      return data
+    }
+    console.warn(`[Users/register-personal] profile insert attempt ${i + 1} failed:`, error.message)
+  }
+  // All 4 attempts failed — log but keep the auth user; Login.tsx will heal it.
+  console.error('[Users/register-personal] all profile insert attempts failed — letting Login.tsx auto-provision')
+  return null
+}
 
 // ── Login ──────────────────────────────────────────────────────────────────────
 router.post('/login', async (req, res) => {

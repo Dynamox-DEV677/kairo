@@ -61,58 +61,18 @@ router.post('/register', async (req, res) => {
     const plainPasscode  = generatePasscode()
     const hashedPasscode = await bcrypt.hash(plainPasscode, 12)
 
-    // Insert with the full set of columns. If the deployed Supabase is missing
-    // some of the newer columns (passcode_plain, status, subscription_status, …),
-    // retry with the minimal set so signup never breaks on a stale schema.
-    const fullCols = {
-      school_name:          school_name.trim(),
-      school_email:         school_email.trim().toLowerCase(),
-      school_passcode:      hashedPasscode,
-      passcode_plain:       plainPasscode,
-      school_logo_url:      school_logo_url || null,
-      domain:               domain          || null,
-      require_approval:     !!require_approval,
-      status:               'pending_payment',
-      subscription_status:  'pending_payment',
-    }
-    let { data: school, error } = await supabaseAdmin
-      .from('schools')
-      .insert(fullCols)
-      .select('id, school_name, school_email, school_logo_url, domain, require_approval, created_at')
-      .single()
-
-    if (error) {
-      // Detect missing-column errors and retry with the minimal column set.
-      const msg = (error.message || '').toLowerCase()
-      const schemaIssue = msg.includes('column') || msg.includes('schema cache')
-      if (!schemaIssue) throw new Error(error.message)
-
-      const minCols = {
-        school_name:     school_name.trim(),
-        school_email:    school_email.trim().toLowerCase(),
-        school_passcode: hashedPasscode,
-        school_logo_url: school_logo_url || null,
-      }
-      const retry = await supabaseAdmin
-        .from('schools')
-        .insert(minCols)
-        .select('id, school_name, school_email, school_logo_url, created_at')
-        .single()
-      if (retry.error) throw new Error(retry.error.message)
-      school = retry.data
-
-      // Best-effort: patch each new column individually so missing ones are skipped.
-      const patches = [
-        { passcode_plain:       plainPasscode },
-        { domain:               domain || null },
-        { require_approval:     !!require_approval },
-        { status:               'pending_payment' },
-        { subscription_status:  'pending_payment' },
-      ]
-      for (const p of patches) {
-        await supabaseAdmin.from('schools').update(p).eq('id', school.id).then(() => {}, () => {})
-      }
-    }
+    // Insert with the full set of columns, but progressively strip them
+    // until the row lands. Survives any school-table column drift.
+    const school = await tryInsertSchool(
+      school_name.trim(),
+      school_email.trim().toLowerCase(),
+      hashedPasscode,
+      plainPasscode,
+      school_logo_url,
+      domain,
+      !!require_approval,
+    )
+    if (!school) throw new Error('Could not register school — see server logs.')
 
     let ownerAccount = null
 
@@ -693,6 +653,49 @@ function generatePasscode() {
   // Format: XXXXXX-XXXXXX-XXXXXX (uppercase hex, easy to read/share)
   const seg = () => crypto.randomBytes(3).toString('hex').toUpperCase()
   return `${seg()}-${seg()}-${seg()}`
+}
+
+/**
+ * Insert a new schools row with progressive column stripping.
+ *
+ *   1. Full payload (passcode_plain, domain, require_approval, status, subscription_status)
+ *   2. Drop subscription_status
+ *   3. Drop status
+ *   4. Drop require_approval + domain + passcode_plain
+ *   5. Bare minimum (school_name, school_email, school_passcode, school_logo_url)
+ *
+ * Returns the inserted row, or null if every attempt fails. NEVER throws.
+ */
+async function tryInsertSchool(name, email, hashed, plainPasscode, logoUrl, domain, requireApproval) {
+  const attempts = [
+    { school_name: name, school_email: email, school_passcode: hashed, passcode_plain: plainPasscode, school_logo_url: logoUrl || null, domain: domain || null, require_approval: requireApproval, status: 'pending_payment', subscription_status: 'pending_payment' },
+    { school_name: name, school_email: email, school_passcode: hashed, passcode_plain: plainPasscode, school_logo_url: logoUrl || null, domain: domain || null, require_approval: requireApproval, status: 'pending_payment' },
+    { school_name: name, school_email: email, school_passcode: hashed, passcode_plain: plainPasscode, school_logo_url: logoUrl || null, domain: domain || null, require_approval: requireApproval },
+    { school_name: name, school_email: email, school_passcode: hashed, school_logo_url: logoUrl || null },
+    { school_name: name, school_email: email, school_passcode: hashed },
+  ]
+  for (let i = 0; i < attempts.length; i++) {
+    const { data, error } = await supabaseAdmin
+      .from('schools')
+      .insert(attempts[i])
+      .select('id, school_name, school_email, school_logo_url, created_at')
+      .single()
+    if (!error) {
+      // Best-effort patch the optional columns
+      const patches = [
+        { passcode_plain: plainPasscode }, { domain: domain || null },
+        { require_approval: requireApproval }, { status: 'pending_payment' },
+        { subscription_status: 'pending_payment' },
+      ]
+      for (const p of patches) {
+        await supabaseAdmin.from('schools').update(p).eq('id', data.id).then(() => {}, () => {})
+      }
+      return data
+    }
+    console.warn(`[Schools/register] insert attempt ${i + 1} failed:`, error.message)
+  }
+  console.error('[Schools/register] all insert attempts failed')
+  return null
 }
 
 export default router
