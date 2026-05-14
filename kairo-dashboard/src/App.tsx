@@ -8,6 +8,7 @@ import { supabase } from './lib/supabase'
 import { refreshIfStale } from './lib/api'
 import { pullFromCloud, syncToCloudNow, deleteCloudSnapshot, pauseSyncUntil } from './lib/twin'
 import SprintOverlay, { SPRINT_MIN_MS } from './components/SprintOverlay'
+import SplashScreen from './components/SplashScreen'
 
 // "landing" = cinematic marketing page (default for new visitors)
 // "login"   = sign-in / sign-up flow
@@ -21,6 +22,13 @@ export default function App() {
   const [sprintingIn, setSprintingIn] = useState(false)
   const [sprintHead, setSprintHead]   = useState<string | undefined>()
   const [sprintSub,  setSprintSub]    = useState<string | undefined>()
+  // Once-per-session splash gate. Stays mounted until onComplete fires
+  // so the boot animation plays before anything else renders.
+  const [splashing,  setSplashing]    = useState(() => {
+    if (typeof window === 'undefined') return false
+    try { return sessionStorage.getItem('kairo:splash:shown') !== '1' }
+    catch { return true }
+  })
 
   // Listen for auth-expired (refresh token died) — bounce to login screen
   useEffect(() => {
@@ -183,29 +191,44 @@ export default function App() {
     setProfile(null)
   }
 
+  // The splash is rendered alongside every branch — it portals to body
+  // with z-index 99999 so it covers whatever the rest of the tree renders.
+  // Once it completes we drop the flag so subsequent re-renders skip it.
+  const splash = splashing ? (
+    <SplashScreen onComplete={() => {
+      try { sessionStorage.setItem('kairo:splash:shown', '1') } catch { /* ignore */ }
+      setSplashing(false)
+    }} />
+  ) : null
+
   if (checking) {
-    // Minimal splash while we validate token
     return (
-      <div style={{
-        minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
-        background: '#0a0a0a',
-      }}>
+      <>
         <div style={{
-          width: 36, height: 36, borderRadius: '50%',
-          border: '2px solid #1e1e1e', borderTopColor: '#6366f1',
-          animation: 'spin 0.8s linear infinite',
-        }} />
-        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-      </div>
+          minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          background: '#0a0a0a',
+        }}>
+          <div style={{
+            width: 36, height: 36, borderRadius: '50%',
+            border: '2px solid #1e1e1e', borderTopColor: '#a78bfa',
+            animation: 'spin 0.8s linear infinite',
+          }} />
+          <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+        </div>
+        {splash}
+      </>
     )
   }
 
   if (!profile) {
-    // Returning users skip the landing if they explicitly opened it as login
-    if (view === 'login') {
-      return <Login onLogin={handleLogin} />
-    }
-    return <Landing onGetStarted={() => setView('login')} />
+    return (
+      <>
+        {view === 'login'
+          ? <Login onLogin={handleLogin} />
+          : <Landing onGetStarted={() => setView('login')} />}
+        {splash}
+      </>
+    )
   }
 
   return (
@@ -217,6 +240,7 @@ export default function App() {
         headline={sprintHead}
         subhead={sprintSub}
       />
+      {splash}
     </GenerationProvider>
   )
 }
