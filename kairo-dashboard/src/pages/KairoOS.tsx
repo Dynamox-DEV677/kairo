@@ -6,6 +6,7 @@
  * model). Wipes cleanly via the "Wipe my Twin" action.
  */
 import { useEffect, useMemo, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Sparkles, Eye, BookOpen, MousePointerClick, Repeat,
@@ -979,7 +980,9 @@ function DetailDrawer({ kind, twin, mastery, onClose }: {
     return () => window.removeEventListener('keydown', onKey)
   }, [onClose])
 
-  return (
+  // Portal to body so we escape any transform/filter stacking context
+  // the dashboard layout (which has its own header at zIndex 200) might create.
+  return createPortal(
     <>
       <motion.div
         key="dd-backdrop"
@@ -989,9 +992,9 @@ function DetailDrawer({ kind, twin, mastery, onClose }: {
         transition={{ duration: 0.2 }}
         onClick={onClose}
         style={{
-          position: 'fixed', inset: 0, zIndex: 80,
-          background: 'rgba(6,6,10,0.65)', backdropFilter: 'blur(8px)',
-          WebkitBackdropFilter: 'blur(8px)',
+          position: 'fixed', inset: 0, zIndex: 9998,
+          background: 'rgba(6,6,10,0.72)', backdropFilter: 'blur(10px)',
+          WebkitBackdropFilter: 'blur(10px)',
         }}
       />
       <motion.div
@@ -1002,7 +1005,7 @@ function DetailDrawer({ kind, twin, mastery, onClose }: {
         transition={{ type: 'spring', stiffness: 380, damping: 36 }}
         style={{
           position: 'fixed', top: 0, right: 0, bottom: 0, width: 'min(520px, 100vw)',
-          zIndex: 81, background: C.panel,
+          zIndex: 9999, background: C.panel,
           borderLeft: `1px solid ${C.border}`,
           boxShadow: '-20px 0 60px rgba(0,0,0,0.5)',
           display: 'flex', flexDirection: 'column',
@@ -1105,7 +1108,8 @@ function DetailDrawer({ kind, twin, mastery, onClose }: {
           )}
         </div>
       </motion.div>
-    </>
+    </>,
+    document.body,
   )
 }
 

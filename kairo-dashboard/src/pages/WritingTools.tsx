@@ -1,11 +1,13 @@
-import { useState } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Edit3, Expand, Star, Shield, ArrowRight, Copy, Check } from 'lucide-react'
+import { Edit3, Expand, Star, Shield, ArrowRight, Copy, Check, PencilLine, Sparkles, AlertTriangle, BookOpen, Zap } from 'lucide-react'
 import { post } from '../lib/api'
+import { chat } from '../lib/openrouter'
 
 const SCHOOL_ID = 'demo_school'
 
 const TABS = [
+  { id: 'editor',      label: 'Editor',           icon: PencilLine },
   { id: 'improve',     label: 'Tone Improver',    icon: Edit3  },
   { id: 'expand',      label: 'Expand Answer',    icon: Expand },
   { id: 'topper',      label: 'Topper Level',     icon: Star   },
@@ -18,7 +20,7 @@ const label = { fontSize: 11, color: '#71717a', display: 'block', marginBottom: 
 const btn   = (active = true) => ({ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', borderRadius: 9, border: 'none', background: active ? 'linear-gradient(135deg,#7c3aed,#7c3aed)' : '#1c1c1c', color: active ? '#fff' : '#52525b', fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: active ? 'pointer' : 'not-allowed' } as React.CSSProperties)
 
 export default function WritingTools() {
-  const [tab, setTab] = useState('improve')
+  const [tab, setTab] = useState('editor')
 
   return (
     <div style={{ padding: '28px 36px', maxWidth: 900, margin: '0 auto', height: '100%', overflowY: 'auto' }}>
@@ -43,6 +45,7 @@ export default function WritingTools() {
 
       <AnimatePresence mode="wait">
         <motion.div key={tab} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}>
+          {tab === 'editor'     && <Editor />}
           {tab === 'improve'    && <ToneImprover />}
           {tab === 'expand'     && <ExpandTool />}
           {tab === 'topper'     && <TopperTool />}
@@ -67,6 +70,305 @@ function ResultBox({ title, text, color = '#a78bfa' }: { title: string; text: st
       </div>
       <div style={{ fontSize: 13, color: '#e4e4e7', lineHeight: 1.8, whiteSpace: 'pre-wrap' }}>{text}</div>
     </div>
+  )
+}
+
+// ── Editor: live clarity scoring + AI critique ───────────────────────────────
+const WEAK_VERBS = new Set(['got', 'get', 'gets', 'made', 'make', 'makes', 'did', 'do', 'does', 'have', 'has', 'had', 'thing', 'things', 'stuff'])
+const HEDGE_WORDS = new Set(['very', 'really', 'quite', 'somewhat', 'pretty', 'just', 'rather', 'kind', 'sort', 'actually', 'basically', 'literally'])
+const PASSIVE_AUX = ['is being', 'was being', 'are being', 'were being', 'has been', 'have been', 'had been', 'will be', 'be ']
+
+function analyze(text: string) {
+  const trimmed = text.trim()
+  if (!trimmed) {
+    return {
+      words: 0, sentences: 0, paragraphs: 0, avgSentence: 0,
+      gradeLevel: 0, clarity: 0,
+      longSentences: [] as { text: string; words: number }[],
+      passiveCount: 0,
+      weakVerbs: [] as string[],
+      hedges:    [] as string[],
+      repeats:   [] as { word: string; count: number }[],
+    }
+  }
+  const paragraphs = trimmed.split(/\n\s*\n/).filter(Boolean).length
+  const sentencesArr = trimmed.split(/[.!?]+(?:\s|$)/).map(s => s.trim()).filter(Boolean)
+  const sentences = sentencesArr.length
+  const wordsArr = trimmed.toLowerCase().match(/\b[a-z']+\b/g) || []
+  const words = wordsArr.length
+  const avgSentence = sentences ? words / sentences : 0
+
+  // Flesch–Kincaid grade approximation: 0.39 × (W/S) + 11.8 × (Sy/W) − 15.59
+  const syllables = wordsArr.reduce((acc, w) => acc + Math.max(1, (w.match(/[aeiouy]+/g) || []).length), 0)
+  const gradeLevel = words && sentences
+    ? Math.max(1, Math.min(20, +(0.39 * (words / sentences) + 11.8 * (syllables / words) - 15.59).toFixed(1)))
+    : 0
+
+  // Long sentences (> 28 words)
+  const longSentences: { text: string; words: number }[] = []
+  for (const s of sentencesArr) {
+    const wc = (s.match(/\b[a-z']+\b/gi) || []).length
+    if (wc > 28) longSentences.push({ text: s.length > 100 ? s.slice(0, 100) + '…' : s, words: wc })
+  }
+
+  // Passive count
+  let passiveCount = 0
+  const lower = ' ' + trimmed.toLowerCase() + ' '
+  for (const p of PASSIVE_AUX) {
+    const re = new RegExp(`\\b${p.trim()}\\s+\\w+ed\\b`, 'g')
+    const m  = lower.match(re)
+    if (m) passiveCount += m.length
+  }
+
+  // Weak verbs + hedge words
+  const weakVerbs: string[] = []
+  const hedges:    string[] = []
+  for (const w of wordsArr) {
+    if (WEAK_VERBS.has(w) && !weakVerbs.includes(w)) weakVerbs.push(w)
+    if (HEDGE_WORDS.has(w) && !hedges.includes(w))   hedges.push(w)
+  }
+
+  // Repeated content words
+  const stop = new Set(['the','a','an','and','or','but','of','to','in','on','at','for','with','from','by','as','is','are','was','were','be','been','being','it','this','that','these','those','i','you','we','they','he','she','his','her','their','my','our','your','its','if','so','not','no','do','does','did','have','has','had','can','will','would','could','should'])
+  const counts: Record<string, number> = {}
+  for (const w of wordsArr) if (!stop.has(w) && w.length > 3) counts[w] = (counts[w] || 0) + 1
+  const repeats = Object.entries(counts)
+    .filter(([, c]) => c >= 4)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 6)
+    .map(([word, count]) => ({ word, count }))
+
+  // Composite clarity score
+  const sentencePenalty = Math.min(40, longSentences.length * 8 + Math.max(0, (avgSentence - 22) * 1.5))
+  const passivePenalty  = Math.min(25, passiveCount * 5)
+  const weakPenalty     = Math.min(15, weakVerbs.length * 3 + hedges.length * 2)
+  const repeatPenalty   = Math.min(20, repeats.reduce((a, r) => a + r.count - 3, 0))
+  const clarity = Math.max(0, Math.min(100, Math.round(100 - sentencePenalty - passivePenalty - weakPenalty - repeatPenalty)))
+
+  return { words, sentences, paragraphs, avgSentence, gradeLevel, clarity, longSentences, passiveCount, weakVerbs, hedges, repeats }
+}
+
+function Editor() {
+  const [text, setText]   = useState('')
+  const [critique, setCritique] = useState<{ verdict: string; rewrites: string[]; suggestions: string[] } | null>(null)
+  const [loading, setLoading]   = useState(false)
+  const [err, setErr]           = useState('')
+
+  // Persist between visits
+  useEffect(() => {
+    const saved = localStorage.getItem('kairo:writing:draft')
+    if (saved) setText(saved)
+  }, [])
+  useEffect(() => {
+    const t = setTimeout(() => localStorage.setItem('kairo:writing:draft', text), 400)
+    return () => clearTimeout(t)
+  }, [text])
+
+  const stats = useMemo(() => analyze(text), [text])
+
+  async function askKairo() {
+    if (!text.trim() || text.length < 60) { setErr('Write at least 60 characters before asking Kairo.'); return }
+    setErr(''); setLoading(true); setCritique(null)
+    try {
+      const reply = await chat({
+        messages: [
+          { role: 'system', content: `You are Kairo's writing editor. Read the student's text and return ONLY this JSON:
+{"verdict":"1 sentence verdict (max 28 words)","rewrites":["clearer rewrite of the weakest sentence","another rewrite of any other weak sentence"],"suggestions":["1 short tip","1 short tip","1 short tip"]}
+
+Rules:
+- "verdict" is honest but kind, in 2nd person.
+- "rewrites" must be tighter than the original (cut filler, prefer active voice).
+- "suggestions" each ≤ 18 words, specific and actionable.` },
+          { role: 'user', content: text },
+        ],
+      })
+      const m = reply.match(/\{[\s\S]*\}/)
+      if (!m) throw new Error('AI returned no critique.')
+      const parsed = JSON.parse(m[0])
+      setCritique({
+        verdict:    String(parsed.verdict || '').slice(0, 240),
+        rewrites:   Array.isArray(parsed.rewrites)    ? parsed.rewrites.slice(0, 3).map((s: any) => String(s).slice(0, 400))    : [],
+        suggestions: Array.isArray(parsed.suggestions) ? parsed.suggestions.slice(0, 5).map((s: any) => String(s).slice(0, 200)) : [],
+      })
+    } catch (e: any) {
+      setErr(e.message || 'Kairo could not analyze that.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const clarityColor = stats.clarity >= 80 ? '#86efac' : stats.clarity >= 60 ? '#fcd34d' : '#f87171'
+  const clarityLabel = stats.clarity >= 80 ? 'Crystal' : stats.clarity >= 60 ? 'Good' : stats.clarity >= 40 ? 'Cloudy' : 'Foggy'
+
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 14 }}>
+      {/* LEFT — editor */}
+      <div>
+        <div style={{ ...card, padding: 0, overflow: 'hidden' }}>
+          <div style={{
+            padding: '10px 16px', borderBottom: '1px solid #1e1e1e',
+            display: 'flex', alignItems: 'center', gap: 10, fontSize: 11, color: '#71717a',
+          }}>
+            <PencilLine size={12} color="#a78bfa" />
+            <span style={{ flex: 1, fontWeight: 600, letterSpacing: 0.4 }}>Draft · auto-saved on this device</span>
+            <span>{stats.words} words · {stats.sentences} sentences</span>
+          </div>
+          <textarea
+            value={text}
+            onChange={e => setText(e.target.value)}
+            placeholder="Start writing. Kairo scores your clarity in real time on the right →"
+            style={{
+              width: '100%', minHeight: 420, padding: '18px 20px',
+              background: 'transparent', border: 'none', outline: 'none',
+              color: '#fafafa', fontSize: 15, lineHeight: 1.7,
+              fontFamily: '"Charter", "Iowan Old Style", Georgia, serif',
+              resize: 'vertical',
+            }}
+          />
+        </div>
+
+        {err && (
+          <div style={{ marginTop: 12, padding: '10px 14px', background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.25)', borderRadius: 8, fontSize: 12, color: '#f87171' }}>
+            {err}
+          </div>
+        )}
+
+        <button onClick={askKairo} disabled={loading}
+          style={{
+            marginTop: 12, width: '100%', padding: '13px', borderRadius: 10, border: 'none',
+            background: loading ? '#1c1c1c' : 'linear-gradient(135deg, #a78bfa, #7c3aed)',
+            color: loading ? '#71717a' : '#000',
+            fontFamily: 'inherit', fontSize: 14, fontWeight: 700,
+            cursor: loading ? 'not-allowed' : 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+          }}>
+          <Sparkles size={14} /> {loading ? 'Kairo is reading…' : 'Ask Kairo for a critique'}
+        </button>
+
+        <AnimatePresence>
+          {critique && (
+            <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+              style={{ ...card, marginTop: 12, borderColor: 'rgba(167,139,250,0.3)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+                <div style={{ width: 28, height: 28, borderRadius: 8, background: 'linear-gradient(135deg, #a78bfa, #7c3aed)', display: 'grid', placeItems: 'center' }}>
+                  <Sparkles size={13} color="#000" />
+                </div>
+                <span style={{ fontSize: 11, color: '#a78bfa', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.4 }}>Kairo's verdict</span>
+              </div>
+              <p style={{ margin: 0, fontSize: 14, color: '#fafafa', fontWeight: 600, lineHeight: 1.55 }}>"{critique.verdict}"</p>
+
+              {critique.rewrites.length > 0 && (
+                <div style={{ marginTop: 14, paddingTop: 14, borderTop: '1px solid rgba(167,139,250,0.18)' }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: '#71717a', textTransform: 'uppercase', letterSpacing: 1.4, marginBottom: 8 }}>Cleaner rewrites</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {critique.rewrites.map((r, i) => (
+                      <div key={i} style={{ padding: '10px 12px', borderRadius: 8, background: 'rgba(167,139,250,0.06)', border: '1px solid rgba(167,139,250,0.18)', fontSize: 13, color: '#e4e4e7', lineHeight: 1.55, fontFamily: '"Charter", Georgia, serif' }}>
+                        {r}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {critique.suggestions.length > 0 && (
+                <div style={{ marginTop: 14, paddingTop: 14, borderTop: '1px solid rgba(167,139,250,0.18)' }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: '#71717a', textTransform: 'uppercase', letterSpacing: 1.4, marginBottom: 8 }}>How to tighten it</div>
+                  <ul style={{ margin: 0, paddingLeft: 18, display: 'flex', flexDirection: 'column', gap: 5 }}>
+                    {critique.suggestions.map((s, i) => (
+                      <li key={i} style={{ fontSize: 13, color: '#d4d4d8', lineHeight: 1.55 }}>{s}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* RIGHT — live stats panel */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12, position: 'sticky', top: 0, alignSelf: 'flex-start' }}>
+        <div style={{ ...card, textAlign: 'center', padding: 18 }}>
+          <div style={{ fontSize: 10, fontWeight: 700, color: '#71717a', textTransform: 'uppercase', letterSpacing: 1.4 }}>Clarity score</div>
+          <div style={{ position: 'relative', width: 132, height: 132, margin: '10px auto 6px' }}>
+            <svg viewBox="0 0 132 132" style={{ width: '100%', height: '100%', transform: 'rotate(-90deg)' }}>
+              <circle cx={66} cy={66} r={56} fill="none" stroke="#1a1a1a" strokeWidth={10} />
+              <motion.circle cx={66} cy={66} r={56} fill="none"
+                stroke={clarityColor} strokeWidth={10} strokeLinecap="round"
+                strokeDasharray={2 * Math.PI * 56}
+                animate={{ strokeDashoffset: 2 * Math.PI * 56 * (1 - stats.clarity / 100) }}
+                transition={{ duration: 0.6 }} />
+            </svg>
+            <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ fontSize: 36, fontWeight: 800, color: clarityColor, letterSpacing: -1.4, lineHeight: 1 }}>{stats.clarity}</div>
+              <div style={{ fontSize: 10, color: '#52525b', marginTop: 2, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.4 }}>/ 100</div>
+            </div>
+          </div>
+          <div style={{ fontSize: 13, fontWeight: 700, color: clarityColor }}>{clarityLabel}</div>
+        </div>
+
+        <div style={{ ...card, padding: 14 }}>
+          <div style={{ fontSize: 10, fontWeight: 700, color: '#71717a', textTransform: 'uppercase', letterSpacing: 1.4, marginBottom: 10 }}>At a glance</div>
+          <StatRow icon={BookOpen}      label="Grade level" value={stats.gradeLevel ? `${stats.gradeLevel}` : '—'} />
+          <StatRow icon={Zap}           label="Avg sentence" value={stats.avgSentence ? `${stats.avgSentence.toFixed(1)} words` : '—'} />
+          <StatRow icon={Edit3}         label="Paragraphs"   value={`${stats.paragraphs || 0}`} />
+        </div>
+
+        {(stats.longSentences.length > 0 || stats.passiveCount > 0 || stats.weakVerbs.length > 0 || stats.hedges.length > 0 || stats.repeats.length > 0) && (
+          <div style={{ ...card, padding: 14 }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: '#71717a', textTransform: 'uppercase', letterSpacing: 1.4, marginBottom: 10 }}>Issues found</div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+              {stats.longSentences.length > 0 && <IssueChip label={`${stats.longSentences.length} long sentence${stats.longSentences.length === 1 ? '' : 's'}`} color="#f87171" />}
+              {stats.passiveCount > 0       && <IssueChip label={`${stats.passiveCount} passive`} color="#fcd34d" />}
+              {stats.weakVerbs.map(w => <IssueChip key={w} label={`"${w}"`} color="#a78bfa" />)}
+              {stats.hedges.map(w  => <IssueChip key={w} label={`hedge: "${w}"`} color="#c4b5fd" />)}
+              {stats.repeats.map(r => <IssueChip key={r.word} label={`${r.word} ×${r.count}`} color="#5b21b6" />)}
+            </div>
+            {stats.longSentences.length > 0 && (
+              <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid #1a1a1a' }}>
+                {stats.longSentences.slice(0, 2).map((s, i) => (
+                  <div key={i} style={{ fontSize: 11, color: '#a1a1aa', marginBottom: 6, padding: '6px 8px', borderRadius: 6, background: 'rgba(248,113,113,0.06)', borderLeft: '2px solid #f87171' }}>
+                    <span style={{ color: '#f87171', fontWeight: 700 }}>{s.words}w · </span>
+                    {s.text}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {stats.clarity >= 85 && stats.words > 100 && (
+          <div style={{ ...card, padding: 14, borderColor: 'rgba(134,239,172,0.3)', background: 'rgba(134,239,172,0.05)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Sparkles size={13} color="#86efac" />
+              <div style={{ fontSize: 12, color: '#86efac', fontWeight: 700 }}>This reads beautifully.</div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function StatRow({ icon: Icon, label, value }: { icon: any; label: string; value: string }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0' }}>
+      <Icon size={12} color="#71717a" />
+      <span style={{ flex: 1, fontSize: 12, color: '#a1a1aa' }}>{label}</span>
+      <span style={{ fontSize: 13, fontWeight: 700, color: '#fafafa' }}>{value}</span>
+    </div>
+  )
+}
+
+function IssueChip({ label, color }: { label: string; color: string }) {
+  return (
+    <span style={{
+      padding: '4px 9px', borderRadius: 999,
+      background: `${color}14`, border: `1px solid ${color}40`,
+      fontSize: 11, fontWeight: 600, color,
+      display: 'inline-flex', alignItems: 'center', gap: 4,
+    }}>
+      <AlertTriangle size={10} /> {label}
+    </span>
   )
 }
 

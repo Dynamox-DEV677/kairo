@@ -2,8 +2,8 @@
  * Kairo Labs — interactive 3D learning simulations.
  * Lists available labs; clicking one opens the simulation full-bleed.
  */
-import { useState, useEffect, lazy, Suspense } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { useState, useEffect, lazy, Suspense, useRef } from 'react'
+import { motion, AnimatePresence, useMotionValue, useTransform, useSpring } from 'framer-motion'
 import {
   Beaker, Atom, Heart, Activity, Sparkles, Lock,
   ArrowRight, Loader2, Globe, Dna, Rocket, Brain,
@@ -127,8 +127,20 @@ const LABS: Lab[] = [
   },
 ]
 
+// Strict monochrome palette — every subject is a shade of purple
 const SUBJECT_COLORS: Record<string, string> = {
-  Physics: '#818cf8', Chemistry: '#34d399', Biology: '#f472b6', Math: '#fbbf24', Space: '#a78bfa',
+  Physics:   '#c4b5fd',   // light lavender
+  Chemistry: '#a78bfa',   // mid purple
+  Biology:   '#7c3aed',   // deep purple
+  Math:      '#5b21b6',   // dark violet
+  Space:     '#8b5cf6',   // royal purple
+}
+const SUBJECT_TAGS: Record<string, string> = {
+  Physics: 'force · motion · light',
+  Chemistry: 'atoms · bonds · reactions',
+  Biology: 'cells · genes · organs',
+  Math: 'vectors · functions · proofs',
+  Space: 'planets · rockets · stars',
 }
 
 export default function KairoLabs() {
@@ -165,25 +177,56 @@ export default function KairoLabs() {
   const visible = filter === 'all' ? LABS : LABS.filter(l => l.subject === filter)
   const readyCount = LABS.filter(l => l.ready).length
 
+  // Pick a "featured" lab — newest ready entry
+  const featured = visible.find(l => l.ready) || LABS.find(l => l.ready)!
+
   return (
-    <div style={{ padding: '28px 36px', maxWidth: 1100, margin: '0 auto', height: '100%', overflowY: 'auto' }}>
-      {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 22 }}>
+    <div style={{
+      padding: '28px 36px 60px', maxWidth: 1240, margin: '0 auto',
+      height: '100%', overflowY: 'auto',
+      background: `
+        radial-gradient(at 12% 0%, rgba(124,58,237,0.10) 0%, transparent 36%),
+        radial-gradient(at 88% 100%, rgba(91,33,182,0.10) 0%, transparent 42%)`,
+    }}>
+      <style>{`@keyframes kl-glow { 0%,100% { opacity: 0.45 } 50% { opacity: 0.95 } }`}</style>
+
+      {/* Immersive header */}
+      <div style={{ position: 'relative', marginBottom: 26 }}>
         <div style={{
-          width: 44, height: 44, borderRadius: 11,
-          background: 'linear-gradient(135deg, #6366f1, #ec4899)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 0 20px rgba(99,102,241,0.4)', flexShrink: 0,
-        }}>
-          <Beaker size={22} color="#fff" />
-        </div>
-        <div style={{ flex: 1 }}>
-          <h1 style={{ fontSize: 20, fontWeight: 700, color: '#fafafa', margin: 0 }}>Kairo Labs</h1>
-          <p style={{ fontSize: 13, color: '#52525b', marginTop: 4 }}>
-            Interactive 3D simulations · AI-powered explanations · {readyCount} live · {LABS.length - readyCount} coming soon
-          </p>
+          position: 'absolute', top: -20, left: 30,
+          width: 240, height: 240, borderRadius: '50%',
+          background: 'radial-gradient(closest-side, rgba(124,58,237,0.35), transparent 70%)',
+          filter: 'blur(40px)', animation: 'kl-glow 6s ease-in-out infinite',
+          pointerEvents: 'none',
+        }} />
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 18, position: 'relative' }}>
+          <div style={{
+            width: 56, height: 56, borderRadius: 14,
+            background: 'linear-gradient(135deg, #c4b5fd 0%, #7c3aed 60%, #3b0764 100%)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            boxShadow: '0 12px 36px rgba(124,58,237,0.45)', flexShrink: 0,
+          }}>
+            <Beaker size={26} color="#000" />
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 2.2, textTransform: 'uppercase',
+              background: 'linear-gradient(90deg, #c4b5fd, #a78bfa, #7c3aed)', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent' }}>
+              Kairo Labs  ·  3D Simulations
+            </div>
+            <h1 style={{ margin: '4px 0 6px', fontSize: 32, fontWeight: 800, color: '#fafafa', letterSpacing: -0.6, lineHeight: 1.1 }}>
+              Drag the apple, watch it fall.
+            </h1>
+            <p style={{ margin: 0, fontSize: 14, color: '#a1a1aa', maxWidth: 640, lineHeight: 1.6 }}>
+              Every lab is a real, interactive simulation — not a video. Tweak the parameters, hover for AI commentary, and feel the physics in your fingertips. {readyCount} live · ships weekly.
+            </p>
+          </div>
         </div>
       </div>
+
+      {/* Featured lab — bigger panel */}
+      {featured && (
+        <FeaturedLab lab={featured} onOpen={() => setActive(featured)} />
+      )}
 
       {/* Subject filter */}
       <div style={{ display: 'flex', gap: 6, marginBottom: 18, flexWrap: 'wrap' }}>
@@ -211,93 +254,246 @@ export default function KairoLabs() {
         })}
       </div>
 
-      {/* Lab grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 14 }}>
+      {/* Lab grid — larger cards w/ 3D tilt */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 18, perspective: 1200 }}>
         <AnimatePresence>
-          {visible.map((lab, i) => {
-            const Icon = lab.icon
-            const color = SUBJECT_COLORS[lab.subject] || '#a1a1aa'
-            return (
-              <motion.button key={lab.id}
-                initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-                transition={{ delay: i * 0.04 }}
-                whileHover={{ y: lab.ready ? -3 : 0 }}
-                onClick={() => lab.ready && setActive(lab)}
-                disabled={!lab.ready}
-                style={{
-                  background: '#111', border: `1px solid ${lab.ready ? color + '30' : '#1e1e1e'}`,
-                  borderRadius: 14, padding: 18, textAlign: 'left',
-                  cursor: lab.ready ? 'pointer' : 'not-allowed',
-                  fontFamily: 'inherit',
-                  position: 'relative', overflow: 'hidden',
-                  opacity: lab.ready ? 1 : 0.55,
-                }}>
-                {/* Ambient color glow on hover */}
-                {lab.ready && (
-                  <div style={{
-                    position: 'absolute', top: -30, right: -30,
-                    width: 100, height: 100, borderRadius: '50%',
-                    background: color, opacity: 0.12, filter: 'blur(40px)',
-                    pointerEvents: 'none',
-                  }} />
-                )}
-
-                <div style={{ position: 'relative', zIndex: 1 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-                    <div style={{
-                      width: 36, height: 36, borderRadius: 9,
-                      background: `${color}18`, border: `1px solid ${color}30`,
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    }}>
-                      <Icon size={16} color={color} />
-                    </div>
-                    <span style={{ fontSize: 10, color, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.5 }}>
-                      {lab.subject}
-                    </span>
-                    {lab.ready ? (
-                      <span style={{
-                        marginLeft: 'auto', fontSize: 9, fontWeight: 700,
-                        padding: '2px 7px', borderRadius: 4,
-                        background: 'rgba(52,211,153,0.12)', color: '#34d399',
-                        textTransform: 'uppercase', letterSpacing: 1,
-                      }}>Live</span>
-                    ) : (
-                      <Lock size={11} color="#52525b" style={{ marginLeft: 'auto' }} />
-                    )}
-                  </div>
-
-                  <div style={{ fontSize: 15, fontWeight: 700, color: '#fafafa', marginBottom: 4 }}>
-                    {lab.title}
-                  </div>
-                  <div style={{ fontSize: 11, color: '#71717a', marginBottom: 10, fontWeight: 500 }}>
-                    {lab.topic}
-                  </div>
-                  <div style={{ fontSize: 12, color: '#a1a1aa', lineHeight: 1.6, marginBottom: 12 }}>
-                    {lab.desc}
-                  </div>
-                  {lab.ready && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color, fontWeight: 600 }}>
-                      Open lab <ArrowRight size={11} />
-                    </div>
-                  )}
-                </div>
-              </motion.button>
-            )
-          })}
+          {visible.map((lab, i) => (
+            <LabCard key={lab.id} lab={lab} delay={i * 0.04} onOpen={() => lab.ready && setActive(lab)} />
+          ))}
         </AnimatePresence>
       </div>
 
       {/* Footer note */}
       <div style={{
-        marginTop: 22, padding: '12px 16px', borderRadius: 9,
-        background: 'rgba(99,102,241,0.04)', border: '1px solid rgba(99,102,241,0.15)',
-        display: 'flex', alignItems: 'center', gap: 10,
+        marginTop: 28, padding: '14px 18px', borderRadius: 12,
+        background: 'rgba(124,58,237,0.05)', border: '1px solid rgba(124,58,237,0.18)',
+        display: 'flex', alignItems: 'center', gap: 12,
       }}>
-        <Sparkles size={13} color="#a5b4fc" />
-        <p style={{ fontSize: 11.5, color: '#a1a1aa', margin: 0, lineHeight: 1.5 }}>
-          New labs ship every week. Each one is a real interactive simulation, not a video — drag, zoom, tweak parameters, and watch the AI explanation update live.
+        <Sparkles size={14} color="#a78bfa" />
+        <p style={{ fontSize: 12, color: '#a1a1aa', margin: 0, lineHeight: 1.55 }}>
+          <strong style={{ color: '#fafafa' }}>New labs ship every week.</strong>{' '}
+          Drag, zoom, tweak parameters, and watch the AI explanation update live.
         </p>
       </div>
     </div>
+  )
+}
+
+// ─── 3D-tilt lab card ────────────────────────────────────────────────────────
+function LabCard({ lab, delay, onOpen }: { lab: Lab; delay: number; onOpen: () => void }) {
+  const Icon = lab.icon
+  const color = SUBJECT_COLORS[lab.subject] || '#a78bfa'
+  const ref = useRef<HTMLButtonElement>(null)
+
+  // Tilt motion values
+  const mx = useMotionValue(0)
+  const my = useMotionValue(0)
+  const rx = useSpring(useTransform(my, [-120, 120], [9, -9]), { stiffness: 200, damping: 24 })
+  const ry = useSpring(useTransform(mx, [-160, 160], [-12, 12]), { stiffness: 200, damping: 24 })
+  // Spotlight position (% across card)
+  const spotX = useTransform(mx, [-160, 160], ['0%', '100%'])
+  const spotY = useTransform(my, [-120, 120], ['0%', '100%'])
+
+  function onMove(e: React.MouseEvent<HTMLButtonElement>) {
+    if (!ref.current) return
+    const r = ref.current.getBoundingClientRect()
+    mx.set(e.clientX - r.left - r.width / 2)
+    my.set(e.clientY - r.top - r.height / 2)
+  }
+  function onLeave() { mx.set(0); my.set(0) }
+
+  return (
+    <motion.button
+      ref={ref}
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0 }}
+      transition={{ delay, type: 'spring', stiffness: 220, damping: 26 }}
+      onMouseMove={lab.ready ? onMove : undefined}
+      onMouseLeave={lab.ready ? onLeave : undefined}
+      onClick={onOpen}
+      disabled={!lab.ready}
+      style={{
+        rotateX: lab.ready ? rx as any : 0,
+        rotateY: lab.ready ? ry as any : 0,
+        transformStyle: 'preserve-3d',
+        background: 'linear-gradient(180deg, #0e0e16 0%, #06060a 100%)',
+        border: `1px solid ${lab.ready ? color + '30' : '#1a1a26'}`,
+        borderRadius: 18, padding: 0, textAlign: 'left',
+        cursor: lab.ready ? 'pointer' : 'not-allowed',
+        fontFamily: 'inherit',
+        position: 'relative', overflow: 'hidden',
+        opacity: lab.ready ? 1 : 0.55,
+        minHeight: 230,
+        color: 'inherit',
+      }}
+    >
+      {/* Spotlight that follows the cursor */}
+      {lab.ready && (
+        <motion.div style={{
+          position: 'absolute', inset: 0,
+          background: `radial-gradient(360px circle at var(--spx) var(--spy), ${color}22, transparent 55%)`,
+          pointerEvents: 'none',
+          // @ts-expect-error CSS custom props
+          '--spx': spotX, '--spy': spotY,
+        }} />
+      )}
+
+      {/* Static ambient glow */}
+      {lab.ready && (
+        <div style={{
+          position: 'absolute', top: -40, right: -40,
+          width: 160, height: 160, borderRadius: '50%',
+          background: color, opacity: 0.12, filter: 'blur(50px)',
+          pointerEvents: 'none',
+        }} />
+      )}
+
+      <div style={{ position: 'relative', padding: '20px 22px', transform: 'translateZ(30px)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
+          <div style={{
+            width: 42, height: 42, borderRadius: 11,
+            background: `linear-gradient(135deg, ${color}30, ${color}10)`,
+            border: `1px solid ${color}40`,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            boxShadow: lab.ready ? `0 6px 20px ${color}30` : 'none',
+          }}>
+            <Icon size={20} color={color} />
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <span style={{ fontSize: 10, color, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.6 }}>
+              {lab.subject}
+            </span>
+            <div style={{ fontSize: 10, color: '#52525b', marginTop: 2 }}>{SUBJECT_TAGS[lab.subject] || ''}</div>
+          </div>
+          {lab.ready ? (
+            <span style={{
+              fontSize: 9.5, fontWeight: 700,
+              padding: '3px 8px', borderRadius: 999,
+              background: 'rgba(167,139,250,0.14)', color: '#c4b5fd',
+              textTransform: 'uppercase', letterSpacing: 1.2,
+              border: '1px solid rgba(167,139,250,0.3)',
+            }}>● Live</span>
+          ) : (
+            <Lock size={12} color="#52525b" />
+          )}
+        </div>
+
+        <div style={{ fontSize: 18, fontWeight: 800, color: '#fafafa', marginBottom: 5, letterSpacing: -0.3, lineHeight: 1.2 }}>
+          {lab.title}
+        </div>
+        <div style={{ fontSize: 11.5, color: '#71717a', marginBottom: 12, fontWeight: 600, letterSpacing: 0.3 }}>
+          {lab.topic}
+        </div>
+        <div style={{ fontSize: 12.5, color: '#a1a1aa', lineHeight: 1.6, marginBottom: 14 }}>
+          {lab.desc}
+        </div>
+        {lab.ready && (
+          <div style={{
+            display: 'inline-flex', alignItems: 'center', gap: 6,
+            padding: '7px 12px', borderRadius: 8,
+            background: `${color}14`, border: `1px solid ${color}30`,
+            fontSize: 11.5, color, fontWeight: 700, letterSpacing: 0.4,
+          }}>
+            Open lab <ArrowRight size={12} />
+          </div>
+        )}
+      </div>
+    </motion.button>
+  )
+}
+
+// ─── Featured lab — bigger immersive showcase ────────────────────────────────
+function FeaturedLab({ lab, onOpen }: { lab: Lab; onOpen: () => void }) {
+  const Icon = lab.icon
+  const color = SUBJECT_COLORS[lab.subject] || '#a78bfa'
+  const ref = useRef<HTMLButtonElement>(null)
+  const mx = useMotionValue(0)
+  const my = useMotionValue(0)
+  const rx = useSpring(useTransform(my, [-200, 200], [4, -4]), { stiffness: 240, damping: 28 })
+  const ry = useSpring(useTransform(mx, [-400, 400], [-6, 6]), { stiffness: 240, damping: 28 })
+
+  function onMove(e: React.MouseEvent<HTMLButtonElement>) {
+    if (!ref.current) return
+    const r = ref.current.getBoundingClientRect()
+    mx.set(e.clientX - r.left - r.width / 2)
+    my.set(e.clientY - r.top - r.height / 2)
+  }
+  function onLeave() { mx.set(0); my.set(0) }
+
+  return (
+    <motion.button
+      ref={ref}
+      onMouseMove={onMove}
+      onMouseLeave={onLeave}
+      onClick={onOpen}
+      whileTap={{ scale: 0.99 }}
+      style={{
+        width: '100%', marginBottom: 28,
+        rotateX: rx as any, rotateY: ry as any, transformStyle: 'preserve-3d',
+        background: `linear-gradient(135deg, #0e0e16 0%, #06060a 50%, ${color}10 100%)`,
+        border: `1px solid ${color}40`,
+        borderRadius: 22, padding: 0, textAlign: 'left',
+        cursor: 'pointer', fontFamily: 'inherit',
+        position: 'relative', overflow: 'hidden',
+        boxShadow: `0 24px 60px rgba(0,0,0,0.5), 0 0 40px ${color}1a`,
+        color: 'inherit',
+      }}
+    >
+      {/* Backdrop orbs */}
+      <div style={{
+        position: 'absolute', top: '-30%', right: '-10%',
+        width: 380, height: 380, borderRadius: '50%',
+        background: `radial-gradient(closest-side, ${color}30, transparent 70%)`,
+        filter: 'blur(30px)', pointerEvents: 'none',
+      }} />
+      <div style={{
+        position: 'absolute', bottom: '-30%', left: '-10%',
+        width: 320, height: 320, borderRadius: '50%',
+        background: `radial-gradient(closest-side, ${color}24, transparent 70%)`,
+        filter: 'blur(30px)', pointerEvents: 'none',
+      }} />
+
+      <div style={{ position: 'relative', padding: '30px 32px', display: 'grid', gridTemplateColumns: '1fr auto', gap: 24, alignItems: 'center', transform: 'translateZ(40px)' }}>
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
+            <span style={{
+              fontSize: 10, fontWeight: 700, padding: '4px 11px', borderRadius: 999,
+              background: `${color}22`, color, border: `1px solid ${color}40`,
+              textTransform: 'uppercase', letterSpacing: 1.6,
+            }}>
+              Featured · {lab.subject}
+            </span>
+            <span style={{ fontSize: 11, color: '#71717a' }}>{lab.topic}</span>
+          </div>
+          <h2 style={{ margin: 0, fontSize: 30, fontWeight: 800, color: '#fafafa', letterSpacing: -0.6, lineHeight: 1.1 }}>
+            {lab.title}
+          </h2>
+          <p style={{ margin: '10px 0 18px', fontSize: 14, color: '#c4c4c8', lineHeight: 1.65, maxWidth: 520 }}>
+            {lab.desc}
+          </p>
+          <div style={{
+            display: 'inline-flex', alignItems: 'center', gap: 8,
+            padding: '11px 20px', borderRadius: 10,
+            background: `linear-gradient(135deg, ${color}, #7c3aed)`,
+            color: '#000', fontWeight: 800, fontSize: 13,
+            boxShadow: `0 8px 24px ${color}55`,
+          }}>
+            <Sparkles size={14} /> Launch lab <ArrowRight size={14} />
+          </div>
+        </div>
+
+        <div style={{
+          width: 160, height: 160, borderRadius: 28, flexShrink: 0,
+          background: `linear-gradient(135deg, ${color}40, ${color}08)`,
+          border: `1px solid ${color}40`,
+          display: 'grid', placeItems: 'center',
+          boxShadow: `inset 0 0 40px ${color}30, 0 16px 40px ${color}26`,
+          transform: 'translateZ(60px) rotateY(-8deg)',
+        }}>
+          <Icon size={68} color={color} strokeWidth={1.4} />
+        </div>
+      </div>
+    </motion.button>
   )
 }
