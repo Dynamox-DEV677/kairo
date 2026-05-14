@@ -6,7 +6,7 @@ import Landing from './pages/Landing'
 import { GenerationProvider } from './lib/generationContext'
 import { supabase } from './lib/supabase'
 import { refreshIfStale } from './lib/api'
-import { pullFromCloud, syncToCloudNow } from './lib/twin'
+import { pullFromCloud, syncToCloudNow, deleteCloudSnapshot, pauseSyncUntil } from './lib/twin'
 import SprintOverlay, { SPRINT_MIN_MS } from './components/SprintOverlay'
 
 // "landing" = cinematic marketing page (default for new visitors)
@@ -58,6 +58,10 @@ export default function App() {
       setSprintSub(`We\'ll have your study history on this device in a moment.`)
       setSprintingIn(true)
 
+      // Pause any auto-uploads during the pull so we don't race against
+      // the inbound data with a stale push from this fresh device.
+      pauseSyncUntil(Date.now() + SPRINT_MIN_MS + 5_000)
+
       const r = await pullFromCloud()
 
       // Hold the animation a minimum SPRINT_MIN_MS so it doesn't feel glitchy.
@@ -67,10 +71,17 @@ export default function App() {
       if (cancelled) return
 
       if (r.ok && r.restored) {
-        // Show success copy briefly before dismissing
+        // Wipe the cloud copy now that the data has safely landed locally.
+        // Privacy-by-default: the server only holds your snapshot during transit.
+        const wiped = await deleteCloudSnapshot()
+        if (!wiped.ok) console.warn('[sync] could not wipe cloud snapshot:', wiped.reason)
+
         setSprintHead('Your data has arrived.')
-        setSprintSub(`${r.stats?.events ?? 0} events · ${r.stats?.flashcards ?? 0} flashcards · ${r.stats?.formulas ?? 0} formulas restored.`)
-        await new Promise(res => setTimeout(res, 900))
+        setSprintSub(
+          `${r.stats?.events ?? 0} events · ${r.stats?.flashcards ?? 0} flashcards · ${r.stats?.formulas ?? 0} formulas restored.` +
+          (wiped.ok ? '  ·  Cloud copy wiped — your data lives only on this device now.' : '')
+        )
+        await new Promise(res => setTimeout(res, 1200))
       } else if (!r.ok && r.reason !== 'not-signed-in') {
         // Soft-fail — just dismiss the overlay
         console.warn('[sync] auto-pull failed:', r.reason)
@@ -80,8 +91,9 @@ export default function App() {
       sessionStorage.setItem('kairo:sync:pulled', '1')
       setSprintingIn(false)
 
-      // Also push any local-only state back up (e.g. user studied while offline)
-      syncToCloudNow().catch(() => {})
+      // Allow uploads again — the next change on this device will create a
+      // fresh server-side snapshot for the next device hop.
+      pauseSyncUntil(0)
     })()
 
     return () => { cancelled = true }

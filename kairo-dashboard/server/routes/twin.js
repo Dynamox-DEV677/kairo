@@ -336,6 +336,26 @@ router.post('/snapshot', async (req, res) => {
   }
 })
 
+// ── DELETE /api/twin/snapshot ───────────────────────────────────────────────
+// Deletes the cloud copy of the user's snapshot. Called by the client after
+// a successful pull so the data doesn't sit on the server. The next push
+// (5 s after activity on the device that just pulled) will re-create the row.
+router.delete('/snapshot', async (req, res) => {
+  try {
+    const { error } = await supabaseAdmin
+      .from('twin_snapshots')
+      .delete()
+      .eq('user_id', req.user.id)
+    if (error) throw new Error(error.message)
+    res.json({ ok: true, deleted_at: new Date().toISOString() })
+  } catch (e) {
+    if (/relation .* does not exist/i.test(e.message || '')) {
+      return res.json({ ok: true, deleted_at: new Date().toISOString() })  // no-op
+    }
+    res.status(500).json({ error: e.message })
+  }
+})
+
 // ── POST /api/twin/event ────────────────────────────────────────────────────
 // Manual event ingestion — useful for the frontend to log lab opens,
 // concept views, etc. directly. Triggers an async refresh.

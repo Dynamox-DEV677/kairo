@@ -446,7 +446,15 @@ function dedupeBy<T>(arr: T[], keyFn: (x: T) => string): T[] {
 const SYNC_DEBOUNCE_MS = 5_000
 let   syncTimer: number | null = null
 let   syncEnabled: boolean      = true
+let   syncPausedUntil: number   = 0     // epoch ms; scheduled pushes before this are no-ops
 let   onSyncEvent: ((kind: 'pulling' | 'pulled' | 'pushed' | 'idle' | 'error', detail?: any) => void) | null = null
+
+/** Skip the next debounced push until `untilEpochMs`. Used right after a pull
+ *  so the device that just received data doesn't immediately re-upload the
+ *  exact same payload (or worse, an empty state if hydration is mid-flight). */
+export function pauseSyncUntil(untilEpochMs: number) {
+  syncPausedUntil = Math.max(syncPausedUntil, untilEpochMs)
+}
 
 /** Subscribe to sync lifecycle events (one observer at a time — the App shell). */
 export function onSync(handler: typeof onSyncEvent) {
@@ -489,7 +497,10 @@ export function scheduleSyncToCloud() {
   if (typeof window === 'undefined') return
   if (!syncEnabled) return
   if (syncTimer) window.clearTimeout(syncTimer)
-  syncTimer = window.setTimeout(() => { syncToCloudNow().catch(() => {}) }, SYNC_DEBOUNCE_MS)
+  syncTimer = window.setTimeout(() => {
+    if (Date.now() < syncPausedUntil) return    // honor the post-pull pause
+    syncToCloudNow().catch(() => {})
+  }, SYNC_DEBOUNCE_MS)
 }
 
 /** Force an immediate upload. Used on logout / manual "sync now". */
@@ -511,6 +522,29 @@ export async function syncToCloudNow(): Promise<{ ok: boolean; reason?: string }
   } catch (e: any) {
     const reason = String(e?.message || e || 'unknown')
     emitSync('error', { phase: 'push', reason })
+    return { ok: false, reason }
+  }
+}
+
+/**
+ * Wipe the cloud copy of the snapshot.
+ *
+ * Called right after a successful pull on a new device — once the data has
+ * landed in this device's localStorage, the cloud copy serves no purpose
+ * and is deleted so it doesn't linger on the server. The next debounced
+ * push (5 s after activity here) re-creates a fresh row.
+ */
+export async function deleteCloudSnapshot(): Promise<{ ok: boolean; reason?: string }> {
+  if (typeof window === 'undefined') return { ok: false, reason: 'no-window' }
+  const token = localStorage.getItem('kairo_token')
+  if (!token) return { ok: false, reason: 'not-signed-in' }
+  try {
+    const { del } = await import('./api')
+    await del('/twin/snapshot')
+    return { ok: true }
+  } catch (e: any) {
+    const reason = String(e?.message || e || 'unknown')
+    // Soft-fail — cloud might not have a row yet, that's fine
     return { ok: false, reason }
   }
 }

@@ -163,7 +163,7 @@ export default function Settings() {
         </div>
 
         <p style={{ fontSize: 13, color: '#71717a', marginBottom: 14, lineHeight: 1.6 }}>
-          Your study history syncs to your Kairo account automatically. Sign in on any phone or laptop and you'll see the sprint animation as your data arrives.
+          Your study history syncs to your Kairo account automatically. Sign in on any phone or laptop and you'll see the sprint animation as your data arrives — then the cloud copy is wiped immediately so your data only ever lives on the device in your hand.
         </p>
 
         <div style={{
