@@ -645,7 +645,10 @@ function CreateSchool({ onLogin, onBack }: any) {
   async function createSchool() {
     setBusy(true); setErr('')
     try {
-      // 1. Create the school + admin account (no payment session)
+      // 1. Create the school + admin account. The server signs the admin
+      //    in SERVER-SIDE and returns the session tokens directly, so we
+      //    don't need a separate supabase.auth.signInWithPassword call
+      //    (which was 400-ing because of a race / auth-config mismatch).
       const data = await post('/schools/register', {
         school_name:    schoolName.trim(),
         school_email:   email.trim().toLowerCase(),
@@ -654,18 +657,40 @@ function CreateSchool({ onLogin, onBack }: any) {
         owner_password: password,
       })
 
-      // 2. Sign the admin in immediately
-      const { data: signed } = await supabase.auth.signInWithPassword({
-        email:    email.trim().toLowerCase(),
-        password,
-      })
-      if (!signed?.session?.access_token) throw new Error('Sign-in failed after school creation.')
+      let access_token  = data.access_token  || null
+      let refresh_token = data.refresh_token || null
+
+      // 2. Fallback: if the server didn't return tokens (older deploy or
+      //    sign-in failed server-side), try the legacy client-side sign-in.
+      if (!access_token || !refresh_token) {
+        try {
+          const { data: signed } = await supabase.auth.signInWithPassword({
+            email:    email.trim().toLowerCase(),
+            password,
+          })
+          if (signed?.session) {
+            access_token  = signed.session.access_token
+            refresh_token = signed.session.refresh_token
+          }
+        } catch (e) {
+          console.warn('[CreateSchool] client-side sign-in fallback failed:', e)
+        }
+      }
+
+      // 3. Still no tokens? Walk the user to the sign-in screen with a
+      //    friendly note — their school IS created, they just need to
+      //    sign in manually. Better UX than a red error box.
+      if (!access_token || !refresh_token) {
+        setErr(`School created. Sign in with ${email} to access your dashboard.`)
+        setBusy(false)
+        return
+      }
 
       setResult({
         passcode:      data.passcode,
         school_id:     data.school_id,
-        access_token:  signed.session.access_token,
-        refresh_token: signed.session.refresh_token,
+        access_token,
+        refresh_token,
         owner_email:   email.trim().toLowerCase(),
         owner_name:    name.trim(),
         school_name:   schoolName.trim(),

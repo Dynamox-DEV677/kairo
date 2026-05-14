@@ -121,6 +121,30 @@ router.post('/register', async (req, res) => {
       }
     }
 
+    // ── Sign the owner in SERVER-SIDE so the client never has to re-auth.
+    //    This avoids the race / config mismatches that caused
+    //    "Sign-in failed after school creation" on the wizard.
+    let access_token  = null
+    let refresh_token = null
+    let expires_in    = 3600
+    if (owner_email && owner_password) {
+      try {
+        const { data: signed, error: signErr } = await supabaseAdmin.auth.signInWithPassword({
+          email:    owner_email.trim().toLowerCase(),
+          password: owner_password,
+        })
+        if (signErr) {
+          console.warn('[Schools/register] server-side sign-in failed:', signErr.message)
+        } else if (signed?.session) {
+          access_token  = signed.session.access_token  || null
+          refresh_token = signed.session.refresh_token || null
+          expires_in    = signed.session.expires_in    || 3600
+        }
+      } catch (e) {
+        console.warn('[Schools/register] sign-in threw:', e?.message)
+      }
+    }
+
     console.log(`[Schools] ✓ Registered: ${school_name} (${school.id})`)
 
     // Welcome email — fire and forget
@@ -142,6 +166,10 @@ router.post('/register', async (req, res) => {
       passcode:       plainPasscode,
       warning:        'Save this passcode securely — it will never be shown again.',
       owner_account:  ownerAccount,
+      // Session tokens so the client can skip its own auth call:
+      access_token,
+      refresh_token,
+      expires_in,
     })
   } catch (e) {
     res.status(500).json({ error: e.message })
