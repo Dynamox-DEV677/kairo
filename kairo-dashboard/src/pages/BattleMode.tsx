@@ -607,7 +607,7 @@ Tips: each tip is one specific actionable line (max 18 words) — reference the 
 
       {/* Personal stats row */}
       {stats && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: 16 }}>
+        <div className="bm-stats-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: 16 }}>
           <Tile icon={Zap}    label="Total XP"  value={stats.total_xp}             color="#c4b5fd" />
           <Tile icon={Flame}  label="Streak"    value={`${stats.streak}d`}         color="#7c3aed" />
           <Tile icon={Target} label="Avg Acc"   value={`${stats.avg_accuracy}%`}   color="#a78bfa" />

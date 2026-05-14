@@ -330,9 +330,9 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
       {/* HERO — empty state */}
       {!showResult && <Hero onPick={ask} />}
 
-      {/* RESULT — split pane */}
+      {/* RESULT — split pane (stacks vertically on mobile via .ks-result) */}
       {showResult && (
-        <div style={{
+        <div className="ks-result" style={{
           flex: 1, minHeight: 0, position: 'relative', zIndex: 1,
           display: 'grid',
           gridTemplateColumns: 'minmax(0, 1.4fr) minmax(0, 1fr)',

@@ -666,6 +666,58 @@ html, body, #root {
   min-height: 100%;
 }
 
+/* ════════════════════════════════════════════════════════════════════════
+   Page-specific mobile fixes from the latest screenshots
+   ════════════════════════════════════════════════════════════════════════ */
+
+/* Kairo Solver — stack the lesson-video pane and "Kairo says" pane vertically
+   instead of squeezing them side-by-side. */
+.kairo-mobile .ks-result {
+  grid-template-columns: 1fr !important;
+  grid-auto-rows: min-content !important;
+  gap: 12px !important;
+  overflow: auto !important;
+}
+
+/* Battle Mode — 4-stat tile row (Total XP / Streak / Acc / Battles) → 2×2 */
+.kairo-mobile .bm-stats-row {
+  grid-template-columns: repeat(2, 1fr) !important;
+  gap: 8px !important;
+}
+/* Smaller fonts inside each tile so labels don't break into 3 lines */
+.kairo-mobile .bm-stats-row > * { padding: 12px 12px !important; }
+.kairo-mobile .bm-stats-row > * > div:first-child { font-size: 9.5px !important; letter-spacing: 1px !important; }
+.kairo-mobile .bm-stats-row > * > div:nth-child(2) { font-size: 22px !important; }
+
+/* Landing page "demo dashboard" mockup — stack to single column. */
+.kairo-mobile .landing-demo-grid {
+  grid-template-columns: 1fr !important;
+  gap: 12px !important;
+}
+/* The inner 3-stat row of the demo (STREAK / RETENTION / PREDICTED) stays
+   3-col but fonts shrink so it fits a 320 px phone */
+.kairo-mobile .landing-demo-grid [style*="repeat(3, 1fr)"] > * {
+  padding: 8px 10px !important;
+}
+.kairo-mobile .landing-demo-grid [style*="repeat(3, 1fr)"] > * > div:nth-child(2) {
+  font-size: 18px !important;
+}
+
+/* Pomodoro — mode selector tabs (Focus/Short/Long) become full-width row
+   so the labels don't break into multiple lines */
+@media (max-width: 768px) {
+  .kairo-mobile [style*="background: '#111'"][style*="borderRadius: 20"][style*="padding: 28px"] {
+    padding: 18px !important;
+  }
+}
+
+/* Universal: any inline-style 4-col grid → 2-col on mobile.
+   Catches Battle, Adaptive Path, etc. without needing a class. */
+.kairo-mobile [style*="gridTemplateColumns: 'repeat(4, 1fr)'"],
+.kairo-mobile [style*="gridTemplateColumns:'repeat(4, 1fr)'"] {
+  grid-template-columns: repeat(2, 1fr) !important;
+}
+
 /* Catch FormulaSheet-style root `display: 'flex'` + `height: '100%'` + `overflow: 'hidden'`
    layouts and unlock vertical scroll. */
 .kairo-mobile .fs-split { height: auto !important; }

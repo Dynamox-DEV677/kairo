@@ -235,7 +235,11 @@ function PulseHero({ pct, label, twin, pulsing, onRecompute }: {
         pointerEvents: 'none',
       }} />
 
-      <div style={{ position: 'relative', display: 'flex', alignItems: 'flex-start', gap: 16 }}>
+      {/* Stacks vertically on phones: ring on top, label/copy beneath. */}
+      <div style={{
+        position: 'relative', display: 'flex', flexDirection: 'column',
+        alignItems: 'center', textAlign: 'center', gap: 14,
+      }}>
         <div style={{ position: 'relative', width: 200, height: 200, flexShrink: 0 }}>
           <svg viewBox="0 0 200 200" style={{ width: '100%', height: '100%' }}>
             <defs>
@@ -262,7 +266,7 @@ function PulseHero({ pct, label, twin, pulsing, onRecompute }: {
           </svg>
         </div>
 
-        <div style={{ flex: 1, minWidth: 0, paddingTop: 6 }}>
+        <div style={{ width: '100%', minWidth: 0 }}>
           <div style={{ fontSize: 10, fontWeight: 700, color: tone, letterSpacing: 1.8, textTransform: 'uppercase', marginBottom: 4 }}>
             AI Pulse
           </div>

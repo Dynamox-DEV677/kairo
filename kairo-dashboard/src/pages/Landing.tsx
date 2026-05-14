@@ -1052,7 +1052,7 @@ function HeroDashboardMock() {
         <span style={{ marginLeft: 'auto', fontSize: 10, color: C.textFaint, letterSpacing: 1.5, fontWeight: 600 }}>kairo.app / dashboard</span>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '260px 1fr', gap: 14, alignItems: 'start' }}>
+      <div className="landing-demo-grid" style={{ display: 'grid', gridTemplateColumns: '260px 1fr', gap: 14, alignItems: 'start' }}>
         {/* Left panel — Pulse ring */}
         <div style={{
           background: 'rgba(15,15,22,0.7)',
