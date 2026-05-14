@@ -25,11 +25,13 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
   Send, StopCircle, Sparkles, Image as ImageIcon, Loader2,
   ChevronLeft, ChevronRight, Beaker, ExternalLink, BookOpen, Atom,
+  Mic, MicOff,
 } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
+import { recordDoubt } from '../lib/twin'
 
 interface ImageSlide {
   url:         string
@@ -86,8 +88,58 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
   const [resp, setResp]                 = useState<SolverResponse | null>(null)
   const [error, setError]               = useState('')
   const [retryHint, setRetryHint]       = useState('')   // visible during 429 backoff
+  const [voiceOn, setVoiceOn]           = useState(false)
+  const [voiceSupported, setVoiceSupported] = useState(false)
   const abortRef = useRef<AbortController | null>(null)
   const taRef = useRef<HTMLTextAreaElement>(null)
+  const recogRef = useRef<any>(null)
+
+  // ── Web Speech API setup (browser-native, free) ─────────────────────────
+  // Replaces the deleted Voice Tutor page. Toggle the mic, speak your doubt,
+  // it transcribes into the input field. Auto-submits when you stop speaking.
+  useEffect(() => {
+    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
+    if (!SR) { setVoiceSupported(false); return }
+    setVoiceSupported(true)
+    const rec = new SR()
+    rec.continuous = false
+    rec.interimResults = true
+    rec.lang = 'en-IN'
+    rec.onresult = (e: any) => {
+      const transcript = Array.from(e.results)
+        .map((r: any) => r[0]?.transcript || '')
+        .join(' ').trim()
+      setInput(transcript)
+    }
+    rec.onend = () => {
+      setVoiceOn(false)
+      // Auto-submit if we captured something meaningful
+      setTimeout(() => {
+        setInput(prev => {
+          if (prev.trim().length > 3) ask(prev)
+          return prev
+        })
+      }, 50)
+    }
+    rec.onerror = () => setVoiceOn(false)
+    recogRef.current = rec
+    return () => { try { rec.abort() } catch {} }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  function toggleVoice() {
+    if (!recogRef.current) return
+    if (voiceOn) {
+      try { recogRef.current.stop() } catch {}
+      setVoiceOn(false)
+    } else {
+      setInput('')
+      try {
+        recogRef.current.start()
+        setVoiceOn(true)
+      } catch { setVoiceOn(false) }
+    }
+  }
 
   async function ask(q: string) {
     const question = q.trim()
@@ -170,6 +222,19 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
         videoBusy:   true,
       })
       setBusy(false)   // unlock input — user can keep reading
+
+      // ── Persist to unified memory engine ──────────────────────────────
+      // Every successful answer flows into twin.doubts + emits a concept_viewed
+      // event, which downstream pages (Notebook, Concept Map, Mistake Analysis)
+      // read from. Fire-and-forget — failures should never block the UI.
+      try {
+        recordDoubt({
+          question,
+          answer:  text.textExplanation,
+          topic:   text.topicKeyword || undefined,
+          source:  voiceOn ? 'voice' : 'solver',
+        })
+      } catch { /* ignore */ }
 
       // When the video lands, merge it in (independent of images).
       videoPromise.then((v: any) => {
@@ -278,11 +343,13 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
 
       {/* INPUT */}
       <div style={{
-        background: '#0d0d0d', border: '1px solid #1e1e1e',
+        background: '#0d0d0d', border: `1px solid ${voiceOn ? 'rgba(167,139,250,0.55)' : '#1e1e1e'}`,
         borderRadius: 14, padding: 10,
         display: 'flex', alignItems: 'flex-end', gap: 10,
         marginBottom: 18, marginTop: showResult ? 0 : 14,
         position: 'relative', zIndex: 2,
+        transition: 'border-color .2s ease, box-shadow .2s ease',
+        boxShadow: voiceOn ? '0 0 28px rgba(124,58,237,0.35)' : 'none',
       }}>
         <textarea
           ref={taRef}
@@ -290,7 +357,9 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
           onChange={handleInput}
           onKeyDown={onKeyDown}
           rows={1}
-          placeholder={showResult ? 'Ask another question…' : 'Ask anything — physics, biology, math, history…'}
+          placeholder={voiceOn
+            ? 'Listening… speak your doubt'
+            : (showResult ? 'Ask another question…' : 'Ask anything — physics, biology, math, history…')}
           disabled={busy}
           style={{
             flex: 1, background: 'transparent', border: 'none', outline: 'none',
@@ -298,6 +367,25 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
             padding: '8px 6px', lineHeight: 1.5, maxHeight: 140,
           }}
         />
+        {/* Voice toggle — only shown if browser supports Web Speech */}
+        {voiceSupported && !busy && (
+          <button
+            onClick={toggleVoice}
+            title={voiceOn ? 'Stop listening' : 'Speak your doubt'}
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: 6,
+              padding: '8px 12px', borderRadius: 10,
+              background: voiceOn ? 'rgba(167,139,250,0.18)' : 'transparent',
+              border: `1px solid ${voiceOn ? 'rgba(167,139,250,0.55)' : '#22222e'}`,
+              color: voiceOn ? '#c4b5fd' : '#a1a1aa',
+              fontFamily: 'inherit', fontSize: 12, fontWeight: 600,
+              cursor: 'pointer',
+              boxShadow: voiceOn ? '0 0 14px rgba(124,58,237,0.45)' : 'none',
+            }}>
+            {voiceOn ? <Mic size={14} className="kr-voice-pulse" /> : <MicOff size={14} />}
+            {voiceOn ? 'Listening' : 'Voice'}
+          </button>
+        )}
         {busy ? (
           <button onClick={stop} style={btnStop}>
             <StopCircle size={14} /> Stop
@@ -310,6 +398,10 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
             <Send size={14} /> Solve
           </button>
         )}
+        <style>{`
+          @keyframes kr-voice-pulse { 0%,100% { opacity: 1 } 50% { opacity: 0.45 } }
+          .kr-voice-pulse { animation: kr-voice-pulse 1.2s ease-in-out infinite }
+        `}</style>
       </div>
     </div>
   )

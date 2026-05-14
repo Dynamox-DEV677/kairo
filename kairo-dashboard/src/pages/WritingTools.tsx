@@ -15,7 +15,7 @@ const TABS = [
 const card  = { background: '#111', border: '1px solid #1e1e1e', borderRadius: 14, padding: 20 } as React.CSSProperties
 const inp   = { background: '#0d0d0d', border: '1px solid #1e1e1e', borderRadius: 8, padding: '9px 12px', fontSize: 13, color: '#fafafa', fontFamily: 'inherit', outline: 'none', width: '100%' } as React.CSSProperties
 const label = { fontSize: 11, color: '#71717a', display: 'block', marginBottom: 5, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.8 } as React.CSSProperties
-const btn   = (active = true) => ({ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', borderRadius: 9, border: 'none', background: active ? 'linear-gradient(135deg,#6366f1,#7c3aed)' : '#1c1c1c', color: active ? '#fff' : '#52525b', fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: active ? 'pointer' : 'not-allowed' } as React.CSSProperties)
+const btn   = (active = true) => ({ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', borderRadius: 9, border: 'none', background: active ? 'linear-gradient(135deg,#7c3aed,#7c3aed)' : '#1c1c1c', color: active ? '#fff' : '#52525b', fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: active ? 'pointer' : 'not-allowed' } as React.CSSProperties)
 
 export default function WritingTools() {
   const [tab, setTab] = useState('improve')
@@ -34,7 +34,7 @@ export default function WritingTools() {
             padding: '7px 8px', borderRadius: 7, border: 'none', fontFamily: 'inherit',
             fontSize: 12, fontWeight: tab === t.id ? 600 : 400, cursor: 'pointer',
             background: tab === t.id ? '#1e1e2e' : 'transparent',
-            color: tab === t.id ? '#818cf8' : '#52525b', transition: 'all 0.15s',
+            color: tab === t.id ? '#a78bfa' : '#52525b', transition: 'all 0.15s',
           }}>
             <t.icon size={12} /> {t.label}
           </button>
@@ -54,14 +54,14 @@ export default function WritingTools() {
 }
 
 // ── Shared Result Box ─────────────────────────────────────────────────────────
-function ResultBox({ title, text, color = '#818cf8' }: { title: string; text: string; color?: string }) {
+function ResultBox({ title, text, color = '#a78bfa' }: { title: string; text: string; color?: string }) {
   const [copied, setCopied] = useState(false)
   return (
     <div style={{ ...card, marginTop: 16 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
         <span style={{ fontSize: 13, fontWeight: 600, color }}>{title}</span>
         <button onClick={() => { navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 2000) }}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', color: copied ? '#34d399' : '#52525b', display: 'flex', alignItems: 'center', gap: 4, fontSize: 12 }}>
+          style={{ background: 'none', border: 'none', cursor: 'pointer', color: copied ? '#a78bfa' : '#52525b', display: 'flex', alignItems: 'center', gap: 4, fontSize: 12 }}>
           {copied ? <><Check size={12} /> Copied</> : <><Copy size={12} /> Copy</>}
         </button>
       </div>
@@ -109,7 +109,7 @@ function ToneImprover() {
         <label style={label}>Your Text</label>
         <textarea style={{ ...inp, height: 160, resize: 'vertical' }} value={text} onChange={e => setText(e.target.value)} placeholder="Paste your answer or paragraph here…" />
       </div>
-      {err && <p style={{ color: '#f87171', fontSize: 12, marginBottom: 10 }}>{err}</p>}
+      {err && <p style={{ color: '#5b21b6', fontSize: 12, marginBottom: 10 }}>{err}</p>}
       <button onClick={run} disabled={loading} style={btn(!loading)}>
         <ArrowRight size={13} /> {loading ? 'Improving…' : 'Improve Tone'}
       </button>
@@ -155,11 +155,11 @@ function ExpandTool() {
         <label style={label}>Short Answer to Expand</label>
         <textarea style={{ ...inp, height: 140, resize: 'vertical' }} value={text} onChange={e => setText(e.target.value)} placeholder="Write a short 2-3 sentence answer…" />
       </div>
-      {err && <p style={{ color: '#f87171', fontSize: 12, marginBottom: 10 }}>{err}</p>}
+      {err && <p style={{ color: '#5b21b6', fontSize: 12, marginBottom: 10 }}>{err}</p>}
       <button onClick={run} disabled={loading} style={btn(!loading)}>
         <Expand size={13} /> {loading ? 'Expanding…' : `Expand to ${words} words`}
       </button>
-      {result?.expanded && <ResultBox title="✓ Expanded Answer" text={result.expanded} color="#34d399" />}
+      {result?.expanded && <ResultBox title="✓ Expanded Answer" text={result.expanded} color="#a78bfa" />}
     </div>
   )
 }
@@ -182,8 +182,8 @@ function TopperTool() {
 
   return (
     <div>
-      <div style={{ ...card, marginBottom: 16, background: '#1a1a2e', border: '1px solid #6366f130' }}>
-        <p style={{ fontSize: 12, color: '#818cf8', margin: 0 }}>⭐ This tool rewrites your answer the way a top-scorer would write it — with precise vocabulary, strong structure, and exam keywords.</p>
+      <div style={{ ...card, marginBottom: 16, background: '#1a1a2e', border: '1px solid #7c3aed30' }}>
+        <p style={{ fontSize: 12, color: '#a78bfa', margin: 0 }}>⭐ This tool rewrites your answer the way a top-scorer would write it — with precise vocabulary, strong structure, and exam keywords.</p>
       </div>
       <div style={{ marginBottom: 12 }}>
         <label style={label}>Subject</label>
@@ -193,14 +193,14 @@ function TopperTool() {
         <label style={label}>Your Current Answer</label>
         <textarea style={{ ...inp, height: 160, resize: 'vertical' }} value={text} onChange={e => setText(e.target.value)} placeholder="Write your current answer — any quality is fine…" />
       </div>
-      {err && <p style={{ color: '#f87171', fontSize: 12, marginBottom: 10 }}>{err}</p>}
+      {err && <p style={{ color: '#5b21b6', fontSize: 12, marginBottom: 10 }}>{err}</p>}
       <button onClick={run} disabled={loading} style={{ ...btn(!loading), background: loading ? '#1c1c1c' : 'linear-gradient(135deg,#f59e0b,#d97706)' }}>
         <Star size={13} /> {loading ? 'Rewriting…' : 'Make it Topper-Level ✦'}
       </button>
       {result?.rewritten && (
         <div>
-          <ResultBox title="✓ Topper-Level Answer" text={result.rewritten} color="#fbbf24" />
-          <div style={{ ...card, marginTop: 10, background: '#0d1117', border: '1px solid #fbbf2430' }}>
+          <ResultBox title="✓ Topper-Level Answer" text={result.rewritten} color="#c4b5fd" />
+          <div style={{ ...card, marginTop: 10, background: '#0d1117', border: '1px solid #c4b5fd30' }}>
             <p style={{ fontSize: 11, color: '#71717a', margin: 0 }}>Compare your original and the rewritten version. Study the vocabulary and structure differences — that's what examiners reward.</p>
           </div>
         </div>
@@ -224,7 +224,7 @@ function PlagiarismTool() {
     finally { setLoading(false) }
   }
 
-  const riskColors: Record<string, string> = { low: '#34d399', medium: '#fbbf24', high: '#f87171', unknown: '#71717a' }
+  const riskColors: Record<string, string> = { low: '#a78bfa', medium: '#c4b5fd', high: '#5b21b6', unknown: '#71717a' }
 
   return (
     <div>
@@ -235,7 +235,7 @@ function PlagiarismTool() {
         <label style={label}>Text to Check</label>
         <textarea style={{ ...inp, height: 180, resize: 'vertical' }} value={text} onChange={e => setText(e.target.value)} placeholder="Paste the essay or answer to check…" />
       </div>
-      {err && <p style={{ color: '#f87171', fontSize: 12, marginBottom: 10 }}>{err}</p>}
+      {err && <p style={{ color: '#5b21b6', fontSize: 12, marginBottom: 10 }}>{err}</p>}
       <button onClick={run} disabled={loading} style={btn(!loading)}>
         <Shield size={13} /> {loading ? 'Checking…' : 'Check Now'}
       </button>
@@ -263,15 +263,15 @@ function PlagiarismTool() {
             <div style={card}>
               <div style={{ fontSize: 11, fontWeight: 700, color: '#71717a', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 }}>Flagged Phrases</div>
               {result.flags.map((f: any, i: number) => (
-                <div key={i} style={{ fontSize: 12, color: '#fbbf24', marginBottom: 8, padding: '8px 12px', background: '#fbbf2408', borderRadius: 6, borderLeft: '3px solid #fbbf24' }}>
+                <div key={i} style={{ fontSize: 12, color: '#c4b5fd', marginBottom: 8, padding: '8px 12px', background: '#c4b5fd08', borderRadius: 6, borderLeft: '3px solid #c4b5fd' }}>
                   <strong>"{f.phrase}"</strong> — {f.reason}
                 </div>
               ))}
             </div>
           )}
           {result.recommendation && (
-            <div style={{ ...card, marginTop: 10, borderColor: '#34d39930' }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: '#34d399', marginBottom: 6 }}>RECOMMENDATION</div>
+            <div style={{ ...card, marginTop: 10, borderColor: '#a78bfa30' }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: '#a78bfa', marginBottom: 6 }}>RECOMMENDATION</div>
               <p style={{ fontSize: 13, color: '#a1a1aa', margin: 0 }}>{result.recommendation}</p>
             </div>
           )}

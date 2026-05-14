@@ -10,6 +10,7 @@ import {
 } from 'lucide-react'
 import { api } from '../lib/api'
 import { chat } from '../lib/openrouter'
+import { track } from '../lib/twin'
 
 interface Q { q: string; options: string[]; answer: number; explain: string }
 interface DailyChallenge {
@@ -147,6 +148,24 @@ Return ONLY a JSON array:
 
   function pickAnswer(i: number) {
     const next = [...answers]; next[idx] = i; setAnswers(next)
+    // Feed unified memory engine — every battle answer flows into the twin
+    // so Mistake Analysis + Kairo OS see your battle performance too.
+    try {
+      const q = questions[idx]
+      if (q && daily) {
+        const correct = i === q.answer
+        track({
+          type: 'quiz_answered',
+          subject: daily.challenge.subject,
+          topic:   daily.challenge.topic,
+          correct,
+          score:   correct ? 100 : 0,
+          difficulty: ({ easy: 0.3, medium: 0.55, hard: 0.8 } as any)[daily.challenge.difficulty] ?? 0.55,
+          modality: 'interactive',
+          payload: { source: 'battle' },
+        })
+      }
+    } catch { /* ignore */ }
     setTimeout(() => advance(i), 250)
   }
 
@@ -157,7 +176,7 @@ Return ONLY a JSON array:
     return (
       <div style={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
         <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-          style={{ width: 36, height: 36, borderRadius: '50%', border: '3px solid #1e1e2e', borderTopColor: '#fbbf24' }} />
+          style={{ width: 36, height: 36, borderRadius: '50%', border: '3px solid #1e1e2e', borderTopColor: '#c4b5fd' }} />
         <p style={{ fontSize: 14, color: '#a1a1aa' }}>Generating today's battle…</p>
       </div>
     )
@@ -168,17 +187,17 @@ Return ONLY a JSON array:
     const q = questions[idx]
     if (!q) return null
     const pct = (secsLeft / 20) * 100
-    const color = secsLeft < 5 ? '#f87171' : secsLeft < 10 ? '#fbbf24' : '#34d399'
+    const color = secsLeft < 5 ? '#5b21b6' : secsLeft < 10 ? '#c4b5fd' : '#a78bfa'
     return (
       <div style={{ padding: '28px 36px', maxWidth: 760, margin: '0 auto', height: '100%', overflowY: 'auto' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 22 }}>
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 11, color: '#fbbf24', marginBottom: 6, fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase' }}>
+            <div style={{ fontSize: 11, color: '#c4b5fd', marginBottom: 6, fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase' }}>
               ⚡ Battle · Question {idx + 1} of {questions.length}
             </div>
             <div style={{ height: 4, background: '#1a1a1a', borderRadius: 2, overflow: 'hidden' }}>
               <motion.div animate={{ width: `${((idx + 1) / questions.length) * 100}%` }}
-                style={{ height: '100%', background: 'linear-gradient(90deg,#fbbf24,#fb923c)' }} />
+                style={{ height: '100%', background: 'linear-gradient(90deg,#c4b5fd,#7c3aed)' }} />
             </div>
           </div>
           <div style={{ width: 64, height: 64, position: 'relative' }}>
@@ -207,14 +226,14 @@ Return ONLY a JSON array:
                 onClick={() => pickAnswer(i)} disabled={answers[idx] !== null && answers[idx] !== undefined}
                 style={{
                   padding: '13px 16px', borderRadius: 10,
-                  border: `1px solid ${isPicked ? '#fbbf24' : '#1e1e1e'}`,
+                  border: `1px solid ${isPicked ? '#c4b5fd' : '#1e1e1e'}`,
                   background: isPicked ? 'rgba(251,191,36,0.12)' : '#111',
                   cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left',
                   display: 'flex', alignItems: 'center', gap: 12,
                 }}>
                 <div style={{
                   width: 26, height: 26, borderRadius: 7, flexShrink: 0,
-                  background: isPicked ? '#fbbf24' : '#1a1a1a',
+                  background: isPicked ? '#c4b5fd' : '#1a1a1a',
                   color: isPicked ? '#000' : '#71717a',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   fontSize: 12, fontWeight: 700,
@@ -237,17 +256,17 @@ Return ONLY a JSON array:
       <div style={{ padding: '28px 36px', maxWidth: 720, margin: '0 auto', height: '100%', overflowY: 'auto' }}>
         <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
           style={{ ...card, padding: 32, textAlign: 'center', marginBottom: 18 }}>
-          <Trophy size={48} color="#fbbf24" style={{ marginBottom: 14 }} />
+          <Trophy size={48} color="#c4b5fd" style={{ marginBottom: 14 }} />
           <h2 style={{ fontSize: 28, fontWeight: 800, color: '#fafafa', margin: 0, marginBottom: 6 }}>
             Battle complete!
           </h2>
           <p style={{ fontSize: 14, color: '#a1a1aa', margin: 0, marginBottom: 24 }}>
-            You got <strong style={{ color: '#34d399' }}>{correct}</strong> out of <strong>{total}</strong> · accuracy {Math.round((correct / total) * 100)}%
+            You got <strong style={{ color: '#a78bfa' }}>{correct}</strong> out of <strong>{total}</strong> · accuracy {Math.round((correct / total) * 100)}%
           </p>
           <div style={{
             display: 'inline-flex', alignItems: 'center', gap: 8,
             padding: '12px 22px', borderRadius: 10,
-            background: 'linear-gradient(135deg,#fbbf24,#fb923c)',
+            background: 'linear-gradient(135deg,#c4b5fd,#7c3aed)',
             color: '#000', fontFamily: 'inherit', fontSize: 18, fontWeight: 800,
           }}>
             <Zap size={18} /> +{xp} XP
@@ -258,7 +277,7 @@ Return ONLY a JSON array:
         <button onClick={backToLobby}
           style={{
             width: '100%', padding: '12px', borderRadius: 10, border: 'none',
-            background: 'linear-gradient(135deg, #fbbf24, #fb923c)',
+            background: 'linear-gradient(135deg, #c4b5fd, #7c3aed)',
             color: '#000', fontFamily: 'inherit', fontSize: 14, fontWeight: 700,
             cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
           }}>
@@ -275,7 +294,7 @@ Return ONLY a JSON array:
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 22 }}>
         <div style={{
           width: 44, height: 44, borderRadius: 11,
-          background: 'linear-gradient(135deg, #fbbf24, #fb923c)',
+          background: 'linear-gradient(135deg, #c4b5fd, #7c3aed)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           boxShadow: '0 0 18px rgba(251,191,36,0.4)', flexShrink: 0,
         }}>
@@ -298,7 +317,7 @@ Return ONLY a JSON array:
       </div>
 
       {err && (
-        <div style={{ marginBottom: 14, padding: '10px 14px', background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.25)', borderRadius: 8, fontSize: 12, color: '#f87171' }}>
+        <div style={{ marginBottom: 14, padding: '10px 14px', background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.25)', borderRadius: 8, fontSize: 12, color: '#5b21b6' }}>
           {err}
         </div>
       )}
@@ -306,10 +325,10 @@ Return ONLY a JSON array:
       {/* Personal stats row */}
       {stats && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: 16 }}>
-          <Tile icon={Zap}    label="Total XP"  value={stats.total_xp}             color="#fbbf24" />
-          <Tile icon={Flame}  label="Streak"    value={`${stats.streak}d`}         color="#fb923c" />
-          <Tile icon={Target} label="Avg Acc"   value={`${stats.avg_accuracy}%`}   color="#34d399" />
-          <Tile icon={Award}  label="Battles"   value={stats.battles}              color="#818cf8" />
+          <Tile icon={Zap}    label="Total XP"  value={stats.total_xp}             color="#c4b5fd" />
+          <Tile icon={Flame}  label="Streak"    value={`${stats.streak}d`}         color="#7c3aed" />
+          <Tile icon={Target} label="Avg Acc"   value={`${stats.avg_accuracy}%`}   color="#a78bfa" />
+          <Tile icon={Award}  label="Battles"   value={stats.battles}              color="#a78bfa" />
         </div>
       )}
 
@@ -322,9 +341,9 @@ Return ONLY a JSON array:
             borderColor: 'rgba(251,191,36,0.3)',
           }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
-            <Sparkles size={16} color="#fbbf24" />
+            <Sparkles size={16} color="#c4b5fd" />
             <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 11, color: '#fbbf24', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1 }}>
+              <div style={{ fontSize: 11, color: '#c4b5fd', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1 }}>
                 Today's Challenge · {daily.date}
               </div>
               <h3 style={{ fontSize: 18, fontWeight: 800, color: '#fafafa', margin: 0, marginTop: 4 }}>
@@ -332,14 +351,14 @@ Return ONLY a JSON array:
               </h3>
               <p style={{ fontSize: 12, color: '#a1a1aa', margin: 0, marginTop: 4 }}>
                 {daily.challenge.subject} · {daily.questions} questions · 20s each ·
-                <span style={{ color: '#fbbf24', fontWeight: 700 }}> {daily.xp_per_correct} XP</span> per correct
+                <span style={{ color: '#c4b5fd', fontWeight: 700 }}> {daily.xp_per_correct} XP</span> per correct
               </p>
             </div>
           </div>
           <button onClick={startDaily} disabled={daily.already_played}
             style={{
               width: '100%', padding: '13px', borderRadius: 10, border: 'none',
-              background: daily.already_played ? '#1c1c1c' : 'linear-gradient(135deg, #fbbf24, #fb923c)',
+              background: daily.already_played ? '#1c1c1c' : 'linear-gradient(135deg, #c4b5fd, #7c3aed)',
               color: daily.already_played ? '#52525b' : '#000',
               fontFamily: 'inherit', fontSize: 14, fontWeight: 700,
               cursor: daily.already_played ? 'not-allowed' : 'pointer',
@@ -354,7 +373,7 @@ Return ONLY a JSON array:
       {/* Leaderboard */}
       <div style={{ ...card, padding: 18 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-          <Trophy size={15} color="#fbbf24" />
+          <Trophy size={15} color="#c4b5fd" />
           <h3 style={{ fontSize: 14, fontWeight: 700, color: '#fafafa', margin: 0, flex: 1 }}>School Leaderboard</h3>
           <div style={{ display: 'flex', gap: 4, background: '#0d0d0d', border: '1px solid #1e1e1e', borderRadius: 8, padding: 3 }}>
             {(['today', 'week', 'all'] as const).map(r => (
@@ -362,7 +381,7 @@ Return ONLY a JSON array:
                 style={{
                   padding: '5px 12px', borderRadius: 6, border: 'none',
                   background: tab === r ? '#1e1e2e' : 'transparent',
-                  color: tab === r ? '#fbbf24' : '#52525b',
+                  color: tab === r ? '#c4b5fd' : '#52525b',
                   fontFamily: 'inherit', fontSize: 11, fontWeight: 600, cursor: 'pointer',
                   textTransform: 'capitalize',
                 }}>{r}</button>
@@ -407,7 +426,7 @@ function Tile({ icon: Icon, label, value, color }: { icon: any; label: string; v
 
 function LeaderRow({ l, highlightSelf }: { l: Leader; highlightSelf?: boolean }) {
   const RankIcon = l.rank === 1 ? Crown : l.rank === 2 ? Medal : l.rank === 3 ? Medal : null
-  const rankColor = l.rank === 1 ? '#fbbf24' : l.rank === 2 ? '#a1a1aa' : l.rank === 3 ? '#fb923c' : '#52525b'
+  const rankColor = l.rank === 1 ? '#c4b5fd' : l.rank === 2 ? '#a1a1aa' : l.rank === 3 ? '#7c3aed' : '#52525b'
   return (
     <div style={{
       display: 'flex', alignItems: 'center', gap: 12,
@@ -423,7 +442,7 @@ function LeaderRow({ l, highlightSelf }: { l: Leader; highlightSelf?: boolean })
       </div>
       <div style={{
         width: 28, height: 28, borderRadius: 7, flexShrink: 0,
-        background: l.avatar_url ? 'transparent' : 'linear-gradient(135deg,#6366f1,#7c3aed)',
+        background: l.avatar_url ? 'transparent' : 'linear-gradient(135deg,#7c3aed,#7c3aed)',
         overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center',
         color: '#fff', fontSize: 11, fontWeight: 700,
       }}>
@@ -438,7 +457,7 @@ function LeaderRow({ l, highlightSelf }: { l: Leader; highlightSelf?: boolean })
         </div>
       </div>
       <div style={{ textAlign: 'right', flexShrink: 0 }}>
-        <div style={{ fontSize: 14, fontWeight: 800, color: '#fbbf24', lineHeight: 1 }}>{l.xp}</div>
+        <div style={{ fontSize: 14, fontWeight: 800, color: '#c4b5fd', lineHeight: 1 }}>{l.xp}</div>
         <div style={{ fontSize: 9, color: '#52525b', textTransform: 'uppercase', letterSpacing: 1, marginTop: 2 }}>XP</div>
       </div>
     </div>

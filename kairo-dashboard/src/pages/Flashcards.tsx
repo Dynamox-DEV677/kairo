@@ -4,6 +4,7 @@ import { BookMarked, ChevronLeft, ChevronRight, Sparkles, RotateCcw } from 'luci
 import { chat } from '../lib/openrouter'
 import { usePageGeneration } from '../lib/generationContext'
 import { saveToNotebook } from '../lib/notebook'
+import { recordFlashcard } from '../lib/twin'
 
 const SYSTEM = `You are Kairo, an expert tutor for Indian school students.
 When given a chapter or topic, generate exactly 8-12 flashcards in this JSON format:
@@ -74,6 +75,21 @@ export default function Flashcards() {
 
       setCards(valid)
 
+      // ── Persist every card into the unified memory engine (twin) ────────
+      // This lets Notebook's "Auto-collected" strip + future Kairo OS deck
+      // viewer see every card across every generation. Each card gets its
+      // own SRS row (initial ease 2.5, dueAt = now).
+      try {
+        for (const c of valid) {
+          recordFlashcard({
+            front:   c.front,
+            back:    c.back,
+            topic:   topic,
+            source:  'auto-from-doubt',
+          })
+        }
+      } catch { /* ignore */ }
+
       // Auto-save to notebook (best-effort, fire-and-forget)
       saveToNotebook({
         kind: 'flashcards',
@@ -112,7 +128,7 @@ export default function Flashcards() {
           value={topic}
           onChange={e => setTopic(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && generate()}
-          onFocus={e => (e.target as HTMLInputElement).style.borderColor = '#6366f1'}
+          onFocus={e => (e.target as HTMLInputElement).style.borderColor = '#a78bfa'}
           onBlur={e => (e.target as HTMLInputElement).style.borderColor = '#1e1e1e'}
         />
         <motion.button
@@ -122,11 +138,11 @@ export default function Flashcards() {
           style={{
             display: 'flex', alignItems: 'center', gap: 7,
             padding: '10px 20px', borderRadius: 10, border: 'none',
-            background: topic.trim() ? 'linear-gradient(135deg, #6366f1, #7c3aed)' : '#1c1c1c',
+            background: topic.trim() ? 'linear-gradient(135deg, #7c3aed, #5b21b6)' : '#1c1c1c',
             color: topic.trim() ? '#fff' : '#52525b',
             fontFamily: 'inherit', fontSize: 14, fontWeight: 600,
             cursor: topic.trim() ? 'pointer' : 'not-allowed',
-            boxShadow: topic.trim() ? '0 0 20px rgba(99,102,241,0.35)' : 'none',
+            boxShadow: topic.trim() ? '0 0 20px rgba(124,58,237,0.45)' : 'none',
             flexShrink: 0, transition: 'all 0.2s',
           }}
         >

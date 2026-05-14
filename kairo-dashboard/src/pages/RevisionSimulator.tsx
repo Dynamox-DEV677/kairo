@@ -12,6 +12,7 @@ import {
   Trophy, RefreshCw, Brain, AlertTriangle,
 } from 'lucide-react'
 import { chat } from '../lib/openrouter'
+import { getMistakes, track } from '../lib/twin'
 
 interface Question {
   q:        string
@@ -47,6 +48,23 @@ export default function RevisionSimulator() {
 
   const loadMemory = useCallback(async () => {
     try {
+      // PRIMARY: read directly from the unified twin memory engine —
+      // this is the new source of truth for weak topics. getMistakes()
+      // returns severity-ranked rows pulled from every quiz / lab / battle.
+      const mistakes = getMistakes()
+      if (mistakes.length > 0) {
+        const items = mistakes.slice(0, 12).map(m => ({
+          topic:   m.topic,
+          subject: m.subject,
+        }))
+        setWeakTopics(items)
+        // Auto-select the top 5 highest-severity topics
+        setPicked(items.slice(0, 5).map(x => x.topic))
+        setMemoryReady(true)
+        return
+      }
+      // FALLBACK: legacy backend /api/memory (deprecated, kept for users
+      // with v2 data who haven't fed the new twin engine yet)
       const r = await fetch('/api/memory', {
         headers: { Authorization: `Bearer ${localStorage.getItem('kairo_token') || ''}` },
       })
@@ -131,6 +149,23 @@ export default function RevisionSimulator() {
     const next = [...answers]
     next[idx] = i
     setAnswers(next)
+    // Feed unified memory engine — every answer becomes a twin event so
+    // Mistake Analysis / Concept Map / Kairo OS update in real time.
+    try {
+      const q = questions[idx]
+      if (q) {
+        const correct = i === q.answer
+        track({
+          type: 'quiz_answered',
+          subject: q.subject,
+          topic:   q.topic,
+          correct,
+          score:   correct ? 100 : 0,
+          difficulty: ({ easy: 0.3, medium: 0.55, hard: 0.8 } as any)[diff.id] ?? 0.5,
+          modality: 'interactive',
+        })
+      }
+    } catch { /* ignore */ }
     setTimeout(() => advance(i), 250)
   }
 

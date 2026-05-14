@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Brain, CheckCircle, XCircle, Trophy, RotateCcw, History } from 'lucide-react'
+import { Brain, CheckCircle, XCircle, Trophy, RotateCcw, History, Target, Zap, BarChart3, Award, ArrowRight } from 'lucide-react'
 import { post, get } from '../lib/api'
+import { track } from '../lib/twin'
 
 const SCHOOL_ID = 'demo_school'
 
@@ -139,13 +140,20 @@ function SetupScreen({ form, setForm, onStart, loading, err }: any) {
       <div style={card}>
         <h3 style={{ fontSize: 14, fontWeight: 700, color: '#fafafa', margin: '0 0 14px' }}>How it works</h3>
         {[
-          ['🎯', 'AI generates MCQ questions', 'Board-pattern questions at your chosen difficulty'],
-          ['⚡', 'Instant feedback', 'See if you\'re right immediately with explanation'],
-          ['📊', 'Score tracking', 'Track performance over time in History'],
-          ['🏆', 'XP rewards', 'Earn XP for completing quizzes and perfect scores'],
-        ].map(([icon, title, desc]) => (
-          <div key={title as string} style={{ display: 'flex', gap: 12, marginBottom: 14 }}>
-            <span style={{ fontSize: 20 }}>{icon}</span>
+          [Target,   'AI generates MCQ questions', 'Board-pattern questions at your chosen difficulty'],
+          [Zap,      'Instant feedback', "See if you're right immediately with explanation"],
+          [BarChart3,'Score tracking', 'Track performance over time in History'],
+          [Award,    'XP rewards', 'Earn XP for completing quizzes and perfect scores'],
+        ].map(([Icon, title, desc]: any) => (
+          <div key={title as string} style={{ display: 'flex', gap: 12, marginBottom: 14, alignItems: 'flex-start' }}>
+            <div style={{
+              width: 30, height: 30, borderRadius: 8, flexShrink: 0,
+              background: 'rgba(167,139,250,0.12)',
+              border: '1px solid rgba(167,139,250,0.32)',
+              display: 'grid', placeItems: 'center',
+            }}>
+              <Icon size={14} color="#a78bfa" />
+            </div>
             <div>
               <div style={{ fontSize: 13, fontWeight: 600, color: '#e4e4e7' }}>{title}</div>
               <div style={{ fontSize: 11, color: '#71717a' }}>{desc}</div>
@@ -175,6 +183,19 @@ function QuizScreen({ questions, onComplete }: any) {
     const correct = letter === q.correct
     if (correct) setScore(s => s + 1)
     setAnswers(a => [...a, { question_index: index, answer: letter, correct }])
+    // Feed the unified memory engine so Mistake Analysis + Concept Map +
+    // Kairo OS see this attempt. Fire-and-forget.
+    try {
+      track({
+        type:    'quiz_answered',
+        subject: (q as any).subject,
+        topic:   (q as any).topic,
+        correct,
+        score:   correct ? 100 : 0,
+        difficulty: ({ easy: 0.3, medium: 0.5, hard: 0.75 } as any)[(q as any).difficulty] ?? 0.5,
+        modality: 'interactive',
+      })
+    } catch { /* ignore */ }
   }
 
   function next() {
@@ -263,7 +284,7 @@ function QuizScreen({ questions, onComplete }: any) {
 
         {revealed && (
           <button onClick={handleNext} style={{ ...btn(), width: '100%', justifyContent: 'center' }}>
-            {index + 1 >= questions.length ? '📊 See Results' : 'Next Question →'}
+            {index + 1 >= questions.length ? (<><BarChart3 size={13} /> See Results</>) : (<>Next Question <ArrowRight size={13} /></>)}
           </button>
         )}
       </div>

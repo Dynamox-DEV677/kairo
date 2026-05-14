@@ -11,6 +11,7 @@ import {
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { api } from '../lib/api'
+import { listDoubts, listConcepts, listFormulas, type Doubt, type Concept, type Formula } from '../lib/twin'
 
 type Kind = 'flashcards' | 'summary' | 'doubt' | 'concept_map' | 'note' | 'plan' | 'grade'
 
@@ -27,14 +28,15 @@ interface Note {
   updated_at: string
 }
 
+// Monochrome purple — kind colors are now 3 shades of purple instead of rainbow.
 const KIND_META: Record<Kind, { label: string; icon: any; color: string }> = {
-  flashcards:  { label: 'Flashcards',  icon: BookMarked,    color: '#34d399' },
-  summary:     { label: 'Summary',     icon: FileText,      color: '#fb923c' },
-  doubt:       { label: 'Doubt',       icon: MessageCircle, color: '#818cf8' },
-  concept_map: { label: 'Concept Map', icon: Network,       color: '#a78bfa' },
-  note:        { label: 'Note',        icon: StickyNote,    color: '#fbbf24' },
-  plan:        { label: 'Study Plan',  icon: Calendar,      color: '#f472b6' },
-  grade:       { label: 'Graded',      icon: CheckCircle2,  color: '#38bdf8' },
+  flashcards:  { label: 'Flashcards',  icon: BookMarked,    color: '#a78bfa' },
+  summary:     { label: 'Summary',     icon: FileText,      color: '#c4b5fd' },
+  doubt:       { label: 'Doubt',       icon: MessageCircle, color: '#a78bfa' },
+  concept_map: { label: 'Concept Map', icon: Network,       color: '#7c3aed' },
+  note:        { label: 'Note',        icon: StickyNote,    color: '#c4b5fd' },
+  plan:        { label: 'Study Plan',  icon: Calendar,      color: '#a78bfa' },
+  grade:       { label: 'Graded',      icon: CheckCircle2,  color: '#7c3aed' },
 }
 
 const card: React.CSSProperties = { background: '#111', border: '1px solid #1e1e1e', borderRadius: 14 }
@@ -98,13 +100,13 @@ export default function Notebook() {
 
   return (
     <div style={{ padding: '28px 36px', maxWidth: 1200, margin: '0 auto', height: '100%', overflowY: 'hidden', display: 'flex', flexDirection: 'column' }}>
-      {/* Header */}
+      {/* Header — monochrome purple per strict palette rule */}
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 20, flexShrink: 0 }}>
         <div style={{
           width: 44, height: 44, borderRadius: 11,
-          background: 'linear-gradient(135deg, #fbbf24, #f59e0b)',
+          background: 'linear-gradient(135deg, #7c3aed, #5b21b6)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 0 18px rgba(251,191,36,0.35)', flexShrink: 0,
+          boxShadow: '0 0 18px rgba(124,58,237,0.45)', flexShrink: 0,
         }}>
           <BookOpen size={22} color="#fff" />
         </div>
@@ -116,7 +118,7 @@ export default function Notebook() {
         </div>
         <button onClick={() => setCreating(true)} style={{
           padding: '9px 14px', borderRadius: 9, border: 'none',
-          background: 'linear-gradient(135deg,#6366f1,#7c3aed)', color: '#fff',
+          background: 'linear-gradient(135deg, #7c3aed, #5b21b6)', color: '#fff',
           fontFamily: 'inherit', fontSize: 12, fontWeight: 600, cursor: 'pointer',
           display: 'flex', alignItems: 'center', gap: 6,
         }}>
@@ -130,6 +132,9 @@ export default function Notebook() {
           <RefreshCw size={12} style={{ animation: loading ? 'spin 0.8s linear infinite' : 'none' }} />
         </button>
       </div>
+
+      {/* Auto-collected from unified memory engine — doubts + concepts + formulas */}
+      <AutoCollectedStrip />
 
       {/* Search + filters */}
       <div style={{ display: 'flex', gap: 10, marginBottom: 14, flexShrink: 0 }}>
@@ -232,6 +237,114 @@ export default function Notebook() {
       </AnimatePresence>
     </div>
   )
+}
+
+// ─── Auto-collected strip ──────────────────────────────────────────────────
+// Pulls live data from the unified memory engine (twin.ts):
+//   • Recent doubts the user asked the Solver
+//   • Concepts auto-discovered from quizzes/labs
+//   • Formulas collected during study
+// This is the "AI second brain auto-fills itself" piece from the spec.
+function AutoCollectedStrip() {
+  const [doubts, setDoubts]     = useState<Doubt[]>([])
+  const [concepts, setConcepts] = useState<Concept[]>([])
+  const [formulas, setFormulas] = useState<Formula[]>([])
+  const [tab, setTab] = useState<'doubts' | 'concepts' | 'formulas'>('doubts')
+
+  function reload() {
+    setDoubts(listDoubts(20))
+    setConcepts(listConcepts().slice(0, 24))
+    setFormulas(listFormulas())
+  }
+  useEffect(() => {
+    reload()
+    const onStorage = (e: StorageEvent) => {
+      if (e.key?.startsWith('kairo:twin:')) reload()
+    }
+    window.addEventListener('storage', onStorage)
+    return () => window.removeEventListener('storage', onStorage)
+  }, [])
+
+  const totals = { doubts: doubts.length, concepts: concepts.length, formulas: formulas.length }
+  const anyData = totals.doubts + totals.concepts + totals.formulas > 0
+  if (!anyData) return null
+
+  return (
+    <div style={{
+      marginBottom: 14, padding: 14,
+      background: 'rgba(124,58,237,0.04)',
+      border: '1px solid rgba(167,139,250,0.22)',
+      borderRadius: 12,
+      flexShrink: 0,
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 10 }}>
+        <span style={{
+          fontSize: 10.5, fontWeight: 700, color: '#c4b5fd',
+          textTransform: 'uppercase', letterSpacing: 1.6,
+        }}>
+          Auto-collected from your Kairo memory
+        </span>
+        <div style={{ display: 'flex', gap: 4, marginLeft: 'auto' }}>
+          <Tab active={tab === 'doubts'}   label={`Doubts ${totals.doubts}`}     onClick={() => setTab('doubts')} />
+          <Tab active={tab === 'concepts'} label={`Concepts ${totals.concepts}`} onClick={() => setTab('concepts')} />
+          <Tab active={tab === 'formulas'} label={`Formulas ${totals.formulas}`} onClick={() => setTab('formulas')} />
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, maxHeight: 90, overflowY: 'auto' }}>
+        {tab === 'doubts' && doubts.map(d => (
+          <span key={d.id} title={d.question} style={chipStyle()}>
+            {d.topic ? <span style={{ textTransform: 'capitalize' }}>{d.topic}</span> : d.question.slice(0, 32)}
+            {d.question.length > 32 && !d.topic ? '…' : ''}
+          </span>
+        ))}
+        {tab === 'concepts' && concepts.map(c => (
+          <span key={c.id} title={`Visited ${c.visits}× · ${c.subject || 'General'}`} style={chipStyle()}>
+            <span style={{ textTransform: 'capitalize' }}>{c.name}</span>
+            <span style={{ marginLeft: 5, color: '#7c3aed', fontSize: 10 }}>×{c.visits}</span>
+          </span>
+        ))}
+        {tab === 'formulas' && (
+          formulas.length === 0
+            ? <span style={{ fontSize: 12, color: '#71717a' }}>No formulas yet. They'll appear here as Kairo extracts them from your solver answers.</span>
+            : formulas.map(f => (
+                <span key={f.id} style={chipStyle()}>
+                  {f.name}: <code style={{ fontFamily: "'SF Mono', monospace", color: '#c4b5fd', marginLeft: 4 }}>{f.expr}</code>
+                </span>
+              ))
+        )}
+        {tab === 'doubts' && doubts.length === 0 && (
+          <span style={{ fontSize: 12, color: '#71717a' }}>No doubts yet. Ask the Kairo Solver something — every Q&A auto-saves here.</span>
+        )}
+        {tab === 'concepts' && concepts.length === 0 && (
+          <span style={{ fontSize: 12, color: '#71717a' }}>No concepts yet. Take a quiz or open a lab — Kairo will discover concepts automatically.</span>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function Tab({ active, label, onClick }: { active: boolean; label: string; onClick: () => void }) {
+  return (
+    <button onClick={onClick} style={{
+      padding: '5px 10px', borderRadius: 7,
+      background: active ? 'rgba(167,139,250,0.18)' : 'transparent',
+      border: `1px solid ${active ? 'rgba(167,139,250,0.5)' : '#22222e'}`,
+      color: active ? '#c4b5fd' : '#71717a',
+      fontFamily: 'inherit', fontSize: 11, fontWeight: 600,
+      cursor: 'pointer',
+    }}>{label}</button>
+  )
+}
+
+function chipStyle(): React.CSSProperties {
+  return {
+    padding: '4px 9px', borderRadius: 6,
+    background: 'rgba(124,58,237,0.08)',
+    border: '1px solid rgba(167,139,250,0.32)',
+    fontSize: 11.5, color: '#e4e4e7', fontWeight: 500,
+    whiteSpace: 'nowrap',
+  }
 }
 
 // ─── Note detail / editor ───────────────────────────────────────────────────
