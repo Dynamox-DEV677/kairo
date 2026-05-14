@@ -129,7 +129,7 @@ export default function KairoOS() {
     // container — pages must own their own scroll. Without `overflow-y:auto`
     // here, content past the viewport is clipped and the user can't reach
     // recommendations / timeline / footer.
-    <div style={{
+    <div className="kr-page" style={{
       width: '100%',
       height: '100%',
       overflowY: 'auto',
@@ -144,6 +144,45 @@ export default function KairoOS() {
         @keyframes kr-spin { to { transform: rotate(360deg) } }
         @keyframes kr-glow { 0%,100% { opacity: .55 } 50% { opacity: .95 } }
         .kr-spin { animation: kr-spin .8s linear infinite }
+
+        /* ── Responsive: collapse all grids to single column on phones ── */
+        @media (max-width: 760px) {
+          .kr-page { padding: 16px 14px 100px !important; }
+          .kr-pulse-row,
+          .kr-half-row,
+          .kr-vitals-row,
+          .kr-recs-row { grid-template-columns: 1fr !important; gap: 12px !important; }
+
+          /* Tighten card internals */
+          .kr-style-grid   { grid-template-columns: repeat(2, 1fr) !important; }
+          .kr-perf-grid    { grid-template-columns: repeat(3, 1fr) !important; }
+          .kr-submetrics   { gap: 6px !important; }
+
+          /* Pulse ring smaller on phone */
+          .kr-pulse-ring   { width: 160px !important; height: 160px !important; }
+          .kr-pulse-svg    { width: 160px !important; height: 160px !important; }
+
+          /* Header chips wrap nicely */
+          .kr-header       { gap: 10px !important; }
+          .kr-header h1    { font-size: 20px !important; }
+          .kr-chip-row     { width: 100%; }
+
+          /* Card padding */
+          .kr-card         { padding: 14px !important; }
+
+          /* Heatmap maxHeight smaller on phone (less scroll fatigue) */
+          .kr-heatmap-list { max-height: 240px !important; }
+
+          /* Timeline + Recommendations cards stay full-width and readable */
+          .kr-rec-item     { padding: 10px 12px !important; }
+        }
+
+        /* Slightly tighter on very narrow phones */
+        @media (max-width: 380px) {
+          .kr-page { padding: 12px 10px 100px !important; }
+          .kr-pulse-ring   { width: 140px !important; height: 140px !important; }
+          .kr-pulse-svg    { width: 140px !important; height: 140px !important; }
+        }
       `}</style>
 
       <div style={{ maxWidth: 1240, margin: '0 auto' }}>
@@ -154,7 +193,7 @@ export default function KairoOS() {
           <TwinVoice obs={snap.observations[0]} />
         )}
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(320px, 420px) 1fr', gap: 18, marginTop: 22 }}>
+        <div className="kr-pulse-row" style={{ display: 'grid', gridTemplateColumns: 'minmax(320px, 420px) 1fr', gap: 18, marginTop: 22 }}>
           <PulseCard twin={snap.twin!} openDetail={setDetail} />
           <div style={{ display: 'grid', gridTemplateRows: 'auto auto', gap: 18 }}>
             <StyleCard twin={snap.twin!} openDetail={setDetail} />
@@ -162,12 +201,12 @@ export default function KairoOS() {
           </div>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18, marginTop: 18 }}>
+        <div className="kr-half-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18, marginTop: 18 }}>
           <HeatmapCard mastery={snap.mastery} openDetail={setDetail} />
           <RetentionCard mastery={snap.mastery} forgetting={snap.twin!.forgettingSoon} openDetail={setDetail} />
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 18, marginTop: 18 }}>
+        <div className="kr-vitals-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 18, marginTop: 18 }}>
           <VitalsTile title="Burnout risk" value={snap.twin!.burnoutRisk}
             color={snap.twin!.burnoutRisk > 0.55 ? C.red : snap.twin!.burnoutRisk > 0.3 ? C.amber : C.green}
             hint={snap.twin!.burnoutRisk > 0.55 ? "Slow down. Sleep + walks are part of learning." : "You're pacing well."}
@@ -182,7 +221,7 @@ export default function KairoOS() {
             onClick={() => setDetail({ type: 'vitalConfidence' })} />
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 18, marginTop: 18 }}>
+        <div className="kr-recs-row" style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 18, marginTop: 18 }}>
           <RecommendationsCard recs={snap.recommendations} onAct={onAct} onDismiss={onDismiss} />
           <ObservationsCard obs={snap.observations.slice(1)} />
         </div>
@@ -219,7 +258,7 @@ export default function KairoOS() {
 // ════════════════════════════════════════════════════════════════════════════
 function Header({ twin, onRefresh, onWipe, pulse, onBackup }: { twin: Twin; onRefresh: () => void; onWipe: () => void; pulse: boolean; onBackup: () => void }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14, flexWrap: 'wrap' }}>
+    <div className="kr-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14, flexWrap: 'wrap' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
         <div style={{
           width: 44, height: 44, borderRadius: 12,
@@ -349,7 +388,7 @@ function PulseCard({ twin, openDetail }: { twin: Twin; openDetail: (k: DetailKin
           ● {label}
         </div>
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginTop: 18 }}>
+      <div className="kr-submetrics" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginTop: 18 }}>
         <SubMetric label="Retention"   value={Math.round(twin.retentionScore * 100)}   unit="%" onClick={() => openDetail({ type: 'retention' })} />
         <SubMetric label="Consistency" value={Math.round(twin.consistencyScore * 100)} unit="%" onClick={() => openDetail({ type: 'consistency' })} />
         <SubMetric label="Confidence"  value={Math.round(twin.confidence * 100)}       unit="%" onClick={() => openDetail({ type: 'confidence' })} />
@@ -364,13 +403,13 @@ function Ring({ score }: { score: number }) {
   const c = 2 * Math.PI * r
   const offset = c * (1 - Math.max(0, Math.min(1, score)))
   return (
-    <div style={{ position: 'relative', width: 200, height: 200 }}>
+    <div className="kr-pulse-ring" style={{ position: 'relative', width: 200, height: 200 }}>
       <div style={{
         position: 'absolute', inset: -20,
         background: `radial-gradient(closest-side, rgba(124,58,237,0.42), transparent 70%)`,
         filter: 'blur(20px)', animation: 'kr-glow 4s ease-in-out infinite',
       }} />
-      <svg width="200" height="200" style={{ position: 'relative', display: 'block' }}>
+      <svg className="kr-pulse-svg" width="200" height="200" style={{ position: 'relative', display: 'block' }}>
         <defs>
           <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%"   stopColor="#c4b5fd"/>
@@ -437,7 +476,7 @@ function StyleCard({ twin, openDetail }: { twin: Twin; openDetail: (k: DetailKin
           <div key={s.id} style={{ width: `${s.value * 100}%`, background: s.color, transition: 'width 0.8s ease' }} />
         ))}
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginTop: 14 }}>
+      <div className="kr-style-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginTop: 14 }}>
         {segments.map(s => {
           const I = s.icon
           const isTop = s.id === top.id
@@ -493,7 +532,7 @@ function PerformanceCard({ twin, mastery, openDetail }: { twin: Twin; mastery: (
   return (
     <Card>
       <CardTitle icon={<TrendingUp size={13} />}>Trajectory</CardTitle>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginTop: 12 }}>
+      <div className="kr-perf-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginTop: 12 }}>
         <BigStat label="Trend" value={`${twin.performanceTrend > 0 ? '+' : ''}${(twin.performanceTrend * 100).toFixed(0)}`} unit="%" color={trendColor} icon={<TrendIcon size={14} color={trendColor} />} onClick={() => openDetail({ type: 'trend' })} />
         <BigStat label="Predicted exam" value={twin.predictedExamScore ?? '—'} unit={twin.predictedExamScore != null ? '%' : ''} color={C.purple} subtitle={twin.predictedBand ? `Grade ${twin.predictedBand}` : 'Need more data'} onClick={() => openDetail({ type: 'predictedExam' })} />
         <BigStat label="Mastered" value={masteredCount} unit={` topic${masteredCount === 1 ? '' : 's'}`} color={C.cyan} subtitle={`${mastery.length} total tracked`} onClick={() => openDetail({ type: 'mastered' })} />
@@ -585,7 +624,7 @@ function HeatmapCard({ mastery, openDetail }: { mastery: (MasteryRow & { retenti
         Weakness heatmap
         <span style={{ marginLeft: 'auto', fontSize: 10, color: C.textFaint, fontWeight: 600 }}>{mastery.length} topic{mastery.length === 1 ? '' : 's'}</span>
       </CardTitle>
-      <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 12, maxHeight: 320, overflowY: 'auto' }}>
+      <div className="kr-heatmap-list" style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 12, maxHeight: 320, overflowY: 'auto' }}>
         {bySubject.map(([subject, rows]) => (
           <div key={subject}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
@@ -796,7 +835,7 @@ function RecommendationsCard({ recs, onAct, onDismiss }: { recs: Recommendation[
       <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 10 }}>
         <AnimatePresence>
           {recs.map(r => (
-            <motion.div key={r.id}
+            <motion.div key={r.id} className="kr-rec-item"
               initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, height: 0 }}
               style={{
                 display: 'flex', alignItems: 'center', gap: 12,
@@ -1552,7 +1591,7 @@ function buildDayActivityRows(events: TwinEvent[], days: number) {
 // ════════════════════════════════════════════════════════════════════════════
 function Card({ children }: { children: React.ReactNode }) {
   return (
-    <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} style={{
+    <motion.div className="kr-card" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} style={{
       background: C.panel, border: `1px solid ${C.border}`, borderRadius: 14,
       padding: 18, position: 'relative', overflow: 'hidden',
     }}>{children}</motion.div>
