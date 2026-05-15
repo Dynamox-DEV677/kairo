@@ -1,0 +1,25 @@
+{
+  "name": "kairo-video",
+  "version": "1.0.0",
+  "description": "Kairo · AI Academic Twin — 40-second hype reel built in Remotion. Matches the Canva theme exactly.",
+  "private": true,
+  "scripts": {
+    "dev": "remotion studio",
+    "build": "remotion render KairoReel out/kairo-reel.mp4",
+    "render": "remotion render KairoReel out/kairo-reel.mp4",
+    "render:vertical": "remotion render KairoReelVertical out/kairo-reel-vertical.mp4",
+    "upgrade": "remotion upgrade"
+  },
+  "dependencies": {
+    "@remotion/cli": "^4.0.0",
+    "@remotion/google-fonts": "^4.0.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "remotion": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.0",
+    "@types/react-dom": "^18.3.0",
+    "typescript": "^5.4.0"
+  }
+}
