@@ -31,14 +31,14 @@ export default function Step1Forgot({ initialEmail = '', onContinue, onBackToSig
     setErr(''); setBusy(true)
     saveEmail(email)
 
-    // 200 ms artificial loading for premium feel
-    await new Promise(r => setTimeout(r, 220))
-    const r = sendOtp()
+    const r = await sendOtp()
     setBusy(false)
 
     if (!r.ok) {
       if (r.reason === 'rate-limited') {
         setErr(`Try again in ${r.cooldown}s — too many requests.`)
+      } else if (r.reason === 'no-email') {
+        setErr('Email is required.')
       } else {
         setErr('Something went wrong. Try again.')
       }

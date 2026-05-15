@@ -28,6 +28,7 @@ export { sendSchoolCreatedEmail }    from './templates/schoolCreated.js'
 export { sendAccountApprovedEmail }  from './templates/accountApproved.js'
 export { sendPasswordResetEmail }    from './templates/passwordReset.js'
 export { sendParentLinkedEmail }     from './templates/parentLinked.js'
+export { sendPasscodeOtpEmail }      from './templates/passcodeOtp.js'
 
 // ── Renderers (pure, return HTML/text strings) ──────────────────────────────
 export { renderWelcomeJoinHtml,      renderWelcomeJoinText }      from './templates/welcomeJoin.js'
@@ -37,6 +38,7 @@ export { renderSchoolCreatedHtml,    renderSchoolCreatedText }    from './templa
 export { renderAccountApprovedHtml,  renderAccountApprovedText }  from './templates/accountApproved.js'
 export { renderPasswordResetHtml,    renderPasswordResetText }    from './templates/passwordReset.js'
 export { renderParentLinkedHtml,     renderParentLinkedText }     from './templates/parentLinked.js'
+export { renderPasscodeOtpHtml,      renderPasscodeOtpText }      from './templates/passcodeOtp.js'
 
 // ── Infrastructure helpers ──────────────────────────────────────────────────
 export { send, getTransporter, getFromAddress } from './transport.js'

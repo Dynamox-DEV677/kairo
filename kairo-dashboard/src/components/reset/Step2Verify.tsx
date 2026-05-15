@@ -45,28 +45,28 @@ export default function Step2Verify({ devOtp, onBack, onContinue }: Props) {
 
   async function attemptVerify(value: string) {
     setBusy(true); setErr('')
-    await new Promise(r => setTimeout(r, 260))
-    const r = verifyOtp(value)
+    const r = await verifyOtp(value)
     setBusy(false)
     if (!r.ok) {
       const msg =
         r.reason === 'expired'  ? 'This code has expired. Tap Resend to get a new one.'
         : r.reason === 'no-otp' ? 'No code on file. Go back and request a new one.'
+        : r.reason === 'network' ? 'Network error — try again in a moment.'
         :                         'Incorrect verification code.'
       setErr(msg)
       setShake(true)
       window.setTimeout(() => setShake(false), 600)
-      // Auto-clear so the user can start fresh
       setCode('')
       return
     }
     onContinue()
   }
 
-  function handleResend() {
+  async function handleResend() {
     if (cooldown > 0 || busy) return
-    setErr('')
-    const r = sendOtp()
+    setErr(''); setBusy(true)
+    const r = await sendOtp()
+    setBusy(false)
     if (!r.ok) {
       setErr(r.reason === 'rate-limited'
         ? `Slow down — try again in ${r.cooldown}s.`

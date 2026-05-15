@@ -41,6 +41,7 @@ import gamificationRoutes  from './routes/gamification.js'
 import schoolRoutes        from './routes/schools.js'
 import usersV2Routes       from './routes/usersV2.js'
 import passwordResetRoutes from './routes/passwordReset.js'
+import passcodeRoutes      from './routes/passcode.js'
 import notesRoutes         from './routes/notes.js'
 import notificationsRoutes from './routes/notifications.js'
 
@@ -150,6 +151,7 @@ app.use('/api/gamification',   gamificationRoutes)
 app.use('/api/schools',        schoolRoutes)
 app.use('/api/users',          passwordResetRoutes)    // forgot-password, reset-password (mounted first so /forgot-password resolves before any catch-alls)
 app.use('/api/users',          usersV2Routes)
+app.use('/api/passcode',       passcodeRoutes)         // 6-digit OTP for Kairo OS device passcode reset
 app.use('/api/notes',          notesRoutes)
 app.use('/api/notifications',  notificationsRoutes)
 

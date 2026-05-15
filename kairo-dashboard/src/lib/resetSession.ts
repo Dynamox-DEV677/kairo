@@ -76,35 +76,78 @@ export function setEmail(email: string) { setS(K_EMAIL, email.trim().toLowerCase
 
 // ─── OTP send + verify ────────────────────────────────────────────────────
 /**
- * Generate and "send" a new OTP. In production this would call the backend
- * to dispatch the email. In dev / local-only mode, the OTP is also surfaced
- * via the returned `dev_otp` field so you can paste it in. The real OTP is
- * stored hashed-by-time only — never logged.
+ * Send a new OTP. ALWAYS calls the server first so the user actually gets
+ * the email. If the server is unreachable (offline / 5xx), we fall back
+ * to a local-only OTP and surface it as `dev_otp` so the user can keep
+ * testing on a flaky network.
  *
- * Returns an object describing the send outcome.
+ * Returns an object describing the outcome.
  */
-export function sendOtp(): {
+export async function sendOtp(): Promise<{
   ok:           boolean
-  reason?:      'rate-limited' | 'no-email'
-  /** Seconds until next resend allowed (cooldown). 0 = ready. */
+  reason?:      'rate-limited' | 'no-email' | 'network'
+  /** Seconds until next resend allowed. 0 = ready. */
   cooldown:     number
   /** Times remaining in this 10-min window. */
   remaining:    number
-  /** Surfaced in dev only — paste this in the OTP box. */
+  /** Surfaced in dev only (server returns it when running on localhost). */
   dev_otp?:     string
-} {
+  /** True if we couldn't reach the server and used a client-only OTP. */
+  offline?:     boolean
+}> {
   const email = getEmail()
   if (!email) return { ok: false, reason: 'no-email', cooldown: 0, remaining: 0 }
 
   const now = Date.now()
-  const resendUntil = Number(getS(K_RESEND_UNTIL) || 0)
-  if (resendUntil > now) {
+  const localUntil = Number(getS(K_RESEND_UNTIL) || 0)
+  if (localUntil > now) {
     return {
       ok: false, reason: 'rate-limited',
-      cooldown: Math.ceil((resendUntil - now) / 1000),
+      cooldown: Math.ceil((localUntil - now) / 1000),
       remaining: resendCountWindow(),
     }
   }
+
+  // ─── 1. Try the server first ─────────────────────────────────────────
+  try {
+    const res = await fetch('/api/passcode/send-otp', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ email }),
+    })
+    const data = await res.json().catch(() => ({}))
+    if (res.ok && data?.ok) {
+      // Server accepted — server owns the truth. We only mirror the
+      // cooldown timestamp locally so the UI countdown stays accurate
+      // across refreshes.
+      const cooldown = Number(data.cooldown ?? 30)
+      setS(K_RESEND_UNTIL, String(now + cooldown * 1000))
+      bumpResendCount()
+      // We don't store the OTP locally — the server holds it.
+      delS(K_OTP)
+      setS(K_OTP_EXPIRES, String(now + (Number(data.expires_in_sec ?? 600) * 1000)))
+      delS(K_VERIFIED)
+      return {
+        ok:        true,
+        cooldown,
+        remaining: Number(data.remaining ?? 3),
+        dev_otp:   data.dev_otp,
+      }
+    }
+    // 429 etc. from server
+    if (res.status === 429) {
+      return {
+        ok: false, reason: 'rate-limited',
+        cooldown:  Number(data.cooldown ?? 30),
+        remaining: 0,
+      }
+    }
+    // Other 4xx/5xx — fall through to offline mode
+  } catch {
+    // Network error — fall through to offline mode below.
+  }
+
+  // ─── 2. Offline fallback — local-only OTP ────────────────────────────
   if (resendCountWindow() >= RESEND_MAX_PER_10) {
     return {
       ok: false, reason: 'rate-limited',
@@ -112,33 +155,58 @@ export function sendOtp(): {
       remaining: 0,
     }
   }
-
   const otp = randomOtp()
   setS(K_OTP,          otp)
   setS(K_OTP_EXPIRES,  String(now + OTP_TTL_MS))
   setS(K_RESEND_UNTIL, String(now + RESEND_COOLDOWN_MS))
   bumpResendCount()
   delS(K_VERIFIED)
-
-  // Dev surfacing — only in development
-  const isDev = typeof window !== 'undefined' && /localhost|127\.0\.0\.1/.test(window.location.hostname)
   return {
     ok:        true,
     cooldown:  Math.ceil(RESEND_COOLDOWN_MS / 1000),
     remaining: Math.max(0, RESEND_MAX_PER_10 - resendCountWindow()),
-    dev_otp:   isDev ? otp : undefined,
+    dev_otp:   otp,         // always shown in offline mode — no email is going out
+    offline:   true,
   }
 }
 
-/** Verify a user-entered OTP. Returns ok=true if matched + not expired. */
-export function verifyOtp(entered: string): {
+/**
+ * Verify a user-entered OTP. Calls the server when possible; falls back
+ * to the local hash when offline.
+ */
+export async function verifyOtp(entered: string): Promise<{
   ok:        boolean
-  reason?:   'mismatch' | 'expired' | 'no-otp'
-} {
+  reason?:   'mismatch' | 'expired' | 'no-otp' | 'network'
+}> {
+  const email = getEmail()
+
+  // ─── 1. Try the server ──────────────────────────────────────────────
+  try {
+    const res = await fetch('/api/passcode/verify-otp', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ email, code: entered.trim() }),
+    })
+    if (res.ok) {
+      setS(K_VERIFIED, '1')
+      return { ok: true }
+    }
+    if (res.status === 400 || res.status === 401) {
+      const data = await res.json().catch(() => ({}))
+      const reason = (data?.reason as any) || 'mismatch'
+      return { ok: false, reason }
+    }
+    // 5xx → fall through to local check
+  } catch {
+    // Network error — fall through.
+  }
+
+  // ─── 2. Local fallback — only works if we previously stored an OTP
+  //       locally (i.e. last send was an offline send). ─────────────────
   const otp = getS(K_OTP)
-  if (!otp)                  return { ok: false, reason: 'no-otp' }
+  if (!otp)                   return { ok: false, reason: 'no-otp' }
   const expires = Number(getS(K_OTP_EXPIRES) || 0)
-  if (Date.now() > expires)  return { ok: false, reason: 'expired' }
+  if (Date.now() > expires)   return { ok: false, reason: 'expired' }
   if (entered.trim() !== otp) return { ok: false, reason: 'mismatch' }
   setS(K_VERIFIED, '1')
   return { ok: true }
