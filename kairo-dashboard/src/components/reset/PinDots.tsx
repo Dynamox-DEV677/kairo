@@ -1,0 +1,56 @@
+/**
+ * PinDots — 6 circular dots that fill in as the user types.
+ * Pulse-bounces the most-recent dot for haptic-style feedback.
+ */
+import { motion } from 'framer-motion'
+import { RC } from './shared'
+
+interface Props {
+  /** Number of digits already entered. */
+  filled: number
+  /** Total dots (default 6). */
+  length?: number
+  /** Show shake animation (e.g. on mismatch). */
+  shake?: boolean
+  /** Larger size for the Create / Confirm screens. */
+  large?: boolean
+}
+
+export default function PinDots({ filled, length = 6, shake = false, large = false }: Props) {
+  const size = large ? 18 : 14
+  const gap  = large ? 18 : 14
+  return (
+    <div
+      className={shake ? 'rs-shake' : ''}
+      style={{
+        display: 'flex', justifyContent: 'center',
+        gap, padding: '8px 0 4px',
+      }}
+    >
+      {Array.from({ length }).map((_, i) => {
+        const active = i < filled
+        const isMostRecent = i === filled - 1
+        return (
+          <motion.div
+            key={i}
+            animate={isMostRecent ? { scale: [1, 1.35, 1] } : { scale: 1 }}
+            transition={{ duration: 0.32, ease: [0.2, 0.8, 0.2, 1] }}
+            style={{
+              width: size, height: size, borderRadius: '50%',
+              background: active
+                ? 'radial-gradient(circle at 30% 30%, #e9d5ff, #7c3aed 80%)'
+                : 'transparent',
+              border: active
+                ? '1px solid rgba(196, 181, 253, 0.7)'
+                : `1.5px solid ${RC.border}`,
+              boxShadow: active
+                ? '0 0 14px rgba(167, 139, 250, 0.6), inset 0 0 6px rgba(255,255,255,0.25)'
+                : 'none',
+              transition: 'background 0.18s, border-color 0.18s',
+            }}
+          />
+        )
+      })}
+    </div>
+  )
+}

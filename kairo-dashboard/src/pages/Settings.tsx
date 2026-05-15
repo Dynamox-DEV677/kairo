@@ -1,8 +1,9 @@
 import { useState, useRef } from 'react'
 import { motion } from 'framer-motion'
-import { Camera, User, Bell, Shield, Trash2, Check, FileJson, Smartphone, Laptop, ChevronsRight } from 'lucide-react'
+import { Camera, User, Bell, Shield, Trash2, Check, FileJson, Smartphone, Laptop, ChevronsRight, KeyRound } from 'lucide-react'
 import { confirmDialog } from '../components/ConfirmModal'
 import TwinBackupModal from '../components/TwinBackupModal'
+import ResetPasscode from './ResetPasscode'
 
 const BOARDS = ['CBSE', 'ICSE', 'Maharashtra', 'Tamil Nadu', 'Karnataka', 'UP Board', 'Bihar Board']
 const CLASSES = ['6', '7', '8', '9', '10', '11', '12']
@@ -17,6 +18,7 @@ export default function Settings() {
   const [notifs, setNotifs] = useState(true)
   const [saved, setSaved] = useState(false)
   const [backupOpen, setBackupOpen] = useState(false)
+  const [resetOpen, setResetOpen] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
 
   function handlePic(e: React.ChangeEvent<HTMLInputElement>) {
@@ -195,6 +197,26 @@ export default function Settings() {
         </button>
       </Section>
 
+      {/* Security */}
+      <Section icon={<KeyRound size={14} />} title="Security">
+        <p style={{ fontSize: 13, color: '#71717a', marginBottom: 14, lineHeight: 1.6 }}>
+          Your 6-digit Kairo OS passcode locks the app on this device. Forgot it? Reset it via email below.
+        </p>
+        <button
+          onClick={() => setResetOpen(true)}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 8,
+            padding: '11px 18px', borderRadius: 12, cursor: 'pointer',
+            background: 'linear-gradient(135deg, rgba(196,181,253,0.15), rgba(124,58,237,0.10))',
+            border: '1px solid rgba(196,181,253,0.40)',
+            color: '#c4b5fd',
+            fontFamily: 'inherit', fontSize: 13, fontWeight: 700,
+          }}
+        >
+          <KeyRound size={13} /> Reset Passcode
+        </button>
+      </Section>
+
       {/* Privacy */}
       <Section icon={<Shield size={14} />} title="Privacy & Data">
         <p style={{ fontSize: 13, color: '#71717a', marginBottom: 14, lineHeight: 1.6 }}>
@@ -219,6 +241,13 @@ export default function Settings() {
       </div>
 
       <TwinBackupModal open={backupOpen} onClose={() => setBackupOpen(false)} />
+
+      {resetOpen && (
+        <ResetPasscode
+          onClose={() => setResetOpen(false)}
+          initialEmail={stored.email || ''}
+        />
+      )}
     </div>
   )
 }
