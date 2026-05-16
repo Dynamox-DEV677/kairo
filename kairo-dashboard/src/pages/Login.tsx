@@ -15,6 +15,7 @@ import {
 } from 'lucide-react'
 import { post } from '../lib/api'
 import { supabase, supabaseReady } from '../lib/supabase'
+import { TermsAcceptLine } from '../components/Terms'
 
 export interface AuthProfile {
   id:               string
@@ -278,6 +279,7 @@ function SignIn({ onLogin, onBack }: any) {
       </Field>
       {err && <ErrLine msg={err} />}
       <PrimaryBtn busy={busy} onClick={submit} icon={Sparkles}>Sign in</PrimaryBtn>
+      <TermsAcceptLine action="signing in" />
     </Wizard>
   )
 }
@@ -475,7 +477,10 @@ function PersonalSignup({ onLogin, onBack }: any) {
           </div>
         </>
       ) : (
-        <PrimaryBtn busy={busy} onClick={submit} icon={Sparkles}>Create my account</PrimaryBtn>
+        <>
+          <PrimaryBtn busy={busy} onClick={submit} icon={Sparkles}>Create my account</PrimaryBtn>
+          <TermsAcceptLine action="creating an account" />
+        </>
       )}
       <p style={{ fontSize: 11, color: '#52525b', textAlign: 'center', marginTop: 12, lineHeight: 1.5 }}>
         Already have an account?{' '}
@@ -688,6 +693,7 @@ function JoinSchool({ onLogin, onBack }: any) {
         icon={role === 'parent' ? ArrowRight : Sparkles}>
         {role === 'parent' ? 'Continue' : 'Create Account'}
       </PrimaryBtn>
+      {role !== 'parent' && <TermsAcceptLine action="creating an account" />}
     </Wizard>
   )
 
@@ -707,6 +713,7 @@ function JoinSchool({ onLogin, onBack }: any) {
       </Field>
       {err && <ErrLine msg={err} />}
       <PrimaryBtn busy={busy} onClick={submit} icon={Sparkles}>Create Parent Account</PrimaryBtn>
+      <TermsAcceptLine action="creating a parent account" />
     </Wizard>
   )
 }
@@ -834,6 +841,7 @@ function CreateSchool({ onLogin, onBack }: any) {
         }
         setErr(''); createSchool()
       }} icon={Sparkles}>Create School</PrimaryBtn>
+      <TermsAcceptLine action="creating a school on Kairo" />
     </Wizard>
   )
 

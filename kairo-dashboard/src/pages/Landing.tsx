@@ -29,6 +29,7 @@ import {
 import LabPreview3D, { type LabVariant } from '../components/LabPreview3D'
 import HeroCore3D from '../components/HeroCore3D'
 import DepthDust from '../components/DepthDust'
+import { openTerms } from '../components/Terms'
 
 // ════════════════════════════════════════════════════════════════════════════
 // TOKENS — strict monochrome palette: BLACK · DEEP PURPLE · WHITE only
@@ -1965,11 +1966,11 @@ function Footer() {
     { label: 'Student Analytics',  href: '/analytics' },
     { label: 'Homework System',    href: '/homework' },
   ]
-  const company = [
+  const company: FooterItem[] = [
     { label: 'About Kairo',        href: '/about' },
     { label: 'Careers',            href: '/careers' },
-    { label: 'Privacy Policy',     href: '/privacy' },
-    { label: 'Terms of Service',   href: '/terms' },
+    { label: 'Privacy Policy',     onClick: () => openTerms('privacy') },
+    { label: 'Terms of Service',   onClick: () => openTerms('terms') },
     { label: 'Community',          href: '/community' },
   ]
 
@@ -2136,7 +2137,15 @@ function FooterContactCol() {
   )
 }
 
-function FooterCol({ title, items }: { title: string; items: Array<{ label: string; href: string }> }) {
+type FooterItem = { label: string; href?: string; onClick?: () => void }
+
+function FooterCol({ title, items }: { title: string; items: FooterItem[] }) {
+  const baseStyle: React.CSSProperties = {
+    fontSize: 13, color: C.textDim, textDecoration: 'none',
+    transition: 'color .2s ease',
+    background: 'transparent', border: 'none', padding: 0,
+    fontFamily: 'inherit', cursor: 'pointer', textAlign: 'left',
+  }
   return (
     <div>
       <div style={{
@@ -2148,14 +2157,19 @@ function FooterCol({ title, items }: { title: string; items: Array<{ label: stri
       <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
         {items.map((it, i) => (
           <li key={i}>
-            <a href={it.href} style={{
-              fontSize: 13, color: C.textDim, textDecoration: 'none',
-              transition: 'color .2s ease',
-            }}
-            onMouseEnter={e => (e.currentTarget.style.color = C.purple)}
-            onMouseLeave={e => (e.currentTarget.style.color = C.textDim)}>
-              {it.label}
-            </a>
+            {it.onClick ? (
+              <button onClick={it.onClick} style={baseStyle}
+                onMouseEnter={e => (e.currentTarget.style.color = C.purple)}
+                onMouseLeave={e => (e.currentTarget.style.color = C.textDim)}>
+                {it.label}
+              </button>
+            ) : (
+              <a href={it.href} style={baseStyle}
+                onMouseEnter={e => (e.currentTarget.style.color = C.purple)}
+                onMouseLeave={e => (e.currentTarget.style.color = C.textDim)}>
+                {it.label}
+              </a>
+            )}
           </li>
         ))}
       </ul>

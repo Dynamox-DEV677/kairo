@@ -9,6 +9,7 @@ import { refreshIfStale } from './lib/api'
 import { pullFromCloud, syncToCloudNow, deleteCloudSnapshot, pauseSyncUntil } from './lib/twin'
 import SprintOverlay, { SPRINT_MIN_MS } from './components/SprintOverlay'
 import SplashScreen from './components/SplashScreen'
+import { TermsHost } from './components/Terms'
 
 // "landing" = cinematic marketing page (default for new visitors)
 // "login"   = sign-in / sign-up flow
@@ -215,6 +216,7 @@ export default function App() {
           }} />
           <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
         </div>
+        <TermsHost />
         {splash}
       </>
     )
@@ -226,6 +228,7 @@ export default function App() {
         {view === 'login'
           ? <Login onLogin={handleLogin} />
           : <Landing onGetStarted={() => setView('login')} />}
+        <TermsHost />
         {splash}
       </>
     )
@@ -240,6 +243,7 @@ export default function App() {
         headline={sprintHead}
         subhead={sprintSub}
       />
+      <TermsHost />
       {splash}
     </GenerationProvider>
   )
