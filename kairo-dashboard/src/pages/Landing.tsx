@@ -310,12 +310,14 @@ function Hero({ onGetStarted }: { onGetStarted: () => void }) {
           </SwissCell>
         </SwissRow>
 
-        {/* Tagline + headline */}
+        {/* Tagline + headline.
+            NOTE: we deliberately do NOT set initial/animate here. Mixing an
+            entrance animation with `style: { opacity: motionValue }` causes
+            Framer to leave opacity stuck at the `initial` value on first
+            paint — the hero went invisible. Scroll-bound y + opacity below
+            handle the motion; the headline just appears immediately. */}
         <motion.div
           style={{ y: headlineY, opacity: headlineO, marginTop: 60 }}
-          initial={{ opacity: 0, y: 28 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
         >
           <SwissRow>
             <SwissCell span={9}>
