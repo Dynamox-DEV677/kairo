@@ -11,6 +11,7 @@ import SprintOverlay, { SPRINT_MIN_MS } from './components/SprintOverlay'
 import SplashScreen from './components/SplashScreen'
 import { TermsHost } from './components/Terms'
 import ResetPasswordPage from './pages/ResetPasswordPage'
+import StatusPage from './pages/StatusPage'
 
 // "landing" = cinematic marketing page (default for new visitors)
 // "login"   = sign-in / sign-up flow
@@ -26,6 +27,11 @@ export default function App() {
     if (typeof window === 'undefined') return false
     return window.location.pathname === '/reset-password'
       && !!new URLSearchParams(window.location.search).get('token')
+  })
+  // Public status page at /status — no auth required, shown above app shell.
+  const [statusMode, setStatusMode] = useState(() => {
+    if (typeof window === 'undefined') return false
+    return window.location.pathname === '/status'
   })
   const [sprintingIn, setSprintingIn] = useState(false)
   const [sprintHead, setSprintHead]   = useState<string | undefined>()
@@ -220,6 +226,22 @@ export default function App() {
             try { window.history.replaceState({}, '', '/') } catch { /* ignore */ }
             setResetMode(false)
             setView('login')   // drop straight onto the sign-in screen
+          }}
+        />
+        <TermsHost />
+      </>
+    )
+  }
+
+  // Public /status page — also stands above session restore so anyone can
+  // load it (incidents are when you can't sign in anyway).
+  if (statusMode) {
+    return (
+      <>
+        <StatusPage
+          onExit={() => {
+            try { window.history.replaceState({}, '', '/') } catch { /* ignore */ }
+            setStatusMode(false)
           }}
         />
         <TermsHost />

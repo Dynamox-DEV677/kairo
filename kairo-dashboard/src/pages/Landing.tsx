@@ -1945,12 +1945,12 @@ function FinalCTASection({ onGetStarted }: { onGetStarted: () => void }) {
 // FOOTER — premium Apple-style brand strip + powered-by + columns
 // ════════════════════════════════════════════════════════════════════════════
 function Footer() {
-  const support = [
+  const support: FooterItem[] = [
+    { label: 'System Status',       href: '/status' },
     { label: 'Help Center',         href: '/help' },
     { label: 'Contact Support',     href: '/contact' },
     { label: 'FAQs',                href: '/faqs' },
     { label: 'Bug Reports',         href: '/bugs' },
-    { label: 'Report School Issue', href: '/report' },
   ]
   const platform = [
     { label: 'AI Solver',          href: '#solver' },
