@@ -1264,7 +1264,7 @@ function PullQuote({ text, attribution }: { text: string; attribution: string })
   )
 }
 
-// Logo mark — minimal monochrome "K"
+// Logo mark — the real Kairo brand image inside a rounded purple badge.
 function KairoMark({ size = 28, intense = false, centered = false }: {
   size?: number
   intense?: boolean
@@ -1276,22 +1276,26 @@ function KairoMark({ size = 28, intense = false, centered = false }: {
       inset: centered ? 0 : undefined,
       margin: centered ? 'auto' : undefined,
       width: size, height: size, flexShrink: 0,
+      borderRadius: Math.max(6, Math.round(size * 0.25)),
+      background: intense
+        ? `linear-gradient(135deg, ${C.purpleLite} 0%, ${C.purple} 55%, ${C.purpleHi} 100%)`
+        : C.purpleInk,
+      border: intense ? 'none' : `1px solid ${C.purpleHi}`,
       display: 'flex', alignItems: 'center', justifyContent: 'center',
+      overflow: 'hidden',
+      boxShadow: intense ? `0 0 22px ${C.purpleHi}55` : 'none',
     }}>
-      <svg viewBox="0 0 32 32" width={size} height={size}>
-        <defs>
-          <linearGradient id="kg" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%"   stopColor={C.purpleLite} />
-            <stop offset="60%"  stopColor={C.purple} />
-            <stop offset="100%" stopColor={C.purpleHi} />
-          </linearGradient>
-        </defs>
-        <rect x="0" y="0" width="32" height="32" rx="8" fill={intense ? 'url(#kg)' : C.purpleInk}
-          stroke={C.purpleHi} strokeWidth={intense ? 0 : 1} />
-        <path d="M9 8v16 M9 16l8 -8 M9 16l8 8"
-          stroke={intense ? C.white : C.purpleSoft}
-          strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-      </svg>
+      <img
+        src="/kairo_logo.png"
+        alt="Kairo"
+        style={{
+          width: '78%', height: '78%', objectFit: 'contain',
+          filter: intense ? 'drop-shadow(0 1px 3px rgba(0,0,0,0.35))' : 'none',
+          pointerEvents: 'none',
+          userSelect: 'none',
+        }}
+        draggable={false}
+      />
     </div>
   )
 }
