@@ -135,7 +135,20 @@ html, body, #root {
   padding-bottom: calc(116px + env(safe-area-inset-bottom)) !important;
 }
 
-/* Fix max-width clamping on mobile so we use the full width */
+/* Fix max-width clamping on mobile so we use the full width.
+   IMPORTANT: React serialises inline-style to kebab-case in the DOM
+   (`max-width: 1100px`), so attribute selectors must use kebab-case too.
+   The camelCase variants below are kept as a belt-and-suspenders fallback
+   for any place we render with native HTML attrs. */
+.kairo-mobile [style*="max-width: 1100"],
+.kairo-mobile [style*="max-width: 1000"],
+.kairo-mobile [style*="max-width: 900"],
+.kairo-mobile [style*="max-width: 880"],
+.kairo-mobile [style*="max-width: 820"],
+.kairo-mobile [style*="max-width: 800"],
+.kairo-mobile [style*="max-width: 760"],
+.kairo-mobile [style*="max-width: 720"],
+.kairo-mobile [style*="max-width: 680"],
 .kairo-mobile [style*="maxWidth: 1100"],
 .kairo-mobile [style*="maxWidth: 1000"],
 .kairo-mobile [style*="maxWidth: 900"],
@@ -152,34 +165,39 @@ html, body, #root {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* Stack 2-col grids into 1 column on mobile */
+/* Stack 2-col grids into 1 column on mobile (kebab-case for actual DOM). */
+.kairo-mobile [style*="grid-template-columns: 1fr 1fr"]:not([style*="1fr 1fr 1fr"]):not([style*="repeat"]),
 .kairo-mobile [style*="gridTemplateColumns: '1fr 1fr'"],
-.kairo-mobile [style*="gridTemplateColumns:'1fr 1fr'"],
-.kairo-mobile [style*="gridTemplateColumns: \"1fr 1fr\""] {
+.kairo-mobile [style*="gridTemplateColumns:'1fr 1fr'"] {
   grid-template-columns: 1fr !important;
 }
 
 /* Stack 3-col grids into 1 column too — too cramped at narrow widths */
+.kairo-mobile [style*="grid-template-columns: 1fr 1fr 1fr"],
 .kairo-mobile [style*="gridTemplateColumns: '1fr 1fr 1fr'"],
 .kairo-mobile [style*="gridTemplateColumns:'1fr 1fr 1fr'"] {
   grid-template-columns: 1fr 1fr !important;
 }
 
 /* 4-col grids → 2 columns (e.g. stat tiles) */
+.kairo-mobile [style*="grid-template-columns: repeat(4, 1fr)"],
+.kairo-mobile [style*="grid-template-columns: repeat(4,1fr)"],
 .kairo-mobile [style*="gridTemplateColumns: 'repeat(4, 1fr)'"],
-.kairo-mobile [style*="gridTemplateColumns:'repeat(4, 1fr)'"],
-.kairo-mobile [style*="repeat(4,1fr)"] {
+.kairo-mobile [style*="gridTemplateColumns:'repeat(4, 1fr)'"] {
   grid-template-columns: repeat(2, 1fr) !important;
 }
 
 /* Pages with inset:0 — lift them above the floating dock (96px dock incl margin + safe-area) */
+.kairo-mobile [style*="position: absolute"][style*="inset: 0"],
 .kairo-mobile [style*="position: 'absolute'"][style*="inset: 0"] {
   bottom: calc(96px + env(safe-area-inset-bottom)) !important;
 }
 
 /* ChatWindow's input border — give the input area its own breathing room from the nav */
-.kairo-mobile [style*="borderTop: '1px solid #1a1a1a'"]:last-child,
-.kairo-mobile [style*="borderTop: '1px solid #1e1e1e'"]:last-child {
+.kairo-mobile [style*="border-top: 1px solid #1a1a1a"]:last-child,
+.kairo-mobile [style*="border-top: 1px solid #1e1e1e"]:last-child,
+.kairo-mobile [style*="border-top: 1px solid rgb(26, 26, 26)"]:last-child,
+.kairo-mobile [style*="border-top: 1px solid rgb(30, 30, 30)"]:last-child {
   padding-bottom: calc(14px + env(safe-area-inset-bottom)) !important;
   margin-bottom: 8px;
 }
@@ -195,9 +213,30 @@ html, body, #root {
 .kairo-mobile h1 { font-size: 18px !important; }
 
 /* Smooth scroll for inner panels on iOS */
+.kairo-mobile [style*="overflow-y: auto"],
+.kairo-mobile [style*="overflow: auto"],
 .kairo-mobile [style*="overflowY: 'auto'"],
 .kairo-mobile [style*="overflow: 'auto'"] {
   -webkit-overflow-scrolling: touch;
+}
+
+/* ── Hard universal mobile responsive layer ──────────────────────────────
+   The attribute-selector pattern above only fires when an inline style
+   matches a literal substring. Many pages don't — they use class names or
+   conditional values that don't serialise to the patterns above. The block
+   below catches the long tail by viewport width. */
+@media (max-width: 768px) {
+  /* Catch the most common 2-column inline grid the React DOM emits. */
+  .kairo-mobile div[style*="grid-template-columns: 1fr 1fr"]:not([style*="1fr 1fr 1fr"]):not([style*="repeat"]) {
+    grid-template-columns: 1fr !important;
+  }
+  /* Bento-style 2/3-col grids using `repeat(2, 1fr)` etc. */
+  .kairo-mobile [style*="grid-template-columns: repeat(2"] {
+    grid-template-columns: 1fr !important;
+  }
+  .kairo-mobile [style*="grid-template-columns: repeat(3"] {
+    grid-template-columns: 1fr !important;
+  }
 }
 
 /* Bottom nav active-pill animation already handled in component, just ensure layout transitions are GPU-accelerated */

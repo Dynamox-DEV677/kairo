@@ -143,6 +143,13 @@ const DRAWER_ADMIN = [
       { to: 'timetable',      label: 'Timetable',            icon: Grid3x3 },
     ],
   },
+  {
+    title: 'Insights',
+    items: [
+      { to: 'analytics',      label: 'Analytics',            icon: Activity },
+      { to: 'ops',            label: 'Ops Dashboard',        icon: Grid3x3 },
+    ],
+  },
 ]
 
 function getBottomNav(role?: string): NavItem[] {
