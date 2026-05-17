@@ -327,20 +327,7 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
           >
             <Settings size={13} /> Settings
           </button>
-          <button
-            onClick={toggleTheme}
-            title={isDark ? 'Light mode' : 'Dark mode'}
-            style={{
-              width: 34, height: 34, borderRadius: 7, background: '#161616',
-              border: '1px solid #1e1e1e', cursor: 'pointer',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              color: '#52525b', transition: 'all 0.15s', flexShrink: 0,
-            }}
-            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = '#fafafa'; (e.currentTarget as HTMLButtonElement).style.borderColor = '#3f3f46' }}
-            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = '#52525b'; (e.currentTarget as HTMLButtonElement).style.borderColor = '#1e1e1e' }}
-          >
-            {isDark ? <Sun size={14} /> : <Moon size={14} />}
-          </button>
+          {/* Theme toggle removed — Kairo is dark-only. */}
         </div>
 
         {/* Upgrade CTA removed — monetisation deferred until later. */}

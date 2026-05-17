@@ -3,7 +3,7 @@ import Sidebar from '../components/Sidebar'
 import TopBar from '../components/TopBar'
 import MobileShell from '../components/MobileShell'
 import { useIsMobile } from '../hooks/useViewport'
-import { applyLightTheme, restoreDarkTheme, startThemeWatcher } from '../lib/themeRewriter'
+import { restoreDarkTheme } from '../lib/themeRewriter'
 import ChatWindow from '../components/ChatWindow'
 import KairoSolver from './KairoSolver'
 import Ops from './Ops'
@@ -101,10 +101,11 @@ interface DashboardProps {
 export default function Dashboard({ profile, onLogout }: DashboardProps) {
   // Admins land on School Hub (their control center); everyone else on Kairo's Solver
   const [active, setActive]           = useState(profile?.role === 'admin' ? 'school' : 'doubt')
-  const [isDark, setIsDark]           = useState(() => {
-    const v = localStorage.getItem('kairo_theme')
-    return v === null ? true : v === 'dark'
-  })
+  // Light mode is disabled — Kairo is dark-only. Keeping the state shape
+  // so the rest of the file's `isDark ? darkColor : lightColor` ternaries
+  // still resolve correctly; we just freeze it to true and never flip it.
+  const [isDark]                       = useState(true)
+  const setIsDark = (_: boolean | ((d: boolean) => boolean)) => { /* noop */ }
   const [lastQuestion, setLastQuestion] = useState('')
   const [hasContent, setHasContent]   = useState(false)
   const [selectedModel, setSelectedModel] = useState(DEFAULT_MODEL)
@@ -118,25 +119,19 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
     return () => { delete (window as any).__kairoSetActive }
   }, [])
 
-  // Apply theme to document root + persist
+  // Force dark mode + wipe any stale "light" preference. The light-mode
+  // rewriter is intentionally NOT called.
   useEffect(() => {
-    document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light')
-    document.body.style.background = isDark ? '#0a0a0a' : '#fafafa'
-    document.body.style.color      = isDark ? '#fafafa' : '#18181b'
-    localStorage.setItem('kairo_theme', isDark ? 'dark' : 'light')
-
-    // Light mode: walk the DOM and re-paint every dark inline-style colour.
-    // We need this because most components hard-code hex backgrounds /
-    // colours, which the browser normalises to rgb()/rgba() — CSS attribute
-    // selectors miss too many spellings to be reliable.
-    if (!isDark) {
-      applyLightTheme()
-      const stop = startThemeWatcher()
-      return () => stop()
-    } else {
+    document.documentElement.setAttribute('data-theme', 'dark')
+    document.body.style.background = '#0a0a0a'
+    document.body.style.color      = '#fafafa'
+    try {
+      localStorage.setItem('kairo_theme', 'dark')
+      // If the user previously toggled light, undo it so any rewritten
+      // inline styles are restored.
       restoreDarkTheme()
-    }
-  }, [isDark])
+    } catch { /* ignore */ }
+  }, [])
 
   // Parent users get a completely separate portal — no sidebar, no AI tools
   if (profile?.role === 'parent') {

@@ -486,16 +486,7 @@ function MobileDrawer({
               }}>
               <Settings size={14} /> Settings
             </button>
-            <button onClick={toggleTheme} aria-label="Toggle theme"
-              style={{
-                width: 44, padding: 0, borderRadius: 9,
-                background: isDark ? '#161616' : '#f4f4f5',
-                border: `1px solid ${isDark ? '#1e1e1e' : '#e4e4e7'}`,
-                color: isDark ? '#a1a1aa' : '#52525b', cursor: 'pointer',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}>
-              {isDark ? <Sun size={15} /> : <Moon size={15} />}
-            </button>
+            {/* Theme toggle removed — Kairo is dark-only. */}
           </div>
 
           <div style={{
