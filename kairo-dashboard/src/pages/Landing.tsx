@@ -77,6 +77,7 @@ export default function Landing({ onGetStarted }: LandingProps) {
       <GlobalStyles />
       <GrainOverlay />
       <PurpleHalo />
+      <GlobalScrollLayer />
 
       <Masthead onGetStarted={onGetStarted} />
       <Hero onGetStarted={onGetStarted} />
@@ -88,6 +89,52 @@ export default function Landing({ onGetStarted }: LandingProps) {
       <TwinEssay />
       <FinalCTA onGetStarted={onGetStarted} />
       <Footer />
+    </div>
+  )
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// GLOBAL SCROLL LAYER — page-wide continuous parallax that runs underneath
+// every section. Two giant ghost wordmarks counter-drift the entire scroll
+// length, plus a slow gradient field that breathes with page progress.
+// This is what makes the WHOLE page feel parallax, not just each section.
+// ════════════════════════════════════════════════════════════════════════════
+function GlobalScrollLayer() {
+  const { scrollYProgress } = useScroll()
+  // KAIRO ghost drifts left as you scroll, ACADEMICS drifts right.
+  const kx = useTransform(scrollYProgress, [0, 1], ['8%',  '-22%'])
+  const ax = useTransform(scrollYProgress, [0, 1], ['-12%', '18%'])
+  // Each band fades in and out at different scroll depths.
+  const ko = useTransform(scrollYProgress, [0, 0.3, 0.7, 1], [0.04, 0.10, 0.06, 0.02])
+  const ao = useTransform(scrollYProgress, [0, 0.3, 0.7, 1], [0.02, 0.06, 0.10, 0.05])
+
+  return (
+    <div aria-hidden style={{
+      position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0,
+      overflow: 'hidden',
+    }}>
+      <motion.div style={{
+        position: 'absolute', top: '12%', left: '50%',
+        translateX: '-50%',
+        x: kx,
+        opacity: ko,
+        fontFamily: DISPLAY, fontSize: 'min(50vw, 720px)',
+        fontWeight: 900, letterSpacing: '-0.09em', color: C.purpleInk,
+        whiteSpace: 'nowrap',
+      }}>
+        KAIRO
+      </motion.div>
+      <motion.div style={{
+        position: 'absolute', bottom: '8%', left: '50%',
+        translateX: '-50%',
+        x: ax,
+        opacity: ao,
+        fontFamily: DISPLAY, fontSize: 'min(38vw, 540px)',
+        fontWeight: 900, letterSpacing: '-0.08em', color: C.purpleInk,
+        whiteSpace: 'nowrap',
+      }}>
+        ACADEMICS
+      </motion.div>
     </div>
   )
 }
@@ -191,6 +238,11 @@ function Hero({ onGetStarted }: { onGetStarted: () => void }) {
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] })
   const headlineY = useTransform(scrollYProgress, [0, 1], ['0%', '-30%'])
   const headlineO = useTransform(scrollYProgress, [0, 0.8], [1, 0.4])
+  // Counter-parallax on the two giant lines — same technique as the brutal divider.
+  const line1X    = useTransform(scrollYProgress, [0, 1], ['0%', '-14%'])
+  const line2X    = useTransform(scrollYProgress, [0, 1], ['0%', '16%'])
+  const kineticX  = useTransform(scrollYProgress, [0, 1], ['0%', '12%'])
+  const subX      = useTransform(scrollYProgress, [0, 1], ['0%', '-6%'])
 
   return (
     <section ref={ref} style={{ position: 'relative', paddingTop: 80, paddingBottom: 160, zIndex: 2 }}>
@@ -225,16 +277,17 @@ function Hero({ onGetStarted }: { onGetStarted: () => void }) {
                 — A future operating system for learning
               </div>
 
-              <h1 className="kr-display" style={{
+              <motion.h1 className="kr-display" style={{
                 fontFamily: DISPLAY, margin: 0,
                 fontSize: 'clamp(56px, 10.5vw, 168px)',
                 lineHeight: 0.92, letterSpacing: '-0.045em', fontWeight: 800,
                 color: C.text,
+                x: line1X,
               }}>
                 KAIRO ISN'T A
                 <br />
                 LEARNING APP.
-              </h1>
+              </motion.h1>
 
               {/* Brutal divider */}
               <div style={{
@@ -244,10 +297,11 @@ function Hero({ onGetStarted }: { onGetStarted: () => void }) {
                 boxShadow: `0 0 22px ${C.purpleHi}88`,
               }} />
 
-              <h2 className="kr-display" style={{
+              <motion.h2 className="kr-display" style={{
                 fontFamily: DISPLAY, margin: 0,
                 fontSize: 'clamp(56px, 10.5vw, 168px)',
                 lineHeight: 0.92, letterSpacing: '-0.045em', fontWeight: 800,
+                x: line2X,
               }}>
                 <span style={{ color: C.text }}>IT </span>
                 <span style={{
@@ -255,7 +309,7 @@ function Hero({ onGetStarted }: { onGetStarted: () => void }) {
                   WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
                   backgroundClip: 'text',
                 }}>LEARNS YOU.</span>
-              </h2>
+              </motion.h2>
             </SwissCell>
 
             <SwissCell span={3}>
@@ -265,7 +319,7 @@ function Hero({ onGetStarted }: { onGetStarted: () => void }) {
         </motion.div>
 
         {/* Sub + CTAs */}
-        <div style={{ marginTop: 64 }}>
+        <motion.div style={{ marginTop: 64, x: subX }}>
           <SwissRow>
             <SwissCell span={6}>
               <p style={{
@@ -290,10 +344,12 @@ function Hero({ onGetStarted }: { onGetStarted: () => void }) {
             </SwissCell>
 
             <SwissCell span={6}>
-              <KineticBlock />
+              <motion.div style={{ x: kineticX }}>
+                <KineticBlock />
+              </motion.div>
             </SwissCell>
           </SwissRow>
-        </div>
+        </motion.div>
 
       </Container>
 
@@ -370,26 +426,24 @@ function KineticBlock() {
 function Manifesto() {
   const ref = useRef<HTMLDivElement>(null)
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] })
-  // Two headline lines drift in OPPOSITE directions — counter-parallax.
-  const line1X = useTransform(scrollYProgress, [0, 1], ['-6%', '4%'])
-  const line2X = useTransform(scrollYProgress, [0, 1], ['8%', '-4%'])
-  // Side metadata column drifts up slowly for depth.
-  const metaY  = useTransform(scrollYProgress, [0, 1], ['16%', '-8%'])
-  // Watermark drifts SAME direction as line 2 but slower (depth).
-  const ghostX = useTransform(scrollYProgress, [0, 1], ['4%', '-3%'])
-  // Pull quote slides in from the right.
-  const quoteX = useTransform(scrollYProgress, [0, 1], ['6%', '-4%'])
+  // Counter-parallax — dramatic ranges so the motion is unmistakable.
+  const line1X = useTransform(scrollYProgress, [0, 1], ['-15%', '10%'])
+  const line2X = useTransform(scrollYProgress, [0, 1], ['18%', '-12%'])
+  const metaY  = useTransform(scrollYProgress, [0, 1], ['28%', '-18%'])
+  const ghostX = useTransform(scrollYProgress, [0, 1], ['12%', '-10%'])
+  const quoteX = useTransform(scrollYProgress, [0, 1], ['14%', '-10%'])
+  const bodyX  = useTransform(scrollYProgress, [0, 1], ['-4%', '3%'])
 
   return (
     <section ref={ref} id="manifesto" style={{ padding: '120px 0 100px', position: 'relative', zIndex: 2, overflow: 'hidden' }}>
-      {/* Ghost watermark behind the headline */}
+      {/* Ghost watermark behind the headline — louder, larger, more visible drift */}
       <motion.div aria-hidden style={{
-        position: 'absolute', top: '32%', left: '50%',
+        position: 'absolute', top: '30%', left: '50%',
         translateX: '-50%',
         x: ghostX,
-        fontFamily: DISPLAY, fontSize: 'min(28vw, 360px)',
-        fontWeight: 900, letterSpacing: '-0.08em', color: C.purpleInk,
-        opacity: 0.12, pointerEvents: 'none', whiteSpace: 'nowrap',
+        fontFamily: DISPLAY, fontSize: 'min(36vw, 480px)',
+        fontWeight: 900, letterSpacing: '-0.09em', color: C.purpleInk,
+        opacity: 0.22, pointerEvents: 'none', whiteSpace: 'nowrap',
       }}>
         MANIFESTO
       </motion.div>
@@ -427,11 +481,12 @@ function Manifesto() {
               </motion.span>
             </h3>
 
-            {/* Two-column body */}
-            <div className="kr-two-col" style={{
+            {/* Two-column body — subtle scroll-linked drift opposite to headline */}
+            <motion.div className="kr-two-col" style={{
               display: 'grid', gridTemplateColumns: '1fr 1fr', columnGap: 56,
               fontFamily: SERIF, fontSize: 17, lineHeight: 1.7,
               color: C.textDim,
+              x: bodyX,
             }}>
               <div>
                 <DropCap letter="W" />hen a board paper lands on your desk in March, the questions don't care what you forgot in November. The textbook is the same for forty million students. The teacher will tell you to revise. The coaching centre will sell you a planner. None of them know which formula left your head two Wednesdays ago.
@@ -447,7 +502,7 @@ function Manifesto() {
                   Then it tutors you back. With explanations only you needed. With flashcards that come back at the moment you're about to forget. With a study plan that reshapes itself when life gets in the way. This is the Twin. This is Kairo.
                 </p>
               </div>
-            </div>
+            </motion.div>
 
             <motion.div style={{ x: quoteX }}>
               <PullQuote
@@ -536,20 +591,23 @@ function BrutalDivider({ lines, kicker, tail }: {
 function BentoSection({ onGetStarted }: { onGetStarted: () => void }) {
   const ref = useRef<HTMLDivElement>(null)
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] })
-  const head1X = useTransform(scrollYProgress, [0, 1], ['-5%', '3%'])
-  const head2X = useTransform(scrollYProgress, [0, 1], ['7%', '-4%'])
-  const ghostX = useTransform(scrollYProgress, [0, 1], ['6%', '-4%'])
-  const bentoY = useTransform(scrollYProgress, [0, 1], ['3%', '-3%'])
+  const head1X = useTransform(scrollYProgress, [0, 1], ['-14%', '8%'])
+  const head2X = useTransform(scrollYProgress, [0, 1], ['16%', '-10%'])
+  const ghostX = useTransform(scrollYProgress, [0, 1], ['14%', '-12%'])
+  const bentoY = useTransform(scrollYProgress, [0, 1], ['8%', '-8%'])
+  // Bento cards drift in alternating directions for kinetic depth.
+  const driftL = useTransform(scrollYProgress, [0, 1], ['0%', '-6%'])
+  const driftR = useTransform(scrollYProgress, [0, 1], ['0%', '6%'])
 
   return (
     <section ref={ref} id="product" style={{ padding: '120px 0 100px', position: 'relative', zIndex: 2, overflow: 'hidden' }}>
       <motion.div aria-hidden style={{
-        position: 'absolute', top: '8%', left: '50%',
+        position: 'absolute', top: '6%', left: '50%',
         translateX: '-50%',
         x: ghostX,
-        fontFamily: DISPLAY, fontSize: 'min(32vw, 420px)',
-        fontWeight: 900, letterSpacing: '-0.08em', color: C.purpleInk,
-        opacity: 0.10, pointerEvents: 'none', whiteSpace: 'nowrap',
+        fontFamily: DISPLAY, fontSize: 'min(38vw, 500px)',
+        fontWeight: 900, letterSpacing: '-0.09em', color: C.purpleInk,
+        opacity: 0.20, pointerEvents: 'none', whiteSpace: 'nowrap',
       }}>
         BENTO
       </motion.div>
@@ -581,68 +639,95 @@ function BentoSection({ onGetStarted }: { onGetStarted: () => void }) {
         </SwissRow>
 
         <motion.div className="kr-bento" style={{ marginTop: 72, y: bentoY }}>
-          {/* Row 1 */}
-          <BentoCard span="col 1 / span 8" rowSpan={2} hero
-            kicker="01 · Solver" title="Any doubt. Eight seconds."
-            body="Type any question. Kairo writes a step-by-step explanation, finds 4–6 relevant images, and pulls one matching video — all under eight seconds."
-            icon={Sparkles}
-            tag="LIVE · 24/7"
-          />
-          <BentoCard span="col 9 / span 4"
-            kicker="02 · OS"
-            title="Kairo OS"
-            body="The memory engine. Tracks what you've studied, what you've forgotten, and what to do next."
-            icon={Atom}
-          />
-          <BentoCard span="col 9 / span 4"
-            kicker="03 · Voice"
-            title="Voice tutor"
-            body="Hold to speak. Kairo replies in voice and on-screen text. Hands-free, exam-night ready."
-            icon={Mic}
-          />
+          {/* Row 1 — left cluster drifts left, right cluster drifts right */}
+          <motion.div style={{ gridColumn: '1 / span 8', gridRow: 'span 2', x: driftL }}>
+            <BentoCard span="col 1 / span 8" rowSpan={2} hero
+              kicker="01 · Solver" title="Any doubt. Eight seconds."
+              body="Type any question. Kairo writes a step-by-step explanation, finds 4–6 relevant images, and pulls one matching video — all under eight seconds."
+              icon={Sparkles}
+              tag="LIVE · 24/7"
+              embedded
+            />
+          </motion.div>
+          <motion.div style={{ gridColumn: '9 / span 4', x: driftR }}>
+            <BentoCard span="col 9 / span 4"
+              kicker="02 · OS"
+              title="Kairo OS"
+              body="The memory engine. Tracks what you've studied, what you've forgotten, and what to do next."
+              icon={Atom}
+              embedded
+            />
+          </motion.div>
+          <motion.div style={{ gridColumn: '9 / span 4', x: driftR }}>
+            <BentoCard span="col 9 / span 4"
+              kicker="03 · Voice"
+              title="Voice tutor"
+              body="Hold to speak. Kairo replies in voice and on-screen text. Hands-free, exam-night ready."
+              icon={Mic}
+              embedded
+            />
+          </motion.div>
 
-          {/* Row 2 */}
-          <BentoCard span="col 1 / span 5"
-            kicker="04 · Labs"
-            title="3D physics, chem, bio"
-            body="Drag, zoom, tweak variables. Diagrams you can touch."
-            icon={Beaker}
-            visual="lab"
-          />
-          <BentoCard span="col 6 / span 4"
-            kicker="05 · Memory"
-            title="Memory Brain"
-            body="A graph of every concept you've touched, ranked by mastery."
-            icon={Brain}
-          />
-          <BentoCard span="col 10 / span 3"
-            kicker="06 · Notebook"
-            title="AI Notebook"
-            body="Type. It organises."
-            icon={BookOpen}
-            compact
-          />
+          {/* Row 2 — left drifts left, mid stays, right drifts right */}
+          <motion.div style={{ gridColumn: '1 / span 5', x: driftL }}>
+            <BentoCard span="col 1 / span 5"
+              kicker="04 · Labs"
+              title="3D physics, chem, bio"
+              body="Drag, zoom, tweak variables. Diagrams you can touch."
+              icon={Beaker}
+              visual="lab"
+              embedded
+            />
+          </motion.div>
+          <div style={{ gridColumn: '6 / span 4' }}>
+            <BentoCard span="col 6 / span 4"
+              kicker="05 · Memory"
+              title="Memory Brain"
+              body="A graph of every concept you've touched, ranked by mastery."
+              icon={Brain}
+              embedded
+            />
+          </div>
+          <motion.div style={{ gridColumn: '10 / span 3', x: driftR }}>
+            <BentoCard span="col 10 / span 3"
+              kicker="06 · Notebook"
+              title="AI Notebook"
+              body="Type. It organises."
+              icon={BookOpen}
+              compact
+              embedded
+            />
+          </motion.div>
 
-          {/* Row 3 */}
-          <BentoCard span="col 1 / span 3"
-            kicker="07 · Predictor"
-            title="Exam Predictor"
-            body="Probability-ranked questions for next month's paper."
-            icon={Activity}
-            compact
-          />
-          <BentoCard span="col 4 / span 4"
-            kicker="08 · Concepts"
-            title="Concept Map"
-            body="Drag the whole syllabus around like a metro map."
-            icon={Network}
-          />
-          <BentoCard span="col 8 / span 5"
-            kicker="09 · Camera Study"
-            title="Point at a textbook."
-            body="Snap a page. Kairo explains the question on it, step by step, with diagrams pulled in."
-            icon={Camera}
-          />
+          {/* Row 3 — left drifts left, right drifts right */}
+          <motion.div style={{ gridColumn: '1 / span 3', x: driftL }}>
+            <BentoCard span="col 1 / span 3"
+              kicker="07 · Predictor"
+              title="Exam Predictor"
+              body="Probability-ranked questions for next month's paper."
+              icon={Activity}
+              compact
+              embedded
+            />
+          </motion.div>
+          <div style={{ gridColumn: '4 / span 4' }}>
+            <BentoCard span="col 4 / span 4"
+              kicker="08 · Concepts"
+              title="Concept Map"
+              body="Drag the whole syllabus around like a metro map."
+              icon={Network}
+              embedded
+            />
+          </div>
+          <motion.div style={{ gridColumn: '8 / span 5', x: driftR }}>
+            <BentoCard span="col 8 / span 5"
+              kicker="09 · Camera Study"
+              title="Point at a textbook."
+              body="Snap a page. Kairo explains the question on it, step by step, with diagrams pulled in."
+              icon={Camera}
+              embedded
+            />
+          </motion.div>
         </motion.div>
 
         <div style={{ marginTop: 56, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 24 }}>
@@ -659,7 +744,7 @@ function BentoSection({ onGetStarted }: { onGetStarted: () => void }) {
 }
 
 function BentoCard({ span, rowSpan = 1, hero = false, compact = false,
-                    kicker, title, body, icon: Icon, tag, visual,
+                    kicker, title, body, icon: Icon, tag, visual, embedded = false,
 }: {
   span: string
   rowSpan?: number
@@ -671,6 +756,10 @@ function BentoCard({ span, rowSpan = 1, hero = false, compact = false,
   icon?: any
   tag?: string
   visual?: 'lab'
+  /** When true, the card lives INSIDE a parallax wrapper that already owns
+   *  grid placement. Skip our own grid-column/row so it inherits 100% of
+   *  the wrapper's box. */
+  embedded?: boolean
 }) {
   const [hover, setHover] = useState(false)
   return (
@@ -680,8 +769,9 @@ function BentoCard({ span, rowSpan = 1, hero = false, compact = false,
       whileHover={{ y: -4 }}
       transition={{ type: 'spring', stiffness: 200, damping: 22 }}
       style={{
-        gridColumn: span.replace('col ', ''),
-        gridRow: `span ${rowSpan}`,
+        ...(embedded
+          ? { width: '100%', height: '100%' }
+          : { gridColumn: span.replace('col ', ''), gridRow: `span ${rowSpan}` }),
         background: hero
           ? `linear-gradient(140deg, ${C.purpleInk} 0%, ${C.panel} 60%, ${C.ink} 100%)`
           : C.panel,
@@ -856,12 +946,13 @@ function LabsShowcase() {
 
   const ref = useRef<HTMLDivElement>(null)
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] })
-  // Counter-drift on the two-line headline.
-  const tx1 = useTransform(scrollYProgress, [0, 1], ['-9%', '5%'])
-  const tx2 = useTransform(scrollYProgress, [0, 1], ['9%', '-5%'])
-  const ghostX = useTransform(scrollYProgress, [0, 1], ['-5%', '4%'])
-  // Lab grid drifts up slightly.
-  const gridY = useTransform(scrollYProgress, [0, 1], ['4%', '-4%'])
+  // Dramatic counter-drift on the two-line headline.
+  const tx1 = useTransform(scrollYProgress, [0, 1], ['-18%', '12%'])
+  const tx2 = useTransform(scrollYProgress, [0, 1], ['20%', '-14%'])
+  const ghostX = useTransform(scrollYProgress, [0, 1], ['-14%', '10%'])
+  const gridY = useTransform(scrollYProgress, [0, 1], ['10%', '-10%'])
+  const labL  = useTransform(scrollYProgress, [0, 1], ['0%', '-5%'])
+  const labR  = useTransform(scrollYProgress, [0, 1], ['0%', '5%'])
 
   return (
     <section ref={ref} id="labs" style={{
@@ -870,12 +961,12 @@ function LabsShowcase() {
       overflow: 'hidden',
     }}>
       <motion.div aria-hidden style={{
-        position: 'absolute', top: '6%', left: '50%',
+        position: 'absolute', top: '4%', left: '50%',
         translateX: '-50%',
         x: ghostX,
-        fontFamily: DISPLAY, fontSize: 'min(34vw, 440px)',
-        fontWeight: 900, letterSpacing: '-0.08em', color: C.purpleInk,
-        opacity: 0.10, pointerEvents: 'none', whiteSpace: 'nowrap',
+        fontFamily: DISPLAY, fontSize: 'min(42vw, 540px)',
+        fontWeight: 900, letterSpacing: '-0.09em', color: C.purpleInk,
+        opacity: 0.22, pointerEvents: 'none', whiteSpace: 'nowrap',
       }}>
         LABS
       </motion.div>
@@ -925,8 +1016,8 @@ function LabsShowcase() {
 
         <div style={{ marginTop: 24, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}
           className="kr-lab-grid-2">
-          <LabTile lab={labs[3]} />
-          <LabTile lab={labs[4]} />
+          <motion.div style={{ x: labL }}><LabTile lab={labs[3]} /></motion.div>
+          <motion.div style={{ x: labR }}><LabTile lab={labs[4]} /></motion.div>
         </div>
 
         <div style={{
@@ -1018,21 +1109,21 @@ function LabTile({ lab, big = false }: { lab: { name: string; tag: string; glyph
 function TwinEssay() {
   const ref = useRef<HTMLDivElement>(null)
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] })
-  const lx1 = useTransform(scrollYProgress, [0, 1], ['-7%', '4%'])
-  const lx2 = useTransform(scrollYProgress, [0, 1], ['9%', '-5%'])
-  const ghostX = useTransform(scrollYProgress, [0, 1], ['5%', '-6%'])
-  const bodyY  = useTransform(scrollYProgress, [0, 1], ['4%', '-4%'])
-  const quoteX = useTransform(scrollYProgress, [0, 1], ['-5%', '4%'])
+  const lx1 = useTransform(scrollYProgress, [0, 1], ['-16%', '12%'])
+  const lx2 = useTransform(scrollYProgress, [0, 1], ['20%', '-14%'])
+  const ghostX = useTransform(scrollYProgress, [0, 1], ['16%', '-14%'])
+  const bodyY  = useTransform(scrollYProgress, [0, 1], ['10%', '-10%'])
+  const quoteX = useTransform(scrollYProgress, [0, 1], ['-14%', '10%'])
 
   return (
     <section ref={ref} id="twin" style={{ padding: '140px 0 120px', position: 'relative', zIndex: 2, overflow: 'hidden' }}>
       <motion.div aria-hidden style={{
-        position: 'absolute', top: '10%', left: '50%',
+        position: 'absolute', top: '8%', left: '50%',
         translateX: '-50%',
         x: ghostX,
-        fontFamily: DISPLAY, fontSize: 'min(34vw, 440px)',
-        fontWeight: 900, letterSpacing: '-0.08em', color: C.purpleInk,
-        opacity: 0.11, pointerEvents: 'none', whiteSpace: 'nowrap',
+        fontFamily: DISPLAY, fontSize: 'min(44vw, 580px)',
+        fontWeight: 900, letterSpacing: '-0.09em', color: C.purpleInk,
+        opacity: 0.22, pointerEvents: 'none', whiteSpace: 'nowrap',
       }}>
         TWIN
       </motion.div>
@@ -1114,12 +1205,12 @@ function TwinEssay() {
 function FinalCTA({ onGetStarted }: { onGetStarted: () => void }) {
   const ref = useRef<HTMLDivElement>(null)
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] })
-  // "BEGIN." scales up as it enters the viewport and drifts left slightly.
-  const beginScale = useTransform(scrollYProgress, [0, 0.5, 1], [0.88, 1, 1.06])
-  const beginX     = useTransform(scrollYProgress, [0, 1], ['4%', '-4%'])
-  const beginO     = useTransform(scrollYProgress, [0, 0.4, 1], [0.6, 1, 1])
-  const haloS      = useTransform(scrollYProgress, [0, 1], [0.6, 1.2])
-  const ghostX     = useTransform(scrollYProgress, [0, 1], ['-6%', '4%'])
+  // Dramatic scale + drift on BEGIN.
+  const beginScale = useTransform(scrollYProgress, [0, 0.5, 1], [0.7, 1.05, 1.18])
+  const beginX     = useTransform(scrollYProgress, [0, 1], ['12%', '-12%'])
+  const beginO     = useTransform(scrollYProgress, [0, 0.4, 1], [0.4, 1, 1])
+  const haloS      = useTransform(scrollYProgress, [0, 1], [0.4, 1.5])
+  const ghostX     = useTransform(scrollYProgress, [0, 1], ['-16%', '14%'])
 
   return (
     <section ref={ref} style={{
@@ -1140,14 +1231,14 @@ function FinalCTA({ onGetStarted }: { onGetStarted: () => void }) {
         pointerEvents: 'none',
       }} />
 
-      {/* Ghost watermark */}
+      {/* Ghost watermark — louder, larger */}
       <motion.div aria-hidden style={{
         position: 'absolute', top: '50%', left: '50%',
         translateX: '-50%', translateY: '-50%',
         x: ghostX,
-        fontFamily: DISPLAY, fontSize: 'min(36vw, 480px)',
-        fontWeight: 900, letterSpacing: '-0.08em', color: C.purpleInk,
-        opacity: 0.12, pointerEvents: 'none', whiteSpace: 'nowrap',
+        fontFamily: DISPLAY, fontSize: 'min(46vw, 620px)',
+        fontWeight: 900, letterSpacing: '-0.09em', color: C.purpleInk,
+        opacity: 0.22, pointerEvents: 'none', whiteSpace: 'nowrap',
       }}>
         BEGIN
       </motion.div>
