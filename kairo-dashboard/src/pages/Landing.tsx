@@ -88,10 +88,16 @@ interface LandingProps {
 // ════════════════════════════════════════════════════════════════════════════
 export default function Landing({ onGetStarted }: LandingProps) {
   return (
+    // The dashboard's mobile CSS does `html, body { overflow: hidden }` to
+    // keep its bottom dock pinned — that locks the landing page's body scroll.
+    // Give the landing its own scroll container so users can scroll on phones.
     <div style={{
       background: C.ink, color: C.text, fontFamily: SANS,
-      width: '100%', minHeight: '100vh',
+      width: '100%',
+      height: '100dvh', minHeight: '100vh',
       overflowX: 'hidden',
+      overflowY: 'auto',
+      WebkitOverflowScrolling: 'touch',
       WebkitFontSmoothing: 'antialiased',
       MozOsxFontSmoothing: 'grayscale' as any,
     }}>
