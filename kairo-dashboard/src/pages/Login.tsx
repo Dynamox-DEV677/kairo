@@ -52,6 +52,66 @@ const PLANS = [
 ]
 
 // ─── Top-level component ────────────────────────────────────────────────────
+// Drifting brand wordmarks for the background.
+// Time-based (not scroll-based) since Login doesn't scroll. Same monochrome
+// purple palette + giant DISPLAY-style typography as the landing's
+// GlobalScrollLayer, but it loops on a timer so it works on every device.
+function AmbientWordmarks() {
+  const display = "'Inter Tight', 'Inter', 'Neue Haas Grotesk Display', 'Helvetica Neue', system-ui, sans-serif"
+  // Plain CSS keyframes — Framer Motion's `animate={{ x: [...] }}` keyframe
+  // arrays were silently refusing to start in this layout (likely a conflict
+  // with the centering wrapper). CSS animation is bulletproof and works on
+  // every device including mobile Safari.
+  return (
+    <>
+      <style>{`
+        @keyframes kr-drift-a {
+          0%, 100% { transform: translate(-50%, 0) translateX(-6vw); }
+          50%      { transform: translate(-50%, 0) translateX(6vw);  }
+        }
+        @keyframes kr-drift-b {
+          0%, 100% { transform: translate(-50%, 0) translateX(8vw);  }
+          50%      { transform: translate(-50%, 0) translateX(-8vw); }
+        }
+        .kr-ghost-a { animation: kr-drift-a 28s ease-in-out infinite; }
+        .kr-ghost-b { animation: kr-drift-b 34s ease-in-out infinite; }
+        @media (prefers-reduced-motion: reduce) {
+          .kr-ghost-a, .kr-ghost-b { animation: none; }
+        }
+      `}</style>
+      <div aria-hidden style={{
+        position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0,
+        overflow: 'hidden',
+      }}>
+        <div className="kr-ghost-a" style={{
+          position: 'absolute', top: '14%', left: '50%',
+          transform: 'translate(-50%, 0) translateX(-6vw)',
+          fontFamily: display,
+          fontSize: 'clamp(120px, 38vw, 540px)',
+          fontWeight: 900, letterSpacing: '-0.08em',
+          color: '#3b0764', opacity: 0.20,
+          whiteSpace: 'nowrap', lineHeight: 1,
+          willChange: 'transform',
+        }}>
+          KAIRO
+        </div>
+        <div className="kr-ghost-b" style={{
+          position: 'absolute', bottom: '6%', left: '50%',
+          transform: 'translate(-50%, 0) translateX(8vw)',
+          fontFamily: display,
+          fontSize: 'clamp(80px, 28vw, 400px)',
+          fontWeight: 900, letterSpacing: '-0.08em',
+          color: '#3b0764', opacity: 0.16,
+          whiteSpace: 'nowrap', lineHeight: 1,
+          willChange: 'transform',
+        }}>
+          ACADEMICS
+        </div>
+      </div>
+    </>
+  )
+}
+
 export default function Login({ onLogin }: LoginProps) {
   const [mode, setMode] = useState<Mode>('choose')
 
@@ -72,16 +132,26 @@ export default function Login({ onLogin }: LoginProps) {
       WebkitOverflowScrolling: 'touch',
       paddingTop: 'env(safe-area-inset-top)',
       paddingBottom: 'env(safe-area-inset-bottom)',
+      position: 'relative',
+      overflowX: 'hidden',           // contain the drifting wordmarks
     }}>
+      {/* Drifting background wordmarks — same brand language as the landing's
+          GlobalScrollLayer, but TIME-based (Login doesn't scroll, so no
+          scrollYProgress to bind to). Two counter-drifting bands give the
+          background that "the page is breathing" feel on both desktop and
+          mobile. pointerEvents: none so they never intercept taps. */}
+      <AmbientWordmarks />
+
       {/* Ambient glow */}
       <div style={{
         position: 'fixed', top: '15%', left: '50%', transform: 'translateX(-50%)',
         width: 600, height: 600, borderRadius: '50%',
         background: 'radial-gradient(circle, rgba(124, 58, 237,0.10) 0%, transparent 70%)',
         pointerEvents: 'none',
+        zIndex: 1,
       }} />
 
-      <div style={{ width: '100%', maxWidth: 480, padding: '28px 20px 48px', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ width: '100%', maxWidth: 480, padding: '28px 20px 48px', display: 'flex', flexDirection: 'column', position: 'relative', zIndex: 2 }}>
         {/* Logo */}
         <div style={{ textAlign: 'center', marginBottom: 22, flexShrink: 0 }}>
           <img src="/kairo_logo.png" alt="Kairo"
