@@ -365,25 +365,51 @@ function KineticBlock() {
 }
 
 // ════════════════════════════════════════════════════════════════════════════
-// MANIFESTO — editorial essay, drop-cap, pull-quote
+// MANIFESTO — editorial essay, drop-cap, pull-quote (scroll-linked drift)
 // ════════════════════════════════════════════════════════════════════════════
 function Manifesto() {
+  const ref = useRef<HTMLDivElement>(null)
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] })
+  // Two headline lines drift in OPPOSITE directions — counter-parallax.
+  const line1X = useTransform(scrollYProgress, [0, 1], ['-6%', '4%'])
+  const line2X = useTransform(scrollYProgress, [0, 1], ['8%', '-4%'])
+  // Side metadata column drifts up slowly for depth.
+  const metaY  = useTransform(scrollYProgress, [0, 1], ['16%', '-8%'])
+  // Watermark drifts SAME direction as line 2 but slower (depth).
+  const ghostX = useTransform(scrollYProgress, [0, 1], ['4%', '-3%'])
+  // Pull quote slides in from the right.
+  const quoteX = useTransform(scrollYProgress, [0, 1], ['6%', '-4%'])
+
   return (
-    <section id="manifesto" style={{ padding: '120px 0 100px', position: 'relative', zIndex: 2 }}>
+    <section ref={ref} id="manifesto" style={{ padding: '120px 0 100px', position: 'relative', zIndex: 2, overflow: 'hidden' }}>
+      {/* Ghost watermark behind the headline */}
+      <motion.div aria-hidden style={{
+        position: 'absolute', top: '32%', left: '50%',
+        translateX: '-50%',
+        x: ghostX,
+        fontFamily: DISPLAY, fontSize: 'min(28vw, 360px)',
+        fontWeight: 900, letterSpacing: '-0.08em', color: C.purpleInk,
+        opacity: 0.12, pointerEvents: 'none', whiteSpace: 'nowrap',
+      }}>
+        MANIFESTO
+      </motion.div>
+
       <Container>
         <SwissRow>
           <SwissCell span={3}>
-            <Eyebrow num="01" label="The Manifesto" />
-            <div style={{
-              fontFamily: MONO, fontSize: 10, color: C.textVery,
-              letterSpacing: 2, marginTop: 14, lineHeight: 1.6,
-            }}>
-              FILED · MAY 2026
-              <br />
-              FOR ISSUE Nº 01
-              <br />
-              WORDS · K. EDITORIAL
-            </div>
+            <motion.div style={{ y: metaY }}>
+              <Eyebrow num="01" label="The Manifesto" />
+              <div style={{
+                fontFamily: MONO, fontSize: 10, color: C.textVery,
+                letterSpacing: 2, marginTop: 14, lineHeight: 1.6,
+              }}>
+                FILED · MAY 2026
+                <br />
+                FOR ISSUE Nº 01
+                <br />
+                WORDS · K. EDITORIAL
+              </div>
+            </motion.div>
           </SwissCell>
 
           <SwissCell span={9}>
@@ -392,9 +418,13 @@ function Manifesto() {
               lineHeight: 1.02, letterSpacing: '-0.02em', fontWeight: 700,
               margin: '0 0 48px', color: C.text, maxWidth: 880,
             }}>
-              Every student in India is taught the same way.
+              <motion.span style={{ x: line1X, display: 'inline-block' }}>
+                Every student in India is taught the same way.
+              </motion.span>
               <br />
-              <span style={{ color: C.purpleSoft }}>Kairo notices that you aren't.</span>
+              <motion.span style={{ x: line2X, color: C.purpleSoft, display: 'inline-block' }}>
+                Kairo notices that you aren't.
+              </motion.span>
             </h3>
 
             {/* Two-column body */}
@@ -419,10 +449,12 @@ function Manifesto() {
               </div>
             </div>
 
-            <PullQuote
-              text={`“Kairo doesn’t teach the textbook. It teaches the person reading it.”`}
-              attribution={`— Editor’s note`}
-            />
+            <motion.div style={{ x: quoteX }}>
+              <PullQuote
+                text={`“Kairo doesn’t teach the textbook. It teaches the person reading it.”`}
+                attribution={`— Editor’s note`}
+              />
+            </motion.div>
           </SwissCell>
         </SwissRow>
       </Container>
@@ -499,11 +531,29 @@ function BrutalDivider({ lines, kicker, tail }: {
 }
 
 // ════════════════════════════════════════════════════════════════════════════
-// BENTO — asymmetric feature grid
+// BENTO — asymmetric feature grid (scroll-linked drift)
 // ════════════════════════════════════════════════════════════════════════════
 function BentoSection({ onGetStarted }: { onGetStarted: () => void }) {
+  const ref = useRef<HTMLDivElement>(null)
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] })
+  const head1X = useTransform(scrollYProgress, [0, 1], ['-5%', '3%'])
+  const head2X = useTransform(scrollYProgress, [0, 1], ['7%', '-4%'])
+  const ghostX = useTransform(scrollYProgress, [0, 1], ['6%', '-4%'])
+  const bentoY = useTransform(scrollYProgress, [0, 1], ['3%', '-3%'])
+
   return (
-    <section id="product" style={{ padding: '120px 0 100px', position: 'relative', zIndex: 2 }}>
+    <section ref={ref} id="product" style={{ padding: '120px 0 100px', position: 'relative', zIndex: 2, overflow: 'hidden' }}>
+      <motion.div aria-hidden style={{
+        position: 'absolute', top: '8%', left: '50%',
+        translateX: '-50%',
+        x: ghostX,
+        fontFamily: DISPLAY, fontSize: 'min(32vw, 420px)',
+        fontWeight: 900, letterSpacing: '-0.08em', color: C.purpleInk,
+        opacity: 0.10, pointerEvents: 'none', whiteSpace: 'nowrap',
+      }}>
+        BENTO
+      </motion.div>
+
       <Container>
         <SwissRow>
           <SwissCell span={3}>
@@ -515,9 +565,9 @@ function BentoSection({ onGetStarted }: { onGetStarted: () => void }) {
               lineHeight: 1.02, letterSpacing: '-0.02em', fontWeight: 700,
               margin: 0, color: C.text, maxWidth: 880,
             }}>
-              Eleven systems.
+              <motion.span style={{ x: head1X, display: 'inline-block' }}>Eleven systems.</motion.span>
               <br />
-              <span style={{ color: C.purpleSoft }}>One mind.</span>
+              <motion.span style={{ x: head2X, color: C.purpleSoft, display: 'inline-block' }}>One mind.</motion.span>
             </h3>
             <p style={{
               fontFamily: SANS, fontSize: 16.5, lineHeight: 1.65, color: C.textDim,
@@ -530,7 +580,7 @@ function BentoSection({ onGetStarted }: { onGetStarted: () => void }) {
           </SwissCell>
         </SwissRow>
 
-        <div className="kr-bento" style={{ marginTop: 72 }}>
+        <motion.div className="kr-bento" style={{ marginTop: 72, y: bentoY }}>
           {/* Row 1 */}
           <BentoCard span="col 1 / span 8" rowSpan={2} hero
             kicker="01 · Solver" title="Any doubt. Eight seconds."
@@ -593,7 +643,7 @@ function BentoSection({ onGetStarted }: { onGetStarted: () => void }) {
             body="Snap a page. Kairo explains the question on it, step by step, with diagrams pulled in."
             icon={Camera}
           />
-        </div>
+        </motion.div>
 
         <div style={{ marginTop: 56, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 24 }}>
           <span style={{ fontFamily: MONO, fontSize: 11, color: C.textVery, letterSpacing: 2 }}>
@@ -793,7 +843,7 @@ function ConstructivistInterstitial() {
 }
 
 // ════════════════════════════════════════════════════════════════════════════
-// LABS SHOWCASE — massive editorial cards
+// LABS SHOWCASE — massive editorial cards (scroll-linked drift)
 // ════════════════════════════════════════════════════════════════════════════
 function LabsShowcase() {
   const labs = [
@@ -803,11 +853,33 @@ function LabsShowcase() {
     { name: 'Combustion',       tag: 'CHEM · 10',    glyph: Zap },
     { name: 'Wave Optics',      tag: 'PHYSICS · 12', glyph: Compass },
   ]
+
+  const ref = useRef<HTMLDivElement>(null)
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] })
+  // Counter-drift on the two-line headline.
+  const tx1 = useTransform(scrollYProgress, [0, 1], ['-9%', '5%'])
+  const tx2 = useTransform(scrollYProgress, [0, 1], ['9%', '-5%'])
+  const ghostX = useTransform(scrollYProgress, [0, 1], ['-5%', '4%'])
+  // Lab grid drifts up slightly.
+  const gridY = useTransform(scrollYProgress, [0, 1], ['4%', '-4%'])
+
   return (
-    <section id="labs" style={{
+    <section ref={ref} id="labs" style={{
       padding: '120px 0 100px', position: 'relative', zIndex: 2,
       background: `linear-gradient(180deg, ${C.ink} 0%, ${C.paper} 50%, ${C.ink} 100%)`,
+      overflow: 'hidden',
     }}>
+      <motion.div aria-hidden style={{
+        position: 'absolute', top: '6%', left: '50%',
+        translateX: '-50%',
+        x: ghostX,
+        fontFamily: DISPLAY, fontSize: 'min(34vw, 440px)',
+        fontWeight: 900, letterSpacing: '-0.08em', color: C.purpleInk,
+        opacity: 0.10, pointerEvents: 'none', whiteSpace: 'nowrap',
+      }}>
+        LABS
+      </motion.div>
+
       <Container>
         <SwissRow>
           <SwissCell span={3}>
@@ -819,13 +891,15 @@ function LabsShowcase() {
               lineHeight: 0.98, letterSpacing: '-0.03em', fontWeight: 800,
               margin: 0, color: C.text,
             }}>
-              Touch the<br />
-              <span style={{
+              <motion.span style={{ x: tx1, display: 'inline-block' }}>Touch the</motion.span><br />
+              <motion.span style={{
+                x: tx2,
+                display: 'inline-block',
                 fontStyle: 'italic',
                 background: `linear-gradient(180deg, ${C.purpleLite}, ${C.purple})`,
                 WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
                 backgroundClip: 'text',
-              }}>diagram.</span>
+              }}>diagram.</motion.span>
             </h3>
             <p style={{
               fontFamily: SERIF, fontSize: 18, lineHeight: 1.7, color: C.textDim,
@@ -840,14 +914,14 @@ function LabsShowcase() {
         </SwissRow>
 
         {/* Hero lab + supporting */}
-        <div style={{ marginTop: 80, display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: 24 }}
+        <motion.div style={{ marginTop: 80, display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: 24, y: gridY }}
           className="kr-lab-grid">
           <LabTile big lab={labs[0]} />
           <div style={{ display: 'grid', gap: 24, gridTemplateRows: '1fr 1fr' }}>
             <LabTile lab={labs[1]} />
             <LabTile lab={labs[2]} />
           </div>
-        </div>
+        </motion.div>
 
         <div style={{ marginTop: 24, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}
           className="kr-lab-grid-2">
@@ -939,11 +1013,30 @@ function LabTile({ lab, big = false }: { lab: { name: string; tag: string; glyph
 }
 
 // ════════════════════════════════════════════════════════════════════════════
-// TWIN ESSAY — long-form editorial
+// TWIN ESSAY — long-form editorial (scroll-linked drift)
 // ════════════════════════════════════════════════════════════════════════════
 function TwinEssay() {
+  const ref = useRef<HTMLDivElement>(null)
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] })
+  const lx1 = useTransform(scrollYProgress, [0, 1], ['-7%', '4%'])
+  const lx2 = useTransform(scrollYProgress, [0, 1], ['9%', '-5%'])
+  const ghostX = useTransform(scrollYProgress, [0, 1], ['5%', '-6%'])
+  const bodyY  = useTransform(scrollYProgress, [0, 1], ['4%', '-4%'])
+  const quoteX = useTransform(scrollYProgress, [0, 1], ['-5%', '4%'])
+
   return (
-    <section id="twin" style={{ padding: '140px 0 120px', position: 'relative', zIndex: 2 }}>
+    <section ref={ref} id="twin" style={{ padding: '140px 0 120px', position: 'relative', zIndex: 2, overflow: 'hidden' }}>
+      <motion.div aria-hidden style={{
+        position: 'absolute', top: '10%', left: '50%',
+        translateX: '-50%',
+        x: ghostX,
+        fontFamily: DISPLAY, fontSize: 'min(34vw, 440px)',
+        fontWeight: 900, letterSpacing: '-0.08em', color: C.purpleInk,
+        opacity: 0.11, pointerEvents: 'none', whiteSpace: 'nowrap',
+      }}>
+        TWIN
+      </motion.div>
+
       <Container>
         <SwissRow>
           <SwissCell span={3}>
@@ -956,19 +1049,22 @@ function TwinEssay() {
               lineHeight: 0.94, letterSpacing: '-0.035em', fontWeight: 800,
               margin: 0, color: C.text,
             }}>
-              An AI that knows<br />
-              <em style={{
+              <motion.span style={{ x: lx1, display: 'inline-block' }}>An AI that knows</motion.span><br />
+              <motion.em style={{
+                x: lx2,
+                display: 'inline-block',
                 fontStyle: 'italic',
                 background: `linear-gradient(180deg, ${C.purpleLite}, ${C.purpleHi})`,
                 WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
                 backgroundClip: 'text',
-              }}>where you are</em>.
+              }}>where you are</motion.em>.
             </h3>
 
-            <div style={{
+            <motion.div style={{
               marginTop: 56,
               display: 'grid', gridTemplateColumns: '1fr 1fr', columnGap: 56,
               fontFamily: SERIF, fontSize: 17.5, lineHeight: 1.75, color: C.textDim,
+              y: bodyY,
             }} className="kr-two-col">
               <div>
                 <DropCap letter="T" />he Twin lives on your device. Most of what Kairo
@@ -997,12 +1093,14 @@ function TwinEssay() {
                   it becomes <em style={{ color: C.text }}>only yours</em>.
                 </p>
               </div>
-            </div>
+            </motion.div>
 
-            <PullQuote
-              text={`“It remembered I never finished projectile motion. I had.\nI just forgot I had.”`}
-              attribution={`— Ananya, Class 11, CBSE`}
-            />
+            <motion.div style={{ x: quoteX }}>
+              <PullQuote
+                text={`“It remembered I never finished projectile motion. I had.\nI just forgot I had.”`}
+                attribution={`— Ananya, Class 11, CBSE`}
+              />
+            </motion.div>
           </SwissCell>
         </SwissRow>
       </Container>
@@ -1011,19 +1109,51 @@ function TwinEssay() {
 }
 
 // ════════════════════════════════════════════════════════════════════════════
-// FINAL CTA — brutalist closer
+// FINAL CTA — brutalist closer (scroll-linked drift + scale)
 // ════════════════════════════════════════════════════════════════════════════
 function FinalCTA({ onGetStarted }: { onGetStarted: () => void }) {
+  const ref = useRef<HTMLDivElement>(null)
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] })
+  // "BEGIN." scales up as it enters the viewport and drifts left slightly.
+  const beginScale = useTransform(scrollYProgress, [0, 0.5, 1], [0.88, 1, 1.06])
+  const beginX     = useTransform(scrollYProgress, [0, 1], ['4%', '-4%'])
+  const beginO     = useTransform(scrollYProgress, [0, 0.4, 1], [0.6, 1, 1])
+  const haloS      = useTransform(scrollYProgress, [0, 1], [0.6, 1.2])
+  const ghostX     = useTransform(scrollYProgress, [0, 1], ['-6%', '4%'])
+
   return (
-    <section style={{
+    <section ref={ref} style={{
       padding: '160px 0',
       borderTop: `1px solid ${C.lineHi}`,
       background:
         `radial-gradient(80% 100% at 50% 50%, rgba(124,58,237,0.18) 0%, ${C.ink} 70%)`,
       position: 'relative', zIndex: 2, overflow: 'hidden',
     }}>
+      {/* Animated halo that pulses larger with scroll */}
+      <motion.div aria-hidden style={{
+        position: 'absolute', top: '50%', left: '50%',
+        translate: '-50% -50%',
+        width: '70vw', height: '70vw', maxWidth: 900, maxHeight: 900,
+        borderRadius: '50%',
+        background: `radial-gradient(circle, rgba(124,58,237,0.18) 0%, transparent 60%)`,
+        scale: haloS,
+        pointerEvents: 'none',
+      }} />
+
+      {/* Ghost watermark */}
+      <motion.div aria-hidden style={{
+        position: 'absolute', top: '50%', left: '50%',
+        translateX: '-50%', translateY: '-50%',
+        x: ghostX,
+        fontFamily: DISPLAY, fontSize: 'min(36vw, 480px)',
+        fontWeight: 900, letterSpacing: '-0.08em', color: C.purpleInk,
+        opacity: 0.12, pointerEvents: 'none', whiteSpace: 'nowrap',
+      }}>
+        BEGIN
+      </motion.div>
+
       <Container>
-        <div style={{ textAlign: 'center' }}>
+        <div style={{ textAlign: 'center', position: 'relative', zIndex: 2 }}>
           <span style={{
             fontFamily: MONO, fontSize: 11, letterSpacing: 3.4, color: C.purpleSoft,
             textTransform: 'uppercase',
@@ -1031,14 +1161,15 @@ function FinalCTA({ onGetStarted }: { onGetStarted: () => void }) {
             — End of cover ·  Issue №01 ·
           </span>
 
-          <h2 className="kr-mega" style={{
+          <motion.h2 className="kr-mega" style={{
             fontFamily: DISPLAY, fontWeight: 900,
             fontSize: 'clamp(80px, 19vw, 320px)',
             lineHeight: 0.85, letterSpacing: '-0.05em',
             margin: '28px auto 8px', color: C.text,
+            scale: beginScale, x: beginX, opacity: beginO,
           }}>
             BEGIN.
-          </h2>
+          </motion.h2>
 
           <p style={{
             fontFamily: SERIF, fontSize: 19, color: C.textDim,
