@@ -87,17 +87,32 @@ interface LandingProps {
 // MAIN
 // ════════════════════════════════════════════════════════════════════════════
 export default function Landing({ onGetStarted }: LandingProps) {
+  // The dashboard's mobile CSS does `html, body { overflow: hidden }` to keep
+  // its bottom dock pinned — that locks the landing page's body scroll. We
+  // need body to be scrollable here so Framer Motion's `useScroll` can track
+  // window scrolling. Toggle the lock off while the Landing is mounted, then
+  // restore on unmount.
+  useEffect(() => {
+    const html = document.documentElement
+    const body = document.body
+    const prevHtml = html.style.overflow
+    const prevBody = body.style.overflow
+    const prevBodyBehavior = (body.style as any).overscrollBehavior
+    html.style.overflow = 'auto'
+    body.style.overflow = 'auto'
+    ;(body.style as any).overscrollBehavior = 'auto'
+    return () => {
+      html.style.overflow = prevHtml
+      body.style.overflow = prevBody
+      ;(body.style as any).overscrollBehavior = prevBodyBehavior
+    }
+  }, [])
+
   return (
-    // The dashboard's mobile CSS does `html, body { overflow: hidden }` to
-    // keep its bottom dock pinned — that locks the landing page's body scroll.
-    // Give the landing its own scroll container so users can scroll on phones.
     <div style={{
       background: C.ink, color: C.text, fontFamily: SANS,
-      width: '100%',
-      height: '100dvh', minHeight: '100vh',
+      width: '100%', minHeight: '100vh',
       overflowX: 'hidden',
-      overflowY: 'auto',
-      WebkitOverflowScrolling: 'touch',
       WebkitFontSmoothing: 'antialiased',
       MozOsxFontSmoothing: 'grayscale' as any,
     }}>
