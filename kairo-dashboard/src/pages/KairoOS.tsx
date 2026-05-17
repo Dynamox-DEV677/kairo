@@ -857,66 +857,55 @@ function RecommendationsCard({ recs, onAct, onDismiss }: { recs: Recommendation[
       </CardTitle>
 
       <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 10, minHeight: 90 }}>
-        <AnimatePresence mode="popLayout" initial={false}>
-          {isEmpty ? (
-            <motion.div
-              key="rec-empty"
-              initial={{ opacity: 0, y: 4 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.22 }}
-            >
-              <EmptyInline
-                icon={<Sparkles size={20} color={C.textFaint} />}
-                text="No suggestions right now — you're doing great. Recompute after your next session."
-              />
-            </motion.div>
-          ) : (
-            recs.map(r => (
-              <motion.div key={r.id} className="kr-rec-item"
-                layout
-                initial={{ opacity: 0, y: 4 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, height: 0, marginTop: 0, paddingTop: 0, paddingBottom: 0 }}
-                transition={{ duration: 0.22 }}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: 12,
-                  padding: '12px 14px', borderRadius: 12,
-                  background: C.panel2, border: `1px solid ${C.borderSoft}`,
-                  position: 'relative', overflow: 'hidden',
-                }}>
-                <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, background: recKindColor(r.kind) }} />
-                <div style={{ width: 32, height: 32, borderRadius: 8, flexShrink: 0, background: recKindColor(r.kind) + '18', display: 'grid', placeItems: 'center' }}>
-                  <RecIcon kind={r.kind} />
+        {isEmpty ? (
+          <EmptyInline
+            icon={<Sparkles size={20} color={C.textFaint} />}
+            text="No suggestions right now — you're doing great. Recompute after your next session."
+          />
+        ) : (
+          // Plain map — no layout animations, no popLayout. The card was
+          // flickering / "blinking" because every re-render of the parent
+          // (poll, scroll, anything) triggered Framer's layout animator
+          // on every rec item simultaneously. Static items now.
+          recs.map(r => (
+            <div key={r.id} className="kr-rec-item"
+              style={{
+                display: 'flex', alignItems: 'center', gap: 12,
+                padding: '12px 14px', borderRadius: 12,
+                background: C.panel2, border: `1px solid ${C.borderSoft}`,
+                position: 'relative', overflow: 'hidden',
+              }}>
+              <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, background: recKindColor(r.kind) }} />
+              <div style={{ width: 32, height: 32, borderRadius: 8, flexShrink: 0, background: recKindColor(r.kind) + '18', display: 'grid', placeItems: 'center' }}>
+                <RecIcon kind={r.kind} />
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: recKindColor(r.kind), textTransform: 'uppercase', letterSpacing: 1.2 }}>
+                  {r.kind}{r.subject ? ` · ${r.subject}` : ''}
                 </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: recKindColor(r.kind), textTransform: 'uppercase', letterSpacing: 1.2 }}>
-                    {r.kind}{r.subject ? ` · ${r.subject}` : ''}
-                  </div>
-                  <div style={{ fontSize: 13, color: C.text, lineHeight: 1.5, marginTop: 2 }}>{r.reason}</div>
-                </div>
-                <button
-                  type="button"
-                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); onAct(r.id) }}
-                  title="Mark done"
-                  aria-label="Mark this recommendation done"
-                  style={iconBtnStyle()}
-                >
-                  <Check size={13} color={C.green} />
-                </button>
-                <button
-                  type="button"
-                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); onDismiss(r.id) }}
-                  title="Dismiss"
-                  aria-label="Dismiss this recommendation"
-                  style={iconBtnStyle()}
-                >
-                  <X size={13} color={C.textFaint} />
-                </button>
-              </motion.div>
-            ))
-          )}
-        </AnimatePresence>
+                <div style={{ fontSize: 13, color: C.text, lineHeight: 1.5, marginTop: 2 }}>{r.reason}</div>
+              </div>
+              <button
+                type="button"
+                onClick={(e) => { e.preventDefault(); e.stopPropagation(); onAct(r.id) }}
+                title="Mark done"
+                aria-label="Mark this recommendation done"
+                style={iconBtnStyle()}
+              >
+                <Check size={13} color={C.green} />
+              </button>
+              <button
+                type="button"
+                onClick={(e) => { e.preventDefault(); e.stopPropagation(); onDismiss(r.id) }}
+                title="Dismiss"
+                aria-label="Dismiss this recommendation"
+                style={iconBtnStyle()}
+              >
+                <X size={13} color={C.textFaint} />
+              </button>
+            </div>
+          ))
+        )}
       </div>
     </Card>
   )
