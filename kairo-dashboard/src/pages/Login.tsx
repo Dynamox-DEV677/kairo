@@ -207,11 +207,9 @@ function SignIn({ onLogin, onBack }: any) {
     }
     setBusy(true); setErr('')
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(
-        email.trim().toLowerCase(),
-        { redirectTo: window.location.origin },
-      )
-      if (error) throw new Error(error.message)
+      // Use our own Gmail-SMTP-backed endpoint — Supabase's default SMTP is
+      // unreliable and 500s on free projects. Always returns 200 (anti-enum).
+      await post('/users/forgot-password', { email: email.trim().toLowerCase() })
       setResetSent(true)
     } catch (e: any) {
       setErr(`Couldn't send reset email: ${e.message || 'try again later'}`)
@@ -355,11 +353,8 @@ function PersonalSignup({ onLogin, onBack }: any) {
   async function sendPasswordReset() {
     setBusy(true); setErr('')
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(
-        email.trim().toLowerCase(),
-        { redirectTo: window.location.origin },
-      )
-      if (error) throw new Error(error.message)
+      // Our own Gmail-SMTP endpoint (Supabase's default SMTP 500s on free projects).
+      await post('/users/forgot-password', { email: email.trim().toLowerCase() })
       setResetSent(true)
     } catch (e: any) {
       setErr(`Couldn't send reset email: ${e.message || 'try again later'}`)

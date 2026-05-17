@@ -10,6 +10,7 @@ import { pullFromCloud, syncToCloudNow, deleteCloudSnapshot, pauseSyncUntil } fr
 import SprintOverlay, { SPRINT_MIN_MS } from './components/SprintOverlay'
 import SplashScreen from './components/SplashScreen'
 import { TermsHost } from './components/Terms'
+import ResetPasswordPage from './pages/ResetPasswordPage'
 
 // "landing" = cinematic marketing page (default for new visitors)
 // "login"   = sign-in / sign-up flow
@@ -20,6 +21,12 @@ export default function App() {
   const [profile, setProfile] = useState<AuthProfile | null>(null)
   const [checking, setChecking] = useState(true)
   const [view, setView] = useState<View>('landing')
+  // Email-link landing: /reset-password?token=... — shown above everything else.
+  const [resetMode, setResetMode] = useState(() => {
+    if (typeof window === 'undefined') return false
+    return window.location.pathname === '/reset-password'
+      && !!new URLSearchParams(window.location.search).get('token')
+  })
   const [sprintingIn, setSprintingIn] = useState(false)
   const [sprintHead, setSprintHead]   = useState<string | undefined>()
   const [sprintSub,  setSprintSub]    = useState<string | undefined>()
@@ -201,6 +208,24 @@ export default function App() {
       setSplashing(false)
     }} />
   ) : null
+
+  // Reset-password landing takes precedence over everything — even before
+  // session restore — because the user came here from an email link and
+  // shouldn't be bounced to the dashboard if they happen to have a session.
+  if (resetMode) {
+    return (
+      <>
+        <ResetPasswordPage
+          onDone={() => {
+            try { window.history.replaceState({}, '', '/') } catch { /* ignore */ }
+            setResetMode(false)
+            setView('login')   // drop straight onto the sign-in screen
+          }}
+        />
+        <TermsHost />
+      </>
+    )
+  }
 
   if (checking) {
     return (
