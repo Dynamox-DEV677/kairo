@@ -576,8 +576,13 @@ function Hero({ onPick }: { onPick: (q: string) => void }) {
           background: 'linear-gradient(135deg, #7c3aed, #a78bfa)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           boxShadow: '0 0 40px rgba(124, 58, 237,0.45)',
+          padding: 10,
         }}>
-        <Sparkles size={32} color="#fff" />
+        <img
+          src="/kairo_logo.png"
+          alt="Kairo"
+          style={{ width: '100%', height: '100%', objectFit: 'contain', filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.25))' }}
+        />
       </motion.div>
       <div style={{ textAlign: 'center', maxWidth: 520 }}>
         <h1 style={{ fontSize: 26, fontWeight: 800, color: '#fafafa', margin: 0, letterSpacing: '-0.5px' }}>
@@ -903,8 +908,13 @@ function SlideshowSkeleton() {
           background: 'linear-gradient(135deg, #7c3aed, #a78bfa)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           boxShadow: '0 0 32px rgba(124, 58, 237,0.4)',
+          padding: 8,
         }}>
-        <Sparkles size={28} color="#fff" />
+        <img
+          src="/kairo_logo.png"
+          alt="Kairo"
+          style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+        />
       </motion.div>
       <div style={{ fontSize: 13, fontWeight: 700, color: '#fafafa' }}>Building your visual lesson…</div>
       <div style={{ fontSize: 11, color: '#71717a', maxWidth: 320, textAlign: 'center', lineHeight: 1.5 }}>

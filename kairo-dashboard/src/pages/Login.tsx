@@ -198,6 +198,27 @@ function SignIn({ onLogin, onBack }: any) {
   const [show, setShow]         = useState(false)
   const [busy, setBusy]         = useState(false)
   const [err, setErr]           = useState('')
+  const [resetSent, setResetSent] = useState(false)
+
+  async function sendPasswordReset() {
+    if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      setErr('Enter the email on your account first — we\'ll send a reset link there.')
+      return
+    }
+    setBusy(true); setErr('')
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(
+        email.trim().toLowerCase(),
+        { redirectTo: window.location.origin },
+      )
+      if (error) throw new Error(error.message)
+      setResetSent(true)
+    } catch (e: any) {
+      setErr(`Couldn't send reset email: ${e.message || 'try again later'}`)
+    } finally {
+      setBusy(false)
+    }
+  }
 
   async function submit() {
     if (!email.trim() || !password) { setErr('Enter your email and password.'); return }
@@ -276,7 +297,36 @@ function SignIn({ onLogin, onBack }: any) {
             {show ? <EyeOff size={14} color="#52525b" /> : <Eye size={14} color="#52525b" />}
           </button>
         </div>
+        <div style={{ marginTop: 6, display: 'flex', justifyContent: 'flex-end' }}>
+          <button
+            type="button"
+            onClick={sendPasswordReset}
+            disabled={busy}
+            style={{
+              background: 'none', border: 'none', padding: 0,
+              color: '#c4b5fd', fontFamily: 'inherit', fontSize: 11.5, fontWeight: 600,
+              cursor: busy ? 'not-allowed' : 'pointer',
+              textDecoration: 'underline', textUnderlineOffset: 2,
+              textDecorationColor: 'rgba(196,181,253,0.4)',
+            }}>
+            Forgot your password?
+          </button>
+        </div>
       </Field>
+
+      {resetSent && (
+        <div style={{
+          padding: '12px 14px', borderRadius: 10, marginBottom: 12,
+          background: 'rgba(167,139,250,0.10)',
+          border: '1px solid rgba(167,139,250,0.32)',
+          color: '#c4b5fd', fontSize: 12.5, lineHeight: 1.55,
+        }}>
+          <strong style={{ color: '#fafafa' }}>Reset link sent ✓</strong>
+          <br />
+          Check <strong>{email}</strong> — click the link in the email, set a new password, then come back here and sign in.
+        </div>
+      )}
+
       {err && <ErrLine msg={err} />}
       <PrimaryBtn busy={busy} onClick={submit} icon={Sparkles}>Sign in</PrimaryBtn>
       <TermsAcceptLine action="signing in" />
