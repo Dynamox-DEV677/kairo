@@ -13,6 +13,22 @@ export default defineConfig({
   plugins: [
     react(),
     tailwindcss(),
+    // When the real PWA plugin isn't loaded, stub `virtual:pwa-register` so
+    // `src/lib/pwa.ts` still bundles — without this, Rolldown fails to
+    // resolve the import and the whole build errors out.
+    ...(!PWA_ENABLED ? [{
+      name: 'kairo-pwa-register-stub',
+      resolveId(id: string) {
+        if (id === 'virtual:pwa-register') return '\0virtual:pwa-register'
+        return null
+      },
+      load(id: string) {
+        if (id === '\0virtual:pwa-register') {
+          return `export function registerSW(_options) { return (_reload) => {} }`
+        }
+        return null
+      },
+    }] : []),
     ...(PWA_ENABLED ? [VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['kairo_logo.png', 'favicon.svg'],

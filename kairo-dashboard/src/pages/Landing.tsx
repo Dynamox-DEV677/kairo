@@ -420,8 +420,8 @@ function Manifesto() {
             </div>
 
             <PullQuote
-              text='"Kairo doesn\'t teach the textbook. It teaches the person reading it."'
-              attribution="— Editor's note"
+              text={`“Kairo doesn’t teach the textbook. It teaches the person reading it.”`}
+              attribution={`— Editor’s note`}
             />
           </SwissCell>
         </SwissRow>
@@ -1000,8 +1000,8 @@ function TwinEssay() {
             </div>
 
             <PullQuote
-              text='"It remembered I never finished projectile motion. I had.\nI just forgot I had."'
-              attribution="— Ananya, Class 11, CBSE"
+              text={`“It remembered I never finished projectile motion. I had.\nI just forgot I had.”`}
+              attribution={`— Ananya, Class 11, CBSE`}
             />
           </SwissCell>
         </SwissRow>
