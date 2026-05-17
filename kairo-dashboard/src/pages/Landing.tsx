@@ -19,6 +19,27 @@
  */
 import { useEffect, useRef, useState } from 'react'
 import { motion, useScroll, useTransform, useSpring } from 'framer-motion'
+
+// ─── Mobile guard ────────────────────────────────────────────────────────────
+// Disables parallax on phones so touch + scroll behave normally. Without this
+// the dramatic drifts (e.g. -18%→+12%) push content under the user's finger
+// and intercept gestures.
+function useIsMobileViewport(breakpoint = 768) {
+  const [m, setM] = useState(() =>
+    typeof window !== 'undefined' && window.innerWidth < breakpoint)
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const onR = () => setM(window.innerWidth < breakpoint)
+    window.addEventListener('resize', onR, { passive: true })
+    return () => window.removeEventListener('resize', onR)
+  }, [breakpoint])
+  return m
+}
+
+// Helper to pick mobile-safe range (all zeros) vs desktop range.
+function pxRange(mobile: boolean, range: [string, string]): [string, string] {
+  return mobile ? ['0%', '0%'] : range
+}
 import {
   ArrowRight, ArrowDown, Sparkles, Brain, Beaker, Atom, BookOpen,
   Mic, Network, Activity, Camera, Compass, Zap, Eye,
@@ -100,13 +121,19 @@ export default function Landing({ onGetStarted }: LandingProps) {
 // This is what makes the WHOLE page feel parallax, not just each section.
 // ════════════════════════════════════════════════════════════════════════════
 function GlobalScrollLayer() {
+  const mobile = useIsMobileViewport()
   const { scrollYProgress } = useScroll()
   // KAIRO ghost drifts left as you scroll, ACADEMICS drifts right.
-  const kx = useTransform(scrollYProgress, [0, 1], ['8%',  '-22%'])
-  const ax = useTransform(scrollYProgress, [0, 1], ['-12%', '18%'])
+  const kx = useTransform(scrollYProgress, [0, 1], pxRange(mobile, ['8%',  '-22%']))
+  const ax = useTransform(scrollYProgress, [0, 1], pxRange(mobile, ['-12%', '18%']))
   // Each band fades in and out at different scroll depths.
   const ko = useTransform(scrollYProgress, [0, 0.3, 0.7, 1], [0.04, 0.10, 0.06, 0.02])
   const ao = useTransform(scrollYProgress, [0, 0.3, 0.7, 1], [0.02, 0.06, 0.10, 0.05])
+
+  // Mobile: skip the fixed-position giant ghost text entirely. It eats touch
+  // even with pointer-events:none on some browsers and makes the page feel
+  // unresponsive.
+  if (mobile) return null
 
   return (
     <div aria-hidden style={{
@@ -234,15 +261,16 @@ function Masthead({ onGetStarted }: { onGetStarted: () => void }) {
 // HERO — editorial + brutalist
 // ════════════════════════════════════════════════════════════════════════════
 function Hero({ onGetStarted }: { onGetStarted: () => void }) {
+  const mobile = useIsMobileViewport()
   const ref = useRef<HTMLDivElement>(null)
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] })
-  const headlineY = useTransform(scrollYProgress, [0, 1], ['0%', '-30%'])
-  const headlineO = useTransform(scrollYProgress, [0, 0.8], [1, 0.4])
+  const headlineY = useTransform(scrollYProgress, [0, 1], pxRange(mobile, ['0%', '-30%']))
+  const headlineO = useTransform(scrollYProgress, [0, 0.8], mobile ? [1, 1] : [1, 0.4])
   // Counter-parallax on the two giant lines — same technique as the brutal divider.
-  const line1X    = useTransform(scrollYProgress, [0, 1], ['0%', '-14%'])
-  const line2X    = useTransform(scrollYProgress, [0, 1], ['0%', '16%'])
-  const kineticX  = useTransform(scrollYProgress, [0, 1], ['0%', '12%'])
-  const subX      = useTransform(scrollYProgress, [0, 1], ['0%', '-6%'])
+  const line1X    = useTransform(scrollYProgress, [0, 1], pxRange(mobile, ['0%', '-14%']))
+  const line2X    = useTransform(scrollYProgress, [0, 1], pxRange(mobile, ['0%', '16%']))
+  const kineticX  = useTransform(scrollYProgress, [0, 1], pxRange(mobile, ['0%', '12%']))
+  const subX      = useTransform(scrollYProgress, [0, 1], pxRange(mobile, ['0%', '-6%']))
 
   return (
     <section ref={ref} style={{ position: 'relative', paddingTop: 80, paddingBottom: 160, zIndex: 2 }}>
@@ -424,15 +452,15 @@ function KineticBlock() {
 // MANIFESTO — editorial essay, drop-cap, pull-quote (scroll-linked drift)
 // ════════════════════════════════════════════════════════════════════════════
 function Manifesto() {
+  const mobile = useIsMobileViewport()
   const ref = useRef<HTMLDivElement>(null)
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] })
-  // Counter-parallax — dramatic ranges so the motion is unmistakable.
-  const line1X = useTransform(scrollYProgress, [0, 1], ['-15%', '10%'])
-  const line2X = useTransform(scrollYProgress, [0, 1], ['18%', '-12%'])
-  const metaY  = useTransform(scrollYProgress, [0, 1], ['28%', '-18%'])
-  const ghostX = useTransform(scrollYProgress, [0, 1], ['12%', '-10%'])
-  const quoteX = useTransform(scrollYProgress, [0, 1], ['14%', '-10%'])
-  const bodyX  = useTransform(scrollYProgress, [0, 1], ['-4%', '3%'])
+  const line1X = useTransform(scrollYProgress, [0, 1], pxRange(mobile, ['-15%', '10%']))
+  const line2X = useTransform(scrollYProgress, [0, 1], pxRange(mobile, ['18%', '-12%']))
+  const metaY  = useTransform(scrollYProgress, [0, 1], pxRange(mobile, ['28%', '-18%']))
+  const ghostX = useTransform(scrollYProgress, [0, 1], pxRange(mobile, ['12%', '-10%']))
+  const quoteX = useTransform(scrollYProgress, [0, 1], pxRange(mobile, ['14%', '-10%']))
+  const bodyX  = useTransform(scrollYProgress, [0, 1], pxRange(mobile, ['-4%', '3%']))
 
   return (
     <section ref={ref} id="manifesto" style={{ padding: '120px 0 100px', position: 'relative', zIndex: 2, overflow: 'hidden' }}>
@@ -525,10 +553,11 @@ function BrutalDivider({ lines, kicker, tail }: {
   kicker?: string
   tail?: string[]
 }) {
+  const mobile = useIsMobileViewport()
   const ref = useRef<HTMLDivElement>(null)
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] })
-  const lx = useTransform(scrollYProgress, [0, 1], ['-12%', '6%'])
-  const tx = useTransform(scrollYProgress, [0, 1], ['8%', '-10%'])
+  const lx = useTransform(scrollYProgress, [0, 1], pxRange(mobile, ['-12%', '6%']))
+  const tx = useTransform(scrollYProgress, [0, 1], pxRange(mobile, ['8%', '-10%']))
 
   return (
     <section ref={ref} style={{
@@ -589,15 +618,16 @@ function BrutalDivider({ lines, kicker, tail }: {
 // BENTO — asymmetric feature grid (scroll-linked drift)
 // ════════════════════════════════════════════════════════════════════════════
 function BentoSection({ onGetStarted }: { onGetStarted: () => void }) {
+  const mobile = useIsMobileViewport()
   const ref = useRef<HTMLDivElement>(null)
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] })
-  const head1X = useTransform(scrollYProgress, [0, 1], ['-14%', '8%'])
-  const head2X = useTransform(scrollYProgress, [0, 1], ['16%', '-10%'])
-  const ghostX = useTransform(scrollYProgress, [0, 1], ['14%', '-12%'])
-  const bentoY = useTransform(scrollYProgress, [0, 1], ['8%', '-8%'])
+  const head1X = useTransform(scrollYProgress, [0, 1], pxRange(mobile, ['-14%', '8%']))
+  const head2X = useTransform(scrollYProgress, [0, 1], pxRange(mobile, ['16%', '-10%']))
+  const ghostX = useTransform(scrollYProgress, [0, 1], pxRange(mobile, ['14%', '-12%']))
+  const bentoY = useTransform(scrollYProgress, [0, 1], pxRange(mobile, ['8%', '-8%']))
   // Bento cards drift in alternating directions for kinetic depth.
-  const driftL = useTransform(scrollYProgress, [0, 1], ['0%', '-6%'])
-  const driftR = useTransform(scrollYProgress, [0, 1], ['0%', '6%'])
+  const driftL = useTransform(scrollYProgress, [0, 1], pxRange(mobile, ['0%', '-6%']))
+  const driftR = useTransform(scrollYProgress, [0, 1], pxRange(mobile, ['0%', '6%']))
 
   return (
     <section ref={ref} id="product" style={{ padding: '120px 0 100px', position: 'relative', zIndex: 2, overflow: 'hidden' }}>
@@ -869,9 +899,12 @@ function BentoCard({ span, rowSpan = 1, hero = false, compact = false,
 // CONSTRUCTIVIST INTERSTITIAL — diagonal layout, rotated labels
 // ════════════════════════════════════════════════════════════════════════════
 function ConstructivistInterstitial() {
+  const mobile = useIsMobileViewport()
   const ref = useRef<HTMLDivElement>(null)
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] })
-  const rotate = useTransform(scrollYProgress, [0, 1], [-2, 2])
+  // Skip the rotation on mobile — the diagonal slab feels off-axis on
+  // narrow viewports and can clip touch targets.
+  const rotate = useTransform(scrollYProgress, [0, 1], mobile ? [0, 0] : [-2, 2])
 
   return (
     <section ref={ref} style={{ padding: '120px 0', position: 'relative', zIndex: 2 }}>
@@ -944,15 +977,15 @@ function LabsShowcase() {
     { name: 'Wave Optics',      tag: 'PHYSICS · 12', glyph: Compass },
   ]
 
+  const mobile = useIsMobileViewport()
   const ref = useRef<HTMLDivElement>(null)
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] })
-  // Dramatic counter-drift on the two-line headline.
-  const tx1 = useTransform(scrollYProgress, [0, 1], ['-18%', '12%'])
-  const tx2 = useTransform(scrollYProgress, [0, 1], ['20%', '-14%'])
-  const ghostX = useTransform(scrollYProgress, [0, 1], ['-14%', '10%'])
-  const gridY = useTransform(scrollYProgress, [0, 1], ['10%', '-10%'])
-  const labL  = useTransform(scrollYProgress, [0, 1], ['0%', '-5%'])
-  const labR  = useTransform(scrollYProgress, [0, 1], ['0%', '5%'])
+  const tx1 = useTransform(scrollYProgress, [0, 1], pxRange(mobile, ['-18%', '12%']))
+  const tx2 = useTransform(scrollYProgress, [0, 1], pxRange(mobile, ['20%', '-14%']))
+  const ghostX = useTransform(scrollYProgress, [0, 1], pxRange(mobile, ['-14%', '10%']))
+  const gridY = useTransform(scrollYProgress, [0, 1], pxRange(mobile, ['10%', '-10%']))
+  const labL  = useTransform(scrollYProgress, [0, 1], pxRange(mobile, ['0%', '-5%']))
+  const labR  = useTransform(scrollYProgress, [0, 1], pxRange(mobile, ['0%', '5%']))
 
   return (
     <section ref={ref} id="labs" style={{
@@ -1107,13 +1140,14 @@ function LabTile({ lab, big = false }: { lab: { name: string; tag: string; glyph
 // TWIN ESSAY — long-form editorial (scroll-linked drift)
 // ════════════════════════════════════════════════════════════════════════════
 function TwinEssay() {
+  const mobile = useIsMobileViewport()
   const ref = useRef<HTMLDivElement>(null)
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] })
-  const lx1 = useTransform(scrollYProgress, [0, 1], ['-16%', '12%'])
-  const lx2 = useTransform(scrollYProgress, [0, 1], ['20%', '-14%'])
-  const ghostX = useTransform(scrollYProgress, [0, 1], ['16%', '-14%'])
-  const bodyY  = useTransform(scrollYProgress, [0, 1], ['10%', '-10%'])
-  const quoteX = useTransform(scrollYProgress, [0, 1], ['-14%', '10%'])
+  const lx1 = useTransform(scrollYProgress, [0, 1], pxRange(mobile, ['-16%', '12%']))
+  const lx2 = useTransform(scrollYProgress, [0, 1], pxRange(mobile, ['20%', '-14%']))
+  const ghostX = useTransform(scrollYProgress, [0, 1], pxRange(mobile, ['16%', '-14%']))
+  const bodyY  = useTransform(scrollYProgress, [0, 1], pxRange(mobile, ['10%', '-10%']))
+  const quoteX = useTransform(scrollYProgress, [0, 1], pxRange(mobile, ['-14%', '10%']))
 
   return (
     <section ref={ref} id="twin" style={{ padding: '140px 0 120px', position: 'relative', zIndex: 2, overflow: 'hidden' }}>
@@ -1203,14 +1237,16 @@ function TwinEssay() {
 // FINAL CTA — brutalist closer (scroll-linked drift + scale)
 // ════════════════════════════════════════════════════════════════════════════
 function FinalCTA({ onGetStarted }: { onGetStarted: () => void }) {
+  const mobile = useIsMobileViewport()
   const ref = useRef<HTMLDivElement>(null)
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] })
-  // Dramatic scale + drift on BEGIN.
-  const beginScale = useTransform(scrollYProgress, [0, 0.5, 1], [0.7, 1.05, 1.18])
-  const beginX     = useTransform(scrollYProgress, [0, 1], ['12%', '-12%'])
-  const beginO     = useTransform(scrollYProgress, [0, 0.4, 1], [0.4, 1, 1])
-  const haloS      = useTransform(scrollYProgress, [0, 1], [0.4, 1.5])
-  const ghostX     = useTransform(scrollYProgress, [0, 1], ['-16%', '14%'])
+  // Dramatic scale + drift on BEGIN. Tamer on mobile.
+  const beginScale = useTransform(scrollYProgress, [0, 0.5, 1],
+    mobile ? [1, 1, 1] : [0.7, 1.05, 1.18])
+  const beginX     = useTransform(scrollYProgress, [0, 1], pxRange(mobile, ['12%', '-12%']))
+  const beginO     = useTransform(scrollYProgress, [0, 0.4, 1], mobile ? [1, 1, 1] : [0.4, 1, 1])
+  const haloS      = useTransform(scrollYProgress, [0, 1], mobile ? [1, 1] : [0.4, 1.5])
+  const ghostX     = useTransform(scrollYProgress, [0, 1], pxRange(mobile, ['-16%', '14%']))
 
   return (
     <section ref={ref} style={{
@@ -1384,7 +1420,7 @@ function FooterCol({ title, items }: { title: string; items: Array<[string, stri
 // ════════════════════════════════════════════════════════════════════════════
 function Container({ children }: { children: React.ReactNode }) {
   return (
-    <div style={{
+    <div className="kr-container" style={{
       maxWidth: 1320, margin: '0 auto', padding: '0 32px',
       position: 'relative',
     }}>
@@ -1594,6 +1630,10 @@ function GlobalStyles() {
         .kr-headline { font-size: clamp(32px, 8vw, 56px) !important; }
         .kr-display { font-size: clamp(48px, 13vw, 92px) !important; }
         .kr-bento-title { font-size: clamp(20px, 5.6vw, 30px) !important; }
+        .kr-container { padding: 0 18px !important; }
+      }
+      @media (max-width: 420px) {
+        .kr-container { padding: 0 14px !important; }
       }
     `}</style>
   )
