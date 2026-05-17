@@ -3,6 +3,7 @@ import Sidebar from '../components/Sidebar'
 import TopBar from '../components/TopBar'
 import MobileShell from '../components/MobileShell'
 import { useIsMobile } from '../hooks/useViewport'
+import { applyLightTheme, restoreDarkTheme, startThemeWatcher } from '../lib/themeRewriter'
 import ChatWindow from '../components/ChatWindow'
 import KairoSolver from './KairoSolver'
 import Ops from './Ops'
@@ -120,9 +121,21 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
   // Apply theme to document root + persist
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light')
-    document.body.style.background = isDark ? '#0a0a0a' : '#f4f4f5'
+    document.body.style.background = isDark ? '#0a0a0a' : '#fafafa'
     document.body.style.color      = isDark ? '#fafafa' : '#18181b'
     localStorage.setItem('kairo_theme', isDark ? 'dark' : 'light')
+
+    // Light mode: walk the DOM and re-paint every dark inline-style colour.
+    // We need this because most components hard-code hex backgrounds /
+    // colours, which the browser normalises to rgb()/rgba() — CSS attribute
+    // selectors miss too many spellings to be reliable.
+    if (!isDark) {
+      applyLightTheme()
+      const stop = startThemeWatcher()
+      return () => stop()
+    } else {
+      restoreDarkTheme()
+    }
   }, [isDark])
 
   // Parent users get a completely separate portal — no sidebar, no AI tools
