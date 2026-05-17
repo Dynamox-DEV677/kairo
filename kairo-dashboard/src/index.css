@@ -110,8 +110,11 @@ html, body, #root {
    ────────────────────────────────────────────────────────────────────────── */
 
 @media (max-width: 768px) {
-  /* Body never scrolls — only inner page does — fixes iOS rubber-band hiding nav */
-  html, body { overflow: hidden; overscroll-behavior: none; }
+  /* Body lock is opt-in via .kairo-app on <html> — Dashboard adds it on
+     mount, Landing/Login leave it off so window scroll + Framer Motion
+     useScroll work normally. */
+  html.kairo-app,
+  html.kairo-app body { overflow: hidden; overscroll-behavior: none; }
   /* Smaller scrollbars for touch */
   ::-webkit-scrollbar { width: 0; height: 0; }
 }

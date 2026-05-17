@@ -121,16 +121,21 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
 
   // Force dark mode + wipe any stale "light" preference. The light-mode
   // rewriter is intentionally NOT called.
+  // Also opt INTO the body-overflow lock for the dashboard's mobile mode.
+  // Landing / Login do NOT add this class, so they get normal body scroll
+  // and Framer Motion's useScroll keeps working there.
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', 'dark')
+    document.documentElement.classList.add('kairo-app')
     document.body.style.background = '#0a0a0a'
     document.body.style.color      = '#fafafa'
     try {
       localStorage.setItem('kairo_theme', 'dark')
-      // If the user previously toggled light, undo it so any rewritten
-      // inline styles are restored.
       restoreDarkTheme()
     } catch { /* ignore */ }
+    return () => {
+      document.documentElement.classList.remove('kairo-app')
+    }
   }, [])
 
   // Parent users get a completely separate portal — no sidebar, no AI tools
