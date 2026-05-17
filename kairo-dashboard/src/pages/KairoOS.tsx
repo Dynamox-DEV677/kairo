@@ -138,8 +138,14 @@ export default function KairoOS() {
     reload()
   }
 
-  function onAct(id: string)     { actOnRecommendation(id);     reload() }
-  function onDismiss(id: string) { dismissRecommendation(id);   reload() }
+  function onAct(id: string) {
+    try { actOnRecommendation(id) } catch (e) { console.warn('[Twin] mark-done failed:', e) }
+    reload()
+  }
+  function onDismiss(id: string) {
+    try { dismissRecommendation(id) } catch (e) { console.warn('[Twin] dismiss failed:', e) }
+    reload()
+  }
   function onSeed() {
     seedDemoEvents()
     reload()
@@ -836,49 +842,80 @@ function VitalsTile({ title, value, color, hint, onClick }: { title: string; val
 // RECOMMENDATIONS
 // ════════════════════════════════════════════════════════════════════════════
 function RecommendationsCard({ recs, onAct, onDismiss }: { recs: Recommendation[]; onAct: (id: string) => void; onDismiss: (id: string) => void }) {
-  if (recs.length === 0) {
-    return (
-      <Card>
-        <CardTitle icon={<Sparkles size={13} />}>Recommended next</CardTitle>
-        <EmptyInline icon={<Sparkles size={20} color={C.textFaint} />} text="No suggestions right now — you're doing great. Recompute after your next session." />
-      </Card>
-    )
-  }
+  // Keep a single render path so AnimatePresence stays mounted across the
+  // last-rec → empty-state transition. Previously the component swapped
+  // returns when recs.length hit 0 mid-exit-animation, which orphaned the
+  // exit-animating item and collapsed the entire card to 0 visual height.
+  const isEmpty = recs.length === 0
   return (
     <Card>
       <CardTitle icon={<Sparkles size={13} />}>
         Recommended next
-        <span style={{ marginLeft: 'auto', fontSize: 10, color: C.textFaint, fontWeight: 600 }}>Ranked by priority</span>
+        {!isEmpty && (
+          <span style={{ marginLeft: 'auto', fontSize: 10, color: C.textFaint, fontWeight: 600 }}>Ranked by priority</span>
+        )}
       </CardTitle>
-      <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 10 }}>
-        <AnimatePresence>
-          {recs.map(r => (
-            <motion.div key={r.id} className="kr-rec-item"
-              initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, height: 0 }}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 12,
-                padding: '12px 14px', borderRadius: 12,
-                background: C.panel2, border: `1px solid ${C.borderSoft}`,
-                position: 'relative', overflow: 'hidden',
-              }}>
-              <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, background: recKindColor(r.kind) }} />
-              <div style={{ width: 32, height: 32, borderRadius: 8, flexShrink: 0, background: recKindColor(r.kind) + '18', display: 'grid', placeItems: 'center' }}>
-                <RecIcon kind={r.kind} />
-              </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: recKindColor(r.kind), textTransform: 'uppercase', letterSpacing: 1.2 }}>
-                  {r.kind}{r.subject ? ` · ${r.subject}` : ''}
-                </div>
-                <div style={{ fontSize: 13, color: C.text, lineHeight: 1.5, marginTop: 2 }}>{r.reason}</div>
-              </div>
-              <button onClick={() => onAct(r.id)} title="Mark done" style={iconBtnStyle()}>
-                <Check size={13} color={C.green} />
-              </button>
-              <button onClick={() => onDismiss(r.id)} title="Dismiss" style={iconBtnStyle()}>
-                <X size={13} color={C.textFaint} />
-              </button>
+
+      <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 10, minHeight: 90 }}>
+        <AnimatePresence mode="popLayout" initial={false}>
+          {isEmpty ? (
+            <motion.div
+              key="rec-empty"
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.22 }}
+            >
+              <EmptyInline
+                icon={<Sparkles size={20} color={C.textFaint} />}
+                text="No suggestions right now — you're doing great. Recompute after your next session."
+              />
             </motion.div>
-          ))}
+          ) : (
+            recs.map(r => (
+              <motion.div key={r.id} className="kr-rec-item"
+                layout
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, height: 0, marginTop: 0, paddingTop: 0, paddingBottom: 0 }}
+                transition={{ duration: 0.22 }}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 12,
+                  padding: '12px 14px', borderRadius: 12,
+                  background: C.panel2, border: `1px solid ${C.borderSoft}`,
+                  position: 'relative', overflow: 'hidden',
+                }}>
+                <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, background: recKindColor(r.kind) }} />
+                <div style={{ width: 32, height: 32, borderRadius: 8, flexShrink: 0, background: recKindColor(r.kind) + '18', display: 'grid', placeItems: 'center' }}>
+                  <RecIcon kind={r.kind} />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: recKindColor(r.kind), textTransform: 'uppercase', letterSpacing: 1.2 }}>
+                    {r.kind}{r.subject ? ` · ${r.subject}` : ''}
+                  </div>
+                  <div style={{ fontSize: 13, color: C.text, lineHeight: 1.5, marginTop: 2 }}>{r.reason}</div>
+                </div>
+                <button
+                  type="button"
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); onAct(r.id) }}
+                  title="Mark done"
+                  aria-label="Mark this recommendation done"
+                  style={iconBtnStyle()}
+                >
+                  <Check size={13} color={C.green} />
+                </button>
+                <button
+                  type="button"
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); onDismiss(r.id) }}
+                  title="Dismiss"
+                  aria-label="Dismiss this recommendation"
+                  style={iconBtnStyle()}
+                >
+                  <X size={13} color={C.textFaint} />
+                </button>
+              </motion.div>
+            ))
+          )}
         </AnimatePresence>
       </div>
     </Card>
