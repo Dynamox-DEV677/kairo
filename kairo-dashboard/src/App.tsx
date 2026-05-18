@@ -12,6 +12,7 @@ import SplashScreen from './components/SplashScreen'
 import { TermsHost } from './components/Terms'
 import ResetPasswordPage from './pages/ResetPasswordPage'
 import StatusPage from './pages/StatusPage'
+import AboutPage from './pages/AboutPage'
 
 // "landing" = cinematic marketing page (default for new visitors)
 // "login"   = sign-in / sign-up flow
@@ -32,6 +33,11 @@ export default function App() {
   const [statusMode, setStatusMode] = useState(() => {
     if (typeof window === 'undefined') return false
     return window.location.pathname === '/status'
+  })
+  // Public About / founder page at /about.
+  const [aboutMode, setAboutMode] = useState(() => {
+    if (typeof window === 'undefined') return false
+    return window.location.pathname === '/about'
   })
   const [sprintingIn, setSprintingIn] = useState(false)
   const [sprintHead, setSprintHead]   = useState<string | undefined>()
@@ -242,6 +248,21 @@ export default function App() {
           onExit={() => {
             try { window.history.replaceState({}, '', '/') } catch { /* ignore */ }
             setStatusMode(false)
+          }}
+        />
+        <TermsHost />
+      </>
+    )
+  }
+
+  // Public /about — founder bio / colophon page.
+  if (aboutMode) {
+    return (
+      <>
+        <AboutPage
+          onExit={() => {
+            try { window.history.replaceState({}, '', '/') } catch { /* ignore */ }
+            setAboutMode(false)
           }}
         />
         <TermsHost />

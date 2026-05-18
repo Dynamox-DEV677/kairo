@@ -19,6 +19,7 @@
  */
 import { useEffect, useRef, useState } from 'react'
 import { motion, useScroll, useTransform, useSpring } from 'framer-motion'
+import { openTerms } from '../components/Terms'
 
 // ─── Mobile guard ────────────────────────────────────────────────────────────
 // Disables parallax on phones so touch + scroll behave normally. Without this
@@ -1352,23 +1353,23 @@ function Footer() {
 
           <SwissCell span={3}>
             <FooterCol title="ISSUE · NAV" items={[
-              ['Manifesto', '#manifesto'],
-              ['Product',   '#product'],
-              ['Labs',      '#labs'],
-              ['Twin',      '#twin'],
+              { label: 'Manifesto', href: '#manifesto' },
+              { label: 'Product',   href: '#product' },
+              { label: 'Labs',      href: '#labs' },
+              { label: 'Twin',      href: '#twin' },
             ]} />
           </SwissCell>
           <SwissCell span={3}>
             <FooterCol title="COMPANY" items={[
-              ['About',         '/about'],
-              ['Contact',       '/contact'],
-              ['System Status', '/status'],
+              { label: 'About',         href: '/about' },
+              { label: 'Contact',       href: 'mailto:quro.cor@gmail.com' },
+              { label: 'System Status', href: '/status' },
             ]} />
           </SwissCell>
           <SwissCell span={2}>
             <FooterCol title="LEGAL" items={[
-              ['Terms',   '/terms'],
-              ['Privacy', '/privacy'],
+              { label: 'Terms',   onClick: () => openTerms('terms') },
+              { label: 'Privacy', onClick: () => openTerms('privacy') },
             ]} />
           </SwissCell>
         </SwissRow>
@@ -1390,7 +1391,15 @@ function Footer() {
   )
 }
 
-function FooterCol({ title, items }: { title: string; items: Array<[string, string]> }) {
+type FooterItem = { label: string; href?: string; onClick?: () => void }
+
+function FooterCol({ title, items }: { title: string; items: FooterItem[] }) {
+  const sharedStyle: React.CSSProperties = {
+    fontFamily: SANS, fontSize: 13, color: C.textDim, textDecoration: 'none',
+    transition: 'color .15s',
+    background: 'transparent', border: 'none', padding: 0,
+    textAlign: 'left', cursor: 'pointer',
+  }
   return (
     <div>
       <div style={{
@@ -1400,16 +1409,28 @@ function FooterCol({ title, items }: { title: string; items: Array<[string, stri
         {title}
       </div>
       <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
-        {items.map(([label, href]) => (
+        {items.map(({ label, href, onClick }) => (
           <li key={label}>
-            <a href={href} style={{
-              fontFamily: SANS, fontSize: 13, color: C.textDim, textDecoration: 'none',
-              transition: 'color .15s',
-            }}
-              onMouseEnter={e => (e.currentTarget.style.color = C.purpleSoft)}
-              onMouseLeave={e => (e.currentTarget.style.color = C.textDim)}>
-              {label}
-            </a>
+            {onClick ? (
+              <button
+                type="button"
+                onClick={onClick}
+                style={sharedStyle}
+                onMouseEnter={e => (e.currentTarget.style.color = C.purpleSoft)}
+                onMouseLeave={e => (e.currentTarget.style.color = C.textDim)}
+              >
+                {label}
+              </button>
+            ) : (
+              <a
+                href={href}
+                style={sharedStyle}
+                onMouseEnter={e => (e.currentTarget.style.color = C.purpleSoft)}
+                onMouseLeave={e => (e.currentTarget.style.color = C.textDim)}
+              >
+                {label}
+              </a>
+            )}
           </li>
         ))}
       </ul>
