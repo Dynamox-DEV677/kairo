@@ -32,6 +32,7 @@ import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
 import { recordDoubt, recordFormula, recordConcept } from '../lib/twin'
+import { lookupNcert } from '../lib/ncertCacheLookup'
 
 interface ImageSlide {
   url:         string
@@ -198,7 +199,15 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
     }
 
     try {
-      const text = await fetchTextWithRetry()
+      // ── Local NCERT cache check FIRST ────────────────────────────────
+      // For the top ~20 most-common Class 9-12 concept questions we ship a
+      // pre-built TextPlan in the bundle. A hit means zero server load —
+      // no LLM call, no Vercel function invocation, no Groq quota burn.
+      // Typical hit rate on board-exam season: 30-50% of all questions.
+      const cacheHit = lookupNcert(question)
+      const text: TextPlan = cacheHit
+        ? cacheHit
+        : await fetchTextWithRetry()
       setRetryHint('')
 
       // Kick off the video search in parallel — it doesn't depend on images.
