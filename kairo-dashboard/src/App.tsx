@@ -6,7 +6,7 @@ import Landing from './pages/Landing'
 import { GenerationProvider } from './lib/generationContext'
 import { supabase } from './lib/supabase'
 import { refreshIfStale } from './lib/api'
-import { pullFromCloud, syncToCloudNow, deleteCloudSnapshot, pauseSyncUntil } from './lib/twin'
+import { pullFromCloud, syncToCloudNow, deleteCloudSnapshot, pauseSyncUntil, getSyncEnabled } from './lib/twin'
 import SprintOverlay, { SPRINT_MIN_MS } from './components/SprintOverlay'
 import SplashScreen from './components/SplashScreen'
 import { TermsHost } from './components/Terms'
@@ -73,6 +73,10 @@ export default function App() {
   // animation so the moment feels intentional.
   useEffect(() => {
     if (!profile || profile.localMode) return
+    // Sync is off by default now — Kairo is local-first. Skip the pull
+    // unless the user explicitly opted in from Settings. Keeps the
+    // twin_snapshots table empty in production.
+    if (!getSyncEnabled()) return
 
     // Skip if we've already auto-pulled in this session
     if (sessionStorage.getItem('kairo:sync:pulled') === '1') return

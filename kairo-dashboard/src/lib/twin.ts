@@ -475,9 +475,12 @@ export function getSyncEnabled(): boolean {
   if (typeof window === 'undefined') return false
   try {
     const raw = localStorage.getItem('kairo:sync:enabled')
-    if (raw === null) return true               // default ON
+    // Default OFF — Kairo is local-first. Users who want cross-device sync
+    // can opt in from Settings; until then, the Twin lives only on the
+    // device and the twin_snapshots table stays empty in production.
+    if (raw === null) return false
     return raw === '1'
-  } catch { return true }
+  } catch { return false }
 }
 
 function deviceLabel(): string {
