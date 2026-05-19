@@ -1,7 +1,7 @@
 /**
  * /about — the founder story.
  *
- * Editorial single-page about Darshna, the 9th-grader who started Kairo.
+ * Editorial single-page about Darshan, the 9th-grader who started Kairo.
  * Same Swiss / editorial / brutalist visual language as the landing.
  * Strict monochrome BLACK · DEEP PURPLE · WHITE. Mobile-first.
  */
@@ -120,7 +120,7 @@ export default function AboutPage({ onExit }: Props) {
                     lineHeight: 0.94, letterSpacing: '-0.04em', fontWeight: 800,
                     color: C.text,
                   }}>
-                    DARSHNA.
+                    DARSHAN.
                   </h1>
                   <h2 style={{
                     fontFamily: DISPLAY, margin: '18px 0 0',
@@ -156,7 +156,7 @@ export default function AboutPage({ onExit }: Props) {
                   fontFamily: SERIF, fontSize: 17.5, lineHeight: 1.78,
                   color: C.textDim, maxWidth: 760,
                 }}>
-                  <DropCap letter="M" />y name is Darshna. I'm a 9th-grader in
+                  <DropCap letter="M" />y name is Darshan. I'm a 9th-grader in
                   Chennai trying to crack 490 out of 500 in my boards. The
                   reason Kairo exists is simple — every student in India is
                   taught the same way, with the same textbook, on the same
@@ -265,7 +265,7 @@ export default function AboutPage({ onExit }: Props) {
                     marginTop: 18, fontFamily: MONO, fontSize: 11, color: C.purpleSoft,
                     fontStyle: 'normal', letterSpacing: 1.6,
                   }}>
-                    — Darshna · Founder · Kairo
+                    — Darshan · Founder · Kairo
                   </div>
                 </blockquote>
               </SwissCell>
