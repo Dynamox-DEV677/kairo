@@ -4,11 +4,14 @@
  *   POST /api/passcode/send-otp     { email }     → emails a 6-digit code
  *   POST /api/passcode/verify-otp   { email, code } → checks the code
  *
- * Storage: in-memory Map. Each entry expires after 10 minutes and is also
- * proactively purged on every request. For multi-instance prod, swap the
- * Map for a Supabase row (see comments below). For Vercel hobby +
- * Anthropic single-instance, in-memory is fine — a cold start just makes
- * the user request another code.
+ * Storage strategy (changed: 2026-05-19):
+ *   PRIMARY  : Supabase table `kairo_otps`. Survives Vercel cold starts and
+ *              works across every serverless instance. Required for any
+ *              production traffic above ~50 concurrent users.
+ *   FALLBACK : In-memory Map. Used only if the table doesn't exist (i.e.
+ *              the migration in db/kairo_otps_schema.sql hasn't been run)
+ *              or Supabase is unreachable. Survives single-instance, dev,
+ *              and the first deploy before the SQL has run.
  *
  * Anti-abuse:
  *   • 30 s cooldown between sends per email
@@ -19,10 +22,11 @@
 import { Router } from 'express'
 import crypto from 'crypto'
 import { sendPasscodeOtpEmail } from '../email/index.js'
+import { supabaseAdmin } from '../services/supabase.js'
 
 const router = Router()
 
-// In-memory store keyed by lowercased email.
+// In-memory fallback. Used when Supabase is unreachable / table missing.
 //   email → { hash, expiresAt, lastSentAt, sendTimestamps[], attemptsLeft }
 const STORE = new Map()
 
@@ -32,8 +36,9 @@ const WINDOW_MS          = 10 * 60 * 1000      // 10-min anti-spam window
 const SENDS_PER_WINDOW   = 4
 const MAX_ATTEMPTS       = 6
 
+// ───────────────────────────── Helpers ─────────────────────────────────────
 function hashCode(code, email) {
-  // Per-email salt — even if STORE leaks, hashes can't be replayed across users
+  // Per-email salt — even if the row leaks, hashes can't be replayed across users
   return crypto.createHash('sha256').update(`${email}::${code}`).digest('hex')
 }
 function genCode() {
@@ -46,10 +51,85 @@ function normEmail(s) {
 function validEmail(s) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s)
 }
-function purge(email) {
-  // Drop expired entries on every touch
-  const r = STORE.get(email)
-  if (r && r.expiresAt < Date.now()) STORE.delete(email)
+
+// Did the error string tell us the table is missing? Then the deploy is
+// running ahead of the migration and we should silently fall back to the
+// in-memory Map.
+function isMissingTable(err) {
+  const msg = String(err?.message || err || '')
+  return /relation .* does not exist/i.test(msg)
+       || /could not find .* table/i.test(msg)
+       || /schema cache/i.test(msg)
+}
+
+// ─────────────────────── Storage abstraction ───────────────────────────────
+// All four methods return the same shape so the route code doesn't care
+// where the OTP actually lives.
+//
+//   read(email)   → { hash, expiresAt, lastSentAt, sendTimestamps[], attemptsLeft } | null
+//   write(email, row) → void
+//   bump(email, row)  → void  (updates attempts_left after wrong code)
+//   destroy(email)    → void
+
+async function readRow(email) {
+  // Try Supabase first.
+  try {
+    const { data, error } = await supabaseAdmin
+      .from('kairo_otps')
+      .select('email, hash, expires_at, last_sent_at, send_timestamps, attempts_left')
+      .eq('email', email)
+      .maybeSingle()
+    if (error) throw new Error(error.message)
+    if (!data) return STORE.get(email) || null   // also check memory in case of recent fall-back
+    // Purge if expired
+    if (new Date(data.expires_at).getTime() < Date.now()) {
+      await destroyRow(email).catch(() => {})
+      return null
+    }
+    return {
+      hash:           data.hash,
+      expiresAt:      new Date(data.expires_at).getTime(),
+      lastSentAt:     new Date(data.last_sent_at).getTime(),
+      sendTimestamps: Array.isArray(data.send_timestamps) ? data.send_timestamps : [],
+      attemptsLeft:   data.attempts_left,
+    }
+  } catch (e) {
+    if (!isMissingTable(e)) console.warn('[passcode] supabase read failed, using memory fallback:', e.message)
+    // ── Memory fallback ──
+    const row = STORE.get(email)
+    if (!row) return null
+    if (row.expiresAt < Date.now()) { STORE.delete(email); return null }
+    return row
+  }
+}
+
+async function writeRow(email, row) {
+  STORE.set(email, row)                          // always write to memory too
+  try {
+    const { error } = await supabaseAdmin
+      .from('kairo_otps')
+      .upsert({
+        email,
+        hash:            row.hash,
+        expires_at:      new Date(row.expiresAt).toISOString(),
+        last_sent_at:    new Date(row.lastSentAt).toISOString(),
+        send_timestamps: row.sendTimestamps,
+        attempts_left:   row.attemptsLeft,
+      }, { onConflict: 'email' })
+    if (error) throw new Error(error.message)
+  } catch (e) {
+    if (!isMissingTable(e)) console.warn('[passcode] supabase upsert failed:', e.message)
+    // memory copy already written above — no further action needed
+  }
+}
+
+async function destroyRow(email) {
+  STORE.delete(email)
+  try {
+    await supabaseAdmin.from('kairo_otps').delete().eq('email', email)
+  } catch (e) {
+    if (!isMissingTable(e)) console.warn('[passcode] supabase delete failed:', e.message)
+  }
 }
 
 // ── POST /send-otp ──────────────────────────────────────────────────────────
@@ -59,9 +139,8 @@ router.post('/send-otp', async (req, res) => {
     return res.status(400).json({ error: 'A valid email is required.' })
   }
 
-  purge(email)
   const now = Date.now()
-  const existing = STORE.get(email) || { sendTimestamps: [] }
+  const existing = (await readRow(email)) || { sendTimestamps: [] }
 
   // Trim send-timestamps to the last 10 minutes
   existing.sendTimestamps = (existing.sendTimestamps || []).filter(t => t > now - WINDOW_MS)
@@ -95,10 +174,9 @@ router.post('/send-otp', async (req, res) => {
     sendTimestamps: [...existing.sendTimestamps, now],
     attemptsLeft:   MAX_ATTEMPTS,
   }
-  STORE.set(email, entry)
+  await writeRow(email, entry)
 
   // Fire the email — never block the response on it.
-  // The transport already swallows errors, so this is safe to await briefly.
   try {
     await sendPasscodeOtpEmail({
       to:               email,
@@ -109,10 +187,8 @@ router.post('/send-otp', async (req, res) => {
     })
   } catch (e) {
     console.warn('[passcode/send-otp] email send failed:', e?.message)
-    // Don't fail the request — code is still valid; user can ask for a resend.
   }
 
-  // In dev, surface the code so the UI can auto-fill (localhost only).
   const isDev = (req.hostname || '').includes('localhost') ||
                 (req.headers['x-forwarded-for'] || '').includes('127.0.0.1')
 
@@ -126,42 +202,29 @@ router.post('/send-otp', async (req, res) => {
 })
 
 // ── POST /verify-otp ────────────────────────────────────────────────────────
-router.post('/verify-otp', (req, res) => {
+router.post('/verify-otp', async (req, res) => {
   const email = normEmail(req.body?.email)
   const code  = String(req.body?.code || '').trim()
-  if (!validEmail(email)) return res.status(400).json({ error: 'Invalid email.' })
+  if (!validEmail(email))    return res.status(400).json({ error: 'Invalid email.' })
   if (!/^\d{6}$/.test(code)) return res.status(400).json({ error: 'Code must be 6 digits.' })
 
-  purge(email)
-  const entry = STORE.get(email)
+  const entry = await readRow(email)
   if (!entry) {
-    return res.status(400).json({
-      ok:     false,
-      error:  'No active code. Request a new one.',
-      reason: 'no-otp',
-    })
+    return res.status(400).json({ ok: false, error: 'No active code. Request a new one.', reason: 'no-otp' })
   }
   if (entry.expiresAt < Date.now()) {
-    STORE.delete(email)
-    return res.status(400).json({
-      ok:     false,
-      error:  'Code expired. Request a new one.',
-      reason: 'expired',
-    })
+    await destroyRow(email)
+    return res.status(400).json({ ok: false, error: 'Code expired. Request a new one.', reason: 'expired' })
   }
   if (entry.attemptsLeft <= 0) {
-    STORE.delete(email)
-    return res.status(400).json({
-      ok:     false,
-      error:  'Too many wrong attempts. Request a new code.',
-      reason: 'locked',
-    })
+    await destroyRow(email)
+    return res.status(400).json({ ok: false, error: 'Too many wrong attempts. Request a new code.', reason: 'locked' })
   }
 
   const ok = hashCode(code, email) === entry.hash
   if (!ok) {
     entry.attemptsLeft -= 1
-    STORE.set(email, entry)
+    await writeRow(email, entry)
     return res.status(400).json({
       ok:     false,
       error:  'Incorrect verification code.',
@@ -171,13 +234,20 @@ router.post('/verify-otp', (req, res) => {
   }
 
   // Success — burn the code immediately so it can't be re-used.
-  STORE.delete(email)
+  await destroyRow(email)
   res.status(200).json({ ok: true })
 })
 
 // ── Health (handy for debugging in dev) ─────────────────────────────────────
-router.get('/health', (_req, res) => {
-  res.json({ ok: true, pending: STORE.size })
+router.get('/health', async (_req, res) => {
+  let dbRows = null
+  try {
+    const { count } = await supabaseAdmin
+      .from('kairo_otps')
+      .select('email', { count: 'exact', head: true })
+    dbRows = count
+  } catch { /* ignore */ }
+  res.json({ ok: true, memory_pending: STORE.size, db_pending: dbRows })
 })
 
 export default router
