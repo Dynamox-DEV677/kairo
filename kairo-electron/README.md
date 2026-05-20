@@ -52,6 +52,48 @@ proper "Kairo Setup.exe" with shortcut creation.
 
 ---
 
+## Shipping an update
+
+Two layers of "Kairo update", each handled differently:
+
+### 1. Web app updates (most updates)
+
+You push to `main`, Vercel auto-deploys, the next time anyone opens the
+desktop app it loads the new web build. **Zero action on the desktop side.**
+
+### 2. Electron shell updates (rare — splash bug, new menu item, etc.)
+
+These need a new installer. Auto-updates are wired via `electron-updater`
+pointing at this repo's GitHub Releases:
+
+```
+1. Bump the version in package.json (e.g. 1.0.0 → 1.0.1)
+2. Set a GitHub token in your env:
+       set GH_TOKEN=ghp_xxx        (Windows)
+       export GH_TOKEN=ghp_xxx     (Mac/Linux)
+3. Build and publish in one shot:
+       npm run dist:win -- --publish always
+       npm run dist:mac -- --publish always
+       npm run dist:linux -- --publish always
+```
+
+That uploads the installer + a `latest.yml` metadata file to a new
+GitHub Release tagged with the version. Every existing installed copy
+checks GitHub every 6 hours; when it sees a newer `latest.yml`, it
+downloads the installer in the background and prompts the user
+"**Kairo is ready to update — Restart now / Later?**"
+
+If the user has never installed an update before, the prompt also
+appears in their system notification tray.
+
+### Without a GH_TOKEN
+
+You can still build locally with plain `npm run dist:win` — the
+installer lands in `dist/` but isn't published to GitHub. Users won't
+auto-update. Useful for testing the installer before shipping.
+
+---
+
 ## Files
 
 ```

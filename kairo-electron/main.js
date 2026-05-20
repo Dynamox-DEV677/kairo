@@ -12,6 +12,7 @@
  */
 const { app, BrowserWindow, Menu, shell, ipcMain, nativeTheme } = require('electron')
 const path = require('path')
+const updater = require('./updater')
 
 // Default to production. Override via env when iterating against a local Vite dev server.
 const KAIRO_URL = process.env.KAIRO_URL || 'https://kairo-daily-edu.vercel.app'
@@ -77,6 +78,10 @@ function createMainWindow() {
       splashWin.close()
       splashWin = null
     }
+    // Hook the shell-update layer once the main window is alive.
+    // (Web app updates are already automatic — this only handles new
+    // versions of the Electron wrapper itself: splash, menu, this code.)
+    updater.attach(mainWin)
   })
 
   // External links — open in the user's real browser, not inside the app.
@@ -110,8 +115,9 @@ function configureMenu() {
         submenu: [
           { label: 'Open kairo-daily-edu.vercel.app', click: () => shell.openExternal(KAIRO_URL) },
           { type: 'separator' },
-          { label: 'Reload Kairo',    accelerator: 'CmdOrCtrl+R', click: () => mainWin?.reload() },
-          { label: 'Toggle Dev Tools', accelerator: 'CmdOrCtrl+Alt+I', click: () => mainWin?.webContents.toggleDevTools() },
+          { label: 'Reload Kairo',         accelerator: 'CmdOrCtrl+R',     click: () => mainWin?.reload() },
+          { label: 'Check for updates…',                                    click: () => updater.checkNow() },
+          { label: 'Toggle Dev Tools',     accelerator: 'CmdOrCtrl+Alt+I', click: () => mainWin?.webContents.toggleDevTools() },
         ],
       },
     ]
