@@ -1,0 +1,88 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Kairo</title>
+  <style>
+    html, body {
+      margin: 0; padding: 0;
+      width: 100vw; height: 100vh;
+      background: #06060a;
+      overflow: hidden;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      color: #ffffff;
+      -webkit-app-region: drag;       /* draggable splash on macOS */
+      -webkit-user-select: none;
+    }
+    .stage {
+      position: absolute; inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+    }
+    .halo {
+      position: absolute;
+      width: 320px; height: 320px;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      background: radial-gradient(circle,
+        rgba(124, 58, 237, 0.40) 0%,
+        rgba(91, 33, 182, 0.20) 30%,
+        transparent 70%);
+      filter: blur(40px);
+      animation: pulse 2.4s ease-in-out infinite;
+    }
+    .logo {
+      position: relative;
+      width: 120px; height: 120px;
+      border-radius: 28px;
+      background: linear-gradient(135deg, #3b0764 0%, #06060a 100%);
+      box-shadow: 0 24px 56px rgba(124,58,237,.35),
+                  inset 0 0 32px rgba(124,58,237,.08);
+      display: flex; align-items: center; justify-content: center;
+      animation: float 2.4s ease-in-out infinite;
+    }
+    .logo img {
+      width: 78%; height: 78%;
+      object-fit: contain;
+      filter: drop-shadow(0 4px 12px rgba(0,0,0,.5));
+    }
+    .name {
+      position: relative;
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -.02em;
+      color: #ffffff;
+      margin-top: 8px;
+    }
+    .sub {
+      position: relative;
+      font-family: ui-monospace, 'SF Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 3px;
+      color: #c4b5fd;
+      text-transform: uppercase;
+    }
+    @keyframes pulse {
+      0%,100% { opacity: 0.85; transform: translate(-50%,-50%) scale(1); }
+      50%     { opacity: 1;    transform: translate(-50%,-50%) scale(1.08); }
+    }
+    @keyframes float {
+      0%,100% { transform: translateY(0); }
+      50%     { transform: translateY(-6px); }
+    }
+  </style>
+</head>
+<body>
+  <div class="halo"></div>
+  <div class="stage">
+    <div class="logo">
+      <img src="assets/icon-256.png" alt="Kairo" />
+    </div>
+    <div class="name">Kairo</div>
+    <div class="sub">Accelerate your academics</div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,69 @@
+{
+  "name": "kairo-desktop",
+  "version": "1.0.0",
+  "description": "Kairo — desktop wrapper for the AI learning operating system",
+  "main": "main.js",
+  "author": {
+    "name": "Darshan",
+    "email": "quro.cor@gmail.com"
+  },
+  "homepage": "https://kairo-daily-edu.vercel.app",
+  "license": "MIT",
+  "scripts": {
+    "start":     "electron .",
+    "dist:win":  "electron-builder --win --x64",
+    "dist:mac":  "electron-builder --mac",
+    "dist:linux":"electron-builder --linux",
+    "postinstall":"electron-builder install-app-deps"
+  },
+  "build": {
+    "appId": "app.kairo.desktop",
+    "productName": "Kairo",
+    "copyright": "© 2026 Darshan",
+    "directories": {
+      "buildResources": "assets",
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "splash.html",
+      "assets/**/*"
+    ],
+    "win": {
+      "icon": "assets/icon.ico",
+      "target": [
+        { "target": "nsis",     "arch": ["x64"] },
+        { "target": "portable", "arch": ["x64"] }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Kairo"
+    },
+    "mac": {
+      "icon": "assets/icon.png",
+      "category": "public.app-category.education",
+      "target": [
+        { "target": "dmg",  "arch": ["x64", "arm64"] },
+        { "target": "zip",  "arch": ["x64", "arm64"] }
+      ]
+    },
+    "linux": {
+      "icon": "assets/icon.png",
+      "category": "Education",
+      "target": [
+        "AppImage",
+        "deb"
+      ]
+    }
+  },
+  "devDependencies": {
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8"
+  }
+}
