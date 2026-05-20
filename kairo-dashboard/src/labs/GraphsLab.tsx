@@ -150,7 +150,7 @@ function GraphsSim({ params }: SimProps) {
 
       {/* Wireframe overlay (line segments, not the noisy meshBasic wireframe) */}
       {wireSegs.map((seg, i) => (
-        <Line key={i} points={seg} color="#0f0f0f" lineWidth={0.5} transparent opacity={0.55} />
+        <Line key={i} points={seg} color="#0E1117" lineWidth={0.5} transparent opacity={0.55} />
       ))}
 
       {/* Equation label floating above */}
@@ -188,7 +188,7 @@ function BoundingBox({ range, zMin, zMax }: { range: number; zMin: number; zMax:
       {/* Box edges */}
       {edges.map(([a, b], i) => (
         <Line key={i} points={[corners[a], corners[b]]}
-          color="#52525b" lineWidth={0.7} transparent opacity={0.55} />
+          color="#6B7280" lineWidth={0.7} transparent opacity={0.55} />
       ))}
 
       {/* Floor grid lines + ticks */}
@@ -221,13 +221,13 @@ function BoundingBox({ range, zMin, zMax }: { range: number; zMin: number; zMax:
       {/* Tick labels — only on the x and y floor edges (not z height, which would clutter) */}
       {[-R, 0, R].map(v => (
         <Text key={`tx-${v}`} position={[v, yMin - 0.2, -R - 0.15]}
-          fontSize={0.18} color="#71717a" anchorX="center">
+          fontSize={0.18} color="#9CA3AF" anchorX="center">
           {v.toFixed(0)}
         </Text>
       ))}
       {[-R, 0, R].map(v => (
         <Text key={`ty-${v}`} position={[-R - 0.2, yMin - 0.2, v]}
-          fontSize={0.18} color="#71717a" anchorX="center">
+          fontSize={0.18} color="#9CA3AF" anchorX="center">
           {v.toFixed(0)}
         </Text>
       ))}
@@ -237,7 +237,7 @@ function BoundingBox({ range, zMin, zMax }: { range: number; zMin: number; zMax:
         const z = yMin + k
         return (
           <Text key={`tz-${z}`} position={[-R - 0.35, z, -R]}
-            fontSize={0.18} color="#71717a" anchorX="right">
+            fontSize={0.18} color="#9CA3AF" anchorX="right">
             {z.toFixed(0)}
           </Text>
         )

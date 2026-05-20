@@ -34,18 +34,18 @@ interface Note {
 
 // Monochrome purple — kind colors are now 3 shades of purple instead of rainbow.
 const KIND_META: Record<Kind, { label: string; icon: any; color: string }> = {
-  flashcards:  { label: 'Flashcards',  icon: BookMarked,    color: '#a78bfa' },
-  summary:     { label: 'Summary',     icon: FileText,      color: '#c4b5fd' },
-  doubt:       { label: 'Doubt',       icon: MessageCircle, color: '#a78bfa' },
-  concept_map: { label: 'Concept Map', icon: Network,       color: '#7c3aed' },
-  note:        { label: 'Note',        icon: StickyNote,    color: '#c4b5fd' },
-  plan:        { label: 'Study Plan',  icon: Calendar,      color: '#a78bfa' },
-  grade:       { label: 'Graded',      icon: CheckCircle2,  color: '#7c3aed' },
+  flashcards:  { label: 'Flashcards',  icon: BookMarked,    color: '#66D9FF' },
+  summary:     { label: 'Summary',     icon: FileText,      color: '#A5B4FC' },
+  doubt:       { label: 'Doubt',       icon: MessageCircle, color: '#66D9FF' },
+  concept_map: { label: 'Concept Map', icon: Network,       color: '#4F7CFF' },
+  note:        { label: 'Note',        icon: StickyNote,    color: '#A5B4FC' },
+  plan:        { label: 'Study Plan',  icon: Calendar,      color: '#66D9FF' },
+  grade:       { label: 'Graded',      icon: CheckCircle2,  color: '#4F7CFF' },
 }
 
-const card: React.CSSProperties = { background: '#111', border: '1px solid #1e1e1e', borderRadius: 14 }
+const card: React.CSSProperties = { background: '#0E1117', border: '1px solid #1f2532', borderRadius: 14 }
 const inp: React.CSSProperties = {
-  background: '#0d0d0d', border: '1px solid #1e1e1e', borderRadius: 8,
+  background: '#0E1117', border: '1px solid #1f2532', borderRadius: 8,
   padding: '9px 12px', fontSize: 13, color: '#fafafa',
   fontFamily: 'inherit', outline: 'none', width: '100%', boxSizing: 'border-box',
 }
@@ -120,29 +120,29 @@ export default function Notebook() {
       <div className="nb-header" style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 20, flexShrink: 0 }}>
         <div style={{
           width: 44, height: 44, borderRadius: 11,
-          background: 'linear-gradient(135deg, #7c3aed, #5b21b6)',
+          background: 'linear-gradient(135deg, #4F7CFF, #2046C2)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 0 18px rgba(124,58,237,0.45)', flexShrink: 0,
+          boxShadow: '0 0 18px rgba(79, 124, 255, 0.32)', flexShrink: 0,
         }}>
           <BookOpen size={22} color="#fff" />
         </div>
         <div style={{ flex: 1 }}>
           <h1 style={{ fontSize: 20, fontWeight: 700, color: '#fafafa', margin: 0 }}>AI Notebook</h1>
-          <p style={{ fontSize: 13, color: '#52525b', marginTop: 4 }}>
+          <p style={{ fontSize: 13, color: '#6B7280', marginTop: 4 }}>
             Your second brain — every flashcard, summary, and doubt saved automatically.
           </p>
         </div>
         <button className="nb-newbtn-inline" onClick={() => setCreating(true)} style={{
           padding: '9px 14px', borderRadius: 9, border: 'none',
-          background: 'linear-gradient(135deg, #7c3aed, #5b21b6)', color: '#fff',
+          background: 'linear-gradient(135deg, #4F7CFF, #2046C2)', color: '#fff',
           fontFamily: 'inherit', fontSize: 12, fontWeight: 600, cursor: 'pointer',
           display: 'flex', alignItems: 'center', gap: 6,
         }}>
           <Plus size={13} /> New Note
         </button>
         <button onClick={load} disabled={loading} style={{
-          padding: '9px 12px', borderRadius: 9, border: '1px solid #1e1e1e',
-          background: '#161616', color: '#71717a', cursor: 'pointer',
+          padding: '9px 12px', borderRadius: 9, border: '1px solid #1f2532',
+          background: '#151922', color: '#9CA3AF', cursor: 'pointer',
           fontFamily: 'inherit', fontSize: 12, display: 'flex', alignItems: 'center', gap: 5,
         }}>
           <RefreshCw size={12} style={{ animation: loading ? 'spin 0.8s linear infinite' : 'none' }} />
@@ -165,7 +165,7 @@ export default function Notebook() {
       {/* Search + filters */}
       <div style={{ display: 'flex', gap: 10, marginBottom: 14, flexShrink: 0 }}>
         <div style={{ position: 'relative', flex: 1 }}>
-          <Search size={13} color="#52525b" style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)' }} />
+          <Search size={13} color="#6B7280" style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)' }} />
           <input value={search} onChange={e => setSearch(e.target.value)}
             placeholder="Search title, content, tag, subject…"
             style={{ ...inp, paddingLeft: 32 }} />
@@ -181,12 +181,12 @@ export default function Notebook() {
       <div style={{ display: 'grid', gridTemplateColumns: selected ? '1fr 1.3fr' : '1fr', gap: 12, flex: 1, minHeight: 0 }}>
         {/* List */}
         <div style={{ overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 6 }}>
-          {err && <div style={{ padding: '10px 14px', background: 'rgba(167, 139, 250,0.08)', border: '1px solid rgba(167, 139, 250,0.25)', borderRadius: 8, fontSize: 12, color: '#a78bfa' }}>{err}</div>}
-          {loading && notes.length === 0 && <div style={{ textAlign: 'center', padding: '40px 0', color: '#52525b' }}>Loading…</div>}
+          {err && <div style={{ padding: '10px 14px', background: 'rgba(102, 217, 255, 0.08)', border: '1px solid rgba(102, 217, 255, 0.25)', borderRadius: 8, fontSize: 12, color: '#66D9FF' }}>{err}</div>}
+          {loading && notes.length === 0 && <div style={{ textAlign: 'center', padding: '40px 0', color: '#6B7280' }}>Loading…</div>}
           {!loading && filtered.length === 0 && (
             <div style={{ ...card, padding: '40px 24px', textAlign: 'center' }}>
-              <StickyNote size={28} color="#52525b" style={{ marginBottom: 12 }} />
-              <p style={{ fontSize: 13, color: '#71717a', margin: 0 }}>
+              <StickyNote size={28} color="#6B7280" style={{ marginBottom: 12 }} />
+              <p style={{ fontSize: 13, color: '#9CA3AF', margin: 0 }}>
                 {notes.length === 0 ? "Empty notebook — generate flashcards or use Kairo's Solver to start filling it." : 'No matches.'}
               </p>
             </div>
@@ -200,8 +200,8 @@ export default function Notebook() {
                 onClick={() => { setSelected(n); setEditing(false) }}
                 style={{
                   padding: '12px 14px', borderRadius: 10, cursor: 'pointer',
-                  background: isActive ? '#1a1a2e' : '#111',
-                  border: `1px solid ${isActive ? meta.color : '#1e1e1e'}`,
+                  background: isActive ? '#1a1a2e' : '#0E1117',
+                  border: `1px solid ${isActive ? meta.color : '#1f2532'}`,
                   borderLeft: `3px solid ${meta.color}`,
                   display: 'flex', alignItems: 'flex-start', gap: 10,
                 }}>
@@ -214,16 +214,16 @@ export default function Notebook() {
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    {n.pinned && <Pin size={10} color="#c4b5fd" style={{ flexShrink: 0 }} />}
+                    {n.pinned && <Pin size={10} color="#A5B4FC" style={{ flexShrink: 0 }} />}
                     <div style={{
                       fontSize: 13, fontWeight: 600, color: '#fafafa',
                       overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1,
                     }}>{n.title}</div>
                   </div>
-                  <div style={{ fontSize: 10.5, color: '#52525b', marginTop: 3, display: 'flex', gap: 8 }}>
+                  <div style={{ fontSize: 10.5, color: '#6B7280', marginTop: 3, display: 'flex', gap: 8 }}>
                     <span style={{ color: meta.color, fontWeight: 600 }}>{meta.label}</span>
                     {n.subject && <span>· {n.subject}</span>}
-                    <span style={{ marginLeft: 'auto', color: '#3f3f46' }}>{relTime(n.updated_at)}</span>
+                    <span style={{ marginLeft: 'auto', color: '#4B5563' }}>{relTime(n.updated_at)}</span>
                   </div>
                 </div>
               </motion.div>
@@ -359,15 +359,15 @@ function AutoCollectedStrip() {
   return (
     <div style={{
       marginBottom: 14, padding: 14,
-      background: 'rgba(124,58,237,0.04)',
-      border: '1px solid rgba(167,139,250,0.22)',
+      background: 'rgba(79, 124, 255, 0.04)',
+      border: '1px solid rgba(102, 217, 255, 0.22)',
       borderRadius: 12,
       flexShrink: 0,
       position: 'relative',
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 10 }}>
         <span style={{
-          fontSize: 10.5, fontWeight: 700, color: '#c4b5fd',
+          fontSize: 10.5, fontWeight: 700, color: '#A5B4FC',
           textTransform: 'uppercase', letterSpacing: 1.6,
         }}>
           Auto-collected memory  ·  click to AI-build a note
@@ -415,14 +415,14 @@ function AutoCollectedStrip() {
               style={chipBtn(isBusy)}>
               {isBusy ? 'Building…' : <>
                 <span style={{ textTransform: 'capitalize' }}>{c.name}</span>
-                <span style={{ marginLeft: 5, color: '#7c3aed', fontSize: 10 }}>×{c.visits}</span>
+                <span style={{ marginLeft: 5, color: '#4F7CFF', fontSize: 10 }}>×{c.visits}</span>
               </>}
             </button>
           )
         })}
         {tab === 'formulas' && (
           formulas.length === 0
-            ? <span style={{ fontSize: 12, color: '#71717a' }}>No formulas yet. They'll appear here as Kairo extracts them from your solver answers.</span>
+            ? <span style={{ fontSize: 12, color: '#9CA3AF' }}>No formulas yet. They'll appear here as Kairo extracts them from your solver answers.</span>
             : formulas.map(f => {
                 const id = `formula:${f.id}`
                 const isBusy = working === id
@@ -438,17 +438,17 @@ function AutoCollectedStrip() {
                     })}
                     style={chipBtn(isBusy)}>
                     {isBusy ? 'Building…' : <>
-                      {f.name}: <code style={{ fontFamily: "'SF Mono', monospace", color: '#c4b5fd', marginLeft: 4 }}>{f.expr}</code>
+                      {f.name}: <code style={{ fontFamily: "'SF Mono', monospace", color: '#A5B4FC', marginLeft: 4 }}>{f.expr}</code>
                     </>}
                   </button>
                 )
               })
         )}
         {tab === 'doubts' && doubts.length === 0 && (
-          <span style={{ fontSize: 12, color: '#71717a' }}>No doubts yet. Ask the Kairo Solver something — every Q&A auto-saves here.</span>
+          <span style={{ fontSize: 12, color: '#9CA3AF' }}>No doubts yet. Ask the Kairo Solver something — every Q&A auto-saves here.</span>
         )}
         {tab === 'concepts' && concepts.length === 0 && (
-          <span style={{ fontSize: 12, color: '#71717a' }}>No concepts yet. Take a quiz or open a lab — Kairo will discover concepts automatically.</span>
+          <span style={{ fontSize: 12, color: '#9CA3AF' }}>No concepts yet. Take a quiz or open a lab — Kairo will discover concepts automatically.</span>
         )}
       </div>
 
@@ -461,12 +461,12 @@ function AutoCollectedStrip() {
               position: 'absolute', bottom: -42, left: 12,
               padding: '8px 14px', borderRadius: 10,
               background: 'rgba(13,13,21,0.95)',
-              border: '1px solid rgba(167,139,250,0.5)',
-              boxShadow: '0 14px 32px rgba(124,58,237,0.35)',
+              border: '1px solid rgba(102, 217, 255, 0.5)',
+              boxShadow: '0 14px 32px rgba(79, 124, 255, 0.35)',
               fontSize: 12, color: '#e4e4e7', fontWeight: 500,
               zIndex: 5,
             }}>
-            <span style={{ color: '#c4b5fd', fontWeight: 700 }}>● </span>
+            <span style={{ color: '#A5B4FC', fontWeight: 700 }}>● </span>
             {toast}
           </motion.div>
         )}
@@ -478,8 +478,8 @@ function AutoCollectedStrip() {
 function chipBtn(busy: boolean): React.CSSProperties {
   return {
     padding: '4px 9px', borderRadius: 6,
-    background: busy ? 'rgba(167,139,250,0.22)' : 'rgba(124,58,237,0.08)',
-    border: `1px solid ${busy ? 'rgba(167,139,250,0.55)' : 'rgba(167,139,250,0.32)'}`,
+    background: busy ? 'rgba(102, 217, 255, 0.22)' : 'rgba(79, 124, 255, 0.08)',
+    border: `1px solid ${busy ? 'rgba(102, 217, 255, 0.55)' : 'rgba(102, 217, 255, 0.32)'}`,
     fontSize: 11.5, color: '#e4e4e7', fontWeight: 500,
     whiteSpace: 'nowrap',
     fontFamily: 'inherit',
@@ -492,9 +492,9 @@ function Tab({ active, label, onClick }: { active: boolean; label: string; onCli
   return (
     <button onClick={onClick} style={{
       padding: '5px 10px', borderRadius: 7,
-      background: active ? 'rgba(167,139,250,0.18)' : 'transparent',
-      border: `1px solid ${active ? 'rgba(167,139,250,0.5)' : '#22222e'}`,
-      color: active ? '#c4b5fd' : '#71717a',
+      background: active ? 'rgba(102, 217, 255, 0.18)' : 'transparent',
+      border: `1px solid ${active ? 'rgba(102, 217, 255, 0.5)' : 'rgba(255,255,255,0.08)'}`,
+      color: active ? '#A5B4FC' : '#9CA3AF',
       fontFamily: 'inherit', fontSize: 11, fontWeight: 600,
       cursor: 'pointer',
     }}>{label}</button>
@@ -549,7 +549,7 @@ function NoteDetail({ note, editing, onClose, onTogglePin, onDelete, onEdit, onS
           {editing ? (
             <input value={title} onChange={e => setTitle(e.target.value)}
               style={{
-                width: '100%', background: '#0d0d0d', border: '1px solid #1e1e1e',
+                width: '100%', background: '#0E1117', border: '1px solid #1f2532',
                 borderRadius: 7, padding: '6px 10px', fontSize: 16, fontWeight: 700,
                 color: '#fafafa', fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box',
               }} />
@@ -558,7 +558,7 @@ function NoteDetail({ note, editing, onClose, onTogglePin, onDelete, onEdit, onS
               {note.title}
             </h2>
           )}
-          <div style={{ fontSize: 11, color: '#52525b', marginTop: 6, display: 'flex', gap: 10 }}>
+          <div style={{ fontSize: 11, color: '#6B7280', marginTop: 6, display: 'flex', gap: 10 }}>
             <span style={{ color: meta.color, fontWeight: 600 }}>{meta.label}</span>
             {note.subject && <span>{note.subject}</span>}
             <span>{new Date(note.updated_at).toLocaleString()}</span>
@@ -566,23 +566,23 @@ function NoteDetail({ note, editing, onClose, onTogglePin, onDelete, onEdit, onS
         </div>
         <div style={{ display: 'flex', gap: 4 }}>
           <button onClick={onTogglePin} title={note.pinned ? 'Unpin' : 'Pin'}
-            style={{ padding: 6, borderRadius: 7, border: '1px solid #1e1e1e', background: '#161616', cursor: 'pointer', color: note.pinned ? '#c4b5fd' : '#71717a' }}>
+            style={{ padding: 6, borderRadius: 7, border: '1px solid #1f2532', background: '#151922', cursor: 'pointer', color: note.pinned ? '#A5B4FC' : '#9CA3AF' }}>
             {note.pinned ? <Pin size={12} /> : <PinOff size={12} />}
           </button>
           {!editing && (
             <button onClick={onEdit} title="Edit"
-              style={{ padding: 6, borderRadius: 7, border: '1px solid #1e1e1e', background: '#161616', cursor: 'pointer', color: '#71717a' }}>
+              style={{ padding: 6, borderRadius: 7, border: '1px solid #1f2532', background: '#151922', cursor: 'pointer', color: '#9CA3AF' }}>
               <Edit3 size={12} />
             </button>
           )}
           <button onClick={onDelete} title="Delete"
-            style={{ padding: 6, borderRadius: 7, border: '1px solid #1e1e1e', background: '#161616', cursor: 'pointer', color: '#71717a' }}
-            onMouseEnter={e => (e.currentTarget.style.color = '#a78bfa')}
-            onMouseLeave={e => (e.currentTarget.style.color = '#71717a')}>
+            style={{ padding: 6, borderRadius: 7, border: '1px solid #1f2532', background: '#151922', cursor: 'pointer', color: '#9CA3AF' }}
+            onMouseEnter={e => (e.currentTarget.style.color = '#66D9FF')}
+            onMouseLeave={e => (e.currentTarget.style.color = '#9CA3AF')}>
             <Trash2 size={12} />
           </button>
           <button onClick={onClose} title="Close"
-            style={{ padding: 6, borderRadius: 7, border: '1px solid #1e1e1e', background: '#161616', cursor: 'pointer', color: '#71717a' }}>
+            style={{ padding: 6, borderRadius: 7, border: '1px solid #1f2532', background: '#151922', cursor: 'pointer', color: '#9CA3AF' }}>
             <X size={12} />
           </button>
         </div>
@@ -591,11 +591,11 @@ function NoteDetail({ note, editing, onClose, onTogglePin, onDelete, onEdit, onS
       {editing ? (
         <>
           <div style={{ marginBottom: 10 }}>
-            <label style={{ fontSize: 10, fontWeight: 700, color: '#71717a', textTransform: 'uppercase', letterSpacing: 1.5, display: 'block', marginBottom: 4 }}>Subject</label>
+            <label style={{ fontSize: 10, fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: 1.5, display: 'block', marginBottom: 4 }}>Subject</label>
             <input value={subject} onChange={e => setSubject(e.target.value)} style={inp} />
           </div>
           <div style={{ marginBottom: 10 }}>
-            <label style={{ fontSize: 10, fontWeight: 700, color: '#71717a', textTransform: 'uppercase', letterSpacing: 1.5, display: 'block', marginBottom: 4 }}>Tags (comma-sep)</label>
+            <label style={{ fontSize: 10, fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: 1.5, display: 'block', marginBottom: 4 }}>Tags (comma-sep)</label>
             <input value={tags} onChange={e => setTags(e.target.value)} style={inp} />
           </div>
           <textarea value={content} onChange={e => setContent(e.target.value)} rows={16}
@@ -603,15 +603,15 @@ function NoteDetail({ note, editing, onClose, onTogglePin, onDelete, onEdit, onS
           <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
             <button onClick={save} disabled={saving} style={{
               padding: '8px 16px', borderRadius: 8, border: 'none',
-              background: saving ? '#1c1c1c' : 'linear-gradient(135deg,#7c3aed,#7c3aed)',
-              color: saving ? '#52525b' : '#fff',
+              background: saving ? '#1a1f2e' : 'linear-gradient(135deg,#4F7CFF,#4F7CFF)',
+              color: saving ? '#6B7280' : '#fff',
               fontFamily: 'inherit', fontSize: 12, fontWeight: 600,
               cursor: saving ? 'not-allowed' : 'pointer',
               display: 'flex', alignItems: 'center', gap: 6,
             }}><Save size={12} />{saving ? 'Saving…' : 'Save'}</button>
             <button onClick={onCancelEdit} style={{
-              padding: '8px 16px', borderRadius: 8, border: '1px solid #1e1e1e',
-              background: '#161616', color: '#71717a', cursor: 'pointer',
+              padding: '8px 16px', borderRadius: 8, border: '1px solid #1f2532',
+              background: '#151922', color: '#9CA3AF', cursor: 'pointer',
               fontFamily: 'inherit', fontSize: 12,
             }}>Cancel</button>
           </div>
@@ -621,7 +621,7 @@ function NoteDetail({ note, editing, onClose, onTogglePin, onDelete, onEdit, onS
           {note.tags.length > 0 && (
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 12 }}>
               {note.tags.map(t => (
-                <span key={t} style={{ padding: '2px 8px', borderRadius: 4, fontSize: 10, background: '#1a1a1a', color: '#a1a1aa' }}>{t}</span>
+                <span key={t} style={{ padding: '2px 8px', borderRadius: 4, fontSize: 10, background: '#1a1f2e', color: '#B1B5BA' }}>{t}</span>
               ))}
             </div>
           )}
@@ -676,13 +676,13 @@ function CreateModal({ onClose, onCreated }: { onClose: () => void; onCreated: (
           style={{ ...inp, resize: 'vertical', lineHeight: 1.6 }} />
         <div style={{ display: 'flex', gap: 8, marginTop: 14, justifyContent: 'flex-end' }}>
           <button onClick={onClose} style={{
-            padding: '8px 14px', borderRadius: 7, border: '1px solid #1e1e1e',
-            background: '#161616', color: '#71717a', cursor: 'pointer',
+            padding: '8px 14px', borderRadius: 7, border: '1px solid #1f2532',
+            background: '#151922', color: '#9CA3AF', cursor: 'pointer',
             fontFamily: 'inherit', fontSize: 12,
           }}>Cancel</button>
           <button onClick={save} disabled={saving || !title.trim() || !content.trim()} style={{
             padding: '8px 14px', borderRadius: 7, border: 'none',
-            background: saving || !title.trim() || !content.trim() ? '#1c1c1c' : 'linear-gradient(135deg,#7c3aed,#7c3aed)',
+            background: saving || !title.trim() || !content.trim() ? '#1a1f2e' : 'linear-gradient(135deg,#4F7CFF,#4F7CFF)',
             color: '#fff', fontFamily: 'inherit', fontSize: 12, fontWeight: 600,
             cursor: saving || !title.trim() || !content.trim() ? 'not-allowed' : 'pointer',
             display: 'flex', alignItems: 'center', gap: 6,

@@ -24,7 +24,7 @@ interface SubjectPrediction {
   risk:       'low' | 'medium' | 'high'
 }
 
-const card: React.CSSProperties = { background: '#111', border: '1px solid #1e1e1e', borderRadius: 14 }
+const card: React.CSSProperties = { background: '#0E1117', border: '1px solid #1f2532', borderRadius: 14 }
 
 export default function PerformancePredictor() {
   const [predictions, setPredictions] = useState<SubjectPrediction[] | null>(null)
@@ -170,7 +170,7 @@ Keep it under 200 words. No fluff.` },
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 22 }}>
         <div style={{
           width: 44, height: 44, borderRadius: 11,
-          background: 'linear-gradient(135deg, #38bdf8, #a78bfa)',
+          background: 'linear-gradient(135deg, #38bdf8, #66D9FF)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           boxShadow: '0 0 18px rgba(56,189,248,0.35)', flexShrink: 0,
         }}>
@@ -178,13 +178,13 @@ Keep it under 200 words. No fluff.` },
         </div>
         <div style={{ flex: 1 }}>
           <h1 style={{ fontSize: 20, fontWeight: 700, color: '#fafafa', margin: 0 }}>Performance Predictor</h1>
-          <p style={{ fontSize: 13, color: '#52525b', marginTop: 4 }}>
+          <p style={{ fontSize: 13, color: '#6B7280', marginTop: 4 }}>
             Where your scores are heading · risk areas · improvement potential
           </p>
         </div>
         <button onClick={compute} disabled={loading} style={{
-          padding: '8px 14px', borderRadius: 8, border: '1px solid #1e1e1e',
-          background: '#161616', color: '#71717a', cursor: 'pointer',
+          padding: '8px 14px', borderRadius: 8, border: '1px solid #1f2532',
+          background: '#151922', color: '#9CA3AF', cursor: 'pointer',
           fontFamily: 'inherit', fontSize: 12, display: 'flex', alignItems: 'center', gap: 6,
         }}>
           <RefreshCw size={12} style={{ animation: loading ? 'spin 0.8s linear infinite' : 'none' }} />
@@ -193,20 +193,20 @@ Keep it under 200 words. No fluff.` },
       </div>
 
       {err && (
-        <div style={{ marginBottom: 16, padding: '10px 14px', background: 'rgba(167, 139, 250,0.08)', border: '1px solid rgba(167, 139, 250,0.25)', borderRadius: 8, fontSize: 12, color: '#a78bfa' }}>
+        <div style={{ marginBottom: 16, padding: '10px 14px', background: 'rgba(102, 217, 255, 0.08)', border: '1px solid rgba(102, 217, 255, 0.25)', borderRadius: 8, fontSize: 12, color: '#66D9FF' }}>
           {err}
         </div>
       )}
 
       {loading && !predictions && (
-        <div style={{ textAlign: 'center', padding: '80px 0', color: '#52525b' }}>Computing predictions…</div>
+        <div style={{ textAlign: 'center', padding: '80px 0', color: '#6B7280' }}>Computing predictions…</div>
       )}
 
       {predictions && predictions.length === 0 && (
         <div style={{ ...card, padding: '60px 32px', textAlign: 'center' }}>
-          <AlertTriangle size={32} color="#52525b" style={{ marginBottom: 14 }} />
+          <AlertTriangle size={32} color="#6B7280" style={{ marginBottom: 14 }} />
           <h3 style={{ fontSize: 17, fontWeight: 700, color: '#fafafa', margin: 0, marginBottom: 8 }}>No exam history yet</h3>
-          <p style={{ fontSize: 13, color: '#71717a', maxWidth: 460, margin: '0 auto', lineHeight: 1.6 }}>
+          <p style={{ fontSize: 13, color: '#9CA3AF', maxWidth: 460, margin: '0 auto', lineHeight: 1.6 }}>
             Predictions need at least one mark per subject. Once teachers enter marks or you complete graded essays, this page will project your trajectory.
           </p>
         </div>
@@ -219,34 +219,34 @@ Keep it under 200 words. No fluff.` },
             <div style={{
               position: 'absolute', top: -50, right: -50, width: 220, height: 220,
               borderRadius: '50%',
-              background: overall >= 75 ? 'rgba(196, 181, 253,0.18)' : overall >= 60 ? 'rgba(196, 181, 253,0.18)' : 'rgba(167, 139, 250,0.18)',
+              background: overall >= 75 ? 'rgba(165, 180, 252, 0.18)' : overall >= 60 ? 'rgba(165, 180, 252, 0.18)' : 'rgba(102, 217, 255, 0.18)',
               filter: 'blur(60px)',
             }} />
             <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 24 }}>
               <div style={{
                 width: 110, height: 110, borderRadius: '50%',
-                background: '#0d0d0d', border: `3px solid ${overall >= 75 ? '#c4b5fd' : overall >= 60 ? '#c4b5fd' : '#a78bfa'}`,
+                background: '#0E1117', border: `3px solid ${overall >= 75 ? '#A5B4FC' : overall >= 60 ? '#A5B4FC' : '#66D9FF'}`,
                 display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
               }}>
                 <div style={{
                   fontSize: 30, fontWeight: 800, lineHeight: 1,
-                  color: overall >= 75 ? '#c4b5fd' : overall >= 60 ? '#c4b5fd' : '#a78bfa',
+                  color: overall >= 75 ? '#A5B4FC' : overall >= 60 ? '#A5B4FC' : '#66D9FF',
                 }}>{overall}%</div>
-                <div style={{ fontSize: 10, color: '#71717a', marginTop: 4, textTransform: 'uppercase', letterSpacing: 1 }}>predicted</div>
+                <div style={{ fontSize: 10, color: '#9CA3AF', marginTop: 4, textTransform: 'uppercase', letterSpacing: 1 }}>predicted</div>
               </div>
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 11, color: '#71717a', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.5 }}>
+                <div style={{ fontSize: 11, color: '#9CA3AF', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.5 }}>
                   Overall projection
                 </div>
                 <div style={{ fontSize: 28, fontWeight: 800, color: '#fafafa', marginTop: 4, lineHeight: 1 }}>
                   {overall >= 90 ? 'Outstanding' : overall >= 75 ? 'On track' : overall >= 60 ? 'Workable' : 'Needs work'}
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8, fontSize: 12, color: '#a1a1aa' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8, fontSize: 12, color: '#B1B5BA' }}>
                   <span>Current avg: <strong style={{ color: '#fafafa' }}>{overallCurrent}%</strong></span>
                   <span style={{
                     padding: '2px 8px', borderRadius: 4,
-                    background: overallDelta > 0 ? 'rgba(196, 181, 253,0.12)' : overallDelta < 0 ? 'rgba(167, 139, 250,0.12)' : 'rgba(115,115,115,0.12)',
-                    color: overallDelta > 0 ? '#c4b5fd' : overallDelta < 0 ? '#a78bfa' : '#a1a1aa',
+                    background: overallDelta > 0 ? 'rgba(165, 180, 252, 0.12)' : overallDelta < 0 ? 'rgba(102, 217, 255, 0.12)' : 'rgba(115,115,115,0.12)',
+                    color: overallDelta > 0 ? '#A5B4FC' : overallDelta < 0 ? '#66D9FF' : '#B1B5BA',
                     fontWeight: 700,
                   }}>
                     {overallDelta > 0 ? '+' : ''}{overallDelta} projected change
@@ -259,16 +259,16 @@ Keep it under 200 words. No fluff.` },
           {/* AI Insight */}
           <div style={{ ...card, padding: 22, marginBottom: 16 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-              <Sparkles size={15} color="#c4b5fd" />
+              <Sparkles size={15} color="#A5B4FC" />
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: 13, fontWeight: 700, color: '#fafafa' }}>AI Coach Read</div>
-                <div style={{ fontSize: 11, color: '#52525b' }}>What to do this week — biggest opportunity, biggest risk, action plan</div>
+                <div style={{ fontSize: 11, color: '#6B7280' }}>What to do this week — biggest opportunity, biggest risk, action plan</div>
               </div>
               <button onClick={generateInsight} disabled={insightBusy}
                 style={{
                   padding: '8px 16px', borderRadius: 8, border: 'none',
-                  background: insightBusy ? '#1c1c1c' : 'linear-gradient(135deg,#7c3aed,#7c3aed)',
-                  color: insightBusy ? '#52525b' : '#fff',
+                  background: insightBusy ? '#1a1f2e' : 'linear-gradient(135deg,#4F7CFF,#4F7CFF)',
+                  color: insightBusy ? '#6B7280' : '#fff',
                   fontFamily: 'inherit', fontSize: 12, fontWeight: 600,
                   cursor: insightBusy ? 'not-allowed' : 'pointer',
                   display: 'flex', alignItems: 'center', gap: 6,
@@ -280,14 +280,14 @@ Keep it under 200 words. No fluff.` },
               <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
                 className="prose-ai"
                 style={{
-                  background: '#0d0d0d', border: '1px solid #1e1e2e',
+                  background: '#0E1117', border: '1px solid #1f2532',
                   borderRadius: 10, padding: 16, fontSize: 13, color: '#e4e4e7', lineHeight: 1.65,
                 }}>
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>{insight}</ReactMarkdown>
               </motion.div>
             )}
             {!insight && !insightBusy && (
-              <p style={{ fontSize: 12, color: '#52525b', fontStyle: 'italic', margin: 0 }}>
+              <p style={{ fontSize: 12, color: '#6B7280', fontStyle: 'italic', margin: 0 }}>
                 Click Generate to get a personalized read on your trajectory.
               </p>
             )}
@@ -301,23 +301,23 @@ Keep it under 200 words. No fluff.` },
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {predictions.map(p => {
                 const TrendIcon = p.trajectory === 'up' ? TrendingUp : p.trajectory === 'down' ? TrendingDown : Minus
-                const trendColor = p.trajectory === 'up' ? '#c4b5fd' : p.trajectory === 'down' ? '#a78bfa' : '#a1a1aa'
-                const riskColor = p.risk === 'high' ? '#a78bfa' : p.risk === 'medium' ? '#c4b5fd' : '#c4b5fd'
+                const trendColor = p.trajectory === 'up' ? '#A5B4FC' : p.trajectory === 'down' ? '#66D9FF' : '#B1B5BA'
+                const riskColor = p.risk === 'high' ? '#66D9FF' : p.risk === 'medium' ? '#A5B4FC' : '#A5B4FC'
                 return (
                   <div key={p.subject} style={{
-                    padding: 14, borderRadius: 10, background: '#0d0d0d',
+                    padding: 14, borderRadius: 10, background: '#0E1117',
                     border: `1px solid ${riskColor}30`, borderLeft: `3px solid ${riskColor}`,
                     display: 'flex', alignItems: 'center', gap: 14,
                   }}>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 4 }}>
                         <span style={{ fontSize: 13.5, fontWeight: 700, color: '#fafafa' }}>{p.subject}</span>
-                        <span style={{ fontSize: 10, color: '#52525b', textTransform: 'uppercase', letterSpacing: 1 }}>
+                        <span style={{ fontSize: 10, color: '#6B7280', textTransform: 'uppercase', letterSpacing: 1 }}>
                           {p.exams} exam{p.exams === 1 ? '' : 's'} · confidence {p.confidence}
                         </span>
                       </div>
                       {/* Bar */}
-                      <div style={{ position: 'relative', height: 8, background: '#1a1a1a', borderRadius: 4, overflow: 'hidden' }}>
+                      <div style={{ position: 'relative', height: 8, background: '#1a1f2e', borderRadius: 4, overflow: 'hidden' }}>
                         <motion.div
                           initial={{ width: 0 }} animate={{ width: `${p.predicted}%` }}
                           transition={{ duration: 0.7, ease: 'easeOut' }}
@@ -328,12 +328,12 @@ Keep it under 200 words. No fluff.` },
                           width: 2, background: '#fafafa',
                         }} />
                       </div>
-                      <div style={{ display: 'flex', gap: 12, marginTop: 6, fontSize: 10.5, color: '#71717a' }}>
+                      <div style={{ display: 'flex', gap: 12, marginTop: 6, fontSize: 10.5, color: '#9CA3AF' }}>
                         <span>Current <strong style={{ color: '#fafafa' }}>{p.current}%</strong></span>
                         <span>·</span>
                         <span>Predicted <strong style={{ color: riskColor }}>{p.predicted}%</strong></span>
                         {p.weak_count > 0 && (
-                          <span style={{ marginLeft: 'auto', color: '#c4b5fd' }}>{p.weak_count} weak topic{p.weak_count === 1 ? '' : 's'}</span>
+                          <span style={{ marginLeft: 'auto', color: '#A5B4FC' }}>{p.weak_count} weak topic{p.weak_count === 1 ? '' : 's'}</span>
                         )}
                       </div>
                     </div>
@@ -347,7 +347,7 @@ Keep it under 200 words. No fluff.` },
                 )
               })}
             </div>
-            <p style={{ fontSize: 10.5, color: '#3f3f46', marginTop: 10, textAlign: 'center' }}>
+            <p style={{ fontSize: 10.5, color: '#4B5563', marginTop: 10, textAlign: 'center' }}>
               White line = current avg · colored bar = projected at exam · color = risk level
             </p>
           </div>

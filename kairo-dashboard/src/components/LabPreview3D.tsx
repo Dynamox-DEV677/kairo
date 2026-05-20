@@ -96,9 +96,9 @@ function SolarScene({ tint, hover }: { tint: string; hover: boolean }) {
   // Monochrome purple-scale planets — no blue/red/yellow.
   const planets = useMemo(() => [
     { r: 1.2, size: 0.13, speed: 1.5, color: '#9ca3af', phase: 0    },
-    { r: 1.8, size: 0.20, speed: 1.0, color: '#a78bfa', phase: 0.7  },
-    { r: 2.5, size: 0.18, speed: 0.6, color: '#c4b5fd', phase: 1.6  },
-    { r: 3.2, size: 0.28, speed: 0.4, color: '#7c3aed', phase: 2.4  },
+    { r: 1.8, size: 0.20, speed: 1.0, color: '#66D9FF', phase: 0.7  },
+    { r: 2.5, size: 0.18, speed: 0.6, color: '#A5B4FC', phase: 1.6  },
+    { r: 3.2, size: 0.28, speed: 0.4, color: '#4F7CFF', phase: 2.4  },
   ], [])
 
   useFrame((state) => {
@@ -112,12 +112,12 @@ function SolarScene({ tint, hover }: { tint: string; hover: boolean }) {
       {/* Sun */}
       <mesh>
         <sphereGeometry args={[0.55, 32, 32]} />
-        <meshStandardMaterial color="#a78bfa" emissive="#a78bfa" emissiveIntensity={hover ? 2.2 : 1.5} toneMapped={false} />
+        <meshStandardMaterial color="#66D9FF" emissive="#66D9FF" emissiveIntensity={hover ? 2.2 : 1.5} toneMapped={false} />
       </mesh>
       {/* Sun corona */}
       <mesh>
         <sphereGeometry args={[0.75, 24, 24]} />
-        <meshBasicMaterial color="#a78bfa" transparent opacity={0.22} side={THREE.BackSide} />
+        <meshBasicMaterial color="#66D9FF" transparent opacity={0.22} side={THREE.BackSide} />
       </mesh>
 
       {/* Orbit rings */}
@@ -188,12 +188,12 @@ function HeartScene({ tint, hover }: { tint: string; hover: boolean }) {
       {/* LV (big, red) */}
       <mesh position={[0.55, -0.3, 0]}>
         <sphereGeometry args={[0.85, 24, 24]} />
-        <meshStandardMaterial color="#7c3aed" emissive="#7c3aed" emissiveIntensity={hover ? 0.6 : 0.25} roughness={0.45} />
+        <meshStandardMaterial color="#4F7CFF" emissive="#4F7CFF" emissiveIntensity={hover ? 0.6 : 0.25} roughness={0.45} />
       </mesh>
       {/* LV apex */}
       <mesh position={[0.55, -0.95, 0]} scale={[0.55, 0.7, 0.55]}>
         <sphereGeometry args={[1, 18, 18]} />
-        <meshStandardMaterial color="#5b21b6" emissive="#7c3aed" emissiveIntensity={hover ? 0.55 : 0.20} roughness={0.45} />
+        <meshStandardMaterial color="#2046C2" emissive="#4F7CFF" emissiveIntensity={hover ? 0.55 : 0.20} roughness={0.45} />
       </mesh>
       {/* RV */}
       <mesh position={[-0.45, -0.3, 0]} scale={[0.85, 0.95, 0.85]}>
@@ -203,7 +203,7 @@ function HeartScene({ tint, hover }: { tint: string; hover: boolean }) {
       {/* LA */}
       <mesh position={[0.45, 0.65, 0]} scale={[0.7, 0.55, 0.7]}>
         <sphereGeometry args={[0.7, 18, 18]} />
-        <meshStandardMaterial color="#c4b5fd" emissive="#c4b5fd" emissiveIntensity={hover ? 0.5 : 0.20} />
+        <meshStandardMaterial color="#A5B4FC" emissive="#A5B4FC" emissiveIntensity={hover ? 0.5 : 0.20} />
       </mesh>
       {/* RA */}
       <mesh position={[-0.45, 0.65, 0]} scale={[0.7, 0.55, 0.7]}>
@@ -213,7 +213,7 @@ function HeartScene({ tint, hover }: { tint: string; hover: boolean }) {
       {/* Aorta — quick curve approximation with a tilted torus arc */}
       <mesh position={[0.55, 1.1, 0]} rotation={[Math.PI / 2, 0, -0.3]}>
         <torusGeometry args={[0.35, 0.13, 12, 24, Math.PI]} />
-        <meshStandardMaterial color="#a78bfa" emissive="#a78bfa" emissiveIntensity={hover ? 0.6 : 0.3} />
+        <meshStandardMaterial color="#66D9FF" emissive="#66D9FF" emissiveIntensity={hover ? 0.6 : 0.3} />
       </mesh>
       {/* Pulse halo */}
       <mesh>
@@ -256,7 +256,7 @@ function DnaScene({ tint, hover }: { tint: string; hover: boolean }) {
   })
 
   // Monochrome purple base-pair palette — light → deep across the helix.
-  const baseColors = ['#e9d5ff', '#c4b5fd', '#a78bfa', '#7c3aed']
+  const baseColors = ['#DBE7FF', '#A5B4FC', '#66D9FF', '#4F7CFF']
 
   return (
     <group ref={root} scale={0.85}>
@@ -359,9 +359,9 @@ function VectorsScene({ tint: _tint, hover }: { tint: string; hover: boolean }) 
   // Three purple shades — distinct enough to read as separate axes,
   // never breaks the monochrome rule.
   const axes: Array<{ dir: [number, number, number]; color: string }> = [
-    { dir: [1.6, 0, 0],   color: '#7c3aed' },
-    { dir: [0, 1.6, 0],   color: '#c4b5fd' },
-    { dir: [0, 0, 1.6],   color: '#a78bfa' },
+    { dir: [1.6, 0, 0],   color: '#4F7CFF' },
+    { dir: [0, 1.6, 0],   color: '#A5B4FC' },
+    { dir: [0, 0, 1.6],   color: '#66D9FF' },
   ]
 
   return (
@@ -375,7 +375,7 @@ function VectorsScene({ tint: _tint, hover }: { tint: string; hover: boolean }) 
       {axes.map((a, i) => <Arrow key={i} dir={a.dir} color={a.color} hover={hover} />)}
 
       {/* Subtle floor grid */}
-      <gridHelper args={[6, 12, '#22222e', '#1a1a26']} position={[0, -1.5, 0]} />
+      <gridHelper args={[6, 12, 'rgba(255,255,255,0.08)', 'rgba(255,255,255,0.06)']} position={[0, -1.5, 0]} />
     </group>
   )
 }
@@ -438,7 +438,7 @@ function RocketScene({ tint, hover }: { tint: string; hover: boolean }) {
       {/* Ring divider */}
       <mesh position={[0, 0.45, 0]}>
         <cylinderGeometry args={[0.34, 0.34, 0.06, 28]} />
-        <meshStandardMaterial color="#52525b" />
+        <meshStandardMaterial color="#6B7280" />
       </mesh>
       {/* Body stage 2 (slightly fatter) */}
       <mesh position={[0, -0.05, 0]}>
@@ -460,11 +460,11 @@ function RocketScene({ tint, hover }: { tint: string; hover: boolean }) {
       {/* Flame */}
       <mesh ref={flameRef} position={[0, -1.15, 0]}>
         <coneGeometry args={[0.22, 0.7, 16]} />
-        <meshBasicMaterial color="#a78bfa" transparent opacity={0.9} />
+        <meshBasicMaterial color="#66D9FF" transparent opacity={0.9} />
       </mesh>
       <mesh position={[0, -1.05, 0]} scale={[0.6, 0.6, 0.6]}>
         <coneGeometry args={[0.22, 0.5, 16]} />
-        <meshBasicMaterial color="#e9d5ff" transparent opacity={0.95} />
+        <meshBasicMaterial color="#DBE7FF" transparent opacity={0.95} />
       </mesh>
     </group>
   )

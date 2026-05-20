@@ -35,14 +35,14 @@ export function logo({ size = 64, glow = true } = {}) {
          style="display:inline-block;vertical-align:middle;">
       <defs>
         <linearGradient id="${id}-stroke" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stop-color="#c4b5fd"/>
-          <stop offset="40%" stop-color="#a78bfa"/>
+          <stop offset="0%" stop-color="#A5B4FC"/>
+          <stop offset="40%" stop-color="#66D9FF"/>
           <stop offset="80%" stop-color="#60a5fa"/>
           <stop offset="100%" stop-color="#22d3ee"/>
         </linearGradient>
         ${glow ? `
         <radialGradient id="${id}-halo" cx="50%" cy="50%" r="50%">
-          <stop offset="0%"  stop-color="#7c3aed" stop-opacity="0.55"/>
+          <stop offset="0%"  stop-color="#4F7CFF" stop-opacity="0.55"/>
           <stop offset="60%" stop-color="#2563eb" stop-opacity="0.18"/>
           <stop offset="100%" stop-color="#2563eb" stop-opacity="0"/>
         </radialGradient>` : ''}
@@ -62,7 +62,7 @@ export function logo({ size = 64, glow = true } = {}) {
         <path d="M22 32 L36 47"/>
       </g>
       <!-- Spark on the right — pulses when supported -->
-      <circle cx="42" cy="32" r="${dotR + 0.6}" fill="#c4b5fd">
+      <circle cx="42" cy="32" r="${dotR + 0.6}" fill="#A5B4FC">
         <animate attributeName="opacity" values="0.35;1;0.35" dur="2.4s" repeatCount="indefinite"/>
         <animate attributeName="r" values="${dotR};${dotR + 1.3};${dotR}" dur="2.4s" repeatCount="indefinite"/>
       </circle>
@@ -152,10 +152,10 @@ export function intro({ greeting, lead }) {
 export function infoCard({ kind = 'brand', title, body, icon }) {
   const colorMap = {
     success: { tint: 'rgba(52,211,153,0.06)',  border: 'rgba(52,211,153,0.32)',  ink: THEME.status.success, fallbackIcon: '✓' },
-    warning: { tint: 'rgba(251,191,36,0.06)',  border: 'rgba(251,191,36,0.32)',  ink: THEME.status.warning, fallbackIcon: '⏳' },
+    warning: { tint: 'rgba(199, 210, 232, 0.06)',  border: 'rgba(199, 210, 232, 0.32)',  ink: THEME.status.warning, fallbackIcon: '⏳' },
     info:    { tint: 'rgba(96,165,250,0.06)',  border: 'rgba(96,165,250,0.32)',  ink: THEME.status.info,    fallbackIcon: 'ⓘ' },
     danger:  { tint: 'rgba(248,113,113,0.06)', border: 'rgba(248,113,113,0.32)', ink: THEME.status.danger,  fallbackIcon: '⚠' },
-    brand:   { tint: 'rgba(124,58,237,0.08)',  border: 'rgba(124,58,237,0.38)',  ink: THEME.brand.purpleLite, fallbackIcon: '✦' },
+    brand:   { tint: 'rgba(79, 124, 255, 0.08)',  border: 'rgba(79, 124, 255, 0.38)',  ink: THEME.brand.purpleLite, fallbackIcon: '✦' },
   }
   const c = colorMap[kind] || colorMap.brand
   const usedIcon = icon ?? c.fallbackIcon
@@ -218,7 +218,7 @@ export function dataPanel({ rows = [], title }) {
 export function codeBlock({ value, hint }) {
   return `
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
-      style="background:rgba(124,58,237,0.10);border:1px solid rgba(124,58,237,0.4);border-radius:${THEME.radius.md};margin:20px 0;box-shadow:inset 0 1px 0 rgba(255,255,255,0.04);">
+      style="background:rgba(79, 124, 255, 0.10);border:1px solid rgba(79, 124, 255, 0.4);border-radius:${THEME.radius.md};margin:20px 0;box-shadow:inset 0 1px 0 rgba(255,255,255,0.04);">
       <tr>
         <td style="padding:22px 16px;text-align:center;">
           <code style="font-family:${THEME.font.mono};font-size:24px;font-weight:800;color:${THEME.text.primary};letter-spacing:4px;line-height:1;">
@@ -324,7 +324,7 @@ export function brandStrip() {
 // ─── 12. Preheader — hidden inbox preview text ───────────────────────────────
 export function preheader(text) {
   return `
-    <span style="display:none;font-size:1px;color:#0a0a0a;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;mso-hide:all;">
+    <span style="display:none;font-size:1px;color:#050505;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;mso-hide:all;">
       ${escapeHtml(text)}
     </span>
   `

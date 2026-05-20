@@ -72,7 +72,7 @@ const PARTS: PartCatalog = {
     related: ['Systemic arteries', 'Blood pressure'],
   },
   pulmonary_artery: {
-    id: 'pulmonary_artery', label: 'Pulmonary Artery', color: '#a78bfa',
+    id: 'pulmonary_artery', label: 'Pulmonary Artery', color: '#66D9FF',
     function: 'Carries oxygen-poor blood from the RV to the lungs to pick up oxygen.',
     whyItMatters: "The ONLY artery in your body that carries deoxygenated blood. Most arteries carry oxygen.",
     analogy: "The lung-bound exit ramp.",
@@ -320,8 +320,8 @@ function PulmonaryArtery({ lit, onHover, onSelect }: { lit: boolean; onHover: an
       onPointerOut={() => { onHover(null); document.body.style.cursor='default' }}
       onClick={(e: ThreeEvent<MouseEvent>) => { e.stopPropagation(); onSelect('pulmonary_artery') }}>
       <meshStandardMaterial
-        color="#a78bfa" roughness={0.4}
-        emissive={lit ? '#a78bfa' : '#000'} emissiveIntensity={lit ? 0.6 : 0.1}/>
+        color="#66D9FF" roughness={0.4}
+        emissive={lit ? '#66D9FF' : '#000'} emissiveIntensity={lit ? 0.6 : 0.1}/>
     </mesh>
   )
 }

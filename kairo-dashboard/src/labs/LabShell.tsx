@@ -40,21 +40,21 @@ const MARKDOWN_COMPONENTS = {
   p:  ({ children }: any) => <p style={{ margin: '0 0 10px', lineHeight: 1.7 }}>{children}</p>,
   h1: ({ children }: any) => <h1 style={{ fontSize: 17, fontWeight: 800, color: '#fafafa', margin: '14px 0 8px' }}>{children}</h1>,
   h2: ({ children }: any) => <h2 style={{ fontSize: 15, fontWeight: 700, color: '#e4e4e7', margin: '14px 0 6px', letterSpacing: '-0.2px' }}>{children}</h2>,
-  h3: ({ children }: any) => <h3 style={{ fontSize: 13.5, fontWeight: 700, color: '#a5b4fc', margin: '10px 0 4px', textTransform: 'uppercase', letterSpacing: 1 }}>{children}</h3>,
+  h3: ({ children }: any) => <h3 style={{ fontSize: 13.5, fontWeight: 700, color: '#A5B4FC', margin: '10px 0 4px', textTransform: 'uppercase', letterSpacing: 1 }}>{children}</h3>,
   strong: ({ children }: any) => <strong style={{ color: '#fafafa', fontWeight: 700 }}>{children}</strong>,
-  em:     ({ children }: any) => <em style={{ color: '#c4b5fd' }}>{children}</em>,
+  em:     ({ children }: any) => <em style={{ color: '#A5B4FC' }}>{children}</em>,
   ul: ({ children }: any) => <ul style={{ paddingLeft: 20, margin: '6px 0 10px' }}>{children}</ul>,
   ol: ({ children }: any) => <ol style={{ paddingLeft: 20, margin: '6px 0 10px' }}>{children}</ol>,
   li: ({ children }: any) => <li style={{ marginBottom: 4, color: '#d4d4d8' }}>{children}</li>,
   code: ({ children, className }: any) => {
     const isBlock = !!className
     return isBlock
-      ? <pre style={{ background: '#0a0a0a', border: '1px solid #27272a', borderRadius: 8, padding: '12px 14px', overflowX: 'auto', margin: '10px 0' }}>
+      ? <pre style={{ background: '#050505', border: '1px solid #27272a', borderRadius: 8, padding: '12px 14px', overflowX: 'auto', margin: '10px 0' }}>
           <code style={{ fontSize: 12.5, color: '#86efac', fontFamily: 'monospace' }}>{children}</code>
         </pre>
-      : <code style={{ background: '#1a1a2e', padding: '2px 6px', borderRadius: 4, fontSize: 12.5, color: '#c4b5fd', fontFamily: 'monospace' }}>{children}</code>
+      : <code style={{ background: '#1a1a2e', padding: '2px 6px', borderRadius: 4, fontSize: 12.5, color: '#A5B4FC', fontFamily: 'monospace' }}>{children}</code>
   },
-  blockquote: ({ children }: any) => <blockquote style={{ borderLeft: '3px solid #6366f1', paddingLeft: 12, margin: '8px 0', color: '#a1a1aa', fontStyle: 'italic' }}>{children}</blockquote>,
+  blockquote: ({ children }: any) => <blockquote style={{ borderLeft: '3px solid #4F7CFF', paddingLeft: 12, margin: '8px 0', color: '#B1B5BA', fontStyle: 'italic' }}>{children}</blockquote>,
   hr: () => <hr style={{ border: 'none', borderTop: '1px solid #27272a', margin: '12px 0' }} />,
 }
 import { chat } from '../lib/openrouter'
@@ -185,32 +185,32 @@ Keep total length 180-280 words. Tone: friendly, specific, exam-aware.` },
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       {/* Header */}
       <div style={{
-        padding: '14px 24px', borderBottom: '1px solid #1a1a1a',
+        padding: '14px 24px', borderBottom: '1px solid #1a1f2e',
         display: 'flex', alignItems: 'center', gap: 14, flexShrink: 0,
         background: 'rgba(13,13,13,0.7)', backdropFilter: 'blur(12px)',
       }}>
         {onBack && (
           <button onClick={onBack} style={{
             width: 34, height: 34, borderRadius: 8,
-            background: '#161616', border: '1px solid #1e1e1e',
+            background: '#151922', border: '1px solid #1f2532',
             cursor: 'pointer', flexShrink: 0,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: '#a1a1aa',
+            color: '#B1B5BA',
           }}>
             <ArrowLeft size={14} />
           </button>
         )}
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 10, color: '#6366f1', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.5 }}>
+          <div style={{ fontSize: 10, color: '#4F7CFF', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.5 }}>
             KAIRO LABS · {subject}
           </div>
           <h1 style={{ fontSize: 16, fontWeight: 700, color: '#fafafa', margin: 0, marginTop: 2 }}>
-            {title} <span style={{ color: '#52525b', fontWeight: 400 }}>· {topic}</span>
+            {title} <span style={{ color: '#6B7280', fontWeight: 400 }}>· {topic}</span>
           </h1>
         </div>
 
         {/* Mode toggle */}
-        <div style={{ display: 'flex', gap: 4, background: '#0d0d0d', border: '1px solid #1e1e1e', borderRadius: 9, padding: 3 }}>
+        <div style={{ display: 'flex', gap: 4, background: '#0E1117', border: '1px solid #1f2532', borderRadius: 9, padding: 3 }}>
           {([
             { id: '3d',   label: '3D',    Icon: Box },
             { id: 'text', label: 'Text',  Icon: Type },
@@ -223,8 +223,8 @@ Keep total length 180-280 words. Tone: friendly, specific, exam-aware.` },
                 style={{
                   display: 'flex', alignItems: 'center', gap: 5,
                   padding: '6px 11px', borderRadius: 6, border: 'none',
-                  background: active ? '#1e1e2e' : 'transparent',
-                  color: active ? '#a5b4fc' : '#52525b',
+                  background: active ? '#1f2532' : 'transparent',
+                  color: active ? '#A5B4FC' : '#6B7280',
                   fontFamily: 'inherit', fontSize: 11.5, fontWeight: 600, cursor: 'pointer',
                 }}>
                 <Icon size={11} />{t.label}
@@ -258,10 +258,10 @@ Keep total length 180-280 words. Tone: friendly, specific, exam-aware.` },
                 {controls.map(c => (
                   <div key={c.key} style={{ flex: '1 1 200px', minWidth: 200 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                      <span style={{ fontSize: 10, fontWeight: 700, color: '#a1a1aa', textTransform: 'uppercase', letterSpacing: 1 }}>
+                      <span style={{ fontSize: 10, fontWeight: 700, color: '#B1B5BA', textTransform: 'uppercase', letterSpacing: 1 }}>
                         {c.label}
                       </span>
-                      <span style={{ fontSize: 10, color: '#6366f1', fontFamily: 'Consolas, monospace', fontWeight: 700 }}>
+                      <span style={{ fontSize: 10, color: '#4F7CFF', fontFamily: 'Consolas, monospace', fontWeight: 700 }}>
                         {params[c.key]}{c.unit ? ' ' + c.unit : ''}
                       </span>
                     </div>
@@ -270,15 +270,15 @@ Keep total length 180-280 words. Tone: friendly, specific, exam-aware.` },
                         min={c.min} max={c.max} step={c.step ?? 1}
                         value={params[c.key]}
                         onChange={e => setParam(c.key, Number(e.target.value))}
-                        style={{ width: '100%', accentColor: '#6366f1' }} />
+                        style={{ width: '100%', accentColor: '#4F7CFF' }} />
                     )}
                     {c.type === 'toggle' && (
                       <button onClick={() => setParam(c.key, !params[c.key])}
                         style={{
                           padding: '4px 10px', borderRadius: 5,
-                          border: `1px solid ${params[c.key] ? '#6366f1' : '#1e1e1e'}`,
-                          background: params[c.key] ? 'rgba(99,102,241,0.12)' : '#0d0d0d',
-                          color: params[c.key] ? '#a5b4fc' : '#71717a',
+                          border: `1px solid ${params[c.key] ? '#4F7CFF' : '#1f2532'}`,
+                          background: params[c.key] ? 'rgba(79, 124, 255, 0.12)' : '#0E1117',
+                          color: params[c.key] ? '#A5B4FC' : '#9CA3AF',
                           fontSize: 10, fontWeight: 600, cursor: 'pointer',
                           fontFamily: 'inherit',
                         }}>
@@ -289,7 +289,7 @@ Keep total length 180-280 words. Tone: friendly, specific, exam-aware.` },
                       <select value={params[c.key]} onChange={e => setParam(c.key, e.target.value)}
                         style={{
                           width: '100%', padding: '4px 8px', borderRadius: 5,
-                          background: '#0d0d0d', border: '1px solid #1e1e1e',
+                          background: '#0E1117', border: '1px solid #1f2532',
                           color: '#fafafa', fontFamily: 'inherit', fontSize: 11,
                           outline: 'none',
                         }}>
@@ -318,17 +318,17 @@ Keep total length 180-280 words. Tone: friendly, specific, exam-aware.` },
         {showText && (
           <div style={{
             overflowY: 'auto', padding: '20px 24px',
-            background: '#0a0a0a', borderLeft: showSim ? '1px solid #1a1a1a' : 'none',
+            background: '#050505', borderLeft: showSim ? '1px solid #1a1f2e' : 'none',
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-              <Sparkles size={14} color="#a5b4fc" />
-              <span style={{ fontSize: 11, fontWeight: 700, color: '#a5b4fc', textTransform: 'uppercase', letterSpacing: 1.5 }}>
+              <Sparkles size={14} color="#A5B4FC" />
+              <span style={{ fontSize: 11, fontWeight: 700, color: '#A5B4FC', textTransform: 'uppercase', letterSpacing: 1.5 }}>
                 AI Lab Assistant
               </span>
-              {aiBusy && <Loader2 size={11} color="#52525b" style={{ animation: 'spin 0.8s linear infinite', marginLeft: 'auto' }} />}
+              {aiBusy && <Loader2 size={11} color="#6B7280" style={{ animation: 'spin 0.8s linear infinite', marginLeft: 'auto' }} />}
             </div>
 
-            <p style={{ fontSize: 13, color: '#a1a1aa', marginBottom: 18, lineHeight: 1.6, fontStyle: 'italic' }}>
+            <p style={{ fontSize: 13, color: '#B1B5BA', marginBottom: 18, lineHeight: 1.6, fontStyle: 'italic' }}>
               {description}
             </p>
 
@@ -352,18 +352,18 @@ Keep total length 180-280 words. Tone: friendly, specific, exam-aware.` },
                 </motion.div>
               )}
               {!explanation && aiBusy && (
-                <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ fontSize: 13, color: '#52525b' }}>
+                <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ fontSize: 13, color: '#6B7280' }}>
                   Loading explanation…
                 </motion.p>
               )}
             </AnimatePresence>
 
             {explanation && (
-              <div style={{ display: 'flex', gap: 8, marginTop: 18, paddingTop: 14, borderTop: '1px solid #1a1a1a' }}>
+              <div style={{ display: 'flex', gap: 8, marginTop: 18, paddingTop: 14, borderTop: '1px solid #1a1f2e' }}>
                 <button onClick={saveExplanation} disabled={savedNote} style={{
-                  ...btn, color: savedNote ? '#34d399' : '#a5b4fc',
-                  borderColor: savedNote ? 'rgba(52,211,153,0.4)' : 'rgba(99,102,241,0.3)',
-                  background: savedNote ? 'rgba(52,211,153,0.08)' : 'rgba(99,102,241,0.08)',
+                  ...btn, color: savedNote ? '#34d399' : '#A5B4FC',
+                  borderColor: savedNote ? 'rgba(52,211,153,0.4)' : 'rgba(79, 124, 255, 0.3)',
+                  background: savedNote ? 'rgba(52,211,153,0.08)' : 'rgba(79, 124, 255, 0.08)',
                 }}>
                   <Save size={11} />{savedNote ? 'Saved to Notebook' : 'Save to Notebook'}
                 </button>
@@ -378,8 +378,8 @@ Keep total length 180-280 words. Tone: friendly, specific, exam-aware.` },
 
 const btn: React.CSSProperties = {
   padding: '6px 11px', borderRadius: 6,
-  border: '1px solid #1e1e1e', background: '#161616',
-  color: '#a1a1aa', cursor: 'pointer',
+  border: '1px solid #1f2532', background: '#151922',
+  color: '#B1B5BA', cursor: 'pointer',
   fontFamily: 'inherit', fontSize: 10.5, fontWeight: 600,
   display: 'flex', alignItems: 'center', gap: 5,
 }

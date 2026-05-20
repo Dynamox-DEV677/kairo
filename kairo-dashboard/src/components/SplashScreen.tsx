@@ -29,12 +29,12 @@ interface Props {
 }
 
 const C = {
-  bg:        '#06060a',
+  bg:        '#050505',
   text:      '#fafafa',
-  purpleDeep:'#3b0764',
-  purple:    '#7c3aed',
-  purpleLite:'#c4b5fd',
-  purpleSoft:'#e9d5ff',
+  purpleDeep:'#0B1530',
+  purple:    '#4F7CFF',
+  purpleLite:'#A5B4FC',
+  purpleSoft:'#DBE7FF',
 }
 
 export default function SplashScreen({ onComplete, duration = 3000 }: Props) {
@@ -118,8 +118,8 @@ export default function SplashScreen({ onComplete, duration = 3000 }: Props) {
             style={{
               position: 'absolute', inset: '-20%',
               background: `
-                radial-gradient(at 30% 30%, rgba(124, 58, 237, 0.35) 0%, transparent 50%),
-                radial-gradient(at 70% 70%, rgba(196, 181, 253, 0.20) 0%, transparent 55%)
+                radial-gradient(at 30% 30%, rgba(79, 124, 255, 0.35) 0%, transparent 50%),
+                radial-gradient(at 70% 70%, rgba(165, 180, 252, 0.20) 0%, transparent 55%)
               `,
               animation: 'splash-glow-pan 8s ease-in-out infinite alternate',
               willChange: 'transform',
@@ -141,9 +141,9 @@ export default function SplashScreen({ onComplete, duration = 3000 }: Props) {
           >
             <defs>
               <linearGradient id="splash-line" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%"  stopColor="#7c3aed" stopOpacity="0"/>
-                <stop offset="50%" stopColor="#c4b5fd" stopOpacity="0.45"/>
-                <stop offset="100%" stopColor="#7c3aed" stopOpacity="0"/>
+                <stop offset="0%"  stopColor="#4F7CFF" stopOpacity="0"/>
+                <stop offset="50%" stopColor="#A5B4FC" stopOpacity="0.45"/>
+                <stop offset="100%" stopColor="#4F7CFF" stopOpacity="0"/>
               </linearGradient>
             </defs>
             {/* Horizontal lines */}
@@ -186,7 +186,7 @@ export default function SplashScreen({ onComplete, duration = 3000 }: Props) {
                 transition={{ delay: 0.5, duration: 0.9, ease: 'easeOut' }}
                 style={{
                   position: 'absolute', inset: -50,
-                  background: 'radial-gradient(closest-side, rgba(124, 58, 237, 0.55), transparent 70%)',
+                  background: 'radial-gradient(closest-side, rgba(79, 124, 255, 0.32), transparent 70%)',
                   filter: 'blur(28px)',
                   animation: 'splash-halo 3.4s 1.2s ease-in-out infinite',
                   pointerEvents: 'none',
@@ -201,8 +201,8 @@ export default function SplashScreen({ onComplete, duration = 3000 }: Props) {
                 style={{
                   position: 'absolute', inset: 0, borderRadius: '50%',
                   background: `conic-gradient(from 0deg at 50% 50%,
-                    transparent 0%, rgba(196, 181, 253, 0.35) 35%,
-                    transparent 65%, rgba(124, 58, 237, 0.65) 95%, transparent 100%)`,
+                    transparent 0%, rgba(165, 180, 252, 0.35) 35%,
+                    transparent 65%, rgba(79, 124, 255, 0.32) 95%, transparent 100%)`,
                   WebkitMask: 'radial-gradient(circle, transparent 60%, black 62%, black 100%)',
                   mask:        'radial-gradient(circle, transparent 60%, black 62%, black 100%)',
                   pointerEvents: 'none',
@@ -228,7 +228,7 @@ export default function SplashScreen({ onComplete, duration = 3000 }: Props) {
                   draggable={false}
                   style={{
                     width: 120, height: 120, objectFit: 'contain',
-                    filter: 'drop-shadow(0 12px 36px rgba(124, 58, 237, 0.6))',
+                    filter: 'drop-shadow(0 12px 36px rgba(79, 124, 255, 0.32))',
                     userSelect: 'none', WebkitUserDrag: 'none',
                   }}
                 />
@@ -285,7 +285,7 @@ export default function SplashScreen({ onComplete, duration = 3000 }: Props) {
               }}
             >
               <span style={{
-                background: 'linear-gradient(90deg, #e9d5ff 0%, #c4b5fd 35%, #a78bfa 65%, #7c3aed 100%)',
+                background: 'linear-gradient(90deg, #DBE7FF 0%, #A5B4FC 35%, #66D9FF 65%, #4F7CFF 100%)',
                 WebkitBackgroundClip: 'text', backgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
               }}>
@@ -299,7 +299,7 @@ export default function SplashScreen({ onComplete, duration = 3000 }: Props) {
                   display: 'inline-block', width: 4, height: 'clamp(28px, 6.5vw, 36px)',
                   marginLeft: 6, verticalAlign: 'middle',
                   background: C.purpleLite, borderRadius: 1,
-                  boxShadow: '0 0 12px rgba(196, 181, 253, 0.9)',
+                  boxShadow: '0 0 12px rgba(165, 180, 252, 0.9)',
                 }}
               />
             </motion.div>
@@ -315,7 +315,7 @@ export default function SplashScreen({ onComplete, duration = 3000 }: Props) {
                 fontWeight: 700,
                 letterSpacing: 3.2,
                 textTransform: 'uppercase',
-                color: 'rgba(196, 181, 253, 0.85)',
+                color: 'rgba(165, 180, 252, 0.85)',
               }}
             >
               Your AI Academic Twin
@@ -326,7 +326,7 @@ export default function SplashScreen({ onComplete, duration = 3000 }: Props) {
               marginTop: 6,
               width: 'min(280px, 70vw)',
               height: 2,
-              background: 'rgba(167, 139, 250, 0.12)',
+              background: 'rgba(102, 217, 255, 0.12)',
               borderRadius: 999, overflow: 'hidden',
               position: 'relative',
             }}>
@@ -336,8 +336,8 @@ export default function SplashScreen({ onComplete, duration = 3000 }: Props) {
                 transition={{ delay: 0.4, duration: (duration - 600) / 1000, ease: 'easeInOut' }}
                 style={{
                   height: '100%',
-                  background: 'linear-gradient(90deg, #e9d5ff, #c4b5fd, #7c3aed)',
-                  boxShadow: '0 0 12px rgba(196, 181, 253, 0.9)',
+                  background: 'linear-gradient(90deg, #DBE7FF, #A5B4FC, #4F7CFF)',
+                  boxShadow: '0 0 12px rgba(165, 180, 252, 0.9)',
                 }}
               />
             </div>
@@ -355,7 +355,7 @@ export default function SplashScreen({ onComplete, duration = 3000 }: Props) {
               textAlign: 'center',
               fontSize: 11, fontWeight: 600,
               letterSpacing: 1.6, textTransform: 'uppercase',
-              color: 'rgba(196, 181, 253, 0.75)',
+              color: 'rgba(165, 180, 252, 0.75)',
               fontFamily: '"Inter", "SF Pro Display", system-ui, sans-serif',
               pointerEvents: 'none',
             }}

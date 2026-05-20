@@ -49,13 +49,13 @@ Format your response in clean markdown:
 - No <think> tags`
 
 const ACTIONS = [
-  { id: 'solve',     label: 'Solve',         icon: Sparkles,     color: '#7c3aed',
+  { id: 'solve',     label: 'Solve',         icon: Sparkles,     color: '#4F7CFF',
     prompt: 'Read the question(s) in this image carefully. Solve each one step-by-step with clear working.' + MD_RULES },
-  { id: 'explain',   label: 'Explain',       icon: Lightbulb,    color: '#c4b5fd',
+  { id: 'explain',   label: 'Explain',       icon: Lightbulb,    color: '#A5B4FC',
     prompt: 'Explain the concept(s) shown in this image as if teaching a Class 10 student in India. Use simple language, give an analogy, end with a 3-line summary under "## Summary".' + MD_RULES },
-  { id: 'flashcards', label: 'Flashcards',   icon: BookmarkPlus, color: '#c4b5fd',
+  { id: 'flashcards', label: 'Flashcards',   icon: BookmarkPlus, color: '#A5B4FC',
     prompt: 'Create 8-10 high-quality flashcards from the content in this image. Return ONLY a JSON array: [{"front":"question","back":"answer"}]. No other text, no markdown, no explanation.' },
-  { id: 'summarize', label: 'Summarize',     icon: FileText,     color: '#c4b5fd',
+  { id: 'summarize', label: 'Summarize',     icon: FileText,     color: '#A5B4FC',
     prompt: 'Summarize the content in this image into clear bullet points organized under "## Section Name" headings. Capture all key facts, formulas, and definitions. Keep it tight.' + MD_RULES },
 ]
 
@@ -205,15 +205,15 @@ export default function CameraStudy() {
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 22 }}>
         <div style={{
           width: 44, height: 44, borderRadius: 11,
-          background: 'linear-gradient(135deg, #7c3aed, #7c3aed)',
+          background: 'linear-gradient(135deg, #4F7CFF, #4F7CFF)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 0 18px rgba(124, 58, 237,0.4)', flexShrink: 0,
+          boxShadow: '0 0 18px rgba(79, 124, 255, 0.4)', flexShrink: 0,
         }}>
           <Camera size={22} color="#fff" />
         </div>
         <div style={{ flex: 1 }}>
           <h1 style={{ fontSize: 20, fontWeight: 700, color: '#fafafa', margin: 0 }}>Camera Study Mode</h1>
-          <p style={{ fontSize: 13, color: '#52525b', marginTop: 4 }}>
+          <p style={{ fontSize: 13, color: '#6B7280', marginTop: 4 }}>
             Snap a photo of homework, textbook, or notes — AI explains, solves, or turns it into flashcards.
           </p>
         </div>
@@ -221,25 +221,25 @@ export default function CameraStudy() {
 
       {/* Model picker */}
       <div style={{ marginBottom: 16 }}>
-        <label style={{ fontSize: 11, fontWeight: 700, color: '#71717a', textTransform: 'uppercase', letterSpacing: 1.5, display: 'block', marginBottom: 8 }}>
+        <label style={{ fontSize: 11, fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: 1.5, display: 'block', marginBottom: 8 }}>
           Vision Model
         </label>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
           {VISION_MODELS.map(m => (
             <button key={m.id} onClick={() => setModel(m.id)} style={{
               padding: '10px 14px', borderRadius: 9,
-              border: `1px solid ${model === m.id ? '#7c3aed' : '#1e1e1e'}`,
-              background: model === m.id ? 'rgba(124, 58, 237,0.10)' : '#0d0d0d',
+              border: `1px solid ${model === m.id ? '#4F7CFF' : '#1f2532'}`,
+              background: model === m.id ? 'rgba(79, 124, 255, 0.10)' : '#0E1117',
               cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left',
               transition: 'all 0.15s',
             }}>
               <div style={{
                 fontSize: 12, fontWeight: 700,
-                color: model === m.id ? '#c4b5fd' : '#d4d4d8', marginBottom: 3,
+                color: model === m.id ? '#A5B4FC' : '#d4d4d8', marginBottom: 3,
               }}>
                 {m.label}
               </div>
-              <div style={{ fontSize: 10.5, color: '#52525b', lineHeight: 1.4 }}>{m.desc}</div>
+              <div style={{ fontSize: 10.5, color: '#6B7280', lineHeight: 1.4 }}>{m.desc}</div>
             </button>
           ))}
         </div>
@@ -252,25 +252,25 @@ export default function CameraStudy() {
           onDragOver={e => e.preventDefault()}
           style={{
             border: '2px dashed #2d2d4d', borderRadius: 14, padding: '46px 24px',
-            background: '#0d0d0d', textAlign: 'center', marginBottom: 14,
+            background: '#0E1117', textAlign: 'center', marginBottom: 14,
           }}>
           <div style={{
             width: 60, height: 60, borderRadius: 16, margin: '0 auto 14px',
-            background: 'rgba(124, 58, 237,0.1)',
+            background: 'rgba(79, 124, 255, 0.1)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
-            <Upload size={26} color="#a78bfa" />
+            <Upload size={26} color="#66D9FF" />
           </div>
           <p style={{ fontSize: 14, color: '#fafafa', fontWeight: 600, margin: '0 0 6px' }}>
             Drag a photo here, or pick a source
           </p>
-          <p style={{ fontSize: 12, color: '#52525b', margin: '0 0 18px' }}>
+          <p style={{ fontSize: 12, color: '#6B7280', margin: '0 0 18px' }}>
             JPG / PNG / HEIC up to 6 MB · works best with clear, in-focus shots
           </p>
           <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
             <button onClick={() => fileInputRef.current?.click()} style={{
               padding: '10px 18px', borderRadius: 9, border: 'none',
-              background: 'linear-gradient(135deg, #7c3aed, #7c3aed)', color: '#fff',
+              background: 'linear-gradient(135deg, #4F7CFF, #4F7CFF)', color: '#fff',
               fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: 'pointer',
               display: 'flex', alignItems: 'center', gap: 7,
             }}>
@@ -278,7 +278,7 @@ export default function CameraStudy() {
             </button>
             <button onClick={openCamera} style={{
               padding: '10px 18px', borderRadius: 9,
-              border: '1px solid #1e1e1e', background: '#161616', color: '#a1a1aa',
+              border: '1px solid #1f2532', background: '#151922', color: '#B1B5BA',
               fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: 'pointer',
               display: 'flex', alignItems: 'center', gap: 7,
             }}>
@@ -309,15 +309,15 @@ export default function CameraStudy() {
             <div style={{ display: 'flex', gap: 10, justifyContent: 'center', marginTop: 10 }}>
               <button onClick={snap} style={{
                 padding: '11px 22px', borderRadius: 9, border: 'none',
-                background: 'linear-gradient(135deg,#7c3aed,#7c3aed)', color: '#fff',
+                background: 'linear-gradient(135deg,#4F7CFF,#4F7CFF)', color: '#fff',
                 fontFamily: 'inherit', fontSize: 13, fontWeight: 700, cursor: 'pointer',
                 display: 'flex', alignItems: 'center', gap: 7,
               }}>
                 <Camera size={14} /> Capture
               </button>
               <button onClick={stopCamera} style={{
-                padding: '11px 18px', borderRadius: 9, border: '1px solid #1e1e1e',
-                background: '#161616', color: '#a1a1aa',
+                padding: '11px 18px', borderRadius: 9, border: '1px solid #1f2532',
+                background: '#151922', color: '#B1B5BA',
                 fontFamily: 'inherit', fontSize: 13, cursor: 'pointer',
               }}>Cancel</button>
             </div>
@@ -330,7 +330,7 @@ export default function CameraStudy() {
         <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
           style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
           <div style={{
-            background: '#111', border: '1px solid #1e1e1e', borderRadius: 14, padding: 12,
+            background: '#0E1117', border: '1px solid #1f2532', borderRadius: 14, padding: 12,
             position: 'relative',
           }}>
             <img src={imageData} alt="Captured"
@@ -356,8 +356,8 @@ export default function CameraStudy() {
                   disabled={busy}
                   style={{
                     padding: 16, borderRadius: 12,
-                    border: `1px solid ${isActive ? a.color : '#1e1e1e'}`,
-                    background: isActive ? `${a.color}10` : '#111',
+                    border: `1px solid ${isActive ? a.color : '#1f2532'}`,
+                    background: isActive ? `${a.color}10` : '#0E1117',
                     cursor: busy ? 'not-allowed' : 'pointer',
                     fontFamily: 'inherit', textAlign: 'left',
                     display: 'flex', flexDirection: 'column', gap: 8,
@@ -384,7 +384,7 @@ export default function CameraStudy() {
       )}
 
       {err && (
-        <div style={{ marginBottom: 14, padding: '10px 14px', background: 'rgba(167, 139, 250,0.08)', border: '1px solid rgba(167, 139, 250,0.25)', borderRadius: 8, fontSize: 12, color: '#a78bfa' }}>
+        <div style={{ marginBottom: 14, padding: '10px 14px', background: 'rgba(102, 217, 255, 0.08)', border: '1px solid rgba(102, 217, 255, 0.25)', borderRadius: 8, fontSize: 12, color: '#66D9FF' }}>
           {err}
         </div>
       )}
@@ -394,15 +394,15 @@ export default function CameraStudy() {
         {result && (
           <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
             style={{
-              background: '#111', border: '1px solid #2d2b55', borderRadius: 14,
+              background: '#0E1117', border: '1px solid #2d2b55', borderRadius: 14,
               padding: 22,
             }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-              <CheckCircle2 size={15} color="#c4b5fd" />
-              <span style={{ fontSize: 12, fontWeight: 700, color: '#c4b5fd', textTransform: 'uppercase', letterSpacing: 1.5 }}>
+              <CheckCircle2 size={15} color="#A5B4FC" />
+              <span style={{ fontSize: 12, fontWeight: 700, color: '#A5B4FC', textTransform: 'uppercase', letterSpacing: 1.5 }}>
                 AI Result
               </span>
-              <span style={{ marginLeft: 'auto', fontSize: 11, color: '#52525b' }}>
+              <span style={{ marginLeft: 'auto', fontSize: 11, color: '#6B7280' }}>
                 Saved to recent chats
               </span>
             </div>
@@ -413,15 +413,15 @@ export default function CameraStudy() {
             </div>
             <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
               <button onClick={() => navigator.clipboard.writeText(result)} style={{
-                padding: '6px 12px', borderRadius: 7, border: '1px solid #1e1e1e',
-                background: '#161616', color: '#a1a1aa', cursor: 'pointer',
+                padding: '6px 12px', borderRadius: 7, border: '1px solid #1f2532',
+                background: '#151922', color: '#B1B5BA', cursor: 'pointer',
                 fontFamily: 'inherit', fontSize: 11, display: 'flex', alignItems: 'center', gap: 5,
               }}>
                 Copy
               </button>
               <button onClick={reset} style={{
-                padding: '6px 12px', borderRadius: 7, border: '1px solid #1e1e1e',
-                background: '#161616', color: '#a1a1aa', cursor: 'pointer',
+                padding: '6px 12px', borderRadius: 7, border: '1px solid #1f2532',
+                background: '#151922', color: '#B1B5BA', cursor: 'pointer',
                 fontFamily: 'inherit', fontSize: 11, display: 'flex', alignItems: 'center', gap: 5,
               }}>
                 <RotateCcw size={11} /> Try another image

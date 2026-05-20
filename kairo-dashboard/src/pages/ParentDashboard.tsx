@@ -59,12 +59,12 @@ interface Student {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function grade(pct: number) {
-  if (pct >= 90) return { label: 'A+', color: '#c4b5fd' }
-  if (pct >= 75) return { label: 'A',  color: '#c4b5fd' }
-  if (pct >= 60) return { label: 'B',  color: '#c4b5fd' }
-  if (pct >= 45) return { label: 'C',  color: '#c4b5fd' }
-  if (pct >= 33) return { label: 'D',  color: '#c4b5fd' }
-  return { label: 'F', color: '#a78bfa' }
+  if (pct >= 90) return { label: 'A+', color: '#A5B4FC' }
+  if (pct >= 75) return { label: 'A',  color: '#A5B4FC' }
+  if (pct >= 60) return { label: 'B',  color: '#A5B4FC' }
+  if (pct >= 45) return { label: 'C',  color: '#A5B4FC' }
+  if (pct >= 33) return { label: 'D',  color: '#A5B4FC' }
+  return { label: 'F', color: '#66D9FF' }
 }
 
 function fmtDate(s: string) {
@@ -83,11 +83,11 @@ function BarChart({ subjects }: { subjects: SubjectSummary[] }) {
             initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}
             transition={{ delay: i * 0.06 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <div style={{ width: 100, fontSize: 12, color: '#a1a1aa', flexShrink: 0,
+              <div style={{ width: 100, fontSize: 12, color: '#B1B5BA', flexShrink: 0,
                 overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {s.subject}
               </div>
-              <div style={{ flex: 1, height: 20, background: '#1a1a1a', borderRadius: 4, overflow: 'hidden', position: 'relative' }}>
+              <div style={{ flex: 1, height: 20, background: '#1a1f2e', borderRadius: 4, overflow: 'hidden', position: 'relative' }}>
                 <motion.div
                   initial={{ width: 0 }}
                   animate={{ width: `${(s.percentage / max) * 100}%` }}
@@ -152,19 +152,19 @@ export default function ParentDashboard({ profile, onLogout }: ParentDashboardPr
 
   return (
     <div style={{
-      minHeight: '100vh', background: '#0a0a0a',
+      minHeight: '100vh', background: '#050505',
       fontFamily: "'Inter', system-ui, sans-serif",
     }}>
       {/* Top bar */}
       <div style={{
-        background: '#111', borderBottom: '1px solid #1e1e1e',
+        background: '#0E1117', borderBottom: '1px solid #1f2532',
         padding: '0 24px', display: 'flex', alignItems: 'center',
         height: 56, gap: 16,
       }}>
         {profile.school_logo_url
           ? <img src={profile.school_logo_url} alt="school"
               style={{ width: 32, height: 32, borderRadius: 8, objectFit: 'cover' }} />
-          : <div style={{ width: 32, height: 32, borderRadius: 8, background: 'linear-gradient(135deg,#7c3aed,#7c3aed)',
+          : <div style={{ width: 32, height: 32, borderRadius: 8, background: 'linear-gradient(135deg,#4F7CFF,#4F7CFF)',
               display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <Building2 size={16} color="#fff" />
             </div>
@@ -173,10 +173,10 @@ export default function ParentDashboard({ profile, onLogout }: ParentDashboardPr
           <div style={{ fontSize: 14, fontWeight: 700, color: '#fafafa' }}>
             {profile.school_name || 'School'}
           </div>
-          <div style={{ fontSize: 11, color: '#52525b' }}>Parent Portal · Read-only</div>
+          <div style={{ fontSize: 11, color: '#6B7280' }}>Parent Portal · Read-only</div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div style={{ fontSize: 12, color: '#71717a' }}>
+          <div style={{ fontSize: 12, color: '#9CA3AF' }}>
             {profile.name}
           </div>
           <button
@@ -186,10 +186,10 @@ export default function ParentDashboard({ profile, onLogout }: ParentDashboardPr
               localStorage.removeItem('kairo_profile')
               if (onLogout) onLogout(); else window.location.reload()
             }}
-            style={{ background: 'none', border: '1px solid #1e1e1e', borderRadius: 6, padding: '5px 10px',
-              color: '#52525b', cursor: 'pointer', fontSize: 12, fontFamily: 'inherit' }}
-            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = '#a78bfa' }}
-            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = '#52525b' }}
+            style={{ background: 'none', border: '1px solid #1f2532', borderRadius: 6, padding: '5px 10px',
+              color: '#6B7280', cursor: 'pointer', fontSize: 12, fontFamily: 'inherit' }}
+            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = '#66D9FF' }}
+            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = '#6B7280' }}
           >
             Sign out
           </button>
@@ -200,22 +200,22 @@ export default function ParentDashboard({ profile, onLogout }: ParentDashboardPr
         {/* Child card */}
         {student && (
           <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
-            style={{ background: 'linear-gradient(135deg, rgba(124, 58, 237,0.12), rgba(124,58,237,0.08))',
-              border: '1px solid rgba(124, 58, 237,0.25)', borderRadius: 14, padding: '18px 22px',
+            style={{ background: 'linear-gradient(135deg, rgba(79, 124, 255, 0.12), rgba(79, 124, 255, 0.08))',
+              border: '1px solid rgba(79, 124, 255, 0.25)', borderRadius: 14, padding: '18px 22px',
               display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24 }}>
-            <div style={{ width: 52, height: 52, borderRadius: 14, background: 'linear-gradient(135deg,#7c3aed,#7c3aed)',
+            <div style={{ width: 52, height: 52, borderRadius: 14, background: 'linear-gradient(135deg,#4F7CFF,#4F7CFF)',
               display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               <GraduationCap size={24} color="#fff" />
             </div>
             <div>
               <div style={{ fontSize: 18, fontWeight: 700, color: '#fafafa' }}>{student.name}</div>
-              <div style={{ fontSize: 13, color: '#a78bfa' }}>
+              <div style={{ fontSize: 13, color: '#66D9FF' }}>
                 {student.class_name ? `Class ${student.class_name}` : 'Student'}
                 {' · '}Your linked child
               </div>
             </div>
-            <button onClick={load} style={{ marginLeft: 'auto', background: 'none', border: '1px solid rgba(124, 58, 237,0.3)',
-              borderRadius: 8, padding: '6px 10px', color: '#a78bfa', cursor: 'pointer' }}>
+            <button onClick={load} style={{ marginLeft: 'auto', background: 'none', border: '1px solid rgba(79, 124, 255, 0.3)',
+              borderRadius: 8, padding: '6px 10px', color: '#66D9FF', cursor: 'pointer' }}>
               <RefreshCw size={13} />
             </button>
           </motion.div>
@@ -223,8 +223,8 @@ export default function ParentDashboard({ profile, onLogout }: ParentDashboardPr
 
         {/* Error */}
         {err && (
-          <div style={{ background: 'rgba(124, 58, 237,0.1)', border: '1px solid rgba(124, 58, 237,0.25)',
-            borderRadius: 10, padding: '12px 16px', marginBottom: 20, display: 'flex', gap: 10, color: '#a78bfa', fontSize: 13 }}>
+          <div style={{ background: 'rgba(79, 124, 255, 0.1)', border: '1px solid rgba(79, 124, 255, 0.25)',
+            borderRadius: 10, padding: '12px 16px', marginBottom: 20, display: 'flex', gap: 10, color: '#66D9FF', fontSize: 13 }}>
             <AlertCircle size={16} style={{ flexShrink: 0, marginTop: 1 }} />
             {err}
           </div>
@@ -233,12 +233,12 @@ export default function ParentDashboard({ profile, onLogout }: ParentDashboardPr
         {loading ? (
           <div style={{ display: 'flex', justifyContent: 'center', padding: 60 }}>
             <motion.div animate={{ rotate: 360 }} transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }}
-              style={{ width: 32, height: 32, borderRadius: '50%', border: '2px solid #1e1e1e', borderTopColor: '#7c3aed' }} />
+              style={{ width: 32, height: 32, borderRadius: '50%', border: '2px solid #1f2532', borderTopColor: '#4F7CFF' }} />
           </div>
         ) : marks.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '60px 20px', color: '#52525b' }}>
+          <div style={{ textAlign: 'center', padding: '60px 20px', color: '#6B7280' }}>
             <BookOpen size={48} style={{ margin: '0 auto 14px', opacity: 0.3 }} />
-            <div style={{ fontSize: 16, fontWeight: 600, color: '#71717a' }}>No marks recorded yet</div>
+            <div style={{ fontSize: 16, fontWeight: 600, color: '#9CA3AF' }}>No marks recorded yet</div>
             <div style={{ fontSize: 13, marginTop: 6 }}>
               Marks will appear here once your child's teacher enters them.
             </div>
@@ -250,13 +250,13 @@ export default function ParentDashboard({ profile, onLogout }: ParentDashboardPr
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(170px, 1fr))', gap: 12, marginBottom: 24 }}>
                 <SummaryCard icon={Target} label="Overall Average" value={`${summary.average_percentage}%`}
                   color={grade(summary.average_percentage).color} sub={grade(summary.average_percentage).label} />
-                <SummaryCard icon={BookOpen} label="Total Exams" value={summary.total_exams} color="#a78bfa" />
+                <SummaryCard icon={BookOpen} label="Total Exams" value={summary.total_exams} color="#66D9FF" />
                 <SummaryCard icon={TrendingUp} label="Strong Subjects"
                   value={summary.strong_subjects.length || '—'}
-                  color="#c4b5fd" sub={summary.strong_subjects.slice(0, 2).join(', ') || 'none yet'} />
+                  color="#A5B4FC" sub={summary.strong_subjects.slice(0, 2).join(', ') || 'none yet'} />
                 <SummaryCard icon={TrendingDown} label="Needs Work"
                   value={summary.weak_subjects.length || '—'}
-                  color="#a78bfa" sub={summary.weak_subjects.slice(0, 2).join(', ') || 'none'} />
+                  color="#66D9FF" sub={summary.weak_subjects.slice(0, 2).join(', ') || 'none'} />
               </div>
             )}
 
@@ -265,9 +265,9 @@ export default function ParentDashboard({ profile, onLogout }: ParentDashboardPr
               {(['overview', 'details'] as const).map(t => (
                 <button key={t} onClick={() => setTab(t)} style={{
                   padding: '7px 16px', borderRadius: 8, fontSize: 13, fontWeight: tab === t ? 600 : 400,
-                  border: tab === t ? '1px solid rgba(124, 58, 237,0.4)' : '1px solid #1e1e1e',
-                  background: tab === t ? 'rgba(124, 58, 237,0.12)' : '#111',
-                  color: tab === t ? '#a78bfa' : '#71717a',
+                  border: tab === t ? '1px solid rgba(79, 124, 255, 0.4)' : '1px solid #1f2532',
+                  background: tab === t ? 'rgba(79, 124, 255, 0.12)' : '#0E1117',
+                  color: tab === t ? '#66D9FF' : '#9CA3AF',
                   cursor: 'pointer', fontFamily: 'inherit',
                 }}>
                   {t === 'overview' ? '📊 Subject Overview' : '📋 All Exams'}
@@ -281,36 +281,36 @@ export default function ParentDashboard({ profile, onLogout }: ParentDashboardPr
                   initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
 
                   {/* Performance bar chart */}
-                  <div style={{ background: '#111', border: '1px solid #1e1e1e', borderRadius: 14, padding: 20, marginBottom: 16 }}>
+                  <div style={{ background: '#0E1117', border: '1px solid #1f2532', borderRadius: 14, padding: 20, marginBottom: 16 }}>
                     <div style={{ fontSize: 14, fontWeight: 700, color: '#fafafa', marginBottom: 16, display: 'flex', gap: 8 }}>
-                      <BarChart3 size={16} color="#7c3aed" /> Subject-wise Performance
+                      <BarChart3 size={16} color="#4F7CFF" /> Subject-wise Performance
                     </div>
                     <BarChart subjects={subjects} />
                   </div>
 
                   {/* Strong / Weak */}
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                    <div style={{ background: 'rgba(196, 181, 253,0.06)', border: '1px solid rgba(196, 181, 253,0.2)',
+                    <div style={{ background: 'rgba(165, 180, 252, 0.06)', border: '1px solid rgba(165, 180, 252, 0.2)',
                       borderRadius: 12, padding: 16 }}>
-                      <div style={{ fontSize: 13, fontWeight: 700, color: '#c4b5fd', marginBottom: 10, display: 'flex', gap: 6 }}>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: '#A5B4FC', marginBottom: 10, display: 'flex', gap: 6 }}>
                         <Star size={14} /> Strong Subjects (≥75%)
                       </div>
                       {summary.strong_subjects.length === 0
-                        ? <div style={{ fontSize: 12, color: '#52525b' }}>None yet — keep working!</div>
+                        ? <div style={{ fontSize: 12, color: '#6B7280' }}>None yet — keep working!</div>
                         : summary.strong_subjects.map(s => (
-                          <div key={s} style={{ fontSize: 13, color: '#c4b5fd', marginBottom: 4 }}>✓ {s}</div>
+                          <div key={s} style={{ fontSize: 13, color: '#A5B4FC', marginBottom: 4 }}>✓ {s}</div>
                         ))
                       }
                     </div>
-                    <div style={{ background: 'rgba(124, 58, 237,0.06)', border: '1px solid rgba(124, 58, 237,0.2)',
+                    <div style={{ background: 'rgba(79, 124, 255, 0.06)', border: '1px solid rgba(79, 124, 255, 0.2)',
                       borderRadius: 12, padding: 16 }}>
-                      <div style={{ fontSize: 13, fontWeight: 700, color: '#a78bfa', marginBottom: 10, display: 'flex', gap: 6 }}>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: '#66D9FF', marginBottom: 10, display: 'flex', gap: 6 }}>
                         <AlertCircle size={14} /> Needs Attention (&lt;50%)
                       </div>
                       {summary.weak_subjects.length === 0
-                        ? <div style={{ fontSize: 12, color: '#52525b' }}>All subjects doing well 🎉</div>
+                        ? <div style={{ fontSize: 12, color: '#6B7280' }}>All subjects doing well 🎉</div>
                         : summary.weak_subjects.map(s => (
-                          <div key={s} style={{ fontSize: 13, color: '#c4b5fd', marginBottom: 4 }}>⚠ {s}</div>
+                          <div key={s} style={{ fontSize: 13, color: '#A5B4FC', marginBottom: 4 }}>⚠ {s}</div>
                         ))
                       }
                     </div>
@@ -326,16 +326,16 @@ export default function ParentDashboard({ profile, onLogout }: ParentDashboardPr
                   <div style={{ display: 'flex', gap: 6, marginBottom: 14, flexWrap: 'wrap' }}>
                     <button onClick={() => setSortSubject('')} style={{
                       padding: '4px 10px', borderRadius: 6, fontSize: 12, cursor: 'pointer',
-                      border: !sortSubject ? '1px solid #7c3aed' : '1px solid #1e1e1e',
-                      background: !sortSubject ? 'rgba(124, 58, 237,0.12)' : '#161616',
-                      color: !sortSubject ? '#a78bfa' : '#71717a', fontFamily: 'inherit',
+                      border: !sortSubject ? '1px solid #4F7CFF' : '1px solid #1f2532',
+                      background: !sortSubject ? 'rgba(79, 124, 255, 0.12)' : '#151922',
+                      color: !sortSubject ? '#66D9FF' : '#9CA3AF', fontFamily: 'inherit',
                     }}>All</button>
                     {[...new Set(marks.map(m => m.subject))].map(s => (
                       <button key={s} onClick={() => setSortSubject(s === sortSubject ? '' : s)} style={{
                         padding: '4px 10px', borderRadius: 6, fontSize: 12, cursor: 'pointer',
-                        border: sortSubject === s ? '1px solid #7c3aed' : '1px solid #1e1e1e',
-                        background: sortSubject === s ? 'rgba(124, 58, 237,0.12)' : '#161616',
-                        color: sortSubject === s ? '#a78bfa' : '#71717a', fontFamily: 'inherit',
+                        border: sortSubject === s ? '1px solid #4F7CFF' : '1px solid #1f2532',
+                        background: sortSubject === s ? 'rgba(79, 124, 255, 0.12)' : '#151922',
+                        color: sortSubject === s ? '#66D9FF' : '#9CA3AF', fontFamily: 'inherit',
                       }}>{s}</button>
                     ))}
                   </div>
@@ -348,7 +348,7 @@ export default function ParentDashboard({ profile, onLogout }: ParentDashboardPr
                         <motion.div key={m.id}
                           initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: i * 0.04 }}
-                          style={{ background: '#111', border: '1px solid #1e1e1e', borderRadius: 12, padding: '14px 16px',
+                          style={{ background: '#0E1117', border: '1px solid #1f2532', borderRadius: 12, padding: '14px 16px',
                             display: 'flex', alignItems: 'center', gap: 14 }}>
                           {/* Grade badge */}
                           <div style={{ width: 40, height: 40, borderRadius: 10, flexShrink: 0,
@@ -361,13 +361,13 @@ export default function ParentDashboard({ profile, onLogout }: ParentDashboardPr
                           {/* Info */}
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <div style={{ fontSize: 14, fontWeight: 600, color: '#fafafa' }}>{m.exam_name}</div>
-                            <div style={{ fontSize: 12, color: '#52525b' }}>
+                            <div style={{ fontSize: 12, color: '#6B7280' }}>
                               {m.subject}
                               {m.teacher && ` · ${m.teacher.name}`}
                               {' · '}{fmtDate(m.created_at)}
                             </div>
                             {m.remarks && (
-                              <div style={{ fontSize: 12, color: '#71717a', marginTop: 3, fontStyle: 'italic' }}>
+                              <div style={{ fontSize: 12, color: '#9CA3AF', marginTop: 3, fontStyle: 'italic' }}>
                                 "{m.remarks}"
                               </div>
                             )}
@@ -377,9 +377,9 @@ export default function ParentDashboard({ profile, onLogout }: ParentDashboardPr
                           <div style={{ textAlign: 'right', flexShrink: 0 }}>
                             <div style={{ fontSize: 20, fontWeight: 800, color: g.color }}>
                               {m.marks_obtained}
-                              <span style={{ fontSize: 12, fontWeight: 400, color: '#52525b' }}>/{m.total_marks}</span>
+                              <span style={{ fontSize: 12, fontWeight: 400, color: '#6B7280' }}>/{m.total_marks}</span>
                             </div>
-                            <div style={{ fontSize: 11, color: '#52525b' }}>{pct}%</div>
+                            <div style={{ fontSize: 11, color: '#6B7280' }}>{pct}%</div>
                           </div>
                         </motion.div>
                       )
@@ -405,7 +405,7 @@ function SummaryCard({ icon: Icon, label, value, color, sub }: {
   icon: React.ElementType; label: string; value: number | string; color: string; sub?: string
 }) {
   return (
-    <div style={{ background: '#111', border: '1px solid #1e1e1e', borderRadius: 12, padding: 16,
+    <div style={{ background: '#0E1117', border: '1px solid #1f2532', borderRadius: 12, padding: 16,
       display: 'flex', alignItems: 'flex-start', gap: 12 }}>
       <div style={{ width: 36, height: 36, borderRadius: 9, background: `${color}18`,
         display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -413,8 +413,8 @@ function SummaryCard({ icon: Icon, label, value, color, sub }: {
       </div>
       <div style={{ minWidth: 0 }}>
         <div style={{ fontSize: 22, fontWeight: 800, color, lineHeight: 1.1 }}>{value}</div>
-        <div style={{ fontSize: 11, color: '#71717a', marginTop: 2 }}>{label}</div>
-        {sub && <div style={{ fontSize: 10, color: '#52525b', marginTop: 1, overflow: 'hidden',
+        <div style={{ fontSize: 11, color: '#9CA3AF', marginTop: 2 }}>{label}</div>
+        {sub && <div style={{ fontSize: 10, color: '#6B7280', marginTop: 1, overflow: 'hidden',
           textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sub}</div>}
       </div>
     </div>

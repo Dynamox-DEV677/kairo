@@ -89,7 +89,7 @@ function AmbientWordmarks() {
           fontFamily: display,
           fontSize: 'clamp(120px, 38vw, 540px)',
           fontWeight: 900, letterSpacing: '-0.08em',
-          color: '#3b0764', opacity: 0.20,
+          color: '#0B1530', opacity: 0.20,
           whiteSpace: 'nowrap', lineHeight: 1,
           willChange: 'transform',
         }}>
@@ -101,7 +101,7 @@ function AmbientWordmarks() {
           fontFamily: display,
           fontSize: 'clamp(80px, 28vw, 400px)',
           fontWeight: 900, letterSpacing: '-0.08em',
-          color: '#3b0764', opacity: 0.16,
+          color: '#0B1530', opacity: 0.16,
           whiteSpace: 'nowrap', lineHeight: 1,
           willChange: 'transform',
         }}>
@@ -125,7 +125,7 @@ export default function Login({ onLogin }: LoginProps) {
     <div style={{
       height: '100dvh',
       minHeight: '100vh',                          // fallback for older browsers
-      background: '#0a0a0a',
+      background: '#050505',
       fontFamily: "'Inter', system-ui, sans-serif",
       display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
       overflowY: 'auto',
@@ -146,7 +146,7 @@ export default function Login({ onLogin }: LoginProps) {
       <div style={{
         position: 'fixed', top: '15%', left: '50%', transform: 'translateX(-50%)',
         width: 600, height: 600, borderRadius: '50%',
-        background: 'radial-gradient(circle, rgba(124, 58, 237,0.10) 0%, transparent 70%)',
+        background: 'radial-gradient(circle, rgba(79, 124, 255, 0.10) 0%, transparent 70%)',
         pointerEvents: 'none',
         zIndex: 1,
       }} />
@@ -158,10 +158,10 @@ export default function Login({ onLogin }: LoginProps) {
             style={{
               width: 64, height: 64, borderRadius: 16, objectFit: 'contain',
               margin: '0 auto 14px', display: 'block',
-              filter: 'drop-shadow(0 0 20px rgba(124, 58, 237,0.45))',
+              filter: 'drop-shadow(0 0 20px rgba(79, 124, 255, 0.32))',
             }} />
           <h1 style={{ fontSize: 24, fontWeight: 800, color: '#fafafa', margin: 0, letterSpacing: '-0.5px' }}>kairo</h1>
-          <p style={{ fontSize: 11, color: '#7c3aed', fontWeight: 700, letterSpacing: 4, marginTop: 4, textTransform: 'uppercase' }}>
+          <p style={{ fontSize: 11, color: '#4F7CFF', fontWeight: 700, letterSpacing: 4, marginTop: 4, textTransform: 'uppercase' }}>
             Accelerate Your Academics
           </p>
         </div>
@@ -169,7 +169,7 @@ export default function Login({ onLogin }: LoginProps) {
         {/* Wizard surface — let it size to its content (was `flex: 1` which
             collapsed the children behind a fixed viewport height). */}
         <div style={{
-          background: '#111', border: '1px solid #1e1e1e', borderRadius: 18,
+          background: '#0E1117', border: '1px solid #1f2532', borderRadius: 18,
           padding: 24,
         }}>
           <AnimatePresence mode="wait">
@@ -202,7 +202,7 @@ export default function Login({ onLogin }: LoginProps) {
         </div>
 
         {!supabaseReady && (
-          <p style={{ fontSize: 11, color: '#c4b5fd', textAlign: 'center', marginTop: 14, padding: '8px 14px', background: 'rgba(196, 181, 253,0.08)', border: '1px solid rgba(196, 181, 253,0.25)', borderRadius: 8 }}>
+          <p style={{ fontSize: 11, color: '#A5B4FC', textAlign: 'center', marginTop: 14, padding: '8px 14px', background: 'rgba(165, 180, 252, 0.08)', border: '1px solid rgba(165, 180, 252, 0.25)', borderRadius: 8 }}>
             ⚠ Supabase env vars missing — auth will fail. Add VITE_SUPABASE_URL + VITE_SUPABASE_ANON_KEY.
           </p>
         )}
@@ -218,7 +218,7 @@ function ChooseMode({ setMode }: { setMode: (m: Mode) => void }) {
   return (
     <div>
       <h2 style={{ fontSize: 20, fontWeight: 700, color: '#fafafa', margin: 0, marginBottom: 6 }}>Welcome</h2>
-      <p style={{ fontSize: 13, color: '#71717a', marginBottom: 24 }}>Pick how you'd like to continue.</p>
+      <p style={{ fontSize: 13, color: '#9CA3AF', marginBottom: 24 }}>Pick how you'd like to continue.</p>
 
       <ChoiceCard onClick={() => setMode('signin')} icon={Mail}
         title="Sign In" desc="Email + password — already a member" />
@@ -238,23 +238,23 @@ function ChoiceCard({ onClick, icon: Icon, title, desc, highlight = false }: any
       whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}
       style={{
         width: '100%', padding: '16px 18px', borderRadius: 12,
-        background: highlight ? 'rgba(124, 58, 237,0.06)' : '#0d0d0d',
-        border: `1px solid ${highlight ? 'rgba(124, 58, 237,0.3)' : '#1e1e1e'}`,
+        background: highlight ? 'rgba(79, 124, 255, 0.06)' : '#0E1117',
+        border: `1px solid ${highlight ? 'rgba(79, 124, 255, 0.3)' : '#1f2532'}`,
         cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left',
         display: 'flex', alignItems: 'center', gap: 14, marginBottom: 10,
       }}>
       <div style={{
         width: 42, height: 42, borderRadius: 10, flexShrink: 0,
-        background: highlight ? 'linear-gradient(135deg,#7c3aed,#7c3aed)' : '#1a1a1a',
+        background: highlight ? 'linear-gradient(135deg,#4F7CFF,#4F7CFF)' : '#1a1f2e',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}>
-        <Icon size={18} color={highlight ? '#fff' : '#a1a1aa'} />
+        <Icon size={18} color={highlight ? '#fff' : '#B1B5BA'} />
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontSize: 15, fontWeight: 700, color: '#fafafa' }}>{title}</div>
-        <div style={{ fontSize: 12, color: '#71717a', marginTop: 2 }}>{desc}</div>
+        <div style={{ fontSize: 12, color: '#9CA3AF', marginTop: 2 }}>{desc}</div>
       </div>
-      <ArrowRight size={16} color="#52525b" />
+      <ArrowRight size={16} color="#6B7280" />
     </motion.button>
   )
 }
@@ -362,7 +362,7 @@ function SignIn({ onLogin, onBack }: any) {
             onKeyDown={e => e.key === 'Enter' && submit()}
             placeholder="••••••••" style={{ ...inp, paddingRight: 40 }} />
           <button onClick={() => setShow(s => !s)} type="button" style={eyeBtn}>
-            {show ? <EyeOff size={14} color="#52525b" /> : <Eye size={14} color="#52525b" />}
+            {show ? <EyeOff size={14} color="#6B7280" /> : <Eye size={14} color="#6B7280" />}
           </button>
         </div>
         <div style={{ marginTop: 6, display: 'flex', justifyContent: 'flex-end' }}>
@@ -372,10 +372,10 @@ function SignIn({ onLogin, onBack }: any) {
             disabled={busy}
             style={{
               background: 'none', border: 'none', padding: 0,
-              color: '#c4b5fd', fontFamily: 'inherit', fontSize: 11.5, fontWeight: 600,
+              color: '#A5B4FC', fontFamily: 'inherit', fontSize: 11.5, fontWeight: 600,
               cursor: busy ? 'not-allowed' : 'pointer',
               textDecoration: 'underline', textUnderlineOffset: 2,
-              textDecorationColor: 'rgba(196,181,253,0.4)',
+              textDecorationColor: 'rgba(165, 180, 252, 0.4)',
             }}>
             Forgot your password?
           </button>
@@ -385,9 +385,9 @@ function SignIn({ onLogin, onBack }: any) {
       {resetSent && (
         <div style={{
           padding: '12px 14px', borderRadius: 10, marginBottom: 12,
-          background: 'rgba(167,139,250,0.10)',
-          border: '1px solid rgba(167,139,250,0.32)',
-          color: '#c4b5fd', fontSize: 12.5, lineHeight: 1.55,
+          background: 'rgba(102, 217, 255, 0.10)',
+          border: '1px solid rgba(102, 217, 255, 0.32)',
+          color: '#A5B4FC', fontSize: 12.5, lineHeight: 1.55,
         }}>
           <strong style={{ color: '#fafafa' }}>Reset link sent ✓</strong>
           <br />
@@ -536,7 +536,7 @@ function PersonalSignup({ onLogin, onBack }: any) {
           <input type={show ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)}
             placeholder="min 8 characters" style={{ ...inp, paddingRight: 40 }} />
           <button onClick={() => setShow(s => !s)} type="button" style={eyeBtn}>
-            {show ? <EyeOff size={14} color="#52525b" /> : <Eye size={14} color="#52525b" />}
+            {show ? <EyeOff size={14} color="#6B7280" /> : <Eye size={14} color="#6B7280" />}
           </button>
         </div>
       </Field>
@@ -552,9 +552,9 @@ function PersonalSignup({ onLogin, onBack }: any) {
                 onClick={() => setBoard(active ? '' : b)}
                 style={{
                   padding: '7px 13px', borderRadius: 8,
-                  background: active ? 'rgba(124, 58, 237,0.12)' : '#0d0d0d',
-                  border: `1px solid ${active ? '#7c3aed' : '#1e1e1e'}`,
-                  color: active ? '#c4b5fd' : '#a1a1aa',
+                  background: active ? 'rgba(79, 124, 255, 0.12)' : '#0E1117',
+                  border: `1px solid ${active ? '#4F7CFF' : '#1f2532'}`,
+                  color: active ? '#A5B4FC' : '#B1B5BA',
                   fontFamily: 'inherit', fontSize: 12, fontWeight: 600, cursor: 'pointer',
                 }}>
                 {b}
@@ -568,9 +568,9 @@ function PersonalSignup({ onLogin, onBack }: any) {
       {resetSent ? (
         <div style={{
           padding: '14px 16px', borderRadius: 12,
-          background: 'rgba(167,139,250,0.10)',
-          border: '1px solid rgba(167,139,250,0.32)',
-          color: '#c4b5fd', fontSize: 13, lineHeight: 1.55,
+          background: 'rgba(102, 217, 255, 0.10)',
+          border: '1px solid rgba(102, 217, 255, 0.32)',
+          color: '#A5B4FC', fontSize: 13, lineHeight: 1.55,
         }}>
           <strong style={{ color: '#fafafa' }}>Reset link sent ✓</strong>
           <br />
@@ -582,8 +582,8 @@ function PersonalSignup({ onLogin, onBack }: any) {
             <PrimaryBtn busy={busy} onClick={sendPasswordReset} icon={Mail}>Reset password via email</PrimaryBtn>
             <button onClick={onBack} type="button" style={{
               padding: '11px 16px', borderRadius: 10,
-              background: 'transparent', border: '1px solid #2d2d2d',
-              color: '#a1a1aa', fontFamily: 'inherit', fontSize: 13, fontWeight: 600,
+              background: 'transparent', border: '1px solid rgba(255,255,255,0.08)',
+              color: '#B1B5BA', fontFamily: 'inherit', fontSize: 13, fontWeight: 600,
               cursor: 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
             }}>
@@ -597,10 +597,10 @@ function PersonalSignup({ onLogin, onBack }: any) {
           <TermsAcceptLine action="creating an account" />
         </>
       )}
-      <p style={{ fontSize: 11, color: '#52525b', textAlign: 'center', marginTop: 12, lineHeight: 1.5 }}>
+      <p style={{ fontSize: 11, color: '#6B7280', textAlign: 'center', marginTop: 12, lineHeight: 1.5 }}>
         Already have an account?{' '}
         <button onClick={onBack} style={{
-          background: 'none', border: 'none', color: '#c4b5fd',
+          background: 'none', border: 'none', color: '#A5B4FC',
           fontFamily: 'inherit', fontSize: 11, fontWeight: 600, cursor: 'pointer', padding: 0,
         }}>Sign in instead</button>
       </p>
@@ -730,7 +730,7 @@ function JoinSchool({ onLogin, onBack }: any) {
           <input type={show ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)}
             placeholder="min 8 characters" style={{ ...inp, paddingRight: 40 }} />
           <button onClick={() => setShow(s => !s)} type="button" style={eyeBtn}>
-            {show ? <EyeOff size={14} color="#52525b" /> : <Eye size={14} color="#52525b" />}
+            {show ? <EyeOff size={14} color="#6B7280" /> : <Eye size={14} color="#6B7280" />}
           </button>
         </div>
       </Field>
@@ -764,34 +764,34 @@ function JoinSchool({ onLogin, onBack }: any) {
               onClick={() => setRole(r.id as any)}
               style={{
                 padding: '14px 16px', borderRadius: 11,
-                background: active ? 'rgba(124, 58, 237,0.10)' : '#0d0d0d',
-                border: `1px solid ${active ? '#7c3aed' : '#1e1e1e'}`,
+                background: active ? 'rgba(79, 124, 255, 0.10)' : '#0E1117',
+                border: `1px solid ${active ? '#4F7CFF' : '#1f2532'}`,
                 cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left',
                 display: 'flex', alignItems: 'center', gap: 12,
               }}>
               <div style={{
                 width: 38, height: 38, borderRadius: 9, flexShrink: 0,
-                background: active ? 'linear-gradient(135deg,#7c3aed,#7c3aed)' : '#1a1a1a',
+                background: active ? 'linear-gradient(135deg,#4F7CFF,#4F7CFF)' : '#1a1f2e',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
-                <Icon size={16} color={active ? '#fff' : '#a1a1aa'} />
+                <Icon size={16} color={active ? '#fff' : '#B1B5BA'} />
               </div>
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 14, fontWeight: 700, color: active ? '#c4b5fd' : '#fafafa' }}>{r.label}</div>
-                <div style={{ fontSize: 11, color: '#71717a', marginTop: 2 }}>{r.desc}</div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: active ? '#A5B4FC' : '#fafafa' }}>{r.label}</div>
+                <div style={{ fontSize: 11, color: '#9CA3AF', marginTop: 2 }}>{r.desc}</div>
               </div>
-              {active && <Check size={16} color="#7c3aed" />}
+              {active && <Check size={16} color="#4F7CFF" />}
             </motion.button>
           )
         })}
       </div>
 
-      <div style={{ padding: '10px 14px', borderRadius: 8, background: 'rgba(115,115,115,0.06)', border: '1px solid #1e1e1e', marginBottom: 14 }}>
+      <div style={{ padding: '10px 14px', borderRadius: 8, background: 'rgba(115,115,115,0.06)', border: '1px solid #1f2532', marginBottom: 14 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-          <Shield size={11} color="#71717a" />
-          <span style={{ fontSize: 10, fontWeight: 700, color: '#71717a', textTransform: 'uppercase', letterSpacing: 1 }}>Note</span>
+          <Shield size={11} color="#9CA3AF" />
+          <span style={{ fontSize: 10, fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: 1 }}>Note</span>
         </div>
-        <p style={{ fontSize: 11, color: '#a1a1aa', margin: 0, lineHeight: 1.5 }}>
+        <p style={{ fontSize: 11, color: '#B1B5BA', margin: 0, lineHeight: 1.5 }}>
           Admin role is reserved for the school creator. Reach out to your school admin if you need elevated access.
         </p>
       </div>
@@ -945,7 +945,7 @@ function CreateSchool({ onLogin, onBack }: any) {
           <input type={show ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)}
             placeholder="min 8 characters" style={{ ...inp, paddingRight: 40 }} />
           <button onClick={() => setShow(s => !s)} type="button" style={eyeBtn}>
-            {show ? <EyeOff size={14} color="#52525b" /> : <Eye size={14} color="#52525b" />}
+            {show ? <EyeOff size={14} color="#6B7280" /> : <Eye size={14} color="#6B7280" />}
           </button>
         </div>
       </Field>
@@ -964,10 +964,10 @@ function CreateSchool({ onLogin, onBack }: any) {
   return (
     <Wizard back={null} step={null} title="School Created" subtitle="Save your join code somewhere safe.">
       <div style={{
-        background: 'rgba(124, 58, 237,0.08)', border: '1px solid rgba(124, 58, 237,0.3)',
+        background: 'rgba(79, 124, 255, 0.08)', border: '1px solid rgba(79, 124, 255, 0.3)',
         borderRadius: 12, padding: 18, marginBottom: 16, textAlign: 'center',
       }}>
-        <div style={{ fontSize: 10, fontWeight: 700, color: '#c4b5fd', textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 8 }}>
+        <div style={{ fontSize: 10, fontWeight: 700, color: '#A5B4FC', textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 8 }}>
           Your School Join Code
         </div>
         <code style={{
@@ -979,16 +979,16 @@ function CreateSchool({ onLogin, onBack }: any) {
         <button onClick={() => navigator.clipboard.writeText(result.passcode)}
           style={{
             padding: '6px 14px', borderRadius: 6, fontSize: 11,
-            background: 'rgba(124, 58, 237,0.15)', border: '1px solid rgba(124, 58, 237,0.3)',
-            color: '#c4b5fd', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600,
+            background: 'rgba(79, 124, 255, 0.15)', border: '1px solid rgba(79, 124, 255, 0.3)',
+            color: '#A5B4FC', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600,
           }}>
           Copy code
         </button>
       </div>
 
-      <div style={{ padding: '12px 14px', borderRadius: 8, background: 'rgba(196, 181, 253,0.06)', border: '1px solid rgba(196, 181, 253,0.3)', marginBottom: 14 }}>
-        <span style={{ fontSize: 11, fontWeight: 700, color: '#c4b5fd', textTransform: 'uppercase', letterSpacing: 1 }}>Free during launch</span>
-        <p style={{ fontSize: 11, color: '#a1a1aa', margin: 0, marginTop: 4, lineHeight: 1.5 }}>
+      <div style={{ padding: '12px 14px', borderRadius: 8, background: 'rgba(165, 180, 252, 0.06)', border: '1px solid rgba(165, 180, 252, 0.3)', marginBottom: 14 }}>
+        <span style={{ fontSize: 11, fontWeight: 700, color: '#A5B4FC', textTransform: 'uppercase', letterSpacing: 1 }}>Free during launch</span>
+        <p style={{ fontSize: 11, color: '#B1B5BA', margin: 0, marginTop: 4, lineHeight: 1.5 }}>
           Your school has full access — no payment required while Kairo is in early access. Share the join code with your teachers and students to bring them on board.
         </p>
       </div>
@@ -1010,8 +1010,8 @@ function Wizard({ back, step, of, title, subtitle, children }: any) {
         {back && (
           <button onClick={back} style={{
             width: 30, height: 30, borderRadius: 7, flexShrink: 0,
-            background: '#161616', border: '1px solid #1e1e1e',
-            color: '#a1a1aa', cursor: 'pointer',
+            background: '#151922', border: '1px solid #1f2532',
+            color: '#B1B5BA', cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
             <ArrowLeft size={14} />
@@ -1019,12 +1019,12 @@ function Wizard({ back, step, of, title, subtitle, children }: any) {
         )}
         <div style={{ flex: 1 }}>
           {step !== null && (
-            <div style={{ fontSize: 10, color: '#52525b', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 2 }}>
+            <div style={{ fontSize: 10, color: '#6B7280', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 2 }}>
               Step {step}{of ? ` of ${of}` : ''}
             </div>
           )}
           <h2 style={{ fontSize: 19, fontWeight: 700, color: '#fafafa', margin: 0 }}>{title}</h2>
-          {subtitle && <p style={{ fontSize: 12, color: '#71717a', margin: 0, marginTop: 2 }}>{subtitle}</p>}
+          {subtitle && <p style={{ fontSize: 12, color: '#9CA3AF', margin: 0, marginTop: 2 }}>{subtitle}</p>}
         </div>
       </div>
       {step !== null && of && (
@@ -1032,7 +1032,7 @@ function Wizard({ back, step, of, title, subtitle, children }: any) {
           {[...Array(of)].map((_, i) => (
             <div key={i} style={{
               flex: 1, height: 3, borderRadius: 2,
-              background: i < step ? '#7c3aed' : '#1e1e1e',
+              background: i < step ? '#4F7CFF' : '#1f2532',
             }} />
           ))}
         </div>
@@ -1046,12 +1046,12 @@ function SchoolPreview({ school, compact = false }: { school: any; compact?: boo
   return (
     <div style={{
       padding: compact ? '10px 14px' : '14px 16px', borderRadius: 11,
-      background: 'rgba(124, 58, 237,0.06)', border: '1px solid rgba(124, 58, 237,0.3)',
+      background: 'rgba(79, 124, 255, 0.06)', border: '1px solid rgba(79, 124, 255, 0.3)',
       display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14,
     }}>
       <div style={{
         width: compact ? 34 : 40, height: compact ? 34 : 40, borderRadius: 9, flexShrink: 0,
-        background: school.school_logo_url ? '#fff' : 'linear-gradient(135deg,#7c3aed,#7c3aed)',
+        background: school.school_logo_url ? '#fff' : 'linear-gradient(135deg,#4F7CFF,#4F7CFF)',
         overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}>
         {school.school_logo_url
@@ -1062,11 +1062,11 @@ function SchoolPreview({ school, compact = false }: { school: any; compact?: boo
         <div style={{ fontSize: compact ? 12 : 13, fontWeight: 700, color: '#fafafa', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {school.school_name}
         </div>
-        <div style={{ fontSize: 10, color: '#c4b5fd', fontWeight: 600, marginTop: 2, textTransform: 'uppercase', letterSpacing: 1 }}>
+        <div style={{ fontSize: 10, color: '#A5B4FC', fontWeight: 600, marginTop: 2, textTransform: 'uppercase', letterSpacing: 1 }}>
           You're joining
         </div>
       </div>
-      <Check size={16} color="#c4b5fd" />
+      <Check size={16} color="#A5B4FC" />
     </div>
   )
 }
@@ -1076,10 +1076,10 @@ function Field({ icon: Icon, label, hint, children }: any) {
     <div style={{ marginBottom: 12 }}>
       <label style={{
         display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, fontWeight: 600,
-        color: '#71717a', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.8,
+        color: '#9CA3AF', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.8,
       }}>
-        <Icon size={11} color="#52525b" />{label}
-        {hint && <span style={{ color: '#3f3f46', fontWeight: 400, textTransform: 'none', letterSpacing: 0, marginLeft: 4 }}>· {hint}</span>}
+        <Icon size={11} color="#6B7280" />{label}
+        {hint && <span style={{ color: '#4B5563', fontWeight: 400, textTransform: 'none', letterSpacing: 0, marginLeft: 4 }}>· {hint}</span>}
       </label>
       {children}
     </div>
@@ -1092,10 +1092,10 @@ function PrimaryBtn({ busy, onClick, icon: Icon, children }: any) {
       onClick={onClick} disabled={busy}
       style={{
         width: '100%', marginTop: 6, padding: '13px', borderRadius: 11, border: 'none',
-        background: busy ? '#1e1e2e' : 'linear-gradient(135deg, #7c3aed, #7c3aed)',
-        color: busy ? '#52525b' : '#fff', fontFamily: 'inherit', fontSize: 14, fontWeight: 700,
+        background: busy ? '#1f2532' : 'linear-gradient(135deg, #4F7CFF, #4F7CFF)',
+        color: busy ? '#6B7280' : '#fff', fontFamily: 'inherit', fontSize: 14, fontWeight: 700,
         cursor: busy ? 'not-allowed' : 'pointer',
-        boxShadow: busy ? 'none' : '0 0 22px rgba(124, 58, 237,0.35)',
+        boxShadow: busy ? 'none' : '0 0 22px rgba(79, 124, 255, 0.35)',
         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
       }}>
       {busy
@@ -1108,9 +1108,9 @@ function PrimaryBtn({ busy, onClick, icon: Icon, children }: any) {
 function ErrLine({ msg }: { msg: string }) {
   return (
     <p style={{
-      fontSize: 12, color: '#a78bfa', marginTop: -4, marginBottom: 12,
-      padding: '8px 12px', background: 'rgba(167, 139, 250,0.08)',
-      border: '1px solid rgba(167, 139, 250,0.25)', borderRadius: 7,
+      fontSize: 12, color: '#66D9FF', marginTop: -4, marginBottom: 12,
+      padding: '8px 12px', background: 'rgba(102, 217, 255, 0.08)',
+      border: '1px solid rgba(102, 217, 255, 0.25)', borderRadius: 7,
     }}>{msg}</p>
   )
 }
@@ -1128,12 +1128,12 @@ function AvatarPicker({ avatar, onPick, fallback }: {
         onClick={() => inputRef.current?.click()}
         style={{
           width: 90, height: 90, borderRadius: '50%', cursor: 'pointer',
-          background: avatar ? 'transparent' : 'linear-gradient(135deg,#7c3aed,#7c3aed)',
+          background: avatar ? 'transparent' : 'linear-gradient(135deg,#4F7CFF,#4F7CFF)',
           overflow: 'hidden', position: 'relative',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: 32, fontWeight: 800, color: '#fff',
-          border: '2px solid rgba(124, 58, 237,0.4)',
-          boxShadow: avatar ? '0 0 22px rgba(124, 58, 237,0.3)' : 'none',
+          border: '2px solid rgba(79, 124, 255, 0.4)',
+          boxShadow: avatar ? '0 0 22px rgba(79, 124, 255, 0.3)' : 'none',
           transition: 'box-shadow 0.2s, border-color 0.2s',
         }}
       >
@@ -1144,7 +1144,7 @@ function AvatarPicker({ avatar, onPick, fallback }: {
         <div style={{
           position: 'absolute', bottom: 0, right: 0,
           width: 26, height: 26, borderRadius: '50%',
-          background: '#7c3aed', border: '2px solid #111',
+          background: '#4F7CFF', border: '2px solid #0E1117',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: 11,
         }}>
@@ -1161,19 +1161,19 @@ function AvatarPicker({ avatar, onPick, fallback }: {
 
       <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
         <button type="button" onClick={() => inputRef.current?.click()} style={{
-          padding: '5px 11px', borderRadius: 6, border: '1px solid #1e1e1e',
-          background: '#161616', color: '#a1a1aa', cursor: 'pointer',
+          padding: '5px 11px', borderRadius: 6, border: '1px solid #1f2532',
+          background: '#151922', color: '#B1B5BA', cursor: 'pointer',
           fontFamily: 'inherit', fontSize: 11, fontWeight: 600,
         }}>{avatar ? 'Change' : 'Upload photo'}</button>
         {avatar && (
           <button type="button" onClick={() => onPick(null)} style={{
-            padding: '5px 11px', borderRadius: 6, border: '1px solid #1e1e1e',
-            background: '#161616', color: '#71717a', cursor: 'pointer',
+            padding: '5px 11px', borderRadius: 6, border: '1px solid #1f2532',
+            background: '#151922', color: '#9CA3AF', cursor: 'pointer',
             fontFamily: 'inherit', fontSize: 11,
           }}>Remove</button>
         )}
       </div>
-      <p style={{ fontSize: 10, color: '#3f3f46', marginTop: 8, textAlign: 'center' }}>
+      <p style={{ fontSize: 10, color: '#4B5563', marginTop: 8, textAlign: 'center' }}>
         Optional · max 4 MB · JPG/PNG/WebP
       </p>
     </div>
@@ -1181,7 +1181,7 @@ function AvatarPicker({ avatar, onPick, fallback }: {
 }
 
 const inp: React.CSSProperties = {
-  width: '100%', background: '#0d0d0d', border: '1px solid #1e1e1e',
+  width: '100%', background: '#0E1117', border: '1px solid #1f2532',
   borderRadius: 9, padding: '11px 14px', fontSize: 14, color: '#fafafa',
   fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box',
   transition: 'border-color 0.15s',

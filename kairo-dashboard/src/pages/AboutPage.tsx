@@ -10,23 +10,23 @@ import { motion } from 'framer-motion'
 import { ArrowRight, ArrowLeft, Mail } from 'lucide-react'
 
 const C = {
-  ink:         '#06060a',
-  paper:       '#0a0a10',
+  ink:         '#050505',
+  paper:       '#050505',
   panel:       '#101018',
-  panel2:      '#16161f',
-  line:        '#1d1d29',
-  lineHi:      '#2a2a3a',
+  panel2:      '#151922',
+  line:        'rgba(255,255,255,0.06)',
+  lineHi:      'rgba(255,255,255,0.10)',
   white:       '#ffffff',
   text:        '#ffffff',
-  textDim:     '#c1c1c8',
-  textFaint:   '#8a8a96',
-  textVery:    '#5a5a66',
-  purpleLite:  '#e9d5ff',
-  purpleSoft:  '#c4b5fd',
-  purple:      '#a78bfa',
-  purpleHi:    '#7c3aed',
-  purpleDeep:  '#5b21b6',
-  purpleInk:   '#3b0764',
+  textDim:     '#CBD5E1',
+  textFaint:   '#9CA3AF',
+  textVery:    '#6B7280',
+  purpleLite:  '#DBE7FF',
+  purpleSoft:  '#A5B4FC',
+  purple:      '#66D9FF',
+  purpleHi:    '#4F7CFF',
+  purpleDeep:  '#2046C2',
+  purpleInk:   '#0B1530',
 }
 
 const DISPLAY = "'Inter Tight', 'Inter', 'Neue Haas Grotesk Display', 'Helvetica Neue', system-ui, sans-serif"
@@ -307,7 +307,7 @@ export default function AboutPage({ onExit }: Props) {
                     padding: '16px 26px', borderRadius: 12, textDecoration: 'none',
                     background: C.white, color: C.ink,
                     fontFamily: SANS, fontSize: 15, fontWeight: 700,
-                    boxShadow: `0 0 32px rgba(167,139,250,0.30)`,
+                    boxShadow: `0 0 32px rgba(102, 217, 255, 0.30)`,
                   }}>
                   <Mail size={15} />
                   quro.cor@gmail.com
@@ -367,7 +367,7 @@ function PurpleHalo() {
     <div aria-hidden style={{
       position: 'fixed', top: '-20vh', left: '50%', transform: 'translateX(-50%)',
       width: '120vw', height: '80vh', borderRadius: '50%',
-      background: `radial-gradient(60% 60% at 50% 30%, rgba(124,58,237,0.18) 0%, rgba(91,33,182,0.05) 35%, transparent 70%)`,
+      background: `radial-gradient(60% 60% at 50% 30%, rgba(79, 124, 255, 0.18) 0%, rgba(32, 70, 194, 0.05) 35%, transparent 70%)`,
       pointerEvents: 'none', zIndex: 0,
       filter: 'blur(30px)',
     }} />

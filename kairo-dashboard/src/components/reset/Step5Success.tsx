@@ -75,7 +75,7 @@ export default function Step5Success({ onContinue }: Props) {
         >
           <div style={{
             width: 220, height: 220, borderRadius: '50%',
-            background: 'radial-gradient(circle, rgba(124,58,237,0.45) 0%, transparent 70%)',
+            background: 'radial-gradient(circle, rgba(79, 124, 255, 0.32) 0%, transparent 70%)',
             filter: 'blur(20px)',
           }} />
         </motion.div>
@@ -88,15 +88,15 @@ export default function Step5Success({ onContinue }: Props) {
           style={{
             position: 'relative',
             width: 130, height: 130, borderRadius: '50%',
-            background: 'linear-gradient(135deg, #c4b5fd 0%, #7c3aed 100%)',
+            background: 'linear-gradient(135deg, #A5B4FC 0%, #4F7CFF 100%)',
             display: 'grid', placeItems: 'center',
-            boxShadow: '0 24px 60px rgba(124,58,237,0.55), inset 0 1px 0 rgba(255,255,255,0.25)',
+            boxShadow: '0 24px 60px rgba(79, 124, 255, 0.32), inset 0 1px 0 rgba(255,255,255,0.25)',
           }}
         >
           {/* Inner ring */}
           <div style={{
             position: 'absolute', inset: -6, borderRadius: '50%',
-            border: '2px solid rgba(196,181,253,0.50)',
+            border: '2px solid rgba(165, 180, 252, 0.50)',
             pointerEvents: 'none',
           }} />
           <Check size={62} color="#000" strokeWidth={3.4} />

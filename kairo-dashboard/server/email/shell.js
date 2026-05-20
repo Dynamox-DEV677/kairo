@@ -67,14 +67,14 @@ export function shell({
       100% { opacity:0.55; transform:translateX(10%); }
     }
     @keyframes kr-pulse {
-      0%, 100% { box-shadow:0 12px 36px rgba(124,58,237,0.30), 0 4px 14px rgba(37,99,235,0.18); }
-      50%      { box-shadow:0 18px 56px rgba(124,58,237,0.55), 0 6px 22px rgba(37,99,235,0.36); }
+      0%, 100% { box-shadow:0 12px 36px rgba(79, 124, 255, 0.30), 0 4px 14px rgba(37,99,235,0.18); }
+      50%      { box-shadow:0 18px 56px rgba(79, 124, 255, 0.32), 0 6px 22px rgba(37,99,235,0.36); }
     }
     .kr-divider-line { animation: kr-shimmer 5s ease-in-out infinite; }
     .kr-cta-pulse    { animation: kr-pulse    3.6s ease-in-out infinite; }
     /* Anti-Gmail blue links on auto-detected text */
     a { color:${THEME.brand.purpleLite}; text-decoration:none; }
-    a:hover { color:#c4b5fd; }
+    a:hover { color:#A5B4FC; }
   </style>
 </head>
 <body style="margin:0;padding:0;background:${THEME.bg.page};font-family:${THEME.font.family};color:${THEME.text.primary};-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;">
@@ -84,7 +84,7 @@ export function shell({
   <!-- Outer page table ────────────────────────────────────────────────── -->
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
     style="background:${THEME.bg.page};background-image:
-      radial-gradient(at 8% 0%,  rgba(124,58,237,0.10) 0%, transparent 35%),
+      radial-gradient(at 8% 0%,  rgba(79, 124, 255, 0.10) 0%, transparent 35%),
       radial-gradient(at 92% 100%, rgba(37,99,235,0.10) 0%, transparent 40%);">
     <tr>
       <td align="center" style="padding:48px 16px 8px;">

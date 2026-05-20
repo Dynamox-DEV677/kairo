@@ -77,7 +77,7 @@ function KeypadButton({ children, onClick, disabled }: {
         minHeight: 72,
         borderRadius: 22,
         border: `1px solid ${RC.border}`,
-        background: 'rgba(167, 139, 250, 0.06)',
+        background: 'rgba(102, 217, 255, 0.06)',
         color: RC.text,
         display: 'grid', placeItems: 'center',
         cursor: disabled ? 'not-allowed' : 'pointer',
@@ -85,9 +85,9 @@ function KeypadButton({ children, onClick, disabled }: {
         opacity: disabled ? 0.4 : 1,
         transition: 'background 0.15s',
       }}
-      onMouseDown={e => !disabled && (e.currentTarget.style.background = 'rgba(167,139,250,0.20)')}
-      onMouseUp={e => !disabled && (e.currentTarget.style.background = 'rgba(167,139,250,0.06)')}
-      onMouseLeave={e => !disabled && (e.currentTarget.style.background = 'rgba(167,139,250,0.06)')}
+      onMouseDown={e => !disabled && (e.currentTarget.style.background = 'rgba(102, 217, 255, 0.20)')}
+      onMouseUp={e => !disabled && (e.currentTarget.style.background = 'rgba(102, 217, 255, 0.06)')}
+      onMouseLeave={e => !disabled && (e.currentTarget.style.background = 'rgba(102, 217, 255, 0.06)')}
     >
       {children}
     </motion.button>

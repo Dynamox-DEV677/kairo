@@ -232,7 +232,7 @@ export default function ChatWindow({ onNewMessage, onNavigate, model = DEFAULT_M
                   background: '#000',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   margin: '0 auto',
-                  boxShadow: '0 0 40px rgba(99,102,241,0.4), 0 0 80px rgba(124,58,237,0.2)',
+                  boxShadow: '0 0 40px rgba(79, 124, 255, 0.4), 0 0 80px rgba(79, 124, 255, 0.2)',
                   border: '1px solid #27272a',
                 }}>
                   <img src="/kairo_logo.png" alt="Kairo" style={{ width: 48, height: 48, objectFit: 'contain' }} />
@@ -245,7 +245,7 @@ export default function ChatWindow({ onNewMessage, onNavigate, model = DEFAULT_M
               }}>
                 Ask anything. Learn everything.
               </h2>
-              <p style={{ fontSize: 14, color: '#52525b', marginBottom: 32, lineHeight: 1.6 }}>
+              <p style={{ fontSize: 14, color: '#6B7280', marginBottom: 32, lineHeight: 1.6 }}>
                 Your AI tutor for CBSE · ICSE · State boards · Class 6–12
               </p>
 
@@ -266,20 +266,20 @@ export default function ChatWindow({ onNewMessage, onNavigate, model = DEFAULT_M
                     style={{
                       display: 'flex', alignItems: 'center', gap: 7,
                       padding: '9px 16px', borderRadius: 24,
-                      background: '#111', border: '1px solid #1e1e1e',
+                      background: '#0E1117', border: '1px solid #1f2532',
                       cursor: 'pointer', fontFamily: 'inherit',
-                      fontSize: 13, color: '#71717a',
+                      fontSize: 13, color: '#9CA3AF',
                       transition: 'all 0.15s',
                     }}
                     onMouseEnter={e => {
-                      (e.currentTarget as HTMLButtonElement).style.borderColor = '#3f3f46'
+                      (e.currentTarget as HTMLButtonElement).style.borderColor = '#4B5563'
                       ;(e.currentTarget as HTMLButtonElement).style.color = '#fafafa'
-                      ;(e.currentTarget as HTMLButtonElement).style.background = '#161616'
+                      ;(e.currentTarget as HTMLButtonElement).style.background = '#151922'
                     }}
                     onMouseLeave={e => {
-                      (e.currentTarget as HTMLButtonElement).style.borderColor = '#1e1e1e'
-                      ;(e.currentTarget as HTMLButtonElement).style.color = '#71717a'
-                      ;(e.currentTarget as HTMLButtonElement).style.background = '#111'
+                      (e.currentTarget as HTMLButtonElement).style.borderColor = '#1f2532'
+                      ;(e.currentTarget as HTMLButtonElement).style.color = '#9CA3AF'
+                      ;(e.currentTarget as HTMLButtonElement).style.background = '#0E1117'
                     }}
                   >
                     <span>{s.emoji}</span>
@@ -320,17 +320,17 @@ export default function ChatWindow({ onNewMessage, onNavigate, model = DEFAULT_M
             style={{
               display: 'flex', alignItems: 'center', gap: 10,
               padding: '14px 18px',
-              background: '#111', border: '1px solid #1e1e1e',
+              background: '#0E1117', border: '1px solid #1f2532',
               borderRadius: '4px 16px 16px 16px',
               width: 'fit-content', marginBottom: 24,
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-              <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#6366f1', animation: 'dot-bounce 1.2s ease-in-out infinite' }} />
-              <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#6366f1', animation: 'dot-bounce 1.2s ease-in-out 0.2s infinite' }} />
-              <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#6366f1', animation: 'dot-bounce 1.2s ease-in-out 0.4s infinite' }} />
+              <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#4F7CFF', animation: 'dot-bounce 1.2s ease-in-out infinite' }} />
+              <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#4F7CFF', animation: 'dot-bounce 1.2s ease-in-out 0.2s infinite' }} />
+              <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#4F7CFF', animation: 'dot-bounce 1.2s ease-in-out 0.4s infinite' }} />
             </div>
-            <span style={{ fontSize: 12, color: '#52525b' }}>Kairo is thinking…</span>
+            <span style={{ fontSize: 12, color: '#6B7280' }}>Kairo is thinking…</span>
           </motion.div>
         )}
 
@@ -355,15 +355,15 @@ export default function ChatWindow({ onNewMessage, onNavigate, model = DEFAULT_M
               fontSize: 13,
               background: fcState === 'success' ? 'rgba(16,185,129,0.1)'
                         : fcState === 'error'   ? 'rgba(239,68,68,0.1)'
-                        : 'rgba(99,102,241,0.1)',
+                        : 'rgba(79, 124, 255, 0.1)',
               border: `1px solid ${
                 fcState === 'success' ? 'rgba(16,185,129,0.3)'
                 : fcState === 'error' ? 'rgba(239,68,68,0.3)'
-                : 'rgba(99,102,241,0.3)'
+                : 'rgba(79, 124, 255, 0.3)'
               }`,
               color: fcState === 'success' ? '#34d399'
                    : fcState === 'error'   ? '#f87171'
-                   : '#818cf8',
+                   : '#A5B4FC',
             }}
           >
             {fcState === 'loading' && (
@@ -379,27 +379,27 @@ export default function ChatWindow({ onNewMessage, onNavigate, model = DEFAULT_M
       {/* Input bar */}
       <div className="cw-input-bar" style={{
         padding: '14px 20px 18px',
-        borderTop: '1px solid #1a1a1a',
+        borderTop: '1px solid #1a1f2e',
         background: 'rgba(10,10,10,0.9)',
         backdropFilter: 'blur(8px)',
         flexShrink: 0,
       }}>
         <div style={{
           display: 'flex', gap: 10, alignItems: 'flex-end',
-          background: '#111', border: '1px solid #1e1e1e',
+          background: '#0E1117', border: '1px solid #1f2532',
           borderRadius: 14, padding: '10px 10px 10px 16px',
           transition: 'border-color 0.15s, box-shadow 0.15s',
         }}
           onFocusCapture={e => {
-            (e.currentTarget as HTMLDivElement).style.borderColor = '#3f3f46'
-            ;(e.currentTarget as HTMLDivElement).style.boxShadow = '0 0 0 3px rgba(99,102,241,0.08)'
+            (e.currentTarget as HTMLDivElement).style.borderColor = '#4B5563'
+            ;(e.currentTarget as HTMLDivElement).style.boxShadow = '0 0 0 3px rgba(79, 124, 255, 0.08)'
           }}
           onBlurCapture={e => {
-            (e.currentTarget as HTMLDivElement).style.borderColor = '#1e1e1e'
+            (e.currentTarget as HTMLDivElement).style.borderColor = '#1f2532'
             ;(e.currentTarget as HTMLDivElement).style.boxShadow = 'none'
           }}
         >
-          <Sparkles size={14} color="#3f3f46" style={{ marginBottom: 10, flexShrink: 0 }} />
+          <Sparkles size={14} color="#4B5563" style={{ marginBottom: 10, flexShrink: 0 }} />
           <textarea
             ref={textareaRef}
             rows={1}
@@ -421,12 +421,12 @@ export default function ChatWindow({ onNewMessage, onNavigate, model = DEFAULT_M
               onClick={stop}
               style={{
                 width: 36, height: 36, borderRadius: 10, flexShrink: 0,
-                background: '#1c1c1c', border: '1px solid #2d2d2d',
+                background: '#1a1f2e', border: '1px solid rgba(255,255,255,0.08)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 cursor: 'pointer',
               }}
             >
-              <StopCircle size={16} color="#71717a" />
+              <StopCircle size={16} color="#9CA3AF" />
             </motion.button>
           ) : (
             <motion.button
@@ -437,16 +437,16 @@ export default function ChatWindow({ onNewMessage, onNavigate, model = DEFAULT_M
               style={{
                 width: 36, height: 36, borderRadius: 10, flexShrink: 0,
                 background: input.trim()
-                  ? 'linear-gradient(135deg, #6366f1, #7c3aed)'
-                  : '#1c1c1c',
+                  ? 'linear-gradient(135deg, #4F7CFF, #4F7CFF)'
+                  : '#1a1f2e',
                 border: 'none',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 cursor: input.trim() ? 'pointer' : 'not-allowed',
-                boxShadow: input.trim() ? '0 0 16px rgba(99,102,241,0.4)' : 'none',
+                boxShadow: input.trim() ? '0 0 16px rgba(79, 124, 255, 0.4)' : 'none',
                 transition: 'all 0.2s',
               }}
             >
-              <Send size={15} color={input.trim() ? '#fff' : '#3f3f46'} />
+              <Send size={15} color={input.trim() ? '#fff' : '#4B5563'} />
             </motion.button>
           )}
         </div>

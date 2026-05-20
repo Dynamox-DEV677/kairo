@@ -20,14 +20,14 @@ import { saveToNotebook } from '../lib/notebook'
 
 const SUBJECTS = ['Mathematics', 'Physics', 'Chemistry', 'Biology', 'English', 'Hindi', 'History', 'Geography', 'Economics', 'Computer Science', 'General']
 
-const card: React.CSSProperties = { background: '#111', border: '1px solid #1e1e1e', borderRadius: 14 }
+const card: React.CSSProperties = { background: '#0E1117', border: '1px solid #1f2532', borderRadius: 14 }
 const inp: React.CSSProperties = {
-  background: '#0d0d0d', border: '1px solid #1e1e1e', borderRadius: 8,
+  background: '#0E1117', border: '1px solid #1f2532', borderRadius: 8,
   padding: '10px 12px', fontSize: 13.5, color: '#fafafa',
   fontFamily: 'inherit', outline: 'none', width: '100%', boxSizing: 'border-box',
 }
 const lbl: React.CSSProperties = {
-  fontSize: 11, color: '#71717a', display: 'block', marginBottom: 6,
+  fontSize: 11, color: '#9CA3AF', display: 'block', marginBottom: 6,
   fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.8,
 }
 
@@ -150,15 +150,15 @@ Now teach me how to never make this mistake again, following your structure exac
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 22 }}>
         <div style={{
           width: 44, height: 44, borderRadius: 11,
-          background: 'linear-gradient(135deg, #a78bfa, #c4b5fd)',
+          background: 'linear-gradient(135deg, #66D9FF, #A5B4FC)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 0 18px rgba(167, 139, 250,0.35)', flexShrink: 0,
+          boxShadow: '0 0 18px rgba(102, 217, 255, 0.35)', flexShrink: 0,
         }}>
           <AlertTriangle size={22} color="#fff" />
         </div>
         <div style={{ flex: 1 }}>
           <h1 style={{ fontSize: 20, fontWeight: 700, color: '#fafafa', margin: 0 }}>Explain My Mistake</h1>
-          <p style={{ fontSize: 13, color: '#52525b', marginTop: 4 }}>
+          <p style={{ fontSize: 13, color: '#6B7280', marginTop: 4 }}>
             Got a question wrong? AI walks you through why — concept gap, reasoning trace, and how to never do it again.
           </p>
         </div>
@@ -190,13 +190,13 @@ Now teach me how to never make this mistake again, following your structure exac
           </div>
 
           <div style={{ marginBottom: 18 }}>
-            <label style={lbl}>Correct answer <span style={{ color: '#3f3f46', textTransform: 'none', letterSpacing: 0 }}>· optional, helps the AI</span></label>
+            <label style={lbl}>Correct answer <span style={{ color: '#4B5563', textTransform: 'none', letterSpacing: 0 }}>· optional, helps the AI</span></label>
             <textarea rows={2} placeholder="If you know it"
               value={correctAnswer} onChange={e => setCorrect(e.target.value)}
               style={{ ...inp, resize: 'vertical', lineHeight: 1.6 }} />
           </div>
 
-          {err && <p style={{ fontSize: 12, color: '#a78bfa', marginBottom: 12 }}>{err}</p>}
+          {err && <p style={{ fontSize: 12, color: '#66D9FF', marginBottom: 12 }}>{err}</p>}
 
           <motion.button
             whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
@@ -204,13 +204,13 @@ Now teach me how to never make this mistake again, following your structure exac
             style={{
               width: '100%', padding: '12px', borderRadius: 10, border: 'none',
               background: busy || !question.trim() || !myAnswer.trim()
-                ? '#1c1c1c'
-                : 'linear-gradient(135deg, #a78bfa, #c4b5fd)',
-              color: busy || !question.trim() || !myAnswer.trim() ? '#52525b' : '#fff',
+                ? '#1a1f2e'
+                : 'linear-gradient(135deg, #66D9FF, #A5B4FC)',
+              color: busy || !question.trim() || !myAnswer.trim() ? '#6B7280' : '#fff',
               fontFamily: 'inherit', fontSize: 14, fontWeight: 700,
               cursor: busy || !question.trim() || !myAnswer.trim() ? 'not-allowed' : 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-              boxShadow: busy || !question.trim() ? 'none' : '0 0 22px rgba(167, 139, 250,0.35)',
+              boxShadow: busy || !question.trim() ? 'none' : '0 0 22px rgba(102, 217, 255, 0.35)',
             }}>
             <Brain size={14} />{busy ? 'Analyzing your mistake…' : 'Explain'}
           </motion.button>
@@ -224,19 +224,19 @@ Now teach me how to never make this mistake again, following your structure exac
               {busy && (
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, padding: '40px 0' }}>
                   <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                    style={{ width: 28, height: 28, borderRadius: '50%', border: '3px solid #1e1e2e', borderTopColor: '#c4b5fd' }} />
-                  <p style={{ fontSize: 13, color: '#71717a' }}>Tracing where you went wrong…</p>
+                    style={{ width: 28, height: 28, borderRadius: '50%', border: '3px solid #1f2532', borderTopColor: '#A5B4FC' }} />
+                  <p style={{ fontSize: 13, color: '#9CA3AF' }}>Tracing where you went wrong…</p>
                 </div>
               )}
 
               {result && (
                 <>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-                    <Lightbulb size={14} color="#c4b5fd" />
-                    <span style={{ fontSize: 11, fontWeight: 700, color: '#c4b5fd', textTransform: 'uppercase', letterSpacing: 1.5 }}>
+                    <Lightbulb size={14} color="#A5B4FC" />
+                    <span style={{ fontSize: 11, fontWeight: 700, color: '#A5B4FC', textTransform: 'uppercase', letterSpacing: 1.5 }}>
                       Tutor explanation
                     </span>
-                    <span style={{ marginLeft: 'auto', fontSize: 10, color: '#52525b' }}>
+                    <span style={{ marginLeft: 'auto', fontSize: 10, color: '#6B7280' }}>
                       Tracked to AI Memory
                     </span>
                   </div>
@@ -247,12 +247,12 @@ Now teach me how to never make this mistake again, following your structure exac
                     </ReactMarkdown>
                   </div>
 
-                  <div style={{ display: 'flex', gap: 8, marginTop: 18, paddingTop: 16, borderTop: '1px solid #1a1a1a' }}>
+                  <div style={{ display: 'flex', gap: 8, marginTop: 18, paddingTop: 16, borderTop: '1px solid #1a1f2e' }}>
                     <button onClick={saveToBook} disabled={savedToBook} style={{
                       padding: '8px 14px', borderRadius: 8,
-                      border: `1px solid ${savedToBook ? 'rgba(196, 181, 253,0.4)' : 'rgba(124, 58, 237,0.3)'}`,
-                      background: savedToBook ? 'rgba(196, 181, 253,0.08)' : 'rgba(124, 58, 237,0.08)',
-                      color: savedToBook ? '#c4b5fd' : '#c4b5fd',
+                      border: `1px solid ${savedToBook ? 'rgba(165, 180, 252, 0.4)' : 'rgba(79, 124, 255, 0.3)'}`,
+                      background: savedToBook ? 'rgba(165, 180, 252, 0.08)' : 'rgba(79, 124, 255, 0.08)',
+                      color: savedToBook ? '#A5B4FC' : '#A5B4FC',
                       cursor: savedToBook ? 'default' : 'pointer',
                       fontFamily: 'inherit', fontSize: 12, fontWeight: 600,
                       display: 'flex', alignItems: 'center', gap: 6,
@@ -260,8 +260,8 @@ Now teach me how to never make this mistake again, following your structure exac
                       <Save size={12} />{savedToBook ? 'Saved to Notebook' : 'Save to Notebook'}
                     </button>
                     <button onClick={reset} style={{
-                      padding: '8px 14px', borderRadius: 8, border: '1px solid #1e1e1e',
-                      background: '#161616', color: '#71717a', cursor: 'pointer',
+                      padding: '8px 14px', borderRadius: 8, border: '1px solid #1f2532',
+                      background: '#151922', color: '#9CA3AF', cursor: 'pointer',
                       fontFamily: 'inherit', fontSize: 12, display: 'flex', alignItems: 'center', gap: 6,
                     }}>
                       <RefreshCw size={12} /> Another mistake

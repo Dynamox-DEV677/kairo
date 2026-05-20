@@ -26,7 +26,7 @@ interface Molecule { name: string; formula: string; atoms: Atom[]; bonds: Bond[]
 
 // Standard CPK colors (close to industry standard)
 const C_H = '#f5f5f5', C_C = '#374151', C_O = '#ef4444', C_N = '#3b82f6'
-const C_S = '#fbbf24', C_CL = '#22c55e', C_F = '#a3e635', C_BR = '#a16207', C_P = '#f97316'
+const C_S = '#C7D2E8', C_CL = '#22c55e', C_F = '#a3e635', C_BR = '#a16207', C_P = '#f97316'
 
 // Atomic radii
 const R_H = 0.28, R_C = 0.5, R_O = 0.48, R_N = 0.48, R_S = 0.6, R_X = 0.55
@@ -325,7 +325,7 @@ function RotatingMolecule({ mol, playing }: { mol: Molecule; playing: boolean })
         return offsets.map((off, j) => (
           <mesh key={`${i}-${j}`} position={mid.toArray()} quaternion={quat}>
             <cylinderGeometry args={[0.05, 0.05, len, 6]} />
-            <meshStandardMaterial color="#a1a1aa" />
+            <meshStandardMaterial color="#B1B5BA" />
           </mesh>
         ))
       })}

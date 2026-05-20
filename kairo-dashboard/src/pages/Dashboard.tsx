@@ -127,7 +127,7 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', 'dark')
     document.documentElement.classList.add('kairo-app')
-    document.body.style.background = '#0a0a0a'
+    document.body.style.background = '#050505'
     document.body.style.color      = '#fafafa'
     try {
       localStorage.setItem('kairo_theme', 'dark')
@@ -163,7 +163,7 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
       flexDirection: isMobile ? 'column' : 'row',
       height: '100vh',
       overflow: 'hidden',
-      background: isDark ? '#0a0a0a' : '#f4f4f5',
+      background: isDark ? '#050505' : '#f4f4f5',
       color:      isDark ? '#fafafa' : '#18181b',
       fontFamily: "'Lora', 'Georgia', serif",
       transition: 'background 0.25s ease',

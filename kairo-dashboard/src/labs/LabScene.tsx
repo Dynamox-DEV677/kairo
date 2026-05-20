@@ -83,7 +83,7 @@ export default function LabScene({
         shadow-camera-near={0.5} shadow-camera-far={40}
         shadow-bias={-0.0005}
       />
-      <directionalLight position={[-7, 4, -5]} intensity={0.7} color="#a5b4fc" />
+      <directionalLight position={[-7, 4, -5]} intensity={0.7} color="#A5B4FC" />
       <pointLight position={[3, -3, 4]} intensity={0.4} color="#ec4899" />
 
       {/* Cinematic backdrop stars */}
@@ -141,7 +141,7 @@ function AmbientParticles({ count }: { count: number }) {
       <pointsMaterial
         size={0.05}
         sizeAttenuation
-        color="#a5b4fc"
+        color="#A5B4FC"
         transparent
         opacity={0.7}
         depthWrite={false}

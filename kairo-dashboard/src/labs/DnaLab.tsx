@@ -20,7 +20,7 @@ const PARTS: PartCatalog = {
     related: ['A-T base pair', 'Purine', 'Hydrogen bonding'],
   },
   thymine: {
-    id: 'thymine', label: 'Thymine (T)', color: '#fbbf24',
+    id: 'thymine', label: 'Thymine (T)', color: '#C7D2E8',
     function: 'Pairs with adenine via two hydrogen bonds. Unique to DNA (replaced by uracil in RNA).',
     whyItMatters: 'Thymine\'s methyl group helps DNA repair enzymes detect damage.',
     analogy: 'The T-shaped twin of adenine.',

@@ -2,7 +2,7 @@
  * Light-mode theme rewriter for Kairo.
  *
  * Most of Kairo's components paint themselves with hard-coded inline styles
- * (background: '#0a0a0a', color: '#fafafa', border: '1px solid #1e1e1e'),
+ * (background: '#050505', color: '#fafafa', border: '1px solid #1f2532'),
  * which the browser normalises to rgb()/rgba() form in the actual inline
  * style attribute. CSS attribute selectors can't reliably cover every
  * spelling Chrome / Firefox / Safari emit, so we walk the DOM ourselves
@@ -46,8 +46,8 @@ const RGB_MAP: Record<string, string> = {
   'rgb(250, 250, 250)':  '#18181b',
   'rgb(255, 255, 255)':  '#18181b',
   // bright greys → mid-grey
-  'rgb(228, 228, 231)':  '#3f3f46',
-  'rgb(212, 212, 216)':  '#3f3f46',
+  'rgb(228, 228, 231)':  '#4B5563',
+  'rgb(212, 212, 216)':  '#4B5563',
 }
 
 // Properties we'll touch. Limits the blast radius to colour-bearing ones.

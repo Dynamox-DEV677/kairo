@@ -48,7 +48,7 @@ const BODIES: Body[] = [
 
 const PARTS: PartCatalog = {
   sun: {
-    id: 'sun', label: 'Sun', color: '#fbbf24',
+    id: 'sun', label: 'Sun', color: '#C7D2E8',
     function: 'G-type main-sequence star — fuses hydrogen into helium, releasing 3.8 × 10²⁶ watts of energy every second.',
     whyItMatters: 'Provides 99.86% of the solar system\'s mass and ALL of the energy that drives weather, climate, and life.',
     analogy: 'The reactor core of the solar system.',
@@ -62,7 +62,7 @@ const PARTS: PartCatalog = {
     related: ['Tidal locking', 'Caloris Basin', 'No atmosphere'],
   },
   venus: {
-    id: 'venus', label: 'Venus', color: '#facc15',
+    id: 'venus', label: 'Venus', color: '#C7D2E8',
     function: 'Earth-sized but with a thick CO₂ atmosphere → runaway greenhouse, 462°C surface.',
     whyItMatters: 'A warning of what extreme greenhouse gases can do to a planet\'s climate.',
     analogy: 'Earth\'s evil twin.',
@@ -76,7 +76,7 @@ const PARTS: PartCatalog = {
     related: ['Plate tectonics', 'Magnetic field', 'Goldilocks zone'],
   },
   moon: {
-    id: 'moon', label: 'Moon (Luna)', color: '#a1a1aa',
+    id: 'moon', label: 'Moon (Luna)', color: '#B1B5BA',
     function: 'Earth\'s only natural satellite. Formed ~4.5 billion years ago from a Mars-sized impactor.',
     whyItMatters: 'Stabilises Earth\'s axial tilt → keeps the seasons predictable enough for life to evolve.',
     analogy: 'Earth\'s gravitational anchor.',
@@ -90,7 +90,7 @@ const PARTS: PartCatalog = {
     related: ['Olympus Mons', 'Polar caps', 'Mars rovers'],
   },
   jupiter: {
-    id: 'jupiter', label: 'Jupiter', color: '#fb923c',
+    id: 'jupiter', label: 'Jupiter', color: '#4F7CFF',
     function: 'The largest planet — a gas giant of hydrogen and helium with a 350-year-old storm.',
     whyItMatters: 'Jupiter\'s gravity acts as the solar system\'s "vacuum cleaner", deflecting comets that might hit Earth.',
     analogy: 'Solar system bodyguard + king of the gas giants.',
@@ -273,7 +273,7 @@ function Sun({ onHover, onSelect, hovered, selected }: any) {
       {/* Sun corona glow */}
       <mesh scale={1.15}>
         <sphereGeometry args={[SUN.radius, 32, 32]} />
-        <meshBasicMaterial color="#fbbf24" transparent opacity={0.18} side={THREE.BackSide} />
+        <meshBasicMaterial color="#C7D2E8" transparent opacity={0.18} side={THREE.BackSide} />
       </mesh>
     </group>
   )
@@ -370,7 +370,7 @@ function OrbitRing({ radius }: { radius: number }) {
   return (
     <line>
       <primitive object={geom} attach="geometry" />
-      <lineBasicMaterial color="#3f3f46" transparent opacity={0.3} />
+      <lineBasicMaterial color="#4B5563" transparent opacity={0.3} />
     </line>
   )
 }

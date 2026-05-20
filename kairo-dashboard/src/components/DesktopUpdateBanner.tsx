@@ -81,11 +81,11 @@ export default function DesktopUpdateBanner() {
           padding: '14px 18px 14px 16px',
           minWidth: 320, maxWidth: 'calc(100vw - 32px)',
           background:
-            'linear-gradient(135deg, #1a0b3b 0%, #0e0e16 60%, #06060a 100%)',
-          border: '1px solid rgba(167, 139, 250, 0.35)',
+            'linear-gradient(135deg, #1a0b3b 0%, #0E1117 60%, #050505 100%)',
+          border: '1px solid rgba(102, 217, 255, 0.35)',
           borderRadius: 16,
           boxShadow:
-            '0 16px 48px rgba(124, 58, 237, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.04) inset',
+            '0 16px 48px rgba(79, 124, 255, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.04) inset',
           display: 'flex', alignItems: 'center', gap: 14,
           fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif",
           color: '#ffffff',
@@ -96,9 +96,9 @@ export default function DesktopUpdateBanner() {
         {/* Sparkle badge */}
         <div style={{
           width: 36, height: 36, borderRadius: 10,
-          background: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)',
+          background: 'linear-gradient(135deg, #4F7CFF 0%, #2046C2 100%)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 0 18px rgba(124, 58, 237, 0.45)',
+          boxShadow: '0 0 18px rgba(79, 124, 255, 0.32)',
           flexShrink: 0,
         }}>
           <Sparkles size={17} color="#fff" />
@@ -110,7 +110,7 @@ export default function DesktopUpdateBanner() {
             Kairo {info.version} is ready
           </div>
           <div style={{
-            fontSize: 11.5, color: '#c1c1c8', marginTop: 2,
+            fontSize: 11.5, color: '#CBD5E1', marginTop: 2,
             fontFamily: 'ui-monospace, monospace', letterSpacing: 0.2,
           }}>
             Restart to apply — your session stays put.
@@ -125,12 +125,12 @@ export default function DesktopUpdateBanner() {
             display: 'inline-flex', alignItems: 'center', gap: 6,
             padding: '8px 14px', borderRadius: 10,
             background: busy
-              ? 'rgba(167, 139, 250, 0.3)'
-              : 'linear-gradient(135deg, #fafafa 0%, #c4b5fd 100%)',
-            color: '#06060a',
+              ? 'rgba(102, 217, 255, 0.3)'
+              : 'linear-gradient(135deg, #fafafa 0%, #A5B4FC 100%)',
+            color: '#050505',
             border: 'none', fontFamily: 'inherit',
             fontSize: 12.5, fontWeight: 700, cursor: busy ? 'wait' : 'pointer',
-            boxShadow: '0 0 14px rgba(196, 181, 253, 0.35)',
+            boxShadow: '0 0 14px rgba(165, 180, 252, 0.35)',
             flexShrink: 0,
             transition: 'transform .15s',
           }}
@@ -146,7 +146,7 @@ export default function DesktopUpdateBanner() {
             width: 28, height: 28, borderRadius: 8,
             background: 'transparent',
             border: '1px solid rgba(255, 255, 255, 0.08)',
-            color: '#8a8a96', cursor: 'pointer',
+            color: '#9CA3AF', cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             flexShrink: 0,
           }}

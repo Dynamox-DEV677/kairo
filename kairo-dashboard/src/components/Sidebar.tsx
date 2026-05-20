@@ -27,50 +27,50 @@ interface NavItem {
 // Their functionality now lives inside Kairo OS / Kairo Solver respectively.
 // Colors are all variations of the brand purple — strict monochrome palette.
 const STUDENT_NAV: NavItem[] = [
-  { label: 'Kairo OS',        icon: Cpu,             to: 'kairo-os',         color: '#a78bfa' },
-  { label: "Kairo's Solver",  icon: MessageCircle,   to: 'doubt',            color: '#c4b5fd' },
-  { label: 'Kairo Labs',      icon: Beaker,          to: 'labs',             color: '#a78bfa' },
-  { label: 'Mistake Analysis',icon: Activity,        to: 'mistakes',         color: '#c4b5fd' },
-  { label: 'Revision Sim',    icon: Zap,             to: 'simulator',        color: '#a78bfa' },
-  { label: 'Concept Map',     icon: Network,         to: 'concept-map',      color: '#a78bfa' },
-  { label: 'AI Notebook',     icon: BookOpen,        to: 'notebook',         color: '#c4b5fd' },
-  { label: 'Battle Mode',     icon: Swords,          to: 'battle',           color: '#a78bfa' },
-  { label: 'Explain Mistake', icon: AlertTriangle,   to: 'explain-mistake',  color: '#c4b5fd' },
-  { label: 'Predictor',       icon: TrendingUp,      to: 'perf-predictor',   color: '#a78bfa' },
-  { label: 'Knowledge Graph', icon: Share2,          to: 'knowledge',        color: '#c4b5fd' },
-  { label: 'Camera Study',    icon: Camera,          to: 'camera',           color: '#a78bfa' },
-  { label: 'Focus Mode',      icon: Target,          to: 'focus',            color: '#c4b5fd' },
-  { label: 'Flashcards',      icon: BookMarked,      to: 'flashcards',       color: '#a78bfa' },
-  { label: 'Grader',          icon: FileText,        to: 'essay',            color: '#c4b5fd' },
-  { label: 'My Tasks',        icon: BookOpen,        to: 'school',           color: '#a78bfa' },
-  { label: 'Study Plan',      icon: Calendar,        to: 'study-plan',       color: '#c4b5fd' },
-  { label: 'Adaptive Quiz',   icon: Brain,           to: 'quiz',             color: '#a78bfa' },
-  { label: 'Writing Tools',   icon: Edit3,           to: 'writing',          color: '#c4b5fd' },
-  { label: 'Concept Tools',   icon: Lightbulb,       to: 'concept',          color: '#a78bfa' },
-  { label: 'Formula Sheet',   icon: FunctionSquare,  to: 'formula',          color: '#c4b5fd' },
-  { label: 'Pomodoro',        icon: Timer,           to: 'pomodoro',         color: '#a78bfa' },
+  { label: 'Kairo OS',        icon: Cpu,             to: 'kairo-os',         color: '#66D9FF' },
+  { label: "Kairo's Solver",  icon: MessageCircle,   to: 'doubt',            color: '#A5B4FC' },
+  { label: 'Kairo Labs',      icon: Beaker,          to: 'labs',             color: '#66D9FF' },
+  { label: 'Mistake Analysis',icon: Activity,        to: 'mistakes',         color: '#A5B4FC' },
+  { label: 'Revision Sim',    icon: Zap,             to: 'simulator',        color: '#66D9FF' },
+  { label: 'Concept Map',     icon: Network,         to: 'concept-map',      color: '#66D9FF' },
+  { label: 'AI Notebook',     icon: BookOpen,        to: 'notebook',         color: '#A5B4FC' },
+  { label: 'Battle Mode',     icon: Swords,          to: 'battle',           color: '#66D9FF' },
+  { label: 'Explain Mistake', icon: AlertTriangle,   to: 'explain-mistake',  color: '#A5B4FC' },
+  { label: 'Predictor',       icon: TrendingUp,      to: 'perf-predictor',   color: '#66D9FF' },
+  { label: 'Knowledge Graph', icon: Share2,          to: 'knowledge',        color: '#A5B4FC' },
+  { label: 'Camera Study',    icon: Camera,          to: 'camera',           color: '#66D9FF' },
+  { label: 'Focus Mode',      icon: Target,          to: 'focus',            color: '#A5B4FC' },
+  { label: 'Flashcards',      icon: BookMarked,      to: 'flashcards',       color: '#66D9FF' },
+  { label: 'Grader',          icon: FileText,        to: 'essay',            color: '#A5B4FC' },
+  { label: 'My Tasks',        icon: BookOpen,        to: 'school',           color: '#66D9FF' },
+  { label: 'Study Plan',      icon: Calendar,        to: 'study-plan',       color: '#A5B4FC' },
+  { label: 'Adaptive Quiz',   icon: Brain,           to: 'quiz',             color: '#66D9FF' },
+  { label: 'Writing Tools',   icon: Edit3,           to: 'writing',          color: '#A5B4FC' },
+  { label: 'Concept Tools',   icon: Lightbulb,       to: 'concept',          color: '#66D9FF' },
+  { label: 'Formula Sheet',   icon: FunctionSquare,  to: 'formula',          color: '#A5B4FC' },
+  { label: 'Pomodoro',        icon: Timer,           to: 'pomodoro',         color: '#66D9FF' },
 ]
 
 const TEACHER_NAV: NavItem[] = [
-  { label: 'AI Teacher',      icon: Bot,             to: 'teacher-ai',      color: '#818cf8' },
-  { label: "Kairo's Solver",    icon: MessageCircle,   to: 'doubt',           color: '#818cf8' },
+  { label: 'AI Teacher',      icon: Bot,             to: 'teacher-ai',      color: '#A5B4FC' },
+  { label: "Kairo's Solver",    icon: MessageCircle,   to: 'doubt',           color: '#A5B4FC' },
   { label: 'Flashcards',      icon: BookMarked,      to: 'flashcards',      color: '#34d399' },
   { label: 'Grader',          icon: FileText,        to: 'essay',           color: '#f472b6' },
-  { label: 'Tasks & Marks',   icon: BookOpen,        to: 'school',          color: '#fbbf24' },
-  { label: 'Question Paper',  icon: BookOpen,        to: 'question-paper',  color: '#a78bfa' },
+  { label: 'Tasks & Marks',   icon: BookOpen,        to: 'school',          color: '#C7D2E8' },
+  { label: 'Question Paper',  icon: BookOpen,        to: 'question-paper',  color: '#66D9FF' },
   { label: 'Lesson Plan',     icon: Calendar,        to: 'lesson-plan',     color: '#38bdf8' },
-  { label: 'Parent Message',  icon: Bell,            to: 'parent-message',  color: '#fb923c' },
+  { label: 'Parent Message',  icon: Bell,            to: 'parent-message',  color: '#4F7CFF' },
   { label: 'Announcements',   icon: Megaphone,       to: 'announcement',    color: '#f472b6' },
-  { label: 'Analytics',       icon: TrendingUp,      to: 'analytics',       color: '#818cf8' },
+  { label: 'Analytics',       icon: TrendingUp,      to: 'analytics',       color: '#A5B4FC' },
 ]
 
 // Admin = command center ONLY. No student learning tools.
 const ADMIN_NAV: NavItem[] = [
-  { label: 'School Hub',      icon: Building2,   to: 'school',          color: '#6366f1' },
+  { label: 'School Hub',      icon: Building2,   to: 'school',          color: '#4F7CFF' },
   { label: 'Announcements',   icon: Megaphone,   to: 'announcement',    color: '#f472b6' },
   { label: 'Fee Reminder',    icon: DollarSign,  to: 'fee-reminder',    color: '#34d399' },
-  { label: 'Admission Bot',   icon: Bot,         to: 'admission',       color: '#818cf8' },
-  { label: 'Attendance',      icon: UserCheck,   to: 'attendance',      color: '#fbbf24' },
+  { label: 'Admission Bot',   icon: Bot,         to: 'admission',       color: '#A5B4FC' },
+  { label: 'Attendance',      icon: UserCheck,   to: 'attendance',      color: '#C7D2E8' },
   { label: 'Timetable',       icon: Grid3x3,     to: 'timetable',       color: '#38bdf8' },
   { label: 'Ops Dashboard',   icon: Activity,    to: 'ops',             color: '#34d399' },
 ]
@@ -158,37 +158,37 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
       width: 240,
       flexShrink: 0,
       height: '100%',
-      background: isDark ? '#0d0d0d' : '#fafafa',
-      borderRight: `1px solid ${isDark ? '#1a1a1a' : '#e4e4e7'}`,
+      background: isDark ? '#0E1117' : '#fafafa',
+      borderRight: `1px solid ${isDark ? '#1a1f2e' : '#e4e4e7'}`,
       display: 'flex',
       flexDirection: 'column',
       overflow: 'hidden',
       transition: 'background 0.25s ease, border-color 0.25s ease',
     }}>
       {/* Logo area */}
-      <div style={{ padding: '16px 16px 14px', borderBottom: `1px solid ${isDark ? '#1a1a1a' : '#e4e4e7'}` }}>
+      <div style={{ padding: '16px 16px 14px', borderBottom: `1px solid ${isDark ? '#1a1f2e' : '#e4e4e7'}` }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
           <img src="/kairo_logo.png" alt="Kairo" style={{ width: 52, height: 52, objectFit: 'contain', borderRadius: 12 }} />
           <div>
             <div style={{ fontSize: 16, fontWeight: 700, color: isDark ? '#fafafa' : '#18181b', letterSpacing: '-0.3px' }}>kairo</div>
-            <div style={{ fontSize: 10, color: '#6366f1', fontWeight: 600, letterSpacing: 0.5, textTransform: 'uppercase' }}>Accelerate Your Academics</div>
+            <div style={{ fontSize: 10, color: '#4F7CFF', fontWeight: 600, letterSpacing: 0.5, textTransform: 'uppercase' }}>Accelerate Your Academics</div>
           </div>
         </div>
 
         {/* Search shortcut */}
         <button style={{
-          width: '100%', padding: '8px 12px', background: '#161616',
-          border: '1px solid #1e1e1e', borderRadius: 8,
+          width: '100%', padding: '8px 12px', background: '#151922',
+          border: '1px solid #1f2532', borderRadius: 8,
           display: 'flex', alignItems: 'center', gap: 8,
-          color: '#52525b', fontSize: 12, cursor: 'pointer',
+          color: '#6B7280', fontSize: 12, cursor: 'pointer',
           fontFamily: 'inherit', transition: 'all 0.15s',
         }}
-          onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = '#3f3f46' }}
-          onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = '#1e1e1e' }}
+          onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = '#4B5563' }}
+          onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = '#1f2532' }}
         >
           <MessageCircle size={12} />
           <span>Ask anything...</span>
-          <span style={{ marginLeft: 'auto', fontSize: 10, background: '#1c1c1c', padding: '1px 6px', borderRadius: 4 }}>⌘K</span>
+          <span style={{ marginLeft: 'auto', fontSize: 10, background: '#1a1f2e', padding: '1px 6px', borderRadius: 4 }}>⌘K</span>
         </button>
       </div>
 
@@ -203,7 +203,7 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
               <div style={{
                 display: 'flex', alignItems: 'center', gap: 6,
                 padding: '4px 8px 6px',
-                color: '#3f3f46', fontSize: 10,
+                color: '#4B5563', fontSize: 10,
                 fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1,
               }}>
                 <SectionIcon size={10} />{label}
@@ -238,8 +238,8 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
             title="New chat"
             style={{
               width: 22, height: 22, borderRadius: 5, marginRight: 6,
-              background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.2)',
-              color: '#818cf8', cursor: 'pointer',
+              background: 'rgba(79, 124, 255, 0.1)', border: '1px solid rgba(79, 124, 255, 0.2)',
+              color: '#A5B4FC', cursor: 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               padding: 0, flexShrink: 0,
             }}
@@ -257,7 +257,7 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
               style={{ overflow: 'hidden' }}
             >
               {recents.length === 0 && (
-                <div style={{ padding: '8px 10px', fontSize: 11, color: isDark ? '#3f3f46' : '#a1a1aa', fontStyle: 'italic' }}>
+                <div style={{ padding: '8px 10px', fontSize: 11, color: isDark ? '#4B5563' : '#B1B5BA', fontStyle: 'italic' }}>
                   No chats yet — ask anything in Kairo's Solver
                 </div>
               )}
@@ -271,7 +271,7 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
                     marginBottom: 1, transition: 'background 0.1s', gap: 6,
                   }}
                   onMouseEnter={e => {
-                    (e.currentTarget as HTMLDivElement).style.background = isDark ? '#161616' : '#f4f4f5';
+                    (e.currentTarget as HTMLDivElement).style.background = isDark ? '#151922' : '#f4f4f5';
                     const x = e.currentTarget.querySelector('[data-del]') as HTMLElement | null
                     if (x) x.style.opacity = '1'
                   }}
@@ -283,7 +283,7 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
                 >
                   <span style={{
                     fontSize: 12,
-                    color: isDark ? '#71717a' : '#52525b',
+                    color: isDark ? '#9CA3AF' : '#6B7280',
                     flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                   }}>
                     {r.title}
@@ -295,12 +295,12 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
                     style={{
                       opacity: 0, transition: 'opacity 0.15s',
                       background: 'none', border: 'none', cursor: 'pointer',
-                      color: '#52525b', padding: 2, display: 'flex',
+                      color: '#6B7280', padding: 2, display: 'flex',
                     }}
                   >
                     <X size={11} />
                   </button>
-                  <span style={{ fontSize: 10, color: isDark ? '#3f3f46' : '#a1a1aa', flexShrink: 0 }}>
+                  <span style={{ fontSize: 10, color: isDark ? '#4B5563' : '#B1B5BA', flexShrink: 0 }}>
                     {timeAgo(r.updated)}
                   </span>
                 </div>
@@ -311,18 +311,18 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
       </nav>
 
       {/* Bottom section */}
-      <div style={{ padding: '8px', borderTop: `1px solid ${isDark ? '#1a1a1a' : '#e4e4e7'}` }}>
+      <div style={{ padding: '8px', borderTop: `1px solid ${isDark ? '#1a1f2e' : '#e4e4e7'}` }}>
         {/* Settings + theme row */}
         <div style={{ display: 'flex', gap: 4, marginBottom: 6 }}>
           <button style={{
             flex: 1, padding: '8px 10px', background: 'none',
             border: '1px solid transparent', borderRadius: 7,
-            color: '#52525b', fontSize: 12, cursor: 'pointer',
+            color: '#6B7280', fontSize: 12, cursor: 'pointer',
             fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 7,
             transition: 'all 0.12s',
           }}
-            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = '#161616'; (e.currentTarget as HTMLButtonElement).style.color = '#fafafa' }}
-            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'none'; (e.currentTarget as HTMLButtonElement).style.color = '#52525b' }}
+            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = '#151922'; (e.currentTarget as HTMLButtonElement).style.color = '#fafafa' }}
+            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'none'; (e.currentTarget as HTMLButtonElement).style.color = '#6B7280' }}
             onClick={() => setActive('settings')}
           >
             <Settings size={13} /> Settings
@@ -348,14 +348,14 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
             title="Click to set profile picture"
             style={{
               width: 32, height: 32, borderRadius: 8,
-              background: profilePic ? 'transparent' : 'linear-gradient(135deg, #6366f1, #7c3aed)',
+              background: profilePic ? 'transparent' : 'linear-gradient(135deg, #4F7CFF, #4F7CFF)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               flexShrink: 0, fontSize: 12, fontWeight: 700, color: '#fff',
               cursor: 'pointer', position: 'relative', overflow: 'hidden',
               border: '2px solid transparent',
               transition: 'border-color 0.15s',
             }}
-            onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.borderColor = '#6366f1' }}
+            onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.borderColor = '#4F7CFF' }}
             onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.borderColor = 'transparent' }}
           >
             {profilePic ? (
@@ -375,7 +375,7 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 12, fontWeight: 600, color: isDark ? '#fafafa' : '#18181b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{displayName}</div>
-            <div style={{ fontSize: 10, color: isDark ? '#3f3f46' : '#a1a1aa' }}>{displaySub}</div>
+            <div style={{ fontSize: 10, color: isDark ? '#4B5563' : '#B1B5BA' }}>{displaySub}</div>
           </div>
           <button
             title="Log out"
@@ -386,9 +386,9 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
               if (onLogout) onLogout()
               else window.location.reload()
             }}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#3f3f46', padding: 2 }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#4B5563', padding: 2 }}
             onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = '#f87171' }}
-            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = '#3f3f46' }}
+            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = '#4B5563' }}
           >
             <LogOut size={13} />
           </button>
@@ -405,7 +405,7 @@ function SectionHeader({ label, icon: Icon, open, toggle }: { label: string; ico
       style={{
         width: '100%', display: 'flex', alignItems: 'center', gap: 6,
         padding: '4px 8px 6px', background: 'none', border: 'none',
-        cursor: 'pointer', color: '#3f3f46', fontSize: 10,
+        cursor: 'pointer', color: '#4B5563', fontSize: 10,
         fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1,
         fontFamily: 'inherit',
       }}
@@ -442,8 +442,8 @@ function NavItemRow({ item, isActive, isHovered, isGenerating = false, onHover, 
         padding: '8px 10px', borderRadius: 8, textDecoration: 'none',
         marginBottom: 2, cursor: 'pointer', border: 'none', fontFamily: 'inherit',
         background: isActive
-          ? `rgba(${item.color === '#818cf8' ? '99,102,241' : item.color === '#34d399' ? '52,211,153' : item.color === '#fb923c' ? '251,146,60' : item.color === '#f472b6' ? '244,114,182' : '251,191,36'},0.1)`
-          : isHovered ? '#161616' : 'transparent',
+          ? `rgba(${item.color === '#A5B4FC' ? '99,102,241' : item.color === '#34d399' ? '52,211,153' : item.color === '#4F7CFF' ? '251,146,60' : item.color === '#f472b6' ? '244,114,182' : '251,191,36'},0.1)`
+          : isHovered ? '#151922' : 'transparent',
         position: 'relative',
         transition: 'background 0.12s',
       }}
@@ -455,8 +455,8 @@ function NavItemRow({ item, isActive, isHovered, isGenerating = false, onHover, 
           style={{
             position: 'absolute', left: 0, top: '15%', bottom: '15%',
             width: 2.5, borderRadius: 2,
-            background: item.color || '#6366f1',
-            boxShadow: `0 0 8px ${item.color || '#6366f1'}`,
+            background: item.color || '#4F7CFF',
+            boxShadow: `0 0 8px ${item.color || '#4F7CFF'}`,
           }}
         />
       )}
@@ -467,7 +467,7 @@ function NavItemRow({ item, isActive, isHovered, isGenerating = false, onHover, 
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         flexShrink: 0, transition: 'background 0.12s', position: 'relative',
       }}>
-        <item.icon size={13} color={isActive ? item.color : '#52525b'} />
+        <item.icon size={13} color={isActive ? item.color : '#6B7280'} />
         {/* Background generation pulse indicator */}
         {isGenerating && (
           <motion.div
@@ -476,8 +476,8 @@ function NavItemRow({ item, isActive, isHovered, isGenerating = false, onHover, 
             style={{
               position: 'absolute', top: -2, right: -2,
               width: 6, height: 6, borderRadius: '50%',
-              background: '#6366f1',
-              boxShadow: '0 0 6px #6366f1',
+              background: '#4F7CFF',
+              boxShadow: '0 0 6px #4F7CFF',
             }}
           />
         )}
@@ -485,7 +485,7 @@ function NavItemRow({ item, isActive, isHovered, isGenerating = false, onHover, 
 
       <span style={{
         fontSize: 13, fontWeight: isActive ? 600 : 400,
-        color: isActive ? '#fafafa' : '#71717a',
+        color: isActive ? '#fafafa' : '#9CA3AF',
         flex: 1, textAlign: 'left',
       }}>
         {item.label}
@@ -493,7 +493,7 @@ function NavItemRow({ item, isActive, isHovered, isGenerating = false, onHover, 
 
       {isGenerating ? (
         <span style={{
-          fontSize: 9, fontWeight: 600, color: '#6366f1',
+          fontSize: 9, fontWeight: 600, color: '#4F7CFF',
           letterSpacing: 0.3, animation: 'pulse 1.2s ease-in-out infinite',
         }}>
           AI…
@@ -501,7 +501,7 @@ function NavItemRow({ item, isActive, isHovered, isGenerating = false, onHover, 
       ) : item.badge ? (
         <span style={{
           fontSize: 10, fontWeight: 700, minWidth: 18, height: 18,
-          borderRadius: 5, background: '#6366f1',
+          borderRadius: 5, background: '#4F7CFF',
           color: '#fff', display: 'flex', alignItems: 'center',
           justifyContent: 'center', padding: '0 4px',
         }}>

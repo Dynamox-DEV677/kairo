@@ -15,56 +15,56 @@
 export const THEME = {
   // ── Brand palette ────────────────────────────────────────────────────────
   brand: {
-    purple:    '#7c3aed',   // primary
-    purpleLite:'#a78bfa',
+    purple:    '#4F7CFF',   // primary
+    purpleLite:'#66D9FF',
     blue:      '#2563eb',
     cyan:      '#06b6d4',
     pink:      '#ec4899',
-    indigo:    '#6366f1',
+    indigo:    '#4F7CFF',
   },
 
   // ── Status semantic colors ───────────────────────────────────────────────
   status: {
     success:   '#34d399',
-    warning:   '#fbbf24',
+    warning:   '#C7D2E8',
     danger:    '#f87171',
     info:      '#60a5fa',
   },
 
   // ── Neutrals — dark theme baseline ───────────────────────────────────────
   bg: {
-    page:      '#06060a',   // outermost background
+    page:      '#050505',   // outermost background
     card:      '#0f0f15',   // primary card surface
-    cardDeep:  '#0a0a10',   // sunken section (footer in-card)
+    cardDeep:  '#050505',   // sunken section (footer in-card)
     surface:   '#15151f',   // raised inner elements (info chips)
-    border:    '#22222e',   // visible 1px borders
+    border:    'rgba(255,255,255,0.08)',   // visible 1px borders
     borderSoft:'#1a1a24',
   },
 
   text: {
     primary:   '#fafafa',
     secondary: '#d4d4d8',
-    muted:     '#a1a1aa',
-    dim:       '#71717a',
-    faint:     '#52525b',
+    muted:     '#B1B5BA',
+    dim:       '#9CA3AF',
+    faint:     '#6B7280',
   },
 
   // ── Signature gradients (the AI / cinematic feel) ────────────────────────
   gradient: {
-    hero:      'linear-gradient(135deg, #7c3aed 0%, #5b21b6 35%, #1e3a8a 75%, #06b6d4 100%)',
-    cta:       'linear-gradient(135deg, #7c3aed 0%, #4f46e5 50%, #2563eb 100%)',
-    ctaHover:  'linear-gradient(135deg, #8b5cf6 0%, #6366f1 50%, #3b82f6 100%)',
-    accent:    'linear-gradient(90deg, transparent 0%, #7c3aed 35%, #06b6d4 65%, transparent 100%)',
-    divider:   'linear-gradient(90deg, transparent 0%, rgba(124,58,237,0.55) 50%, transparent 100%)',
-    surface:   'linear-gradient(135deg, rgba(124,58,237,0.06) 0%, rgba(37,99,235,0.06) 100%)',
+    hero:      'linear-gradient(135deg, #4F7CFF 0%, #2046C2 35%, #1e3a8a 75%, #06b6d4 100%)',
+    cta:       'linear-gradient(135deg, #4F7CFF 0%, #4f46e5 50%, #2563eb 100%)',
+    ctaHover:  'linear-gradient(135deg, #8b5cf6 0%, #4F7CFF 50%, #3b82f6 100%)',
+    accent:    'linear-gradient(90deg, transparent 0%, #4F7CFF 35%, #06b6d4 65%, transparent 100%)',
+    divider:   'linear-gradient(90deg, transparent 0%, rgba(79, 124, 255, 0.32) 50%, transparent 100%)',
+    surface:   'linear-gradient(135deg, rgba(79, 124, 255, 0.06) 0%, rgba(37,99,235,0.06) 100%)',
   },
 
   // ── Glow / shadow tokens (box-shadow strings) ────────────────────────────
   glow: {
-    soft:      '0 8px 32px rgba(124,58,237,0.18), 0 2px 8px rgba(0,0,0,0.4)',
-    medium:    '0 14px 48px rgba(124,58,237,0.35), 0 4px 16px rgba(37,99,235,0.18)',
-    strong:    '0 20px 60px rgba(124,58,237,0.55), 0 6px 20px rgba(37,99,235,0.32)',
-    ring:      '0 0 0 1px rgba(124,58,237,0.4), 0 12px 40px rgba(124,58,237,0.35)',
+    soft:      '0 8px 32px rgba(79, 124, 255, 0.18), 0 2px 8px rgba(0,0,0,0.4)',
+    medium:    '0 14px 48px rgba(79, 124, 255, 0.35), 0 4px 16px rgba(37,99,235,0.18)',
+    strong:    '0 20px 60px rgba(79, 124, 255, 0.32), 0 6px 20px rgba(37,99,235,0.32)',
+    ring:      '0 0 0 1px rgba(79, 124, 255, 0.4), 0 12px 40px rgba(79, 124, 255, 0.35)',
   },
 
   // ── Typography ───────────────────────────────────────────────────────────

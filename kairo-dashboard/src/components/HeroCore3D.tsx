@@ -64,8 +64,8 @@ export default function HeroCore3D({ scrollProgress, pointerXRef, pointerYRef, c
         camera={{ position: [0, 0, 8.0], fov: 36 }}
         style={{ background: 'transparent' }}>
         <ambientLight intensity={0.3} />
-        <directionalLight position={[3, 4, 5]} intensity={0.65} color="#c4b5fd" />
-        <pointLight position={[-4, 2, 4]} intensity={0.8} color="#a78bfa" />
+        <directionalLight position={[3, 4, 5]} intensity={0.65} color="#A5B4FC" />
+        <pointLight position={[-4, 2, 4]} intensity={0.8} color="#66D9FF" />
         <pointLight position={[4, -2, 3]} intensity={0.6} color="#ffffff" />
 
         <CoreScene
@@ -74,7 +74,7 @@ export default function HeroCore3D({ scrollProgress, pointerXRef, pointerYRef, c
           pointerYRef={pointerYRef}
         />
 
-        <fog attach="fog" args={['#06060a', 5, 14]} />
+        <fog attach="fog" args={['#050505', 5, 14]} />
       </Canvas>
     </div>
   )
@@ -207,13 +207,13 @@ function CoreScene({ scrollRef, pointerXRef, pointerYRef }: {
       {/* Soft halo backplate */}
       <mesh ref={haloRef}>
         <sphereGeometry args={[2.4, 32, 32]} />
-        <meshBasicMaterial color="#a78bfa" transparent opacity={0.35} side={THREE.BackSide} depthWrite={false} />
+        <meshBasicMaterial color="#66D9FF" transparent opacity={0.35} side={THREE.BackSide} depthWrite={false} />
       </mesh>
 
       {/* Tilted orbit rings */}
       <mesh ref={ring1Ref} rotation={[Math.PI / 2.6, 0, 0]}>
         <torusGeometry args={[1.65, 0.012, 16, 96]} />
-        <meshBasicMaterial color="#c4b5fd" transparent opacity={0.6} depthWrite={false} />
+        <meshBasicMaterial color="#A5B4FC" transparent opacity={0.6} depthWrite={false} />
       </mesh>
       <mesh ref={ring2Ref} rotation={[Math.PI / 3, Math.PI / 2.8, 0]}>
         <torusGeometry args={[1.95, 0.010, 16, 96]} />
@@ -224,8 +224,8 @@ function CoreScene({ scrollRef, pointerXRef, pointerYRef }: {
       <mesh ref={coreRef}>
         <icosahedronGeometry args={[1.05, 1]} />
         <meshStandardMaterial
-          color="#5b21b6"
-          emissive="#a78bfa"
+          color="#2046C2"
+          emissive="#66D9FF"
           emissiveIntensity={0.9}
           roughness={0.25}
           metalness={0.55}
@@ -236,7 +236,7 @@ function CoreScene({ scrollRef, pointerXRef, pointerYRef }: {
       {/* Wireframe overlay — gives the core that "AI mesh" feel */}
       <mesh ref={wireRef}>
         <icosahedronGeometry args={[1.20, 1]} />
-        <meshBasicMaterial color="#c4b5fd" wireframe transparent opacity={0.55} depthWrite={false} />
+        <meshBasicMaterial color="#A5B4FC" wireframe transparent opacity={0.55} depthWrite={false} />
       </mesh>
 
       {/* Spark particle swarm */}

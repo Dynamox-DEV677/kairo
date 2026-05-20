@@ -15,7 +15,7 @@ Be specific and use markdown formatting.`
 
 const sel = (value: string, onChange: (v: string) => void, options: string[]) => (
   <select value={value} onChange={e => onChange(e.target.value)}
-    style={{ width: '100%', background: '#111', border: '1px solid #1e1e1e', borderRadius: 8, padding: '9px 12px', fontSize: 13, color: '#fafafa', fontFamily: 'inherit', outline: 'none', appearance: 'none' }}>
+    style={{ width: '100%', background: '#0E1117', border: '1px solid #1f2532', borderRadius: 8, padding: '9px 12px', fontSize: 13, color: '#fafafa', fontFamily: 'inherit', outline: 'none', appearance: 'none' }}>
     {options.map(o => <option key={o}>{o}</option>)}
   </select>
 )
@@ -41,31 +41,31 @@ export default function ExamPredictor() {
     <div style={{ padding: '28px 36px', maxWidth: 900, margin: '0 auto', height: '100%', overflowY: 'auto' }}>
       <div style={{ marginBottom: 24 }}>
         <h1 style={{ fontSize: 20, fontWeight: 700, color: '#fafafa', margin: 0 }}>Exam Predictor</h1>
-        <p style={{ fontSize: 13, color: '#52525b', marginTop: 4 }}>10-year pattern analysis — highest probability topics</p>
+        <p style={{ fontSize: 13, color: '#6B7280', marginTop: 4 }}>10-year pattern analysis — highest probability topics</p>
       </div>
 
-      <div style={{ background: '#111', border: '1px solid #1e1e1e', borderRadius: 14, padding: 24, marginBottom: 24 }}>
+      <div style={{ background: '#0E1117', border: '1px solid #1f2532', borderRadius: 14, padding: 24, marginBottom: 24 }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14, marginBottom: 20 }}>
           <div>
-            <label style={{ fontSize: 11, fontWeight: 600, color: '#71717a', display: 'block', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.8 }}>Board</label>
+            <label style={{ fontSize: 11, fontWeight: 600, color: '#9CA3AF', display: 'block', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.8 }}>Board</label>
             {sel(board, setBoard, ['CBSE','ICSE','Maharashtra HSC','Tamil Nadu','Karnataka','UP Board','Bihar Board'])}
           </div>
           <div>
-            <label style={{ fontSize: 11, fontWeight: 600, color: '#71717a', display: 'block', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.8 }}>Class</label>
+            <label style={{ fontSize: 11, fontWeight: 600, color: '#9CA3AF', display: 'block', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.8 }}>Class</label>
             {sel(cls, setCls, ['9','10','11','12'])}
           </div>
           <div>
-            <label style={{ fontSize: 11, fontWeight: 600, color: '#71717a', display: 'block', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.8 }}>Subject</label>
+            <label style={{ fontSize: 11, fontWeight: 600, color: '#9CA3AF', display: 'block', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.8 }}>Subject</label>
             {sel(subject, setSubject, ['Mathematics','Physics','Chemistry','Biology','English','Hindi','History','Geography','Economics','Accounts','Business Studies','Computer Science'])}
           </div>
         </div>
 
-        {error && <p style={{ fontSize: 12, color: '#a78bfa', marginBottom: 14 }}>{error}</p>}
+        {error && <p style={{ fontSize: 12, color: '#66D9FF', marginBottom: 14 }}>{error}</p>}
 
         <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} onClick={predict} disabled={loading}
           style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '11px 22px', borderRadius: 10, border: 'none',
-            background: 'linear-gradient(135deg, #7c3aed, #7c3aed)', color: '#fff', fontFamily: 'inherit', fontSize: 14, fontWeight: 600,
-            cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.6 : 1, boxShadow: '0 0 20px rgba(124, 58, 237,0.3)' }}>
+            background: 'linear-gradient(135deg, #4F7CFF, #4F7CFF)', color: '#fff', fontFamily: 'inherit', fontSize: 14, fontWeight: 600,
+            cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.6 : 1, boxShadow: '0 0 20px rgba(79, 124, 255, 0.3)' }}>
           <Sparkles size={14} />
           {loading ? 'Analysing patterns…' : 'Predict exam topics'}
         </motion.button>
@@ -74,15 +74,15 @@ export default function ExamPredictor() {
       {loading && (
         <div style={{ textAlign: 'center', padding: 60 }}>
           <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginBottom: 14 }}>
-            {[0,1,2].map(i => <div key={i} style={{ width: 8, height: 8, borderRadius: '50%', background: '#7c3aed', animation: `dot-bounce 1.2s ease-in-out ${i * 0.2}s infinite` }} />)}
+            {[0,1,2].map(i => <div key={i} style={{ width: 8, height: 8, borderRadius: '50%', background: '#4F7CFF', animation: `dot-bounce 1.2s ease-in-out ${i * 0.2}s infinite` }} />)}
           </div>
-          <p style={{ fontSize: 13, color: '#52525b' }}>Analysing 10 years of question papers…</p>
+          <p style={{ fontSize: 13, color: '#6B7280' }}>Analysing 10 years of question papers…</p>
         </div>
       )}
 
       {prediction && !loading && (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-          style={{ background: '#111', border: '1px solid #1e1e1e', borderRadius: 14, padding: '28px 32px' }}>
+          style={{ background: '#0E1117', border: '1px solid #1f2532', borderRadius: 14, padding: '28px 32px' }}>
           <div className="prose-ai"><ReactMarkdown remarkPlugins={[remarkGfm]}>{prediction}</ReactMarkdown></div>
         </motion.div>
       )}

@@ -24,14 +24,14 @@ import { saveToNotebook } from '../lib/notebook'
 const SUBJECTS = ['Mathematics', 'Physics', 'Chemistry', 'Biology', 'English', 'Hindi', 'History', 'Geography', 'Political Science', 'Economics', 'Computer Science']
 const GRADES   = ['6', '7', '8', '9', '10', '11', '12']
 
-const card: React.CSSProperties = { background: '#111', border: '1px solid #1e1e1e', borderRadius: 14 }
+const card: React.CSSProperties = { background: '#0E1117', border: '1px solid #1f2532', borderRadius: 14 }
 const inp: React.CSSProperties = {
-  background: '#0d0d0d', border: '1px solid #1e1e1e', borderRadius: 8,
+  background: '#0E1117', border: '1px solid #1f2532', borderRadius: 8,
   padding: '9px 12px', fontSize: 13, color: '#fafafa',
   fontFamily: 'inherit', outline: 'none', width: '100%', boxSizing: 'border-box',
 }
 const lbl: React.CSSProperties = {
-  fontSize: 11, color: '#71717a', display: 'block', marginBottom: 5,
+  fontSize: 11, color: '#9CA3AF', display: 'block', marginBottom: 5,
   fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.8,
 }
 
@@ -48,11 +48,11 @@ interface Pack {
 }
 
 const ARTIFACTS = [
-  { id: 'lesson_plan',    label: 'Lesson Plan',    icon: FileText,      color: '#a78bfa' },
-  { id: 'homework',       label: 'Homework',        icon: ClipboardList, color: '#c4b5fd' },
-  { id: 'flashcards',     label: 'Flashcards',      icon: BookMarked,    color: '#c4b5fd' },
-  { id: 'quiz',           label: 'Quiz',            icon: CheckCircle2,  color: '#c4b5fd' },
-  { id: 'revision_sheet', label: 'Revision Sheet',  icon: BookOpen,      color: '#c4b5fd' },
+  { id: 'lesson_plan',    label: 'Lesson Plan',    icon: FileText,      color: '#66D9FF' },
+  { id: 'homework',       label: 'Homework',        icon: ClipboardList, color: '#A5B4FC' },
+  { id: 'flashcards',     label: 'Flashcards',      icon: BookMarked,    color: '#A5B4FC' },
+  { id: 'quiz',           label: 'Quiz',            icon: CheckCircle2,  color: '#A5B4FC' },
+  { id: 'revision_sheet', label: 'Revision Sheet',  icon: BookOpen,      color: '#A5B4FC' },
 ]
 
 export default function TeacherAssistant() {
@@ -232,15 +232,15 @@ Markdown structure:
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 22 }}>
         <div style={{
           width: 44, height: 44, borderRadius: 11,
-          background: 'linear-gradient(135deg, #a78bfa, #a78bfa)',
+          background: 'linear-gradient(135deg, #66D9FF, #66D9FF)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 0 18px rgba(167, 139, 250,0.4)', flexShrink: 0,
+          boxShadow: '0 0 18px rgba(102, 217, 255, 0.4)', flexShrink: 0,
         }}>
           <Bot size={22} color="#fff" />
         </div>
         <div style={{ flex: 1 }}>
           <h1 style={{ fontSize: 20, fontWeight: 700, color: '#fafafa', margin: 0 }}>AI Teacher Assistant</h1>
-          <p style={{ fontSize: 13, color: '#52525b', marginTop: 4 }}>
+          <p style={{ fontSize: 13, color: '#6B7280', marginTop: 4 }}>
             One topic in · lesson plan, homework, flashcards, quiz, revision sheet out.
           </p>
         </div>
@@ -285,19 +285,19 @@ Markdown structure:
               style={{ width: '100%' }} />
           </div>
 
-          {err && <p style={{ fontSize: 12, color: '#a78bfa', marginBottom: 12 }}>{err}</p>}
+          {err && <p style={{ fontSize: 12, color: '#66D9FF', marginBottom: 12 }}>{err}</p>}
 
           <motion.button
             whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
             onClick={generate} disabled={busy || !topic.trim()}
             style={{
               width: '100%', padding: '13px', borderRadius: 11, border: 'none',
-              background: busy || !topic.trim() ? '#1c1c1c' : 'linear-gradient(135deg, #a78bfa, #a78bfa)',
-              color: busy || !topic.trim() ? '#52525b' : '#fff',
+              background: busy || !topic.trim() ? '#1a1f2e' : 'linear-gradient(135deg, #66D9FF, #66D9FF)',
+              color: busy || !topic.trim() ? '#6B7280' : '#fff',
               fontFamily: 'inherit', fontSize: 14, fontWeight: 700,
               cursor: busy || !topic.trim() ? 'not-allowed' : 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-              boxShadow: busy || !topic.trim() ? 'none' : '0 0 22px rgba(167, 139, 250,0.4)',
+              boxShadow: busy || !topic.trim() ? 'none' : '0 0 22px rgba(102, 217, 255, 0.4)',
             }}>
             {busy
               ? <><Loader2 size={14} style={{ animation: 'spin 0.8s linear infinite' }} /> {progress || 'Generating…'}</>
@@ -307,8 +307,8 @@ Markdown structure:
           {busy && (
             <div style={{
               marginTop: 14, padding: '10px 14px', borderRadius: 8,
-              background: 'rgba(167, 139, 250,0.06)', border: '1px solid rgba(167, 139, 250,0.2)',
-              fontSize: 11.5, color: '#c4b5fd',
+              background: 'rgba(102, 217, 255, 0.06)', border: '1px solid rgba(102, 217, 255, 0.2)',
+              fontSize: 11.5, color: '#A5B4FC',
             }}>
               This runs 5 AI calls in sequence — typically 30-60 seconds total.
             </div>
@@ -328,14 +328,14 @@ Markdown structure:
               <div style={{ fontSize: 13, fontWeight: 700, color: '#fafafa' }}>
                 {pack.meta.topic}
               </div>
-              <div style={{ fontSize: 11, color: '#52525b', marginTop: 2 }}>
+              <div style={{ fontSize: 11, color: '#6B7280', marginTop: 2 }}>
                 {board} Class {pack.meta.grade} · {pack.meta.subject} · {pack.meta.duration} min
               </div>
             </div>
             <button onClick={() => { setPack(null); setTopic('') }}
               style={{
-                padding: '7px 12px', borderRadius: 7, border: '1px solid #1e1e1e',
-                background: '#161616', color: '#71717a', cursor: 'pointer',
+                padding: '7px 12px', borderRadius: 7, border: '1px solid #1f2532',
+                background: '#151922', color: '#9CA3AF', cursor: 'pointer',
                 fontFamily: 'inherit', fontSize: 11, display: 'flex', alignItems: 'center', gap: 5,
               }}>
               <RefreshCw size={11} /> New Pack
@@ -344,8 +344,8 @@ Markdown structure:
 
           {/* Tab strip */}
           <div style={{
-            display: 'flex', gap: 4, marginBottom: 12, background: '#0d0d0d',
-            border: '1px solid #1e1e1e', borderRadius: 10, padding: 4, overflowX: 'auto',
+            display: 'flex', gap: 4, marginBottom: 12, background: '#0E1117',
+            border: '1px solid #1f2532', borderRadius: 10, padding: 4, overflowX: 'auto',
           }}>
             {ARTIFACTS.map(a => {
               const isActive = activeTab === a.id
@@ -356,11 +356,11 @@ Markdown structure:
                     display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px',
                     borderRadius: 7, border: 'none', fontFamily: 'inherit',
                     fontSize: 12, fontWeight: 600, cursor: 'pointer', flexShrink: 0,
-                    background: isActive ? '#1e1e2e' : 'transparent',
-                    color: isActive ? a.color : '#52525b',
+                    background: isActive ? '#1f2532' : 'transparent',
+                    color: isActive ? a.color : '#6B7280',
                   }}>
                   <a.icon size={12} /> {a.label}
-                  {isSaved && <CheckCircle2 size={11} color="#c4b5fd" />}
+                  {isSaved && <CheckCircle2 size={11} color="#A5B4FC" />}
                 </button>
               )
             })}
@@ -371,9 +371,9 @@ Markdown structure:
             {/* Toolbar */}
             <div style={{
               display: 'flex', justifyContent: 'flex-end', gap: 6, marginBottom: 14,
-              paddingBottom: 12, borderBottom: '1px solid #1a1a1a',
+              paddingBottom: 12, borderBottom: '1px solid #1a1f2e',
             }}>
-              <button onClick={saveCurrentTab} disabled={savedTabs.has(activeTab)} style={toolBtn(savedTabs.has(activeTab) ? '#c4b5fd' : '#c4b5fd')}>
+              <button onClick={saveCurrentTab} disabled={savedTabs.has(activeTab)} style={toolBtn(savedTabs.has(activeTab) ? '#A5B4FC' : '#A5B4FC')}>
                 <Save size={11} />{savedTabs.has(activeTab) ? 'Saved' : 'Save to Notebook'}
               </button>
               <button onClick={() => {
@@ -384,7 +384,7 @@ Markdown structure:
                 if (activeTab === 'quiz')           c = JSON.stringify(pack.quiz, null, 2)
                 if (activeTab === 'revision_sheet') c = pack.revision_sheet
                 copyText(c)
-              }} style={toolBtn('#71717a')}>
+              }} style={toolBtn('#9CA3AF')}>
                 <Copy size={11} /> Copy
               </button>
               <button onClick={() => {
@@ -395,7 +395,7 @@ Markdown structure:
                 if (activeTab === 'quiz')           c = pack.quiz.map((q, i) => `Q${i + 1}. ${q.q}\n${q.options.map((o, j) => `${String.fromCharCode(65 + j)}. ${o}`).join('\n')}\nAnswer: ${String.fromCharCode(65 + q.answer)}\n${q.explain}`).join('\n\n')
                 if (activeTab === 'revision_sheet') c = pack.revision_sheet
                 downloadAs(activeTab, c)
-              }} style={toolBtn('#71717a')}>
+              }} style={toolBtn('#9CA3AF')}>
                 <Download size={11} /> Download .md
               </button>
             </div>
@@ -416,7 +416,7 @@ Markdown structure:
             )}
           </div>
 
-          <p style={{ fontSize: 11, color: '#52525b', textAlign: 'center', marginTop: 12 }}>
+          <p style={{ fontSize: 11, color: '#6B7280', textAlign: 'center', marginTop: 12 }}>
             Save any artifact to your AI Notebook so you can reuse it later.
           </p>
         </motion.div>
@@ -427,20 +427,20 @@ Markdown structure:
 
 // ─── Flashcards view ──────────────────────────────────────────────────────────
 function FlashcardsView({ cards }: { cards: Flashcard[] }) {
-  if (cards.length === 0) return <p style={{ color: '#52525b', fontSize: 13 }}>No flashcards generated.</p>
+  if (cards.length === 0) return <p style={{ color: '#6B7280', fontSize: 13 }}>No flashcards generated.</p>
   return (
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 10 }}>
       {cards.map((c, i) => (
         <div key={i} style={{
-          background: '#0d0d0d', border: '1px solid #2d2b55', borderRadius: 10, padding: 14,
+          background: '#0E1117', border: '1px solid #2d2b55', borderRadius: 10, padding: 14,
         }}>
-          <div style={{ fontSize: 10, fontWeight: 700, color: '#52525b', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>
+          <div style={{ fontSize: 10, fontWeight: 700, color: '#6B7280', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>
             #{i + 1} · Front
           </div>
           <div style={{ fontSize: 13, color: '#fafafa', fontWeight: 600, marginBottom: 10, lineHeight: 1.5 }}>
             {c.front}
           </div>
-          <div style={{ fontSize: 10, fontWeight: 700, color: '#52525b', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>
+          <div style={{ fontSize: 10, fontWeight: 700, color: '#6B7280', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>
             Back
           </div>
           <div style={{ fontSize: 12.5, color: '#c7d2fe', lineHeight: 1.5 }}>{c.back}</div>
@@ -453,25 +453,25 @@ function FlashcardsView({ cards }: { cards: Flashcard[] }) {
 // ─── Quiz view ────────────────────────────────────────────────────────────────
 function QuizView({ items }: { items: QuizItem[] }) {
   const [showAnswers, setShowAnswers] = useState(false)
-  if (items.length === 0) return <p style={{ color: '#52525b', fontSize: 13 }}>No quiz items generated.</p>
+  if (items.length === 0) return <p style={{ color: '#6B7280', fontSize: 13 }}>No quiz items generated.</p>
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 10 }}>
         <button onClick={() => setShowAnswers(s => !s)} style={{
           padding: '5px 12px', borderRadius: 6,
-          border: `1px solid ${showAnswers ? '#c4b5fd' : '#1e1e1e'}`,
-          background: showAnswers ? 'rgba(196, 181, 253,0.1)' : '#161616',
-          color: showAnswers ? '#c4b5fd' : '#71717a',
+          border: `1px solid ${showAnswers ? '#A5B4FC' : '#1f2532'}`,
+          background: showAnswers ? 'rgba(165, 180, 252, 0.1)' : '#151922',
+          color: showAnswers ? '#A5B4FC' : '#9CA3AF',
           cursor: 'pointer', fontFamily: 'inherit', fontSize: 11, fontWeight: 600,
         }}>{showAnswers ? 'Hide Answers' : 'Reveal Answers'}</button>
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         {items.map((q, i) => (
           <div key={i} style={{
-            background: '#0d0d0d', border: '1px solid #1a1a1a', borderRadius: 10, padding: 14,
+            background: '#0E1117', border: '1px solid #1a1f2e', borderRadius: 10, padding: 14,
           }}>
             <div style={{ fontSize: 13, fontWeight: 600, color: '#fafafa', marginBottom: 10 }}>
-              <span style={{ color: '#c4b5fd', fontWeight: 800, marginRight: 6 }}>Q{i + 1}.</span>
+              <span style={{ color: '#A5B4FC', fontWeight: 800, marginRight: 6 }}>Q{i + 1}.</span>
               {q.q}
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 6, marginBottom: showAnswers ? 10 : 0 }}>
@@ -480,9 +480,9 @@ function QuizView({ items }: { items: QuizItem[] }) {
                 return (
                   <div key={j} style={{
                     padding: '7px 10px', borderRadius: 6, fontSize: 12,
-                    border: `1px solid ${showAnswers && isAnswer ? 'rgba(196, 181, 253,0.4)' : '#1a1a1a'}`,
-                    background: showAnswers && isAnswer ? 'rgba(196, 181, 253,0.08)' : '#0a0a0a',
-                    color: showAnswers && isAnswer ? '#c4b5fd' : '#a1a1aa',
+                    border: `1px solid ${showAnswers && isAnswer ? 'rgba(165, 180, 252, 0.4)' : '#1a1f2e'}`,
+                    background: showAnswers && isAnswer ? 'rgba(165, 180, 252, 0.08)' : '#050505',
+                    color: showAnswers && isAnswer ? '#A5B4FC' : '#B1B5BA',
                     display: 'flex', alignItems: 'center', gap: 8,
                   }}>
                     <span style={{ fontWeight: 700, fontSize: 10 }}>{String.fromCharCode(65 + j)}</span>
@@ -493,11 +493,11 @@ function QuizView({ items }: { items: QuizItem[] }) {
             </div>
             {showAnswers && (
               <div style={{
-                fontSize: 11.5, color: '#a1a1aa', lineHeight: 1.5,
-                padding: '7px 10px', background: '#0a0a0a',
-                border: '1px solid #1a1a1a', borderRadius: 6,
+                fontSize: 11.5, color: '#B1B5BA', lineHeight: 1.5,
+                padding: '7px 10px', background: '#050505',
+                border: '1px solid #1a1f2e', borderRadius: 6,
               }}>
-                <strong style={{ color: '#c4b5fd' }}>Why:</strong> {q.explain}
+                <strong style={{ color: '#A5B4FC' }}>Why:</strong> {q.explain}
               </div>
             )}
           </div>

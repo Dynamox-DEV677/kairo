@@ -126,11 +126,11 @@ export default function ConfirmModal({
   if (typeof document === 'undefined') return null
 
   const danger = tone === 'danger'
-  const accentColor = danger ? '#f87171' : '#a78bfa'
-  const glowColor   = danger ? 'rgba(248,113,113,0.35)' : 'rgba(124,58,237,0.35)'
+  const accentColor = danger ? '#f87171' : '#66D9FF'
+  const glowColor   = danger ? 'rgba(248,113,113,0.35)' : 'rgba(79, 124, 255, 0.35)'
   const confirmGradient = danger
     ? 'linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)'
-    : 'linear-gradient(135deg, #7c3aed 0%, #4f46e5 50%, #2563eb 100%)'
+    : 'linear-gradient(135deg, #4F7CFF 0%, #4f46e5 50%, #2563eb 100%)'
 
   const DefaultIcon = danger ? AlertTriangle : Sparkles
 
@@ -161,8 +161,8 @@ export default function ConfirmModal({
             role="dialog" aria-modal="true" aria-labelledby="kairo-confirm-title"
             style={{
               width: '100%', maxWidth: 420,
-              background: 'linear-gradient(180deg, #14141f 0%, #0d0d15 100%)',
-              border: `1px solid ${danger ? 'rgba(248,113,113,0.32)' : 'rgba(124,58,237,0.32)'}`,
+              background: 'linear-gradient(180deg, #151922 0%, #0d0d15 100%)',
+              border: `1px solid ${danger ? 'rgba(248,113,113,0.32)' : 'rgba(79, 124, 255, 0.32)'}`,
               borderRadius: 18,
               padding: 24,
               position: 'relative',
@@ -186,8 +186,8 @@ export default function ConfirmModal({
               style={{
                 position: 'absolute', top: 14, right: 14,
                 width: 28, height: 28, borderRadius: 8,
-                border: '1px solid #22222e', background: 'transparent',
-                color: '#71717a', cursor: 'pointer',
+                border: '1px solid rgba(255,255,255,0.08)', background: 'transparent',
+                color: '#9CA3AF', cursor: 'pointer',
                 display: 'grid', placeItems: 'center',
               }}
             >
@@ -197,8 +197,8 @@ export default function ConfirmModal({
             {/* Icon */}
             <div style={{
               width: 44, height: 44, borderRadius: 12,
-              background: danger ? 'rgba(248,113,113,0.12)' : 'rgba(124,58,237,0.12)',
-              border:    `1px solid ${danger ? 'rgba(248,113,113,0.32)' : 'rgba(124,58,237,0.32)'}`,
+              background: danger ? 'rgba(248,113,113,0.12)' : 'rgba(79, 124, 255, 0.12)',
+              border:    `1px solid ${danger ? 'rgba(248,113,113,0.32)' : 'rgba(79, 124, 255, 0.32)'}`,
               display: 'grid', placeItems: 'center',
               marginBottom: 14,
               position: 'relative',
@@ -218,7 +218,7 @@ export default function ConfirmModal({
             {/* Body */}
             {body && (
               <p style={{
-                margin: '8px 0 0', fontSize: 13.5, color: '#a1a1aa', lineHeight: 1.6,
+                margin: '8px 0 0', fontSize: 13.5, color: '#B1B5BA', lineHeight: 1.6,
               }}>
                 {body}
               </p>

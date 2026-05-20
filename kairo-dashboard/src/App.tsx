@@ -292,11 +292,11 @@ export default function App() {
       <>
         <div style={{
           minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
-          background: '#0a0a0a',
+          background: '#050505',
         }}>
           <div style={{
             width: 36, height: 36, borderRadius: '50%',
-            border: '2px solid #1e1e1e', borderTopColor: '#a78bfa',
+            border: '2px solid #1f2532', borderTopColor: '#66D9FF',
             animation: 'spin 0.8s linear infinite',
           }} />
           <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>

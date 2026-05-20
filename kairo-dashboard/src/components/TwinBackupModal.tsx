@@ -20,20 +20,20 @@ import SprintOverlay, { SPRINT_PHASES, SPRINT_MIN_MS } from './SprintOverlay'
 
 // ─── Strict monochrome palette ──────────────────────────────────────────────
 const C = {
-  bg:        '#06060a',
-  panel:     '#0e0e16',
-  panel2:    '#13131d',
-  border:    '#22222e',
-  borderSoft:'#1a1a26',
+  bg:        '#050505',
+  panel:     '#0E1117',
+  panel2:    '#151922',
+  border:    'rgba(255,255,255,0.08)',
+  borderSoft:'rgba(255,255,255,0.06)',
   text:      '#fafafa',
-  textDim:   '#a1a1aa',
-  textFaint: '#71717a',
-  textGhost: '#52525b',
-  purple:    '#a78bfa',
-  purpleHi:  '#7c3aed',
-  purpleDeep:'#5b21b6',
-  purpleLite:'#c4b5fd',
-  purpleSoft:'#e9d5ff',
+  textDim:   '#B1B5BA',
+  textFaint: '#9CA3AF',
+  textGhost: '#6B7280',
+  purple:    '#66D9FF',
+  purpleHi:  '#4F7CFF',
+  purpleDeep:'#2046C2',
+  purpleLite:'#A5B4FC',
+  purpleSoft:'#DBE7FF',
 }
 
 interface Props {
@@ -188,7 +188,7 @@ export default function TwinBackupModal({ open, onClose, onChange }: Props) {
           borderRadius: 18,
           display: 'flex', flexDirection: 'column',
           overflow: 'hidden',
-          boxShadow: '0 30px 80px rgba(0,0,0,0.6), 0 0 60px rgba(124,58,237,0.15)',
+          boxShadow: '0 30px 80px rgba(0,0,0,0.6), 0 0 60px rgba(79, 124, 255, 0.15)',
         }}
       >
         {/* HEADER */}
@@ -196,13 +196,13 @@ export default function TwinBackupModal({ open, onClose, onChange }: Props) {
           padding: '18px 22px',
           borderBottom: `1px solid ${C.border}`,
           display: 'flex', alignItems: 'flex-start', gap: 14,
-          background: `linear-gradient(180deg, rgba(124,58,237,0.10), transparent)`,
+          background: `linear-gradient(180deg, rgba(79, 124, 255, 0.10), transparent)`,
         }}>
           <div style={{
             width: 40, height: 40, borderRadius: 11, flexShrink: 0,
-            background: 'linear-gradient(135deg, #c4b5fd, #7c3aed)',
+            background: 'linear-gradient(135deg, #A5B4FC, #4F7CFF)',
             display: 'grid', placeItems: 'center',
-            boxShadow: '0 8px 22px rgba(124,58,237,0.4)',
+            boxShadow: '0 8px 22px rgba(79, 124, 255, 0.4)',
           }}>
             <FileJson size={20} color="#000" />
           </div>
@@ -253,8 +253,8 @@ export default function TwinBackupModal({ open, onClose, onChange }: Props) {
               <div style={{
                 display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16,
                 padding: '12px 14px', borderRadius: 12,
-                background: 'rgba(167,139,250,0.06)',
-                border: '1px solid rgba(167,139,250,0.22)',
+                background: 'rgba(102, 217, 255, 0.06)',
+                border: '1px solid rgba(102, 217, 255, 0.22)',
               }}>
                 <Laptop size={18} color={C.purpleLite} />
                 <ChevronsRight size={14} color={C.textFaint} />
@@ -284,17 +284,17 @@ export default function TwinBackupModal({ open, onClose, onChange }: Props) {
               {/* Buttons */}
               <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
                 <motion.button
-                  whileHover={{ y: -2, boxShadow: '0 12px 30px rgba(124,58,237,0.5)' }}
+                  whileHover={{ y: -2, boxShadow: '0 12px 30px rgba(79, 124, 255, 0.32)' }}
                   whileTap={{ scale: 0.97 }}
                   onClick={downloadFile}
                   style={{
                     flex: 1, minWidth: 200,
                     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
                     padding: '13px 20px', borderRadius: 12, border: 'none',
-                    background: 'linear-gradient(135deg, #c4b5fd, #7c3aed)',
+                    background: 'linear-gradient(135deg, #A5B4FC, #4F7CFF)',
                     color: '#000', fontFamily: 'inherit', fontSize: 14, fontWeight: 800,
                     cursor: 'pointer',
-                    boxShadow: '0 8px 24px rgba(124,58,237,0.4)',
+                    boxShadow: '0 8px 24px rgba(79, 124, 255, 0.4)',
                   }}>
                   <Download size={15} /> Download JSON
                 </motion.button>
@@ -316,7 +316,7 @@ export default function TwinBackupModal({ open, onClose, onChange }: Props) {
 
               <div style={{
                 marginTop: 18, padding: '12px 14px', borderRadius: 10,
-                background: 'rgba(196,181,253,0.04)', border: '1px solid rgba(196,181,253,0.16)',
+                background: 'rgba(165, 180, 252, 0.04)', border: '1px solid rgba(165, 180, 252, 0.16)',
                 display: 'flex', alignItems: 'flex-start', gap: 10,
               }}>
                 <Sparkles size={13} color={C.purpleLite} style={{ marginTop: 2, flexShrink: 0 }} />
@@ -366,8 +366,8 @@ export default function TwinBackupModal({ open, onClose, onChange }: Props) {
                   width: '100%',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
                   padding: '20px', borderRadius: 14,
-                  background: 'rgba(167,139,250,0.05)',
-                  border: '2px dashed rgba(167,139,250,0.4)',
+                  background: 'rgba(102, 217, 255, 0.05)',
+                  border: '2px dashed rgba(102, 217, 255, 0.4)',
                   color: C.purpleLite, fontFamily: 'inherit', fontSize: 13.5, fontWeight: 700,
                   cursor: 'pointer', textAlign: 'center',
                   marginBottom: 14,
@@ -403,7 +403,7 @@ export default function TwinBackupModal({ open, onClose, onChange }: Props) {
                   marginTop: 12, width: '100%',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
                   padding: '13px', borderRadius: 12, border: 'none',
-                  background: importText.trim() ? 'linear-gradient(135deg, #c4b5fd, #7c3aed)' : C.panel2,
+                  background: importText.trim() ? 'linear-gradient(135deg, #A5B4FC, #4F7CFF)' : C.panel2,
                   color: importText.trim() ? '#000' : C.textGhost,
                   fontFamily: 'inherit', fontSize: 14, fontWeight: 800,
                   cursor: importText.trim() ? 'pointer' : 'not-allowed',
@@ -457,7 +457,7 @@ function ModeCard({ selected, onClick, title, sub }: { selected: boolean; onClic
       onClick={onClick}
       style={{
         padding: '12px 14px', borderRadius: 10, textAlign: 'left',
-        background: selected ? 'rgba(167,139,250,0.10)' : C.panel2,
+        background: selected ? 'rgba(102, 217, 255, 0.10)' : C.panel2,
         border: `1px solid ${selected ? C.purple : C.borderSoft}`,
         cursor: 'pointer', fontFamily: 'inherit', color: 'inherit',
         transition: 'all 0.18s',
@@ -481,10 +481,10 @@ function ResultPanel({ result }: { result: ImportResult }) {
     return (
       <div style={{
         marginTop: 14, padding: '12px 14px', borderRadius: 10,
-        background: 'rgba(124,58,237,0.06)', border: '1px solid rgba(124,58,237,0.32)',
+        background: 'rgba(79, 124, 255, 0.06)', border: '1px solid rgba(79, 124, 255, 0.32)',
         display: 'flex', alignItems: 'flex-start', gap: 10,
       }}>
-        <AlertTriangle size={14} color="#a78bfa" style={{ marginTop: 1, flexShrink: 0 }} />
+        <AlertTriangle size={14} color="#66D9FF" style={{ marginTop: 1, flexShrink: 0 }} />
         <p style={{ margin: 0, fontSize: 12.5, color: C.textDim, lineHeight: 1.55 }}>{msg}</p>
       </div>
     )
@@ -494,7 +494,7 @@ function ResultPanel({ result }: { result: ImportResult }) {
       initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
       style={{
         marginTop: 14, padding: '14px 16px', borderRadius: 12,
-        background: 'rgba(196,181,253,0.08)', border: '1px solid rgba(196,181,253,0.4)',
+        background: 'rgba(165, 180, 252, 0.08)', border: '1px solid rgba(165, 180, 252, 0.4)',
       }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
         <Check size={14} color={C.purpleLite} />
@@ -522,7 +522,7 @@ function Pill({ children }: { children: React.ReactNode }) {
   return (
     <span style={{
       padding: '3px 8px', borderRadius: 999,
-      background: 'rgba(167,139,250,0.10)', border: '1px solid rgba(167,139,250,0.25)',
+      background: 'rgba(102, 217, 255, 0.10)', border: '1px solid rgba(102, 217, 255, 0.25)',
       fontWeight: 600,
     }}>{children}</span>
   )

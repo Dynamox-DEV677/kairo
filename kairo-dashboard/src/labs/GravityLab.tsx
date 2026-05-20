@@ -118,7 +118,7 @@ function Ground() {
         position={[0, 0.001, 0]}
         args={[40, 40]}
         cellSize={1} cellThickness={0.5} cellColor="#27272a"
-        sectionSize={5} sectionThickness={1} sectionColor="#3f3f46"
+        sectionSize={5} sectionThickness={1} sectionColor="#4B5563"
         fadeDistance={30} fadeStrength={1.5}
         infiniteGrid
       />
@@ -130,9 +130,9 @@ function LoaderChip() {
   return (
     <Html center>
       <div style={{
-        background: 'rgba(13,13,13,0.85)', border: '1px solid rgba(99,102,241,0.4)',
+        background: 'rgba(13,13,13,0.85)', border: '1px solid rgba(79, 124, 255, 0.4)',
         borderRadius: 10, padding: '8px 14px', fontFamily: 'inherit',
-        fontSize: 11, color: '#a5b4fc', whiteSpace: 'nowrap',
+        fontSize: 11, color: '#A5B4FC', whiteSpace: 'nowrap',
       }}>
         Loading scene…
       </div>
@@ -251,17 +251,17 @@ function FallingApple({ gravity, airDrag, startHeight, playing }: {
       <group ref={velRef} position={[0, startHeight, 0]}>
         <mesh position={[0, 0, 0]}>
           <cylinderGeometry args={[0.05, 0.05, 1, 12]} />
-          <meshStandardMaterial color="#fbbf24" emissive="#fbbf24" emissiveIntensity={0.6} />
+          <meshStandardMaterial color="#C7D2E8" emissive="#C7D2E8" emissiveIntensity={0.6} />
         </mesh>
         <mesh position={[0, -0.55, 0]}>
           <coneGeometry args={[0.15, 0.3, 12]} rotation={[Math.PI, 0, 0]} />
-          <meshStandardMaterial color="#fbbf24" emissive="#fbbf24" emissiveIntensity={0.6} />
+          <meshStandardMaterial color="#C7D2E8" emissive="#C7D2E8" emissiveIntensity={0.6} />
         </mesh>
         <Html position={[0.35, -0.1, 0]} center>
           <div style={{
             background: 'rgba(13,13,13,0.85)', padding: '2px 6px', borderRadius: 4,
-            fontFamily: 'monospace', fontSize: 9, color: '#fbbf24', whiteSpace: 'nowrap',
-            border: '1px solid rgba(251,191,36,0.4)', pointerEvents: 'none',
+            fontFamily: 'monospace', fontSize: 9, color: '#C7D2E8', whiteSpace: 'nowrap',
+            border: '1px solid rgba(199, 210, 232, 0.4)', pointerEvents: 'none',
           }}>v</div>
         </Html>
       </group>
@@ -300,7 +300,7 @@ function DropGuide({ startHeight }: { startHeight: number }) {
       {Array.from({ length: Math.floor(startHeight) + 1 }).map((_, i) => (
         <mesh key={i} position={[0.15, i, 0]}>
           <boxGeometry args={[0.15, 0.02, 0.02]} />
-          <meshBasicMaterial color="#a5b4fc" transparent opacity={0.4} />
+          <meshBasicMaterial color="#A5B4FC" transparent opacity={0.4} />
         </mesh>
       ))}
     </group>
@@ -346,20 +346,20 @@ function LiveHUD({ params, playing }: SimProps) {
       position: 'absolute', top: 12, left: 12, zIndex: 5,
       padding: '10px 14px', borderRadius: 9,
       background: 'rgba(13,13,13,0.85)', backdropFilter: 'blur(10px)',
-      border: '1px solid rgba(99,102,241,0.3)',
+      border: '1px solid rgba(79, 124, 255, 0.3)',
       fontFamily: 'Consolas, monospace', fontSize: 11,
-      color: '#a5b4fc', minWidth: 130,
+      color: '#A5B4FC', minWidth: 130,
     }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-        <span style={{ color: '#71717a' }}>velocity</span>
+        <span style={{ color: '#9CA3AF' }}>velocity</span>
         <span style={{ color: '#fafafa', fontWeight: 700 }}>{readout.v.toFixed(2)} m/s</span>
       </div>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-        <span style={{ color: '#71717a' }}>height</span>
+        <span style={{ color: '#9CA3AF' }}>height</span>
         <span style={{ color: '#fafafa', fontWeight: 700 }}>{readout.y.toFixed(2)} m</span>
       </div>
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-        <span style={{ color: '#71717a' }}>time</span>
+        <span style={{ color: '#9CA3AF' }}>time</span>
         <span style={{ color: '#fafafa', fontWeight: 700 }}>{readout.t.toFixed(2)} s</span>
       </div>
     </div>

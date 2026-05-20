@@ -18,23 +18,23 @@ const FONT = "'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Seg
 
 // ── palette ──────────────────────────────────────────────────────────────
 const C = {
-  bg:        '#06060a',
-  panel:     '#0c0c14',
-  panel2:    '#14141f',
-  border:    '#22222e',
-  borderHi:  'rgba(167,139,250,0.32)',
+  bg:        '#050505',
+  panel:     '#0E1117',
+  panel2:    '#151922',
+  border:    'rgba(255,255,255,0.08)',
+  borderHi:  'rgba(102, 217, 255, 0.32)',
   text:      '#ffffff',
-  textDim:   '#c1c1c8',
-  textFaint: '#8a8a96',
-  textVery:  '#5a5a66',
-  purple:    '#a78bfa',
-  purpleHi:  '#7c3aed',
-  purpleSoft:'#c4b5fd',
-  purpleLite:'#e9d5ff',
+  textDim:   '#CBD5E1',
+  textFaint: '#9CA3AF',
+  textVery:  '#6B7280',
+  purple:    '#66D9FF',
+  purpleHi:  '#4F7CFF',
+  purpleSoft:'#A5B4FC',
+  purpleLite:'#DBE7FF',
   // semantic — all on the purple scale so the palette stays strict
-  ok:    '#a78bfa',
-  warn:  '#c4b5fd',
-  bad:   '#5b21b6',
+  ok:    '#66D9FF',
+  warn:  '#A5B4FC',
+  bad:   '#2046C2',
 }
 
 interface StatusSnapshot {
@@ -169,7 +169,7 @@ export default function StatusPage({ onExit }: Props) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 28 }}>
           <img src="/kairo_logo.png" alt="Kairo"
             style={{ width: 38, height: 38, borderRadius: 10, objectFit: 'contain',
-                     filter: 'drop-shadow(0 0 18px rgba(124,58,237,0.35))' }} />
+                     filter: 'drop-shadow(0 0 18px rgba(79, 124, 255, 0.35))' }} />
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 14, fontWeight: 800, letterSpacing: -0.2, color: C.text }}>
               Kairo Status
@@ -195,9 +195,9 @@ export default function StatusPage({ onExit }: Props) {
             padding: '22px 24px',
             borderRadius: 18,
             background: `linear-gradient(135deg,
-              ${overall === 'ok'       ? 'rgba(167,139,250,0.10)' :
-                overall === 'degraded' ? 'rgba(196,181,253,0.10)' :
-                                         'rgba(91,33,182,0.18)'} 0%,
+              ${overall === 'ok'       ? 'rgba(102, 217, 255, 0.10)' :
+                overall === 'degraded' ? 'rgba(165, 180, 252, 0.10)' :
+                                         'rgba(32, 70, 194, 0.18)'} 0%,
               ${C.panel} 100%)`,
             border: `1px solid ${overall === 'down' ? C.borderHi : C.border}`,
             display: 'flex', alignItems: 'center', gap: 18,
@@ -316,8 +316,8 @@ export default function StatusPage({ onExit }: Props) {
               <div style={{
                 width: 38, height: 38, borderRadius: 10, flexShrink: 0,
                 background: snap.errors.totalLogged === 0
-                  ? 'rgba(167,139,250,0.10)'
-                  : 'rgba(91,33,182,0.18)',
+                  ? 'rgba(102, 217, 255, 0.10)'
+                  : 'rgba(32, 70, 194, 0.18)',
                 border: `1px solid ${C.border}`,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
@@ -342,7 +342,7 @@ export default function StatusPage({ onExit }: Props) {
         {/* Build / footer */}
         <div style={{
           padding: '12px 16px', borderRadius: 12,
-          background: 'rgba(167,139,250,0.04)',
+          background: 'rgba(102, 217, 255, 0.04)',
           border: `1px solid ${C.border}`,
           fontSize: 11, color: C.textFaint, lineHeight: 1.6,
         }}>
@@ -410,7 +410,7 @@ function StatusPill({ health }: { health: Health }) {
     <div style={{
       display: 'inline-flex', alignItems: 'center', gap: 6,
       padding: '5px 10px', borderRadius: 100,
-      background: 'rgba(167,139,250,0.08)',
+      background: 'rgba(102, 217, 255, 0.08)',
       border: `1px solid ${C.border}`,
       color, fontSize: 11, fontWeight: 700, letterSpacing: 0.2,
       flexShrink: 0,
@@ -430,7 +430,7 @@ function StatTile({ icon: Icon, label, value, accent = false }: {
   return (
     <div style={{
       background: accent
-        ? 'linear-gradient(135deg, rgba(167,139,250,0.12), rgba(124,58,237,0.05))'
+        ? 'linear-gradient(135deg, rgba(102, 217, 255, 0.12), rgba(79, 124, 255, 0.05))'
         : C.panel,
       border: `1px solid ${accent ? C.borderHi : C.border}`,
       borderRadius: 14,

@@ -231,17 +231,17 @@ function MobileTopBar({
       paddingTop: 'env(safe-area-inset-top)',
       background: isDark ? 'rgba(13,13,13,0.92)' : 'rgba(255,255,255,0.92)',
       backdropFilter: 'blur(14px)',
-      borderBottom: `1px solid ${isDark ? '#1a1a1a' : '#e4e4e7'}`,
+      borderBottom: `1px solid ${isDark ? '#1a1f2e' : '#e4e4e7'}`,
       display: 'flex', alignItems: 'center', gap: 8,
       padding: '0 14px',
     }}>
       <button onClick={onOpenDrawer} aria-label="Menu" style={{
         width: 38, height: 38, borderRadius: 9,
-        background: isDark ? '#161616' : '#f4f4f5',
-        border: `1px solid ${isDark ? '#1e1e1e' : '#e4e4e7'}`,
+        background: isDark ? '#151922' : '#f4f4f5',
+        border: `1px solid ${isDark ? '#1f2532' : '#e4e4e7'}`,
         cursor: 'pointer', flexShrink: 0,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        color: isDark ? '#a1a1aa' : '#52525b',
+        color: isDark ? '#B1B5BA' : '#6B7280',
       }}>
         <Menu size={18} />
       </button>
@@ -254,7 +254,7 @@ function MobileTopBar({
         }}>{pageTitle}</div>
         {isAdmin && profile?.school_name && (
           <div style={{
-            fontSize: 10, color: '#6366f1', fontWeight: 700,
+            fontSize: 10, color: '#4F7CFF', fontWeight: 700,
             textTransform: 'uppercase', letterSpacing: 1.2, marginTop: 2,
             overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
           }}>
@@ -270,9 +270,9 @@ function MobileTopBar({
           setTimeout(() => setCopied(false), 1400)
         }} style={{
           padding: '6px 9px', borderRadius: 7,
-          background: copied ? 'rgba(52,211,153,0.12)' : 'rgba(99,102,241,0.10)',
-          border: `1px solid ${copied ? 'rgba(52,211,153,0.4)' : 'rgba(99,102,241,0.3)'}`,
-          color: copied ? '#34d399' : '#a5b4fc',
+          background: copied ? 'rgba(52,211,153,0.12)' : 'rgba(79, 124, 255, 0.10)',
+          border: `1px solid ${copied ? 'rgba(52,211,153,0.4)' : 'rgba(79, 124, 255, 0.3)'}`,
+          color: copied ? '#34d399' : '#A5B4FC',
           fontFamily: 'Consolas, monospace', fontSize: 11, fontWeight: 700,
           cursor: 'pointer', flexShrink: 0,
           display: 'flex', alignItems: 'center', gap: 4,
@@ -310,9 +310,9 @@ function BottomNav({
         background: 'rgba(14, 14, 22, 0.72)',
         backdropFilter: 'blur(24px) saturate(180%)',
         WebkitBackdropFilter: 'blur(24px) saturate(180%)',
-        border: '1px solid rgba(167, 139, 250, 0.22)',
+        border: '1px solid rgba(102, 217, 255, 0.22)',
         borderRadius: 22,
-        boxShadow: '0 20px 60px rgba(0,0,0,0.55), 0 0 40px rgba(124, 58, 237, 0.15), inset 0 1px 0 rgba(255,255,255,0.05)',
+        boxShadow: '0 20px 60px rgba(0,0,0,0.55), 0 0 40px rgba(79, 124, 255, 0.15), inset 0 1px 0 rgba(255,255,255,0.05)',
         maxWidth: 360, width: '100%',
       }}>
         {items.map(item => {
@@ -328,7 +328,7 @@ function BottomNav({
                 background: 'none', border: 'none', cursor: 'pointer',
                 display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                 gap: 2, padding: '8px 0', position: 'relative',
-                color: isActive ? '#fafafa' : '#71717a',
+                color: isActive ? '#fafafa' : '#9CA3AF',
                 fontFamily: 'inherit',
                 WebkitTapHighlightColor: 'transparent',
                 borderRadius: 14,
@@ -338,17 +338,17 @@ function BottomNav({
                   transition={{ type: 'spring', stiffness: 380, damping: 32 }}
                   style={{
                     position: 'absolute', inset: 0,
-                    background: 'linear-gradient(135deg, rgba(196,181,253,0.18), rgba(124,58,237,0.16))',
-                    border: '1px solid rgba(196,181,253,0.30)',
+                    background: 'linear-gradient(135deg, rgba(165, 180, 252, 0.18), rgba(79, 124, 255, 0.16))',
+                    border: '1px solid rgba(165, 180, 252, 0.30)',
                     borderRadius: 14,
-                    boxShadow: '0 4px 14px rgba(124,58,237,0.30)',
+                    boxShadow: '0 4px 14px rgba(79, 124, 255, 0.30)',
                   }} />
               )}
               <Icon size={20} style={{ position: 'relative', strokeWidth: isActive ? 2.4 : 1.8 }} />
               <span style={{
                 position: 'relative',
                 fontSize: 10, fontWeight: 700, letterSpacing: 0.2,
-                color: isActive ? '#fafafa' : '#a1a1aa',
+                color: isActive ? '#fafafa' : '#B1B5BA',
               }}>{item.label}</span>
             </button>
           )
@@ -360,13 +360,13 @@ function BottomNav({
             flex: 1,
             background: 'none', border: 'none', cursor: 'pointer',
             display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-            gap: 2, padding: '8px 0', color: '#71717a',
+            gap: 2, padding: '8px 0', color: '#9CA3AF',
             fontFamily: 'inherit',
             WebkitTapHighlightColor: 'transparent',
             borderRadius: 14,
           }}>
           <MoreHorizontal size={20} style={{ strokeWidth: 1.8 }} />
-          <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: 0.2, color: '#a1a1aa' }}>More</span>
+          <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: 0.2, color: '#B1B5BA' }}>More</span>
         </button>
       </div>
     </div>
@@ -407,7 +407,7 @@ function MobileDrawer({
         style={{
           position: 'fixed', top: 0, left: 0, bottom: 0, zIndex: 101,
           width: 'min(82vw, 320px)',
-          background: isDark ? '#0d0d0d' : '#fafafa',
+          background: isDark ? '#0E1117' : '#fafafa',
           paddingTop: 'env(safe-area-inset-top)',
           paddingBottom: 'env(safe-area-inset-bottom)',
           display: 'flex', flexDirection: 'column',
@@ -416,22 +416,22 @@ function MobileDrawer({
         {/* Header */}
         <div style={{
           padding: '18px 18px 14px',
-          borderBottom: `1px solid ${isDark ? '#1a1a1a' : '#e4e4e7'}`,
+          borderBottom: `1px solid ${isDark ? '#1a1f2e' : '#e4e4e7'}`,
           display: 'flex', alignItems: 'center', gap: 12,
         }}>
           <img src="/kairo_logo.png" alt="Kairo"
             style={{ width: 40, height: 40, borderRadius: 10, objectFit: 'contain', flexShrink: 0 }} />
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 16, fontWeight: 800, color: isDark ? '#fafafa' : '#18181b' }}>kairo</div>
-            <div style={{ fontSize: 10, fontWeight: 600, color: '#6366f1', textTransform: 'uppercase', letterSpacing: 1 }}>
+            <div style={{ fontSize: 10, fontWeight: 600, color: '#4F7CFF', textTransform: 'uppercase', letterSpacing: 1 }}>
               Accelerate Your Academics
             </div>
           </div>
           <button onClick={onClose} style={{
             width: 34, height: 34, borderRadius: 8,
-            background: isDark ? '#161616' : '#f4f4f5',
-            border: `1px solid ${isDark ? '#1e1e1e' : '#e4e4e7'}`,
-            color: isDark ? '#a1a1aa' : '#71717a', cursor: 'pointer',
+            background: isDark ? '#151922' : '#f4f4f5',
+            border: `1px solid ${isDark ? '#1f2532' : '#e4e4e7'}`,
+            color: isDark ? '#B1B5BA' : '#9CA3AF', cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
             <X size={15} />
@@ -443,7 +443,7 @@ function MobileDrawer({
           {groups.map(group => (
             <div key={group.title} style={{ marginBottom: 14 }}>
               <div style={{
-                fontSize: 10, fontWeight: 700, color: isDark ? '#52525b' : '#a1a1aa',
+                fontSize: 10, fontWeight: 700, color: isDark ? '#6B7280' : '#B1B5BA',
                 textTransform: 'uppercase', letterSpacing: 1.5,
                 padding: '6px 18px',
               }}>{group.title}</div>
@@ -457,13 +457,13 @@ function MobileDrawer({
                     style={{
                       width: '100%', padding: '12px 18px',
                       background: isActive
-                        ? 'rgba(99,102,241,0.10)'
+                        ? 'rgba(79, 124, 255, 0.10)'
                         : 'transparent',
                       border: 'none', cursor: 'pointer',
                       display: 'flex', alignItems: 'center', gap: 12,
-                      color: isActive ? '#6366f1' : (isDark ? '#d4d4d8' : '#3f3f46'),
+                      color: isActive ? '#4F7CFF' : (isDark ? '#d4d4d8' : '#4B5563'),
                       fontFamily: 'inherit', fontSize: 14, fontWeight: isActive ? 600 : 500,
-                      borderLeft: `3px solid ${isActive ? '#6366f1' : 'transparent'}`,
+                      borderLeft: `3px solid ${isActive ? '#4F7CFF' : 'transparent'}`,
                       WebkitTapHighlightColor: 'transparent',
                     }}>
                     <Icon size={17} style={{ flexShrink: 0 }} />
@@ -478,16 +478,16 @@ function MobileDrawer({
 
         {/* Footer — settings, theme, profile, logout */}
         <div style={{
-          borderTop: `1px solid ${isDark ? '#1a1a1a' : '#e4e4e7'}`,
+          borderTop: `1px solid ${isDark ? '#1a1f2e' : '#e4e4e7'}`,
           padding: '10px 14px',
         }}>
           <div style={{ display: 'flex', gap: 6, marginBottom: 10 }}>
             <button onClick={() => go('settings')}
               style={{
                 flex: 1, padding: '11px 14px', borderRadius: 9,
-                background: isDark ? '#161616' : '#f4f4f5',
-                border: `1px solid ${isDark ? '#1e1e1e' : '#e4e4e7'}`,
-                color: isDark ? '#a1a1aa' : '#52525b', cursor: 'pointer',
+                background: isDark ? '#151922' : '#f4f4f5',
+                border: `1px solid ${isDark ? '#1f2532' : '#e4e4e7'}`,
+                color: isDark ? '#B1B5BA' : '#6B7280', cursor: 'pointer',
                 fontFamily: 'inherit', fontSize: 13, fontWeight: 600,
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
               }}>
@@ -502,7 +502,7 @@ function MobileDrawer({
           }}>
             <div style={{
               width: 36, height: 36, borderRadius: 9,
-              background: profilePic ? 'transparent' : 'linear-gradient(135deg,#6366f1,#7c3aed)',
+              background: profilePic ? 'transparent' : 'linear-gradient(135deg,#4F7CFF,#4F7CFF)',
               overflow: 'hidden', flexShrink: 0,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontSize: 13, fontWeight: 700, color: '#fff',
@@ -518,7 +518,7 @@ function MobileDrawer({
                 overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
               }}>{profile?.name || 'Guest'}</div>
               <div style={{
-                fontSize: 10, color: isDark ? '#52525b' : '#a1a1aa',
+                fontSize: 10, color: isDark ? '#6B7280' : '#B1B5BA',
                 textTransform: 'capitalize',
               }}>{profile?.role || 'student'}{profile?.school_name ? ' · ' + profile.school_name : ''}</div>
             </div>
@@ -530,7 +530,7 @@ function MobileDrawer({
             }} aria-label="Log out"
               style={{
                 background: 'none', border: 'none', cursor: 'pointer',
-                color: isDark ? '#52525b' : '#a1a1aa', padding: 6,
+                color: isDark ? '#6B7280' : '#B1B5BA', padding: 6,
               }}>
               <LogOut size={15} />
             </button>

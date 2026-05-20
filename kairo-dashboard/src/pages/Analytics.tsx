@@ -12,10 +12,10 @@ const TABS = [
   { id: 'today',  label: 'Study Today',     icon: Target },
 ]
 
-const card = { background: '#111', border: '1px solid #1e1e1e', borderRadius: 14, padding: 20 } as React.CSSProperties
-const inp  = { background: '#0d0d0d', border: '1px solid #1e1e1e', borderRadius: 8, padding: '9px 12px', fontSize: 13, color: '#fafafa', fontFamily: 'inherit', outline: 'none', width: '100%' } as React.CSSProperties
-const lbl  = { fontSize: 11, color: '#71717a', display: 'block', marginBottom: 5, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.8 } as React.CSSProperties
-const btn  = (active = true) => ({ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', borderRadius: 9, border: 'none', background: active ? 'linear-gradient(135deg,#7c3aed,#7c3aed)' : '#1c1c1c', color: active ? '#fff' : '#52525b', fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: active ? 'pointer' : 'not-allowed' } as React.CSSProperties)
+const card = { background: '#0E1117', border: '1px solid #1f2532', borderRadius: 14, padding: 20 } as React.CSSProperties
+const inp  = { background: '#0E1117', border: '1px solid #1f2532', borderRadius: 8, padding: '9px 12px', fontSize: 13, color: '#fafafa', fontFamily: 'inherit', outline: 'none', width: '100%' } as React.CSSProperties
+const lbl  = { fontSize: 11, color: '#9CA3AF', display: 'block', marginBottom: 5, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.8 } as React.CSSProperties
+const btn  = (active = true) => ({ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', borderRadius: 9, border: 'none', background: active ? 'linear-gradient(135deg,#4F7CFF,#4F7CFF)' : '#1a1f2e', color: active ? '#fff' : '#6B7280', fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: active ? 'pointer' : 'not-allowed' } as React.CSSProperties)
 
 export default function Analytics() {
   const [tab, setTab] = useState('today')
@@ -24,16 +24,16 @@ export default function Analytics() {
     <div style={{ padding: '28px 36px', maxWidth: 1000, margin: '0 auto', height: '100%', overflowY: 'auto' }}>
       <div style={{ marginBottom: 24 }}>
         <h1 style={{ fontSize: 20, fontWeight: 700, color: '#fafafa', margin: 0 }}>Analytics & Intelligence</h1>
-        <p style={{ fontSize: 13, color: '#52525b', marginTop: 4 }}>Performance insights · Weak area detection · Rank prediction</p>
+        <p style={{ fontSize: 13, color: '#6B7280', marginTop: 4 }}>Performance insights · Weak area detection · Rank prediction</p>
       </div>
-      <div style={{ display: 'flex', gap: 4, marginBottom: 24, background: '#0d0d0d', border: '1px solid #1e1e1e', borderRadius: 10, padding: 4 }}>
+      <div style={{ display: 'flex', gap: 4, marginBottom: 24, background: '#0E1117', border: '1px solid #1f2532', borderRadius: 10, padding: 4 }}>
         {TABS.map(t => (
           <button key={t.id} onClick={() => setTab(t.id)} style={{
             flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
             padding: '7px 8px', borderRadius: 7, border: 'none', fontFamily: 'inherit',
             fontSize: 12, fontWeight: tab === t.id ? 600 : 400, cursor: 'pointer',
-            background: tab === t.id ? '#1e1e2e' : 'transparent',
-            color: tab === t.id ? '#a78bfa' : '#52525b', transition: 'all 0.15s',
+            background: tab === t.id ? '#1f2532' : 'transparent',
+            color: tab === t.id ? '#66D9FF' : '#6B7280', transition: 'all 0.15s',
           }}><t.icon size={12} /> {t.label}</button>
         ))}
       </div>
@@ -59,35 +59,35 @@ function StudyTodayTab() {
 
   return (
     <div>
-      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ ...card, background: 'linear-gradient(135deg,#1e1e2e,#111)', borderColor: '#7c3aed30', marginBottom: 16 }}>
-        <div style={{ fontSize: 11, fontWeight: 700, color: '#a78bfa', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ ...card, background: 'linear-gradient(135deg,#1f2532,#0E1117)', borderColor: '#4F7CFF30', marginBottom: 16 }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: '#66D9FF', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>
           {card2.day} · {card2.date}
         </div>
         <div style={{ fontSize: 16, fontWeight: 600, color: '#fafafa', marginBottom: 8 }}>{card2.greeting}</div>
-        <div style={{ fontSize: 13, color: '#a1a1aa' }}>{card2.daily_goal}</div>
+        <div style={{ fontSize: 13, color: '#B1B5BA' }}>{card2.daily_goal}</div>
       </motion.div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 14 }}>
         <div style={card}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: '#c4b5fd', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 }}>Today's Focus</div>
+          <div style={{ fontSize: 11, fontWeight: 700, color: '#A5B4FC', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 }}>Today's Focus</div>
           <div style={{ fontSize: 18, fontWeight: 700, color: '#fafafa', marginBottom: 2 }}>{card2.focus_subject}</div>
-          <div style={{ fontSize: 13, color: '#71717a' }}>{card2.focus_topic}</div>
+          <div style={{ fontSize: 13, color: '#9CA3AF' }}>{card2.focus_topic}</div>
         </div>
         <div style={card}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: '#c4b5fd', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>Quick Win 🏆</div>
+          <div style={{ fontSize: 11, fontWeight: 700, color: '#A5B4FC', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>Quick Win 🏆</div>
           <div style={{ fontSize: 13, color: '#e4e4e7' }}>{card2.quick_win}</div>
         </div>
       </div>
 
       {card2.priority_tasks?.length > 0 && (
         <div style={{ ...card, marginBottom: 14 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: '#a78bfa', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 }}>Priority Tasks</div>
+          <div style={{ fontSize: 11, fontWeight: 700, color: '#66D9FF', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 }}>Priority Tasks</div>
           {card2.priority_tasks.map((t: any, i: number) => (
-            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '8px 0', borderBottom: i < card2.priority_tasks.length - 1 ? '1px solid #1e1e1e' : 'none' }}>
-              <div style={{ width: 32, height: 32, borderRadius: 8, background: '#7c3aed15', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: '#a78bfa', flexShrink: 0 }}>{i + 1}</div>
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '8px 0', borderBottom: i < card2.priority_tasks.length - 1 ? '1px solid #1f2532' : 'none' }}>
+              <div style={{ width: 32, height: 32, borderRadius: 8, background: '#4F7CFF15', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: '#66D9FF', flexShrink: 0 }}>{i + 1}</div>
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: 13, color: '#e4e4e7' }}>{t.task}</div>
-                <div style={{ fontSize: 11, color: '#52525b' }}>{t.duration} · {t.type}</div>
+                <div style={{ fontSize: 11, color: '#6B7280' }}>{t.duration} · {t.type}</div>
               </div>
             </div>
           ))}
@@ -95,8 +95,8 @@ function StudyTodayTab() {
       )}
 
       {card2.motivation_quote && (
-        <div style={{ ...card, borderColor: '#a78bfa30', background: '#0d0d1a', textAlign: 'center' }}>
-          <div style={{ fontSize: 15, color: '#a78bfa', fontStyle: 'italic' }}>"{card2.motivation_quote}"</div>
+        <div style={{ ...card, borderColor: '#66D9FF30', background: '#0d0d1a', textAlign: 'center' }}>
+          <div style={{ fontSize: 15, color: '#66D9FF', fontStyle: 'italic' }}>"{card2.motivation_quote}"</div>
         </div>
       )}
     </div>
@@ -115,15 +115,15 @@ function WeakAreasTab() {
   if (loading) return <Spinner />
   if (!data)   return <Err msg="Could not load weak areas." />
 
-  const healthColor = data.overall_health === 'good' ? '#c4b5fd' : data.overall_health === 'moderate' ? '#c4b5fd' : '#a78bfa'
+  const healthColor = data.overall_health === 'good' ? '#A5B4FC' : data.overall_health === 'moderate' ? '#A5B4FC' : '#66D9FF'
 
   return (
     <div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, marginBottom: 16 }}>
-        {[['Total Essays', data.total_essays, '#a78bfa'], ['Total Quizzes', data.total_quizzes, '#38bdf8'], ['Health', data.overall_health?.replace('_',' ').toUpperCase(), healthColor]].map(([l, v, c]) => (
+        {[['Total Essays', data.total_essays, '#66D9FF'], ['Total Quizzes', data.total_quizzes, '#38bdf8'], ['Health', data.overall_health?.replace('_',' ').toUpperCase(), healthColor]].map(([l, v, c]) => (
           <div key={l as string} style={{ ...card, textAlign: 'center' }}>
             <div style={{ fontSize: 22, fontWeight: 700, color: c as string }}>{v}</div>
-            <div style={{ fontSize: 11, color: '#71717a' }}>{l}</div>
+            <div style={{ fontSize: 11, color: '#9CA3AF' }}>{l}</div>
           </div>
         ))}
       </div>
@@ -131,22 +131,22 @@ function WeakAreasTab() {
       {data.weak_areas.length === 0 ? (
         <div style={{ ...card, textAlign: 'center', padding: 40 }}>
           <div style={{ fontSize: 32 }}>🎉</div>
-          <div style={{ fontSize: 14, color: '#c4b5fd', fontWeight: 600, marginTop: 8 }}>No weak areas detected!</div>
-          <div style={{ fontSize: 12, color: '#52525b', marginTop: 4 }}>Keep taking quizzes and submitting essays to track performance.</div>
+          <div style={{ fontSize: 14, color: '#A5B4FC', fontWeight: 600, marginTop: 8 }}>No weak areas detected!</div>
+          <div style={{ fontSize: 12, color: '#6B7280', marginTop: 4 }}>Keep taking quizzes and submitting essays to track performance.</div>
         </div>
       ) : (
         <div style={{ ...card, marginBottom: 14 }}>
-          <div style={{ fontSize: 12, fontWeight: 700, color: '#a78bfa', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 12 }}>Needs Attention</div>
+          <div style={{ fontSize: 12, fontWeight: 700, color: '#66D9FF', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 12 }}>Needs Attention</div>
           {data.weak_areas.map((w: any, i: number) => (
             <div key={i} style={{ marginBottom: 12 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
                 <span style={{ fontSize: 13, color: '#e4e4e7' }}>{w.subject}</span>
-                <span style={{ fontSize: 12, color: w.avg_score < 50 ? '#a78bfa' : '#c4b5fd', fontWeight: 600 }}>{w.avg_score}% avg</span>
+                <span style={{ fontSize: 12, color: w.avg_score < 50 ? '#66D9FF' : '#A5B4FC', fontWeight: 600 }}>{w.avg_score}% avg</span>
               </div>
-              <div style={{ height: 6, background: '#1e1e1e', borderRadius: 3 }}>
-                <div style={{ height: '100%', background: w.avg_score < 50 ? '#a78bfa' : '#c4b5fd', borderRadius: 3, width: `${w.avg_score}%`, transition: 'width 0.5s' }} />
+              <div style={{ height: 6, background: '#1f2532', borderRadius: 3 }}>
+                <div style={{ height: '100%', background: w.avg_score < 50 ? '#66D9FF' : '#A5B4FC', borderRadius: 3, width: `${w.avg_score}%`, transition: 'width 0.5s' }} />
               </div>
-              <div style={{ fontSize: 10, color: '#52525b', marginTop: 2 }}>{w.attempts} attempt{w.attempts > 1 ? 's' : ''} · {w.type}</div>
+              <div style={{ fontSize: 10, color: '#6B7280', marginTop: 2 }}>{w.attempts} attempt{w.attempts > 1 ? 's' : ''} · {w.type}</div>
             </div>
           ))}
         </div>
@@ -154,10 +154,10 @@ function WeakAreasTab() {
 
       {data.hard_flashcard_topics?.length > 0 && (
         <div style={card}>
-          <div style={{ fontSize: 12, fontWeight: 700, color: '#c4b5fd', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 }}>Hard Flashcard Topics</div>
+          <div style={{ fontSize: 12, fontWeight: 700, color: '#A5B4FC', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 }}>Hard Flashcard Topics</div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
             {data.hard_flashcard_topics.map((t: string, i: number) => (
-              <span key={i} style={{ fontSize: 11, padding: '3px 10px', borderRadius: 5, background: '#c4b5fd15', color: '#c4b5fd', border: '1px solid #c4b5fd30' }}>{t}</span>
+              <span key={i} style={{ fontSize: 11, padding: '3px 10px', borderRadius: 5, background: '#A5B4FC15', color: '#A5B4FC', border: '1px solid #A5B4FC30' }}>{t}</span>
             ))}
           </div>
         </div>
@@ -181,10 +181,10 @@ function ClassDashTab() {
   return (
     <div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, marginBottom: 16 }}>
-        {[['Total Students', data.total_students, '#a78bfa'], ['Active', data.active_students, '#c4b5fd'], ['Class Avg', `${data.class_average}%`, data.class_average >= 70 ? '#c4b5fd' : '#c4b5fd']].map(([l, v, c]) => (
+        {[['Total Students', data.total_students, '#66D9FF'], ['Active', data.active_students, '#A5B4FC'], ['Class Avg', `${data.class_average}%`, data.class_average >= 70 ? '#A5B4FC' : '#A5B4FC']].map(([l, v, c]) => (
           <div key={l as string} style={{ ...card, textAlign: 'center' }}>
             <div style={{ fontSize: 22, fontWeight: 700, color: c as string }}>{v}</div>
-            <div style={{ fontSize: 11, color: '#71717a' }}>{l}</div>
+            <div style={{ fontSize: 11, color: '#9CA3AF' }}>{l}</div>
           </div>
         ))}
       </div>
@@ -192,23 +192,23 @@ function ClassDashTab() {
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
         {data.top_students?.length > 0 && (
           <div style={card}>
-            <div style={{ fontSize: 12, fontWeight: 700, color: '#c4b5fd', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 }}>🏆 Top Students</div>
+            <div style={{ fontSize: 12, fontWeight: 700, color: '#A5B4FC', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 }}>🏆 Top Students</div>
             {data.top_students.map((s: any, i: number) => (
               <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-                <div style={{ width: 22, height: 22, borderRadius: 6, background: i === 0 ? '#c4b5fd' : i === 1 ? '#71717a' : '#3b0764', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: '#000', flexShrink: 0 }}>{i + 1}</div>
+                <div style={{ width: 22, height: 22, borderRadius: 6, background: i === 0 ? '#A5B4FC' : i === 1 ? '#9CA3AF' : '#0B1530', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: '#000', flexShrink: 0 }}>{i + 1}</div>
                 <div style={{ flex: 1, fontSize: 12, color: '#e4e4e7' }}>{s.name || s.student_id}</div>
-                <div style={{ fontSize: 12, fontWeight: 700, color: '#c4b5fd' }}>{s.avg_score}%</div>
+                <div style={{ fontSize: 12, fontWeight: 700, color: '#A5B4FC' }}>{s.avg_score}%</div>
               </div>
             ))}
           </div>
         )}
         {data.needs_attention?.length > 0 && (
           <div style={card}>
-            <div style={{ fontSize: 12, fontWeight: 700, color: '#a78bfa', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 }}>⚠ Needs Attention</div>
+            <div style={{ fontSize: 12, fontWeight: 700, color: '#66D9FF', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 }}>⚠ Needs Attention</div>
             {data.needs_attention.map((s: any, i: number) => (
               <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
                 <div style={{ flex: 1, fontSize: 12, color: '#e4e4e7' }}>{s.name || s.student_id}</div>
-                <div style={{ fontSize: 12, fontWeight: 700, color: '#a78bfa' }}>{s.avg_score}%</div>
+                <div style={{ fontSize: 12, fontWeight: 700, color: '#66D9FF' }}>{s.avg_score}%</div>
               </div>
             ))}
           </div>
@@ -217,15 +217,15 @@ function ClassDashTab() {
 
       {data.subject_breakdown?.length > 0 && (
         <div style={{ ...card, marginTop: 14 }}>
-          <div style={{ fontSize: 12, fontWeight: 700, color: '#a78bfa', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 12 }}>Subject Performance</div>
+          <div style={{ fontSize: 12, fontWeight: 700, color: '#66D9FF', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 12 }}>Subject Performance</div>
           {data.subject_breakdown.map((s: any, i: number) => (
             <div key={i} style={{ marginBottom: 10 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
                 <span style={{ fontSize: 13, color: '#e4e4e7' }}>{s.subject}</span>
-                <span style={{ fontSize: 12, color: s.avg >= 70 ? '#c4b5fd' : '#a78bfa', fontWeight: 600 }}>{s.avg}%</span>
+                <span style={{ fontSize: 12, color: s.avg >= 70 ? '#A5B4FC' : '#66D9FF', fontWeight: 600 }}>{s.avg}%</span>
               </div>
-              <div style={{ height: 5, background: '#1e1e1e', borderRadius: 3 }}>
-                <div style={{ height: '100%', background: s.avg >= 70 ? '#c4b5fd' : '#a78bfa', borderRadius: 3, width: `${s.avg}%` }} />
+              <div style={{ height: 5, background: '#1f2532', borderRadius: 3 }}>
+                <div style={{ height: '100%', background: s.avg >= 70 ? '#A5B4FC' : '#66D9FF', borderRadius: 3, width: `${s.avg}%` }} />
               </div>
             </div>
           ))}
@@ -298,7 +298,7 @@ function RankTab() {
             </div>
           </div>
         ))}
-        {err && <p style={{ color: '#a78bfa', fontSize: 12, margin: '8px 0' }}>{err}</p>}
+        {err && <p style={{ color: '#66D9FF', fontSize: 12, margin: '8px 0' }}>{err}</p>}
         <button onClick={predict} disabled={loading} style={{ ...btn(!loading), width: '100%', justifyContent: 'center', marginTop: 8 }}>
           <Trophy size={13} /> {loading ? 'Predicting…' : 'Predict My Rank'}
         </button>
@@ -307,25 +307,25 @@ function RankTab() {
       {result && (
         <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }}>
           <div style={{ ...card, marginBottom: 12 }}>
-            <div style={{ fontSize: 28, fontWeight: 800, color: '#a78bfa' }}>{result.percentage}%</div>
+            <div style={{ fontSize: 28, fontWeight: 800, color: '#66D9FF' }}>{result.percentage}%</div>
             <div style={{ fontSize: 15, fontWeight: 600, color: '#fafafa' }}>Grade: {result.grade}</div>
-            <div style={{ fontSize: 12, color: '#71717a', marginTop: 4 }}>{result.expected_band}</div>
+            <div style={{ fontSize: 12, color: '#9CA3AF', marginTop: 4 }}>{result.expected_band}</div>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 10 }}>
             <div style={{ ...card, padding: 14 }}>
-              <div style={{ fontSize: 11, color: '#71717a', marginBottom: 4 }}>School Rank</div>
-              <div style={{ fontSize: 14, fontWeight: 700, color: '#c4b5fd' }}>{result.school_rank_estimate}</div>
+              <div style={{ fontSize: 11, color: '#9CA3AF', marginBottom: 4 }}>School Rank</div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: '#A5B4FC' }}>{result.school_rank_estimate}</div>
             </div>
             <div style={{ ...card, padding: 14 }}>
-              <div style={{ fontSize: 11, color: '#71717a', marginBottom: 4 }}>State Percentile</div>
-              <div style={{ fontSize: 14, fontWeight: 700, color: '#a78bfa' }}>{result.state_percentile}</div>
+              <div style={{ fontSize: 11, color: '#9CA3AF', marginBottom: 4 }}>State Percentile</div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: '#66D9FF' }}>{result.state_percentile}</div>
             </div>
           </div>
           {result.improvement_tips?.length > 0 && (
             <div style={card}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: '#c4b5fd', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>Tips to Improve</div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: '#A5B4FC', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>Tips to Improve</div>
               {result.improvement_tips.map((t: string, i: number) => (
-                <div key={i} style={{ fontSize: 12, color: '#a1a1aa', marginBottom: 6 }}>→ {t}</div>
+                <div key={i} style={{ fontSize: 12, color: '#B1B5BA', marginBottom: 6 }}>→ {t}</div>
               ))}
             </div>
           )}
@@ -336,8 +336,8 @@ function RankTab() {
 }
 
 function Spinner() {
-  return <div style={{ display: 'flex', justifyContent: 'center', padding: 60 }}><div style={{ width: 28, height: 28, borderRadius: '50%', border: '2px solid #1e1e1e', borderTopColor: '#7c3aed', animation: 'spin 0.8s linear infinite' }} /></div>
+  return <div style={{ display: 'flex', justifyContent: 'center', padding: 60 }}><div style={{ width: 28, height: 28, borderRadius: '50%', border: '2px solid #1f2532', borderTopColor: '#4F7CFF', animation: 'spin 0.8s linear infinite' }} /></div>
 }
 function Err({ msg }: { msg: string }) {
-  return <div style={{ textAlign: 'center', padding: 60, color: '#a78bfa', fontSize: 13 }}>{msg}</div>
+  return <div style={{ textAlign: 'center', padding: 60, color: '#66D9FF', fontSize: 13 }}>{msg}</div>
 }

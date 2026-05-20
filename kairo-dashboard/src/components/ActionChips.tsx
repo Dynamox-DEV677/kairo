@@ -10,11 +10,11 @@ interface ActionChipsProps {
 }
 
 const CHIPS = [
-  { icon: Lightbulb, label: 'Explain simpler', key: 'simpler', color: '#fbbf24', bg: 'rgba(251,191,36,0.08)', border: 'rgba(251,191,36,0.2)' },
+  { icon: Lightbulb, label: 'Explain simpler', key: 'simpler', color: '#C7D2E8', bg: 'rgba(199, 210, 232, 0.08)', border: 'rgba(199, 210, 232, 0.2)' },
   { icon: BookMarked, label: 'Make flashcards', key: 'flashcards', color: '#34d399', bg: 'rgba(52,211,153,0.08)', border: 'rgba(52,211,153,0.2)' },
-  { icon: FileText, label: 'Save as notes', key: 'notes', color: '#818cf8', bg: 'rgba(129,140,248,0.08)', border: 'rgba(129,140,248,0.2)' },
+  { icon: FileText, label: 'Save as notes', key: 'notes', color: '#A5B4FC', bg: 'rgba(165, 180, 252, 0.08)', border: 'rgba(165, 180, 252, 0.2)' },
   { icon: Target, label: 'Exam questions', key: 'exam', color: '#f472b6', bg: 'rgba(244,114,182,0.08)', border: 'rgba(244,114,182,0.2)' },
-  { icon: RotateCcw, label: 'Regenerate', key: 'regen', color: '#71717a', bg: 'rgba(113,113,122,0.08)', border: 'rgba(113,113,122,0.2)' },
+  { icon: RotateCcw, label: 'Regenerate', key: 'regen', color: '#9CA3AF', bg: 'rgba(113,113,122,0.08)', border: 'rgba(113,113,122,0.2)' },
 ]
 
 export default function ActionChips({ onSimpler, onFlashcards, onSaveNotes, onExamQuestions, onRegenerate }: ActionChipsProps) {

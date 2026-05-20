@@ -23,19 +23,19 @@ import {
 } from '../lib/twin'
 
 const C = {
-  bg:        '#06060a',
-  panel:     '#0c0c14',
-  panel2:    '#13131d',
-  border:    '#22222e',
-  borderSoft:'#1a1a26',
+  bg:        '#050505',
+  panel:     '#0E1117',
+  panel2:    '#151922',
+  border:    'rgba(255,255,255,0.08)',
+  borderSoft:'rgba(255,255,255,0.06)',
   text:      '#ffffff',
-  textDim:   '#c1c1c8',
-  textFaint: '#8a8a96',
-  purpleLite:'#e9d5ff',
-  purpleSoft:'#c4b5fd',
-  purple:    '#a78bfa',
-  purpleHi:  '#7c3aed',
-  purpleDeep:'#5b21b6',
+  textDim:   '#CBD5E1',
+  textFaint: '#9CA3AF',
+  purpleLite:'#DBE7FF',
+  purpleSoft:'#A5B4FC',
+  purple:    '#66D9FF',
+  purpleHi:  '#4F7CFF',
+  purpleDeep:'#2046C2',
 }
 const FONT = "'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif"
 
@@ -118,8 +118,8 @@ export default function ConceptMap() {
       width: '100%', height: '100%', overflowY: 'auto', WebkitOverflowScrolling: 'touch',
       background: C.bg,
       backgroundImage:
-        `radial-gradient(at 8% 0%,  rgba(124,58,237,0.08) 0%, transparent 40%),
-         radial-gradient(at 92% 100%, rgba(91,33,182,0.10) 0%, transparent 45%)`,
+        `radial-gradient(at 8% 0%,  rgba(79, 124, 255, 0.08) 0%, transparent 40%),
+         radial-gradient(at 92% 100%, rgba(32, 70, 194, 0.10) 0%, transparent 45%)`,
       color: C.text, fontFamily: FONT,
       padding: '24px 28px 80px',
     }}>
@@ -133,8 +133,8 @@ export default function ConceptMap() {
             {subjectStats.map(([subj, n]) => (
               <span key={subj} style={{
                 padding: '5px 12px', borderRadius: 999,
-                background: 'rgba(124,58,237,0.08)',
-                border: '1px solid rgba(167,139,250,0.3)',
+                background: 'rgba(79, 124, 255, 0.08)',
+                border: '1px solid rgba(102, 217, 255, 0.3)',
                 fontSize: 12, color: C.text, fontWeight: 600,
               }}>
                 {subj} <span style={{ color: C.purple, marginLeft: 4 }}>· {n}</span>
@@ -166,12 +166,12 @@ export default function ConceptMap() {
               }}>
               <defs>
                 <radialGradient id="nodeGlow" cx="50%" cy="50%" r="50%">
-                  <stop offset="0%"  stopColor="#a78bfa" stopOpacity="0.4" />
-                  <stop offset="100%" stopColor="#a78bfa" stopOpacity="0" />
+                  <stop offset="0%"  stopColor="#66D9FF" stopOpacity="0.4" />
+                  <stop offset="100%" stopColor="#66D9FF" stopOpacity="0" />
                 </radialGradient>
                 <linearGradient id="edgeStroke" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%"  stopColor="#7c3aed" stopOpacity="0.35"/>
-                  <stop offset="100%" stopColor="#c4b5fd" stopOpacity="0.35"/>
+                  <stop offset="0%"  stopColor="#4F7CFF" stopOpacity="0.35"/>
+                  <stop offset="100%" stopColor="#A5B4FC" stopOpacity="0.35"/>
                 </linearGradient>
               </defs>
 
@@ -183,7 +183,7 @@ export default function ConceptMap() {
                 const isHot = hover && (hover === e.from || hover === e.to)
                 return (
                   <line key={i} x1={a.x} y1={a.y} x2={b.x} y2={b.y}
-                    stroke={isHot ? '#c4b5fd' : 'url(#edgeStroke)'}
+                    stroke={isHot ? '#A5B4FC' : 'url(#edgeStroke)'}
                     strokeWidth={isHot ? 1.4 : 0.8}
                     strokeLinecap="round" opacity={isHot ? 0.85 : 0.45} />
                 )
@@ -195,9 +195,9 @@ export default function ConceptMap() {
                 if (!p) return null
                 const r = 16 + Math.min(18, Math.sqrt(n.visits) * 6)
                 const m = n.mastery
-                const fill = m >= 0.7 ? '#a78bfa'
-                            : m >= 0.4 ? '#7c3aed'
-                                       : '#5b21b6'
+                const fill = m >= 0.7 ? '#66D9FF'
+                            : m >= 0.4 ? '#4F7CFF'
+                                       : '#2046C2'
                 const isHover = hover === n.id
                 return (
                   <g key={n.id}
@@ -217,7 +217,7 @@ export default function ConceptMap() {
                     <text x={p.x} y={p.y + r + 14}
                       textAnchor="middle"
                       fontSize="11" fontWeight="600"
-                      fill={isHover ? '#ffffff' : '#c4b5fd'}
+                      fill={isHover ? '#ffffff' : '#A5B4FC'}
                       fontFamily={FONT}
                       style={{ textTransform: 'capitalize', pointerEvents: 'none' }}>
                       {n.name.length > 18 ? n.name.slice(0, 17) + '…' : n.name}
@@ -237,9 +237,9 @@ export default function ConceptMap() {
               border: `1px solid ${C.borderSoft}`,
               display: 'flex', gap: 14, fontSize: 11, color: C.textFaint, alignItems: 'center',
             }}>
-              <LegendDot color="#5b21b6" label="< 40% mastery" />
-              <LegendDot color="#7c3aed" label="40–70%" />
-              <LegendDot color="#a78bfa" label="70%+" />
+              <LegendDot color="#2046C2" label="< 40% mastery" />
+              <LegendDot color="#4F7CFF" label="40–70%" />
+              <LegendDot color="#66D9FF" label="70%+" />
             </div>
           )}
 
@@ -265,9 +265,9 @@ function Header({ onRefresh, nodeCount, edgeCount }: { onRefresh: () => void; no
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
         <div style={{
           width: 46, height: 46, borderRadius: 13,
-          background: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)',
+          background: 'linear-gradient(135deg, #4F7CFF 0%, #2046C2 100%)',
           display: 'grid', placeItems: 'center',
-          boxShadow: '0 10px 30px rgba(124,58,237,0.45)',
+          boxShadow: '0 10px 30px rgba(79, 124, 255, 0.32)',
         }}>
           <Network size={22} color="#fff" />
         </div>
@@ -315,12 +315,12 @@ function Empty() {
     }}>
       <div style={{
         width: 64, height: 64, borderRadius: 18,
-        background: 'rgba(124,58,237,0.10)',
-        border: '1px solid rgba(167,139,250,0.35)',
+        background: 'rgba(79, 124, 255, 0.10)',
+        border: '1px solid rgba(102, 217, 255, 0.35)',
         display: 'grid', placeItems: 'center',
-        boxShadow: '0 0 32px rgba(124,58,237,0.25)',
+        boxShadow: '0 0 32px rgba(79, 124, 255, 0.25)',
       }}>
-        <Network size={28} color="#a78bfa" />
+        <Network size={28} color="#66D9FF" />
       </div>
       <h3 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: C.text }}>
         Your concept map is empty.
@@ -373,7 +373,7 @@ function AddConceptCard({ onSaved }: { onSaved: () => void }) {
         <button onClick={save} disabled={!name.trim()}
           style={{
             padding: '10px 16px', borderRadius: 10,
-            background: 'linear-gradient(135deg, #7c3aed, #5b21b6)',
+            background: 'linear-gradient(135deg, #4F7CFF, #2046C2)',
             color: '#fff', fontFamily: 'inherit', fontWeight: 700, fontSize: 13,
             border: 'none', cursor: name.trim() ? 'pointer' : 'not-allowed',
             opacity: name.trim() ? 1 : 0.5,

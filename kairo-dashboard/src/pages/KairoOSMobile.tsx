@@ -24,19 +24,19 @@ import {
 // PALETTE
 // ────────────────────────────────────────────────────────────────────────────
 const C = {
-  bg:        '#06060a',
-  panel:     '#0e0e16',
-  panel2:    '#13131d',
-  border:    '#1a1a26',
+  bg:        '#050505',
+  panel:     '#0E1117',
+  panel2:    '#151922',
+  border:    'rgba(255,255,255,0.06)',
   text:      '#fafafa',
-  textDim:   '#a1a1aa',
-  textFaint: '#71717a',
-  textGhost: '#52525b',
-  purple:    '#a78bfa',
-  purpleHi:  '#7c3aed',
-  purpleDeep:'#5b21b6',
-  purpleLite:'#c4b5fd',
-  purpleSoft:'#e9d5ff',
+  textDim:   '#B1B5BA',
+  textFaint: '#9CA3AF',
+  textGhost: '#6B7280',
+  purple:    '#66D9FF',
+  purpleHi:  '#4F7CFF',
+  purpleDeep:'#2046C2',
+  purpleLite:'#A5B4FC',
+  purpleSoft:'#DBE7FF',
 }
 
 interface Props {
@@ -77,8 +77,8 @@ export default function KairoOSMobile({ onNavigate, onOpenBackup }: Props) {
       WebkitOverflowScrolling: 'touch',
       background: C.bg,
       backgroundImage:
-        `radial-gradient(at 50% -10%, rgba(124,58,237,0.18) 0%, transparent 40%),
-         radial-gradient(at 50% 110%, rgba(91,33,182,0.10) 0%, transparent 40%)`,
+        `radial-gradient(at 50% -10%, rgba(79, 124, 255, 0.18) 0%, transparent 40%),
+         radial-gradient(at 50% 110%, rgba(32, 70, 194, 0.10) 0%, transparent 40%)`,
     }}>
       <style>{`
         @keyframes km-glow { 0%,100% { opacity: 0.45 } 50% { opacity: 0.95 } }
@@ -211,8 +211,8 @@ function PulseHero({ pct, label, twin, pulsing, onRecompute }: {
       style={{
         position: 'relative', padding: 22, borderRadius: 22,
         background: `linear-gradient(180deg, ${C.panel} 0%, ${C.bg} 100%)`,
-        border: '1px solid rgba(167,139,250,0.22)',
-        boxShadow: '0 18px 50px rgba(124,58,237,0.18), inset 0 1px 0 rgba(255,255,255,0.04)',
+        border: '1px solid rgba(102, 217, 255, 0.22)',
+        boxShadow: '0 18px 50px rgba(79, 124, 255, 0.18), inset 0 1px 0 rgba(255,255,255,0.04)',
         overflow: 'hidden',
       }}
     >
@@ -220,7 +220,7 @@ function PulseHero({ pct, label, twin, pulsing, onRecompute }: {
       <div style={{
         position: 'absolute', top: '-30%', left: '50%', transform: 'translateX(-50%)',
         width: 280, height: 280, borderRadius: '50%',
-        background: 'radial-gradient(closest-side, rgba(124,58,237,0.42), transparent 70%)',
+        background: 'radial-gradient(closest-side, rgba(79, 124, 255, 0.42), transparent 70%)',
         filter: 'blur(40px)', animation: 'km-glow 5s ease-in-out infinite',
         pointerEvents: 'none',
       }} />
@@ -270,8 +270,8 @@ function PulseHero({ pct, label, twin, pulsing, onRecompute }: {
           <button onClick={onRecompute}
             style={{
               marginTop: 14, padding: '8px 12px', borderRadius: 10,
-              background: pulsing ? 'rgba(196,181,253,0.20)' : 'rgba(167,139,250,0.10)',
-              border: '1px solid rgba(167,139,250,0.32)',
+              background: pulsing ? 'rgba(165, 180, 252, 0.20)' : 'rgba(102, 217, 255, 0.10)',
+              border: '1px solid rgba(102, 217, 255, 0.32)',
               color: pulsing ? C.purpleSoft : C.purpleLite,
               fontFamily: 'inherit', fontSize: 11, fontWeight: 700,
               display: 'inline-flex', alignItems: 'center', gap: 6, cursor: 'pointer',
@@ -299,8 +299,8 @@ function MiniMetric({ label, value, unit }: { label: string; value: any; unit?: 
   return (
     <div style={{
       padding: '10px 12px', borderRadius: 12,
-      background: 'rgba(167,139,250,0.06)',
-      border: '1px solid rgba(167,139,250,0.16)',
+      background: 'rgba(102, 217, 255, 0.06)',
+      border: '1px solid rgba(102, 217, 255, 0.16)',
     }}>
       <div style={{ fontSize: 9.5, fontWeight: 700, color: C.purpleLite, textTransform: 'uppercase', letterSpacing: 1.4 }}>
         {label}
@@ -340,8 +340,8 @@ function QuickAction({ label, icon: Icon, onClick, accent }: { label: string; ic
         flexShrink: 0,
         display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
         minWidth: 78, padding: '12px 10px',
-        background: 'rgba(167,139,250,0.05)',
-        border: '1px solid rgba(167,139,250,0.18)',
+        background: 'rgba(102, 217, 255, 0.05)',
+        border: '1px solid rgba(102, 217, 255, 0.18)',
         borderRadius: 16,
         color: C.text, fontFamily: 'inherit', cursor: 'pointer',
         WebkitTapHighlightColor: 'transparent',
@@ -380,20 +380,20 @@ function TopRecommendation({ rec, onClick }: { rec: any; onClick: () => void }) 
         width: '100%',
         textAlign: 'left',
         padding: '16px 16px',
-        background: 'linear-gradient(135deg, rgba(124,58,237,0.14), rgba(167,139,250,0.06))',
-        border: '1px solid rgba(167,139,250,0.32)',
+        background: 'linear-gradient(135deg, rgba(79, 124, 255, 0.14), rgba(102, 217, 255, 0.06))',
+        border: '1px solid rgba(102, 217, 255, 0.32)',
         borderRadius: 18,
         cursor: 'pointer', fontFamily: 'inherit',
         WebkitTapHighlightColor: 'transparent',
         display: 'flex', alignItems: 'center', gap: 12,
-        boxShadow: '0 10px 30px rgba(124,58,237,0.20)',
+        boxShadow: '0 10px 30px rgba(79, 124, 255, 0.20)',
       }}
     >
       <div style={{
         width: 44, height: 44, borderRadius: 13, flexShrink: 0,
-        background: 'linear-gradient(135deg, #c4b5fd, #7c3aed)',
+        background: 'linear-gradient(135deg, #A5B4FC, #4F7CFF)',
         display: 'grid', placeItems: 'center',
-        boxShadow: '0 6px 18px rgba(124,58,237,0.40)',
+        boxShadow: '0 6px 18px rgba(79, 124, 255, 0.40)',
       }}>
         <Icon size={20} color="#000" strokeWidth={2.2} />
       </div>
@@ -420,8 +420,8 @@ function VitalChip({ title, pct, unit = '%', tone, icon: Icon }: { title: string
       flexShrink: 0,
       minWidth: 130, padding: '14px 14px',
       borderRadius: 16,
-      background: `linear-gradient(180deg, rgba(167,139,250,0.06) 0%, ${C.panel2} 100%)`,
-      border: '1px solid rgba(167,139,250,0.16)',
+      background: `linear-gradient(180deg, rgba(102, 217, 255, 0.06) 0%, ${C.panel2} 100%)`,
+      border: '1px solid rgba(102, 217, 255, 0.16)',
       display: 'flex', flexDirection: 'column', gap: 6,
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -446,12 +446,12 @@ function TrajectoryCard({ trend, predicted, band, mastered, tracked }: {
     <div style={{
       padding: 16, borderRadius: 18,
       background: `linear-gradient(180deg, ${C.panel} 0%, ${C.bg} 100%)`,
-      border: '1px solid rgba(167,139,250,0.16)',
+      border: '1px solid rgba(102, 217, 255, 0.16)',
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
         <div style={{
           width: 44, height: 44, borderRadius: 12,
-          background: 'linear-gradient(135deg, #c4b5fd, #7c3aed)',
+          background: 'linear-gradient(135deg, #A5B4FC, #4F7CFF)',
           display: 'grid', placeItems: 'center', flexShrink: 0,
         }}>
           <TrendingUp size={20} color="#000" />
@@ -467,7 +467,7 @@ function TrajectoryCard({ trend, predicted, band, mastered, tracked }: {
         </div>
       </div>
 
-      <div style={{ display: 'flex', gap: 12, marginTop: 16, paddingTop: 14, borderTop: '1px solid rgba(167,139,250,0.10)' }}>
+      <div style={{ display: 'flex', gap: 12, marginTop: 16, paddingTop: 14, borderTop: '1px solid rgba(102, 217, 255, 0.10)' }}>
         <div style={{ flex: 1 }}>
           <div style={{ fontSize: 10, color: C.textFaint, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.2 }}>Trend</div>
           <div style={{ fontSize: 16, fontWeight: 800, color: up ? C.purpleLite : trend < -0.05 ? C.purpleHi : C.textDim, marginTop: 2 }}>
@@ -497,8 +497,8 @@ function ReviseRow({ topic, subject, hours, onClick }: { topic: string; subject:
       style={{
         width: '100%', display: 'flex', alignItems: 'center', gap: 12,
         padding: '12px 14px', borderRadius: 14,
-        background: urgent ? 'rgba(167,139,250,0.08)' : C.panel,
-        border: `1px solid ${urgent ? 'rgba(167,139,250,0.30)' : 'rgba(167,139,250,0.10)'}`,
+        background: urgent ? 'rgba(102, 217, 255, 0.08)' : C.panel,
+        border: `1px solid ${urgent ? 'rgba(102, 217, 255, 0.30)' : 'rgba(102, 217, 255, 0.10)'}`,
         cursor: 'pointer', fontFamily: 'inherit', color: C.text, textAlign: 'left',
         WebkitTapHighlightColor: 'transparent',
       }}
@@ -557,9 +557,9 @@ function EmptyState() {
     }}>
       <div style={{
         width: 72, height: 72, borderRadius: 20,
-        background: 'linear-gradient(135deg, #c4b5fd, #7c3aed)',
+        background: 'linear-gradient(135deg, #A5B4FC, #4F7CFF)',
         display: 'grid', placeItems: 'center',
-        boxShadow: '0 14px 38px rgba(124,58,237,0.45)',
+        boxShadow: '0 14px 38px rgba(79, 124, 255, 0.32)',
       }}>
         <Brain size={32} color="#000" />
       </div>

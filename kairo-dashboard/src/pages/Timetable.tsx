@@ -8,15 +8,15 @@ const DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday']
 const PERIODS = [1,2,3,4,5,6,7,8]
 
 const SUBJECT_COLORS: Record<string, string> = {
-  Mathematics: '#a78bfa', Physics: '#38bdf8', Chemistry: '#c4b5fd',
-  Biology: '#c4b5fd', English: '#c4b5fd', Hindi: '#c4b5fd',
-  History: '#c4b5fd', Geography: '#a78bfa', 'Computer Science': '#e9d5ff',
-  default: '#7c3aed',
+  Mathematics: '#66D9FF', Physics: '#38bdf8', Chemistry: '#A5B4FC',
+  Biology: '#A5B4FC', English: '#A5B4FC', Hindi: '#A5B4FC',
+  History: '#A5B4FC', Geography: '#66D9FF', 'Computer Science': '#DBE7FF',
+  default: '#4F7CFF',
 }
 
-const card = { background: '#111', border: '1px solid #1e1e1e', borderRadius: 14 }
-const inp  = { background: '#0d0d0d', border: '1px solid #1e1e1e', borderRadius: 8, padding: '9px 12px', fontSize: 13, color: '#fafafa', fontFamily: 'inherit', outline: 'none', width: '100%' } as React.CSSProperties
-const label = { fontSize: 11, color: '#71717a', display: 'block', marginBottom: 5, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.8 } as React.CSSProperties
+const card = { background: '#0E1117', border: '1px solid #1f2532', borderRadius: 14 }
+const inp  = { background: '#0E1117', border: '1px solid #1f2532', borderRadius: 8, padding: '9px 12px', fontSize: 13, color: '#fafafa', fontFamily: 'inherit', outline: 'none', width: '100%' } as React.CSSProperties
+const label = { fontSize: 11, color: '#9CA3AF', display: 'block', marginBottom: 5, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.8 } as React.CSSProperties
 
 const TABS = [
   { id: 'grid',     label: 'Timetable',   icon: Grid3x3 },
@@ -31,17 +31,17 @@ export default function Timetable() {
     <div style={{ padding: '28px 36px', maxWidth: 1100, margin: '0 auto', height: '100%', overflowY: 'auto' }}>
       <div style={{ marginBottom: 24 }}>
         <h1 style={{ fontSize: 20, fontWeight: 700, color: '#fafafa', margin: 0 }}>Timetable Manager</h1>
-        <p style={{ fontSize: 13, color: '#52525b', marginTop: 4 }}>Smart scheduling · Clash detection · AI-generated timetables</p>
+        <p style={{ fontSize: 13, color: '#6B7280', marginTop: 4 }}>Smart scheduling · Clash detection · AI-generated timetables</p>
       </div>
 
-      <div style={{ display: 'flex', gap: 4, marginBottom: 24, background: '#0d0d0d', border: '1px solid #1e1e1e', borderRadius: 10, padding: 4, width: 'fit-content' }}>
+      <div style={{ display: 'flex', gap: 4, marginBottom: 24, background: '#0E1117', border: '1px solid #1f2532', borderRadius: 10, padding: 4, width: 'fit-content' }}>
         {TABS.map(t => (
           <button key={t.id} onClick={() => setTab(t.id)} style={{
             display: 'flex', alignItems: 'center', gap: 6, padding: '7px 18px',
             borderRadius: 7, border: 'none', fontFamily: 'inherit',
             fontSize: 12, fontWeight: tab === t.id ? 600 : 400, cursor: 'pointer',
-            background: tab === t.id ? '#1e1e2e' : 'transparent',
-            color: tab === t.id ? '#a78bfa' : '#52525b',
+            background: tab === t.id ? '#1f2532' : 'transparent',
+            color: tab === t.id ? '#66D9FF' : '#6B7280',
           }}>
             <t.icon size={13} /> {t.label}
           </button>
@@ -123,7 +123,7 @@ function GridTab() {
         <button onClick={() => setAdding(a => !a)} style={{
           marginTop: 18, display: 'flex', alignItems: 'center', gap: 7,
           padding: '9px 18px', borderRadius: 9, border: 'none',
-          background: 'linear-gradient(135deg,#7c3aed,#7c3aed)', color: '#fff',
+          background: 'linear-gradient(135deg,#4F7CFF,#4F7CFF)', color: '#fff',
           fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: 'pointer',
         }}>
           <Plus size={13} /> Add Period
@@ -173,19 +173,19 @@ function GridTab() {
             </div>
             {err && (
               <div style={{ marginBottom: 10 }}>
-                <p style={{ fontSize: 12, color: '#c4b5fd' }}>{err}</p>
+                <p style={{ fontSize: 12, color: '#A5B4FC' }}>{err}</p>
                 {err.includes('anyway') && (
-                  <button onClick={addForce} style={{ padding: '5px 14px', borderRadius: 7, border: 'none', background: '#c4b5fd20', color: '#c4b5fd', fontFamily: 'inherit', fontSize: 12, cursor: 'pointer' }}>
+                  <button onClick={addForce} style={{ padding: '5px 14px', borderRadius: 7, border: 'none', background: '#A5B4FC20', color: '#A5B4FC', fontFamily: 'inherit', fontSize: 12, cursor: 'pointer' }}>
                     Save Anyway (Override Clash)
                   </button>
                 )}
               </div>
             )}
             <div style={{ display: 'flex', gap: 8 }}>
-              <button onClick={addSlot} disabled={saving} style={{ padding: '8px 20px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg,#7c3aed,#7c3aed)', color: '#fff', fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+              <button onClick={addSlot} disabled={saving} style={{ padding: '8px 20px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg,#4F7CFF,#4F7CFF)', color: '#fff', fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
                 {saving ? 'Saving…' : 'Add'}
               </button>
-              <button onClick={() => { setAdding(false); setErr('') }} style={{ padding: '8px 14px', borderRadius: 8, border: '1px solid #1e1e1e', background: 'transparent', color: '#52525b', fontFamily: 'inherit', fontSize: 13, cursor: 'pointer' }}>Cancel</button>
+              <button onClick={() => { setAdding(false); setErr('') }} style={{ padding: '8px 14px', borderRadius: 8, border: '1px solid #1f2532', background: 'transparent', color: '#6B7280', fontFamily: 'inherit', fontSize: 13, cursor: 'pointer' }}>Cancel</button>
             </div>
           </motion.div>
         )}
@@ -197,16 +197,16 @@ function GridTab() {
           <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 4 }}>
             <thead>
               <tr>
-                <th style={{ padding: '8px 10px', fontSize: 10, color: '#52525b', textAlign: 'left', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1 }}>Period</th>
+                <th style={{ padding: '8px 10px', fontSize: 10, color: '#6B7280', textAlign: 'left', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1 }}>Period</th>
                 {DAYS.map(d => (
-                  <th key={d} style={{ padding: '8px 10px', fontSize: 10, color: '#a78bfa', textAlign: 'center', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1 }}>{d.slice(0,3)}</th>
+                  <th key={d} style={{ padding: '8px 10px', fontSize: 10, color: '#66D9FF', textAlign: 'center', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1 }}>{d.slice(0,3)}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {PERIODS.map(p => (
                 <tr key={p}>
-                  <td style={{ padding: '4px 8px', fontSize: 11, color: '#52525b', fontWeight: 600 }}>P{p}</td>
+                  <td style={{ padding: '4px 8px', fontSize: 11, color: '#6B7280', fontWeight: 600 }}>P{p}</td>
                   {DAYS.map(d => {
                     const slot = grid[d]?.[p]
                     const color = slot ? (SUBJECT_COLORS[slot.subject] || SUBJECT_COLORS.default) : undefined
@@ -219,20 +219,20 @@ function GridTab() {
                             borderLeft: `3px solid ${color}`,
                           }}>
                             <div style={{ fontSize: 11, fontWeight: 700, color }}>{slot.subject}</div>
-                            {slot.teacher && <div style={{ fontSize: 9, color: '#71717a', marginTop: 1 }}>{slot.teacher}</div>}
-                            {slot.room    && <div style={{ fontSize: 9, color: '#52525b' }}>Room {slot.room}</div>}
-                            {slot.has_clash && <div style={{ fontSize: 8, color: '#c4b5fd' }}>⚠ clash</div>}
+                            {slot.teacher && <div style={{ fontSize: 9, color: '#9CA3AF', marginTop: 1 }}>{slot.teacher}</div>}
+                            {slot.room    && <div style={{ fontSize: 9, color: '#6B7280' }}>Room {slot.room}</div>}
+                            {slot.has_clash && <div style={{ fontSize: 8, color: '#A5B4FC' }}>⚠ clash</div>}
                             <button onClick={() => remove(slot._id)} style={{
                               position: 'absolute', top: 3, right: 3,
                               background: 'none', border: 'none', cursor: 'pointer', padding: 1,
-                              opacity: 0, transition: 'opacity 0.1s', color: '#a78bfa',
+                              opacity: 0, transition: 'opacity 0.1s', color: '#66D9FF',
                             }}
                               className="delete-btn">
                               <Trash2 size={9} />
                             </button>
                           </div>
                         ) : (
-                          <div style={{ height: 52, borderRadius: 8, border: '1px dashed #1e1e1e', display: 'flex', alignItems: 'center', justifyContent: 'center', minWidth: 90 }}>
+                          <div style={{ height: 52, borderRadius: 8, border: '1px dashed #1f2532', display: 'flex', alignItems: 'center', justifyContent: 'center', minWidth: 90 }}>
                             <span style={{ fontSize: 10, color: '#27272a' }}>—</span>
                           </div>
                         )}
@@ -267,19 +267,19 @@ function ClashesTab() {
       {data.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '80px 0' }}>
           <div style={{ fontSize: 36, marginBottom: 12 }}>✅</div>
-          <div style={{ fontSize: 14, color: '#c4b5fd', fontWeight: 600 }}>No clashes detected</div>
-          <div style={{ fontSize: 12, color: '#52525b', marginTop: 4 }}>Your timetable is clean!</div>
+          <div style={{ fontSize: 14, color: '#A5B4FC', fontWeight: 600 }}>No clashes detected</div>
+          <div style={{ fontSize: 12, color: '#6B7280', marginTop: 4 }}>Your timetable is clean!</div>
         </div>
       ) : (
         <div>
-          <p style={{ fontSize: 13, color: '#c4b5fd', marginBottom: 16 }}>⚠ {data.length} slot(s) with clashes</p>
+          <p style={{ fontSize: 13, color: '#A5B4FC', marginBottom: 16 }}>⚠ {data.length} slot(s) with clashes</p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {data.map(s => (
-              <div key={s._id} style={{ ...card, padding: '14px 18px', borderColor: '#c4b5fd30', display: 'flex', gap: 14, alignItems: 'center' }}>
-                <AlertCircle size={20} color="#c4b5fd" style={{ flexShrink: 0 }} />
+              <div key={s._id} style={{ ...card, padding: '14px 18px', borderColor: '#A5B4FC30', display: 'flex', gap: 14, alignItems: 'center' }}>
+                <AlertCircle size={20} color="#A5B4FC" style={{ flexShrink: 0 }} />
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: 13, fontWeight: 600, color: '#fafafa' }}>{s.subject} — Class {s.class}</div>
-                  <div style={{ fontSize: 11, color: '#71717a' }}>{s.day} · Period {s.period}{s.teacher ? ` · ${s.teacher}` : ''}{s.room ? ` · Room ${s.room}` : ''}</div>
+                  <div style={{ fontSize: 11, color: '#9CA3AF' }}>{s.day} · Period {s.period}{s.teacher ? ` · ${s.teacher}` : ''}{s.room ? ` · Room ${s.room}` : ''}</div>
                 </div>
               </div>
             ))}
@@ -320,7 +320,7 @@ function GenerateTab() {
   return (
     <div style={{ display: 'grid', gridTemplateColumns: result ? '1fr 1.5fr' : '1fr', gap: 20 }}>
       <div style={card}>
-        <div style={{ padding: '16px 18px', borderBottom: '1px solid #1a1a1a' }}>
+        <div style={{ padding: '16px 18px', borderBottom: '1px solid #1a1f2e' }}>
           <div style={{ fontSize: 13, fontWeight: 700, color: '#fafafa' }}>Configure Timetable</div>
         </div>
         <div style={{ padding: 18 }}>
@@ -332,7 +332,7 @@ function GenerateTab() {
           </div>
 
           <div style={{ marginBottom: 12 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: '#52525b', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 }}>Subjects</div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: '#6B7280', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 }}>Subjects</div>
             {subjects.map((s, i) => (
               <div key={i} style={{ display: 'grid', gridTemplateColumns: '2fr 2fr 1fr', gap: 8, marginBottom: 8 }}>
                 <input style={inp} placeholder="Subject" value={s.name} onChange={e => updateSubject(i, 'name', e.target.value)} />
@@ -340,17 +340,17 @@ function GenerateTab() {
                 <input style={inp} type="number" placeholder="Periods/wk" value={s.periods_per_week} onChange={e => updateSubject(i, 'periods_per_week', Number(e.target.value))} />
               </div>
             ))}
-            <button onClick={() => setSubjects(s => [...s, { name: '', teacher: '', periods_per_week: 3 }])} style={{ fontSize: 11, color: '#a78bfa', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+            <button onClick={() => setSubjects(s => [...s, { name: '', teacher: '', periods_per_week: 3 }])} style={{ fontSize: 11, color: '#66D9FF', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
               + Add Subject
             </button>
           </div>
 
-          {err && <p style={{ fontSize: 12, color: '#a78bfa', marginBottom: 12 }}>{err}</p>}
+          {err && <p style={{ fontSize: 12, color: '#66D9FF', marginBottom: 12 }}>{err}</p>}
 
           <button onClick={generate} disabled={loading} style={{
             width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
             padding: '10px', borderRadius: 9, border: 'none',
-            background: 'linear-gradient(135deg,#7c3aed,#7c3aed)', color: '#fff',
+            background: 'linear-gradient(135deg,#4F7CFF,#4F7CFF)', color: '#fff',
             fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: 'pointer',
           }}>
             <Sparkles size={14} /> {loading ? 'Generating…' : 'Generate with AI'}
@@ -360,23 +360,23 @@ function GenerateTab() {
 
       {result && (
         <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} style={{ ...card, overflow: 'hidden' }}>
-          <div style={{ padding: '14px 18px', borderBottom: '1px solid #1a1a1a', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: '#c4b5fd' }}>✓ {result.title || `Class ${result.class} Timetable`}</div>
+          <div style={{ padding: '14px 18px', borderBottom: '1px solid #1a1f2e', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: '#A5B4FC' }}>✓ {result.title || `Class ${result.class} Timetable`}</div>
           </div>
           <div style={{ padding: 16, overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 3 }}>
               <thead>
                 <tr>
-                  <th style={{ fontSize: 9, color: '#52525b', padding: '4px 6px', textTransform: 'uppercase' }}>Period</th>
+                  <th style={{ fontSize: 9, color: '#6B7280', padding: '4px 6px', textTransform: 'uppercase' }}>Period</th>
                   {Object.keys(result.timetable || {}).map(d => (
-                    <th key={d} style={{ fontSize: 9, color: '#a78bfa', padding: '4px 6px', textTransform: 'uppercase' }}>{d.slice(0,3)}</th>
+                    <th key={d} style={{ fontSize: 9, color: '#66D9FF', padding: '4px 6px', textTransform: 'uppercase' }}>{d.slice(0,3)}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {PERIODS.map(p => (
                   <tr key={p}>
-                    <td style={{ fontSize: 10, color: '#52525b', padding: '3px 6px', fontWeight: 600 }}>P{p}</td>
+                    <td style={{ fontSize: 10, color: '#6B7280', padding: '3px 6px', fontWeight: 600 }}>P{p}</td>
                     {Object.values(result.timetable || {}).map((daySlots: any, di) => {
                       const slot = Array.isArray(daySlots) ? daySlots.find((s: any) => s.period === p) : null
                       const color = slot ? (SUBJECT_COLORS[slot.subject] || SUBJECT_COLORS.default) : undefined
@@ -385,10 +385,10 @@ function GenerateTab() {
                           {slot ? (
                             <div style={{ background: `${color}18`, borderRadius: 6, padding: '4px 7px', borderLeft: `2px solid ${color}`, minWidth: 70 }}>
                               <div style={{ fontSize: 10, fontWeight: 700, color }}>{slot.subject}</div>
-                              {slot.teacher && <div style={{ fontSize: 8, color: '#71717a' }}>{slot.teacher}</div>}
+                              {slot.teacher && <div style={{ fontSize: 8, color: '#9CA3AF' }}>{slot.teacher}</div>}
                             </div>
                           ) : (
-                            <div style={{ height: 38, borderRadius: 6, border: '1px dashed #1a1a1a', minWidth: 70 }} />
+                            <div style={{ height: 38, borderRadius: 6, border: '1px dashed #1a1f2e', minWidth: 70 }} />
                           )}
                         </td>
                       )
@@ -397,7 +397,7 @@ function GenerateTab() {
                 ))}
               </tbody>
             </table>
-            {result.notes && <p style={{ fontSize: 11, color: '#71717a', marginTop: 12, padding: '10px 12px', background: '#0d0d0d', borderRadius: 8 }}>{result.notes}</p>}
+            {result.notes && <p style={{ fontSize: 11, color: '#9CA3AF', marginTop: 12, padding: '10px 12px', background: '#0E1117', borderRadius: 8 }}>{result.notes}</p>}
           </div>
         </motion.div>
       )}
@@ -408,7 +408,7 @@ function GenerateTab() {
 function Spinner() {
   return (
     <div style={{ display: 'flex', justifyContent: 'center', padding: '60px 0' }}>
-      <div style={{ width: 28, height: 28, borderRadius: '50%', border: '2px solid #1e1e1e', borderTopColor: '#7c3aed', animation: 'spin 0.8s linear infinite' }} />
+      <div style={{ width: 28, height: 28, borderRadius: '50%', border: '2px solid #1f2532', borderTopColor: '#4F7CFF', animation: 'spin 0.8s linear infinite' }} />
     </div>
   )
 }

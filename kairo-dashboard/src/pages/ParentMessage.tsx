@@ -74,12 +74,12 @@ function NamePicker({
     <div ref={ref} style={{ position: 'relative' }}>
       <div style={{
         display: 'flex', alignItems: 'center', gap: 8,
-        background: '#111', border: '1px solid #1e1e1e', borderRadius: 8,
+        background: '#0E1117', border: '1px solid #1f2532', borderRadius: 8,
         padding: '0 12px', transition: 'border-color 0.15s',
       }}
         onFocus={() => {}}
       >
-        <Search size={13} color="#52525b" style={{ flexShrink: 0 }} />
+        <Search size={13} color="#6B7280" style={{ flexShrink: 0 }} />
         <input
           value={query}
           onChange={e => { setQuery(e.target.value); onChange(e.target.value); setOpen(true) }}
@@ -91,12 +91,12 @@ function NamePicker({
           }}
         />
         {query && (
-          <button onClick={clear} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#52525b', padding: 0 }}>
+          <button onClick={clear} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6B7280', padding: 0 }}>
             <X size={13} />
           </button>
         )}
         {students.length > 0 && (
-          <button onClick={() => setOpen(o => !o)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#52525b', padding: 0 }}>
+          <button onClick={() => setOpen(o => !o)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6B7280', padding: 0 }}>
             <ChevronDown size={13} style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }} />
           </button>
         )}
@@ -109,12 +109,12 @@ function NamePicker({
             transition={{ duration: 0.12 }}
             style={{
               position: 'absolute', top: 'calc(100% + 6px)', left: 0, right: 0, zIndex: 50,
-              background: '#161616', border: '1px solid #2a2a2a', borderRadius: 10,
+              background: '#151922', border: '1px solid #2a2a2a', borderRadius: 10,
               boxShadow: '0 8px 32px rgba(0,0,0,0.5)', maxHeight: 220, overflowY: 'auto',
             }}
           >
             {filtered.length === 0 ? (
-              <div style={{ padding: '12px 14px', fontSize: 12, color: '#52525b' }}>
+              <div style={{ padding: '12px 14px', fontSize: 12, color: '#6B7280' }}>
                 No students found — your typed name will be used.
               </div>
             ) : (
@@ -126,14 +126,14 @@ function NamePicker({
                     width: '100%', display: 'flex', alignItems: 'center', gap: 10,
                     padding: '10px 14px', background: 'none', border: 'none',
                     cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left',
-                    borderBottom: '1px solid #1e1e1e',
+                    borderBottom: '1px solid #1f2532',
                   }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = '#1e1e1e' }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = '#1f2532' }}
                   onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'none' }}
                 >
                   <div style={{
                     width: 28, height: 28, borderRadius: 7, flexShrink: 0,
-                    background: 'linear-gradient(135deg, #7c3aed, #7c3aed)',
+                    background: 'linear-gradient(135deg, #4F7CFF, #4F7CFF)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     fontSize: 11, fontWeight: 700, color: '#fff',
                   }}>
@@ -142,7 +142,7 @@ function NamePicker({
                   <div>
                     <div style={{ fontSize: 13, fontWeight: 600, color: '#fafafa' }}>{s.name}</div>
                     {(s.class_name || s.subject) && (
-                      <div style={{ fontSize: 11, color: '#52525b' }}>
+                      <div style={{ fontSize: 11, color: '#6B7280' }}>
                         {[s.class_name && `Class ${s.class_name}`, s.subject].filter(Boolean).join(' · ')}
                       </div>
                     )}
@@ -227,7 +227,7 @@ export default function ParentMessage() {
       {/* Header */}
       <div style={{ marginBottom: 24 }}>
         <h1 style={{ fontSize: 20, fontWeight: 700, color: '#fafafa', margin: 0 }}>Parent Message Writer</h1>
-        <p style={{ fontSize: 13, color: '#52525b', marginTop: 4 }}>
+        <p style={{ fontSize: 13, color: '#6B7280', marginTop: 4 }}>
           AI-crafted WhatsApp, SMS &amp; email messages — edit and send in seconds
         </p>
       </div>
@@ -238,7 +238,7 @@ export default function ParentMessage() {
         <div>
           {/* Quick templates */}
           <div style={{ marginBottom: 18 }}>
-            <label style={{ fontSize: 11, fontWeight: 600, color: '#71717a', display: 'block', marginBottom: 8,
+            <label style={{ fontSize: 11, fontWeight: 600, color: '#9CA3AF', display: 'block', marginBottom: 8,
               textTransform: 'uppercase', letterSpacing: 0.8 }}>Quick templates</label>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
               {TEMPLATES.map(t => (
@@ -246,9 +246,9 @@ export default function ParentMessage() {
                   onClick={() => setSituation(t.prompt)}
                   style={{
                     padding: '5px 10px', borderRadius: 6, fontSize: 11, cursor: 'pointer', fontFamily: 'inherit',
-                    background: situation === t.prompt ? 'rgba(124, 58, 237,0.15)' : '#161616',
-                    border: `1px solid ${situation === t.prompt ? '#7c3aed' : '#1e1e1e'}`,
-                    color: situation === t.prompt ? '#a78bfa' : '#71717a',
+                    background: situation === t.prompt ? 'rgba(79, 124, 255, 0.15)' : '#151922',
+                    border: `1px solid ${situation === t.prompt ? '#4F7CFF' : '#1f2532'}`,
+                    color: situation === t.prompt ? '#66D9FF' : '#9CA3AF',
                     transition: 'all 0.1s',
                   }}>
                   {t.label}
@@ -259,11 +259,11 @@ export default function ParentMessage() {
 
           {/* Student name picker */}
           <div style={{ marginBottom: 14 }}>
-            <label style={{ fontSize: 11, fontWeight: 600, color: '#71717a', display: 'block', marginBottom: 6,
+            <label style={{ fontSize: 11, fontWeight: 600, color: '#9CA3AF', display: 'block', marginBottom: 6,
               textTransform: 'uppercase', letterSpacing: 0.8 }}>
               Student name
               {students.length > 0 && (
-                <span style={{ marginLeft: 6, fontSize: 10, color: '#52525b', textTransform: 'none', letterSpacing: 0 }}>
+                <span style={{ marginLeft: 6, fontSize: 10, color: '#6B7280', textTransform: 'none', letterSpacing: 0 }}>
                   · {students.length} students in your school
                 </span>
               )}
@@ -273,30 +273,30 @@ export default function ParentMessage() {
 
           {/* Situation */}
           <div style={{ marginBottom: 16 }}>
-            <label style={{ fontSize: 11, fontWeight: 600, color: '#71717a', display: 'block', marginBottom: 6,
+            <label style={{ fontSize: 11, fontWeight: 600, color: '#9CA3AF', display: 'block', marginBottom: 6,
               textTransform: 'uppercase', letterSpacing: 0.8 }}>Situation</label>
             <textarea rows={4} value={situation} onChange={e => setSituation(e.target.value)}
               placeholder="Describe what happened or what you need to communicate…"
-              style={{ width: '100%', background: '#111', border: '1px solid #1e1e1e', borderRadius: 8,
+              style={{ width: '100%', background: '#0E1117', border: '1px solid #1f2532', borderRadius: 8,
                 padding: '10px 12px', fontSize: 13, color: '#fafafa', fontFamily: 'inherit',
                 outline: 'none', resize: 'vertical', boxSizing: 'border-box' }}
-              onFocus={e => { (e.currentTarget as HTMLTextAreaElement).style.borderColor = '#7c3aed' }}
-              onBlur={e => { (e.currentTarget as HTMLTextAreaElement).style.borderColor = '#1e1e1e' }}
+              onFocus={e => { (e.currentTarget as HTMLTextAreaElement).style.borderColor = '#4F7CFF' }}
+              onBlur={e => { (e.currentTarget as HTMLTextAreaElement).style.borderColor = '#1f2532' }}
             />
           </div>
 
           {/* Tone */}
           <div style={{ marginBottom: 16 }}>
-            <label style={{ fontSize: 11, fontWeight: 600, color: '#71717a', display: 'block', marginBottom: 8,
+            <label style={{ fontSize: 11, fontWeight: 600, color: '#9CA3AF', display: 'block', marginBottom: 8,
               textTransform: 'uppercase', letterSpacing: 0.8 }}>Tone</label>
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
               {['Professional', 'Friendly', 'Urgent', 'Formal', 'Empathetic'].map(t => (
                 <motion.button key={t} whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }} onClick={() => setTone(t)}
                   style={{
                     padding: '5px 12px', borderRadius: 7, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit',
-                    background: tone === t ? 'rgba(124, 58, 237,0.15)' : '#161616',
-                    border: `1px solid ${tone === t ? '#7c3aed' : '#1e1e1e'}`,
-                    color: tone === t ? '#a78bfa' : '#52525b',
+                    background: tone === t ? 'rgba(79, 124, 255, 0.15)' : '#151922',
+                    border: `1px solid ${tone === t ? '#4F7CFF' : '#1f2532'}`,
+                    color: tone === t ? '#66D9FF' : '#6B7280',
                     transition: 'all 0.12s',
                   }}>
                   {t}
@@ -308,13 +308,13 @@ export default function ParentMessage() {
           {/* Bilingual */}
           <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20, cursor: 'pointer' }}>
             <input type="checkbox" checked={bilingual} onChange={e => setBilingual(e.target.checked)}
-              style={{ accentColor: '#7c3aed', width: 15, height: 15 }} />
-            <span style={{ fontSize: 13, color: '#71717a' }}>Include Hindi translation</span>
+              style={{ accentColor: '#4F7CFF', width: 15, height: 15 }} />
+            <span style={{ fontSize: 13, color: '#9CA3AF' }}>Include Hindi translation</span>
           </label>
 
           {error && (
-            <div style={{ fontSize: 12, color: '#a78bfa', background: 'rgba(124, 58, 237,0.08)',
-              border: '1px solid rgba(124, 58, 237,0.2)', borderRadius: 7, padding: '8px 12px', marginBottom: 14 }}>
+            <div style={{ fontSize: 12, color: '#66D9FF', background: 'rgba(79, 124, 255, 0.08)',
+              border: '1px solid rgba(79, 124, 255, 0.2)', borderRadius: 7, padding: '8px 12px', marginBottom: 14 }}>
               {error}
             </div>
           )}
@@ -324,11 +324,11 @@ export default function ParentMessage() {
             style={{
               display: 'flex', alignItems: 'center', gap: 7, padding: '11px 22px',
               borderRadius: 10, border: 'none',
-              background: 'linear-gradient(135deg, #7c3aed, #7c3aed)', color: '#fff',
+              background: 'linear-gradient(135deg, #4F7CFF, #4F7CFF)', color: '#fff',
               fontFamily: 'inherit', fontSize: 14, fontWeight: 600,
               cursor: loading || !situation.trim() ? 'not-allowed' : 'pointer',
               opacity: loading || !situation.trim() ? 0.6 : 1,
-              boxShadow: '0 0 20px rgba(124, 58, 237,0.3)',
+              boxShadow: '0 0 20px rgba(79, 124, 255, 0.3)',
             }}>
             <Sparkles size={14} />{loading ? 'Writing…' : 'Write message'}
           </motion.button>
@@ -339,20 +339,20 @@ export default function ParentMessage() {
           {message && (
             <motion.div
               initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }}
-              style={{ background: '#111', border: '1px solid #1e1e1e', borderRadius: 14,
+              style={{ background: '#0E1117', border: '1px solid #1f2532', borderRadius: 14,
                 padding: 20, display: 'flex', flexDirection: 'column', gap: 0 }}>
 
               {/* Title row */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                <span style={{ fontSize: 10, fontWeight: 700, color: '#3f3f46', textTransform: 'uppercase', letterSpacing: 1 }}>
+                <span style={{ fontSize: 10, fontWeight: 700, color: '#4B5563', textTransform: 'uppercase', letterSpacing: 1 }}>
                   Generated message
                 </span>
                 <button onClick={() => setEditing(e => !e)}
                   style={{
                     display: 'flex', alignItems: 'center', gap: 5, fontSize: 11,
-                    color: editing ? '#a78bfa' : '#71717a',
-                    background: editing ? 'rgba(124, 58, 237,0.1)' : 'none',
-                    border: `1px solid ${editing ? '#7c3aed' : '#1e1e1e'}`,
+                    color: editing ? '#66D9FF' : '#9CA3AF',
+                    background: editing ? 'rgba(79, 124, 255, 0.1)' : 'none',
+                    border: `1px solid ${editing ? '#4F7CFF' : '#1f2532'}`,
                     borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontFamily: 'inherit',
                   }}>
                   <Edit3 size={11} />{editing ? 'Done editing' : 'Edit'}
@@ -366,7 +366,7 @@ export default function ParentMessage() {
                   onChange={e => setMessage(e.target.value)}
                   rows={12}
                   style={{
-                    flex: 1, width: '100%', background: '#0d0d0d', border: '1px solid #7c3aed',
+                    flex: 1, width: '100%', background: '#0E1117', border: '1px solid #4F7CFF',
                     borderRadius: 8, padding: '12px', fontSize: 14, color: '#d4d4d8',
                     fontFamily: 'inherit', lineHeight: 1.7, outline: 'none', resize: 'vertical',
                     boxSizing: 'border-box',
@@ -386,7 +386,7 @@ export default function ParentMessage() {
               )}
 
               {/* Character count */}
-              <div style={{ fontSize: 11, color: '#3f3f46', marginTop: 8, marginBottom: 14 }}>
+              <div style={{ fontSize: 11, color: '#4B5563', marginTop: 8, marginBottom: 14 }}>
                 {message.length} characters · {message.split(/\s+/).filter(Boolean).length} words
               </div>
 
@@ -396,9 +396,9 @@ export default function ParentMessage() {
                 <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} onClick={copy}
                   style={{
                     display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 600,
-                    color: copied ? '#c4b5fd' : '#fafafa',
-                    background: copied ? 'rgba(196, 181, 253,0.12)' : '#1a1a1a',
-                    border: `1px solid ${copied ? 'rgba(196, 181, 253,0.3)' : '#2a2a2a'}`,
+                    color: copied ? '#A5B4FC' : '#fafafa',
+                    background: copied ? 'rgba(165, 180, 252, 0.12)' : '#1a1f2e',
+                    border: `1px solid ${copied ? 'rgba(165, 180, 252, 0.3)' : '#2a2a2a'}`,
                     borderRadius: 8, padding: '8px 14px', cursor: 'pointer', fontFamily: 'inherit',
                     transition: 'all 0.15s',
                   }}>
@@ -419,7 +419,7 @@ export default function ParentMessage() {
                 <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} onClick={openMailto}
                   style={{
                     display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 600,
-                    color: '#71717a', background: '#161616', border: '1px solid #1e1e1e',
+                    color: '#9CA3AF', background: '#151922', border: '1px solid #1f2532',
                     borderRadius: 8, padding: '8px 14px', cursor: 'pointer', fontFamily: 'inherit',
                   }}>
                   <Mail size={12} /> Mail app
@@ -430,7 +430,7 @@ export default function ParentMessage() {
                   onClick={generate} disabled={loading}
                   style={{
                     display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 600,
-                    color: '#a78bfa', background: 'rgba(124, 58, 237,0.1)', border: '1px solid rgba(124, 58, 237,0.25)',
+                    color: '#66D9FF', background: 'rgba(79, 124, 255, 0.1)', border: '1px solid rgba(79, 124, 255, 0.25)',
                     borderRadius: 8, padding: '8px 14px', cursor: loading ? 'not-allowed' : 'pointer',
                     fontFamily: 'inherit', opacity: loading ? 0.5 : 1,
                   }}>

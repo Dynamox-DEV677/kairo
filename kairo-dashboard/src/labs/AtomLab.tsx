@@ -59,7 +59,7 @@ function AtomSim({ params, playing }: SimProps) {
       <Text position={[0, 4.5, 0]} fontSize={0.7} color="#fafafa" anchorX="center">
         {elem.sym}
       </Text>
-      <Text position={[0, 3.8, 0]} fontSize={0.3} color="#a1a1aa" anchorX="center">
+      <Text position={[0, 3.8, 0]} fontSize={0.3} color="#B1B5BA" anchorX="center">
         {elem.name}
       </Text>
       <OrbitControls enablePan={false} minDistance={4} maxDistance={20} />
@@ -86,7 +86,7 @@ function Nucleus({ protons, neutrons }: { protons: number; neutrons: number }) {
         <mesh key={i} position={p}>
           <sphereGeometry args={[0.16, 12, 12]} />
           <meshStandardMaterial
-            color={i < protons ? '#ef4444' : '#71717a'}
+            color={i < protons ? '#ef4444' : '#9CA3AF'}
             emissive={i < protons ? '#ef4444' : '#000'}
             emissiveIntensity={0.4}
           />
@@ -114,7 +114,7 @@ function Shell({ radius, electrons, shellIdx, playing }: any) {
       {/* Orbit ring */}
       <mesh rotation={[Math.PI / 2, 0, 0]}>
         <torusGeometry args={[radius, 0.005, 4, 64]} />
-        <meshBasicMaterial color="#3f3f46" transparent opacity={0.5} />
+        <meshBasicMaterial color="#4B5563" transparent opacity={0.5} />
       </mesh>
       {Array.from({ length: electrons }).map((_, i) => {
         const angle = (i / electrons) * Math.PI * 2

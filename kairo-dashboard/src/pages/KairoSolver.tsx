@@ -331,7 +331,7 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
         <div style={{
           position: 'absolute', top: '20%', left: '10%',
           width: 400, height: 400, borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(124, 58, 237,0.10) 0%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(79, 124, 255, 0.10) 0%, transparent 70%)',
           pointerEvents: 'none', zIndex: 0,
         }} />
       )}
@@ -372,13 +372,13 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
 
       {/* INPUT */}
       <div style={{
-        background: '#0d0d0d', border: `1px solid ${voiceOn ? 'rgba(167,139,250,0.55)' : '#1e1e1e'}`,
+        background: '#0E1117', border: `1px solid ${voiceOn ? 'rgba(102, 217, 255, 0.55)' : '#1f2532'}`,
         borderRadius: 14, padding: 10,
         display: 'flex', alignItems: 'flex-end', gap: 10,
         marginBottom: 18, marginTop: showResult ? 0 : 14,
         position: 'relative', zIndex: 2,
         transition: 'border-color .2s ease, box-shadow .2s ease',
-        boxShadow: voiceOn ? '0 0 28px rgba(124,58,237,0.35)' : 'none',
+        boxShadow: voiceOn ? '0 0 28px rgba(79, 124, 255, 0.35)' : 'none',
       }}>
         <textarea
           ref={taRef}
@@ -404,12 +404,12 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
             style={{
               display: 'inline-flex', alignItems: 'center', gap: 6,
               padding: '8px 12px', borderRadius: 10,
-              background: voiceOn ? 'rgba(167,139,250,0.18)' : 'transparent',
-              border: `1px solid ${voiceOn ? 'rgba(167,139,250,0.55)' : '#22222e'}`,
-              color: voiceOn ? '#c4b5fd' : '#a1a1aa',
+              background: voiceOn ? 'rgba(102, 217, 255, 0.18)' : 'transparent',
+              border: `1px solid ${voiceOn ? 'rgba(102, 217, 255, 0.55)' : 'rgba(255,255,255,0.08)'}`,
+              color: voiceOn ? '#A5B4FC' : '#B1B5BA',
               fontFamily: 'inherit', fontSize: 12, fontWeight: 600,
               cursor: 'pointer',
-              boxShadow: voiceOn ? '0 0 14px rgba(124,58,237,0.45)' : 'none',
+              boxShadow: voiceOn ? '0 0 14px rgba(79, 124, 255, 0.32)' : 'none',
             }}>
             {voiceOn ? <Mic size={14} className="kr-voice-pulse" /> : <MicOff size={14} />}
             {voiceOn ? 'Listening' : 'Voice'}
@@ -422,8 +422,8 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
               display: 'inline-flex', alignItems: 'center', gap: 6,
               padding: '8px 12px', borderRadius: 10,
               background: 'transparent',
-              border: '1px solid #22222e',
-              color: '#a1a1aa', fontFamily: 'inherit', fontSize: 12, fontWeight: 600,
+              border: '1px solid rgba(255,255,255,0.08)',
+              color: '#B1B5BA', fontFamily: 'inherit', fontSize: 12, fontWeight: 600,
               cursor: 'pointer',
             }}>
             <Calendar size={14} />
@@ -492,29 +492,29 @@ function ExamPlanModal({ onClose }: { onClose: () => void }) {
         onClick={e => e.stopPropagation()}
         style={{
           width: '100%', maxWidth: 460,
-          background: '#0c0c14',
-          border: '1px solid rgba(167,139,250,0.35)',
+          background: '#0E1117',
+          border: '1px solid rgba(102, 217, 255, 0.35)',
           borderRadius: 18, padding: 24,
           color: '#fafafa', fontFamily: 'inherit',
-          boxShadow: '0 24px 60px rgba(124,58,237,0.35)',
+          boxShadow: '0 24px 60px rgba(79, 124, 255, 0.35)',
           position: 'relative',
         }}>
         <button onClick={onClose} aria-label="Close" style={{
           position: 'absolute', top: 14, right: 14,
           width: 30, height: 30, borderRadius: 8,
-          background: 'transparent', border: '1px solid #22222e',
-          color: '#71717a', cursor: 'pointer', display: 'grid', placeItems: 'center',
+          background: 'transparent', border: '1px solid rgba(255,255,255,0.08)',
+          color: '#9CA3AF', cursor: 'pointer', display: 'grid', placeItems: 'center',
         }}>
           <X size={14} />
         </button>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-          <Calendar size={16} color="#a78bfa" />
-          <span style={{ fontSize: 10.5, fontWeight: 700, color: '#a78bfa', textTransform: 'uppercase', letterSpacing: 2 }}>
+          <Calendar size={16} color="#66D9FF" />
+          <span style={{ fontSize: 10.5, fontWeight: 700, color: '#66D9FF', textTransform: 'uppercase', letterSpacing: 2 }}>
             Plan an exam
           </span>
         </div>
         <h3 style={{ margin: 0, fontSize: 18, fontWeight: 800 }}>Add an exam to your countdown</h3>
-        <p style={{ margin: '4px 0 14px', fontSize: 12.5, color: '#71717a' }}>
+        <p style={{ margin: '4px 0 14px', fontSize: 12.5, color: '#9CA3AF' }}>
           Saved on this device. Kairo OS will show the countdown + adjust your weak-topic revisions toward the exam date.
         </p>
         <ExamLabel>Subject *</ExamLabel>
@@ -522,7 +522,7 @@ function ExamPlanModal({ onClose }: { onClose: () => void }) {
         <ExamLabel>Date *</ExamLabel>
         <ExamInput type="date" value={date} onChange={setDate} />
         {date && (
-          <p style={{ margin: '6px 0 0', fontSize: 11.5, color: daysLeft <= 7 ? '#c4b5fd' : '#71717a' }}>
+          <p style={{ margin: '6px 0 0', fontSize: 11.5, color: daysLeft <= 7 ? '#A5B4FC' : '#9CA3AF' }}>
             {daysLeft === 0 ? 'Today' : daysLeft === 1 ? 'Tomorrow' : `${daysLeft} days from today`}
           </p>
         )}
@@ -531,12 +531,12 @@ function ExamPlanModal({ onClose }: { onClose: () => void }) {
         <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 18 }}>
           <button onClick={onClose} style={{
             padding: '9px 16px', borderRadius: 9,
-            background: 'transparent', border: '1px solid #22222e',
-            color: '#a1a1aa', fontFamily: 'inherit', fontSize: 12.5, fontWeight: 600, cursor: 'pointer',
+            background: 'transparent', border: '1px solid rgba(255,255,255,0.08)',
+            color: '#B1B5BA', fontFamily: 'inherit', fontSize: 12.5, fontWeight: 600, cursor: 'pointer',
           }}>Cancel</button>
           <button onClick={save} disabled={!subject.trim() || !date} style={{
             padding: '9px 20px', borderRadius: 9,
-            background: 'linear-gradient(135deg, #7c3aed, #5b21b6)',
+            background: 'linear-gradient(135deg, #4F7CFF, #2046C2)',
             color: '#fff', fontFamily: 'inherit', fontSize: 13, fontWeight: 700,
             border: 'none', cursor: subject.trim() && date ? 'pointer' : 'not-allowed',
             opacity: subject.trim() && date ? 1 : 0.5,
@@ -549,7 +549,7 @@ function ExamPlanModal({ onClose }: { onClose: () => void }) {
 
 function ExamLabel({ children }: { children: React.ReactNode }) {
   return <div style={{
-    fontSize: 10.5, fontWeight: 700, color: '#71717a',
+    fontSize: 10.5, fontWeight: 700, color: '#9CA3AF',
     textTransform: 'uppercase', letterSpacing: 1.4, margin: '12px 0 6px',
   }}>{children}</div>
 }
@@ -560,7 +560,7 @@ function ExamInput({ value, onChange, placeholder, autoFocus, type }: { value: s
       style={{
         width: '100%', boxSizing: 'border-box',
         padding: '10px 12px', borderRadius: 10,
-        background: '#13131d', border: '1px solid #1a1a26',
+        background: '#151922', border: '1px solid rgba(255,255,255,0.06)',
         color: '#fafafa', fontFamily: 'inherit', fontSize: 13, outline: 'none',
       }} />
   )
@@ -583,10 +583,10 @@ function Hero({ onPick }: { onPick: (q: string) => void }) {
         style={{
           width: 76, height: 76, borderRadius: 18,
           // Match the rest of the brand — black squircle, soft purple halo.
-          background: '#06060a',
-          border: '1px solid rgba(124, 58, 237, 0.25)',
+          background: '#050505',
+          border: '1px solid rgba(79, 124, 255, 0.25)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 0 40px rgba(124, 58, 237, 0.35)',
+          boxShadow: '0 0 40px rgba(79, 124, 255, 0.35)',
           padding: 12,
         }}>
         <img
@@ -599,7 +599,7 @@ function Hero({ onPick }: { onPick: (q: string) => void }) {
         <h1 style={{ fontSize: 26, fontWeight: 800, color: '#fafafa', margin: 0, letterSpacing: '-0.5px' }}>
           Kairo's Solver
         </h1>
-        <p style={{ fontSize: 13.5, color: '#a1a1aa', margin: '8px 0 0', lineHeight: 1.6 }}>
+        <p style={{ fontSize: 13.5, color: '#B1B5BA', margin: '8px 0 0', lineHeight: 1.6 }}>
           Ask anything. Kairo writes a clear explanation on the right and builds a
           live picture-book on the left — sourced from Wikimedia and educational image libraries.
         </p>
@@ -610,9 +610,9 @@ function Hero({ onPick }: { onPick: (q: string) => void }) {
             whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
             style={{
               padding: '8px 14px', borderRadius: 100,
-              background: 'rgba(124, 58, 237,0.06)',
-              border: '1px solid rgba(124, 58, 237,0.2)',
-              color: '#c4b5fd', fontFamily: 'inherit', fontSize: 12, fontWeight: 600,
+              background: 'rgba(79, 124, 255, 0.06)',
+              border: '1px solid rgba(79, 124, 255, 0.2)',
+              color: '#A5B4FC', fontFamily: 'inherit', fontSize: 12, fontWeight: 600,
               cursor: 'pointer',
             }}>
             {s}
@@ -659,7 +659,7 @@ function VideoPlayer({ videoId, busy, topic }: {
 }) {
   return (
     <div style={{
-      background: '#000', border: '1px solid #1e1e1e',
+      background: '#000', border: '1px solid #1f2532',
       borderRadius: 18, overflow: 'hidden', position: 'relative',
       minHeight: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
     }}>
@@ -668,8 +668,8 @@ function VideoPlayer({ videoId, busy, topic }: {
         position: 'absolute', top: 12, left: 14, zIndex: 4,
         padding: '6px 12px', borderRadius: 7,
         background: 'rgba(13,13,13,0.85)', backdropFilter: 'blur(12px)',
-        border: '1px solid rgba(124, 58, 237,0.3)',
-        fontSize: 10.5, color: '#c4b5fd', fontWeight: 700,
+        border: '1px solid rgba(79, 124, 255, 0.3)',
+        fontSize: 10.5, color: '#A5B4FC', fontWeight: 700,
         textTransform: 'uppercase', letterSpacing: 1.5,
         maxWidth: '70%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
         display: 'flex', alignItems: 'center', gap: 6,
@@ -678,13 +678,13 @@ function VideoPlayer({ videoId, busy, topic }: {
       </div>
 
       {busy && (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, color: '#a1a1aa' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, color: '#B1B5BA' }}>
           <motion.div
             animate={{ scale: [1, 1.08, 1] }}
             transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
             style={{
               width: 52, height: 52, borderRadius: 13,
-              background: 'linear-gradient(135deg, #7c3aed, #a78bfa)',
+              background: 'linear-gradient(135deg, #4F7CFF, #66D9FF)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
             <Loader2 size={22} color="#fff" style={{ animation: 'spin 0.8s linear infinite' }} />
@@ -694,7 +694,7 @@ function VideoPlayer({ videoId, busy, topic }: {
       )}
 
       {!busy && !videoId && (
-        <div style={{ color: '#52525b', fontSize: 12.5, padding: 16, textAlign: 'center' }}>
+        <div style={{ color: '#6B7280', fontSize: 12.5, padding: 16, textAlign: 'center' }}>
           No video available for this topic — the slideshow below has visuals.
         </div>
       )}
@@ -719,8 +719,8 @@ function VideoPlayer({ videoId, busy, topic }: {
             position: 'absolute', bottom: 8, right: 12, zIndex: 4,
             padding: '3px 8px', borderRadius: 5,
             background: 'rgba(13,13,13,0.6)', backdropFilter: 'blur(8px)',
-            border: '1px solid rgba(124, 58, 237,0.25)',
-            fontSize: 9, color: '#c4b5fd', fontWeight: 700,
+            border: '1px solid rgba(79, 124, 255, 0.25)',
+            fontSize: 9, color: '#A5B4FC', fontWeight: 700,
             textTransform: 'uppercase', letterSpacing: 1,
             pointerEvents: 'none',
           }}>
@@ -770,19 +770,19 @@ function Slideshow({ slides, busy, topic, questionType, err, compact = false }: 
   return (
     <div ref={containerRef}
       style={{
-        background: '#0a0a0a', border: '1px solid #1e1e1e',
+        background: '#050505', border: '1px solid #1f2532',
         borderRadius: 18, overflow: 'hidden', position: 'relative',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         minHeight: 0,
-        boxShadow: '0 0 60px rgba(124, 58, 237,0.06) inset',
+        boxShadow: '0 0 60px rgba(79, 124, 255, 0.06) inset',
       }}>
       {/* Topic label */}
       <div style={{
         position: 'absolute', top: 14, left: 14, zIndex: 4,
         padding: '6px 12px', borderRadius: 7,
         background: 'rgba(13,13,13,0.85)', backdropFilter: 'blur(12px)',
-        border: '1px solid rgba(124, 58, 237,0.3)',
-        fontSize: 10.5, color: '#c4b5fd', fontWeight: 700,
+        border: '1px solid rgba(79, 124, 255, 0.3)',
+        fontSize: 10.5, color: '#A5B4FC', fontWeight: 700,
         textTransform: 'uppercase', letterSpacing: 1.5,
         maxWidth: '70%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
         display: 'flex', alignItems: 'center', gap: 6,
@@ -797,8 +797,8 @@ function Slideshow({ slides, busy, topic, questionType, err, compact = false }: 
           position: 'absolute', top: 14, right: 14, zIndex: 4,
           padding: '5px 11px', borderRadius: 6,
           background: 'rgba(13,13,13,0.85)', backdropFilter: 'blur(12px)',
-          border: '1px solid #1e1e1e',
-          fontSize: 10, color: '#a1a1aa', fontWeight: 700,
+          border: '1px solid #1f2532',
+          fontSize: 10, color: '#B1B5BA', fontWeight: 700,
           fontFamily: 'monospace', letterSpacing: 0.5,
         }}>
           {idx + 1} / {slides.length}
@@ -809,20 +809,20 @@ function Slideshow({ slides, busy, topic, questionType, err, compact = false }: 
       {busy && slides.length === 0 && <SlideshowSkeleton />}
 
       {!busy && slides.length === 0 && !err && (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, color: '#52525b' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, color: '#6B7280' }}>
           <ImageIcon size={36} />
           <div style={{ fontSize: 13, fontWeight: 600 }}>No images found</div>
-          <div style={{ fontSize: 11, color: '#3f3f46', maxWidth: 260, textAlign: 'center' }}>
+          <div style={{ fontSize: 11, color: '#4B5563', maxWidth: 260, textAlign: 'center' }}>
             We couldn't find good visuals for this topic. The text answer is still on the right.
           </div>
         </div>
       )}
 
       {!busy && err && slides.length === 0 && (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, padding: 24, textAlign: 'center', color: '#a78bfa', maxWidth: 360 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, padding: 24, textAlign: 'center', color: '#66D9FF', maxWidth: 360 }}>
           <ImageIcon size={28} />
           <div style={{ fontSize: 13, fontWeight: 600 }}>Couldn't load images</div>
-          <div style={{ fontSize: 11, color: '#71717a' }}>{err}</div>
+          <div style={{ fontSize: 11, color: '#9CA3AF' }}>{err}</div>
         </div>
       )}
 
@@ -856,10 +856,10 @@ function Slideshow({ slides, busy, topic, questionType, err, compact = false }: 
               <div style={{ fontSize: 12.5, color: '#fafafa', fontWeight: 600, lineHeight: 1.5, marginBottom: 4 }}>
                 {current.caption}
               </div>
-              <div style={{ fontSize: 10, color: '#71717a', display: 'flex', alignItems: 'center', gap: 6 }}>
+              <div style={{ fontSize: 10, color: '#9CA3AF', display: 'flex', alignItems: 'center', gap: 6 }}>
                 <span style={{
                   padding: '1px 6px', borderRadius: 3,
-                  background: 'rgba(124, 58, 237,0.15)', color: '#c4b5fd',
+                  background: 'rgba(79, 124, 255, 0.15)', color: '#A5B4FC',
                   textTransform: 'uppercase', letterSpacing: 0.8, fontWeight: 700,
                 }}>{current.source}</span>
                 {current.attribution && <span style={{ pointerEvents: 'auto' }}>{current.attribution}</span>}
@@ -881,7 +881,7 @@ function Slideshow({ slides, busy, topic, questionType, err, compact = false }: 
               style={{
                 width: i === idx ? 24 : 8, height: 8, borderRadius: 4,
                 border: 'none', cursor: 'pointer',
-                background: i === idx ? '#c4b5fd' : '#3f3f46',
+                background: i === idx ? '#A5B4FC' : '#4B5563',
                 transition: 'all 0.3s',
               }}
             />
@@ -910,15 +910,15 @@ function Slideshow({ slides, busy, topic, questionType, err, compact = false }: 
 
 function SlideshowSkeleton() {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 18, color: '#a1a1aa' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 18, color: '#B1B5BA' }}>
       <motion.div
         animate={{ scale: [1, 1.08, 1], rotate: [0, 6, -6, 0] }}
         transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
         style={{
           width: 64, height: 64, borderRadius: 16,
-          background: 'linear-gradient(135deg, #7c3aed, #a78bfa)',
+          background: 'linear-gradient(135deg, #4F7CFF, #66D9FF)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 0 32px rgba(124, 58, 237,0.4)',
+          boxShadow: '0 0 32px rgba(79, 124, 255, 0.4)',
           padding: 8,
         }}>
         <img
@@ -928,15 +928,15 @@ function SlideshowSkeleton() {
         />
       </motion.div>
       <div style={{ fontSize: 13, fontWeight: 700, color: '#fafafa' }}>Building your visual lesson…</div>
-      <div style={{ fontSize: 11, color: '#71717a', maxWidth: 320, textAlign: 'center', lineHeight: 1.5 }}>
+      <div style={{ fontSize: 11, color: '#9CA3AF', maxWidth: 320, textAlign: 'center', lineHeight: 1.5 }}>
         Searching Wikimedia + educational image libraries · Generating storyboard · Writing explanation
       </div>
       {/* Animated bar */}
-      <div style={{ width: 200, height: 3, background: '#1e1e1e', borderRadius: 2, overflow: 'hidden', marginTop: 4 }}>
+      <div style={{ width: 200, height: 3, background: '#1f2532', borderRadius: 2, overflow: 'hidden', marginTop: 4 }}>
         <motion.div
           animate={{ x: ['-100%', '100%'] }}
           transition={{ duration: 1.4, repeat: Infinity, ease: 'easeInOut' }}
-          style={{ width: '40%', height: '100%', background: 'linear-gradient(90deg, transparent, #7c3aed, transparent)' }}
+          style={{ width: '40%', height: '100%', background: 'linear-gradient(90deg, transparent, #4F7CFF, transparent)' }}
         />
       </div>
     </div>
@@ -956,12 +956,12 @@ function ExplanationPanel({ resp, busy, error, retryHint, onOpenLab, onAskRelate
 }) {
   return (
     <div style={{
-      background: '#0d0d0d', border: '1px solid #1e1e1e',
+      background: '#0E1117', border: '1px solid #1f2532',
       borderRadius: 18, padding: 20, overflowY: 'auto',
       display: 'flex', flexDirection: 'column', gap: 12,
     }}>
       <div style={{
-        fontSize: 10, color: '#c4b5fd', fontWeight: 700,
+        fontSize: 10, color: '#A5B4FC', fontWeight: 700,
         textTransform: 'uppercase', letterSpacing: 1.5,
         display: 'flex', alignItems: 'center', gap: 6,
       }}>
@@ -970,7 +970,7 @@ function ExplanationPanel({ resp, busy, error, retryHint, onOpenLab, onAskRelate
           <span style={{
             marginLeft: 'auto',
             padding: '2px 7px', borderRadius: 4,
-            background: 'rgba(196, 181, 253,0.10)', color: '#c4b5fd',
+            background: 'rgba(165, 180, 252, 0.10)', color: '#A5B4FC',
             fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.8,
           }}>Wikipedia mode</span>
         )}
@@ -978,7 +978,7 @@ function ExplanationPanel({ resp, busy, error, retryHint, onOpenLab, onAskRelate
           <span style={{
             marginLeft: 'auto',
             padding: '2px 7px', borderRadius: 4,
-            background: 'rgba(196, 181, 253,0.10)', color: '#c4b5fd',
+            background: 'rgba(165, 180, 252, 0.10)', color: '#A5B4FC',
             fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.8,
           }}>Cached</span>
         )}
@@ -990,11 +990,11 @@ function ExplanationPanel({ resp, busy, error, retryHint, onOpenLab, onAskRelate
       {error && (
         <div style={{
           padding: '14px 16px', borderRadius: 12,
-          background: 'rgba(167, 139, 250,0.08)', border: '1px solid rgba(167, 139, 250,0.28)',
+          background: 'rgba(102, 217, 255, 0.08)', border: '1px solid rgba(102, 217, 255, 0.28)',
           display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap',
         }}>
           <div style={{ flex: 1, minWidth: 200 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: '#a78bfa', textTransform: 'uppercase', letterSpacing: 1.4, marginBottom: 4 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: '#66D9FF', textTransform: 'uppercase', letterSpacing: 1.4, marginBottom: 4 }}>
               ⚠ Couldn't fetch an answer
             </div>
             <div style={{ fontSize: 13, color: '#e4e4e7', lineHeight: 1.55 }}>
@@ -1006,10 +1006,10 @@ function ExplanationPanel({ resp, busy, error, retryHint, onOpenLab, onAskRelate
               onClick={() => ask(topic)}
               style={{
                 padding: '8px 14px', borderRadius: 9,
-                background: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 50%, #7c3aed 100%)',
+                background: 'linear-gradient(135deg, #4F7CFF 0%, #2046C2 50%, #4F7CFF 100%)',
                 color: '#fff', fontFamily: 'inherit', fontWeight: 700, fontSize: 12,
                 border: 'none', cursor: 'pointer', flexShrink: 0,
-                boxShadow: '0 6px 18px rgba(124,58,237,0.4)',
+                boxShadow: '0 6px 18px rgba(79, 124, 255, 0.4)',
               }}>
               Try again
             </button>
@@ -1034,10 +1034,10 @@ function ExplanationPanel({ resp, busy, error, retryHint, onOpenLab, onAskRelate
           {resp.formulas.length > 0 && (
             <div style={{
               padding: '12px 14px', borderRadius: 11,
-              background: 'rgba(124, 58, 237,0.05)', border: '1px solid rgba(124, 58, 237,0.2)',
+              background: 'rgba(79, 124, 255, 0.05)', border: '1px solid rgba(79, 124, 255, 0.2)',
             }}>
               <div style={{
-                fontSize: 10, color: '#c4b5fd', fontWeight: 700,
+                fontSize: 10, color: '#A5B4FC', fontWeight: 700,
                 textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 8,
                 display: 'flex', alignItems: 'center', gap: 6,
               }}>
@@ -1062,26 +1062,26 @@ function ExplanationPanel({ resp, busy, error, retryHint, onOpenLab, onAskRelate
               onClick={() => onOpenLab(resp.labRoute!)}
               style={{
                 width: '100%', padding: '12px 16px', borderRadius: 12,
-                background: 'linear-gradient(135deg, rgba(167, 139, 250,0.18), rgba(124, 58, 237,0.18))',
-                border: '1px solid rgba(167, 139, 250,0.4)',
+                background: 'linear-gradient(135deg, rgba(102, 217, 255, 0.18), rgba(79, 124, 255, 0.18))',
+                border: '1px solid rgba(102, 217, 255, 0.4)',
                 color: '#fafafa', fontFamily: 'inherit', cursor: 'pointer', textAlign: 'left',
                 display: 'flex', alignItems: 'center', gap: 12,
-                boxShadow: '0 0 24px rgba(167, 139, 250,0.15)',
+                boxShadow: '0 0 24px rgba(102, 217, 255, 0.15)',
               }}>
               <div style={{
                 width: 36, height: 36, borderRadius: 9, flexShrink: 0,
-                background: 'linear-gradient(135deg, #a78bfa, #7c3aed)',
+                background: 'linear-gradient(135deg, #66D9FF, #4F7CFF)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
                 <Beaker size={16} color="#fff" />
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 13, fontWeight: 700 }}>Open in Kairo Labs</div>
-                <div style={{ fontSize: 11, color: '#a1a1aa', marginTop: 1 }}>
+                <div style={{ fontSize: 11, color: '#B1B5BA', marginTop: 1 }}>
                   Tweak parameters, watch it live in 3D
                 </div>
               </div>
-              <ExternalLink size={14} color="#c4b5fd" />
+              <ExternalLink size={14} color="#A5B4FC" />
             </motion.button>
           )}
 
@@ -1089,7 +1089,7 @@ function ExplanationPanel({ resp, busy, error, retryHint, onOpenLab, onAskRelate
           {resp.relatedConcepts.length > 0 && (
             <div>
               <div style={{
-                fontSize: 10, color: '#71717a', fontWeight: 700,
+                fontSize: 10, color: '#9CA3AF', fontWeight: 700,
                 textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 8,
               }}>
                 Explore further
@@ -1101,8 +1101,8 @@ function ExplanationPanel({ resp, busy, error, retryHint, onOpenLab, onAskRelate
                     onClick={() => onAskRelated(c)}
                     style={{
                       padding: '6px 11px', borderRadius: 100,
-                      background: '#161616', border: '1px solid #1e1e1e',
-                      color: '#c4b5fd', fontFamily: 'inherit', fontSize: 11.5, fontWeight: 600,
+                      background: '#151922', border: '1px solid #1f2532',
+                      color: '#A5B4FC', fontFamily: 'inherit', fontSize: 11.5, fontWeight: 600,
                       cursor: 'pointer',
                     }}>
                     {c}
@@ -1124,13 +1124,13 @@ function ExplanationSkeleton({ retryHint }: { retryHint?: string }) {
         <motion.div key={i}
           animate={{ opacity: [0.3, 0.7, 0.3] }}
           transition={{ duration: 1.4, repeat: Infinity, delay: i * 0.15, ease: 'easeInOut' }}
-          style={{ height: 10, width: `${w}%`, background: '#1e1e1e', borderRadius: 5 }}
+          style={{ height: 10, width: `${w}%`, background: '#1f2532', borderRadius: 5 }}
         />
       ))}
       <div style={{ height: 10 }} />
       <div style={{
         display: 'flex', alignItems: 'center', gap: 8,
-        color: retryHint ? '#c4b5fd' : '#52525b',
+        color: retryHint ? '#A5B4FC' : '#6B7280',
         fontSize: 11,
       }}>
         <Loader2 size={12} style={{ animation: 'spin 0.8s linear infinite' }} />
@@ -1153,36 +1153,36 @@ function iconForType(t?: string) {
 const MD_COMPONENTS = {
   p:  ({ children }: any) => <p style={{ margin: '0 0 10px', lineHeight: 1.75 }}>{children}</p>,
   h1: ({ children }: any) => <h1 style={{ fontSize: 17, fontWeight: 800, color: '#fafafa', margin: '12px 0 8px' }}>{children}</h1>,
-  h2: ({ children }: any) => <h2 style={{ fontSize: 14, fontWeight: 700, color: '#c4b5fd', margin: '14px 0 6px', textTransform: 'uppercase', letterSpacing: 1, display: 'flex', alignItems: 'center', gap: 6 }}>{children}</h2>,
+  h2: ({ children }: any) => <h2 style={{ fontSize: 14, fontWeight: 700, color: '#A5B4FC', margin: '14px 0 6px', textTransform: 'uppercase', letterSpacing: 1, display: 'flex', alignItems: 'center', gap: 6 }}>{children}</h2>,
   h3: ({ children }: any) => <h3 style={{ fontSize: 13, fontWeight: 700, color: '#fafafa', margin: '10px 0 4px' }}>{children}</h3>,
   strong: ({ children }: any) => <strong style={{ color: '#fafafa', fontWeight: 700 }}>{children}</strong>,
-  em:     ({ children }: any) => <em style={{ color: '#c4b5fd' }}>{children}</em>,
+  em:     ({ children }: any) => <em style={{ color: '#A5B4FC' }}>{children}</em>,
   ul: ({ children }: any) => <ul style={{ paddingLeft: 18, margin: '6px 0 10px' }}>{children}</ul>,
   ol: ({ children }: any) => <ol style={{ paddingLeft: 18, margin: '6px 0 10px' }}>{children}</ol>,
   li: ({ children }: any) => <li style={{ marginBottom: 3, color: '#d4d4d8' }}>{children}</li>,
   code: ({ children, className }: any) => {
     const isBlock = !!className
     return isBlock
-      ? <pre style={{ background: '#0a0a0a', border: '1px solid #1e1e1e', borderRadius: 8, padding: '10px 12px', overflowX: 'auto', margin: '8px 0' }}>
-          <code style={{ fontSize: 12.5, color: '#c4b5fd', fontFamily: 'monospace' }}>{children}</code>
+      ? <pre style={{ background: '#050505', border: '1px solid #1f2532', borderRadius: 8, padding: '10px 12px', overflowX: 'auto', margin: '8px 0' }}>
+          <code style={{ fontSize: 12.5, color: '#A5B4FC', fontFamily: 'monospace' }}>{children}</code>
         </pre>
-      : <code style={{ background: '#1a1a2e', padding: '2px 6px', borderRadius: 4, fontSize: 12.5, color: '#c4b5fd', fontFamily: 'monospace' }}>{children}</code>
+      : <code style={{ background: '#1a1a2e', padding: '2px 6px', borderRadius: 4, fontSize: 12.5, color: '#A5B4FC', fontFamily: 'monospace' }}>{children}</code>
   },
-  blockquote: ({ children }: any) => <blockquote style={{ borderLeft: '3px solid #7c3aed', paddingLeft: 12, margin: '8px 0', color: '#a1a1aa', fontStyle: 'italic' }}>{children}</blockquote>,
+  blockquote: ({ children }: any) => <blockquote style={{ borderLeft: '3px solid #4F7CFF', paddingLeft: 12, margin: '8px 0', color: '#B1B5BA', fontStyle: 'italic' }}>{children}</blockquote>,
 }
 
 // ─── Styles ───────────────────────────────────────────────────────────────
 const btnSend: React.CSSProperties = {
   padding: '9px 14px', borderRadius: 10,
-  background: 'linear-gradient(135deg, #7c3aed, #7c3aed)',
+  background: 'linear-gradient(135deg, #4F7CFF, #4F7CFF)',
   color: '#fff', border: 'none', fontFamily: 'inherit', fontSize: 12, fontWeight: 700,
   display: 'flex', alignItems: 'center', gap: 6,
-  boxShadow: '0 0 16px rgba(124, 58, 237,0.35)',
+  boxShadow: '0 0 16px rgba(79, 124, 255, 0.35)',
 }
 
 const btnStop: React.CSSProperties = {
   padding: '9px 14px', borderRadius: 10,
-  background: '#3b0764', color: '#fff', border: 'none',
+  background: '#0B1530', color: '#fff', border: 'none',
   fontFamily: 'inherit', fontSize: 12, fontWeight: 700, cursor: 'pointer',
   display: 'flex', alignItems: 'center', gap: 6,
 }
@@ -1191,6 +1191,6 @@ const arrowBtn: React.CSSProperties = {
   position: 'absolute', top: '50%', transform: 'translateY(-50%)',
   width: 34, height: 34, borderRadius: 9, zIndex: 4,
   background: 'rgba(13,13,13,0.85)', backdropFilter: 'blur(10px)',
-  border: '1px solid rgba(124, 58, 237,0.3)', cursor: 'pointer',
+  border: '1px solid rgba(79, 124, 255, 0.3)', cursor: 'pointer',
   display: 'flex', alignItems: 'center', justifyContent: 'center',
 }

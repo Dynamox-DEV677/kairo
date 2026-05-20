@@ -36,12 +36,12 @@ function ReactionSim({ params, playing }: SimProps) {
   return (
     <LabScene cameraPos={[0, 1.5, 9]} cameraFov={55} tint="#1a0a18" particles={45}>
       {/* Heat-source glow — orange light intensity tied to temperature slider */}
-      <pointLight position={[0, 0, 0]} intensity={params.temperature / 200} color="#fb923c" distance={8} />
+      <pointLight position={[0, 0, 0]} intensity={params.temperature / 200} color="#4F7CFF" distance={8} />
       <ReactionAtoms params={params} playing={playing} />
       {/* Equation labels — use ASCII subscripts (drei font lacks Unicode subscripts) */}
-      <Text position={[-3, -3, 0]} fontSize={0.4} color="#a1a1aa" anchorX="center">CH4 + 2O2</Text>
-      <Text position={[ 0, -3, 0]} fontSize={0.4} color="#fbbf24" anchorX="center">→</Text>
-      <Text position={[ 3, -3, 0]} fontSize={0.4} color="#a1a1aa" anchorX="center">CO2 + 2H2O</Text>
+      <Text position={[-3, -3, 0]} fontSize={0.4} color="#B1B5BA" anchorX="center">CH4 + 2O2</Text>
+      <Text position={[ 0, -3, 0]} fontSize={0.4} color="#C7D2E8" anchorX="center">→</Text>
+      <Text position={[ 3, -3, 0]} fontSize={0.4} color="#B1B5BA" anchorX="center">CO2 + 2H2O</Text>
       <OrbitControls enablePan={false} minDistance={6} maxDistance={20} />
     </LabScene>
   )

@@ -335,7 +335,7 @@ function HoverChip({ hovered, selected, catalog }: any) {
             pointerEvents: 'none',
           }}>
           {catalog[hovered]?.label || hovered}
-          <span style={{ color: '#71717a', fontWeight: 500, marginLeft: 8 }}>· click to learn more</span>
+          <span style={{ color: '#9CA3AF', fontWeight: 500, marginLeft: 8 }}>· click to learn more</span>
         </motion.div>
       )}
     </AnimatePresence>
@@ -349,8 +349,8 @@ function IdleHint({ hovered, selected, hint }: any) {
       position: 'absolute', top: 14, left: 14, zIndex: 5,
       padding: '6px 12px', borderRadius: 7,
       background: 'rgba(13,13,13,0.55)', backdropFilter: 'blur(8px)',
-      border: '1px solid rgba(99,102,241,0.25)',
-      fontSize: 10.5, color: '#a5b4fc', fontWeight: 600,
+      border: '1px solid rgba(79, 124, 255, 0.25)',
+      fontSize: 10.5, color: '#A5B4FC', fontWeight: 600,
       textTransform: 'uppercase', letterSpacing: 1.5,
       pointerEvents: 'none',
     }}>
@@ -379,7 +379,7 @@ function PartInfoCard({ part, onClose }: { part: LabPart; onClose: () => void })
         <div style={{ flex: 1, fontSize: 16, fontWeight: 800, letterSpacing: '-0.3px' }}>{part.label}</div>
         <button onClick={onClose} aria-label="Close" style={{
           background: 'none', border: 'none', cursor: 'pointer',
-          color: '#71717a', padding: 4, display: 'flex',
+          color: '#9CA3AF', padding: 4, display: 'flex',
         }}>
           <X size={15} />
         </button>
@@ -390,7 +390,7 @@ function PartInfoCard({ part, onClose }: { part: LabPart; onClose: () => void })
       <Field label="Real-world analogy" body={part.analogy} />
 
       {part.related.length > 0 && <>
-        <div style={{ fontSize: 10, color: '#a5b4fc', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1, marginTop: 12, marginBottom: 4 }}>
+        <div style={{ fontSize: 10, color: '#A5B4FC', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1, marginTop: 12, marginBottom: 4 }}>
           Related processes
         </div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
@@ -410,7 +410,7 @@ function PartInfoCard({ part, onClose }: { part: LabPart; onClose: () => void })
 function Field({ label, body }: { label: string; body: string }) {
   return (
     <div style={{ marginBottom: 8 }}>
-      <div style={{ fontSize: 10, color: '#71717a', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 2 }}>
+      <div style={{ fontSize: 10, color: '#9CA3AF', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 2 }}>
         {label}
       </div>
       <p style={{ fontSize: 12.5, color: '#e4e4e7', margin: 0, lineHeight: 1.55 }}>{body}</p>
@@ -429,13 +429,13 @@ export const LAB_PALETTE = {
   math:      '#0a0a18',
   space:     '#02041a',
   // Part-color recommendations (use for catalog entry colors)
-  nucleus:    '#a78bfa',
+  nucleus:    '#66D9FF',
   power:      '#dc2626',   // power-related parts (mitochondria, batteries, suns)
   storage:    '#67e8f9',   // vacuoles, capacitors
   shipping:   '#34d399',   // golgi, conveyors
   digestion:  '#f472b6',   // lysosomes, stomachs
   structure:  '#fde68a',   // cytoskeleton, bones, frames
-  signal:     '#fbbf24',   // membranes, wires, nerve fibres
+  signal:     '#C7D2E8',   // membranes, wires, nerve fibres
   control:    '#cbd5e1',   // centrioles, controllers
   energy:     '#86efac',   // vesicles, electrons
   fluid:      '#22d3ee',   // blood, water, plasma

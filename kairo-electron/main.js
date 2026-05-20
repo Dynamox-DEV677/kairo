@@ -35,7 +35,7 @@ function createSplash() {
     height: 380,
     frame: false,
     transparent: false,
-    backgroundColor: '#06060a',
+    backgroundColor: '#050505',
     alwaysOnTop: true,
     resizable: false,
     movable: false,
@@ -56,7 +56,7 @@ function createMainWindow() {
     minHeight: 600,
     title: 'Kairo',
     icon: ICON_PATH,
-    backgroundColor: '#06060a',            // no white flash before the page paints
+    backgroundColor: '#050505',            // no white flash before the page paints
     show: false,                           // unhide once content is ready
     titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : 'default',
     autoHideMenuBar: process.platform !== 'darwin',

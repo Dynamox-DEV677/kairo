@@ -51,27 +51,27 @@ import {
 // ════════════════════════════════════════════════════════════════════════════
 const C = {
   black:       '#000000',
-  ink:         '#06060a',   // pure dark paper
-  paper:       '#0a0a10',   // page bg (slightly lifted)
+  ink:         '#050505',   // pure dark paper
+  paper:       '#050505',   // page bg (slightly lifted)
   panel:       '#101018',   // card bg
-  panel2:      '#16161f',   // card bg, elevated
-  line:        '#1d1d29',   // hairline border
+  panel2:      '#151922',   // card bg, elevated
+  line:        'rgba(255,255,255,0.06)',   // hairline border
   lineSoft:    '#15151e',
-  lineHi:      '#2a2a3a',
+  lineHi:      'rgba(255,255,255,0.10)',
 
   white:       '#ffffff',
   paperLight:  '#fafafa',
   text:        '#ffffff',
-  textDim:     '#c1c1c8',
-  textFaint:   '#8a8a96',
-  textVery:    '#5a5a66',
+  textDim:     '#CBD5E1',
+  textFaint:   '#9CA3AF',
+  textVery:    '#6B7280',
 
-  purpleLite:  '#e9d5ff',
-  purpleSoft:  '#c4b5fd',
-  purple:      '#a78bfa',   // primary accent
-  purpleHi:    '#7c3aed',
-  purpleDeep:  '#5b21b6',
-  purpleInk:   '#3b0764',
+  purpleLite:  '#DBE7FF',
+  purpleSoft:  '#A5B4FC',
+  purple:      '#66D9FF',   // primary accent
+  purpleHi:    '#4F7CFF',
+  purpleDeep:  '#2046C2',
+  purpleInk:   '#0B1530',
 }
 
 // Typography
@@ -187,7 +187,7 @@ function PurpleHalo() {
     <div aria-hidden style={{
       position: 'fixed', top: '-20vh', left: '50%', transform: 'translateX(-50%)',
       width: '120vw', height: '80vh', borderRadius: '50%',
-      background: `radial-gradient(60% 60% at 50% 30%, rgba(124,58,237,0.22) 0%, rgba(91,33,182,0.05) 35%, transparent 70%)`,
+      background: `radial-gradient(60% 60% at 50% 30%, rgba(79, 124, 255, 0.22) 0%, rgba(32, 70, 194, 0.05) 35%, transparent 70%)`,
       pointerEvents: 'none', zIndex: 0,
       filter: 'blur(30px)',
     }} />
@@ -809,13 +809,13 @@ function BentoCard({ span, rowSpan = 1, hero = false, compact = false,
         background: hero
           ? `linear-gradient(140deg, ${C.purpleInk} 0%, ${C.panel} 60%, ${C.ink} 100%)`
           : C.panel,
-        border: `1px solid ${hover ? 'rgba(167,139,250,0.35)' : C.line}`,
+        border: `1px solid ${hover ? 'rgba(102, 217, 255, 0.35)' : C.line}`,
         borderRadius: 22, padding: hero ? '36px 38px 32px' : compact ? '22px' : '28px 28px 24px',
         display: 'flex', flexDirection: 'column', gap: 14,
         position: 'relative', overflow: 'hidden',
         transition: 'border-color .25s',
         minHeight: hero ? 0 : compact ? 160 : 220,
-        boxShadow: hover ? `0 12px 50px rgba(124,58,237,0.18)` : '0 0 0 transparent',
+        boxShadow: hover ? `0 12px 50px rgba(79, 124, 255, 0.18)` : '0 0 0 transparent',
       }}>
       {/* Constructivist corner cut */}
       <span aria-hidden style={{
@@ -920,7 +920,7 @@ function ConstructivistInterstitial() {
           border: `1px solid ${C.lineHi}`,
           padding: '70px 60px',
           rotate, transformOrigin: 'left top',
-          boxShadow: `0 30px 90px rgba(91,33,182,0.22), inset 0 0 80px rgba(124,58,237,0.04)`,
+          boxShadow: `0 30px 90px rgba(32, 70, 194, 0.22), inset 0 0 80px rgba(79, 124, 255, 0.04)`,
         }}>
           {/* Side rotated label */}
           <div style={{
@@ -1060,7 +1060,7 @@ function LabsShowcase() {
         <div style={{
           marginTop: 56, padding: '24px 28px',
           border: `1px solid ${C.lineHi}`, borderRadius: 16,
-          background: 'rgba(124,58,237,0.04)',
+          background: 'rgba(79, 124, 255, 0.04)',
           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
           gap: 24, flexWrap: 'wrap',
         }}>
@@ -1092,7 +1092,7 @@ function LabTile({ lab, big = false }: { lab: { name: string; tag: string; glyph
         padding: big ? '36px 38px' : '24px',
         display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
         cursor: 'pointer',
-        boxShadow: '0 20px 80px rgba(91,33,182,0.18)',
+        boxShadow: '0 20px 80px rgba(32, 70, 194, 0.18)',
       }}>
 
       {/* Big floating glyph */}
@@ -1333,7 +1333,7 @@ function DesktopApp() {
             <div style={{
               marginTop: 40, padding: '20px 24px',
               borderRadius: 14,
-              background: 'rgba(124,58,237,0.05)',
+              background: 'rgba(79, 124, 255, 0.05)',
               border: `1px solid ${C.line}`,
               display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)',
               gap: 18,
@@ -1366,7 +1366,7 @@ function DownloadCard({ href, platform, detail, file, glyph }: {
       href={href}
       target="_blank"
       rel="noreferrer"
-      whileHover={{ y: -3, borderColor: 'rgba(167,139,250,0.45)' }}
+      whileHover={{ y: -3, borderColor: 'rgba(102, 217, 255, 0.45)' }}
       transition={{ type: 'spring', stiffness: 220, damping: 22 }}
       style={{
         display: 'flex', flexDirection: 'column', gap: 14,
@@ -1384,7 +1384,7 @@ function DownloadCard({ href, platform, detail, file, glyph }: {
           width: 38, height: 38, borderRadius: 10,
           background: `linear-gradient(135deg, ${C.purpleHi}, ${C.purpleInk})`,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: `0 0 18px rgba(124,58,237,0.35)`,
+          boxShadow: `0 0 18px rgba(79, 124, 255, 0.35)`,
         }}>
           {glyph}
         </div>
@@ -1472,7 +1472,7 @@ function FinalCTA({ onGetStarted }: { onGetStarted: () => void }) {
       padding: '160px 0',
       borderTop: `1px solid ${C.lineHi}`,
       background:
-        `radial-gradient(80% 100% at 50% 50%, rgba(124,58,237,0.18) 0%, ${C.ink} 70%)`,
+        `radial-gradient(80% 100% at 50% 50%, rgba(79, 124, 255, 0.18) 0%, ${C.ink} 70%)`,
       position: 'relative', zIndex: 2, overflow: 'hidden',
     }}>
       {/* Animated halo that pulses larger with scroll */}
@@ -1481,7 +1481,7 @@ function FinalCTA({ onGetStarted }: { onGetStarted: () => void }) {
         translate: '-50% -50%',
         width: '70vw', height: '70vw', maxWidth: 900, maxHeight: 900,
         borderRadius: '50%',
-        background: `radial-gradient(circle, rgba(124,58,237,0.18) 0%, transparent 60%)`,
+        background: `radial-gradient(circle, rgba(79, 124, 255, 0.18) 0%, transparent 60%)`,
         scale: haloS,
         pointerEvents: 'none',
       }} />
@@ -1813,7 +1813,7 @@ const pillCta: React.CSSProperties = {
   fontFamily: SANS, fontSize: 13, fontWeight: 600,
   background: `linear-gradient(135deg, ${C.purpleHi}, ${C.purpleDeep})`,
   color: C.white,
-  boxShadow: `0 0 22px rgba(124,58,237,0.42)`,
+  boxShadow: `0 0 22px rgba(79, 124, 255, 0.42)`,
   transition: 'transform .15s',
 }
 const bigCta: React.CSSProperties = {
@@ -1821,7 +1821,7 @@ const bigCta: React.CSSProperties = {
   padding: '16px 26px', borderRadius: 12, border: 'none', cursor: 'pointer',
   fontFamily: SANS, fontSize: 15, fontWeight: 700, letterSpacing: -0.1,
   background: C.white, color: C.ink,
-  boxShadow: `0 0 32px rgba(167,139,250,0.30)`,
+  boxShadow: `0 0 32px rgba(102, 217, 255, 0.30)`,
   transition: 'transform .15s, box-shadow .25s',
 }
 const ghostCta: React.CSSProperties = {

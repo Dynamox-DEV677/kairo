@@ -26,18 +26,18 @@ Make all questions accurate and board-standard.`
 
 const sel = (v: string, set: (v: string) => void, opts: string[]) => (
   <select value={v} onChange={e => set(e.target.value)}
-    style={{ width: '100%', background: '#111', border: '1px solid #1e1e1e', borderRadius: 8, padding: '9px 12px', fontSize: 13, color: '#fafafa', fontFamily: 'inherit', outline: 'none', appearance: 'none' }}>
+    style={{ width: '100%', background: '#0E1117', border: '1px solid #1f2532', borderRadius: 8, padding: '9px 12px', fontSize: 13, color: '#fafafa', fontFamily: 'inherit', outline: 'none', appearance: 'none' }}>
     {opts.map(o => <option key={o}>{o}</option>)}
   </select>
 )
 
 const PAPER_CSS = `
-  .qp-paper { font-family: 'Times New Roman', Times, serif; font-size: 14px; line-height: 1.8; color: #1a1a1a; }
+  .qp-paper { font-family: 'Times New Roman', Times, serif; font-size: 14px; line-height: 1.8; color: #1a1f2e; }
   .qp-paper p { margin: 5px 0; }
   .qp-paper h1, .qp-paper h2, .qp-paper h3 { text-align: center; margin: 4px 0; font-family: inherit; }
   .qp-paper h1 { font-size: 17px; text-transform: uppercase; letter-spacing: 1px; }
   .qp-paper h2 { font-size: 15px; }
-  .qp-paper hr { border: none; border-top: 1.5px solid #1a1a1a; margin: 12px 0; }
+  .qp-paper hr { border: none; border-top: 1.5px solid #1a1f2e; margin: 12px 0; }
   .qp-paper ul, .qp-paper ol { margin: 4px 0 4px 22px; padding: 0; }
   .qp-paper li { margin: 3px 0; }
   .qp-paper table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 13px; }
@@ -82,66 +82,66 @@ export default function QuestionPaper() {
       <style>{PAPER_CSS}</style>
       <div style={{ marginBottom: 24 }}>
         <h1 style={{ fontSize: 20, fontWeight: 700, color: '#fafafa', margin: 0 }}>Question Paper Generator</h1>
-        <p style={{ fontSize: 13, color: '#52525b', marginTop: 4 }}>Board-standard papers in under 2 minutes</p>
+        <p style={{ fontSize: 13, color: '#6B7280', marginTop: 4 }}>Board-standard papers in under 2 minutes</p>
       </div>
 
       {!paper && !loading && (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-          style={{ background: '#111', border: '1px solid #1e1e1e', borderRadius: 14, padding: 28 }}>
+          style={{ background: '#0E1117', border: '1px solid #1f2532', borderRadius: 14, padding: 28 }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 14 }}>
             <div>
-              <label style={{ fontSize: 11, fontWeight: 600, color: '#71717a', display: 'block', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.8 }}>School name</label>
-              <input value={school} onChange={e => setSchool(e.target.value)} style={{ width: '100%', background: '#0d0d0d', border: '1px solid #1e1e1e', borderRadius: 8, padding: '9px 12px', fontSize: 13, color: '#fafafa', fontFamily: 'inherit', outline: 'none' }} />
+              <label style={{ fontSize: 11, fontWeight: 600, color: '#9CA3AF', display: 'block', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.8 }}>School name</label>
+              <input value={school} onChange={e => setSchool(e.target.value)} style={{ width: '100%', background: '#0E1117', border: '1px solid #1f2532', borderRadius: 8, padding: '9px 12px', fontSize: 13, color: '#fafafa', fontFamily: 'inherit', outline: 'none' }} />
             </div>
             <div>
-              <label style={{ fontSize: 11, fontWeight: 600, color: '#71717a', display: 'block', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.8 }}>Board</label>
+              <label style={{ fontSize: 11, fontWeight: 600, color: '#9CA3AF', display: 'block', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.8 }}>Board</label>
               {sel(board, setBoard, ['CBSE','ICSE','Maharashtra','Tamil Nadu','Karnataka','UP Board'])}
             </div>
             <div>
-              <label style={{ fontSize: 11, fontWeight: 600, color: '#71717a', display: 'block', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.8 }}>Subject</label>
+              <label style={{ fontSize: 11, fontWeight: 600, color: '#9CA3AF', display: 'block', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.8 }}>Subject</label>
               {sel(subject, setSubject, ['Mathematics','Physics','Chemistry','Biology','English','Hindi','History','Geography','Economics','Science','Computer Science'])}
             </div>
             <div>
-              <label style={{ fontSize: 11, fontWeight: 600, color: '#71717a', display: 'block', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.8 }}>Class</label>
+              <label style={{ fontSize: 11, fontWeight: 600, color: '#9CA3AF', display: 'block', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.8 }}>Class</label>
               {sel(cls, setCls, ['6','7','8','9','10','11','12'])}
             </div>
             <div>
-              <label style={{ fontSize: 11, fontWeight: 600, color: '#71717a', display: 'block', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.8 }}>Total marks</label>
+              <label style={{ fontSize: 11, fontWeight: 600, color: '#9CA3AF', display: 'block', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.8 }}>Total marks</label>
               {sel(totalMarks, setTotalMarks, ['20','25','40','50','80','100'])}
             </div>
             <div>
-              <label style={{ fontSize: 11, fontWeight: 600, color: '#71717a', display: 'block', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.8 }}>Duration (hours)</label>
+              <label style={{ fontSize: 11, fontWeight: 600, color: '#9CA3AF', display: 'block', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.8 }}>Duration (hours)</label>
               {sel(duration, setDuration, ['1','1.5','2','2.5','3','3.5'])}
             </div>
           </div>
 
           <div style={{ marginBottom: 14 }}>
-            <label style={{ fontSize: 11, fontWeight: 600, color: '#71717a', display: 'block', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.8 }}>Topics (optional)</label>
+            <label style={{ fontSize: 11, fontWeight: 600, color: '#9CA3AF', display: 'block', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.8 }}>Topics (optional)</label>
             <input value={topics} onChange={e => setTopics(e.target.value)} placeholder="e.g. Algebra, Geometry — leave blank for full syllabus"
-              style={{ width: '100%', background: '#0d0d0d', border: '1px solid #1e1e1e', borderRadius: 8, padding: '9px 12px', fontSize: 13, color: '#fafafa', fontFamily: 'inherit', outline: 'none' }} />
+              style={{ width: '100%', background: '#0E1117', border: '1px solid #1f2532', borderRadius: 8, padding: '9px 12px', fontSize: 13, color: '#fafafa', fontFamily: 'inherit', outline: 'none' }} />
           </div>
 
           <div style={{ marginBottom: 24 }}>
-            <label style={{ fontSize: 11, fontWeight: 600, color: '#71717a', display: 'block', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.8 }}>Difficulty</label>
+            <label style={{ fontSize: 11, fontWeight: 600, color: '#9CA3AF', display: 'block', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.8 }}>Difficulty</label>
             <div style={{ display: 'flex', gap: 8 }}>
               {['Easy','Medium','Hard','Mixed'].map(d => (
                 <motion.button key={d} whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }} onClick={() => setDifficulty(d)}
                   style={{ padding: '6px 16px', borderRadius: 7, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit',
-                    background: difficulty === d ? 'rgba(124, 58, 237,0.15)' : '#161616',
-                    border: `1px solid ${difficulty === d ? '#7c3aed' : '#1e1e1e'}`,
-                    color: difficulty === d ? '#a78bfa' : '#52525b' }}>
+                    background: difficulty === d ? 'rgba(79, 124, 255, 0.15)' : '#151922',
+                    border: `1px solid ${difficulty === d ? '#4F7CFF' : '#1f2532'}`,
+                    color: difficulty === d ? '#66D9FF' : '#6B7280' }}>
                   {d}
                 </motion.button>
               ))}
             </div>
           </div>
 
-          {error && <p style={{ fontSize: 12, color: '#a78bfa', marginBottom: 14 }}>{error}</p>}
+          {error && <p style={{ fontSize: 12, color: '#66D9FF', marginBottom: 14 }}>{error}</p>}
 
           <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} onClick={generate}
             style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '11px 22px', borderRadius: 10, border: 'none',
-              background: 'linear-gradient(135deg, #7c3aed, #7c3aed)', color: '#fff', fontFamily: 'inherit', fontSize: 14, fontWeight: 600,
-              cursor: 'pointer', boxShadow: '0 0 20px rgba(124, 58, 237,0.3)' }}>
+              background: 'linear-gradient(135deg, #4F7CFF, #4F7CFF)', color: '#fff', fontFamily: 'inherit', fontSize: 14, fontWeight: 600,
+              cursor: 'pointer', boxShadow: '0 0 20px rgba(79, 124, 255, 0.3)' }}>
             <Sparkles size={14} /> Generate question paper
           </motion.button>
         </motion.div>
@@ -149,21 +149,21 @@ export default function QuestionPaper() {
 
       {loading && (
         <div style={{ textAlign: 'center', padding: 80 }}>
-          <div style={{ width: 36, height: 36, border: '2px solid #1e1e1e', borderTop: '2px solid #7c3aed', borderRadius: '50%', margin: '0 auto 16px', animation: 'spin 0.8s linear infinite' }} />
+          <div style={{ width: 36, height: 36, border: '2px solid #1f2532', borderTop: '2px solid #4F7CFF', borderRadius: '50%', margin: '0 auto 16px', animation: 'spin 0.8s linear infinite' }} />
           <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-          <p style={{ fontSize: 13, color: '#52525b' }}>Generating your question paper…</p>
+          <p style={{ fontSize: 13, color: '#6B7280' }}>Generating your question paper…</p>
         </div>
       )}
 
       {paper && !loading && (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-            <p style={{ fontSize: 13, color: '#52525b' }}>Your question paper is ready</p>
+            <p style={{ fontSize: 13, color: '#6B7280' }}>Your question paper is ready</p>
             <div style={{ display: 'flex', gap: 8 }}>
-              <button onClick={() => setPaper('')} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 7, fontSize: 12, background: '#161616', border: '1px solid #1e1e1e', color: '#71717a', cursor: 'pointer', fontFamily: 'inherit' }}>
+              <button onClick={() => setPaper('')} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 7, fontSize: 12, background: '#151922', border: '1px solid #1f2532', color: '#9CA3AF', cursor: 'pointer', fontFamily: 'inherit' }}>
                 <RotateCcw size={12} /> Regenerate
               </button>
-              <button onClick={printPaper} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 7, fontSize: 12, background: '#7c3aed', border: 'none', color: '#fff', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600 }}>
+              <button onClick={printPaper} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 7, fontSize: 12, background: '#4F7CFF', border: 'none', color: '#fff', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600 }}>
                 <Printer size={12} /> Print / PDF
               </button>
             </div>

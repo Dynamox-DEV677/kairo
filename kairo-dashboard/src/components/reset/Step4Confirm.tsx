@@ -99,7 +99,7 @@ export default function Step4Confirm({ onBack, onContinue }: Props) {
             style={{
               marginTop: 18, padding: '10px 16px',
               borderRadius: 12,
-              background: 'rgba(167, 139, 250, 0.10)',
+              background: 'rgba(102, 217, 255, 0.10)',
               border: `1px solid ${RC.borderHi}`,
               color: RC.purpleLite,
               fontFamily: FONT, fontSize: 13, fontWeight: 700,

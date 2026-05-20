@@ -70,9 +70,9 @@ export default function Step1Forgot({ initialEmail = '', onContinue, onBackToSig
           display: 'flex', alignItems: 'center', gap: 12,
           padding: '14px 18px', marginTop: 6,
           borderRadius: 20,
-          background: 'rgba(167, 139, 250, 0.05)',
+          background: 'rgba(102, 217, 255, 0.05)',
           border: `1.5px solid ${err ? RC.purple : RC.border}`,
-          boxShadow: err ? '0 0 18px rgba(167, 139, 250, 0.25)' : 'none',
+          boxShadow: err ? '0 0 18px rgba(102, 217, 255, 0.25)' : 'none',
           transition: 'border-color 0.18s, box-shadow 0.18s',
         }}
       >
@@ -104,7 +104,7 @@ export default function Step1Forgot({ initialEmail = '', onContinue, onBackToSig
           style={{
             marginTop: 14, padding: '12px 16px',
             borderRadius: 14,
-            background: 'rgba(167, 139, 250, 0.08)',
+            background: 'rgba(102, 217, 255, 0.08)',
             border: `1px solid ${RC.borderHi}`,
             color: RC.purpleLite,
             fontFamily: FONT, fontSize: 13, fontWeight: 600,

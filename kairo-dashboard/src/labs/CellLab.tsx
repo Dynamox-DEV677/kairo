@@ -54,7 +54,7 @@ const CATALOG: PartCatalog = {
     related: ['Krebs cycle', 'Electron transport chain', 'Oxidative phosphorylation'],
   },
   er: {
-    id: 'er', label: 'Endoplasmic Reticulum', color: '#fbbf24',
+    id: 'er', label: 'Endoplasmic Reticulum', color: '#C7D2E8',
     function: 'Folds and modifies proteins (rough ER, studded with ribosomes); synthesises lipids (smooth ER).',
     whyItMatters: 'Newly made proteins start as floppy chains here — folded, checked, and shipped out.',
     analogy: 'The cell\'s assembly line + quality-control conveyor.',
@@ -175,7 +175,7 @@ function AtpParticles() {
     <instancedMesh ref={ref} args={[undefined, undefined, N]}>
       <sphereGeometry args={[0.04, 8, 8]} />
       <meshBasicMaterial
-        color="#fbbf24"
+        color="#C7D2E8"
         transparent opacity={0.7}
         depthWrite={false}
         blending={THREE.AdditiveBlending}

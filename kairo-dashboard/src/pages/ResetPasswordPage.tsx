@@ -57,7 +57,7 @@ export default function ResetPasswordPage({ onDone }: Props) {
 
   return (
     <div style={{
-      height: '100dvh', minHeight: '100vh', background: '#0a0a0a',
+      height: '100dvh', minHeight: '100vh', background: '#050505',
       fontFamily: FONT,
       display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
       overflowY: 'auto',
@@ -69,7 +69,7 @@ export default function ResetPasswordPage({ onDone }: Props) {
       <div style={{
         position: 'fixed', top: '15%', left: '50%', transform: 'translateX(-50%)',
         width: 600, height: 600, borderRadius: '50%',
-        background: 'radial-gradient(circle, rgba(124,58,237,0.10) 0%, transparent 70%)',
+        background: 'radial-gradient(circle, rgba(79, 124, 255, 0.10) 0%, transparent 70%)',
         pointerEvents: 'none',
       }} />
 
@@ -80,17 +80,17 @@ export default function ResetPasswordPage({ onDone }: Props) {
             style={{
               width: 64, height: 64, borderRadius: 16, objectFit: 'contain',
               margin: '0 auto 14px', display: 'block',
-              filter: 'drop-shadow(0 0 20px rgba(124, 58, 237,0.45))',
+              filter: 'drop-shadow(0 0 20px rgba(79, 124, 255, 0.32))',
             }} />
           <h1 style={{ fontSize: 24, fontWeight: 800, color: '#fafafa', margin: 0, letterSpacing: '-0.5px' }}>kairo</h1>
-          <p style={{ fontSize: 11, color: '#7c3aed', fontWeight: 700, letterSpacing: 4, marginTop: 4, textTransform: 'uppercase' }}>
+          <p style={{ fontSize: 11, color: '#4F7CFF', fontWeight: 700, letterSpacing: 4, marginTop: 4, textTransform: 'uppercase' }}>
             Password Reset
           </p>
         </div>
 
         {/* Card */}
         <div style={{
-          background: '#111', border: '1px solid #1e1e1e', borderRadius: 18,
+          background: '#0E1117', border: '1px solid #1f2532', borderRadius: 18,
           padding: 24, position: 'relative',
         }}>
           <AnimatePresence mode="wait">
@@ -102,16 +102,16 @@ export default function ResetPasswordPage({ onDone }: Props) {
                 transition={{ type: 'spring', stiffness: 280, damping: 26 }}>
                 <div style={{
                   width: 52, height: 52, borderRadius: 14, margin: '0 auto 14px',
-                  background: 'linear-gradient(135deg, rgba(167,139,250,0.18), rgba(124,58,237,0.08))',
-                  border: '1px solid rgba(167,139,250,0.35)',
+                  background: 'linear-gradient(135deg, rgba(102, 217, 255, 0.18), rgba(79, 124, 255, 0.08))',
+                  border: '1px solid rgba(102, 217, 255, 0.35)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}>
-                  <CheckCircle2 size={26} color="#c4b5fd" />
+                  <CheckCircle2 size={26} color="#A5B4FC" />
                 </div>
                 <h2 style={{ margin: 0, fontSize: 20, fontWeight: 800, color: '#fafafa', textAlign: 'center' }}>
                   Password updated
                 </h2>
-                <p style={{ margin: '10px 0 22px', fontSize: 13, color: '#a1a1aa', textAlign: 'center', lineHeight: 1.55 }}>
+                <p style={{ margin: '10px 0 22px', fontSize: 13, color: '#B1B5BA', textAlign: 'center', lineHeight: 1.55 }}>
                   Your new password is active. Sign in below to continue learning.
                 </p>
                 <button
@@ -130,7 +130,7 @@ export default function ResetPasswordPage({ onDone }: Props) {
                 <h2 style={{ margin: 0, fontSize: 19, fontWeight: 700, color: '#fafafa' }}>
                   Set a new password
                 </h2>
-                <p style={{ margin: '4px 0 22px', fontSize: 12.5, color: '#71717a' }}>
+                <p style={{ margin: '4px 0 22px', fontSize: 12.5, color: '#9CA3AF' }}>
                   Pick a password you'll remember — at least 8 characters.
                 </p>
 
@@ -146,7 +146,7 @@ export default function ResetPasswordPage({ onDone }: Props) {
                       style={{ ...inp, paddingRight: 40 }}
                     />
                     <button type="button" onClick={() => setShow(s => !s)} style={eyeBtn}>
-                      {show ? <EyeOff size={14} color="#52525b" /> : <Eye size={14} color="#52525b" />}
+                      {show ? <EyeOff size={14} color="#6B7280" /> : <Eye size={14} color="#6B7280" />}
                     </button>
                   </div>
                 </Field>
@@ -166,9 +166,9 @@ export default function ResetPasswordPage({ onDone }: Props) {
                   <div role="alert" style={{
                     display: 'flex', alignItems: 'flex-start', gap: 8,
                     padding: '10px 12px', borderRadius: 9,
-                    background: 'rgba(167,139,250,0.08)',
-                    border: '1px solid rgba(167,139,250,0.25)',
-                    color: '#c4b5fd', fontSize: 12, lineHeight: 1.55,
+                    background: 'rgba(102, 217, 255, 0.08)',
+                    border: '1px solid rgba(102, 217, 255, 0.25)',
+                    color: '#A5B4FC', fontSize: 12, lineHeight: 1.55,
                     marginTop: 4, marginBottom: 12,
                   }}>
                     <AlertCircle size={14} style={{ flexShrink: 0, marginTop: 1 }} />
@@ -187,10 +187,10 @@ export default function ResetPasswordPage({ onDone }: Props) {
                     : <><Lock size={14} /> Reset password</>}
                 </motion.button>
 
-                <p style={{ fontSize: 11, color: '#52525b', textAlign: 'center', marginTop: 16, lineHeight: 1.5 }}>
+                <p style={{ fontSize: 11, color: '#6B7280', textAlign: 'center', marginTop: 16, lineHeight: 1.5 }}>
                   Changed your mind?{' '}
                   <button onClick={onDone} style={{
-                    background: 'none', border: 'none', color: '#c4b5fd',
+                    background: 'none', border: 'none', color: '#A5B4FC',
                     fontFamily: 'inherit', fontSize: 11, fontWeight: 600, cursor: 'pointer', padding: 0,
                   }}>Back to sign in</button>
                 </p>
@@ -199,7 +199,7 @@ export default function ResetPasswordPage({ onDone }: Props) {
           </AnimatePresence>
         </div>
 
-        <p style={{ fontSize: 10.5, color: '#3f3f46', textAlign: 'center', marginTop: 16, lineHeight: 1.6 }}>
+        <p style={{ fontSize: 10.5, color: '#4B5563', textAlign: 'center', marginTop: 16, lineHeight: 1.6 }}>
           Reset links expire 30 minutes after they're sent.
           <br />
           If yours has expired, request a new one from the sign-in screen.
@@ -216,7 +216,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
     <div style={{ marginBottom: 12 }}>
       <label style={{
         display: 'block', fontSize: 11, fontWeight: 600,
-        color: '#71717a', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.8,
+        color: '#9CA3AF', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.8,
       }}>
         {label}
       </label>
@@ -226,7 +226,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 }
 
 const inp: React.CSSProperties = {
-  width: '100%', background: '#0d0d0d', border: '1px solid #1e1e1e',
+  width: '100%', background: '#0E1117', border: '1px solid #1f2532',
   borderRadius: 9, padding: '11px 14px', fontSize: 14, color: '#fafafa',
   fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box',
   transition: 'border-color 0.15s',
@@ -239,9 +239,9 @@ const eyeBtn: React.CSSProperties = {
 
 const ctaStyle: React.CSSProperties = {
   width: '100%', marginTop: 6, padding: '13px', borderRadius: 11, border: 'none',
-  background: 'linear-gradient(135deg, #7c3aed, #5b21b6)',
+  background: 'linear-gradient(135deg, #4F7CFF, #2046C2)',
   color: '#fff', fontFamily: FONT, fontSize: 14, fontWeight: 700,
   cursor: 'pointer',
-  boxShadow: '0 0 22px rgba(124,58,237,0.30)',
+  boxShadow: '0 0 22px rgba(79, 124, 255, 0.30)',
   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
 }

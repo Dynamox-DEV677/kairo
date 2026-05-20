@@ -55,9 +55,9 @@ export default function ResetShell({
       <div style={{
         position: 'absolute', inset: 0, pointerEvents: 'none',
         background: `
-          radial-gradient(at 50% -10%, rgba(124, 58, 237, 0.30) 0%, transparent 45%),
-          radial-gradient(at 0% 100%, rgba(196, 181, 253, 0.10) 0%, transparent 50%),
-          radial-gradient(at 100% 100%, rgba(124, 58, 237, 0.12) 0%, transparent 45%)
+          radial-gradient(at 50% -10%, rgba(79, 124, 255, 0.30) 0%, transparent 45%),
+          radial-gradient(at 0% 100%, rgba(165, 180, 252, 0.10) 0%, transparent 50%),
+          radial-gradient(at 100% 100%, rgba(79, 124, 255, 0.12) 0%, transparent 45%)
         `,
         animation: 'rs-aura 10s ease-in-out infinite alternate',
       }} />
@@ -97,14 +97,14 @@ export default function ResetShell({
             style={{
               width: 44, height: 44, borderRadius: 14,
               border: `1px solid ${RC.border}`,
-              background: 'rgba(167, 139, 250, 0.06)',
+              background: 'rgba(102, 217, 255, 0.06)',
               color: RC.text, cursor: 'pointer',
               display: 'grid', placeItems: 'center',
               WebkitTapHighlightColor: 'transparent',
               transition: 'background 0.2s',
             }}
-            onMouseDown={e => (e.currentTarget.style.background = 'rgba(167,139,250,0.15)')}
-            onMouseUp={e =>   (e.currentTarget.style.background = 'rgba(167,139,250,0.06)')}
+            onMouseDown={e => (e.currentTarget.style.background = 'rgba(102, 217, 255, 0.15)')}
+            onMouseUp={e =>   (e.currentTarget.style.background = 'rgba(102, 217, 255, 0.06)')}
           >
             <ArrowLeft size={18} />
           </button>
@@ -132,9 +132,9 @@ export default function ResetShell({
             key={i}
             style={{
               flex: 1, height: 4, borderRadius: 999,
-              background: i < stepIndex ? RC.purple : 'rgba(167,139,250,0.14)',
+              background: i < stepIndex ? RC.purple : 'rgba(102, 217, 255, 0.14)',
               transition: 'background 0.35s',
-              boxShadow: i < stepIndex ? `0 0 8px rgba(167,139,250,0.55)` : 'none',
+              boxShadow: i < stepIndex ? `0 0 8px rgba(102, 217, 255, 0.55)` : 'none',
             }}
           />
         ))}
@@ -223,15 +223,15 @@ export function PrimaryButton({ children, onClick, disabled, busy, type = 'butto
         borderRadius: 18,
         border: 'none',
         background: isOff
-          ? 'rgba(167, 139, 250, 0.12)'
-          : 'linear-gradient(135deg, #c4b5fd 0%, #7c3aed 100%)',
+          ? 'rgba(102, 217, 255, 0.12)'
+          : 'linear-gradient(135deg, #A5B4FC 0%, #4F7CFF 100%)',
         color: isOff ? RC.textGhost : '#000',
         fontFamily: FONT,
         fontSize: 16,
         fontWeight: 800,
         letterSpacing: 0.2,
         cursor: isOff ? 'not-allowed' : 'pointer',
-        boxShadow: isOff ? 'none' : '0 14px 32px rgba(124, 58, 237, 0.42)',
+        boxShadow: isOff ? 'none' : '0 14px 32px rgba(79, 124, 255, 0.42)',
         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
         WebkitTapHighlightColor: 'transparent',
         transition: 'background 0.2s, box-shadow 0.2s',
@@ -286,13 +286,13 @@ export function KairoBadge() {
     <div style={{
       display: 'flex', alignItems: 'center', gap: 10,
       padding: '8px 18px', borderRadius: 999,
-      background: 'rgba(167, 139, 250, 0.08)',
+      background: 'rgba(102, 217, 255, 0.08)',
       border: `1px solid ${RC.border}`,
     }}>
       <div style={{
         width: 22, height: 22, borderRadius: 7,
-        background: 'linear-gradient(135deg, #c4b5fd, #7c3aed)',
-        boxShadow: '0 0 12px rgba(124,58,237,0.5)',
+        background: 'linear-gradient(135deg, #A5B4FC, #4F7CFF)',
+        boxShadow: '0 0 12px rgba(79, 124, 255, 0.32)',
       }} />
       <span style={{
         fontFamily: FONT,
@@ -306,4 +306,4 @@ export function KairoBadge() {
   )
 }
 
-const GRADIENT_TEXT = 'linear-gradient(135deg, #e9d5ff 0%, #c4b5fd 50%, #7c3aed 100%)'
+const GRADIENT_TEXT = 'linear-gradient(135deg, #DBE7FF 0%, #A5B4FC 50%, #4F7CFF 100%)'

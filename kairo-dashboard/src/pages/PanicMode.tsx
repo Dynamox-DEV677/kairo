@@ -25,7 +25,7 @@ import { saveToNotebook } from '../lib/notebook'
 
 const SUBJECTS = ['Mathematics', 'Physics', 'Chemistry', 'Biology', 'English', 'Hindi', 'History', 'Geography', 'Economics', 'Computer Science']
 
-const card: React.CSSProperties = { background: '#111', border: '1px solid #1e1e1e', borderRadius: 14 }
+const card: React.CSSProperties = { background: '#0E1117', border: '1px solid #1f2532', borderRadius: 14 }
 
 interface PanicPack {
   topics:    string         // markdown
@@ -214,15 +214,15 @@ Be direct. Indian exam context. Under 200 words total.` },
           transition={{ duration: 1.4, repeat: Infinity, ease: 'easeInOut' }}
           style={{
             width: 44, height: 44, borderRadius: 11,
-            background: 'linear-gradient(135deg, #a78bfa, #7c3aed)',
+            background: 'linear-gradient(135deg, #66D9FF, #4F7CFF)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: '0 0 22px rgba(124, 58, 237,0.5)', flexShrink: 0,
+            boxShadow: '0 0 22px rgba(79, 124, 255, 0.32)', flexShrink: 0,
           }}>
           <AlertTriangle size={22} color="#fff" />
         </motion.div>
         <div style={{ flex: 1 }}>
           <h1 style={{ fontSize: 20, fontWeight: 700, color: '#fafafa', margin: 0 }}>Exam Panic Mode</h1>
-          <p style={{ fontSize: 13, color: '#52525b', marginTop: 4 }}>
+          <p style={{ fontSize: 13, color: '#6B7280', marginTop: 4 }}>
             Last-minute revision pack — top topics, likely questions, formula sheet, strategy.
           </p>
         </div>
@@ -261,8 +261,8 @@ Be direct. Indian exam context. Under 200 words total.` },
           {weakTopics.length > 0 && (
             <div style={{ marginBottom: 16 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-                <Sparkles size={11} color="#c4b5fd" />
-                <span style={{ fontSize: 11, color: '#c4b5fd', fontWeight: 600 }}>
+                <Sparkles size={11} color="#A5B4FC" />
+                <span style={{ fontSize: 11, color: '#A5B4FC', fontWeight: 600 }}>
                   AI will weight these weak topics heavier:
                 </span>
               </div>
@@ -270,27 +270,27 @@ Be direct. Indian exam context. Under 200 words total.` },
                 {weakTopics.map((t, i) => (
                   <span key={i} style={{
                     padding: '4px 9px', borderRadius: 5,
-                    background: 'rgba(124, 58, 237,0.10)', border: '1px solid rgba(124, 58, 237,0.25)',
-                    color: '#c4b5fd', fontSize: 10.5, fontWeight: 600,
+                    background: 'rgba(79, 124, 255, 0.10)', border: '1px solid rgba(79, 124, 255, 0.25)',
+                    color: '#A5B4FC', fontSize: 10.5, fontWeight: 600,
                   }}>{t}</span>
                 ))}
               </div>
             </div>
           )}
 
-          {err && <p style={{ fontSize: 12, color: '#a78bfa', marginBottom: 12 }}>{err}</p>}
+          {err && <p style={{ fontSize: 12, color: '#66D9FF', marginBottom: 12 }}>{err}</p>}
 
           <motion.button
             whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
             onClick={generate} disabled={busy}
             style={{
               width: '100%', padding: '14px', borderRadius: 11, border: 'none',
-              background: busy ? '#1c1c1c' : 'linear-gradient(135deg, #a78bfa, #7c3aed)',
-              color: busy ? '#52525b' : '#fff',
+              background: busy ? '#1a1f2e' : 'linear-gradient(135deg, #66D9FF, #4F7CFF)',
+              color: busy ? '#6B7280' : '#fff',
               fontFamily: 'inherit', fontSize: 15, fontWeight: 800,
               cursor: busy ? 'not-allowed' : 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-              boxShadow: busy ? 'none' : '0 0 26px rgba(124, 58, 237,0.4)',
+              boxShadow: busy ? 'none' : '0 0 26px rgba(79, 124, 255, 0.4)',
               letterSpacing: 1.5, textTransform: 'uppercase',
             }}>
             {busy
@@ -299,7 +299,7 @@ Be direct. Indian exam context. Under 200 words total.` },
           </motion.button>
 
           {busy && (
-            <p style={{ fontSize: 11, color: '#52525b', marginTop: 12, textAlign: 'center' }}>
+            <p style={{ fontSize: 11, color: '#6B7280', marginTop: 12, textAlign: 'center' }}>
               4 AI calls in sequence · 30-45 seconds total
             </p>
           )}
@@ -315,13 +315,13 @@ Be direct. Indian exam context. Under 200 words total.` },
               <div style={{ fontSize: 14, fontWeight: 700, color: '#fafafa' }}>
                 {pack.meta.subject} · {pack.meta.days} day{pack.meta.days === 1 ? '' : 's'} left
               </div>
-              <div style={{ fontSize: 11, color: '#52525b', marginTop: 2 }}>
+              <div style={{ fontSize: 11, color: '#6B7280', marginTop: 2 }}>
                 {pack.meta.weak.length > 0 ? `Weighted by ${pack.meta.weak.length} weak topic${pack.meta.weak.length === 1 ? '' : 's'}` : 'Pure curriculum priority'}
               </div>
             </div>
             <button onClick={() => setPack(null)} style={{
-              padding: '7px 12px', borderRadius: 7, border: '1px solid #1e1e1e',
-              background: '#161616', color: '#71717a', cursor: 'pointer',
+              padding: '7px 12px', borderRadius: 7, border: '1px solid #1f2532',
+              background: '#151922', color: '#9CA3AF', cursor: 'pointer',
               fontFamily: 'inherit', fontSize: 11, display: 'flex', alignItems: 'center', gap: 5,
             }}>
               <RefreshCw size={11} /> New Pack
@@ -330,8 +330,8 @@ Be direct. Indian exam context. Under 200 words total.` },
 
           {/* Tabs */}
           <div style={{
-            display: 'flex', gap: 4, marginBottom: 12, background: '#0d0d0d',
-            border: '1px solid #1e1e1e', borderRadius: 10, padding: 4, overflowX: 'auto',
+            display: 'flex', gap: 4, marginBottom: 12, background: '#0E1117',
+            border: '1px solid #1f2532', borderRadius: 10, padding: 4, overflowX: 'auto',
           }}>
             {TABS.map(t => {
               const Icon = t.icon
@@ -343,11 +343,11 @@ Be direct. Indian exam context. Under 200 words total.` },
                     display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px',
                     borderRadius: 7, border: 'none', fontFamily: 'inherit',
                     fontSize: 12, fontWeight: 600, cursor: 'pointer', flexShrink: 0,
-                    background: isActive ? '#1e1e2e' : 'transparent',
-                    color: isActive ? '#a78bfa' : '#52525b',
+                    background: isActive ? '#1f2532' : 'transparent',
+                    color: isActive ? '#66D9FF' : '#6B7280',
                   }}>
                   <Icon size={12} /> {t.label}
-                  {isSaved && <span style={{ fontSize: 9, color: '#c4b5fd' }}>✓</span>}
+                  {isSaved && <span style={{ fontSize: 9, color: '#A5B4FC' }}>✓</span>}
                 </button>
               )
             })}
@@ -355,16 +355,16 @@ Be direct. Indian exam context. Under 200 words total.` },
 
           {/* Content */}
           <div style={{ ...card, padding: 24 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16, paddingBottom: 12, borderBottom: '1px solid #1a1a1a' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16, paddingBottom: 12, borderBottom: '1px solid #1a1f2e' }}>
               <div style={{ flex: 1, fontSize: 13, fontWeight: 700, color: '#fafafa' }}>
                 {STAGE_TITLES[activeTab]}
               </div>
               <button onClick={() => saveTab(activeTab as keyof PanicPack)}
                 disabled={savedTabs.has(activeTab)} style={{
                 padding: '6px 12px', borderRadius: 6,
-                border: `1px solid ${savedTabs.has(activeTab) ? 'rgba(196, 181, 253,0.4)' : 'rgba(124, 58, 237,0.3)'}`,
-                background: savedTabs.has(activeTab) ? 'rgba(196, 181, 253,0.08)' : 'rgba(124, 58, 237,0.08)',
-                color: savedTabs.has(activeTab) ? '#c4b5fd' : '#c4b5fd',
+                border: `1px solid ${savedTabs.has(activeTab) ? 'rgba(165, 180, 252, 0.4)' : 'rgba(79, 124, 255, 0.3)'}`,
+                background: savedTabs.has(activeTab) ? 'rgba(165, 180, 252, 0.08)' : 'rgba(79, 124, 255, 0.08)',
+                color: savedTabs.has(activeTab) ? '#A5B4FC' : '#A5B4FC',
                 cursor: savedTabs.has(activeTab) ? 'default' : 'pointer',
                 fontFamily: 'inherit', fontSize: 11, fontWeight: 600,
                 display: 'flex', alignItems: 'center', gap: 5,
@@ -389,11 +389,11 @@ Be direct. Indian exam context. Under 200 words total.` },
 }
 
 const lblStyle: React.CSSProperties = {
-  fontSize: 11, color: '#71717a', display: 'block', marginBottom: 5,
+  fontSize: 11, color: '#9CA3AF', display: 'block', marginBottom: 5,
   fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.8,
 }
 const inpStyle: React.CSSProperties = {
-  background: '#0d0d0d', border: '1px solid #1e1e1e', borderRadius: 8,
+  background: '#0E1117', border: '1px solid #1f2532', borderRadius: 8,
   padding: '9px 12px', fontSize: 13, color: '#fafafa',
   fontFamily: 'inherit', outline: 'none', width: '100%', boxSizing: 'border-box',
 }

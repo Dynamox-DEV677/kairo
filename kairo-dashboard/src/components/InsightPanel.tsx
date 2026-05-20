@@ -9,11 +9,11 @@ import { chat } from '../lib/openrouter'
 type Tab = 'summary' | 'concepts' | 'progress'
 
 const MOCK_SUBJECTS = [
-  { name: 'Physics', progress: 72, color: '#818cf8' },
+  { name: 'Physics', progress: 72, color: '#A5B4FC' },
   { name: 'Chemistry', progress: 55, color: '#34d399' },
-  { name: 'Mathematics', progress: 88, color: '#fbbf24' },
+  { name: 'Mathematics', progress: 88, color: '#C7D2E8' },
   { name: 'Biology', progress: 41, color: '#f472b6' },
-  { name: 'History', progress: 63, color: '#fb923c' },
+  { name: 'History', progress: 63, color: '#4F7CFF' },
 ]
 
 const INSIGHT_SYSTEM = `You analyze student questions and return educational insights as JSON.
@@ -34,7 +34,7 @@ Return ONLY valid JSON, no markdown, no explanation:
 }
 examProbability is 0-100. difficulty is 1-5. Base everything on the student's actual question.`
 
-const CONCEPT_COLORS = ['#818cf8', '#34d399', '#fbbf24', '#f472b6']
+const CONCEPT_COLORS = ['#A5B4FC', '#34d399', '#C7D2E8', '#f472b6']
 
 interface InsightPanelProps {
   hasContent: boolean
@@ -87,8 +87,8 @@ export default function InsightPanel({ hasContent, lastQuestion }: InsightPanelP
       style={{
         flexShrink: 0,
         height: '100%',
-        background: '#0d0d0d',
-        borderLeft: '1px solid #1a1a1a',
+        background: '#0E1117',
+        borderLeft: '1px solid #1a1f2e',
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden',
@@ -103,14 +103,14 @@ export default function InsightPanel({ hasContent, lastQuestion }: InsightPanelP
           left: collapsed ? 4 : undefined,
           right: collapsed ? undefined : 10,
           width: 24, height: 24, borderRadius: 6,
-          background: '#161616', border: '1px solid #1e1e1e',
+          background: '#151922', border: '1px solid #1f2532',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          cursor: 'pointer', zIndex: 10, color: '#52525b',
+          cursor: 'pointer', zIndex: 10, color: '#6B7280',
           transition: 'all 0.15s',
           flexShrink: 0,
         }}
         onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = '#fafafa' }}
-        onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = '#52525b' }}
+        onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = '#6B7280' }}
       >
         {collapsed ? <ChevronLeft size={13} /> : <ChevronRight size={13} />}
       </button>
@@ -131,18 +131,18 @@ export default function InsightPanel({ hasContent, lastQuestion }: InsightPanelP
               </h3>
 
               {/* Tabs */}
-              <div style={{ display: 'flex', gap: 2, background: '#111', borderRadius: 8, padding: 3, border: '1px solid #1e1e1e' }}>
+              <div style={{ display: 'flex', gap: 2, background: '#0E1117', borderRadius: 8, padding: 3, border: '1px solid #1f2532' }}>
                 {TABS.map(t => (
                   <button
                     key={t.id}
                     onClick={() => setTab(t.id)}
                     style={{
                       flex: 1, padding: '5px 4px', borderRadius: 6, border: 'none',
-                      background: tab === t.id ? '#1c1c1c' : 'none',
+                      background: tab === t.id ? '#1a1f2e' : 'none',
                       cursor: 'pointer', fontFamily: 'inherit',
                       display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
                       fontSize: 10, fontWeight: 600,
-                      color: tab === t.id ? '#fafafa' : '#52525b',
+                      color: tab === t.id ? '#fafafa' : '#6B7280',
                       transition: 'all 0.12s',
                     }}
                   >
@@ -167,22 +167,22 @@ export default function InsightPanel({ hasContent, lastQuestion }: InsightPanelP
                     {loadingInsights ? (
                       <div style={{ textAlign: 'center', paddingTop: 40 }}>
                         <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: 'linear' }} style={{ display: 'inline-block', marginBottom: 12 }}>
-                          <Loader size={20} color="#6366f1" />
+                          <Loader size={20} color="#4F7CFF" />
                         </motion.div>
-                        <p style={{ fontSize: 11, color: '#52525b' }}>Analysing your question…</p>
+                        <p style={{ fontSize: 11, color: '#6B7280' }}>Analysing your question…</p>
                       </div>
                     ) : hasContent && insights ? (
                       <>
                         {keyPoints.length > 0 && (
                           <SmallCard>
                             <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
-                              <Lightbulb size={13} color="#fbbf24" />
-                              <span style={{ fontSize: 11, fontWeight: 600, color: '#a1a1aa' }}>Key Points</span>
+                              <Lightbulb size={13} color="#C7D2E8" />
+                              <span style={{ fontSize: 11, fontWeight: 600, color: '#B1B5BA' }}>Key Points</span>
                             </div>
                             {keyPoints.map((pt: string, i: number) => (
                               <div key={i} style={{ display: 'flex', gap: 6, marginBottom: 5, alignItems: 'flex-start' }}>
-                                <span style={{ width: 4, height: 4, borderRadius: '50%', background: '#6366f1', marginTop: 5, flexShrink: 0 }} />
-                                <span style={{ fontSize: 11, color: '#71717a', lineHeight: 1.5 }}>{pt}</span>
+                                <span style={{ width: 4, height: 4, borderRadius: '50%', background: '#4F7CFF', marginTop: 5, flexShrink: 0 }} />
+                                <span style={{ fontSize: 11, color: '#9CA3AF', lineHeight: 1.5 }}>{pt}</span>
                               </div>
                             ))}
                           </SmallCard>
@@ -192,21 +192,21 @@ export default function InsightPanel({ hasContent, lastQuestion }: InsightPanelP
                           <SmallCard style={{ marginTop: 10 }}>
                             <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
                               <Target size={13} color="#f472b6" />
-                              <span style={{ fontSize: 11, fontWeight: 600, color: '#a1a1aa' }}>Exam Probability</span>
+                              <span style={{ fontSize: 11, fontWeight: 600, color: '#B1B5BA' }}>Exam Probability</span>
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                              <div style={{ flex: 1, height: 5, background: '#1c1c1c', borderRadius: 3, overflow: 'hidden' }}>
+                              <div style={{ flex: 1, height: 5, background: '#1a1f2e', borderRadius: 3, overflow: 'hidden' }}>
                                 <motion.div
                                   key={examProbability}
                                   initial={{ width: 0 }}
                                   animate={{ width: `${examProbability}%` }}
                                   transition={{ delay: 0.1, duration: 0.6 }}
-                                  style={{ height: '100%', background: 'linear-gradient(90deg, #6366f1, #ec4899)', borderRadius: 3 }}
+                                  style={{ height: '100%', background: 'linear-gradient(90deg, #4F7CFF, #ec4899)', borderRadius: 3 }}
                                 />
                               </div>
                               <span style={{ fontSize: 12, fontWeight: 700, color: '#f472b6' }}>{examProbability}%</span>
                             </div>
-                            <p style={{ fontSize: 10, color: '#52525b' }}>{examContext}</p>
+                            <p style={{ fontSize: 10, color: '#6B7280' }}>{examContext}</p>
                           </SmallCard>
                         )}
 
@@ -214,35 +214,35 @@ export default function InsightPanel({ hasContent, lastQuestion }: InsightPanelP
                           <SmallCard style={{ marginTop: 10 }}>
                             <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
                               <Layers size={13} color="#34d399" />
-                              <span style={{ fontSize: 11, fontWeight: 600, color: '#a1a1aa' }}>Difficulty</span>
+                              <span style={{ fontSize: 11, fontWeight: 600, color: '#B1B5BA' }}>Difficulty</span>
                             </div>
                             <div style={{ display: 'flex', gap: 4 }}>
                               {[1,2,3,4,5].map(n => (
                                 <div key={n} style={{
                                   flex: 1, height: 6, borderRadius: 3,
-                                  background: n <= difficultyLevel ? '#fbbf24' : '#1c1c1c',
+                                  background: n <= difficultyLevel ? '#C7D2E8' : '#1a1f2e',
                                 }} />
                               ))}
                             </div>
-                            <p style={{ fontSize: 10, color: '#52525b', marginTop: 6 }}>{difficultyLabel}</p>
+                            <p style={{ fontSize: 10, color: '#6B7280', marginTop: 6 }}>{difficultyLabel}</p>
                           </SmallCard>
                         )}
 
                         {relatedTopics.length > 0 && (
                           <SmallCard style={{ marginTop: 10 }}>
                             <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
-                              <Hash size={13} color="#818cf8" />
-                              <span style={{ fontSize: 11, fontWeight: 600, color: '#a1a1aa' }}>Related Topics</span>
+                              <Hash size={13} color="#A5B4FC" />
+                              <span style={{ fontSize: 11, fontWeight: 600, color: '#B1B5BA' }}>Related Topics</span>
                             </div>
                             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
                               {relatedTopics.map((tag: string) => (
                                 <span key={tag} style={{
                                   fontSize: 10, padding: '3px 8px', borderRadius: 20,
-                                  background: '#161616', border: '1px solid #1e1e1e',
-                                  color: '#71717a', cursor: 'pointer', transition: 'all 0.1s',
+                                  background: '#151922', border: '1px solid #1f2532',
+                                  color: '#9CA3AF', cursor: 'pointer', transition: 'all 0.1s',
                                 }}
-                                  onMouseEnter={e => { (e.currentTarget as HTMLSpanElement).style.borderColor = '#6366f1'; (e.currentTarget as HTMLSpanElement).style.color = '#818cf8' }}
-                                  onMouseLeave={e => { (e.currentTarget as HTMLSpanElement).style.borderColor = '#1e1e1e'; (e.currentTarget as HTMLSpanElement).style.color = '#71717a' }}
+                                  onMouseEnter={e => { (e.currentTarget as HTMLSpanElement).style.borderColor = '#4F7CFF'; (e.currentTarget as HTMLSpanElement).style.color = '#A5B4FC' }}
+                                  onMouseLeave={e => { (e.currentTarget as HTMLSpanElement).style.borderColor = '#1f2532'; (e.currentTarget as HTMLSpanElement).style.color = '#9CA3AF' }}
                                 >
                                   {tag}
                                 </span>
@@ -265,14 +265,14 @@ export default function InsightPanel({ hasContent, lastQuestion }: InsightPanelP
                     exit={{ opacity: 0, x: -10 }}
                     transition={{ duration: 0.15 }}
                   >
-                    <p style={{ fontSize: 11, color: '#52525b', marginBottom: 12 }}>Concept strength from your sessions</p>
+                    <p style={{ fontSize: 11, color: '#6B7280', marginBottom: 12 }}>Concept strength from your sessions</p>
                     {concepts.length > 0 ? concepts.map((c: any, i: number) => (
                       <div key={i} style={{ marginBottom: 14 }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
-                          <span style={{ fontSize: 12, color: '#a1a1aa' }}>{c.name}</span>
+                          <span style={{ fontSize: 12, color: '#B1B5BA' }}>{c.name}</span>
                           <span style={{ fontSize: 11, fontWeight: 700, color: c.color }}>{c.strength}%</span>
                         </div>
-                        <div style={{ height: 4, background: '#1c1c1c', borderRadius: 3, overflow: 'hidden' }}>
+                        <div style={{ height: 4, background: '#1a1f2e', borderRadius: 3, overflow: 'hidden' }}>
                           <motion.div
                             key={`${c.name}-${c.strength}`}
                             initial={{ width: 0 }}
@@ -289,13 +289,13 @@ export default function InsightPanel({ hasContent, lastQuestion }: InsightPanelP
                     <SmallCard style={{ marginTop: 6 }}>
                       <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
                         <TrendingUp size={13} color="#34d399" />
-                        <span style={{ fontSize: 11, fontWeight: 600, color: '#a1a1aa' }}>XP Earned Today</span>
+                        <span style={{ fontSize: 11, fontWeight: 600, color: '#B1B5BA' }}>XP Earned Today</span>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
                         <span style={{ fontSize: 24, fontWeight: 800, color: '#fafafa' }}>+85</span>
                         <span style={{ fontSize: 12, color: '#34d399', fontWeight: 600 }}>XP</span>
                       </div>
-                      <p style={{ fontSize: 10, color: '#52525b', marginTop: 2 }}>Keep going to unlock "Physics Pro" 🏆</p>
+                      <p style={{ fontSize: 10, color: '#6B7280', marginTop: 2 }}>Keep going to unlock "Physics Pro" 🏆</p>
                     </SmallCard>
                   </motion.div>
                 )}
@@ -308,14 +308,14 @@ export default function InsightPanel({ hasContent, lastQuestion }: InsightPanelP
                     exit={{ opacity: 0, x: -10 }}
                     transition={{ duration: 0.15 }}
                   >
-                    <p style={{ fontSize: 11, color: '#52525b', marginBottom: 12 }}>Subject-wise board prep</p>
+                    <p style={{ fontSize: 11, color: '#6B7280', marginBottom: 12 }}>Subject-wise board prep</p>
                     {MOCK_SUBJECTS.map((s, i) => (
                       <div key={i} style={{ marginBottom: 12 }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                          <span style={{ fontSize: 12, color: '#a1a1aa' }}>{s.name}</span>
+                          <span style={{ fontSize: 12, color: '#B1B5BA' }}>{s.name}</span>
                           <span style={{ fontSize: 11, fontWeight: 700, color: s.color }}>{s.progress}%</span>
                         </div>
-                        <div style={{ height: 5, background: '#1c1c1c', borderRadius: 3, overflow: 'hidden' }}>
+                        <div style={{ height: 5, background: '#1a1f2e', borderRadius: 3, overflow: 'hidden' }}>
                           <motion.div
                             initial={{ width: 0 }}
                             animate={{ width: `${s.progress}%` }}
@@ -328,7 +328,7 @@ export default function InsightPanel({ hasContent, lastQuestion }: InsightPanelP
 
                     {/* Badges */}
                     <SmallCard style={{ marginTop: 6 }}>
-                      <p style={{ fontSize: 11, fontWeight: 600, color: '#a1a1aa', marginBottom: 10 }}>Achievements</p>
+                      <p style={{ fontSize: 11, fontWeight: 600, color: '#B1B5BA', marginBottom: 10 }}>Achievements</p>
                       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                         {[
                           { emoji: '🔥', label: '5-day streak', unlocked: true },
@@ -338,8 +338,8 @@ export default function InsightPanel({ hasContent, lastQuestion }: InsightPanelP
                         ].map((b, i) => (
                           <div key={i} title={b.label} style={{
                             width: 36, height: 36, borderRadius: 9,
-                            background: b.unlocked ? '#1c1c1c' : '#111',
-                            border: `1px solid ${b.unlocked ? '#2d2d3d' : '#1a1a1a'}`,
+                            background: b.unlocked ? '#1a1f2e' : '#0E1117',
+                            border: `1px solid ${b.unlocked ? '#2d2d3d' : '#1a1f2e'}`,
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                             fontSize: 17, opacity: b.unlocked ? 1 : 0.3,
                             cursor: 'pointer',
@@ -363,7 +363,7 @@ export default function InsightPanel({ hasContent, lastQuestion }: InsightPanelP
 function SmallCard({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
   return (
     <div style={{
-      background: '#111', border: '1px solid #1e1e1e',
+      background: '#0E1117', border: '1px solid #1f2532',
       borderRadius: 10, padding: '12px 12px', ...style,
     }}>
       {children}
@@ -375,13 +375,13 @@ function EmptyState({ icon: Icon, text }: { icon: React.ElementType; text: strin
   return (
     <div style={{ textAlign: 'center', paddingTop: 40 }}>
       <div style={{
-        width: 36, height: 36, borderRadius: 10, background: '#161616',
-        border: '1px solid #1e1e1e', display: 'flex', alignItems: 'center',
+        width: 36, height: 36, borderRadius: 10, background: '#151922',
+        border: '1px solid #1f2532', display: 'flex', alignItems: 'center',
         justifyContent: 'center', margin: '0 auto 10px',
       }}>
-        <Icon size={16} color="#3f3f46" />
+        <Icon size={16} color="#4B5563" />
       </div>
-      <p style={{ fontSize: 11, color: '#3f3f46', lineHeight: 1.6 }}>{text}</p>
+      <p style={{ fontSize: 11, color: '#4B5563', lineHeight: 1.6 }}>{text}</p>
     </div>
   )
 }

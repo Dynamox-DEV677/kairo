@@ -21,7 +21,7 @@ function ProjectileSim({ params, playing }: SimProps) {
         <planeGeometry args={[60, 60]} />
         <meshStandardMaterial color="#1a1a2e" />
       </mesh>
-      <Grid args={[60, 60]} cellSize={1} cellColor="#27272a" sectionSize={5} sectionColor="#3f3f46"
+      <Grid args={[60, 60]} cellSize={1} cellColor="#27272a" sectionSize={5} sectionColor="#4B5563"
         fadeDistance={40} infiniteGrid position={[0, 0.001, 0]} />
       <Cannon angle={params.angle} />
       <Projectile {...params} playing={playing} />
@@ -35,12 +35,12 @@ function Cannon({ angle }: { angle: number }) {
     <group position={[-10, 0.4, 0]}>
       <mesh>
         <cylinderGeometry args={[0.5, 0.5, 0.8, 16]} />
-        <meshStandardMaterial color="#52525b" />
+        <meshStandardMaterial color="#6B7280" />
       </mesh>
       <group rotation={[0, 0, (angle * Math.PI) / 180]}>
         <mesh position={[0.8, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
           <cylinderGeometry args={[0.25, 0.3, 1.6, 16]} />
-          <meshStandardMaterial color="#3f3f46" metalness={0.6} roughness={0.4} />
+          <meshStandardMaterial color="#4B5563" metalness={0.6} roughness={0.4} />
         </mesh>
       </group>
     </group>
@@ -102,10 +102,10 @@ function Projectile({ angle, velocity, gravity, playing }: any) {
     <group>
       <mesh ref={ballRef} position={[-10, 0.4, 0]}>
         <sphereGeometry args={[0.25, 16, 16]} />
-        <meshStandardMaterial color="#fb923c" emissive="#fb923c" emissiveIntensity={0.4} />
+        <meshStandardMaterial color="#4F7CFF" emissive="#4F7CFF" emissiveIntensity={0.4} />
       </mesh>
       <points ref={trailRef} geometry={trailGeom}>
-        <pointsMaterial color="#fbbf24" size={0.12} transparent opacity={0.7} />
+        <pointsMaterial color="#C7D2E8" size={0.12} transparent opacity={0.7} />
       </points>
     </group>
   )

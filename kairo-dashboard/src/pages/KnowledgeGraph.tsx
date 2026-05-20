@@ -17,19 +17,19 @@ import {
 import { getStudyHistory, type HistoryEntry } from '../lib/twin'
 
 const C = {
-  bg:        '#06060a',
-  panel:     '#0c0c14',
-  panel2:    '#13131d',
-  border:    '#22222e',
-  borderSoft:'#1a1a26',
+  bg:        '#050505',
+  panel:     '#0E1117',
+  panel2:    '#151922',
+  border:    'rgba(255,255,255,0.08)',
+  borderSoft:'rgba(255,255,255,0.06)',
   text:      '#ffffff',
-  textDim:   '#c1c1c8',
-  textFaint: '#8a8a96',
-  textVery:  '#5a5a66',
-  purpleSoft:'#c4b5fd',
-  purple:    '#a78bfa',
-  purpleHi:  '#7c3aed',
-  purpleDeep:'#5b21b6',
+  textDim:   '#CBD5E1',
+  textFaint: '#9CA3AF',
+  textVery:  '#6B7280',
+  purpleSoft:'#A5B4FC',
+  purple:    '#66D9FF',
+  purpleHi:  '#4F7CFF',
+  purpleDeep:'#2046C2',
 }
 const FONT = "'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif"
 
@@ -87,8 +87,8 @@ export default function KnowledgeGraph() {
       width: '100%', height: '100%', overflowY: 'auto', WebkitOverflowScrolling: 'touch',
       background: C.bg,
       backgroundImage:
-        `radial-gradient(at 8% 0%,  rgba(124,58,237,0.08) 0%, transparent 40%),
-         radial-gradient(at 92% 100%, rgba(91,33,182,0.10) 0%, transparent 45%)`,
+        `radial-gradient(at 8% 0%,  rgba(79, 124, 255, 0.08) 0%, transparent 40%),
+         radial-gradient(at 92% 100%, rgba(32, 70, 194, 0.10) 0%, transparent 45%)`,
       color: C.text, fontFamily: FONT, padding: '24px 28px 80px',
     }}>
       <div style={{ maxWidth: 1000, margin: '0 auto' }}>
@@ -98,9 +98,9 @@ export default function KnowledgeGraph() {
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
             <div style={{
               width: 46, height: 46, borderRadius: 13,
-              background: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)',
+              background: 'linear-gradient(135deg, #4F7CFF 0%, #2046C2 100%)',
               display: 'grid', placeItems: 'center',
-              boxShadow: '0 10px 30px rgba(124,58,237,0.45)',
+              boxShadow: '0 10px 30px rgba(79, 124, 255, 0.32)',
             }}>
               <Share2 size={22} color="#fff" />
             </div>
@@ -134,8 +134,8 @@ export default function KnowledgeGraph() {
             {subjectSummary.map(([subj, n]) => (
               <span key={subj} style={{
                 padding: '5px 12px', borderRadius: 999,
-                background: 'rgba(124,58,237,0.08)',
-                border: '1px solid rgba(167,139,250,0.3)',
+                background: 'rgba(79, 124, 255, 0.08)',
+                border: '1px solid rgba(102, 217, 255, 0.3)',
                 fontSize: 12, color: C.text, fontWeight: 600,
               }}>
                 {subj} <span style={{ color: C.purple, marginLeft: 4 }}>· {n}</span>
@@ -176,8 +176,8 @@ function FilterChip({ active, label, onClick }: { active: boolean; label: React.
     <button onClick={onClick} style={{
       display: 'inline-flex', alignItems: 'center', gap: 5,
       padding: '6px 12px', borderRadius: 8,
-      background: active ? 'rgba(167,139,250,0.20)' : 'transparent',
-      border: `1px solid ${active ? 'rgba(167,139,250,0.5)' : C.borderSoft}`,
+      background: active ? 'rgba(102, 217, 255, 0.20)' : 'transparent',
+      border: `1px solid ${active ? 'rgba(102, 217, 255, 0.5)' : C.borderSoft}`,
       color: active ? C.text : C.textFaint,
       fontFamily: 'inherit', fontSize: 12, fontWeight: 600,
       cursor: 'pointer',

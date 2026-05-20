@@ -41,7 +41,7 @@ interface MemoryData {
 }
 
 const card: React.CSSProperties = {
-  background: '#111', border: '1px solid #1e1e1e', borderRadius: 14,
+  background: '#0E1117', border: '1px solid #1f2532', borderRadius: 14,
 }
 
 export default function MemoryBrain() {
@@ -136,15 +136,15 @@ export default function MemoryBrain() {
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 24 }}>
         <div style={{
           width: 44, height: 44, borderRadius: 11,
-          background: 'linear-gradient(135deg, #7c3aed, #7c3aed)',
+          background: 'linear-gradient(135deg, #4F7CFF, #4F7CFF)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 0 20px rgba(124, 58, 237,0.4)', flexShrink: 0,
+          boxShadow: '0 0 20px rgba(79, 124, 255, 0.4)', flexShrink: 0,
         }}>
           <Brain size={22} color="#fff" />
         </div>
         <div style={{ flex: 1 }}>
           <h1 style={{ fontSize: 20, fontWeight: 700, color: '#fafafa', margin: 0 }}>AI Memory Brain</h1>
-          <p style={{ fontSize: 13, color: '#52525b', marginTop: 4 }}>
+          <p style={{ fontSize: 13, color: '#6B7280', marginTop: 4 }}>
             Kairo remembers your weak topics, mistakes, and wins — and personalizes every AI response with this context.
           </p>
         </div>
@@ -152,8 +152,8 @@ export default function MemoryBrain() {
           onClick={load}
           disabled={loading}
           style={{
-            padding: '8px 14px', borderRadius: 8, border: '1px solid #1e1e1e',
-            background: '#161616', color: '#71717a', cursor: 'pointer',
+            padding: '8px 14px', borderRadius: 8, border: '1px solid #1f2532',
+            background: '#151922', color: '#9CA3AF', cursor: 'pointer',
             fontFamily: 'inherit', fontSize: 12, display: 'flex', alignItems: 'center', gap: 6,
           }}>
           <RefreshCw size={12} style={{ animation: loading ? 'spin 0.8s linear infinite' : 'none' }} />
@@ -162,23 +162,23 @@ export default function MemoryBrain() {
       </div>
 
       {err && (
-        <div style={{ marginBottom: 16, padding: '10px 14px', background: 'rgba(167, 139, 250,0.08)', border: '1px solid rgba(167, 139, 250,0.25)', borderRadius: 8, fontSize: 12, color: '#a78bfa' }}>
+        <div style={{ marginBottom: 16, padding: '10px 14px', background: 'rgba(102, 217, 255, 0.08)', border: '1px solid rgba(102, 217, 255, 0.25)', borderRadius: 8, fontSize: 12, color: '#66D9FF' }}>
           {err}
         </div>
       )}
 
       {loading && !data && (
-        <div style={{ textAlign: 'center', padding: '80px 0', color: '#52525b' }}>Loading your memory…</div>
+        <div style={{ textAlign: 'center', padding: '80px 0', color: '#6B7280' }}>Loading your memory…</div>
       )}
 
       {data && (
         <>
           {/* Top stat row */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 22 }}>
-            <Stat icon={Brain}          label="Memories"        value={data.total} color="#7c3aed" />
-            <Stat icon={AlertTriangle}  label="Weak Areas"      value={data.weak.length} color="#c4b5fd" />
-            <Stat icon={Target}         label="Mistakes Logged" value={data.mistakes.length} color="#a78bfa" />
-            <Stat icon={Award}          label="Strong Areas"    value={data.strong.length} color="#c4b5fd" />
+            <Stat icon={Brain}          label="Memories"        value={data.total} color="#4F7CFF" />
+            <Stat icon={AlertTriangle}  label="Weak Areas"      value={data.weak.length} color="#A5B4FC" />
+            <Stat icon={Target}         label="Mistakes Logged" value={data.mistakes.length} color="#66D9FF" />
+            <Stat icon={Award}          label="Strong Areas"    value={data.strong.length} color="#A5B4FC" />
           </div>
 
           {/* Empty state */}
@@ -186,15 +186,15 @@ export default function MemoryBrain() {
             <div style={{ ...card, padding: '60px 32px', textAlign: 'center' }}>
               <div style={{
                 width: 64, height: 64, borderRadius: 18, margin: '0 auto 18px',
-                background: 'rgba(124, 58, 237,0.1)', border: '1px solid rgba(124, 58, 237,0.3)',
+                background: 'rgba(79, 124, 255, 0.1)', border: '1px solid rgba(79, 124, 255, 0.3)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
-                <Sparkles size={28} color="#a78bfa" />
+                <Sparkles size={28} color="#66D9FF" />
               </div>
               <h3 style={{ fontSize: 17, fontWeight: 700, color: '#fafafa', margin: 0, marginBottom: 8 }}>
                 Your memory is empty
               </h3>
-              <p style={{ fontSize: 13, color: '#71717a', maxWidth: 460, margin: '0 auto', lineHeight: 1.6 }}>
+              <p style={{ fontSize: 13, color: '#9CA3AF', maxWidth: 460, margin: '0 auto', lineHeight: 1.6 }}>
                 Take a quiz, ask Kairo's Solver, or get an essay graded —
                 Kairo will start tracking what you know and what to practice.
               </p>
@@ -203,7 +203,7 @@ export default function MemoryBrain() {
 
           {/* Recommended revision */}
           {recommended.length > 0 && (
-            <Section title="Recommended Revision" subtitle="Topics with the most repeated struggles" icon={Target} accent="#c4b5fd">
+            <Section title="Recommended Revision" subtitle="Topics with the most repeated struggles" icon={Target} accent="#A5B4FC">
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 10 }}>
                 {recommended.map(m => (
                   <RecCard key={m.id} m={m} />
@@ -216,16 +216,16 @@ export default function MemoryBrain() {
           {(data.weak.length > 0 || data.strong.length > 0) && (
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 22 }}>
               {/* Weak */}
-              <Section title="Weak Areas" subtitle="Practice these next" icon={AlertTriangle} accent="#c4b5fd" inline>
+              <Section title="Weak Areas" subtitle="Practice these next" icon={AlertTriangle} accent="#A5B4FC" inline>
                 <EntryList
-                  items={data.weak} accent="#c4b5fd" empty="No weak areas yet — well done."
+                  items={data.weak} accent="#A5B4FC" empty="No weak areas yet — well done."
                   onForget={forget} busy={busy}
                 />
               </Section>
               {/* Strong */}
-              <Section title="Strong Areas" subtitle="Topics you've mastered" icon={Award} accent="#c4b5fd" inline>
+              <Section title="Strong Areas" subtitle="Topics you've mastered" icon={Award} accent="#A5B4FC" inline>
                 <EntryList
-                  items={data.strong} accent="#c4b5fd" empty="Take more quizzes to build strengths."
+                  items={data.strong} accent="#A5B4FC" empty="Take more quizzes to build strengths."
                   onForget={forget} busy={busy}
                 />
               </Section>
@@ -234,29 +234,29 @@ export default function MemoryBrain() {
 
           {/* Recently Improved */}
           {data.improved.length > 0 && (
-            <Section title="Recently Improved" subtitle="Topics where your signal turned positive" icon={TrendingUp} accent="#c4b5fd">
-              <EntryList items={data.improved} accent="#c4b5fd" empty="Keep practicing to see improvements." onForget={forget} busy={busy} />
+            <Section title="Recently Improved" subtitle="Topics where your signal turned positive" icon={TrendingUp} accent="#A5B4FC">
+              <EntryList items={data.improved} accent="#A5B4FC" empty="Keep practicing to see improvements." onForget={forget} busy={busy} />
             </Section>
           )}
 
           {/* Wipe-all bar */}
           {data.total > 0 && (
             <div style={{
-              marginTop: 24, padding: '12px 16px', background: 'rgba(167, 139, 250,0.05)',
-              border: '1px solid rgba(167, 139, 250,0.2)', borderRadius: 10,
+              marginTop: 24, padding: '12px 16px', background: 'rgba(102, 217, 255, 0.05)',
+              border: '1px solid rgba(102, 217, 255, 0.2)', borderRadius: 10,
               display: 'flex', alignItems: 'center', gap: 12,
             }}>
-              <Trash2 size={14} color="#a78bfa" />
+              <Trash2 size={14} color="#66D9FF" />
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: 12, fontWeight: 600, color: '#fafafa' }}>Forget everything</div>
-                <div style={{ fontSize: 11, color: '#71717a', marginTop: 2 }}>
+                <div style={{ fontSize: 11, color: '#9CA3AF', marginTop: 2 }}>
                   Reset Kairo's memory of you. Future AI responses won't be personalized until new data is collected.
                 </div>
               </div>
               <button onClick={wipeAll} disabled={busy === 'all'} style={{
                 padding: '7px 14px', borderRadius: 7,
-                border: '1px solid rgba(167, 139, 250,0.4)',
-                background: 'rgba(167, 139, 250,0.1)', color: '#a78bfa',
+                border: '1px solid rgba(102, 217, 255, 0.4)',
+                background: 'rgba(102, 217, 255, 0.1)', color: '#66D9FF',
                 fontFamily: 'inherit', fontSize: 12, fontWeight: 600,
                 cursor: busy === 'all' ? 'not-allowed' : 'pointer',
               }}>
@@ -281,7 +281,7 @@ function Stat({ icon: Icon, label, value, color }: { icon: any; label: string; v
         }}>
           <Icon size={15} color={color} />
         </div>
-        <span style={{ fontSize: 11, color: '#71717a', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1 }}>{label}</span>
+        <span style={{ fontSize: 11, color: '#9CA3AF', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1 }}>{label}</span>
       </div>
       <div style={{ fontSize: 28, fontWeight: 700, color: '#fafafa', lineHeight: 1 }}>{value}</div>
     </div>
@@ -298,7 +298,7 @@ function Section({ title, subtitle, icon: Icon, accent, children, inline = false
         <Icon size={15} color={accent} />
         <div style={{ flex: 1 }}>
           <div style={{ fontSize: 13, fontWeight: 700, color: '#fafafa' }}>{title}</div>
-          <div style={{ fontSize: 11, color: '#52525b' }}>{subtitle}</div>
+          <div style={{ fontSize: 11, color: '#6B7280' }}>{subtitle}</div>
         </div>
       </div>
       {children}
@@ -311,7 +311,7 @@ function EntryList({ items, accent, empty, onForget, busy }: {
   onForget: (id: string) => void; busy: string | null
 }) {
   if (items.length === 0) {
-    return <div style={{ fontSize: 12, color: '#3f3f46', fontStyle: 'italic', padding: '8px 0' }}>{empty}</div>
+    return <div style={{ fontSize: 12, color: '#4B5563', fontStyle: 'italic', padding: '8px 0' }}>{empty}</div>
   }
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -323,7 +323,7 @@ function EntryList({ items, accent, empty, onForget, busy }: {
             exit={{ opacity: 0, height: 0 }}
             style={{
               padding: '8px 12px', borderRadius: 7,
-              background: '#0d0d0d', border: '1px solid #1a1a1a',
+              background: '#0E1117', border: '1px solid #1a1f2e',
               display: 'flex', alignItems: 'center', gap: 10,
             }}>
             <span style={{ width: 6, height: 6, borderRadius: '50%', background: accent, flexShrink: 0 }} />
@@ -331,10 +331,10 @@ function EntryList({ items, accent, empty, onForget, busy }: {
               <div style={{ fontSize: 12.5, color: '#fafafa', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {m.topic || m.content}
               </div>
-              <div style={{ fontSize: 10, color: '#52525b', marginTop: 2, display: 'flex', gap: 8 }}>
+              <div style={{ fontSize: 10, color: '#6B7280', marginTop: 2, display: 'flex', gap: 8 }}>
                 {m.subject && <span>{m.subject}</span>}
                 <span>seen {m.hits}×</span>
-                <span style={{ color: m.signal < 0 ? '#c4b5fd' : '#c4b5fd' }}>
+                <span style={{ color: m.signal < 0 ? '#A5B4FC' : '#A5B4FC' }}>
                   signal {m.signal.toFixed(2)}
                 </span>
               </div>
@@ -342,10 +342,10 @@ function EntryList({ items, accent, empty, onForget, busy }: {
             <button onClick={() => onForget(m.id)} disabled={busy === m.id} title="Forget this"
               style={{
                 background: 'none', border: 'none', cursor: 'pointer', padding: 4,
-                color: '#3f3f46', display: 'flex',
+                color: '#4B5563', display: 'flex',
               }}
-              onMouseEnter={e => (e.currentTarget.style.color = '#a78bfa')}
-              onMouseLeave={e => (e.currentTarget.style.color = '#3f3f46')}>
+              onMouseEnter={e => (e.currentTarget.style.color = '#66D9FF')}
+              onMouseLeave={e => (e.currentTarget.style.color = '#4B5563')}>
               <X size={12} />
             </button>
           </motion.div>
@@ -360,27 +360,27 @@ function RecCard({ m }: { m: MemoryEntry & { urgency: number } }) {
   return (
     <motion.div whileHover={{ y: -2 }} style={{
       ...card, padding: 14,
-      borderColor: `rgba(196, 181, 253,${0.2 + intensity * 0.3})`,
+      borderColor: `rgba(165, 180, 252, ${0.2 + intensity * 0.3})`,
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-        <Target size={12} color="#c4b5fd" />
-        <span style={{ fontSize: 10, fontWeight: 700, color: '#c4b5fd', textTransform: 'uppercase', letterSpacing: 1 }}>
+        <Target size={12} color="#A5B4FC" />
+        <span style={{ fontSize: 10, fontWeight: 700, color: '#A5B4FC', textTransform: 'uppercase', letterSpacing: 1 }}>
           Revisit
         </span>
-        {m.subject && <span style={{ fontSize: 10, color: '#52525b' }}>· {m.subject}</span>}
+        {m.subject && <span style={{ fontSize: 10, color: '#6B7280' }}>· {m.subject}</span>}
       </div>
       <div style={{ fontSize: 14, fontWeight: 600, color: '#fafafa', lineHeight: 1.4, marginBottom: 8 }}>
         {m.topic || m.content}
       </div>
       <div style={{
-        height: 4, borderRadius: 2, background: '#1a1a1a', overflow: 'hidden',
+        height: 4, borderRadius: 2, background: '#1a1f2e', overflow: 'hidden',
       }}>
         <div style={{
           height: '100%', width: `${intensity * 100}%`,
-          background: 'linear-gradient(90deg, #c4b5fd, #c4b5fd)', borderRadius: 2,
+          background: 'linear-gradient(90deg, #A5B4FC, #A5B4FC)', borderRadius: 2,
         }} />
       </div>
-      <div style={{ fontSize: 10, color: '#52525b', marginTop: 6 }}>
+      <div style={{ fontSize: 10, color: '#6B7280', marginTop: 6 }}>
         Wrong {m.hits} time{m.hits !== 1 ? 's' : ''} · urgency {m.urgency.toFixed(1)}
       </div>
     </motion.div>

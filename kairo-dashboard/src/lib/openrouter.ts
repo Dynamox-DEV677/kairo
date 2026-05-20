@@ -7,11 +7,11 @@ const PROXY_URL   = '/api/ai/chat'
 // All confirmed working free models on OpenRouter (from kairo-ui)
 export const FREE_MODELS = [
   { id: 'openai/gpt-oss-20b:free',                          name: 'GPT OSS 20B',          provider: 'OpenAI',      color: '#34d399', badge: 'Fast' },
-  { id: 'openai/gpt-oss-120b:free',                         name: 'GPT OSS 120B',         provider: 'OpenAI',      color: '#818cf8', badge: 'Smart' },
-  { id: 'meta-llama/llama-3.3-70b-instruct:free',           name: 'Llama 3.3 70B',        provider: 'Meta',        color: '#a78bfa', badge: '' },
+  { id: 'openai/gpt-oss-120b:free',                         name: 'GPT OSS 120B',         provider: 'OpenAI',      color: '#A5B4FC', badge: 'Smart' },
+  { id: 'meta-llama/llama-3.3-70b-instruct:free',           name: 'Llama 3.3 70B',        provider: 'Meta',        color: '#66D9FF', badge: '' },
   { id: 'nvidia/nemotron-3-super-120b-a12b:free',           name: 'Nemotron 3 Super 120B',provider: 'Nvidia',      color: '#76b900', badge: 'New' },
   { id: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', name: 'Nemotron Omni 30B',  provider: 'Nvidia',      color: '#86efac', badge: '' },
-  { id: 'google/gemma-4-31b-it:free',                       name: 'Gemma 4 31B',          provider: 'Google',      color: '#fbbf24', badge: '' },
+  { id: 'google/gemma-4-31b-it:free',                       name: 'Gemma 4 31B',          provider: 'Google',      color: '#C7D2E8', badge: '' },
   { id: 'qwen/qwen3-coder:free',                            name: 'Qwen3 Coder 480B',     provider: 'Alibaba',     color: '#f472b6', badge: 'Huge' },
 ]
 

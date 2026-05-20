@@ -89,8 +89,8 @@ export default function FocusMode() {
   const dash = C * progress
 
   const bg = ambient
-    ? 'radial-gradient(ellipse at top, #1a1a2e 0%, #0a0a0a 60%), radial-gradient(ellipse at bottom right, rgba(124, 58, 237,0.18), transparent 50%)'
-    : '#0a0a0a'
+    ? 'radial-gradient(ellipse at top, #1a1a2e 0%, #050505 60%), radial-gradient(ellipse at bottom right, rgba(79, 124, 255, 0.18), transparent 50%)'
+    : '#050505'
 
   return (
     <div style={{
@@ -114,7 +114,7 @@ export default function FocusMode() {
               position: 'absolute',
               top: `${20 + i * 25}%`, left: `${15 + i * 28}%`,
               width: 260, height: 260, borderRadius: '50%',
-              background: ['#7c3aed', '#7c3aed', '#c4b5fd'][i],
+              background: ['#4F7CFF', '#4F7CFF', '#A5B4FC'][i],
               filter: 'blur(80px)', pointerEvents: 'none',
             }} />
         ))}
@@ -124,24 +124,24 @@ export default function FocusMode() {
       <div style={{ width: '100%', maxWidth: 720, display: 'flex', alignItems: 'center', gap: 14, marginBottom: 32, zIndex: 1 }}>
         <div style={{
           width: 40, height: 40, borderRadius: 10,
-          background: 'linear-gradient(135deg,#7c3aed,#7c3aed)',
+          background: 'linear-gradient(135deg,#4F7CFF,#4F7CFF)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 0 18px rgba(124, 58, 237,0.4)', flexShrink: 0,
+          boxShadow: '0 0 18px rgba(79, 124, 255, 0.4)', flexShrink: 0,
         }}>
           <Target size={20} color="#fff" />
         </div>
         <div style={{ flex: 1 }}>
           <h1 style={{ fontSize: 20, fontWeight: 700, color: '#fafafa', margin: 0 }}>Focus Mode</h1>
-          <p style={{ fontSize: 12, color: '#52525b', marginTop: 2 }}>Distraction-free deep work, with one goal at a time</p>
+          <p style={{ fontSize: 12, color: '#6B7280', marginTop: 2 }}>Distraction-free deep work, with one goal at a time</p>
         </div>
         <button
           onClick={() => setAmbient(a => !a)}
           title={ambient ? 'Calm mode off' : 'Calm mode on'}
           style={{
             width: 36, height: 36, borderRadius: 8,
-            background: ambient ? 'rgba(124, 58, 237,0.15)' : '#161616',
-            border: `1px solid ${ambient ? '#7c3aed' : '#1e1e1e'}`,
-            color: ambient ? '#c4b5fd' : '#71717a', cursor: 'pointer',
+            background: ambient ? 'rgba(79, 124, 255, 0.15)' : '#151922',
+            border: `1px solid ${ambient ? '#4F7CFF' : '#1f2532'}`,
+            color: ambient ? '#A5B4FC' : '#9CA3AF', cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
           {ambient ? <Volume2 size={14} /> : <VolumeX size={14} />}
@@ -154,10 +154,10 @@ export default function FocusMode() {
       }}>
         <svg viewBox="-160 -160 320 320" width={320} height={320}
           style={{ transform: 'rotate(-90deg)' }}>
-          <circle r={R} fill="none" stroke="#1a1a1a" strokeWidth={6} />
+          <circle r={R} fill="none" stroke="#1a1f2e" strokeWidth={6} />
           <motion.circle
             r={R} fill="none"
-            stroke={done ? '#c4b5fd' : 'url(#grad)'}
+            stroke={done ? '#A5B4FC' : 'url(#grad)'}
             strokeWidth={6} strokeLinecap="round"
             strokeDasharray={C}
             animate={{ strokeDashoffset: C - dash }}
@@ -165,8 +165,8 @@ export default function FocusMode() {
           />
           <defs>
             <linearGradient id="grad" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0" stopColor="#7c3aed" />
-              <stop offset="1" stopColor="#7c3aed" />
+              <stop offset="0" stopColor="#4F7CFF" />
+              <stop offset="1" stopColor="#4F7CFF" />
             </linearGradient>
           </defs>
         </svg>
@@ -185,7 +185,7 @@ export default function FocusMode() {
             }}>
             {done ? 'Done' : fmt(remaining)}
           </motion.div>
-          <div style={{ fontSize: 11, color: '#52525b', marginTop: 8, textTransform: 'uppercase', letterSpacing: 2.5 }}>
+          <div style={{ fontSize: 11, color: '#6B7280', marginTop: 8, textTransform: 'uppercase', letterSpacing: 2.5 }}>
             {done ? 'great session' : running ? 'focusing' : 'paused'}
           </div>
         </div>
@@ -199,9 +199,9 @@ export default function FocusMode() {
             onClick={start}
             style={{
               padding: '12px 28px', borderRadius: 10, border: 'none',
-              background: 'linear-gradient(135deg,#7c3aed,#7c3aed)',
+              background: 'linear-gradient(135deg,#4F7CFF,#4F7CFF)',
               color: '#fff', fontFamily: 'inherit', fontSize: 14, fontWeight: 700,
-              cursor: 'pointer', boxShadow: '0 0 22px rgba(124, 58, 237,0.4)',
+              cursor: 'pointer', boxShadow: '0 0 22px rgba(79, 124, 255, 0.4)',
               display: 'flex', alignItems: 'center', gap: 8,
             }}>
             <Play size={14} />{done ? 'Start Again' : 'Start Focus'}
@@ -211,8 +211,8 @@ export default function FocusMode() {
             whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}
             onClick={pause}
             style={{
-              padding: '12px 28px', borderRadius: 10, border: '1px solid #7c3aed',
-              background: 'rgba(124, 58, 237,0.1)', color: '#c4b5fd',
+              padding: '12px 28px', borderRadius: 10, border: '1px solid #4F7CFF',
+              background: 'rgba(79, 124, 255, 0.1)', color: '#A5B4FC',
               fontFamily: 'inherit', fontSize: 14, fontWeight: 700, cursor: 'pointer',
               display: 'flex', alignItems: 'center', gap: 8,
             }}>
@@ -220,8 +220,8 @@ export default function FocusMode() {
           </motion.button>
         )}
         <button onClick={reset} style={{
-          padding: '12px 18px', borderRadius: 10, border: '1px solid #1e1e1e',
-          background: '#161616', color: '#71717a', cursor: 'pointer',
+          padding: '12px 18px', borderRadius: 10, border: '1px solid #1f2532',
+          background: '#151922', color: '#9CA3AF', cursor: 'pointer',
           fontFamily: 'inherit', fontSize: 13, display: 'flex', alignItems: 'center', gap: 6,
         }}>
           <RotateCcw size={13} />Reset
@@ -233,9 +233,9 @@ export default function FocusMode() {
         {PRESETS.map(p => (
           <button key={p.mins} onClick={() => pickPreset(p.mins)} style={{
             padding: '8px 16px', borderRadius: 8,
-            border: `1px solid ${duration === p.mins * 60 ? '#7c3aed' : '#1e1e1e'}`,
-            background: duration === p.mins * 60 ? 'rgba(124, 58, 237,0.12)' : 'transparent',
-            color: duration === p.mins * 60 ? '#c4b5fd' : '#71717a',
+            border: `1px solid ${duration === p.mins * 60 ? '#4F7CFF' : '#1f2532'}`,
+            background: duration === p.mins * 60 ? 'rgba(79, 124, 255, 0.12)' : 'transparent',
+            color: duration === p.mins * 60 ? '#A5B4FC' : '#9CA3AF',
             fontFamily: 'inherit', fontSize: 12, fontWeight: 600, cursor: 'pointer',
           }}>{p.label}</button>
         ))}
@@ -244,7 +244,7 @@ export default function FocusMode() {
       {/* Goal input */}
       <div style={{ width: '100%', maxWidth: 560, marginBottom: 24, zIndex: 1 }}>
         <label style={{
-          fontSize: 11, fontWeight: 700, color: '#52525b',
+          fontSize: 11, fontWeight: 700, color: '#6B7280',
           textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 8,
         }}>
           What are you focusing on?
@@ -255,7 +255,7 @@ export default function FocusMode() {
           placeholder="e.g. Revise quadratic equations · Read Chapter 6"
           style={{
             width: '100%', padding: '12px 16px', borderRadius: 10,
-            background: '#111', border: '1px solid #1e1e1e',
+            background: '#0E1117', border: '1px solid #1f2532',
             color: '#fafafa', fontFamily: 'inherit', fontSize: 14,
             outline: 'none', boxSizing: 'border-box',
           }}
@@ -265,11 +265,11 @@ export default function FocusMode() {
       {/* Lifetime stats */}
       <div style={{
         padding: '12px 18px', borderRadius: 10,
-        background: 'rgba(196, 181, 253,0.08)', border: '1px solid rgba(196, 181, 253,0.25)',
+        background: 'rgba(165, 180, 252, 0.08)', border: '1px solid rgba(165, 180, 252, 0.25)',
         display: 'flex', alignItems: 'center', gap: 10, zIndex: 1,
       }}>
-        <Award size={14} color="#c4b5fd" />
-        <span style={{ fontSize: 12, color: '#c4b5fd', fontWeight: 600 }}>
+        <Award size={14} color="#A5B4FC" />
+        <span style={{ fontSize: 12, color: '#A5B4FC', fontWeight: 600 }}>
           {totalMin === 0 ? 'No focused minutes yet — start your first session.' :
             `${totalMin} focused minute${totalMin === 1 ? '' : 's'} banked.`}
         </span>
