@@ -1,104 +1,85 @@
 """
-Generate Kairo's Apple-style app icon set.
+Kairo icon pipeline (rev 2 — May 2026 brand refresh).
 
-Dark squircle background + soft purple glow + the Kairo wordmark centred —
-matches the rest of the brand. Produces every size the PWA and Electron
-builder need.
+INPUT (two source PNGs in tools/_assets/):
+    kairo_new_logo.png   — the new wordmark on a WHITE background
+                           (gets the background stripped → transparent
+                           for use everywhere inside the React app).
+    kairo_electron.png   — same logo, PRE-RENDERED on a solid BLACK
+                           background. We just round the corners +
+                           resize for the icon-launcher set.
 
-Output paths:
-  kairo-dashboard/public/kairo_icon_192.png          PWA Android home screen
-  kairo-dashboard/public/kairo_icon_512.png          PWA splash + general
-  kairo-dashboard/public/kairo_icon_512_maskable.png PWA Android adaptive
-  kairo-dashboard/public/apple-touch-icon.png        180x180 iOS home screen
-  kairo-electron/assets/icon.png                     1024 master
-  kairo-electron/assets/icon-512.png                 512 Linux
-  kairo-electron/assets/icon-256.png                 256 fallback
-  kairo-electron/assets/icon.ico                     multi-res Windows
+OUTPUT:
+    kairo-dashboard/public/kairo_logo.png                transparent web logo
+    kairo-dashboard/public/kairo_icon_192.png            PWA Android
+    kairo-dashboard/public/kairo_icon_512.png            PWA splash + general
+    kairo-dashboard/public/kairo_icon_512_maskable.png   PWA adaptive icon
+    kairo-dashboard/public/apple-touch-icon.png          iOS home screen (180×180)
+    kairo-electron/assets/icon.png                       1024 master
+    kairo-electron/assets/icon-512.png
+    kairo-electron/assets/icon-256.png
+    kairo-electron/assets/icon.ico                       multi-res Windows
 """
-from PIL import Image, ImageDraw, ImageFilter, ImageChops
+from PIL import Image, ImageDraw, ImageFilter
 from pathlib import Path
 
-REPO = Path(__file__).resolve().parents[1]
-LOGO_SRC = REPO / 'kairo-dashboard' / 'public' / 'kairo_logo.png'
+REPO   = Path(__file__).resolve().parents[1]
+ASSETS = REPO / 'tools' / '_assets'
 
-# Brand palette
-INK         = (6, 6, 10, 255)
-PURPLE_DEEP = (59, 7, 100)
-PURPLE_HI   = (124, 58, 237)
-PURPLE_SOFT = (196, 181, 253)
+SRC_LOGO_RAW       = ASSETS / 'kairo_new_logo.png'       # white-bg source
+SRC_ELECTRON_DARK  = ASSETS / 'kairo_electron.png'       # black-bg source
 
-def make_icon(size: int, *, maskable: bool = False) -> Image.Image:
+# ─── 1. Build the transparent web logo ─────────────────────────────────────
+def make_transparent_logo() -> Image.Image:
     """
-    Apple-style icon: dark **rounded** square + radial purple glow +
-    big centred logo. The corners are pre-rounded so Windows (which
-    doesn't auto-round) looks just as premium as iOS/macOS.
-    PWA maskable icons get the full square (no rounding) because the
-    OS applies its own mask shape on top.
+    The new-logo source has its strokes drawn on a flat white field with
+    near-zero alpha — direct background-removal yields an empty image.
+    Smarter route: take the ELECTRON source (white strokes on a solid
+    black background) and use its luminance as the alpha channel.
+    Black pixels become transparent, white pixels stay opaque white,
+    grey edges become soft anti-aliased semi-transparent.
+
+    The result is a crisp WHITE logo on a fully transparent background —
+    perfect for overlay on the dark surfaces throughout the React app
+    (sidebar, splash, footer, masthead, login, etc.).
     """
-    # iOS uses ~22.37% of icon size for its rounded-square radius.
-    # Maskable icons stay square; the OS will mask them.
-    corner_radius = int(size * 0.2237) if not maskable else 0
-
-    # ── Layer 1 — dark rounded background ───────────────────────────────
-    img = Image.new('RGBA', (size, size), (0, 0, 0, 0))
-    bd  = ImageDraw.Draw(img)
-    if corner_radius > 0:
-        bd.rounded_rectangle([0, 0, size, size],
-                             radius=corner_radius, fill=INK)
-    else:
-        bd.rectangle([0, 0, size, size], fill=INK)
-
-    # ── Layer 2 — radial purple glow ────────────────────────────────────
-    # Larger + brighter than before so the bigger logo sits inside a
-    # proper halo instead of touching the edges of a flat field.
-    glow = Image.new('RGBA', (size, size), (0, 0, 0, 0))
-    gd   = ImageDraw.Draw(glow)
-    cx, cy = size // 2, size // 2
-    # Deep outer wash
-    big_r = int(size * 0.55)
-    gd.ellipse([cx - big_r, cy - big_r, cx + big_r, cy + big_r],
-               fill=(*PURPLE_DEEP, 130))
-    # Mid wash
-    mid_r = int(size * 0.40)
-    gd.ellipse([cx - mid_r, cy - mid_r, cx + mid_r, cy + mid_r],
-               fill=(*PURPLE_HI, 110))
-    # Bright core
-    core_r = int(size * 0.22)
-    gd.ellipse([cx - core_r, cy - core_r, cx + core_r, cy + core_r],
-               fill=(*PURPLE_HI, 80))
-    glow = glow.filter(ImageFilter.GaussianBlur(radius=size // 7))
-    # Mask the glow to the rounded square shape so it doesn't bleed past
-    # the corners on Windows.
-    if corner_radius > 0:
-        mask = Image.new('L', (size, size), 0)
-        ImageDraw.Draw(mask).rounded_rectangle(
-            [0, 0, size, size], radius=corner_radius, fill=255)
-        glow.putalpha(ImageChops.multiply(glow.split()[3], mask))
-    img = Image.alpha_composite(img, glow)
-
-    # ── Layer 3 — the big centre logo ───────────────────────────────────
-    # ~70% of icon size now (was 52%) so the brand mark dominates.
-    # Maskable shrinks to 0.46 to keep important pixels inside the
-    # OS-applied 80% safe zone.
-    logo_scale = 0.70 if not maskable else 0.46
-    logo = Image.open(LOGO_SRC).convert('RGBA')
-    lw   = int(size * logo_scale)
-    logo = logo.resize((lw, lw), Image.LANCZOS)
-    pos  = ((size - lw) // 2, (size - lw) // 2)
-
-    # Soft drop-shadow under the logo for Apple-like depth
-    sR, sG, sB, sA = logo.split()
-    black = Image.new('L', (size, size), 0)
-    shadow_alpha = Image.new('L', (size, size), 0)
-    shadow_alpha.paste(sA, (pos[0], pos[1] + int(size * 0.012)))
-    shadow = Image.merge('RGBA', (black, black, black, shadow_alpha))
-    shadow = shadow.filter(ImageFilter.GaussianBlur(radius=size // 50))
-    img = Image.alpha_composite(img, shadow)
-    img.paste(logo, pos, logo)
-
-    return img
+    src = Image.open(SRC_ELECTRON_DARK).convert('RGBA')
+    r, g, b, _ = src.split()
+    # Per-pixel luminance — anything that was white in the source becomes
+    # opaque, anything that was black becomes transparent.
+    luminance = Image.merge('RGB', (r, g, b)).convert('L')
+    # Fill the RGB plane with pure white so the stroke colour stays clean
+    # regardless of any source-side compression artefacts.
+    white = Image.new('L', src.size, 255)
+    return Image.merge('RGBA', (white, white, white, luminance))
 
 
+# ─── 2. Apply iOS-style rounded corners to the dark electron source ────────
+def make_squircle_icon(size: int, *, maskable: bool = False) -> Image.Image:
+    """
+    Take the user-supplied black-background electron PNG, scale to the
+    requested icon size, then mask with an iOS-spec rounded square.
+    Maskable PWA icons skip the rounding (the OS applies its own mask).
+    """
+    src = Image.open(SRC_ELECTRON_DARK).convert('RGBA')
+    # Resize with high-quality Lanczos
+    icon = src.resize((size, size), Image.LANCZOS)
+
+    if maskable:
+        return icon            # full square — OS will round it
+
+    # iOS-spec rounded square = 22.37 % corner radius
+    radius = int(size * 0.2237)
+    mask = Image.new('L', (size, size), 0)
+    ImageDraw.Draw(mask).rounded_rectangle(
+        [0, 0, size, size], radius=radius, fill=255)
+
+    rounded = Image.new('RGBA', (size, size), (0, 0, 0, 0))
+    rounded.paste(icon, (0, 0), mask)
+    return rounded
+
+
+# ─── helpers ───────────────────────────────────────────────────────────────
 def save(img: Image.Image, path: Path):
     path.parent.mkdir(parents=True, exist_ok=True)
     img.save(path, format='PNG', optimize=True)
@@ -106,30 +87,42 @@ def save(img: Image.Image, path: Path):
 
 
 def main():
-    print('Generating Kairo icon set...')
-    # ── PWA ─────────────────────────────────────────────────────────────
+    if not SRC_LOGO_RAW.exists():
+        raise SystemExit(f'missing source: {SRC_LOGO_RAW}')
+    if not SRC_ELECTRON_DARK.exists():
+        raise SystemExit(f'missing source: {SRC_ELECTRON_DARK}')
+
     pwa = REPO / 'kairo-dashboard' / 'public'
-    save(make_icon(192),                            pwa / 'kairo_icon_192.png')
-    save(make_icon(512),                            pwa / 'kairo_icon_512.png')
-    save(make_icon(512, maskable=True),             pwa / 'kairo_icon_512_maskable.png')
-    save(make_icon(180),                            pwa / 'apple-touch-icon.png')
+    ele = REPO / 'kairo-electron'  / 'assets'
 
-    # ── Electron ───────────────────────────────────────────────────────
-    ele = REPO / 'kairo-electron' / 'assets'
-    master_1024 = make_icon(1024)
-    save(master_1024,                               ele / 'icon.png')
-    save(make_icon(512),                            ele / 'icon-512.png')
-    save(make_icon(256),                            ele / 'icon-256.png')
+    print('Generating Kairo icons (brand refresh, May 2026)...')
 
-    # ── Windows .ico (multi-resolution) ────────────────────────────────
-    ico_path = ele / 'icon.ico'
-    ico_path.parent.mkdir(parents=True, exist_ok=True)
+    # 1. Transparent web logo
+    web_logo = make_transparent_logo()
+    save(web_logo, pwa / 'kairo_logo.png')
+
+    # 2. PWA — rounded squircle, 3 sizes + maskable
+    save(make_squircle_icon(192),                 pwa / 'kairo_icon_192.png')
+    save(make_squircle_icon(512),                 pwa / 'kairo_icon_512.png')
+    save(make_squircle_icon(512, maskable=True),  pwa / 'kairo_icon_512_maskable.png')
+
+    # 3. Apple touch (iOS home screen, same look as the Electron icon)
+    save(make_squircle_icon(180),                 pwa / 'apple-touch-icon.png')
+
+    # 4. Electron — rounded squircle
+    master_1024 = make_squircle_icon(1024)
+    save(master_1024,                              ele / 'icon.png')
+    save(make_squircle_icon(512),                  ele / 'icon-512.png')
+    save(make_squircle_icon(256),                  ele / 'icon-256.png')
+
+    # 5. Multi-resolution .ico for Windows installers
+    ico = ele / 'icon.ico'
+    ico.parent.mkdir(parents=True, exist_ok=True)
     master_1024.save(
-        ico_path, format='ICO',
+        ico, format='ICO',
         sizes=[(256, 256), (128, 128), (64, 64), (48, 48), (32, 32), (16, 16)],
     )
-    print(f'  · {ico_path.relative_to(REPO)}  (multi-res)')
-
+    print(f'  · {ico.relative_to(REPO)}  (multi-res)')
     print('done.')
 
 
