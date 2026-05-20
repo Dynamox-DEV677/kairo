@@ -212,7 +212,7 @@ function PulseHero({ pct, label, twin, pulsing, onRecompute }: {
         position: 'relative', padding: 22, borderRadius: 22,
         background: `linear-gradient(180deg, ${C.panel} 0%, ${C.bg} 100%)`,
         border: '1px solid rgba(102, 217, 255, 0.22)',
-        boxShadow: '0 18px 50px rgba(79, 124, 255, 0.18), inset 0 1px 0 rgba(255,255,255,0.04)',
+        boxShadow: '0 18px 50px rgba(79, 124, 255, 0.01), inset 0 1px 0 rgba(255,255,255,0.04)',
         overflow: 'hidden',
       }}
     >
@@ -386,14 +386,14 @@ function TopRecommendation({ rec, onClick }: { rec: any; onClick: () => void }) 
         cursor: 'pointer', fontFamily: 'inherit',
         WebkitTapHighlightColor: 'transparent',
         display: 'flex', alignItems: 'center', gap: 12,
-        boxShadow: '0 10px 30px rgba(79, 124, 255, 0.20)',
+        boxShadow: '0 10px 30px rgba(79, 124, 255, 0.02)',
       }}
     >
       <div style={{
         width: 44, height: 44, borderRadius: 13, flexShrink: 0,
         background: 'linear-gradient(135deg, #A5B4FC, #4F7CFF)',
         display: 'grid', placeItems: 'center',
-        boxShadow: '0 6px 18px rgba(79, 124, 255, 0.40)',
+        boxShadow: '0 6px 18px rgba(79, 124, 255, 0.04)',
       }}>
         <Icon size={20} color="#000" strokeWidth={2.2} />
       </div>
@@ -559,7 +559,7 @@ function EmptyState() {
         width: 72, height: 72, borderRadius: 20,
         background: 'linear-gradient(135deg, #A5B4FC, #4F7CFF)',
         display: 'grid', placeItems: 'center',
-        boxShadow: '0 14px 38px rgba(79, 124, 255, 0.32)',
+        boxShadow: '0 14px 38px rgba(79, 124, 255, 0.03)',
       }}>
         <Brain size={32} color="#000" />
       </div>

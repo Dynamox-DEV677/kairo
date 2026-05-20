@@ -218,7 +218,7 @@ export function dataPanel({ rows = [], title }) {
 export function codeBlock({ value, hint }) {
   return `
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
-      style="background:rgba(79, 124, 255, 0.10);border:1px solid rgba(79, 124, 255, 0.4);border-radius:${THEME.radius.md};margin:20px 0;box-shadow:inset 0 1px 0 rgba(255,255,255,0.04);">
+      style="background:rgba(79, 124, 255, 0.10);border:1px solid rgba(79, 124, 255, 0.14);border-radius:${THEME.radius.md};margin:20px 0;box-shadow:inset 0 1px 0 rgba(255,255,255,0.04);">
       <tr>
         <td style="padding:22px 16px;text-align:center;">
           <code style="font-family:${THEME.font.mono};font-size:24px;font-weight:800;color:${THEME.text.primary};letter-spacing:4px;line-height:1;">

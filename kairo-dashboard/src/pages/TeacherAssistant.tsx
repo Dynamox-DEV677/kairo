@@ -24,7 +24,7 @@ import { saveToNotebook } from '../lib/notebook'
 const SUBJECTS = ['Mathematics', 'Physics', 'Chemistry', 'Biology', 'English', 'Hindi', 'History', 'Geography', 'Political Science', 'Economics', 'Computer Science']
 const GRADES   = ['6', '7', '8', '9', '10', '11', '12']
 
-const card: React.CSSProperties = { background: '#0E1117', border: '1px solid #1f2532', borderRadius: 14 }
+const card: React.CSSProperties = { background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(14px) saturate(140%)', WebkitBackdropFilter: 'blur(14px) saturate(140%)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14 }
 const inp: React.CSSProperties = {
   background: '#0E1117', border: '1px solid #1f2532', borderRadius: 8,
   padding: '9px 12px', fontSize: 13, color: '#fafafa',
@@ -234,7 +234,7 @@ Markdown structure:
           width: 44, height: 44, borderRadius: 11,
           background: 'linear-gradient(135deg, #66D9FF, #66D9FF)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 0 18px rgba(102, 217, 255, 0.4)', flexShrink: 0,
+          boxShadow: '0 0 18px rgba(102, 217, 255, 0.04)', flexShrink: 0,
         }}>
           <Bot size={22} color="#fff" />
         </div>
@@ -297,7 +297,7 @@ Markdown structure:
               fontFamily: 'inherit', fontSize: 14, fontWeight: 700,
               cursor: busy || !topic.trim() ? 'not-allowed' : 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-              boxShadow: busy || !topic.trim() ? 'none' : '0 0 22px rgba(102, 217, 255, 0.4)',
+              boxShadow: busy || !topic.trim() ? 'none' : '0 0 22px rgba(102, 217, 255, 0.14)',
             }}>
             {busy
               ? <><Loader2 size={14} style={{ animation: 'spin 0.8s linear infinite' }} /> {progress || 'Generating…'}</>

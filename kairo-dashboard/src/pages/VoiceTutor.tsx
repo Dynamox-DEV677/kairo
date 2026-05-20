@@ -26,7 +26,7 @@ Avoid markdown, lists, or headings — use natural spoken language.
 For math, say expressions in words (e.g. "x squared plus three x").
 End with one quick question to keep the dialog flowing.`
 
-const card: React.CSSProperties = { background: '#0E1117', border: '1px solid #1f2532', borderRadius: 14 }
+const card: React.CSSProperties = { background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(14px) saturate(140%)', WebkitBackdropFilter: 'blur(14px) saturate(140%)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14 }
 
 // Browser API detection
 const SpeechRecognitionCtor: any =
@@ -265,7 +265,7 @@ export default function VoiceTutor() {
           width: 44, height: 44, borderRadius: 11,
           background: 'linear-gradient(135deg, #A5B4FC, #38bdf8)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 0 18px rgba(165, 180, 252, 0.35)', flexShrink: 0,
+          boxShadow: '0 0 18px rgba(165, 180, 252, 0.03)', flexShrink: 0,
         }}>
           <Mic size={22} color="#fff" />
         </div>
@@ -280,7 +280,7 @@ export default function VoiceTutor() {
           style={{
             width: 36, height: 36, borderRadius: 9,
             background: muted ? 'rgba(102, 217, 255, 0.1)' : '#151922',
-            border: `1px solid ${muted ? 'rgba(102, 217, 255, 0.4)' : '#1f2532'}`,
+            border: `1px solid ${muted ? 'rgba(102, 217, 255, 0.14)' : '#1f2532'}`,
             color: muted ? '#66D9FF' : '#9CA3AF', cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
@@ -525,7 +525,7 @@ export default function VoiceTutor() {
             <button onClick={stopSpeaking} title="Stop AI voice"
               style={{
                 width: 38, height: 38, borderRadius: 9, flexShrink: 0,
-                background: 'rgba(102, 217, 255, 0.1)', border: '1px solid rgba(102, 217, 255, 0.4)',
+                background: 'rgba(102, 217, 255, 0.1)', border: '1px solid rgba(102, 217, 255, 0.14)',
                 color: '#66D9FF', cursor: 'pointer',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>

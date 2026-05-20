@@ -90,7 +90,7 @@ export default function Step5Success({ onContinue }: Props) {
             width: 130, height: 130, borderRadius: '50%',
             background: 'linear-gradient(135deg, #A5B4FC 0%, #4F7CFF 100%)',
             display: 'grid', placeItems: 'center',
-            boxShadow: '0 24px 60px rgba(79, 124, 255, 0.32), inset 0 1px 0 rgba(255,255,255,0.25)',
+            boxShadow: '0 24px 60px rgba(79, 124, 255, 0.03), inset 0 1px 0 rgba(255,255,255,0.25)',
           }}
         >
           {/* Inner ring */}

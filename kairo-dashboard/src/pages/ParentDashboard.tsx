@@ -265,7 +265,7 @@ export default function ParentDashboard({ profile, onLogout }: ParentDashboardPr
               {(['overview', 'details'] as const).map(t => (
                 <button key={t} onClick={() => setTab(t)} style={{
                   padding: '7px 16px', borderRadius: 8, fontSize: 13, fontWeight: tab === t ? 600 : 400,
-                  border: tab === t ? '1px solid rgba(79, 124, 255, 0.4)' : '1px solid #1f2532',
+                  border: tab === t ? '1px solid rgba(79, 124, 255, 0.14)' : '1px solid #1f2532',
                   background: tab === t ? 'rgba(79, 124, 255, 0.12)' : '#0E1117',
                   color: tab === t ? '#66D9FF' : '#9CA3AF',
                   cursor: 'pointer', fontFamily: 'inherit',

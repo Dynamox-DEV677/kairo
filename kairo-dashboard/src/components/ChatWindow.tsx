@@ -232,7 +232,7 @@ export default function ChatWindow({ onNewMessage, onNavigate, model = DEFAULT_M
                   background: '#000',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   margin: '0 auto',
-                  boxShadow: '0 0 40px rgba(79, 124, 255, 0.4), 0 0 80px rgba(79, 124, 255, 0.2)',
+                  boxShadow: '0 0 40px rgba(79, 124, 255, 0.04), 0 0 80px rgba(79, 124, 255, 0.02)',
                   border: '1px solid #27272a',
                 }}>
                   <img src="/kairo_logo.png" alt="Kairo" style={{ width: 48, height: 48, objectFit: 'contain' }} />
@@ -392,7 +392,7 @@ export default function ChatWindow({ onNewMessage, onNavigate, model = DEFAULT_M
         }}
           onFocusCapture={e => {
             (e.currentTarget as HTMLDivElement).style.borderColor = '#4B5563'
-            ;(e.currentTarget as HTMLDivElement).style.boxShadow = '0 0 0 3px rgba(79, 124, 255, 0.08)'
+            ;(e.currentTarget as HTMLDivElement).style.boxShadow = '0 0 0 3px rgba(79, 124, 255, 0.01)'
           }}
           onBlurCapture={e => {
             (e.currentTarget as HTMLDivElement).style.borderColor = '#1f2532'
@@ -442,7 +442,7 @@ export default function ChatWindow({ onNewMessage, onNavigate, model = DEFAULT_M
                 border: 'none',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 cursor: input.trim() ? 'pointer' : 'not-allowed',
-                boxShadow: input.trim() ? '0 0 16px rgba(79, 124, 255, 0.4)' : 'none',
+                boxShadow: input.trim() ? '0 0 16px rgba(79, 124, 255, 0.14)' : 'none',
                 transition: 'all 0.2s',
               }}
             >

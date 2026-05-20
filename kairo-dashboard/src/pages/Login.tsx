@@ -158,7 +158,7 @@ export default function Login({ onLogin }: LoginProps) {
             style={{
               width: 64, height: 64, borderRadius: 16, objectFit: 'contain',
               margin: '0 auto 14px', display: 'block',
-              filter: 'drop-shadow(0 0 20px rgba(79, 124, 255, 0.32))',
+              filter: 'drop-shadow(0 0 20px rgba(79, 124, 255, 0.03))',
             }} />
           <h1 style={{ fontSize: 24, fontWeight: 800, color: '#fafafa', margin: 0, letterSpacing: '-0.5px' }}>kairo</h1>
           <p style={{ fontSize: 11, color: '#4F7CFF', fontWeight: 700, letterSpacing: 4, marginTop: 4, textTransform: 'uppercase' }}>
@@ -1132,7 +1132,7 @@ function AvatarPicker({ avatar, onPick, fallback }: {
           overflow: 'hidden', position: 'relative',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: 32, fontWeight: 800, color: '#fff',
-          border: '2px solid rgba(79, 124, 255, 0.4)',
+          border: '2px solid rgba(79, 124, 255, 0.14)',
           boxShadow: avatar ? '0 0 22px rgba(79, 124, 255, 0.3)' : 'none',
           transition: 'box-shadow 0.2s, border-color 0.2s',
         }}

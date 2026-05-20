@@ -328,7 +328,7 @@ export default function ParentMessage() {
               fontFamily: 'inherit', fontSize: 14, fontWeight: 600,
               cursor: loading || !situation.trim() ? 'not-allowed' : 'pointer',
               opacity: loading || !situation.trim() ? 0.6 : 1,
-              boxShadow: '0 0 20px rgba(79, 124, 255, 0.3)',
+              boxShadow: '0 0 20px rgba(79, 124, 255, 0.03)',
             }}>
             <Sparkles size={14} />{loading ? 'Writing…' : 'Write message'}
           </motion.button>

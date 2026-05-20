@@ -107,7 +107,7 @@ export default function FormulaSheet() {
               width: 52, height: 52, borderRadius: 14,
               background: 'linear-gradient(135deg, #A5B4FC 0%, #4F7CFF 60%, #0B1530 100%)',
               display: 'grid', placeItems: 'center',
-              boxShadow: '0 14px 38px rgba(79, 124, 255, 0.32)',
+              boxShadow: '0 14px 38px rgba(79, 124, 255, 0.03)',
             }}>
               <Sigma size={24} color="#000" strokeWidth={2.4} />
             </div>
@@ -241,7 +241,7 @@ function TwinFormulaCard({ f }: { f: TwinFormula }) {
   const [copied, setCopied] = useState(false)
   return (
     <motion.div
-      whileHover={{ y: -2, borderColor: 'rgba(102, 217, 255, 0.5)', boxShadow: '0 8px 22px rgba(79, 124, 255, 0.18)' }}
+      whileHover={{ y: -2, borderColor: 'rgba(102, 217, 255, 0.18)', boxShadow: '0 8px 22px rgba(79, 124, 255, 0.01)' }}
       style={{
         background: `linear-gradient(135deg, ${C.panel2} 0%, ${C.bg} 100%)`,
         borderRadius: 11, padding: '14px 14px',

@@ -100,7 +100,7 @@ export default function KnowledgeGraph() {
               width: 46, height: 46, borderRadius: 13,
               background: 'linear-gradient(135deg, #4F7CFF 0%, #2046C2 100%)',
               display: 'grid', placeItems: 'center',
-              boxShadow: '0 10px 30px rgba(79, 124, 255, 0.32)',
+              boxShadow: '0 10px 30px rgba(79, 124, 255, 0.03)',
             }}>
               <Share2 size={22} color="#fff" />
             </div>
@@ -177,7 +177,7 @@ function FilterChip({ active, label, onClick }: { active: boolean; label: React.
       display: 'inline-flex', alignItems: 'center', gap: 5,
       padding: '6px 12px', borderRadius: 8,
       background: active ? 'rgba(102, 217, 255, 0.20)' : 'transparent',
-      border: `1px solid ${active ? 'rgba(102, 217, 255, 0.5)' : C.borderSoft}`,
+      border: `1px solid ${active ? 'rgba(102, 217, 255, 0.18)' : C.borderSoft}`,
       color: active ? C.text : C.textFaint,
       fontFamily: 'inherit', fontSize: 12, fontWeight: 600,
       cursor: 'pointer',

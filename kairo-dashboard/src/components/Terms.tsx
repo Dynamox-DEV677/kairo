@@ -168,7 +168,7 @@ function TermsSheet({ tab, setTab, onClose }: {
           background: C.panel,
           border: `1px solid ${C.border}`,
           borderRadius: 22,
-          boxShadow: '0 30px 100px rgba(79, 124, 255, 0.18), 0 0 0 1px rgba(102, 217, 255, 0.06)',
+          boxShadow: '0 30px 100px rgba(79, 124, 255, 0.01), 0 0 0 1px rgba(102, 217, 255, 0.01)',
           display: 'flex', flexDirection: 'column',
           overflow: 'hidden',
         }}
@@ -304,7 +304,7 @@ function TermsSheet({ tab, setTab, onClose }: {
               background: 'linear-gradient(135deg, #4F7CFF, #2046C2)',
               color: '#fff', fontFamily: FONT, fontSize: 13.5, fontWeight: 700,
               cursor: 'pointer',
-              boxShadow: '0 0 22px rgba(79, 124, 255, 0.30)',
+              boxShadow: '0 0 22px rgba(79, 124, 255, 0.03)',
             }}
           >
             Got it

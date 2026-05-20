@@ -231,7 +231,7 @@ export default function SplashScreen({ onComplete, duration = 3000 }: Props) {
                   draggable={false}
                   style={{
                     width: 120, height: 120, objectFit: 'contain',
-                    filter: 'drop-shadow(0 12px 36px rgba(42, 79, 224, 0.38))',
+                    filter: 'drop-shadow(0 12px 36px rgba(42, 79, 224, 0.03))',
                     userSelect: 'none', WebkitUserDrag: 'none',
                   }}
                 />
@@ -313,7 +313,7 @@ export default function SplashScreen({ onComplete, duration = 3000 }: Props) {
                   borderRadius: 999,
                   background: 'rgba(255, 255, 255, 0.10)',
                   border: '1px solid rgba(255, 255, 255, 0.28)',
-                  boxShadow: '0 0 18px rgba(42, 79, 224, 0.32)',
+                  boxShadow: '0 0 18px rgba(42, 79, 224, 0.03)',
                   backdropFilter: 'blur(10px)',
                   WebkitBackdropFilter: 'blur(10px)',
                   textTransform: 'uppercase',
@@ -369,7 +369,7 @@ export default function SplashScreen({ onComplete, duration = 3000 }: Props) {
                 style={{
                   height: '100%',
                   background: 'linear-gradient(90deg, #DBE7FF, #A5B4FC, #4F7CFF)',
-                  boxShadow: '0 0 12px rgba(165, 180, 252, 0.9)',
+                  boxShadow: '0 0 12px rgba(165, 180, 252, 0.08)',
                 }}
               />
             </div>

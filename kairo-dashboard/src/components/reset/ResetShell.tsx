@@ -292,7 +292,7 @@ export function KairoBadge() {
       <div style={{
         width: 22, height: 22, borderRadius: 7,
         background: 'linear-gradient(135deg, #A5B4FC, #4F7CFF)',
-        boxShadow: '0 0 12px rgba(79, 124, 255, 0.32)',
+        boxShadow: '0 0 12px rgba(79, 124, 255, 0.03)',
       }} />
       <span style={{
         fontFamily: FONT,

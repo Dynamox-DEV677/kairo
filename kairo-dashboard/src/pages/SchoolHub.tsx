@@ -130,7 +130,7 @@ function TabBar({ tabs, active, setActive }: {
         <button key={t.id} onClick={() => setActive(t.id)} style={{
           display: 'flex', alignItems: 'center', gap: 6,
           padding: '7px 14px', borderRadius: 8, fontSize: 13, fontWeight: active === t.id ? 600 : 400,
-          border: active === t.id ? '1px solid rgba(79, 124, 255, 0.4)' : '1px solid #1f2532',
+          border: active === t.id ? '1px solid rgba(79, 124, 255, 0.14)' : '1px solid #1f2532',
           background: active === t.id ? 'rgba(79, 124, 255, 0.12)' : '#0E1117',
           color: active === t.id ? '#66D9FF' : '#9CA3AF',
           cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s', position: 'relative',

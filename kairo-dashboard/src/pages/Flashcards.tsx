@@ -201,7 +201,7 @@ export default function Flashcards() {
                     value={topic}
                     onChange={e => setTopic(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && generate()}
-                    onFocus={e => { (e.target as HTMLInputElement).style.borderColor = C.purple; (e.target as HTMLInputElement).style.boxShadow = `0 0 0 3px rgba(102, 217, 255, 0.18)` }}
+                    onFocus={e => { (e.target as HTMLInputElement).style.borderColor = C.purple; (e.target as HTMLInputElement).style.boxShadow = `0 0 0 3px rgba(102, 217, 255, 0.01)` }}
                     onBlur={e =>  { (e.target as HTMLInputElement).style.borderColor = C.borderSoft; (e.target as HTMLInputElement).style.boxShadow = 'none' }}
                   />
                   <motion.button
@@ -228,7 +228,7 @@ export default function Flashcards() {
                   <span style={{ fontSize: 10, color: C.textFaint, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.2, marginRight: 4, alignSelf: 'center' }}>Try:</span>
                   {QUICK_CHIPS.map(chip => (
                     <motion.button key={chip}
-                      whileHover={{ y: -2, borderColor: 'rgba(102, 217, 255, 0.5)' }}
+                      whileHover={{ y: -2, borderColor: 'rgba(102, 217, 255, 0.18)' }}
                       whileTap={{ scale: 0.95 }}
                       onClick={() => generate(chip)}
                       style={{
@@ -301,7 +301,7 @@ function Header({ mode, setMode, stats }: { mode: 'generate' | 'review'; setMode
         <div style={{
           width: 52, height: 52, borderRadius: 14,
           background: GRAD.pill, display: 'grid', placeItems: 'center',
-          boxShadow: '0 14px 38px rgba(79, 124, 255, 0.32)',
+          boxShadow: '0 14px 38px rgba(79, 124, 255, 0.03)',
         }}>
           <BookMarked size={24} color="#000" />
         </div>
@@ -420,7 +420,7 @@ function SuggestedDeckCard({ title, subject, severity, count, onClick }: { title
   return (
     <motion.button
       onClick={onClick}
-      whileHover={{ y: -4, boxShadow: `0 14px 34px rgba(79, 124, 255, 0.30)` }}
+      whileHover={{ y: -4, boxShadow: `0 14px 34px rgba(79, 124, 255, 0.03)` }}
       whileTap={{ scale: 0.97 }}
       style={{
         textAlign: 'left', padding: '16px 18px', borderRadius: 14,
@@ -486,7 +486,7 @@ function DeckViewer({ cards, idx, flipped, onFlip, onPrev, onNext }: {
         <button onClick={onPrev} disabled={idx === 0} style={{ ...navBtn, opacity: idx === 0 ? 0.35 : 1 }}>
           <ChevronLeft size={14} /> Previous
         </button>
-        <button onClick={onNext} disabled={idx >= cards.length - 1} style={{ ...navBtn, opacity: idx >= cards.length - 1 ? 0.35 : 1, borderColor: 'rgba(102, 217, 255, 0.4)', color: C.purpleLite }}>
+        <button onClick={onNext} disabled={idx >= cards.length - 1} style={{ ...navBtn, opacity: idx >= cards.length - 1 ? 0.35 : 1, borderColor: 'rgba(102, 217, 255, 0.14)', color: C.purpleLite }}>
           Next <ChevronRight size={14} />
         </button>
       </div>
@@ -532,7 +532,7 @@ function Face({ side, text, active }: { side: 'front' | 'back'; text: string; ac
         ? `linear-gradient(135deg, ${C.panel} 0%, ${C.bg} 100%)`
         : `linear-gradient(135deg, ${C.purpleDark} 0%, ${C.bg} 100%)`,
       border: `1px solid ${side === 'front' ? 'rgba(102, 217, 255, 0.3)' : 'rgba(165, 180, 252, 0.5)'}`,
-      boxShadow: '0 24px 60px rgba(79, 124, 255, 0.18), inset 0 0 60px rgba(79, 124, 255, 0.05)',
+      boxShadow: '0 24px 60px rgba(79, 124, 255, 0.01), inset 0 0 60px rgba(79, 124, 255, 0.01)',
       padding: '40px 38px',
       display: 'grid', placeItems: 'center', textAlign: 'center',
       color: C.text,
@@ -597,7 +597,7 @@ function RecentDecks({ deck }: { deck: TwinCard[] }) {
       {byTopic.map(([topic, cards]) => (
         <motion.div
           key={topic}
-          whileHover={{ y: -3, borderColor: 'rgba(102, 217, 255, 0.4)', boxShadow: '0 10px 28px rgba(79, 124, 255, 0.18)' }}
+          whileHover={{ y: -3, borderColor: 'rgba(102, 217, 255, 0.14)', boxShadow: '0 10px 28px rgba(79, 124, 255, 0.01)' }}
           style={{
             padding: '14px 16px', borderRadius: 12,
             background: C.panel, border: `1px solid ${C.borderSoft}`,

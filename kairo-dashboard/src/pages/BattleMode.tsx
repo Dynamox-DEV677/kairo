@@ -38,7 +38,7 @@ interface MyStats {
   recent:       any[]
 }
 
-const card: React.CSSProperties = { background: '#0E1117', border: '1px solid #1f2532', borderRadius: 14 }
+const card: React.CSSProperties = { background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(14px) saturate(140%)', WebkitBackdropFilter: 'blur(14px) saturate(140%)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14 }
 
 type Phase = 'lobby' | 'loading' | 'live' | 'results'
 type Mode  = 'daily' | 'spar'
@@ -579,7 +579,7 @@ Tips: each tip is one specific actionable line (max 18 words) — reference the 
           width: 44, height: 44, borderRadius: 11,
           background: 'linear-gradient(135deg, #A5B4FC, #4F7CFF)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 0 18px rgba(165, 180, 252, 0.4)', flexShrink: 0,
+          boxShadow: '0 0 18px rgba(165, 180, 252, 0.04)', flexShrink: 0,
         }}>
           <Swords size={22} color="#000" />
         </div>

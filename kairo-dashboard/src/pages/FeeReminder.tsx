@@ -13,7 +13,7 @@ const TABS = [
   { id: 'setup',      label: 'Setup',      icon: Settings },
 ]
 
-const card = { background: '#0E1117', border: '1px solid #1f2532', borderRadius: 14, padding: 20 }
+const card = { background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(14px) saturate(140%)', WebkitBackdropFilter: 'blur(14px) saturate(140%)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14, padding: 20 }
 const inp  = { background: '#0E1117', border: '1px solid #1f2532', borderRadius: 8, padding: '9px 12px', fontSize: 13, color: '#fafafa', fontFamily: 'inherit', outline: 'none', width: '100%' } as React.CSSProperties
 const label = { fontSize: 11, color: '#9CA3AF', display: 'block', marginBottom: 5, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.8 } as React.CSSProperties
 const btn = (active = true) => ({ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', borderRadius: 9, border: 'none', background: active ? 'linear-gradient(135deg,#4F7CFF,#4F7CFF)' : '#1a1f2e', color: active ? '#fff' : '#6B7280', fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: active ? 'pointer' : 'not-allowed' } as React.CSSProperties)
@@ -406,7 +406,7 @@ function SendTab() {
               style={{
                 marginTop: 8, display: 'flex', alignItems: 'center', gap: 6,
                 padding: '7px 14px', borderRadius: 8,
-                border: '1px solid rgba(79, 124, 255, 0.4)',
+                border: '1px solid rgba(79, 124, 255, 0.14)',
                 background: 'rgba(79, 124, 255, 0.08)',
                 color: polishing || !message.trim() ? '#4B5563' : '#66D9FF',
                 fontFamily: 'inherit', fontSize: 12, fontWeight: 600,

@@ -204,7 +204,7 @@ export default function KairoLabs() {
             width: 56, height: 56, borderRadius: 14,
             background: 'linear-gradient(135deg, #A5B4FC 0%, #4F7CFF 60%, #0B1530 100%)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: '0 12px 36px rgba(79, 124, 255, 0.32)', flexShrink: 0,
+            boxShadow: '0 12px 36px rgba(79, 124, 255, 0.03)', flexShrink: 0,
           }}>
             <Beaker size={26} color="#000" />
           </div>

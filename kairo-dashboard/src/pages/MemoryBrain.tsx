@@ -41,7 +41,7 @@ interface MemoryData {
 }
 
 const card: React.CSSProperties = {
-  background: '#0E1117', border: '1px solid #1f2532', borderRadius: 14,
+  background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(14px) saturate(140%)', WebkitBackdropFilter: 'blur(14px) saturate(140%)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14,
 }
 
 export default function MemoryBrain() {
@@ -138,7 +138,7 @@ export default function MemoryBrain() {
           width: 44, height: 44, borderRadius: 11,
           background: 'linear-gradient(135deg, #4F7CFF, #4F7CFF)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 0 20px rgba(79, 124, 255, 0.4)', flexShrink: 0,
+          boxShadow: '0 0 20px rgba(79, 124, 255, 0.04)', flexShrink: 0,
         }}>
           <Brain size={22} color="#fff" />
         </div>
@@ -255,7 +255,7 @@ export default function MemoryBrain() {
               </div>
               <button onClick={wipeAll} disabled={busy === 'all'} style={{
                 padding: '7px 14px', borderRadius: 7,
-                border: '1px solid rgba(102, 217, 255, 0.4)',
+                border: '1px solid rgba(102, 217, 255, 0.14)',
                 background: 'rgba(102, 217, 255, 0.1)', color: '#66D9FF',
                 fontFamily: 'inherit', fontSize: 12, fontWeight: 600,
                 cursor: busy === 'all' ? 'not-allowed' : 'pointer',

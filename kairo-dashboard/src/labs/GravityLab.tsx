@@ -130,7 +130,7 @@ function LoaderChip() {
   return (
     <Html center>
       <div style={{
-        background: 'rgba(13,13,13,0.85)', border: '1px solid rgba(79, 124, 255, 0.4)',
+        background: 'rgba(13,13,13,0.85)', border: '1px solid rgba(79, 124, 255, 0.14)',
         borderRadius: 10, padding: '8px 14px', fontFamily: 'inherit',
         fontSize: 11, color: '#A5B4FC', whiteSpace: 'nowrap',
       }}>

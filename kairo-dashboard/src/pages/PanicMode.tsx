@@ -25,7 +25,7 @@ import { saveToNotebook } from '../lib/notebook'
 
 const SUBJECTS = ['Mathematics', 'Physics', 'Chemistry', 'Biology', 'English', 'Hindi', 'History', 'Geography', 'Economics', 'Computer Science']
 
-const card: React.CSSProperties = { background: '#0E1117', border: '1px solid #1f2532', borderRadius: 14 }
+const card: React.CSSProperties = { background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(14px) saturate(140%)', WebkitBackdropFilter: 'blur(14px) saturate(140%)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14 }
 
 interface PanicPack {
   topics:    string         // markdown
@@ -216,7 +216,7 @@ Be direct. Indian exam context. Under 200 words total.` },
             width: 44, height: 44, borderRadius: 11,
             background: 'linear-gradient(135deg, #66D9FF, #4F7CFF)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: '0 0 22px rgba(79, 124, 255, 0.32)', flexShrink: 0,
+            boxShadow: '0 0 22px rgba(79, 124, 255, 0.03)', flexShrink: 0,
           }}>
           <AlertTriangle size={22} color="#fff" />
         </motion.div>
@@ -290,7 +290,7 @@ Be direct. Indian exam context. Under 200 words total.` },
               fontFamily: 'inherit', fontSize: 15, fontWeight: 800,
               cursor: busy ? 'not-allowed' : 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-              boxShadow: busy ? 'none' : '0 0 26px rgba(79, 124, 255, 0.4)',
+              boxShadow: busy ? 'none' : '0 0 26px rgba(79, 124, 255, 0.14)',
               letterSpacing: 1.5, textTransform: 'uppercase',
             }}>
             {busy

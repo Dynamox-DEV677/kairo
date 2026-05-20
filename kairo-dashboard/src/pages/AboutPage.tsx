@@ -307,7 +307,7 @@ export default function AboutPage({ onExit }: Props) {
                     padding: '16px 26px', borderRadius: 12, textDecoration: 'none',
                     background: C.white, color: C.ink,
                     fontFamily: SANS, fontSize: 15, fontWeight: 700,
-                    boxShadow: `0 0 32px rgba(102, 217, 255, 0.30)`,
+                    boxShadow: `0 0 32px rgba(102, 217, 255, 0.03)`,
                   }}>
                   <Mail size={15} />
                   quro.cor@gmail.com

@@ -85,7 +85,7 @@ export default function DesktopUpdateBanner() {
           border: '1px solid rgba(102, 217, 255, 0.35)',
           borderRadius: 16,
           boxShadow:
-            '0 16px 48px rgba(79, 124, 255, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.04) inset',
+            '0 16px 48px rgba(79, 124, 255, 0.03), 0 0 0 1px rgba(255, 255, 255, 0.04) inset',
           display: 'flex', alignItems: 'center', gap: 14,
           fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif",
           color: '#ffffff',
@@ -98,7 +98,7 @@ export default function DesktopUpdateBanner() {
           width: 36, height: 36, borderRadius: 10,
           background: 'linear-gradient(135deg, #4F7CFF 0%, #2046C2 100%)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 0 18px rgba(79, 124, 255, 0.32)',
+          boxShadow: '0 0 18px rgba(79, 124, 255, 0.03)',
           flexShrink: 0,
         }}>
           <Sparkles size={17} color="#fff" />
@@ -130,7 +130,7 @@ export default function DesktopUpdateBanner() {
             color: '#050505',
             border: 'none', fontFamily: 'inherit',
             fontSize: 12.5, fontWeight: 700, cursor: busy ? 'wait' : 'pointer',
-            boxShadow: '0 0 14px rgba(165, 180, 252, 0.35)',
+            boxShadow: '0 0 14px rgba(165, 180, 252, 0.03)',
             flexShrink: 0,
             transition: 'transform .15s',
           }}

@@ -118,7 +118,7 @@ function RocketFallback() {
   return (
     <Html center>
       <div style={{
-        background: 'rgba(13,13,13,0.85)', border: '1px solid rgba(79, 124, 255, 0.4)',
+        background: 'rgba(13,13,13,0.85)', border: '1px solid rgba(79, 124, 255, 0.14)',
         borderRadius: 10, padding: '10px 16px', fontFamily: 'inherit',
         fontSize: 12, color: '#4F7CFF', whiteSpace: 'nowrap',
       }}>

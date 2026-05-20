@@ -14,7 +14,7 @@ const SUBJECT_COLORS: Record<string, string> = {
   default: '#4F7CFF',
 }
 
-const card = { background: '#0E1117', border: '1px solid #1f2532', borderRadius: 14 }
+const card = { background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(14px) saturate(140%)', WebkitBackdropFilter: 'blur(14px) saturate(140%)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14 }
 const inp  = { background: '#0E1117', border: '1px solid #1f2532', borderRadius: 8, padding: '9px 12px', fontSize: 13, color: '#fafafa', fontFamily: 'inherit', outline: 'none', width: '100%' } as React.CSSProperties
 const label = { fontSize: 11, color: '#9CA3AF', display: 'block', marginBottom: 5, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.8 } as React.CSSProperties
 

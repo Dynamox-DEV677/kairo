@@ -207,7 +207,7 @@ export default function CameraStudy() {
           width: 44, height: 44, borderRadius: 11,
           background: 'linear-gradient(135deg, #4F7CFF, #4F7CFF)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 0 18px rgba(79, 124, 255, 0.4)', flexShrink: 0,
+          boxShadow: '0 0 18px rgba(79, 124, 255, 0.04)', flexShrink: 0,
         }}>
           <Camera size={22} color="#fff" />
         </div>

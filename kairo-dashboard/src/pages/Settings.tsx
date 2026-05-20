@@ -190,7 +190,7 @@ export default function Settings() {
             background: 'linear-gradient(135deg, #A5B4FC, #4F7CFF)',
             border: 'none',
             color: '#000', fontFamily: 'inherit', fontSize: 13, fontWeight: 800,
-            boxShadow: '0 6px 18px rgba(79, 124, 255, 0.35)',
+            boxShadow: '0 6px 18px rgba(79, 124, 255, 0.03)',
           }}
         >
           <FileJson size={13} /> Open backup tool

@@ -20,7 +20,7 @@ import { saveToNotebook } from '../lib/notebook'
 
 const SUBJECTS = ['Mathematics', 'Physics', 'Chemistry', 'Biology', 'English', 'Hindi', 'History', 'Geography', 'Economics', 'Computer Science', 'General']
 
-const card: React.CSSProperties = { background: '#0E1117', border: '1px solid #1f2532', borderRadius: 14 }
+const card: React.CSSProperties = { background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(14px) saturate(140%)', WebkitBackdropFilter: 'blur(14px) saturate(140%)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14 }
 const inp: React.CSSProperties = {
   background: '#0E1117', border: '1px solid #1f2532', borderRadius: 8,
   padding: '10px 12px', fontSize: 13.5, color: '#fafafa',
@@ -152,7 +152,7 @@ Now teach me how to never make this mistake again, following your structure exac
           width: 44, height: 44, borderRadius: 11,
           background: 'linear-gradient(135deg, #66D9FF, #A5B4FC)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 0 18px rgba(102, 217, 255, 0.35)', flexShrink: 0,
+          boxShadow: '0 0 18px rgba(102, 217, 255, 0.03)', flexShrink: 0,
         }}>
           <AlertTriangle size={22} color="#fff" />
         </div>

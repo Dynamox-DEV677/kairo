@@ -69,7 +69,7 @@ export default function LessonPlan() {
         <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} onClick={generate} disabled={loading || !topic.trim()}
           style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '11px 22px', borderRadius: 10, border: 'none',
             background: 'linear-gradient(135deg, #4F7CFF, #4F7CFF)', color: '#fff', fontFamily: 'inherit', fontSize: 14, fontWeight: 600,
-            cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.6 : 1, boxShadow: '0 0 20px rgba(79, 124, 255, 0.3)' }}>
+            cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.6 : 1, boxShadow: '0 0 20px rgba(79, 124, 255, 0.03)' }}>
           <Sparkles size={14} />{loading ? 'Building…' : 'Build lesson plan'}
         </motion.button>
       </div>

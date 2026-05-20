@@ -121,7 +121,7 @@ export default function SprintOverlay({ open, phaseIdx, fullscreen = true, banne
             background: `linear-gradient(135deg, ${C.panel} 0%, ${C.bg} 100%)`,
             border: `1px solid ${C.purpleLite}55`,
             display: 'grid', placeItems: 'center',
-            boxShadow: `0 0 28px rgba(165, 180, 252, 0.4)`,
+            boxShadow: `0 0 28px rgba(165, 180, 252, 0.04)`,
             zIndex: 2,
           }}
         >
@@ -192,7 +192,7 @@ export default function SprintOverlay({ open, phaseIdx, fullscreen = true, banne
             width: 68, height: 68, borderRadius: 17,
             background: 'linear-gradient(135deg, #A5B4FC 0%, #4F7CFF 60%, #0B1530 100%)',
             display: 'grid', placeItems: 'center',
-            boxShadow: '0 0 36px rgba(79, 124, 255, 0.32)',
+            boxShadow: '0 0 36px rgba(79, 124, 255, 0.03)',
             zIndex: 2,
           }}
         >
@@ -270,7 +270,7 @@ export default function SprintOverlay({ open, phaseIdx, fullscreen = true, banne
           style={{
             height: '100%',
             background: 'linear-gradient(90deg, #A5B4FC, #66D9FF, #4F7CFF)',
-            boxShadow: '0 0 12px rgba(102, 217, 255, 0.7)',
+            boxShadow: '0 0 12px rgba(102, 217, 255, 0.06)',
           }}
         />
       </div>

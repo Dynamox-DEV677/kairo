@@ -80,7 +80,7 @@ export default function ResetPasswordPage({ onDone }: Props) {
             style={{
               width: 64, height: 64, borderRadius: 16, objectFit: 'contain',
               margin: '0 auto 14px', display: 'block',
-              filter: 'drop-shadow(0 0 20px rgba(79, 124, 255, 0.32))',
+              filter: 'drop-shadow(0 0 20px rgba(79, 124, 255, 0.03))',
             }} />
           <h1 style={{ fontSize: 24, fontWeight: 800, color: '#fafafa', margin: 0, letterSpacing: '-0.5px' }}>kairo</h1>
           <p style={{ fontSize: 11, color: '#4F7CFF', fontWeight: 700, letterSpacing: 4, marginTop: 4, textTransform: 'uppercase' }}>
@@ -242,6 +242,6 @@ const ctaStyle: React.CSSProperties = {
   background: 'linear-gradient(135deg, #4F7CFF, #2046C2)',
   color: '#fff', fontFamily: FONT, fontSize: 14, fontWeight: 700,
   cursor: 'pointer',
-  boxShadow: '0 0 22px rgba(79, 124, 255, 0.30)',
+  boxShadow: '0 0 22px rgba(79, 124, 255, 0.03)',
   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
 }

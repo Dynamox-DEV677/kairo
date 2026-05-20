@@ -23,7 +23,7 @@ interface Question {
   subject?: string
 }
 
-const card: React.CSSProperties = { background: '#0E1117', border: '1px solid #1f2532', borderRadius: 14 }
+const card: React.CSSProperties = { background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(14px) saturate(140%)', WebkitBackdropFilter: 'blur(14px) saturate(140%)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14 }
 
 const DIFFICULTIES = [
   { id: 'easy',   label: 'Easy',   color: '#A5B4FC', secs: 90, count: 8  },
@@ -246,7 +246,7 @@ function SetupView({
           width: 44, height: 44, borderRadius: 11,
           background: 'linear-gradient(135deg, #66D9FF, #A5B4FC)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 0 18px rgba(102, 217, 255, 0.35)', flexShrink: 0,
+          boxShadow: '0 0 18px rgba(102, 217, 255, 0.03)', flexShrink: 0,
         }}>
           <Zap size={22} color="#fff" />
         </div>
@@ -591,7 +591,7 @@ function ResultsView({ questions, answers, onReset }: any) {
                     <div key={j} style={{
                       padding: '7px 10px', borderRadius: 6, fontSize: 12,
                       border: `1px solid ${isAnswer ? 'rgba(165, 180, 252, 0.4)' :
-                        isPicked && !isAnswer ? 'rgba(102, 217, 255, 0.4)' : '#1a1f2e'}`,
+                        isPicked && !isAnswer ? 'rgba(102, 217, 255, 0.14)' : '#1a1f2e'}`,
                       background: isAnswer ? 'rgba(165, 180, 252, 0.08)' :
                         isPicked && !isAnswer ? 'rgba(102, 217, 255, 0.08)' : '#0E1117',
                       color: isAnswer ? '#A5B4FC' : isPicked && !isAnswer ? '#66D9FF' : '#B1B5BA',
@@ -624,7 +624,7 @@ function ResultsView({ questions, answers, onReset }: any) {
             background: 'linear-gradient(135deg, #66D9FF, #A5B4FC)',
             color: '#fff', fontFamily: 'inherit', fontSize: 14, fontWeight: 700,
             cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 7,
-            boxShadow: '0 0 20px rgba(102, 217, 255, 0.3)',
+            boxShadow: '0 0 20px rgba(102, 217, 255, 0.03)',
           }}>
           <RefreshCw size={13} /> Run Another Simulation
         </motion.button>

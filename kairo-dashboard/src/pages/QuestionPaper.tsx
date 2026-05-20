@@ -141,7 +141,7 @@ export default function QuestionPaper() {
           <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} onClick={generate}
             style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '11px 22px', borderRadius: 10, border: 'none',
               background: 'linear-gradient(135deg, #4F7CFF, #4F7CFF)', color: '#fff', fontFamily: 'inherit', fontSize: 14, fontWeight: 600,
-              cursor: 'pointer', boxShadow: '0 0 20px rgba(79, 124, 255, 0.3)' }}>
+              cursor: 'pointer', boxShadow: '0 0 20px rgba(79, 124, 255, 0.03)' }}>
             <Sparkles size={14} /> Generate question paper
           </motion.button>
         </motion.div>

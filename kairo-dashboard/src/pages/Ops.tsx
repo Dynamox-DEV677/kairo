@@ -70,7 +70,7 @@ export default function Ops() {
           width: 46, height: 46, borderRadius: 12,
           background: 'linear-gradient(135deg, #4F7CFF, #A5B4FC)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 0 22px rgba(79, 124, 255, 0.4)',
+          boxShadow: '0 0 22px rgba(79, 124, 255, 0.04)',
         }}>
           <Activity size={22} color="#fff" />
         </div>

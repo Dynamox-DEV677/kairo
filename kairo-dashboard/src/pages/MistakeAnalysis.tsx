@@ -134,7 +134,7 @@ function Header({ onAddManual }: { onAddManual: () => void }) {
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
         <div style={{
           width: 46, height: 46, borderRadius: 13, background: GRAD_PILL,
-          display: 'grid', placeItems: 'center', boxShadow: '0 10px 30px rgba(79, 124, 255, 0.32)',
+          display: 'grid', placeItems: 'center', boxShadow: '0 10px 30px rgba(79, 124, 255, 0.03)',
         }}>
           <Activity size={22} color="#fff" />
         </div>
@@ -155,7 +155,7 @@ function Header({ onAddManual }: { onAddManual: () => void }) {
         display: 'inline-flex', alignItems: 'center', gap: 8,
         padding: '9px 14px', borderRadius: 10,
         background: 'rgba(79, 124, 255, 0.08)',
-        border: '1px solid rgba(102, 217, 255, 0.4)',
+        border: '1px solid rgba(102, 217, 255, 0.14)',
         color: C.text, fontFamily: 'inherit', fontWeight: 600, fontSize: 12,
         cursor: 'pointer',
       }}>
@@ -305,7 +305,7 @@ function AiResultModal({ title, body, loading, onClose }: {
           border: '1px solid rgba(102, 217, 255, 0.35)',
           borderRadius: 18, padding: 24,
           color: C.text, fontFamily: 'inherit',
-          boxShadow: '0 24px 60px rgba(79, 124, 255, 0.35)',
+          boxShadow: '0 24px 60px rgba(79, 124, 255, 0.03)',
           position: 'relative', maxHeight: '88vh', overflowY: 'auto',
         }}>
         <button onClick={onClose} aria-label="Close" style={{
@@ -394,7 +394,7 @@ function AddMistakeModal({ onClose, onSaved }: { onClose: () => void; onSaved: (
           border: '1px solid rgba(102, 217, 255, 0.35)',
           borderRadius: 18, padding: 22,
           color: C.text, fontFamily: 'inherit',
-          boxShadow: '0 24px 60px rgba(79, 124, 255, 0.35)',
+          boxShadow: '0 24px 60px rgba(79, 124, 255, 0.03)',
         }}>
         <h3 style={{ margin: 0, fontSize: 18, fontWeight: 800 }}>Log a mistake</h3>
         <p style={{ margin: '4px 0 14px', fontSize: 12.5, color: C.textFaint }}>

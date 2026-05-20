@@ -46,8 +46,9 @@ html, body, #root {
   to { transform: rotate(360deg); }
 }
 @keyframes streak-glow {
-  0%, 100% { box-shadow: 0 0 8px rgba(79, 124, 255, 0.4); }
-  50% { box-shadow: 0 0 18px rgba(79, 124, 255, 0.32); }
+  /* dimmed 70% — Apple/Linear restraint, no gaming neon */
+  0%, 100% { box-shadow: 0 0 6px rgba(79, 124, 255, 0.05); }
+  50% { box-shadow: 0 0 12px rgba(79, 124, 255, 0.10); }
 }
 
 .animate-pulse-orb { animation: pulse-orb 3s ease-in-out infinite; }
@@ -56,15 +57,39 @@ html, body, #root {
 .animate-blink { animation: blink 1s step-start infinite; }
 .animate-streak { animation: streak-glow 2s ease-in-out infinite; }
 
+/* ─── Glass system ────────────────────────────────────────────────────────
+   Apple / Arc / Linear-style frosted surfaces. Three densities so cards
+   that sit on darker contexts still read above the canvas.
+   ─────────────────────────────────────────────────────────────────────── */
 .glass {
-  background: rgba(255,255,255,0.025);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255,255,255,0.06);
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+.glass-strong {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(18px) saturate(150%);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+.glass-faint {
+  background: rgba(255, 255, 255, 0.018);
+  backdrop-filter: blur(10px) saturate(130%);
+  -webkit-backdrop-filter: blur(10px) saturate(130%);
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.glow-accent { box-shadow: 0 0 24px rgba(79, 124, 255, 0.3), 0 0 60px rgba(79, 124, 255, 0.1); }
-.glow-violet { box-shadow: 0 0 20px rgba(79, 124, 255, 0.4); }
+/* Faint accent fill — applied when a card is the active/selected one.
+   The blue rgba is intentionally low (0.06) so the surface tints, not glows. */
+.kairo-selected {
+  background: rgba(79, 124, 255, 0.06) !important;
+  border-color: rgba(79, 124, 255, 0.22) !important;
+  box-shadow: inset 0 0 0 1px rgba(79, 124, 255, 0.10);
+}
+
+.glow-accent { box-shadow: 0 0 18px rgba(79, 124, 255, 0.09), 0 0 40px rgba(79, 124, 255, 0.03); }
+.glow-violet { box-shadow: 0 0 14px rgba(79, 124, 255, 0.04); }
 
 .gradient-text {
   background: linear-gradient(135deg, #A5B4FC 0%, #c084fc 50%, #f472b6 100%);

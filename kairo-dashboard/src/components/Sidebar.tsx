@@ -438,36 +438,38 @@ function NavItemRow({ item, isActive, isHovered, isGenerating = false, onHover, 
       onMouseLeave={() => onHover(null)}
       whileTap={{ scale: 0.98 }}
       style={{
-        width: '100%', display: 'flex', alignItems: 'center', gap: 9,
-        padding: '8px 10px', borderRadius: 8, textDecoration: 'none',
-        marginBottom: 2, cursor: 'pointer', border: 'none', fontFamily: 'inherit',
+        width: '100%', display: 'flex', alignItems: 'center', gap: 11,
+        padding: '10px 12px', borderRadius: 10, textDecoration: 'none',
+        marginBottom: 4, cursor: 'pointer', border: 'none', fontFamily: 'inherit',
+        // Active = faint blue accent fill (Apple-list pattern).
+        // Hover = glass tint, not a solid panel.
         background: isActive
-          ? `rgba(${item.color === '#A5B4FC' ? '99,102,241' : item.color === '#34d399' ? '52,211,153' : item.color === '#4F7CFF' ? '251,146,60' : item.color === '#f472b6' ? '244,114,182' : '251,191,36'},0.1)`
-          : isHovered ? '#151922' : 'transparent',
+          ? 'rgba(79, 124, 255, 0.07)'
+          : isHovered ? 'rgba(255, 255, 255, 0.035)' : 'transparent',
         position: 'relative',
-        transition: 'background 0.12s',
+        transition: 'background 0.15s ease',
       }}
     >
-      {/* Active indicator */}
+      {/* Active indicator — softened shadow per the no-neon refinement */}
       {isActive && (
         <motion.div
           layoutId="active-indicator"
           style={{
-            position: 'absolute', left: 0, top: '15%', bottom: '15%',
-            width: 2.5, borderRadius: 2,
-            background: item.color || '#4F7CFF',
-            boxShadow: `0 0 8px ${item.color || '#4F7CFF'}`,
+            position: 'absolute', left: 0, top: '18%', bottom: '18%',
+            width: 2, borderRadius: 2,
+            background: '#4F7CFF',
+            boxShadow: '0 0 6px rgba(79, 124, 255, 0.12)',
           }}
         />
       )}
 
       <div style={{
         width: 22, height: 22, borderRadius: 6,
-        background: isActive ? `${item.color}22` : 'transparent',
+        background: isActive ? 'rgba(79, 124, 255, 0.12)' : 'transparent',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        flexShrink: 0, transition: 'background 0.12s', position: 'relative',
+        flexShrink: 0, transition: 'background 0.15s ease', position: 'relative',
       }}>
-        <item.icon size={13} color={isActive ? item.color : '#6B7280'} />
+        <item.icon size={13} color={isActive ? '#A5B4FC' : '#6B7280'} />
         {/* Background generation pulse indicator */}
         {isGenerating && (
           <motion.div

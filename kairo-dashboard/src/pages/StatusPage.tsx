@@ -169,7 +169,7 @@ export default function StatusPage({ onExit }: Props) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 28 }}>
           <img src="/kairo_logo.png" alt="Kairo"
             style={{ width: 38, height: 38, borderRadius: 10, objectFit: 'contain',
-                     filter: 'drop-shadow(0 0 18px rgba(79, 124, 255, 0.35))' }} />
+                     filter: 'drop-shadow(0 0 18px rgba(79, 124, 255, 0.03))' }} />
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 14, fontWeight: 800, letterSpacing: -0.2, color: C.text }}>
               Kairo Status

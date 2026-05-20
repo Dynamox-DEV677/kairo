@@ -496,7 +496,7 @@ function ExamPlanModal({ onClose }: { onClose: () => void }) {
           border: '1px solid rgba(102, 217, 255, 0.35)',
           borderRadius: 18, padding: 24,
           color: '#fafafa', fontFamily: 'inherit',
-          boxShadow: '0 24px 60px rgba(79, 124, 255, 0.35)',
+          boxShadow: '0 24px 60px rgba(79, 124, 255, 0.03)',
           position: 'relative',
         }}>
         <button onClick={onClose} aria-label="Close" style={{
@@ -586,7 +586,7 @@ function Hero({ onPick }: { onPick: (q: string) => void }) {
           background: '#050505',
           border: '1px solid rgba(79, 124, 255, 0.25)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 0 40px rgba(79, 124, 255, 0.35)',
+          boxShadow: '0 0 40px rgba(79, 124, 255, 0.03)',
           padding: 12,
         }}>
         <img
@@ -774,7 +774,7 @@ function Slideshow({ slides, busy, topic, questionType, err, compact = false }: 
         borderRadius: 18, overflow: 'hidden', position: 'relative',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         minHeight: 0,
-        boxShadow: '0 0 60px rgba(79, 124, 255, 0.06) inset',
+        boxShadow: '0 0 60px rgba(79, 124, 255, 0.01) inset',
       }}>
       {/* Topic label */}
       <div style={{
@@ -918,7 +918,7 @@ function SlideshowSkeleton() {
           width: 64, height: 64, borderRadius: 16,
           background: 'linear-gradient(135deg, #4F7CFF, #66D9FF)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 0 32px rgba(79, 124, 255, 0.4)',
+          boxShadow: '0 0 32px rgba(79, 124, 255, 0.04)',
           padding: 8,
         }}>
         <img
@@ -1009,7 +1009,7 @@ function ExplanationPanel({ resp, busy, error, retryHint, onOpenLab, onAskRelate
                 background: 'linear-gradient(135deg, #4F7CFF 0%, #2046C2 50%, #4F7CFF 100%)',
                 color: '#fff', fontFamily: 'inherit', fontWeight: 700, fontSize: 12,
                 border: 'none', cursor: 'pointer', flexShrink: 0,
-                boxShadow: '0 6px 18px rgba(79, 124, 255, 0.4)',
+                boxShadow: '0 6px 18px rgba(79, 124, 255, 0.04)',
               }}>
               Try again
             </button>
@@ -1063,10 +1063,10 @@ function ExplanationPanel({ resp, busy, error, retryHint, onOpenLab, onAskRelate
               style={{
                 width: '100%', padding: '12px 16px', borderRadius: 12,
                 background: 'linear-gradient(135deg, rgba(102, 217, 255, 0.18), rgba(79, 124, 255, 0.18))',
-                border: '1px solid rgba(102, 217, 255, 0.4)',
+                border: '1px solid rgba(102, 217, 255, 0.14)',
                 color: '#fafafa', fontFamily: 'inherit', cursor: 'pointer', textAlign: 'left',
                 display: 'flex', alignItems: 'center', gap: 12,
-                boxShadow: '0 0 24px rgba(102, 217, 255, 0.15)',
+                boxShadow: '0 0 24px rgba(102, 217, 255, 0.01)',
               }}>
               <div style={{
                 width: 36, height: 36, borderRadius: 9, flexShrink: 0,
@@ -1177,7 +1177,7 @@ const btnSend: React.CSSProperties = {
   background: 'linear-gradient(135deg, #4F7CFF, #4F7CFF)',
   color: '#fff', border: 'none', fontFamily: 'inherit', fontSize: 12, fontWeight: 700,
   display: 'flex', alignItems: 'center', gap: 6,
-  boxShadow: '0 0 16px rgba(79, 124, 255, 0.35)',
+  boxShadow: '0 0 16px rgba(79, 124, 255, 0.03)',
 }
 
 const btnStop: React.CSSProperties = {

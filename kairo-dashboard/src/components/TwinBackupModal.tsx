@@ -188,7 +188,7 @@ export default function TwinBackupModal({ open, onClose, onChange }: Props) {
           borderRadius: 18,
           display: 'flex', flexDirection: 'column',
           overflow: 'hidden',
-          boxShadow: '0 30px 80px rgba(0,0,0,0.6), 0 0 60px rgba(79, 124, 255, 0.15)',
+          boxShadow: '0 30px 80px rgba(0,0,0,0.6), 0 0 60px rgba(79, 124, 255, 0.01)',
         }}
       >
         {/* HEADER */}
@@ -202,7 +202,7 @@ export default function TwinBackupModal({ open, onClose, onChange }: Props) {
             width: 40, height: 40, borderRadius: 11, flexShrink: 0,
             background: 'linear-gradient(135deg, #A5B4FC, #4F7CFF)',
             display: 'grid', placeItems: 'center',
-            boxShadow: '0 8px 22px rgba(79, 124, 255, 0.4)',
+            boxShadow: '0 8px 22px rgba(79, 124, 255, 0.04)',
           }}>
             <FileJson size={20} color="#000" />
           </div>
@@ -284,7 +284,7 @@ export default function TwinBackupModal({ open, onClose, onChange }: Props) {
               {/* Buttons */}
               <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
                 <motion.button
-                  whileHover={{ y: -2, boxShadow: '0 12px 30px rgba(79, 124, 255, 0.32)' }}
+                  whileHover={{ y: -2, boxShadow: '0 12px 30px rgba(79, 124, 255, 0.03)' }}
                   whileTap={{ scale: 0.97 }}
                   onClick={downloadFile}
                   style={{
@@ -294,7 +294,7 @@ export default function TwinBackupModal({ open, onClose, onChange }: Props) {
                     background: 'linear-gradient(135deg, #A5B4FC, #4F7CFF)',
                     color: '#000', fontFamily: 'inherit', fontSize: 14, fontWeight: 800,
                     cursor: 'pointer',
-                    boxShadow: '0 8px 24px rgba(79, 124, 255, 0.4)',
+                    boxShadow: '0 8px 24px rgba(79, 124, 255, 0.04)',
                   }}>
                   <Download size={15} /> Download JSON
                 </motion.button>
@@ -367,7 +367,7 @@ export default function TwinBackupModal({ open, onClose, onChange }: Props) {
                   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
                   padding: '20px', borderRadius: 14,
                   background: 'rgba(102, 217, 255, 0.05)',
-                  border: '2px dashed rgba(102, 217, 255, 0.4)',
+                  border: '2px dashed rgba(102, 217, 255, 0.14)',
                   color: C.purpleLite, fontFamily: 'inherit', fontSize: 13.5, fontWeight: 700,
                   cursor: 'pointer', textAlign: 'center',
                   marginBottom: 14,

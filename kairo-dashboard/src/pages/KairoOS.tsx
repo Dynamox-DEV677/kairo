@@ -287,7 +287,7 @@ function Header({ twin, onRefresh, onWipe, pulse, onBackup }: { twin: Twin; onRe
         <div style={{
           width: 44, height: 44, borderRadius: 12,
           background: GRAD.pill, display: 'grid', placeItems: 'center',
-          boxShadow: '0 8px 28px rgba(79, 124, 255, 0.32)',
+          boxShadow: '0 8px 28px rgba(79, 124, 255, 0.03)',
         }}>
           <Brain size={22} color="#fff" />
         </div>
@@ -321,12 +321,12 @@ function Header({ twin, onRefresh, onWipe, pulse, onBackup }: { twin: Twin; onRe
           {pulse ? 'Recomputed' : 'Recompute'}
         </button>
         <button onClick={onBackup} title="Backup / restore your Twin to move it between devices" style={{
-          ...chipBtn(), color: C.purple, borderColor: 'rgba(102, 217, 255, 0.4)',
+          ...chipBtn(), color: C.purple, borderColor: 'rgba(102, 217, 255, 0.14)',
         }}>
           <FileJson size={13} />
           Backup
         </button>
-        <button onClick={onWipe} style={{ ...chipBtn(), color: C.red, borderColor: 'rgba(102, 217, 255, 0.4)' }}>
+        <button onClick={onWipe} style={{ ...chipBtn(), color: C.red, borderColor: 'rgba(102, 217, 255, 0.14)' }}>
           <Trash2 size={13} />
           Wipe Twin
         </button>
@@ -360,7 +360,7 @@ function TwinVoice({ obs }: { obs: Observation }) {
       <div style={{
         width: 38, height: 38, borderRadius: 12, flexShrink: 0,
         background: GRAD.pill, display: 'grid', placeItems: 'center',
-        boxShadow: `0 0 24px rgba(79, 124, 255, 0.32)`,
+        boxShadow: `0 0 24px rgba(79, 124, 255, 0.03)`,
       }}>
         <Sparkles size={18} color="#fff" />
       </div>
@@ -462,7 +462,7 @@ function SubMetric({ label, value, unit, onClick }: { label: string; value: numb
     <motion.button
       type="button"
       onClick={onClick}
-      whileHover={{ y: -2, borderColor: 'rgba(102, 217, 255, 0.5)', boxShadow: '0 6px 16px rgba(79, 124, 255, 0.18)' }}
+      whileHover={{ y: -2, borderColor: 'rgba(102, 217, 255, 0.18)', boxShadow: '0 6px 16px rgba(79, 124, 255, 0.01)' }}
       whileTap={{ scale: 0.97 }}
       style={{
         background: C.panel2, border: `1px solid ${C.borderSoft}`, borderRadius: 10, padding: '10px 8px',
@@ -1048,7 +1048,7 @@ function PrivacyFooter({ onWipe, eventCount }: { onWipe: () => void; eventCount:
         none of this is uploaded to Kairo's servers. Clearing your browser data wipes it.
       </div>
       <button onClick={onWipe} style={{
-        ...chipBtn(), color: C.red, borderColor: 'rgba(102, 217, 255, 0.4)', flexShrink: 0,
+        ...chipBtn(), color: C.red, borderColor: 'rgba(102, 217, 255, 0.14)', flexShrink: 0,
       }}>
         <Trash2 size={13} />
         Wipe my Twin
@@ -1692,7 +1692,7 @@ function EmptyState({ onRefresh, onSeed }: { onRefresh: () => void; onSeed: () =
       <div style={{
         width: 60, height: 60, borderRadius: 16,
         background: GRAD.pill, display: 'grid', placeItems: 'center',
-        boxShadow: '0 12px 36px rgba(79, 124, 255, 0.32)',
+        boxShadow: '0 12px 36px rgba(79, 124, 255, 0.03)',
       }}>
         <Brain size={28} color="#fff" />
       </div>

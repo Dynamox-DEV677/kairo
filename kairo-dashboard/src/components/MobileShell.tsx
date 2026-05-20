@@ -312,7 +312,7 @@ function BottomNav({
         WebkitBackdropFilter: 'blur(24px) saturate(180%)',
         border: '1px solid rgba(102, 217, 255, 0.22)',
         borderRadius: 22,
-        boxShadow: '0 20px 60px rgba(0,0,0,0.55), 0 0 40px rgba(79, 124, 255, 0.15), inset 0 1px 0 rgba(255,255,255,0.05)',
+        boxShadow: '0 20px 60px rgba(0,0,0,0.55), 0 0 40px rgba(79, 124, 255, 0.01), inset 0 1px 0 rgba(255,255,255,0.05)',
         maxWidth: 360, width: '100%',
       }}>
         {items.map(item => {
@@ -341,7 +341,7 @@ function BottomNav({
                     background: 'linear-gradient(135deg, rgba(165, 180, 252, 0.18), rgba(79, 124, 255, 0.16))',
                     border: '1px solid rgba(165, 180, 252, 0.30)',
                     borderRadius: 14,
-                    boxShadow: '0 4px 14px rgba(79, 124, 255, 0.30)',
+                    boxShadow: '0 4px 14px rgba(79, 124, 255, 0.03)',
                   }} />
               )}
               <Icon size={20} style={{ position: 'relative', strokeWidth: isActive ? 2.4 : 1.8 }} />

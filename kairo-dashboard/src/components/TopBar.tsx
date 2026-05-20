@@ -118,7 +118,7 @@ export default function TopBar({ title, onModelChange, profile, modelLocked, mod
               width: 28, height: 28, borderRadius: 7,
               background: 'linear-gradient(135deg, #4F7CFF, #4F7CFF)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              boxShadow: '0 0 14px rgba(79, 124, 255, 0.4)',
+              boxShadow: '0 0 14px rgba(79, 124, 255, 0.04)',
             }}>
               {profile?.school_logo_url
                 ? <img src={profile.school_logo_url} alt="" style={{ width: '100%', height: '100%', borderRadius: 6, objectFit: 'cover' }} />

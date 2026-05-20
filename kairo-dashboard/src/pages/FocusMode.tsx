@@ -126,7 +126,7 @@ export default function FocusMode() {
           width: 40, height: 40, borderRadius: 10,
           background: 'linear-gradient(135deg,#4F7CFF,#4F7CFF)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 0 18px rgba(79, 124, 255, 0.4)', flexShrink: 0,
+          boxShadow: '0 0 18px rgba(79, 124, 255, 0.04)', flexShrink: 0,
         }}>
           <Target size={20} color="#fff" />
         </div>
@@ -201,7 +201,7 @@ export default function FocusMode() {
               padding: '12px 28px', borderRadius: 10, border: 'none',
               background: 'linear-gradient(135deg,#4F7CFF,#4F7CFF)',
               color: '#fff', fontFamily: 'inherit', fontSize: 14, fontWeight: 700,
-              cursor: 'pointer', boxShadow: '0 0 22px rgba(79, 124, 255, 0.4)',
+              cursor: 'pointer', boxShadow: '0 0 22px rgba(79, 124, 255, 0.04)',
               display: 'flex', alignItems: 'center', gap: 8,
             }}>
             <Play size={14} />{done ? 'Start Again' : 'Start Focus'}

@@ -920,7 +920,7 @@ function ConstructivistInterstitial() {
           border: `1px solid ${C.lineHi}`,
           padding: '70px 60px',
           rotate, transformOrigin: 'left top',
-          boxShadow: `0 30px 90px rgba(32, 70, 194, 0.22), inset 0 0 80px rgba(79, 124, 255, 0.04)`,
+          boxShadow: `0 30px 90px rgba(32, 70, 194, 0.02), inset 0 0 80px rgba(79, 124, 255, 0.01)`,
         }}>
           {/* Side rotated label */}
           <div style={{
@@ -1092,7 +1092,7 @@ function LabTile({ lab, big = false }: { lab: { name: string; tag: string; glyph
         padding: big ? '36px 38px' : '24px',
         display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
         cursor: 'pointer',
-        boxShadow: '0 20px 80px rgba(32, 70, 194, 0.18)',
+        boxShadow: '0 20px 80px rgba(32, 70, 194, 0.01)',
       }}>
 
       {/* Big floating glyph */}
@@ -1384,7 +1384,7 @@ function DownloadCard({ href, platform, detail, file, glyph }: {
           width: 38, height: 38, borderRadius: 10,
           background: `linear-gradient(135deg, ${C.purpleHi}, ${C.purpleInk})`,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: `0 0 18px rgba(79, 124, 255, 0.35)`,
+          boxShadow: `0 0 18px rgba(79, 124, 255, 0.03)`,
         }}>
           {glyph}
         </div>
@@ -1813,7 +1813,7 @@ const pillCta: React.CSSProperties = {
   fontFamily: SANS, fontSize: 13, fontWeight: 600,
   background: `linear-gradient(135deg, ${C.purpleHi}, ${C.purpleDeep})`,
   color: C.white,
-  boxShadow: `0 0 22px rgba(79, 124, 255, 0.42)`,
+  boxShadow: `0 0 22px rgba(79, 124, 255, 0.04)`,
   transition: 'transform .15s',
 }
 const bigCta: React.CSSProperties = {
@@ -1821,7 +1821,7 @@ const bigCta: React.CSSProperties = {
   padding: '16px 26px', borderRadius: 12, border: 'none', cursor: 'pointer',
   fontFamily: SANS, fontSize: 15, fontWeight: 700, letterSpacing: -0.1,
   background: C.white, color: C.ink,
-  boxShadow: `0 0 32px rgba(102, 217, 255, 0.30)`,
+  boxShadow: `0 0 32px rgba(102, 217, 255, 0.03)`,
   transition: 'transform .15s, box-shadow .25s',
 }
 const ghostCta: React.CSSProperties = {

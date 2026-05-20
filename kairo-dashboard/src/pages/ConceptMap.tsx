@@ -267,7 +267,7 @@ function Header({ onRefresh, nodeCount, edgeCount }: { onRefresh: () => void; no
           width: 46, height: 46, borderRadius: 13,
           background: 'linear-gradient(135deg, #4F7CFF 0%, #2046C2 100%)',
           display: 'grid', placeItems: 'center',
-          boxShadow: '0 10px 30px rgba(79, 124, 255, 0.32)',
+          boxShadow: '0 10px 30px rgba(79, 124, 255, 0.03)',
         }}>
           <Network size={22} color="#fff" />
         </div>
@@ -318,7 +318,7 @@ function Empty() {
         background: 'rgba(79, 124, 255, 0.10)',
         border: '1px solid rgba(102, 217, 255, 0.35)',
         display: 'grid', placeItems: 'center',
-        boxShadow: '0 0 32px rgba(79, 124, 255, 0.25)',
+        boxShadow: '0 0 32px rgba(79, 124, 255, 0.02)',
       }}>
         <Network size={28} color="#66D9FF" />
       </div>

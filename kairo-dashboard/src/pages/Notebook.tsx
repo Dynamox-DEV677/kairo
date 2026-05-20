@@ -43,7 +43,7 @@ const KIND_META: Record<Kind, { label: string; icon: any; color: string }> = {
   grade:       { label: 'Graded',      icon: CheckCircle2,  color: '#4F7CFF' },
 }
 
-const card: React.CSSProperties = { background: '#0E1117', border: '1px solid #1f2532', borderRadius: 14 }
+const card: React.CSSProperties = { background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(14px) saturate(140%)', WebkitBackdropFilter: 'blur(14px) saturate(140%)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14 }
 const inp: React.CSSProperties = {
   background: '#0E1117', border: '1px solid #1f2532', borderRadius: 8,
   padding: '9px 12px', fontSize: 13, color: '#fafafa',
@@ -122,7 +122,7 @@ export default function Notebook() {
           width: 44, height: 44, borderRadius: 11,
           background: 'linear-gradient(135deg, #4F7CFF, #2046C2)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 0 18px rgba(79, 124, 255, 0.32)', flexShrink: 0,
+          boxShadow: '0 0 18px rgba(79, 124, 255, 0.03)', flexShrink: 0,
         }}>
           <BookOpen size={22} color="#fff" />
         </div>
@@ -461,8 +461,8 @@ function AutoCollectedStrip() {
               position: 'absolute', bottom: -42, left: 12,
               padding: '8px 14px', borderRadius: 10,
               background: 'rgba(13,13,21,0.95)',
-              border: '1px solid rgba(102, 217, 255, 0.5)',
-              boxShadow: '0 14px 32px rgba(79, 124, 255, 0.35)',
+              border: '1px solid rgba(102, 217, 255, 0.18)',
+              boxShadow: '0 14px 32px rgba(79, 124, 255, 0.03)',
               fontSize: 12, color: '#e4e4e7', fontWeight: 500,
               zIndex: 5,
             }}>
@@ -493,7 +493,7 @@ function Tab({ active, label, onClick }: { active: boolean; label: string; onCli
     <button onClick={onClick} style={{
       padding: '5px 10px', borderRadius: 7,
       background: active ? 'rgba(102, 217, 255, 0.18)' : 'transparent',
-      border: `1px solid ${active ? 'rgba(102, 217, 255, 0.5)' : 'rgba(255,255,255,0.08)'}`,
+      border: `1px solid ${active ? 'rgba(102, 217, 255, 0.18)' : 'rgba(255,255,255,0.08)'}`,
       color: active ? '#A5B4FC' : '#9CA3AF',
       fontFamily: 'inherit', fontSize: 11, fontWeight: 600,
       cursor: 'pointer',
