@@ -109,6 +109,7 @@ export default function Landing({ onGetStarted }: LandingProps) {
       <ConstructivistInterstitial />
       <LabsShowcase />
       <TwinEssay />
+      <DesktopApp />
       <FinalCTA onGetStarted={onGetStarted} />
       <Footer />
     </div>
@@ -1237,6 +1238,221 @@ function TwinEssay() {
 }
 
 // ════════════════════════════════════════════════════════════════════════════
+// DESKTOP APP — download section for the Electron build
+// ════════════════════════════════════════════════════════════════════════════
+function DesktopApp() {
+  const mobile = useIsMobileViewport()
+  const ref = useRef<HTMLDivElement>(null)
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] })
+  const lx1 = useTransform(scrollYProgress, [0, 1], pxRange(mobile, ['-12%', '8%']))
+  const lx2 = useTransform(scrollYProgress, [0, 1], pxRange(mobile, ['14%', '-10%']))
+  const ghostX = useTransform(scrollYProgress, [0, 1], pxRange(mobile, ['12%', '-10%']))
+
+  // The release page on GitHub. Builders upload .exe/.dmg/.AppImage there;
+  // these direct links resolve to the latest tagged build whenever it lands.
+  const RELEASES = 'https://github.com/Dynamox-DEV677/kairo/releases/latest'
+
+  return (
+    <section ref={ref} id="desktop" style={{
+      padding: '140px 0 120px', position: 'relative', zIndex: 2, overflow: 'hidden',
+    }}>
+      {/* Ghost watermark */}
+      <motion.div aria-hidden style={{
+        position: 'absolute', top: '8%', left: '50%',
+        translateX: '-50%',
+        x: ghostX,
+        fontFamily: DISPLAY, fontSize: 'min(38vw, 500px)',
+        fontWeight: 900, letterSpacing: '-0.09em', color: C.purpleInk,
+        opacity: 0.20, pointerEvents: 'none', whiteSpace: 'nowrap',
+      }}>
+        DESKTOP
+      </motion.div>
+
+      <Container>
+        <SwissRow>
+          <SwissCell span={3}>
+            <Eyebrow num="05" label="The Desktop App" />
+            <RotatedLabel text="WINDOWS · MACOS · LINUX" style={{ marginTop: 56 }} />
+          </SwissCell>
+
+          <SwissCell span={9}>
+            <h3 className="kr-headline" style={{
+              fontFamily: DISPLAY, fontSize: 'clamp(36px, 5.4vw, 76px)',
+              lineHeight: 0.98, letterSpacing: '-0.03em', fontWeight: 800,
+              margin: 0, color: C.text,
+            }}>
+              <motion.span style={{ x: lx1, display: 'inline-block' }}>Kairo,</motion.span><br />
+              <motion.span style={{
+                x: lx2,
+                display: 'inline-block',
+                fontStyle: 'italic',
+                background: `linear-gradient(180deg, ${C.purpleLite}, ${C.purpleHi})`,
+                WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+              }}>natively yours.</motion.span>
+            </h3>
+
+            <p style={{
+              fontFamily: SERIF, fontSize: 18, lineHeight: 1.7, color: C.textDim,
+              maxWidth: 720, marginTop: 26,
+            }}>
+              The web app lives on every browser. The desktop app lives on
+              your computer — faster startup, no tab clutter, persistent
+              login. Same Twin, same data, same account everywhere.
+            </p>
+
+            {/* Three download cards */}
+            <div style={{
+              display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16,
+              marginTop: 48,
+            }} className="kr-download-grid">
+              <DownloadCard
+                href={RELEASES}
+                platform="Windows"
+                detail="10 / 11 · x64"
+                file=".exe installer"
+                glyph={<WindowsGlyph />}
+              />
+              <DownloadCard
+                href={RELEASES}
+                platform="macOS"
+                detail="12+ · Intel / Apple Silicon"
+                file=".dmg"
+                glyph={<AppleGlyph />}
+              />
+              <DownloadCard
+                href={RELEASES}
+                platform="Linux"
+                detail="AppImage · .deb"
+                file="AppImage"
+                glyph={<LinuxGlyph />}
+              />
+            </div>
+
+            {/* Feature strip */}
+            <div style={{
+              marginTop: 40, padding: '20px 24px',
+              borderRadius: 14,
+              background: 'rgba(124,58,237,0.05)',
+              border: `1px solid ${C.line}`,
+              display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)',
+              gap: 18,
+              fontFamily: MONO, fontSize: 11, color: C.textFaint, letterSpacing: 1.4,
+            }} className="kr-desktop-features">
+              <FeatureLine k="ALWAYS DARK" v="No white flash on boot." />
+              <FeatureLine k="LIVE SPLASH" v="Apple-style splash for ~2 s." />
+              <FeatureLine k="LINKED ACCOUNT" v="Same login across web + desktop." />
+              <FeatureLine k="OFFLINE-FRIENDLY" v="Twin cached locally." />
+            </div>
+
+            <p style={{
+              marginTop: 32, fontFamily: MONO, fontSize: 11, color: C.textVery,
+              letterSpacing: 2,
+            }}>
+              Built with Electron · MIT-licensed · open source
+            </p>
+          </SwissCell>
+        </SwissRow>
+      </Container>
+    </section>
+  )
+}
+
+function DownloadCard({ href, platform, detail, file, glyph }: {
+  href: string; platform: string; detail: string; file: string; glyph: React.ReactNode
+}) {
+  return (
+    <motion.a
+      href={href}
+      target="_blank"
+      rel="noreferrer"
+      whileHover={{ y: -3, borderColor: 'rgba(167,139,250,0.45)' }}
+      transition={{ type: 'spring', stiffness: 220, damping: 22 }}
+      style={{
+        display: 'flex', flexDirection: 'column', gap: 14,
+        padding: '22px 22px 20px',
+        background: C.panel,
+        border: `1px solid ${C.line}`,
+        borderRadius: 18,
+        textDecoration: 'none',
+        cursor: 'pointer',
+        position: 'relative', overflow: 'hidden',
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div style={{
+          width: 38, height: 38, borderRadius: 10,
+          background: `linear-gradient(135deg, ${C.purpleHi}, ${C.purpleInk})`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          boxShadow: `0 0 18px rgba(124,58,237,0.35)`,
+        }}>
+          {glyph}
+        </div>
+        <div style={{ minWidth: 0 }}>
+          <div style={{
+            fontFamily: DISPLAY, fontSize: 22, fontWeight: 800,
+            color: C.text, letterSpacing: '-0.02em', lineHeight: 1.05,
+          }}>
+            {platform}
+          </div>
+          <div style={{
+            fontFamily: MONO, fontSize: 10, color: C.textFaint, letterSpacing: 1.4,
+            marginTop: 3,
+          }}>
+            {detail}
+          </div>
+        </div>
+      </div>
+
+      <div style={{
+        marginTop: 'auto', display: 'flex', alignItems: 'center',
+        justifyContent: 'space-between', paddingTop: 14,
+        borderTop: `1px solid ${C.line}`,
+      }}>
+        <span style={{
+          fontFamily: MONO, fontSize: 11, color: C.purpleSoft, letterSpacing: 1.6,
+        }}>
+          {file}
+        </span>
+        <ArrowDown size={14} color={C.purpleSoft} />
+      </div>
+    </motion.a>
+  )
+}
+
+function FeatureLine({ k, v }: { k: string; v: string }) {
+  return (
+    <div>
+      <div style={{ color: C.purpleSoft, fontWeight: 700, marginBottom: 4 }}>{k}</div>
+      <div style={{ color: C.textDim, letterSpacing: 0.1, fontFamily: SANS, fontSize: 12, lineHeight: 1.5 }}>{v}</div>
+    </div>
+  )
+}
+
+// Minimalist platform glyphs — drawn as inline SVG to stay on-brand.
+function WindowsGlyph() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="#fff">
+      <path d="M3 3.5l8-1.1V11H3V3.5zM12 2.3l9-1.3V11h-9V2.3zM3 12h8v8.5l-8-1.1V12zm9 0h9v9.7l-9-1.3V12z" />
+    </svg>
+  )
+}
+function AppleGlyph() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="#fff">
+      <path d="M17.6 13.4c0-2.5 2-3.7 2.1-3.8-1.1-1.7-2.9-1.9-3.5-2-1.5-.2-2.9.9-3.7.9-.8 0-1.9-.9-3.2-.8-1.6 0-3.2 1-4 2.4-1.7 3-.4 7.4 1.2 9.8.8 1.2 1.8 2.5 3 2.5 1.2 0 1.7-.8 3.1-.8 1.5 0 1.9.8 3.2.7 1.3 0 2.2-1.2 3-2.4.5-.7.9-1.5 1.2-2.4-1.4-.5-2.4-1.9-2.4-4.1zM15.2 5.3c.6-.8 1-1.9.9-3-.9 0-2 .6-2.7 1.4-.6.7-1.1 1.8-1 2.9 1.1 0 2.1-.5 2.8-1.3z" />
+    </svg>
+  )
+}
+function LinuxGlyph() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="#fff">
+      <path d="M12 2c1.7 0 3 1.3 3 3 0 1-.5 1.9-1.2 2.5 0 0 1.7.4 2.7 2.3.8 1.6.8 2.9 1.3 3.7.5.7 1.5 1 1.6 2 0 1.2-1 1.6-1.6 1.9-.6.3-1 .7-1.2 1.1-.2.5-.1 1-.6 1.6-.5.6-1.4.6-2 .5-.7-.1-1.3-.5-1.6-.6-.4-.1-1-.1-1.4 0-.4.1-1 .5-1.6.6-.7.1-1.6.1-2-.5-.5-.6-.4-1.1-.6-1.6-.2-.4-.6-.8-1.2-1.1C5 16 4 15.6 4 14.4c.1-1 1.1-1.3 1.6-2 .5-.8.5-2.1 1.3-3.7 1-1.9 2.7-2.3 2.7-2.3C8.9 5.8 8.4 4.9 8.4 4c0-1.7 1.4-3 3-3zm-1 3.2c-.6 0-1 .4-1 .9 0 .4.3.7.6.7l-.1.5c-.4.1-.6.3-.6.6 0 .2.2.4.5.4.3 0 .5-.2.5-.5l.1-.5.1.5c0 .3.2.5.5.5.3 0 .5-.2.5-.4 0-.3-.2-.5-.6-.6l-.1-.5c.3 0 .6-.3.6-.7 0-.5-.4-.9-1-.9z" />
+    </svg>
+  )
+}
+
+// ════════════════════════════════════════════════════════════════════════════
 // FINAL CTA — brutalist closer (scroll-linked drift + scale)
 // ════════════════════════════════════════════════════════════════════════════
 function FinalCTA({ onGetStarted }: { onGetStarted: () => void }) {
@@ -1353,10 +1569,11 @@ function Footer() {
 
           <SwissCell span={3}>
             <FooterCol title="ISSUE · NAV" items={[
-              { label: 'Manifesto', href: '#manifesto' },
-              { label: 'Product',   href: '#product' },
-              { label: 'Labs',      href: '#labs' },
-              { label: 'Twin',      href: '#twin' },
+              { label: 'Manifesto',   href: '#manifesto' },
+              { label: 'Product',     href: '#product' },
+              { label: 'Labs',        href: '#labs' },
+              { label: 'Twin',        href: '#twin' },
+              { label: 'Desktop App', href: '#desktop' },
             ]} />
           </SwissCell>
           <SwissCell span={3}>
@@ -1654,6 +1871,12 @@ function GlobalStyles() {
         .kr-display { font-size: clamp(48px, 13vw, 92px) !important; }
         .kr-bento-title { font-size: clamp(20px, 5.6vw, 30px) !important; }
         .kr-container { padding: 0 18px !important; }
+        .kr-download-grid { grid-template-columns: 1fr !important; }
+        .kr-desktop-features { grid-template-columns: 1fr 1fr !important; }
+      }
+      @media (max-width: 920px) {
+        .kr-download-grid { grid-template-columns: 1fr !important; gap: 14px !important; }
+        .kr-desktop-features { grid-template-columns: 1fr 1fr !important; }
       }
       @media (max-width: 420px) {
         .kr-container { padding: 0 14px !important; }
