@@ -1,6 +1,6 @@
 {
   "name": "kairo-desktop",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Kairo — desktop wrapper for the AI learning operating system",
   "main": "main.js",
   "author": {
@@ -35,8 +35,11 @@
     "files": [
       "main.js",
       "preload.js",
+      "updater.js",
       "splash.html",
-      "assets/**/*"
+      "assets/**/*",
+      "!dist/**/*",
+      "!**/*.map"
     ],
     "win": {
       "icon": "assets/icon.ico",
