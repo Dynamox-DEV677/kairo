@@ -10,6 +10,7 @@ import { pullFromCloud, syncToCloudNow, deleteCloudSnapshot, pauseSyncUntil, get
 import SprintOverlay, { SPRINT_MIN_MS } from './components/SprintOverlay'
 import SplashScreen from './components/SplashScreen'
 import { TermsHost } from './components/Terms'
+import DesktopUpdateBanner from './components/DesktopUpdateBanner'
 import ResetPasswordPage from './pages/ResetPasswordPage'
 import StatusPage from './pages/StatusPage'
 import AboutPage from './pages/AboutPage'
@@ -248,6 +249,7 @@ export default function App() {
           }}
         />
         <TermsHost />
+        <DesktopUpdateBanner />
       </>
     )
   }
@@ -264,6 +266,7 @@ export default function App() {
           }}
         />
         <TermsHost />
+        <DesktopUpdateBanner />
       </>
     )
   }
@@ -279,6 +282,7 @@ export default function App() {
           }}
         />
         <TermsHost />
+        <DesktopUpdateBanner />
       </>
     )
   }
@@ -298,6 +302,7 @@ export default function App() {
           <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
         </div>
         <TermsHost />
+        <DesktopUpdateBanner />
         {splash}
       </>
     )
@@ -310,6 +315,7 @@ export default function App() {
           ? <Login onLogin={handleLogin} />
           : <Landing onGetStarted={() => setView('login')} />}
         <TermsHost />
+        <DesktopUpdateBanner />
         {splash}
       </>
     )
@@ -325,6 +331,7 @@ export default function App() {
         subhead={sprintSub}
       />
       <TermsHost />
+      <DesktopUpdateBanner />
       {splash}
     </GenerationProvider>
   )

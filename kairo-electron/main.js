@@ -128,8 +128,10 @@ function configureMenu() {
 }
 
 // ─── IPC (minimal) ─────────────────────────────────────────────────────────
-ipcMain.handle('kairo:get-version', () => app.getVersion())
+ipcMain.handle('kairo:get-version',  () => app.getVersion())
 ipcMain.handle('kairo:get-platform', () => process.platform)
+// Banner's "Restart" button → swap to the new binary + relaunch.
+ipcMain.handle('kairo:restart-to-update', () => updater.applyAndRestart())
 
 // ─── App lifecycle ─────────────────────────────────────────────────────────
 nativeTheme.themeSource = 'dark'           // always-dark window chrome

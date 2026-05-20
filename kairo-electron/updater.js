@@ -69,23 +69,26 @@ function attach(mainWindow) {
     }
   })
 
-  autoUpdater.on('update-downloaded', async (info) => {
-    log.info(`[updater] downloaded v${info?.version} — prompting`)
+  autoUpdater.on('update-downloaded', (info) => {
+    log.info(`[updater] downloaded v${info?.version} — banner sent`)
     if (mainWindowRef && !mainWindowRef.isDestroyed()) {
       mainWindowRef.setProgressBar(-1)
-    }
-    const choice = await dialog.showMessageBox(mainWindowRef, {
-      type: 'info',
-      buttons: ['Restart now', 'Later'],
-      defaultId: 0,
-      cancelId: 1,
-      title: 'Kairo is ready to update',
-      message: `Kairo v${info?.version || 'latest'} has been downloaded.`,
-      detail: 'Restart now to apply the update. Your session and data stay where they are.',
-    })
-    if (choice.response === 0) {
-      // Tells electron-updater to swap in the new build + relaunch.
-      autoUpdater.quitAndInstall()
+      // Tell the React app to render the Kairo-branded "Restart to
+      // update" banner. The renderer subscribes via
+      // window.kairoDesktop.onUpdateReady(handler).
+      mainWindowRef.webContents.send('kairo:update-ready', {
+        version:     info?.version || 'latest',
+        releaseDate: info?.releaseDate || null,
+        releaseName: info?.releaseName || null,
+      })
+    } else {
+      // Fallback to a native dialog if the window died for some reason.
+      dialog.showMessageBox({
+        type: 'info',
+        buttons: ['Restart', 'Later'],
+        title:   'Kairo update ready',
+        message: `Kairo v${info?.version || 'latest'} has been downloaded.`,
+      }).then(c => { if (c.response === 0) autoUpdater.quitAndInstall() })
     }
   })
 
@@ -116,8 +119,18 @@ function checkNow() {
   safeCheck()
 }
 
+// Called from the IPC handler when the user clicks the banner's
+// "Restart" button. Swaps the new build in + relaunches.
+function applyAndRestart() {
+  try {
+    autoUpdater.quitAndInstall()
+  } catch (e) {
+    log.warn('[updater] quitAndInstall failed:', e?.message)
+  }
+}
+
 function isUpdateAvailable() {
   return updateAvailable
 }
 
-module.exports = { attach, checkNow, isUpdateAvailable }
+module.exports = { attach, checkNow, applyAndRestart, isUpdateAvailable }

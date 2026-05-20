@@ -12,4 +12,17 @@ contextBridge.exposeInMainWorld('kairoDesktop', {
   isDesktop: true,
   getVersion:  () => ipcRenderer.invoke('kairo:get-version'),
   getPlatform: () => ipcRenderer.invoke('kairo:get-platform'),
+
+  // ── Auto-update flow ────────────────────────────────────────────────
+  // The main process fires 'kairo:update-ready' when an installer has
+  // finished downloading. The web app subscribes via onUpdateReady() and
+  // shows a Kairo-styled banner instead of the native OS dialog.
+  // Click the banner's "Restart" button → restartToUpdate() → main does
+  // autoUpdater.quitAndInstall().
+  onUpdateReady: (handler) => {
+    const fn = (_event, info) => handler(info)
+    ipcRenderer.on('kairo:update-ready', fn)
+    return () => ipcRenderer.removeListener('kairo:update-ready', fn)
+  },
+  restartToUpdate: () => ipcRenderer.invoke('kairo:restart-to-update'),
 })
