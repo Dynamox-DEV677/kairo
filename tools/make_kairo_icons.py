@@ -115,7 +115,7 @@ def main():
     save(make_squircle_icon(512),                  ele / 'icon-512.png')
     save(make_squircle_icon(256),                  ele / 'icon-256.png')
 
-    # 5. Multi-resolution .ico for Windows installers
+    # 5. Multi-resolution .ico for Windows installer
     ico = ele / 'icon.ico'
     ico.parent.mkdir(parents=True, exist_ok=True)
     master_1024.save(
@@ -123,6 +123,18 @@ def main():
         sizes=[(256, 256), (128, 128), (64, 64), (48, 48), (32, 32), (16, 16)],
     )
     print(f'  · {ico.relative_to(REPO)}  (multi-res)')
+
+    # 6. Browser tab favicon — browsers prefer 16/32 px. Provide both a
+    #    multi-res .ico (Chrome / Firefox / Edge auto-detect at /favicon.ico)
+    #    AND explicit 32 px / 16 px PNGs for high-DPI displays.
+    save(make_squircle_icon(32),  pwa / 'kairo_icon_32.png')
+    save(make_squircle_icon(16),  pwa / 'kairo_icon_16.png')
+    favicon = pwa / 'favicon.ico'
+    master_1024.save(
+        favicon, format='ICO',
+        sizes=[(48, 48), (32, 32), (16, 16)],
+    )
+    print(f'  · {favicon.relative_to(REPO)}  (multi-res)')
     print('done.')
 
 

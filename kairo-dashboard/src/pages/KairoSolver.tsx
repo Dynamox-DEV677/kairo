@@ -582,15 +582,17 @@ function Hero({ onPick }: { onPick: (q: string) => void }) {
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
         style={{
           width: 76, height: 76, borderRadius: 18,
-          background: 'linear-gradient(135deg, #7c3aed, #a78bfa)',
+          // Match the rest of the brand — black squircle, soft purple halo.
+          background: '#06060a',
+          border: '1px solid rgba(124, 58, 237, 0.25)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 0 40px rgba(124, 58, 237,0.45)',
-          padding: 10,
+          boxShadow: '0 0 40px rgba(124, 58, 237, 0.35)',
+          padding: 12,
         }}>
         <img
           src="/kairo_logo.png"
           alt="Kairo"
-          style={{ width: '100%', height: '100%', objectFit: 'contain', filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.25))' }}
+          style={{ width: '100%', height: '100%', objectFit: 'contain' }}
         />
       </motion.div>
       <div style={{ textAlign: 'center', maxWidth: 520 }}>
