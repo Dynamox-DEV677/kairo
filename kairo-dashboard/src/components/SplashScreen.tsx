@@ -28,11 +28,14 @@ interface Props {
   duration?: number
 }
 
+// Ultramarine accent — deeper, more saturated royal blue. Sits between
+// the brand's electric primary (#4F7CFF) and the deep anchor (#2046C2),
+// so cards/buttons elsewhere stay harmonious.
 const C = {
   bg:        '#050505',
-  text:      '#fafafa',
+  text:      '#ffffff',
   purpleDeep:'#0B1530',
-  purple:    '#4F7CFF',
+  purple:    '#2A4FE0',  // ultramarine
   purpleLite:'#A5B4FC',
   purpleSoft:'#DBE7FF',
 }
@@ -118,8 +121,8 @@ export default function SplashScreen({ onComplete, duration = 3000 }: Props) {
             style={{
               position: 'absolute', inset: '-20%',
               background: `
-                radial-gradient(at 30% 30%, rgba(79, 124, 255, 0.35) 0%, transparent 50%),
-                radial-gradient(at 70% 70%, rgba(165, 180, 252, 0.20) 0%, transparent 55%)
+                radial-gradient(at 30% 30%, rgba(42, 79, 224, 0.40) 0%, transparent 50%),
+                radial-gradient(at 70% 70%, rgba(165, 180, 252, 0.18) 0%, transparent 55%)
               `,
               animation: 'splash-glow-pan 8s ease-in-out infinite alternate',
               willChange: 'transform',
@@ -186,7 +189,7 @@ export default function SplashScreen({ onComplete, duration = 3000 }: Props) {
                 transition={{ delay: 0.5, duration: 0.9, ease: 'easeOut' }}
                 style={{
                   position: 'absolute', inset: -50,
-                  background: 'radial-gradient(closest-side, rgba(79, 124, 255, 0.32), transparent 70%)',
+                  background: 'radial-gradient(closest-side, rgba(42, 79, 224, 0.38), transparent 70%)',
                   filter: 'blur(28px)',
                   animation: 'splash-halo 3.4s 1.2s ease-in-out infinite',
                   pointerEvents: 'none',
@@ -228,7 +231,7 @@ export default function SplashScreen({ onComplete, duration = 3000 }: Props) {
                   draggable={false}
                   style={{
                     width: 120, height: 120, objectFit: 'contain',
-                    filter: 'drop-shadow(0 12px 36px rgba(79, 124, 255, 0.32))',
+                    filter: 'drop-shadow(0 12px 36px rgba(42, 79, 224, 0.38))',
                     userSelect: 'none', WebkitUserDrag: 'none',
                   }}
                 />
@@ -270,12 +273,13 @@ export default function SplashScreen({ onComplete, duration = 3000 }: Props) {
               })}
             </div>
 
-            {/* Wordmark */}
+            {/* Wordmark + AI pill on one row */}
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 1.3, duration: 0.7, ease: [0.2, 0.8, 0.2, 1] }}
               style={{
+                display: 'flex', alignItems: 'center', gap: 12,
                 fontFamily: '"Inter", "SF Pro Display", system-ui, sans-serif',
                 fontSize: 'clamp(34px, 8vw, 44px)',
                 fontWeight: 800,
@@ -284,27 +288,55 @@ export default function SplashScreen({ onComplete, duration = 3000 }: Props) {
                 lineHeight: 1,
               }}
             >
+              {/* "Kairo" — gradient white→ultramarine for a metallic look */}
               <span style={{
-                background: 'linear-gradient(90deg, #DBE7FF 0%, #A5B4FC 35%, #66D9FF 65%, #4F7CFF 100%)',
+                background: 'linear-gradient(90deg, #FFFFFF 0%, #DBE7FF 40%, #A5B4FC 75%, #2A4FE0 100%)',
                 WebkitBackgroundClip: 'text', backgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
               }}>
                 Kairo
               </span>
+
+              {/* White "AI" pill — small, sits on the wordmark baseline.
+                  Crisp white text on glass tells you this is an AI product
+                  the moment the splash paints, without shouting. */}
+              <motion.span
+                initial={{ opacity: 0, scale: 0.85, y: 4 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                transition={{ delay: 1.55, duration: 0.45, ease: [0.2, 0.8, 0.2, 1] }}
+                style={{
+                  fontSize: 'clamp(10px, 2.1vw, 12px)',
+                  fontWeight: 700,
+                  letterSpacing: 1.6,
+                  color: '#ffffff',
+                  padding: '4px 9px',
+                  borderRadius: 999,
+                  background: 'rgba(255, 255, 255, 0.10)',
+                  border: '1px solid rgba(255, 255, 255, 0.28)',
+                  boxShadow: '0 0 18px rgba(42, 79, 224, 0.32)',
+                  backdropFilter: 'blur(10px)',
+                  WebkitBackdropFilter: 'blur(10px)',
+                  textTransform: 'uppercase',
+                  alignSelf: 'center',
+                }}
+              >
+                AI
+              </motion.span>
+
               <motion.span
                 initial={{ opacity: 0 }}
                 animate={{ opacity: [1, 0, 1, 0, 1, 0] }}
                 transition={{ delay: 1.4, duration: 1.2 }}
                 style={{
                   display: 'inline-block', width: 4, height: 'clamp(28px, 6.5vw, 36px)',
-                  marginLeft: 6, verticalAlign: 'middle',
-                  background: C.purpleLite, borderRadius: 1,
-                  boxShadow: '0 0 12px rgba(165, 180, 252, 0.9)',
+                  marginLeft: 2, alignSelf: 'center',
+                  background: '#ffffff', borderRadius: 1,
+                  boxShadow: '0 0 12px rgba(255, 255, 255, 0.85)',
                 }}
               />
             </motion.div>
 
-            {/* Subtitle */}
+            {/* Subtitle — white for max legibility on the dark canvas */}
             <motion.div
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
@@ -315,7 +347,7 @@ export default function SplashScreen({ onComplete, duration = 3000 }: Props) {
                 fontWeight: 700,
                 letterSpacing: 3.2,
                 textTransform: 'uppercase',
-                color: 'rgba(165, 180, 252, 0.85)',
+                color: 'rgba(255, 255, 255, 0.92)',
               }}
             >
               Your AI Academic Twin
@@ -355,7 +387,7 @@ export default function SplashScreen({ onComplete, duration = 3000 }: Props) {
               textAlign: 'center',
               fontSize: 11, fontWeight: 600,
               letterSpacing: 1.6, textTransform: 'uppercase',
-              color: 'rgba(165, 180, 252, 0.75)',
+              color: 'rgba(255, 255, 255, 0.70)',
               fontFamily: '"Inter", "SF Pro Display", system-ui, sans-serif',
               pointerEvents: 'none',
             }}
