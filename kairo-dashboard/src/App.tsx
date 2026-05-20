@@ -22,7 +22,16 @@ type View = 'landing' | 'login' | 'app'
 export default function App() {
   const [profile, setProfile] = useState<AuthProfile | null>(null)
   const [checking, setChecking] = useState(true)
-  const [view, setView] = useState<View>('landing')
+  // Default view: web visitors land on the cinematic marketing page; users
+  // running inside the Electron desktop shell skip straight to sign-in
+  // (there's no point selling them on Kairo — they already downloaded it).
+  // window.kairoDesktop is exposed by kairo-electron/preload.js.
+  const [view, setView] = useState<View>(() => {
+    if (typeof window !== 'undefined' && (window as any).kairoDesktop?.isDesktop) {
+      return 'login'
+    }
+    return 'landing'
+  })
   // Email-link landing: /reset-password?token=... — shown above everything else.
   const [resetMode, setResetMode] = useState(() => {
     if (typeof window === 'undefined') return false
