@@ -1,0 +1,30 @@
+/* Kairo intro — typography stack.
+
+   SF Pro Display is local-only on Apple OSes; Satoshi is the closest
+   commercial-quality fallback; Inter holds the line on everything
+   else. The intro never relies on a single font being available —
+   the metrics are tuned to look right on the full stack. */
+
+@font-face {
+  font-family: 'Satoshi';
+  font-weight: 400 900;
+  font-style: normal;
+  src: local('Satoshi-Variable'), local('Satoshi Variable');
+  font-display: swap;
+}
+
+:root {
+  --kairo-font: -apple-system, 'SF Pro Display', 'Satoshi',
+                'Inter', system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+html, body, #root {
+  margin: 0; padding: 0;
+  font-family: var(--kairo-font);
+  background: #050505;
+  color: #ffffff;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
