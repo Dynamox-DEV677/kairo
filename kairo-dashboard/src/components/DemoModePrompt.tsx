@@ -1,0 +1,170 @@
+/**
+ * DemoModePrompt — one-time first-visit nudge.
+ *
+ * Surfaces a non-blocking toast in the bottom-right that offers to seed
+ * the dashboard with a realistic Class 10 CBSE student. Aimed at judges
+ * / teachers / first-time visitors so they don't bounce off an empty
+ * Kairo OS the moment they land.
+ *
+ * Shown when ALL of these are true:
+ *   - The user has just landed on the Dashboard (post-login)
+ *   - The Twin storage bucket is empty (no events yet)
+ *   - The user hasn't previously dismissed or accepted the prompt
+ *
+ * Dismissals + acceptances both set `kairo:demo-prompt-shown` so the
+ * toast never reappears for this device — even if the user later wipes
+ * their Twin and re-lands on an empty dashboard. (We don't want to
+ * pester returning users.)
+ *
+ * Honours `prefers-reduced-motion` and the existing dark theme.
+ */
+import { useEffect, useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Sparkles, X } from 'lucide-react'
+import { seedDemo, loadState } from '../lib/twin'
+
+const STORAGE_KEY = 'kairo:demo-prompt-shown'
+
+interface Props {
+  /** Delay before the toast slides up, in ms. Default 1400ms — lets
+   *  the dashboard paint first so the prompt feels like a follow-up
+   *  rather than a blocker. */
+  delayMs?: number
+}
+
+export default function DemoModePrompt({ delayMs = 1400 }: Props) {
+  const [open, setOpen] = useState(false)
+  const [busy, setBusy] = useState(false)
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    if (localStorage.getItem(STORAGE_KEY)) return     // already shown
+    try {
+      // Only show on a truly empty twin
+      const state = loadState()
+      if (state.events.length > 0) return
+    } catch { /* ignore — show prompt as fallback */ }
+
+    const t = window.setTimeout(() => setOpen(true), delayMs)
+    return () => window.clearTimeout(t)
+  }, [delayMs])
+
+  function dismiss() {
+    try { localStorage.setItem(STORAGE_KEY, 'dismissed:' + Date.now()) } catch { /* ignore */ }
+    setOpen(false)
+  }
+
+  function accept() {
+    if (busy) return
+    setBusy(true)
+    try {
+      seedDemo()
+      localStorage.setItem(STORAGE_KEY, 'accepted:' + Date.now())
+      // Reload so every page in the app re-reads from the now-seeded twin.
+      // Routes that subscribe to `storage` events (Kairo OS) would still
+      // update without this, but Solver / Notebook / Formula Sheet read
+      // on mount only.
+      window.location.reload()
+    } catch (err) {
+      console.warn('[DemoModePrompt] seed failed:', err)
+      setBusy(false)
+    }
+  }
+
+  return (
+    <AnimatePresence>
+      {open && (
+        <motion.div
+          initial={{ opacity: 0, y: 24, filter: 'blur(8px)' }}
+          animate={{ opacity: 1, y: 0,  filter: 'blur(0px)' }}
+          exit={{    opacity: 0, y: 16, filter: 'blur(6px)' }}
+          transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+          style={{
+            position: 'fixed',
+            right: 'calc(20px + env(safe-area-inset-right))',
+            bottom: 'calc(20px + env(safe-area-inset-bottom))',
+            zIndex: 9000,
+            maxWidth: 'min(360px, calc(100vw - 40px))',
+            background: 'rgba(14, 17, 23, 0.86)',
+            backdropFilter: 'blur(14px) saturate(140%)',
+            WebkitBackdropFilter: 'blur(14px) saturate(140%)',
+            border: '1px solid rgba(79, 124, 255, 0.22)',
+            borderRadius: 14,
+            padding: 18,
+            color: '#fafafa',
+            fontFamily: '-apple-system, "SF Pro Display", "Inter", system-ui, sans-serif',
+            boxShadow: '0 18px 48px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(79, 124, 255, 0.06)',
+          }}
+        >
+          {/* Close icon — top right */}
+          <button
+            onClick={dismiss}
+            aria-label="Dismiss"
+            style={{
+              position: 'absolute', top: 10, right: 10,
+              background: 'transparent', border: 'none',
+              color: 'rgba(255, 255, 255, 0.5)', cursor: 'pointer',
+              padding: 4, lineHeight: 0, borderRadius: 6,
+            }}
+          >
+            <X size={14} />
+          </button>
+
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+            <div
+              style={{
+                width: 36, height: 36, borderRadius: 10, flexShrink: 0,
+                display: 'grid', placeItems: 'center',
+                background: 'linear-gradient(135deg, #4F7CFF 0%, #2046C2 100%)',
+                boxShadow: '0 0 18px rgba(79, 124, 255, 0.20)',
+              }}
+            >
+              <Sparkles size={16} color="#fff" />
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 13.5, fontWeight: 700, letterSpacing: '-0.01em' }}>
+                Try Demo Mode
+              </div>
+              <p style={{ margin: '4px 0 0', fontSize: 12, color: '#B1B5BA', lineHeight: 1.55 }}>
+                Skip the empty dashboard — load two weeks of realistic Class 10 CBSE activity
+                so you can explore Kairo OS, Flashcards, Concept Map and Mistake Analysis with
+                real data.
+              </p>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
+            <button
+              onClick={accept}
+              disabled={busy}
+              style={{
+                flex: 1,
+                padding: '9px 12px', borderRadius: 9, border: 'none',
+                background: busy
+                  ? 'rgba(79, 124, 255, 0.30)'
+                  : 'linear-gradient(135deg, #4F7CFF 0%, #2046C2 100%)',
+                color: '#fff', fontFamily: 'inherit', fontSize: 12.5, fontWeight: 700,
+                cursor: busy ? 'wait' : 'pointer',
+                letterSpacing: 0.2,
+              }}
+            >
+              {busy ? 'Loading…' : 'Load demo data'}
+            </button>
+            <button
+              onClick={dismiss}
+              style={{
+                padding: '9px 14px', borderRadius: 9,
+                background: 'transparent',
+                border: '1px solid rgba(255, 255, 255, 0.10)',
+                color: '#9CA3AF', fontFamily: 'inherit', fontSize: 12.5, fontWeight: 600,
+                cursor: 'pointer',
+              }}
+            >
+              Not now
+            </button>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  )
+}

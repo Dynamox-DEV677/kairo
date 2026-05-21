@@ -308,9 +308,16 @@ function LegendDot({ color, label }: { color: string; label: string }) {
 }
 
 function Empty() {
+  // Jump the user to the page that would populate this map most
+  // quickly. The Dashboard exposes a global `__kairoSetActive(route)`
+  // so we don't need to wire React Router just for one button.
+  const go = (route: string) => () => {
+    const setActive = (window as unknown as { __kairoSetActive?: (r: string) => void }).__kairoSetActive
+    if (typeof setActive === 'function') setActive(route)
+  }
   return (
     <div style={{
-      padding: '90px 28px', textAlign: 'center',
+      padding: '70px 28px', textAlign: 'center',
       display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14,
     }}>
       <div style={{
@@ -326,14 +333,44 @@ function Empty() {
         Your concept map is empty.
       </h3>
       <p style={{ margin: 0, fontSize: 13, color: C.textFaint, maxWidth: 480, lineHeight: 1.65 }}>
-        Take a quiz, open a lab, or ask the Solver a question — every topic you touch
-        becomes a node here, and topics studied close together get connected automatically.
+        Every topic you touch becomes a node here, and topics studied close together get
+        connected automatically. Start anywhere below.
       </p>
-      <p style={{ margin: 0, fontSize: 11, color: C.textFaint, letterSpacing: 1.2, textTransform: 'uppercase', fontWeight: 600 }}>
+      <div style={{ display: 'flex', gap: 10, marginTop: 6, flexWrap: 'wrap', justifyContent: 'center' }}>
+        <button
+          onClick={go('quiz')}
+          style={emptyCtaPrimary}
+        >Start a Quiz</button>
+        <button
+          onClick={go('doubt')}
+          style={emptyCtaSecondary}
+        >Ask the Solver</button>
+        <button
+          onClick={go('labs')}
+          style={emptyCtaSecondary}
+        >Open a Lab</button>
+      </div>
+      <p style={{ margin: '10px 0 0', fontSize: 11, color: C.textFaint, letterSpacing: 1.2, textTransform: 'uppercase', fontWeight: 600 }}>
         Stored on this device only
       </p>
     </div>
   )
+}
+
+// Shared empty-state CTA styles — kept inline so the file stays self-contained.
+const emptyCtaPrimary: React.CSSProperties = {
+  display: 'inline-flex', alignItems: 'center', gap: 6,
+  padding: '11px 18px', borderRadius: 10, border: 'none', cursor: 'pointer',
+  background: 'linear-gradient(135deg, #4F7CFF 0%, #2046C2 100%)',
+  color: '#fff', fontFamily: 'inherit', fontSize: 13, fontWeight: 700,
+  boxShadow: '0 6px 18px rgba(79, 124, 255, 0.18)',
+}
+const emptyCtaSecondary: React.CSSProperties = {
+  display: 'inline-flex', alignItems: 'center', gap: 6,
+  padding: '11px 16px', borderRadius: 10, cursor: 'pointer',
+  background: 'rgba(255, 255, 255, 0.03)',
+  border: '1px solid rgba(255, 255, 255, 0.08)',
+  color: '#B1B5BA', fontFamily: 'inherit', fontSize: 13, fontWeight: 600,
 }
 
 function AddConceptCard({ onSaved }: { onSaved: () => void }) {

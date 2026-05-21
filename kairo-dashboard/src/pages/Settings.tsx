@@ -1,9 +1,10 @@
 import { useState, useRef } from 'react'
 import { motion } from 'framer-motion'
-import { Camera, User, Bell, Shield, Trash2, Check, FileJson, Smartphone, Laptop, ChevronsRight, KeyRound } from 'lucide-react'
+import { Camera, User, Bell, Shield, Trash2, Check, FileJson, Smartphone, Laptop, ChevronsRight, KeyRound, Sparkles, RotateCcw } from 'lucide-react'
 import { confirmDialog } from '../components/ConfirmModal'
 import TwinBackupModal from '../components/TwinBackupModal'
 import ResetPasscode from './ResetPasscode'
+import { seedDemo, resetAllData } from '../lib/twin'
 
 const BOARDS = ['CBSE', 'ICSE', 'Maharashtra', 'Tamil Nadu', 'Karnataka', 'UP Board', 'Bihar Board']
 const CLASSES = ['6', '7', '8', '9', '10', '11', '12']
@@ -50,6 +51,32 @@ export default function Settings() {
     })
     if (!ok) return
     localStorage.clear()
+    window.location.reload()
+  }
+
+  async function loadDemoProfile() {
+    const ok = await confirmDialog({
+      title:        'Load demo profile?',
+      body:         'Adds two weeks of realistic activity for a Class 10 CBSE student — flashcards, mistakes, concept graph nodes, and pinned formulas. Stacks on top of your existing data; use "Reset to fresh state" first to start clean.',
+      confirmLabel: 'Load demo data',
+      cancelLabel:  'Cancel',
+      tone:         'normal',
+    })
+    if (!ok) return
+    seedDemo()
+    window.location.reload()
+  }
+
+  async function resetToFresh() {
+    const ok = await confirmDialog({
+      title:        'Reset to fresh state?',
+      body:         'Wipes every Kairo data store on this device — Twin events, flashcards, mistakes, concept graph, study history, recent chats. Your login stays signed in.',
+      confirmLabel: 'Reset everything',
+      cancelLabel:  'Keep my data',
+      tone:         'danger',
+    })
+    if (!ok) return
+    resetAllData()
     window.location.reload()
   }
 
@@ -215,6 +242,46 @@ export default function Settings() {
         >
           <KeyRound size={13} /> Reset Passcode
         </button>
+      </Section>
+
+      {/* Demo data — appears above Privacy & Data because a presenter
+          will reach for these every time they open Settings. */}
+      <Section icon={<Sparkles size={14} />} title="Demo & Data">
+        <p style={{ fontSize: 13, color: '#9CA3AF', marginBottom: 14, lineHeight: 1.6 }}>
+          Populate Kairo with realistic Class 10 CBSE activity so the dashboard, Flashcards,
+          Mistake Analysis, Concept Map and Formula Sheet all read as a real student's history.
+          Use "Reset" to wipe and start clean.
+        </p>
+        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+          <button
+            onClick={loadDemoProfile}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 7,
+              padding: '11px 18px', borderRadius: 10, cursor: 'pointer', border: 'none',
+              background: 'linear-gradient(135deg, #4F7CFF 0%, #2046C2 100%)',
+              color: '#fff', fontFamily: 'inherit', fontSize: 13, fontWeight: 700,
+              boxShadow: '0 6px 18px rgba(79, 124, 255, 0.18)',
+            }}
+          >
+            <Sparkles size={13} /> Load Demo Profile
+          </button>
+          <button
+            onClick={resetToFresh}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 7,
+              padding: '11px 16px', borderRadius: 10, cursor: 'pointer',
+              background: 'rgba(255, 255, 255, 0.04)',
+              border: '1px solid rgba(255, 255, 255, 0.08)',
+              color: '#B1B5BA', fontFamily: 'inherit', fontSize: 13, fontWeight: 600,
+            }}
+          >
+            <RotateCcw size={13} /> Reset to fresh state
+          </button>
+        </div>
+        <p style={{ fontSize: 11, color: '#6B7280', marginTop: 10, lineHeight: 1.5 }}>
+          Demo loads 14 backdated activity events, 30 flashcards, 3 mistakes, 12 concept-map nodes,
+          5 pinned formulas. All on-device — nothing leaves your browser.
+        </p>
       </Section>
 
       {/* Privacy */}

@@ -11,6 +11,7 @@ import SprintOverlay, { SPRINT_MIN_MS } from './components/SprintOverlay'
 import SplashScreen from './components/SplashScreen'
 import { TermsHost } from './components/Terms'
 import DesktopUpdateBanner from './components/DesktopUpdateBanner'
+import DemoModePrompt from './components/DemoModePrompt'
 import ResetPasswordPage from './pages/ResetPasswordPage'
 import StatusPage from './pages/StatusPage'
 import AboutPage from './pages/AboutPage'
@@ -250,6 +251,7 @@ export default function App() {
         />
         <TermsHost />
         <DesktopUpdateBanner />
+        <DemoModePrompt />
       </>
     )
   }
@@ -267,6 +269,7 @@ export default function App() {
         />
         <TermsHost />
         <DesktopUpdateBanner />
+        <DemoModePrompt />
       </>
     )
   }
@@ -283,6 +286,7 @@ export default function App() {
         />
         <TermsHost />
         <DesktopUpdateBanner />
+        <DemoModePrompt />
       </>
     )
   }
@@ -303,6 +307,7 @@ export default function App() {
         </div>
         <TermsHost />
         <DesktopUpdateBanner />
+        <DemoModePrompt />
         {splash}
       </>
     )
@@ -316,6 +321,7 @@ export default function App() {
           : <Landing onGetStarted={() => setView('login')} />}
         <TermsHost />
         <DesktopUpdateBanner />
+        <DemoModePrompt />
         {splash}
       </>
     )

@@ -300,6 +300,39 @@ export function clearTwin() {
   localStorage.removeItem(storageKey())
 }
 
+/**
+ * Reset to fresh state — wipes EVERY Kairo-owned localStorage key, not
+ * just the current twin bucket. Used by the Settings "Reset to fresh
+ * state" button so a demo run can return to a clean slate without
+ * logging out and back in.
+ *
+ * Preserves auth (`kairo_token`) and user-visible terms acceptance so
+ * the user doesn't get bounced back to the login screen.
+ */
+export function resetAllData() {
+  if (typeof window === 'undefined') return
+  const PRESERVE = new Set([
+    'kairo_token',
+    'kairo:terms-accepted',
+    'kairo:onboarded',
+  ])
+  const toRemove: string[] = []
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i)
+    if (!k) continue
+    // Anything in our namespace OR the per-feature legacy keys
+    if (
+      (k.startsWith('kairo:') || k.startsWith('kairo_')) &&
+      !PRESERVE.has(k)
+    ) toRemove.push(k)
+  }
+  for (const k of toRemove) localStorage.removeItem(k)
+  // Notify any listeners (Kairo OS subscribes to `storage` events)
+  try {
+    window.dispatchEvent(new StorageEvent('storage', { key: storageKey() }))
+  } catch { /* ignore */ }
+}
+
 // ════════════════════════════════════════════════════════════════════════════
 // BACKUP & RESTORE — export to a JSON blob so the student can move their
 // Twin between devices without any server involvement.
@@ -764,13 +797,89 @@ export function seedDemo(): TwinState {
       }
     }
   }
+  // ── Flashcards (~30 across subjects, CBSE Class 10 flavour) ─────────
+  // recordFlashcard saves into state.flashcards. Mix of subjects + topics
+  // so the Flashcards page reads as a real student's deck.
+  const flashcards: Array<{ front: string; back: string; subject: string; topic: string }> = [
+    // Math
+    { front: 'Quadratic formula',                      back: 'x = (-b ± √(b² - 4ac)) / 2a',                                 subject: 'Math', topic: 'quadratic equations' },
+    { front: 'Discriminant condition for real roots',  back: 'b² - 4ac ≥ 0',                                                 subject: 'Math', topic: 'quadratic equations' },
+    { front: 'sin²θ + cos²θ',                          back: '= 1',                                                          subject: 'Math', topic: 'trigonometry' },
+    { front: 'tan θ in terms of sin and cos',          back: 'sin θ / cos θ',                                                subject: 'Math', topic: 'trigonometry' },
+    { front: 'Area of triangle (Heron’s formula)',     back: '√(s(s-a)(s-b)(s-c)), where s = (a+b+c)/2',                     subject: 'Math', topic: 'mensuration' },
+    { front: 'Sum of first n natural numbers',         back: 'n(n+1)/2',                                                     subject: 'Math', topic: 'arithmetic progressions' },
+    { front: 'nth term of an AP',                      back: 'a + (n-1)d',                                                   subject: 'Math', topic: 'arithmetic progressions' },
+    { front: 'Probability of an event',                back: 'No. of favourable outcomes / Total outcomes',                  subject: 'Math', topic: 'probability' },
+    // Physics
+    { front: 'Newton’s second law',                    back: 'F = ma',                                                       subject: 'Physics', topic: 'newton laws' },
+    { front: 'Ohm’s law',                              back: 'V = IR',                                                       subject: 'Physics', topic: 'electricity' },
+    { front: 'Power formula (electricity)',            back: 'P = VI = I²R = V²/R',                                          subject: 'Physics', topic: 'electricity' },
+    { front: 'Speed of light in vacuum',               back: '3 × 10⁸ m/s',                                                  subject: 'Physics', topic: 'light' },
+    { front: 'Refractive index',                       back: 'n = c / v   (speed of light in vacuum / in medium)',           subject: 'Physics', topic: 'light' },
+    { front: 'Lens formula',                           back: '1/v - 1/u = 1/f',                                              subject: 'Physics', topic: 'light' },
+    { front: 'Kinetic energy',                         back: 'KE = ½ m v²',                                                  subject: 'Physics', topic: 'energy' },
+    { front: 'Work-energy theorem',                    back: 'W_net = ΔKE',                                                  subject: 'Physics', topic: 'energy' },
+    // Chemistry
+    { front: 'Atomic number',                          back: 'Number of protons in the nucleus',                             subject: 'Chemistry', topic: 'periodic table' },
+    { front: 'Group → property trend',                 back: 'Metallic character increases down a group',                    subject: 'Chemistry', topic: 'periodic table' },
+    { front: 'pH of pure water at 25°C',               back: '7 (neutral)',                                                  subject: 'Chemistry', topic: 'acids and bases' },
+    { front: 'Allotropes of carbon',                   back: 'Diamond, graphite, fullerene, graphene',                       subject: 'Chemistry', topic: 'carbon and its compounds' },
+    { front: 'Functional group: –COOH',                back: 'Carboxylic acid',                                              subject: 'Chemistry', topic: 'carbon and its compounds' },
+    { front: 'Saponification',                         back: 'Ester + NaOH → soap + alcohol',                                subject: 'Chemistry', topic: 'carbon and its compounds' },
+    // Biology
+    { front: 'Powerhouse of the cell',                 back: 'Mitochondria',                                                 subject: 'Biology', topic: 'cell' },
+    { front: 'Photosynthesis equation',                back: '6CO₂ + 6H₂O → C₆H₁₂O₆ + 6O₂  (in light, chlorophyll)',         subject: 'Biology', topic: 'life processes' },
+    { front: 'Respiration in muscles during exercise', back: 'Anaerobic — glucose → lactic acid + 2 ATP',                    subject: 'Biology', topic: 'life processes' },
+    { front: 'DNA full form',                          back: 'Deoxyribonucleic acid',                                        subject: 'Biology', topic: 'dna' },
+    { front: 'Chambers of the human heart',            back: '4 — 2 atria + 2 ventricles',                                   subject: 'Biology', topic: 'heart' },
+    // English / Social
+    { front: 'Simile vs metaphor',                     back: 'Simile uses "like/as"; metaphor states A is B directly.',      subject: 'English', topic: 'figures of speech' },
+    { front: 'Year of Indian independence',            back: '1947',                                                         subject: 'History', topic: 'nationalism in india' },
+    { front: 'Author of the Indian Constitution',      back: 'Dr. B. R. Ambedkar (chairman, drafting committee)',            subject: 'Civics', topic: 'indian constitution' },
+  ]
+  for (const f of flashcards) {
+    try { recordFlashcard({ ...f, source: 'manual' }) } catch { /* ignore */ }
+  }
+
+  // ── Mistakes (2-3 logged — feeds Mistake Analysis) ──────────────────
+  try {
+    recordMistake({ subject: 'Math',    topic: 'vectors',            detail: 'Mixed up dot product and cross product directions.',                difficulty: 0.7 })
+    recordMistake({ subject: 'Physics', topic: 'light',              detail: 'Used 1/u + 1/v = 1/f instead of the lens formula 1/v - 1/u = 1/f.', difficulty: 0.6 })
+    recordMistake({ subject: 'Chemistry', topic: 'periodic table',   detail: 'Confused groups and periods on a question about reactivity trends.', difficulty: 0.5 })
+  } catch { /* ignore */ }
+
+  // ── Concepts (~12 nodes with cross-subject links — feeds Concept
+  //    Map + Knowledge Graph) ──────────────────────────────────────────
+  try {
+    recordConcept({ name: 'newton laws',          subject: 'Physics',   related: ['energy', 'kinematics'] })
+    recordConcept({ name: 'energy',               subject: 'Physics',   related: ['newton laws', 'work'] })
+    recordConcept({ name: 'light',                subject: 'Physics',   related: ['refraction', 'lens formula'] })
+    recordConcept({ name: 'lens formula',         subject: 'Physics',   related: ['light'] })
+    recordConcept({ name: 'electricity',          subject: 'Physics',   related: ['ohm law'] })
+    recordConcept({ name: 'quadratic equations',  subject: 'Math',      related: ['discriminant', 'roots'] })
+    recordConcept({ name: 'trigonometry',         subject: 'Math',      related: ['pythagoras', 'identities'] })
+    recordConcept({ name: 'arithmetic progressions', subject: 'Math',   related: ['sequences', 'sum formula'] })
+    recordConcept({ name: 'periodic table',       subject: 'Chemistry', related: ['atomic number', 'groups'] })
+    recordConcept({ name: 'carbon and its compounds', subject: 'Chemistry', related: ['functional groups', 'allotropes'] })
+    recordConcept({ name: 'life processes',       subject: 'Biology',   related: ['photosynthesis', 'respiration'] })
+    recordConcept({ name: 'dna',                  subject: 'Biology',   related: ['cell', 'heredity'] })
+  } catch { /* ignore */ }
+
+  // ── A few formulas pinned (feeds Formula Sheet's "collected" tab) ──
+  try {
+    recordFormula({ name: 'Newton’s 2nd law', expr: '$F = ma$',                                 subject: 'Physics',   topic: 'newton laws',           source: 'manual' })
+    recordFormula({ name: 'Ohm’s law',        expr: '$V = IR$',                                 subject: 'Physics',   topic: 'electricity',           source: 'manual' })
+    recordFormula({ name: 'Lens formula',     expr: '$\\frac{1}{v} - \\frac{1}{u} = \\frac{1}{f}$', subject: 'Physics', topic: 'light',                source: 'manual' })
+    recordFormula({ name: 'Quadratic roots',  expr: '$x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}$',  subject: 'Math',    topic: 'quadratic equations',  source: 'manual' })
+    recordFormula({ name: 'Photosynthesis',   expr: '$6CO_2 + 6H_2O \\rightarrow C_6H_{12}O_6 + 6O_2$', subject: 'Biology', topic: 'photosynthesis',   source: 'manual' })
+  } catch { /* ignore */ }
+
   // Final recompute against the backdated timeline so the dashboard
   // reads as days of activity rather than a 14-event spike at t=now.
-  if (state) {
-    recompute(state)
-    saveState(state)
-  }
-  return state ?? loadState()
+  state = loadState()
+  recompute(state)
+  saveState(state)
+  return state
 }
 
 // ════════════════════════════════════════════════════════════════════════════
