@@ -160,6 +160,11 @@ export default function TwinBackupModal({ open, onClose, onChange }: Props) {
 
   return createPortal(
     <AnimatePresence>
+      {/* Backdrop — opaque + isolation context so the sidebar's profile
+          chip (and any other fixed-position sibling outside the portal)
+          can't leak through. Chromium has a documented issue where
+          backdrop-filter on a fixed div doesn't always cover fixed
+          siblings; bumping alpha + isolation kills that bleed. */}
       <motion.div
         key="tbm-backdrop"
         initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
@@ -167,59 +172,59 @@ export default function TwinBackupModal({ open, onClose, onChange }: Props) {
         onClick={onClose}
         style={{
           position: 'fixed', inset: 0, zIndex: 9998,
-          background: 'rgba(6,6,10,0.78)', backdropFilter: 'blur(10px)',
-          WebkitBackdropFilter: 'blur(10px)',
+          background: 'rgba(5, 5, 5, 0.92)',
+          backdropFilter: 'blur(14px) saturate(140%)',
+          WebkitBackdropFilter: 'blur(14px) saturate(140%)',
+          isolation: 'isolate',
         }}
       />
       <motion.div
         key="tbm-panel"
-        initial={{ opacity: 0, y: 24, scale: 0.96 }}
+        initial={{ opacity: 0, y: 16, scale: 0.97 }}
         animate={{ opacity: 1, y: 0,  scale: 1 }}
-        exit={{ opacity: 0, y: 24,    scale: 0.96 }}
+        exit={{ opacity: 0, y: 16,    scale: 0.97 }}
         transition={{ type: 'spring', stiffness: 380, damping: 32 }}
         style={{
           position: 'fixed', top: '50%', left: '50%',
           transform: 'translate(-50%, -50%)',
-          width: 'min(640px, calc(100vw - 32px))',
-          maxHeight: 'calc(100vh - 80px)',
+          width: 'min(620px, calc(100vw - 32px))',
+          // Tighter cap — never exceeds 86vh so on short viewports the
+          // panel still has visible margins top + bottom.
+          maxHeight: 'min(720px, calc(100vh - 48px))',
           zIndex: 9999,
           background: C.panel,
           border: `1px solid ${C.border}`,
-          borderRadius: 18,
+          borderRadius: 16,
           display: 'flex', flexDirection: 'column',
           overflow: 'hidden',
-          boxShadow: '0 30px 80px rgba(0,0,0,0.6), 0 0 60px rgba(79, 124, 255, 0.01)',
+          boxShadow: '0 24px 64px rgba(0, 0, 0, 0.70)',
         }}
       >
-        {/* HEADER */}
+        {/* HEADER — compact: no oversized icon block, one-line title +
+            short subtitle so the body has room. */}
         <div style={{
-          padding: '18px 22px',
+          padding: '14px 18px',
           borderBottom: `1px solid ${C.border}`,
-          display: 'flex', alignItems: 'flex-start', gap: 14,
-          background: `linear-gradient(180deg, rgba(79, 124, 255, 0.10), transparent)`,
+          display: 'flex', alignItems: 'center', gap: 12,
+          background: `linear-gradient(180deg, rgba(79, 124, 255, 0.08), transparent)`,
         }}>
           <div style={{
-            width: 40, height: 40, borderRadius: 11, flexShrink: 0,
+            width: 32, height: 32, borderRadius: 9, flexShrink: 0,
             background: 'linear-gradient(135deg, #A5B4FC, #4F7CFF)',
             display: 'grid', placeItems: 'center',
-            boxShadow: '0 8px 22px rgba(79, 124, 255, 0.04)',
           }}>
-            <FileJson size={20} color="#000" />
+            <FileJson size={15} color="#0E1117" />
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{
-              fontSize: 10, fontWeight: 700, color: C.purpleLite,
-              textTransform: 'uppercase', letterSpacing: 1.6,
-            }}>Twin · backup & restore</div>
-            <h2 style={{ margin: '2px 0 0', fontSize: 18, fontWeight: 800, color: C.text, letterSpacing: -0.3, lineHeight: 1.25 }}>
+            <h2 style={{ margin: 0, fontSize: 15.5, fontWeight: 700, color: C.text, letterSpacing: '-0.01em', lineHeight: 1.2 }}>
               Move your Twin to another device
             </h2>
-            <div style={{ fontSize: 12, color: C.textFaint, marginTop: 4, lineHeight: 1.5 }}>
-              Export here, then import on your phone or other laptop. Nothing leaves your device — it's a single JSON file.
+            <div style={{ fontSize: 11.5, color: C.textFaint, marginTop: 2, lineHeight: 1.45 }}>
+              Single JSON file. Nothing leaves your device.
             </div>
           </div>
-          <button onClick={onClose} title="Close" style={{
-            width: 32, height: 32, borderRadius: 8,
+          <button onClick={onClose} aria-label="Close" style={{
+            width: 30, height: 30, borderRadius: 8,
             background: 'transparent', border: `1px solid ${C.border}`,
             cursor: 'pointer', display: 'grid', placeItems: 'center', flexShrink: 0,
           }}>
@@ -246,37 +251,43 @@ export default function TwinBackupModal({ open, onClose, onChange }: Props) {
         </AnimatePresence>
 
         {/* BODY */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '18px 22px 22px' }}>
+        <div style={{ flex: 1, overflowY: 'auto', padding: '14px 18px 18px' }}>
           {tab === 'export' && (
             <>
-              {/* Step 1 visual */}
+              {/* Step 1 visual — tighter, single-line copy */}
               <div style={{
-                display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16,
-                padding: '12px 14px', borderRadius: 12,
-                background: 'rgba(102, 217, 255, 0.06)',
-                border: '1px solid rgba(102, 217, 255, 0.22)',
+                display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14,
+                padding: '10px 12px', borderRadius: 10,
+                background: 'rgba(102, 217, 255, 0.05)',
+                border: '1px solid rgba(102, 217, 255, 0.18)',
               }}>
-                <Laptop size={18} color={C.purpleLite} />
-                <ChevronsRight size={14} color={C.textFaint} />
-                <Smartphone size={18} color={C.purpleLite} />
-                <span style={{ fontSize: 12.5, color: C.textDim, lineHeight: 1.5, marginLeft: 4 }}>
-                  Download the file here, then open Kairo on your other device and use <strong style={{ color: C.text }}>Import</strong> with the same file.
+                <Laptop size={14} color={C.purpleLite} />
+                <ChevronsRight size={12} color={C.textFaint} />
+                <Smartphone size={14} color={C.purpleLite} />
+                <span style={{ fontSize: 11.5, color: C.textDim, lineHeight: 1.45, marginLeft: 2 }}>
+                  Download here, then <strong style={{ color: C.text }}>Import</strong> the file on the other device.
                 </span>
               </div>
 
-              {/* Stats summary */}
+              {/* Stats summary — 6 columns on desktop so all stats fit
+                  in one row and the body doesn't double-wrap. Drops
+                  to 3 cols below 520px. */}
               {stats && (
-                <div style={{ marginBottom: 16 }}>
-                  <div style={{ fontSize: 10, fontWeight: 700, color: C.textFaint, textTransform: 'uppercase', letterSpacing: 1.4, marginBottom: 8 }}>
+                <div style={{ marginBottom: 14 }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: C.textFaint, textTransform: 'uppercase', letterSpacing: 1.4, marginBottom: 6 }}>
                     What's in your backup
                   </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(86px, 1fr))',
+                    gap: 6,
+                  }}>
                     <StatTile label="Events"     value={stats.events} />
                     <StatTile label="Doubts"     value={stats.doubts} />
                     <StatTile label="Concepts"   value={stats.concepts} />
                     <StatTile label="Formulas"   value={stats.formulas} />
                     <StatTile label="Flashcards" value={stats.flashcards} />
-                    <StatTile label="Mastery rows" value={stats.mastery} />
+                    <StatTile label="Mastery"    value={stats.mastery} />
                   </div>
                 </div>
               )}
@@ -441,11 +452,16 @@ function TabBtn({ active, onClick, children }: { active: boolean; onClick: () =>
 function StatTile({ label, value }: { label: string; value: number }) {
   return (
     <div style={{
-      padding: '10px 12px', borderRadius: 10,
+      padding: '8px 10px', borderRadius: 9,
       background: C.panel2, border: `1px solid ${C.borderSoft}`,
+      minWidth: 0,
     }}>
-      <div style={{ fontSize: 9.5, fontWeight: 700, color: C.textFaint, textTransform: 'uppercase', letterSpacing: 1.4 }}>{label}</div>
-      <div style={{ fontSize: 18, fontWeight: 800, color: C.text, marginTop: 2, letterSpacing: -0.4 }}>{value}</div>
+      <div style={{
+        fontSize: 9, fontWeight: 700, color: C.textFaint,
+        textTransform: 'uppercase', letterSpacing: 1.2,
+        whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+      }}>{label}</div>
+      <div style={{ fontSize: 16, fontWeight: 800, color: C.text, marginTop: 2, letterSpacing: -0.4 }}>{value}</div>
     </div>
   )
 }
