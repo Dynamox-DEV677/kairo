@@ -259,10 +259,24 @@ function EmergingLines({
   )
 }
 
-// ─── Logo assembly — three K strokes draw themselves in, then a soft pulse ──
+// ─── Logo assembly — the actual Kairo mark materialises from centre out ────
+//
+// The brand mark is a hand-drawn organic logo (PNG, transparent on dark).
+// Without a vector source we can't path-draw individual strokes, so the
+// "construct" feel comes from a four-layer reveal:
+//
+//   1. A blue radial bloom expands behind where the mark will appear
+//   2. The PNG reveals via clip-path circle growing from 0% -> 75% at
+//      centre — feels like the mark crystallising outward, not a wipe
+//   3. Filter blur drops from 12px -> 0 over the same window so the
+//      mark also "comes into focus"
+//   4. Scale 0.92 -> 1.0 -> pulse settle
+//
+// Combined, it reads as "the logo is being constructed". When you have
+// the brand mark as SVG paths, swap the <img> for <motion.path>
+// elements driven by `pathLength` and the rest of this component stays
+// the same.
 function LogoAssemble({ reduce }: { reduce: boolean | null }) {
-  const strokeDur = T.logoStrokes / 2.2     // each stroke
-  const stagger   = T.logoStrokes / 5       // gap between starts
   const easeInk: [number, number, number, number] = [0.83, 0, 0.17, 1]
 
   return (
@@ -271,65 +285,115 @@ function LogoAssemble({ reduce }: { reduce: boolean | null }) {
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       pointerEvents: 'none',
     }}>
-      <motion.svg
-        width="clamp(180px, 22vw, 280px)"
-        height="clamp(180px, 22vw, 280px)"
-        viewBox="0 0 320 320"
-        // Lock pulse — fires once the three strokes have completed
-        initial={{ scale: 1 }}
-        animate={reduce ? { scale: 1 } : { scale: [1, 1.045, 1] }}
+      <motion.div
+        // Settle + lock pulse — one combined keyframe so the mark
+        // never sits at scale=1 in a static way before the pulse.
+        initial={{ scale: 0.92 }}
+        animate={reduce ? { scale: 1 } : { scale: [0.92, 1.0, 1.045, 1.0] }}
         transition={{
-          delay:    T.logoLock,
-          duration: 0.55,
+          delay:    T.logoStart,
+          times:    [0, 0.62, 0.84, 1],
+          duration: T.logoStrokes + 0.55,
           ease:     'easeOut',
         }}
-        style={{ overflow: 'visible' }}
+        style={{
+          position: 'relative',
+          width:  'clamp(220px, 26vw, 340px)',
+          height: 'clamp(220px, 26vw, 340px)',
+        }}
       >
-        <defs>
-          <linearGradient id="kairo-loader-stroke" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%"  stopColor={C.primary} />
-            <stop offset="55%" stopColor={C.secondary} />
-            <stop offset="100%" stopColor="#FFFFFF" />
-          </linearGradient>
-          <filter id="kairo-loader-glow" x="-30%" y="-30%" width="160%" height="160%">
-            <feGaussianBlur stdDeviation="2.4" result="b" />
-            <feMerge>
-              <feMergeNode in="b" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
-        </defs>
+        {/* Bloom layer — soft blue glow that emerges underneath the
+            mark. Alpha is capped at 0.28 per the refinement spec. */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.7 }}
+          animate={reduce ? { opacity: 0.4, scale: 1 } : { opacity: [0, 0.5, 0.4], scale: 1 }}
+          transition={{
+            opacity:  { delay: T.logoStart + 0.15, duration: 1.0, ease: easeInk, times: [0, 0.7, 1] },
+            scale:    { delay: T.logoStart + 0.15, duration: 1.0, ease: easeInk },
+          }}
+          style={{
+            position: 'absolute', inset: '-22%',
+            background: `radial-gradient(circle, rgba(79, 124, 255, 0.28) 0%, rgba(102, 217, 255, 0.10) 38%, transparent 70%)`,
+            filter: 'blur(18px)',
+            pointerEvents: 'none',
+          }}
+        />
 
-        {/* The three K strokes — pathLength 0 → 1 with INK easing (slow
-            start, hard finish) so each line feels intentional. */}
-        <g
-          fill="none"
-          stroke="url(#kairo-loader-stroke)"
-          strokeWidth={26}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          filter="url(#kairo-loader-glow)"
-        >
-          <motion.path
-            d="M 70 28 L 70 292"
-            initial={{ pathLength: 0 }}
-            animate={{ pathLength: 1 }}
-            transition={{ delay: T.logoStart,                 duration: strokeDur, ease: easeInk }}
+        {/* The actual Kairo mark.
+
+            Reveal stack:
+              - clip-path circle expands centre-out (the "construct" gesture)
+              - blur drops 12px -> 0 (the "crystallise" gesture)
+              - opacity 0 -> 1
+
+            Note: clip-path goes to 75%, not 100%, because the SVG
+            mark has soft edges that look better cropped slightly.
+            If you want the full mark visible bump to 100%. */}
+        <motion.img
+          src="/kairo_logo.png"
+          alt="Kairo"
+          draggable={false}
+          initial={{
+            opacity: 0,
+            clipPath:        'circle(0% at 50% 50%)',
+            WebkitClipPath:  'circle(0% at 50% 50%)',
+          }}
+          animate={
+            reduce
+              ? { opacity: 1, clipPath: 'circle(80% at 50% 50%)', WebkitClipPath: 'circle(80% at 50% 50%)' }
+              : {
+                  opacity:        1,
+                  clipPath:       'circle(80% at 50% 50%)',
+                  WebkitClipPath: 'circle(80% at 50% 50%)',
+                }
+          }
+          transition={{
+            opacity:  { delay: T.logoStart + 0.10, duration: T.logoStrokes * 0.55, ease: easeInk },
+            clipPath: { delay: T.logoStart,        duration: T.logoStrokes,        ease: easeInk },
+          }}
+          style={{
+            position: 'absolute',
+            inset: 0,
+            width: '100%',
+            height: '100%',
+            objectFit: 'contain',
+            // Mid-strength drop-shadow — stays under the 0.32 ceiling
+            filter: 'drop-shadow(0 0 20px rgba(79, 124, 255, 0.30))',
+            userSelect: 'none',
+            WebkitUserDrag: 'none',
+          } as React.CSSProperties}
+        />
+
+        {/* Focus pull — a separate blurred copy that fades out as the
+            sharp PNG above takes over. Gives the "coming into focus"
+            feel without animating filter on the main img (which is
+            expensive on mobile when combined with clip-path). */}
+        {!reduce && (
+          <motion.img
+            src="/kairo_logo.png"
+            alt=""
+            aria-hidden
+            draggable={false}
+            initial={{ opacity: 0, scale: 1.08 }}
+            animate={{ opacity: [0, 0.6, 0], scale: 1.0 }}
+            transition={{
+              delay: T.logoStart + 0.05,
+              duration: T.logoStrokes,
+              ease: easeInk,
+              times: [0, 0.5, 1],
+            }}
+            style={{
+              position: 'absolute',
+              inset: 0,
+              width: '100%', height: '100%',
+              objectFit: 'contain',
+              filter: 'blur(14px) saturate(120%)',
+              pointerEvents: 'none',
+              userSelect: 'none',
+            }}
           />
-          <motion.path
-            d="M 70 160 L 240 28"
-            initial={{ pathLength: 0 }}
-            animate={{ pathLength: 1 }}
-            transition={{ delay: T.logoStart + stagger,       duration: strokeDur, ease: easeInk }}
-          />
-          <motion.path
-            d="M 70 160 L 240 292"
-            initial={{ pathLength: 0 }}
-            animate={{ pathLength: 1 }}
-            transition={{ delay: T.logoStart + stagger * 2,   duration: strokeDur, ease: easeInk }}
-          />
-        </g>
-      </motion.svg>
+        )}
+      </motion.div>
     </div>
   )
 }
