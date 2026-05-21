@@ -20,7 +20,9 @@ import DepthFog      from '../primitives/DepthFog'
 const WORDMARK = 'KAIRO'
 const TAGLINE  = 'YOUR AI EDUCATION SYSTEM'
 
-export default function Scene07_Zoom({ globalFrame }: { globalFrame: number }) {
+export default function Scene07_Zoom() {
+  // useCurrentFrame() returns the absolute video frame now that
+  // <Sequence> has been removed from the composition shell.
   const frame = useCurrentFrame()
   const p     = sceneProgress('zoom', frame)
 
@@ -29,7 +31,7 @@ export default function Scene07_Zoom({ globalFrame }: { globalFrame: number }) {
   const zoom = 1 + CINEMATIC(p) * (MOTION.FINAL_ZOOM_FACTOR - 1)
 
   // Final pulse — fires at BEATS.finalPulse, lasts ~24f
-  const pulseElapsed = globalFrame - BEATS.finalPulse
+  const pulseElapsed = frame - BEATS.finalPulse
   const pulseT       = clamp01(pulseElapsed / 24)
   const finalPulse   = (pulseElapsed >= 0)
     ? 0.06 * (1 - PULSE(pulseT))

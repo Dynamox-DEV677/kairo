@@ -55,11 +55,15 @@ export function cameraAt(frame: number): CameraState {
     frame < SCENES.breathe.end    ? MOTION.CAMERA_Z_BREATHE :
                                     lerp(MOTION.CAMERA_Z_BREATHE,  MOTION.CAMERA_Z_FINAL,     CINEMATIC(pZoom))
 
-  // Yaw — scene 03 orbits, everything else holds.
+  // Yaw — scene 03 orbits to MOTION.ORBIT_DEGREES, then scene 04
+  // eases back to 0 as the lattice collapses into the K. After
+  // assembly, yaw holds at 0 for the reveal / breathe / zoom block
+  // so the climax reads stable, not tilted.
   const yaw =
-    frame < SCENES.lattice.start ? 0 :
-    frame < SCENES.lattice.end   ? lerp(0, MOTION.ORBIT_DEGREES, CINEMATIC(pLattice)) :
-                                   MOTION.ORBIT_DEGREES
+    frame < SCENES.lattice.start  ? 0 :
+    frame < SCENES.lattice.end    ? lerp(0, MOTION.ORBIT_DEGREES, CINEMATIC(pLattice)) :
+    frame < SCENES.assembly.end   ? lerp(MOTION.ORBIT_DEGREES, 0, APPLE(pAssembly)) :
+                                    0
 
   return { x: 0, y: 0, z, yaw }
 }

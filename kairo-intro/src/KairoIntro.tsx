@@ -1,17 +1,21 @@
 /**
  * KairoIntro — the top-level composition.
  *
- * Sequences the 7 scenes, applies the virtual camera (yaw + dolly),
- * and runs the global background. Every scene receives the
- * *current absolute frame* via `globalFrame` so beats anchored in
- * BEATS (which are absolute frame indices) line up regardless of
- * each <Sequence>'s own clock.
+ * IMPORTANT — Why we don't use <Sequence>:
  *
- * Scene cross-fades are handled by overlapping <Sequence> ranges
- * with OVERLAP_F — each scene fades its first/last OVERLAP_F frames
- * so adjacent scenes overlap visually without a hard cut.
+ * Remotion's <Sequence> shifts the child's clock — useCurrentFrame()
+ * inside a Sequence returns the frame *relative to the sequence
+ * start*, not the absolute video frame. Our SCENES anchors + BEATS
+ * (in config/timing.ts) are absolute frame numbers, so a Sequence
+ * would mean every `sceneProgress()` and BEATS comparison silently
+ * computes against the wrong clock.
+ *
+ * Instead, we mount every scene at the root level and gate visibility
+ * with opacity (and a hard null when the scene is far out of its
+ * window — keeps render cost down). Every component then sees the
+ * same absolute frame and the timing config Just Works.
  */
-import { AbsoluteFill, Sequence, useCurrentFrame } from 'remotion'
+import { AbsoluteFill, useCurrentFrame } from 'remotion'
 import { COLORS } from './config/colors'
 import { WIDTH, HEIGHT, SCENES, OVERLAP_F } from './config/timing'
 import { cameraAt } from './lib/camera'
@@ -25,18 +29,29 @@ import Scene06_Breathe   from './scenes/Scene06_Breathe'
 import Scene07_Zoom      from './scenes/Scene07_Zoom'
 
 /**
- * Wraps a scene with the camera transform (yaw rotation + scaled
- * dolly) so individual scenes don't have to re-apply them.
+ * Wraps the entire scene tree in the virtual-camera transform.
+ *
+ * Only the YAW rotation is applied at this layer — the dolly is
+ * already handled per-element:
+ *
+ *   - particles: lib/camera.ts `project()` scales each particle by
+ *     `FOCAL / (FOCAL - cam.z + world.z)` so depth reads correctly
+ *     without a global canvas scale
+ *   - logo / text: Scene07 applies its own zoom multiplier; the
+ *     intermediate scenes don't need a dolly because their content
+ *     is centred and the depth illusion comes from the particles
+ *
+ * If the CameraStage applied a global scale, the canvas itself
+ * would visibly shrink (a "screen within a screen" with black
+ * letterbox borders), which kills the cinematic feel.
  */
 function CameraStage({ children }: { children: React.ReactNode }) {
   const frame = useCurrentFrame()
   const cam   = cameraAt(frame)
-  // Map cam.z to a scale — the closer (less negative z), the larger
-  const scale = 800 / (800 - cam.z)
   return (
     <div style={{
       position: 'absolute', inset: 0,
-      transform: `rotate(${cam.yaw}deg) scale(${scale})`,
+      transform: `rotate(${cam.yaw}deg)`,
       transformOrigin: '50% 50%',
       willChange: 'transform',
     }}>
@@ -46,24 +61,28 @@ function CameraStage({ children }: { children: React.ReactNode }) {
 }
 
 /**
- * Scene wrapper — adds the cross-fade on entry/exit and forwards
- * the global frame to children that need it.
+ * Gates a scene by opacity around its [start, end] window with a
+ * soft cross-fade of OVERLAP_F frames at each edge.
+ *
+ * Returns null when the scene is far out of its window — saves the
+ * cost of running its particle field + SVGs every frame.
  */
-function SceneWrap({
-  scene, children,
+function SceneSlot({
+  scene,
+  children,
 }: {
   scene: keyof typeof SCENES
-  children: (globalFrame: number) => React.ReactNode
+  children: React.ReactNode
 }) {
   const frame = useCurrentFrame()
   const { start, end } = SCENES[scene]
-  // Fade in over OVERLAP_F at scene start, out at scene end
-  const fadeIn  = Math.min(1, (frame - start) / OVERLAP_F)
-  const fadeOut = Math.min(1, (end - frame)  / OVERLAP_F)
-  const opacity = Math.max(0, Math.min(fadeIn, fadeOut))
+  if (frame < start - OVERLAP_F || frame >= end + OVERLAP_F) return null
+  const fadeIn  = Math.min(1, Math.max(0, (frame - start) / OVERLAP_F))
+  const fadeOut = Math.min(1, Math.max(0, (end - frame)   / OVERLAP_F))
+  const opacity = Math.min(fadeIn, fadeOut)
   return (
     <div style={{ position: 'absolute', inset: 0, opacity }}>
-      {children(frame)}
+      {children}
     </div>
   )
 }
@@ -72,35 +91,13 @@ export default function KairoIntro() {
   return (
     <AbsoluteFill style={{ background: COLORS.bg, width: WIDTH, height: HEIGHT }}>
       <CameraStage>
-        {/* Scene durations are derived from SCENES anchors — no magic numbers
-            here. Add new scenes by adding to SCENES + registering below. */}
-        <Sequence from={SCENES.dawn.start}      durationInFrames={SCENES.dawn.end      - SCENES.dawn.start}>
-          <SceneWrap scene="dawn">{() => <Scene01_Dawn />}</SceneWrap>
-        </Sequence>
-
-        <Sequence from={SCENES.firstLine.start} durationInFrames={SCENES.firstLine.end - SCENES.firstLine.start}>
-          <SceneWrap scene="firstLine">{() => <Scene02_FirstLine />}</SceneWrap>
-        </Sequence>
-
-        <Sequence from={SCENES.lattice.start}   durationInFrames={SCENES.lattice.end   - SCENES.lattice.start}>
-          <SceneWrap scene="lattice">{() => <Scene03_Lattice />}</SceneWrap>
-        </Sequence>
-
-        <Sequence from={SCENES.assembly.start}  durationInFrames={SCENES.assembly.end  - SCENES.assembly.start}>
-          <SceneWrap scene="assembly">{() => <Scene04_Assembly />}</SceneWrap>
-        </Sequence>
-
-        <Sequence from={SCENES.reveal.start}    durationInFrames={SCENES.reveal.end    - SCENES.reveal.start}>
-          <SceneWrap scene="reveal">{(g) => <Scene05_Reveal globalFrame={g} />}</SceneWrap>
-        </Sequence>
-
-        <Sequence from={SCENES.breathe.start}   durationInFrames={SCENES.breathe.end   - SCENES.breathe.start}>
-          <SceneWrap scene="breathe">{(g) => <Scene06_Breathe globalFrame={g} />}</SceneWrap>
-        </Sequence>
-
-        <Sequence from={SCENES.zoom.start}      durationInFrames={SCENES.zoom.end      - SCENES.zoom.start}>
-          <SceneWrap scene="zoom">{(g) => <Scene07_Zoom globalFrame={g} />}</SceneWrap>
-        </Sequence>
+        <SceneSlot scene="dawn">      <Scene01_Dawn /></SceneSlot>
+        <SceneSlot scene="firstLine"> <Scene02_FirstLine /></SceneSlot>
+        <SceneSlot scene="lattice">   <Scene03_Lattice /></SceneSlot>
+        <SceneSlot scene="assembly">  <Scene04_Assembly /></SceneSlot>
+        <SceneSlot scene="reveal">    <Scene05_Reveal /></SceneSlot>
+        <SceneSlot scene="breathe">   <Scene06_Breathe /></SceneSlot>
+        <SceneSlot scene="zoom">      <Scene07_Zoom /></SceneSlot>
       </CameraStage>
     </AbsoluteFill>
   )

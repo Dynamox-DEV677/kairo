@@ -26,7 +26,10 @@ import DepthFog      from '../primitives/DepthFog'
 const WORDMARK = 'KAIRO'
 const TAGLINE  = 'YOUR AI EDUCATION SYSTEM'
 
-export default function Scene05_Reveal({ globalFrame }: { globalFrame: number }) {
+export default function Scene05_Reveal() {
+  // Now that <Sequence> is gone, useCurrentFrame() returns the absolute
+  // video frame — so BEATS comparisons and sceneProgress both work
+  // against the same clock without needing a prop.
   const frame = useCurrentFrame()
   const p     = sceneProgress('reveal', frame)
 
@@ -34,8 +37,7 @@ export default function Scene05_Reveal({ globalFrame }: { globalFrame: number })
   const fillProgress = APPLE(sub(p, 0, 0.15))
 
   // Lock pulse — fires at BEATS.logoLock (a couple frames into the scene)
-  const lockFrame   = BEATS.logoLock
-  const lockElapsed = globalFrame - lockFrame
+  const lockElapsed = frame - BEATS.logoLock
   const pulseWindow = 18                // frames the pulse takes
   const pulseT      = clamp01(lockElapsed / pulseWindow)
   const pulse       = MOTION.LOGO_LOCK_PULSE_AMP *
@@ -66,7 +68,7 @@ export default function Scene05_Reveal({ globalFrame }: { globalFrame: number })
           <SweepText
             text={WORDMARK}
             startFrame={BEATS.textKairoIn}
-            globalFrame={globalFrame}
+            currentFrame={frame}
             letterStaggerMs={MOTION.LETTER_STAGGER_MS}
             letterDurationMs={MOTION.LETTER_DURATION_MS}
             fontSize={94}
@@ -78,7 +80,7 @@ export default function Scene05_Reveal({ globalFrame }: { globalFrame: number })
           <SweepText
             text={TAGLINE}
             startFrame={BEATS.textTaglineIn}
-            globalFrame={globalFrame}
+            currentFrame={frame}
             letterStaggerMs={MOTION.TAGLINE_LETTER_MS}
             letterDurationMs={520}
             fontSize={14}
@@ -104,7 +106,7 @@ export default function Scene05_Reveal({ globalFrame }: { globalFrame: number })
 interface SweepProps {
   text: string
   startFrame: number
-  globalFrame: number
+  currentFrame: number
   letterStaggerMs: number
   letterDurationMs: number
   fontSize: number
@@ -115,7 +117,7 @@ interface SweepProps {
 }
 
 function SweepText({
-  text, startFrame, globalFrame,
+  text, startFrame, currentFrame,
   letterStaggerMs, letterDurationMs,
   fontSize, letterSpacing, color, fontWeight, uppercase,
 }: SweepProps) {
@@ -132,7 +134,7 @@ function SweepText({
     }}>
       {letters.map((ch, i) => {
         const letterStartF = startFrame + (i * letterStaggerMs * fps) / 1000
-        const elapsedF     = globalFrame - letterStartF
+        const elapsedF     = currentFrame - letterStartF
         const t            = clamp01(elapsedF / ((letterDurationMs * fps) / 1000))
         const eased        = LINEAR_R(t)
         // clip-path inset bottom retreats from 100% → 0%

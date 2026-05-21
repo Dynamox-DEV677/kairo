@@ -21,7 +21,9 @@ import DepthFog      from '../primitives/DepthFog'
 const WORDMARK = 'KAIRO'
 const TAGLINE  = 'YOUR AI EDUCATION SYSTEM'
 
-export default function Scene06_Breathe({ globalFrame }: { globalFrame: number }) {
+export default function Scene06_Breathe() {
+  // useCurrentFrame() returns the absolute video frame now that
+  // <Sequence> has been removed from the composition shell.
   const frame = useCurrentFrame()
   const p     = sceneProgress('breathe', frame)
 
@@ -35,8 +37,7 @@ export default function Scene06_Breathe({ globalFrame }: { globalFrame: number }
   // Caption holds full-opacity throughout (carried from scene 05)
   const captionOpacity = 1
 
-  // Reference globalFrame to keep parity with Scene05's prop shape
-  void BEATS.orbitalParticleIn; void globalFrame
+  void BEATS.orbitalParticleIn
 
   return (
     <>
