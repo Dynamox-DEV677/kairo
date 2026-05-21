@@ -16,7 +16,7 @@ import {
   CalendarDays, Zap, AlertCircle, Trophy, FileJson,
 } from 'lucide-react'
 import {
-  getDashboard, refresh, track, dumpState,
+  getDashboard, refresh, track, dumpState, seedDemo,
   dismissRecommendation, actOnRecommendation, clearTwin,
   type DashboardSnapshot,
   type Twin, type Observation, type Recommendation, type TwinEvent,
@@ -147,7 +147,11 @@ export default function KairoOS() {
     reload()
   }
   function onSeed() {
-    seedDemoEvents()
+    // Uses the canonical seed in lib/twin.ts (single source of truth
+    // for storage key derivation + backdating). The previous inline
+    // version duplicated the FNV-1a hash and silently failed when the
+    // two copies drifted out of sync.
+    seedDemo()
     reload()
   }
 
@@ -1716,60 +1720,9 @@ function EmptyState({ onRefresh, onSeed }: { onRefresh: () => void; onSeed: () =
   )
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// DEMO SEED — for new users to see what the dashboard looks like
-// ════════════════════════════════════════════════════════════════════════════
-function seedDemoEvents() {
-  const demo: Array<Parameters<typeof track>[0] & { _daysAgo?: number }> = [
-    { type: 'lab_opened',     subject: 'Biology',   topic: 'cell',                                       _daysAgo: 9 },
-    { type: 'quiz_answered',  subject: 'Math',      topic: 'quadratic equations', correct: false, score: 40, difficulty: 0.6, _daysAgo: 8 },
-    { type: 'quiz_answered',  subject: 'Math',      topic: 'quadratic equations', correct: true,  score: 70, difficulty: 0.6, _daysAgo: 8 },
-    { type: 'flashcard_review', subject: 'Chemistry', topic: 'periodic table',  correct: true, _daysAgo: 7 },
-    { type: 'lab_opened',     subject: 'Space',     topic: 'solar system',                              _daysAgo: 6 },
-    { type: 'quiz_answered',  subject: 'Physics',   topic: 'newton laws',         correct: true,  score: 80, difficulty: 0.5, _daysAgo: 5 },
-    { type: 'quiz_answered',  subject: 'Physics',   topic: 'newton laws',         correct: true,  score: 90, difficulty: 0.5, _daysAgo: 5 },
-    { type: 'essay_graded',   subject: 'English',   topic: 'persuasive essay',                          _daysAgo: 4 },
-    { type: 'lab_opened',     subject: 'Biology',   topic: 'dna',                                        _daysAgo: 3 },
-    { type: 'quiz_answered',  subject: 'Math',      topic: 'vectors',             correct: false, score: 30, difficulty: 0.7, _daysAgo: 2 },
-    { type: 'quiz_answered',  subject: 'Math',      topic: 'vectors',             correct: false, score: 50, difficulty: 0.7, _daysAgo: 2 },
-    { type: 'flashcard_review', subject: 'Chemistry', topic: 'periodic table',  correct: true, _daysAgo: 1 },
-    { type: 'lab_opened',     subject: 'Biology',   topic: 'heart',                                      _daysAgo: 1 },
-    { type: 'quiz_completed', subject: 'Math',      topic: 'quadratic equations', score: 75,             _daysAgo: 0 },
-  ]
-  // Use track normally, then post-process timestamps by reading + re-saving.
-  // (Cheap hack: avoids exposing a private "track at time T" API.)
-  for (const d of demo) {
-    const { _daysAgo, ...args } = d
-    track(args as any)
-    // Backdate the just-pushed event
-    try {
-      const state = JSON.parse(localStorage.getItem(localStorageKeyForDemo())!)
-      const ev = state.events[state.events.length - 1]
-      if (ev && _daysAgo) {
-        ev.ts = Date.now() - _daysAgo * 86_400_000
-        localStorage.setItem(localStorageKeyForDemo(), JSON.stringify(state))
-      }
-    } catch { /* ignore */ }
-  }
-}
-
-// Demo seed helper — read the same storage key the lib uses.
-function localStorageKeyForDemo(): string {
-  // duplicate the key derivation so we don't need to export the internal
-  try {
-    const tok = localStorage.getItem('kairo_token')
-    if (tok) {
-      const payload = JSON.parse(atob(tok.split('.')[1]))
-      if (payload?.sub) {
-        let h = 0x811c9dc5
-        const s = String(payload.sub)
-        for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 0x01000193)
-        return 'kairo:twin:' + ((h >>> 0).toString(36)).padStart(7, '0')
-      }
-    }
-  } catch { /* ignore */ }
-  return 'kairo:twin:_local'
-}
+// (Demo seed logic now lives in lib/twin.ts as the exported `seedDemo()`
+// — single source of truth for the storage key + backdating maths,
+// shared by both desktop and mobile empty states.)
 
 // ════════════════════════════════════════════════════════════════════════════
 // HELPERS

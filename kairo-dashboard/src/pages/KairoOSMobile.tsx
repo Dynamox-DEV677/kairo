@@ -16,7 +16,7 @@ import {
   RefreshCw, FileJson,
 } from 'lucide-react'
 import {
-  getDashboard, refresh,
+  getDashboard, refresh, seedDemo,
   type DashboardSnapshot, type Twin, type MasteryRow,
 } from '../lib/twin'
 
@@ -57,7 +57,14 @@ export default function KairoOSMobile({ onNavigate, onOpenBackup }: Props) {
   useEffect(() => { reload() }, [])
 
   if (!snap || !snap.hasData) {
-    return <EmptyState />
+    return (
+      <EmptyState
+        onSeed={() => {
+          seedDemo()
+          reload()
+        }}
+      />
+    )
   }
 
   const twin = snap.twin!
@@ -545,7 +552,7 @@ function TopicChip({ row, onClick }: { row: MasteryRow & { retentionNow?: number
 // ════════════════════════════════════════════════════════════════════════════
 // EMPTY STATE
 // ════════════════════════════════════════════════════════════════════════════
-function EmptyState() {
+function EmptyState({ onSeed }: { onSeed?: () => void }) {
   return (
     <div style={{
       width: '100%', height: '100%',
@@ -567,6 +574,34 @@ function EmptyState() {
       <p style={{ margin: 0, fontSize: 13, color: C.textFaint, maxWidth: 320, textAlign: 'center', lineHeight: 1.55 }}>
         Take a quiz, open a lab, or ask the Solver. Your dashboard fills itself in as Kairo learns how you study.
       </p>
+      {onSeed && (
+        <button
+          onClick={onSeed}
+          style={{
+            marginTop: 8,
+            display: 'inline-flex', alignItems: 'center', gap: 8,
+            padding: '12px 22px', borderRadius: 12, border: 'none',
+            background: 'linear-gradient(135deg, #4F7CFF 0%, #2046C2 100%)',
+            color: '#fff', fontFamily: 'inherit', fontSize: 14, fontWeight: 700,
+            letterSpacing: 0.2, cursor: 'pointer',
+            boxShadow: '0 6px 18px rgba(79, 124, 255, 0.18)',
+            // Bigger tap target than desktop — finger-friendly
+            minHeight: 44,
+          }}
+        >
+          <Sparkles size={15} />
+          Try with demo data
+        </button>
+      )}
+      {onSeed && (
+        <p style={{
+          margin: '6px 0 0', fontSize: 11, color: C.textGhost,
+          maxWidth: 280, textAlign: 'center', lineHeight: 1.4,
+        }}>
+          Loads two weeks of sample activity so you can see what the
+          dashboard looks like in motion.
+        </p>
+      )}
     </div>
   )
 }

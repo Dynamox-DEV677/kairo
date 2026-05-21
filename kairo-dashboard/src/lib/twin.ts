@@ -713,6 +713,66 @@ export function track(args: TrackArgs): TwinState {
   return state
 }
 
+/**
+ * Seed a small set of realistic backdated events so a fresh account
+ * has something to look at on Kairo OS. Used by both the desktop and
+ * mobile empty-state "Try with demo data" buttons.
+ *
+ * Why here instead of in each page component?
+ *   - twin.ts owns the storage key derivation; reading/writing localStorage
+ *     directly from page code is brittle (the desktop version had a parallel
+ *     copy of the FNV-1a hash inline — easy to drift out of sync).
+ *   - mobile EmptyState had no button at all, so users on phones were
+ *     stuck on a blank dashboard after signing in to a fresh account.
+ *
+ * Idempotent: safe to call multiple times — each call appends another
+ * batch of events, which still reads as "lots of activity".
+ */
+export function seedDemo(): TwinState {
+  const demo: Array<TrackArgs & { _daysAgo?: number }> = [
+    { type: 'lab_opened',       subject: 'Biology',   topic: 'cell',                                                _daysAgo: 9 },
+    { type: 'quiz_answered',    subject: 'Math',      topic: 'quadratic equations', correct: false, score: 40, difficulty: 0.6, _daysAgo: 8 },
+    { type: 'quiz_answered',    subject: 'Math',      topic: 'quadratic equations', correct: true,  score: 70, difficulty: 0.6, _daysAgo: 8 },
+    { type: 'flashcard_review', subject: 'Chemistry', topic: 'periodic table',      correct: true,                _daysAgo: 7 },
+    { type: 'lab_opened',       subject: 'Space',     topic: 'solar system',                                       _daysAgo: 6 },
+    { type: 'quiz_answered',    subject: 'Physics',   topic: 'newton laws',         correct: true,  score: 80, difficulty: 0.5, _daysAgo: 5 },
+    { type: 'quiz_answered',    subject: 'Physics',   topic: 'newton laws',         correct: true,  score: 90, difficulty: 0.5, _daysAgo: 5 },
+    { type: 'essay_graded',     subject: 'English',   topic: 'persuasive essay',                                   _daysAgo: 4 },
+    { type: 'lab_opened',       subject: 'Biology',   topic: 'dna',                                                _daysAgo: 3 },
+    { type: 'quiz_answered',    subject: 'Math',      topic: 'vectors',             correct: false, score: 30, difficulty: 0.7, _daysAgo: 2 },
+    { type: 'quiz_answered',    subject: 'Math',      topic: 'vectors',             correct: false, score: 50, difficulty: 0.7, _daysAgo: 2 },
+    { type: 'flashcard_review', subject: 'Chemistry', topic: 'periodic table',      correct: true,                _daysAgo: 1 },
+    { type: 'lab_opened',       subject: 'Biology',   topic: 'heart',                                              _daysAgo: 1 },
+    { type: 'quiz_completed',   subject: 'Math',      topic: 'quadratic equations', score: 75,                    _daysAgo: 0 },
+  ]
+
+  let state: TwinState | null = null
+  for (const d of demo) {
+    const { _daysAgo, ...args } = d
+    state = track(args as TrackArgs)
+    // Backdate the just-pushed event. We use storageKey() (the same
+    // function track() uses) so the read + write here can't drift to
+    // a different bucket. Previous page-level copies inlined the hash
+    // and silently lost the backdate when the hash drifted.
+    if (_daysAgo && state) {
+      const lastEv = state.events[state.events.length - 1]
+      if (lastEv) {
+        lastEv.ts = Date.now() - _daysAgo * 86_400_000
+        try {
+          localStorage.setItem(storageKey(), JSON.stringify(state))
+        } catch { /* quota / private mode — ignore */ }
+      }
+    }
+  }
+  // Final recompute against the backdated timeline so the dashboard
+  // reads as days of activity rather than a 14-event spike at t=now.
+  if (state) {
+    recompute(state)
+    saveState(state)
+  }
+  return state ?? loadState()
+}
+
 // ════════════════════════════════════════════════════════════════════════════
 // MASTERY UPDATE (Ebbinghaus + EMA)
 // ════════════════════════════════════════════════════════════════════════════
