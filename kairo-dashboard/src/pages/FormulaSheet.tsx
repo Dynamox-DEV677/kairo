@@ -11,6 +11,7 @@ import {
 } from 'lucide-react'
 import { post, get, del } from '../lib/api'
 import { listFormulas, type Formula as TwinFormula } from '../lib/twin'
+import MathExpr from '../components/MathExpr'
 
 const SCHOOL_ID = 'demo_school'
 
@@ -263,14 +264,21 @@ function TwinFormulaCard({ f }: { f: TwinFormula }) {
         </button>
       </div>
       <div style={{
-        fontSize: 16, fontWeight: 700, color: C.purpleLite,
-        fontFamily: '"JetBrains Mono", ui-monospace, monospace',
-        padding: '10px 12px', borderRadius: 8,
-        background: 'rgba(79, 124, 255, 0.10)',
-        border: `1px solid rgba(79, 124, 255, 0.18)`,
-        wordBreak: 'break-word',
+        // Rendered math block — calm panel, centred, the KaTeX glyphs
+        // do the heavy lifting visually. No mono font; KaTeX brings its
+        // own serif typeface tuned for equations.
+        fontSize: 17, color: C.text,
+        padding: '14px 14px',
+        borderRadius: 10,
+        background: 'rgba(255, 255, 255, 0.03)',
+        backdropFilter: 'blur(10px) saturate(140%)',
+        WebkitBackdropFilter: 'blur(10px) saturate(140%)',
+        border: '1px solid rgba(255, 255, 255, 0.06)',
+        wordBreak: 'break-word', overflowX: 'auto',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        minHeight: 48, lineHeight: 1.4,
       }}>
-        {f.expr}
+        <MathExpr expr={f.expr} displayMode />
       </div>
       <div style={{ fontSize: 9.5, color: C.textGhost, marginTop: 8, textTransform: 'uppercase', letterSpacing: 1, fontWeight: 700 }}>
         {f.source} · {formatRelative(f.ts)}
@@ -425,7 +433,9 @@ function SheetViewer({ sheet }: { sheet: any }) {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 8 }}>
             {sheet.constants.map((c: any, i: number) => (
               <div key={i} style={{ background: C.panel2, borderRadius: 9, padding: '10px 12px', border: `1px solid ${C.borderSoft}` }}>
-                <div style={{ fontSize: 13, fontWeight: 800, color: C.purpleLite, fontFamily: 'monospace' }}>{c.symbol}</div>
+                <div style={{ fontSize: 15, color: C.text }}>
+                  <MathExpr expr={c.symbol} />
+                </div>
                 <div style={{ fontSize: 11, color: C.textDim, marginTop: 2 }}>{c.name}</div>
                 <div style={{ fontSize: 11, color: C.purple, marginTop: 3, fontFamily: 'monospace' }}>{c.value}</div>
               </div>
@@ -474,12 +484,16 @@ function FormulaRow({ formula }: { formula: any }) {
         </button>
       </div>
       <div style={{
-        fontSize: 16, fontWeight: 700, color: C.purpleLite,
-        fontFamily: 'monospace', marginBottom: 8,
-        padding: '8px 12px', background: 'rgba(79, 124, 255, 0.10)',
-        border: '1px solid rgba(79, 124, 255, 0.18)', borderRadius: 7,
+        fontSize: 17, color: C.text, marginBottom: 10,
+        padding: '12px 14px',
+        background: 'rgba(255, 255, 255, 0.03)',
+        backdropFilter: 'blur(10px) saturate(140%)',
+        WebkitBackdropFilter: 'blur(10px) saturate(140%)',
+        border: '1px solid rgba(255, 255, 255, 0.06)', borderRadius: 9,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        minHeight: 46, overflowX: 'auto', lineHeight: 1.4,
       }}>
-        {formula.formula}
+        <MathExpr expr={formula.formula} displayMode />
       </div>
       {formula.variables && <div style={{ fontSize: 11, color: C.textFaint, marginBottom: 4 }}><strong style={{ color: C.text }}>Variables:</strong> {formula.variables}</div>}
       {formula.when_to_use && <div style={{ fontSize: 11, color: C.textDim, marginBottom: 4 }}><strong style={{ color: C.text }}>Use when:</strong> {formula.when_to_use}</div>}
