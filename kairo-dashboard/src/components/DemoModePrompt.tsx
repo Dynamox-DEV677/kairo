@@ -23,7 +23,32 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Sparkles, X } from 'lucide-react'
 import { seedDemo, loadState } from '../lib/twin'
 
-const STORAGE_KEY = 'kairo:demo-prompt-shown'
+/**
+ * Per-user scoped flag. Earlier this was a single global key, which
+ * meant that once a user accepted/dismissed the toast, signing in
+ * with a *different* account would skip the prompt even though the
+ * new account's twin was empty.
+ *
+ * We derive the suffix the same way twin.ts derives the storage
+ * bucket — same FNV-1a hash, same `_local` fallback — so every new
+ * account gets its own first-visit nudge.
+ */
+function promptStorageKey(): string {
+  if (typeof window === 'undefined') return 'kairo:demo-prompt-shown:_local'
+  try {
+    const tok = localStorage.getItem('kairo_token')
+    if (tok) {
+      const payload = JSON.parse(atob(tok.split('.')[1]))
+      if (payload?.sub) {
+        let h = 0x811c9dc5
+        const s = String(payload.sub)
+        for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 0x01000193)
+        return 'kairo:demo-prompt-shown:' + ((h >>> 0).toString(36)).padStart(7, '0')
+      }
+    }
+  } catch { /* ignore */ }
+  return 'kairo:demo-prompt-shown:_local'
+}
 
 interface Props {
   /** Delay before the toast slides up, in ms. Default 1400ms — lets
@@ -38,7 +63,7 @@ export default function DemoModePrompt({ delayMs = 1400 }: Props) {
 
   useEffect(() => {
     if (typeof window === 'undefined') return
-    if (localStorage.getItem(STORAGE_KEY)) return     // already shown
+    if (localStorage.getItem(promptStorageKey())) return     // already shown
     try {
       // Only show on a truly empty twin
       const state = loadState()
@@ -50,7 +75,7 @@ export default function DemoModePrompt({ delayMs = 1400 }: Props) {
   }, [delayMs])
 
   function dismiss() {
-    try { localStorage.setItem(STORAGE_KEY, 'dismissed:' + Date.now()) } catch { /* ignore */ }
+    try { localStorage.setItem(promptStorageKey(), 'dismissed:' + Date.now()) } catch { /* ignore */ }
     setOpen(false)
   }
 
@@ -59,7 +84,7 @@ export default function DemoModePrompt({ delayMs = 1400 }: Props) {
     setBusy(true)
     try {
       seedDemo()
-      localStorage.setItem(STORAGE_KEY, 'accepted:' + Date.now())
+      localStorage.setItem(promptStorageKey(), 'accepted:' + Date.now())
       // Reload so every page in the app re-reads from the now-seeded twin.
       // Routes that subscribe to `storage` events (Kairo OS) would still
       // update without this, but Solver / Notebook / Formula Sheet read
