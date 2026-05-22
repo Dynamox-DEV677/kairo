@@ -508,10 +508,10 @@ export function getSyncEnabled(): boolean {
   if (typeof window === 'undefined') return false
   try {
     const raw = localStorage.getItem('kairo:sync:enabled')
-    // Default OFF — Kairo is local-first. Users who want cross-device sync
-    // can opt in from Settings; until then, the Twin lives only on the
-    // device and the twin_snapshots table stays empty in production.
-    if (raw === null) return false
+    // Default ON — cross-device sync works out of the box. The cloud
+    // snapshot is ephemeral (wiped right after a pull) so privacy impact
+    // is minimal. Users can still opt out from Settings.
+    if (raw === null) return true
     return raw === '1'
   } catch { return false }
 }

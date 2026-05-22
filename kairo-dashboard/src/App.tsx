@@ -84,9 +84,8 @@ export default function App() {
   // animation so the moment feels intentional.
   useEffect(() => {
     if (!profile || profile.localMode) return
-    // Sync is off by default now — Kairo is local-first. Skip the pull
-    // unless the user explicitly opted in from Settings. Keeps the
-    // twin_snapshots table empty in production.
+    // Sync is on by default — twin data follows you across devices.
+    // Users can opt out from Settings if they prefer local-only.
     if (!getSyncEnabled()) return
 
     // Skip if we've already auto-pulled in this session
