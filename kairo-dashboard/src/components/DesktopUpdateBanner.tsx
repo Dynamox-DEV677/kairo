@@ -1,18 +1,15 @@
 /**
- * Desktop Update Banner.
+ * Desktop Update Banner — branded, two-phase update notification.
  *
- * Listens for `window.kairoDesktop.onUpdateReady()` — fired by the
- * Electron auto-updater when a new installer has finished downloading.
- * Slides up from the bottom of the window with a tight, Kairo-styled
- * "Restart to update" card. Clicking Restart calls back into IPC and
- * the shell quits + relaunches on the new build.
+ * Phase 1 (downloading): Slim pill with animated progress bar + speed readout.
+ * Phase 2 (ready):       Full card with "Restart" CTA.
  *
- * In the web build (no Electron), `kairoDesktop` is undefined and this
- * component renders nothing. Safe to mount unconditionally in App.tsx.
+ * Both phases are fully in-app — no fallback to plain OS notifications.
+ * In the web build (no Electron), renders nothing.
  */
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Sparkles, RotateCcw, X } from 'lucide-react'
+import { Download, RotateCcw, X, ArrowDownToLine } from 'lucide-react'
 
 interface UpdateInfo {
   version:     string
@@ -20,139 +17,245 @@ interface UpdateInfo {
   releaseName: string | null
 }
 
+interface DownloadInfo {
+  version:        string | null
+  percent:        number
+  bytesPerSecond?: number
+  transferred?:   number
+  total?:         number
+}
+
 declare global {
   interface Window {
     kairoDesktop?: {
-      isDesktop:        boolean
-      onUpdateReady?:   (cb: (info: UpdateInfo) => void) => () => void
-      restartToUpdate?: () => Promise<void>
+      isDesktop:            boolean
+      onUpdateDownloading?: (cb: (info: DownloadInfo) => void) => () => void
+      onUpdateReady?:       (cb: (info: UpdateInfo) => void) => () => void
+      restartToUpdate?:     () => Promise<void>
     }
   }
 }
 
+type Phase = 'idle' | 'downloading' | 'ready'
+
+function formatBytes(b: number): string {
+  if (b < 1024) return `${b} B`
+  if (b < 1024 * 1024) return `${(b / 1024).toFixed(0)} KB`
+  return `${(b / (1024 * 1024)).toFixed(1)} MB`
+}
+
 export default function DesktopUpdateBanner() {
-  const [info,    setInfo]    = useState<UpdateInfo | null>(null)
-  const [busy,    setBusy]    = useState(false)
+  const [phase, setPhase]       = useState<Phase>('idle')
+  const [version, setVersion]   = useState('')
+  const [percent, setPercent]   = useState(0)
+  const [speed, setSpeed]       = useState(0)
+  const [busy, setBusy]         = useState(false)
   const [dismissed, setDismissed] = useState(false)
+  const versionRef = useRef('')
 
   useEffect(() => {
     if (typeof window === 'undefined') return
     const api = window.kairoDesktop
-    if (!api?.isDesktop || !api.onUpdateReady) return
+    if (!api?.isDesktop) return
 
-    // Subscribe — returns an unsubscriber. Renders nothing until the
-    // first update-downloaded event fires.
-    const unsub = api.onUpdateReady((next) => {
-      setInfo(next)
-      setDismissed(false)        // re-show if previously dismissed
-    })
-    return () => unsub()
+    const unsubs: (() => void)[] = []
+
+    if (api.onUpdateDownloading) {
+      unsubs.push(api.onUpdateDownloading((info) => {
+        if (info.version) {
+          versionRef.current = info.version
+          setVersion(info.version)
+        }
+        setPercent(info.percent ?? 0)
+        setSpeed(info.bytesPerSecond ?? 0)
+        setPhase('downloading')
+        setDismissed(false)
+      }))
+    }
+
+    if (api.onUpdateReady) {
+      unsubs.push(api.onUpdateReady((info) => {
+        setVersion(info.version || versionRef.current || 'latest')
+        setPhase('ready')
+        setDismissed(false)
+      }))
+    }
+
+    return () => unsubs.forEach(u => u())
   }, [])
 
-  if (!info || dismissed) return null
+  if (phase === 'idle' || dismissed) return null
 
   async function onRestart() {
     if (busy) return
     setBusy(true)
     try {
       await window.kairoDesktop?.restartToUpdate?.()
-      // No code runs after this — the app is restarting.
-    } catch (e) {
+    } catch {
       setBusy(false)
-      // eslint-disable-next-line no-console
-      console.warn('[Kairo] restart failed:', e)
     }
   }
 
+  const isDownloading = phase === 'downloading'
+  const isReady       = phase === 'ready'
+
   return (
-    <AnimatePresence>
+    <AnimatePresence mode="wait">
       <motion.div
-        key="update-banner"
-        initial={{ y: 100, opacity: 0 }}
-        animate={{ y: 0,   opacity: 1 }}
-        exit   ={{ y: 100, opacity: 0 }}
-        transition={{ type: 'spring', stiffness: 220, damping: 24 }}
+        key={phase}
+        initial={{ y: 80, opacity: 0, scale: 0.96 }}
+        animate={{ y: 0,  opacity: 1, scale: 1 }}
+        exit   ={{ y: 60, opacity: 0, scale: 0.97 }}
+        transition={{ type: 'spring', stiffness: 280, damping: 26 }}
         style={{
           position: 'fixed',
-          bottom: 'calc(28px + env(safe-area-inset-bottom))',
-          left:   '50%',
+          bottom: 'calc(24px + env(safe-area-inset-bottom))',
+          left: '50%',
           transform: 'translateX(-50%)',
           zIndex: 9999,
-          padding: '14px 18px 14px 16px',
-          minWidth: 320, maxWidth: 'calc(100vw - 32px)',
-          background:
-            'linear-gradient(135deg, #1a0b3b 0%, #0E1117 60%, #050505 100%)',
-          border: '1px solid rgba(102, 217, 255, 0.35)',
-          borderRadius: 16,
-          boxShadow:
-            '0 16px 48px rgba(79, 124, 255, 0.03), 0 0 0 1px rgba(255, 255, 255, 0.04) inset',
-          display: 'flex', alignItems: 'center', gap: 14,
-          fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif",
-          color: '#ffffff',
-          backdropFilter: 'blur(12px)',
-          WebkitBackdropFilter: 'blur(12px)',
+          minWidth: isDownloading ? 280 : 340,
+          maxWidth: 'calc(100vw - 32px)',
+          background: 'rgba(10, 12, 18, 0.92)',
+          backdropFilter: 'blur(20px) saturate(150%)',
+          WebkitBackdropFilter: 'blur(20px) saturate(150%)',
+          border: '1px solid rgba(79, 124, 255, 0.18)',
+          borderRadius: 14,
+          overflow: 'hidden',
+          fontFamily: "'Inter', -apple-system, system-ui, sans-serif",
+          color: '#fafafa',
+          boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.03) inset',
         }}
       >
-        {/* Sparkle badge */}
-        <div style={{
-          width: 36, height: 36, borderRadius: 10,
-          background: 'linear-gradient(135deg, #4F7CFF 0%, #2046C2 100%)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 0 18px rgba(79, 124, 255, 0.03)',
-          flexShrink: 0,
-        }}>
-          <Sparkles size={17} color="#fff" />
-        </div>
+        {/* ─── Downloading phase ─────────────────────────────────────── */}
+        {isDownloading && (
+          <div style={{ padding: '14px 16px 10px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              {/* Animated download icon */}
+              <motion.div
+                animate={{ y: [0, 3, 0] }}
+                transition={{ repeat: Infinity, duration: 1.4, ease: 'easeInOut' }}
+                style={{
+                  width: 32, height: 32, borderRadius: 9,
+                  background: 'linear-gradient(135deg, rgba(79, 124, 255, 0.15), rgba(79, 124, 255, 0.06))',
+                  border: '1px solid rgba(79, 124, 255, 0.12)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  flexShrink: 0,
+                }}
+              >
+                <ArrowDownToLine size={14} color="#4F7CFF" />
+              </motion.div>
 
-        {/* Copy */}
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 13.5, fontWeight: 700, letterSpacing: -0.1 }}>
-            Kairo {info.version} is ready
-          </div>
-          <div style={{
-            fontSize: 11.5, color: '#CBD5E1', marginTop: 2,
-            fontFamily: 'ui-monospace, monospace', letterSpacing: 0.2,
-          }}>
-            Restart to apply — your session stays put.
-          </div>
-        </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 12.5, fontWeight: 700, letterSpacing: '-0.01em' }}>
+                  Downloading Kairo {version || ''}
+                </div>
+                <div style={{
+                  fontSize: 11, color: '#8B92A0', marginTop: 1,
+                  fontFamily: 'ui-monospace, monospace',
+                }}>
+                  {percent}%{speed > 0 ? ` · ${formatBytes(speed)}/s` : ''}
+                </div>
+              </div>
 
-        {/* Buttons */}
-        <button
-          onClick={onRestart}
-          disabled={busy}
-          style={{
-            display: 'inline-flex', alignItems: 'center', gap: 6,
-            padding: '8px 14px', borderRadius: 10,
-            background: busy
-              ? 'rgba(102, 217, 255, 0.3)'
-              : 'linear-gradient(135deg, #fafafa 0%, #A5B4FC 100%)',
-            color: '#050505',
-            border: 'none', fontFamily: 'inherit',
-            fontSize: 12.5, fontWeight: 700, cursor: busy ? 'wait' : 'pointer',
-            boxShadow: '0 0 14px rgba(165, 180, 252, 0.03)',
-            flexShrink: 0,
-            transition: 'transform .15s',
-          }}
-          onMouseDown={e => (e.currentTarget.style.transform = 'scale(.97)')}
-          onMouseUp  ={e => (e.currentTarget.style.transform = 'scale(1)')}
-        >
-          {busy ? 'Restarting…' : <><RotateCcw size={12} /> Restart</>}
-        </button>
-        <button
-          onClick={() => setDismissed(true)}
-          aria-label="Dismiss update banner"
-          style={{
-            width: 28, height: 28, borderRadius: 8,
-            background: 'transparent',
-            border: '1px solid rgba(255, 255, 255, 0.08)',
-            color: '#9CA3AF', cursor: 'pointer',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            flexShrink: 0,
-          }}
-        >
-          <X size={13} />
-        </button>
+              <button
+                onClick={() => setDismissed(true)}
+                aria-label="Dismiss"
+                style={{
+                  background: 'transparent', border: 'none',
+                  color: 'rgba(255,255,255,0.3)', cursor: 'pointer',
+                  padding: 4, lineHeight: 0, borderRadius: 6,
+                }}
+              >
+                <X size={13} />
+              </button>
+            </div>
+
+            {/* Progress bar */}
+            <div style={{
+              marginTop: 10, height: 3, borderRadius: 2,
+              background: 'rgba(255, 255, 255, 0.06)',
+              overflow: 'hidden',
+            }}>
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${percent}%` }}
+                transition={{ ease: 'easeOut', duration: 0.4 }}
+                style={{
+                  height: '100%', borderRadius: 2,
+                  background: 'linear-gradient(90deg, #4F7CFF, #66D9FF)',
+                  boxShadow: '0 0 8px rgba(79, 124, 255, 0.3)',
+                }}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* ─── Ready phase ───────────────────────────────────────────── */}
+        {isReady && (
+          <div style={{ padding: '14px 16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              {/* Success icon */}
+              <div style={{
+                width: 36, height: 36, borderRadius: 10,
+                background: 'linear-gradient(135deg, #4F7CFF 0%, #2046C2 100%)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                boxShadow: '0 0 20px rgba(79, 124, 255, 0.15)',
+                flexShrink: 0,
+              }}>
+                <Download size={16} color="#fff" />
+              </div>
+
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 13.5, fontWeight: 700, letterSpacing: '-0.01em' }}>
+                  Kairo {version} is ready
+                </div>
+                <div style={{
+                  fontSize: 11.5, color: '#8B92A0', marginTop: 2,
+                  letterSpacing: 0.1,
+                }}>
+                  Restart to apply — your session picks up right where you left off.
+                </div>
+              </div>
+
+              {/* Restart button */}
+              <button
+                onClick={onRestart}
+                disabled={busy}
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 6,
+                  padding: '8px 16px', borderRadius: 9,
+                  background: busy
+                    ? 'rgba(79, 124, 255, 0.25)'
+                    : 'linear-gradient(135deg, #4F7CFF 0%, #2046C2 100%)',
+                  color: '#fff', border: 'none',
+                  fontFamily: 'inherit', fontSize: 12.5, fontWeight: 700,
+                  cursor: busy ? 'wait' : 'pointer',
+                  flexShrink: 0,
+                  transition: 'transform .12s',
+                }}
+                onMouseDown={e => (e.currentTarget.style.transform = 'scale(.96)')}
+                onMouseUp  ={e => (e.currentTarget.style.transform = 'scale(1)')}
+              >
+                {busy ? 'Restarting…' : <><RotateCcw size={12} /> Restart</>}
+              </button>
+
+              <button
+                onClick={() => setDismissed(true)}
+                aria-label="Dismiss"
+                style={{
+                  width: 28, height: 28, borderRadius: 8,
+                  background: 'transparent',
+                  border: '1px solid rgba(255, 255, 255, 0.06)',
+                  color: '#6B7280', cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  flexShrink: 0,
+                }}
+              >
+                <X size={13} />
+              </button>
+            </div>
+          </div>
+        )}
       </motion.div>
     </AnimatePresence>
   )

@@ -14,11 +14,15 @@ contextBridge.exposeInMainWorld('kairoDesktop', {
   getPlatform: () => ipcRenderer.invoke('kairo:get-platform'),
 
   // ── Auto-update flow ────────────────────────────────────────────────
-  // The main process fires 'kairo:update-ready' when an installer has
-  // finished downloading. The web app subscribes via onUpdateReady() and
-  // shows a Kairo-styled banner instead of the native OS dialog.
-  // Click the banner's "Restart" button → restartToUpdate() → main does
-  // autoUpdater.quitAndInstall().
+  // Three IPC channels surface the full update lifecycle in the React UI
+  // so we never fall back to a plain OS notification or dialog:
+  //   kairo:update-downloading  → version + progress %
+  //   kairo:update-ready        → download finished, restart available
+  onUpdateDownloading: (handler) => {
+    const fn = (_event, info) => handler(info)
+    ipcRenderer.on('kairo:update-downloading', fn)
+    return () => ipcRenderer.removeListener('kairo:update-downloading', fn)
+  },
   onUpdateReady: (handler) => {
     const fn = (_event, info) => handler(info)
     ipcRenderer.on('kairo:update-ready', fn)

@@ -44,11 +44,13 @@ function attach(mainWindow) {
   autoUpdater.on('update-available', (info) => {
     updateAvailable = true
     log.info(`[updater] update available: ${info?.version}`)
-    if (Notification.isSupported()) {
-      new Notification({
-        title: 'Kairo update available',
-        body:  `Downloading v${info?.version || 'latest'} in the background.`,
-      }).show()
+    // Send to the React UI so it shows a branded in-app banner with
+    // a progress bar — no more plain Windows system notifications.
+    if (mainWindowRef && !mainWindowRef.isDestroyed()) {
+      mainWindowRef.webContents.send('kairo:update-downloading', {
+        version:  info?.version || 'latest',
+        percent:  0,
+      })
     }
   })
 
@@ -63,9 +65,17 @@ function attach(mainWindow) {
   })
 
   autoUpdater.on('download-progress', (p) => {
-    // Optional: bridge this to the renderer to render a progress bar.
     if (mainWindowRef && !mainWindowRef.isDestroyed()) {
+      // Taskbar progress bar
       mainWindowRef.setProgressBar(p?.percent ? p.percent / 100 : -1)
+      // In-app progress — the React banner renders a live bar
+      mainWindowRef.webContents.send('kairo:update-downloading', {
+        version:  null,                     // already sent with update-available
+        percent:  Math.round(p?.percent ?? 0),
+        bytesPerSecond:  p?.bytesPerSecond ?? 0,
+        transferred:     p?.transferred ?? 0,
+        total:           p?.total ?? 0,
+      })
     }
   })
 
