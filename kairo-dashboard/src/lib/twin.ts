@@ -181,6 +181,19 @@ export interface TwinState {
 }
 
 // ════════════════════════════════════════════════════════════════════════════
+// STORAGE ADAPTER
+// ════════════════════════════════════════════════════════════════════════════
+//
+// All persistent reads/writes go through the storage adapter so SQLite
+// (Electron) or OPFS (browser) can drop in without touching this file.
+// See src/lib/storage.ts for the backend-detection logic.
+//
+// Note: auth-token reads (`kairo_token`) intentionally still hit localStorage
+// directly. That key is shared with api.ts, ChatWindow, MobileShell etc. —
+// migrating it requires a separate sweep across those files.
+import * as storage from './storage'
+
+// ════════════════════════════════════════════════════════════════════════════
 // CONSTANTS
 // ════════════════════════════════════════════════════════════════════════════
 
@@ -242,7 +255,7 @@ function emptyState(): TwinState {
 export function loadState(): TwinState {
   if (typeof window === 'undefined') return emptyState()
   try {
-    const raw = localStorage.getItem(storageKey())
+    const raw = storage.getRaw(storageKey())
     if (!raw) return emptyState()
     const parsed = JSON.parse(raw) as any
     // Migration: bump v2 (twin-only) → v3 (twin + domain arrays).
@@ -280,7 +293,7 @@ function saveState(state: TwinState) {
     state.events = state.events
       .filter(e => now - e.ts < EVENT_TTL_MS)
       .slice(-MAX_EVENTS)
-    localStorage.setItem(storageKey(), JSON.stringify(state))
+    storage.setRaw(storageKey(), JSON.stringify(state))
     // Fire-and-forget debounced cloud sync. Defined later in this file; safe
     // because hoisting means the function exists by the time saveState runs.
     try { scheduleSyncToCloud?.() } catch { /* ignore */ }
@@ -288,7 +301,7 @@ function saveState(state: TwinState) {
     // Quota exceeded — last-ditch attempt: keep only the most recent 200 events
     try {
       state.events = state.events.slice(-200)
-      localStorage.setItem(storageKey(), JSON.stringify(state))
+      storage.setRaw(storageKey(), JSON.stringify(state))
       try { scheduleSyncToCloud?.() } catch { /* ignore */ }
     } catch { /* give up silently — user is offline-only and storage-full */ }
   }
@@ -297,7 +310,7 @@ function saveState(state: TwinState) {
 /** Erase everything for the current user. UI's "Wipe my Twin" button. */
 export function clearTwin() {
   if (typeof window === 'undefined') return
-  localStorage.removeItem(storageKey())
+  storage.removeRaw(storageKey())
 }
 
 /**
@@ -317,8 +330,7 @@ export function resetAllData() {
     'kairo:onboarded',
   ])
   const toRemove: string[] = []
-  for (let i = 0; i < localStorage.length; i++) {
-    const k = localStorage.key(i)
+  for (const k of storage.listKeys()) {
     if (!k) continue
     // Anything in our namespace OR the per-feature legacy keys
     if (
@@ -326,7 +338,7 @@ export function resetAllData() {
       !PRESERVE.has(k)
     ) toRemove.push(k)
   }
-  for (const k of toRemove) localStorage.removeItem(k)
+  for (const k of toRemove) storage.removeRaw(k)
   // Notify any listeners (Kairo OS subscribes to `storage` events)
   try {
     window.dispatchEvent(new StorageEvent('storage', { key: storageKey() }))
@@ -501,13 +513,13 @@ function emitSync(kind: 'pulling' | 'pulled' | 'pushed' | 'idle' | 'error', deta
 /** Manually pause / resume sync. The UI keeps a toggle in Settings. */
 export function setSyncEnabled(on: boolean) {
   syncEnabled = on
-  try { localStorage.setItem('kairo:sync:enabled', on ? '1' : '0') } catch { /* ignore */ }
+  try { storage.setRaw('kairo:sync:enabled', on ? '1' : '0') } catch { /* ignore */ }
   if (on) scheduleSyncToCloud()
 }
 export function getSyncEnabled(): boolean {
   if (typeof window === 'undefined') return false
   try {
-    const raw = localStorage.getItem('kairo:sync:enabled')
+    const raw = storage.getRaw('kairo:sync:enabled')
     // Default ON — cross-device sync works out of the box. The cloud
     // snapshot is ephemeral (wiped right after a pull) so privacy impact
     // is minimal. Users can still opt out from Settings.
@@ -792,7 +804,7 @@ export function seedDemo(): TwinState {
       if (lastEv) {
         lastEv.ts = Date.now() - _daysAgo * 86_400_000
         try {
-          localStorage.setItem(storageKey(), JSON.stringify(state))
+          storage.setRaw(storageKey(), JSON.stringify(state))
         } catch { /* quota / private mode — ignore */ }
       }
     }

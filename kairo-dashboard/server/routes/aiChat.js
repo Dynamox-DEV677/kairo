@@ -89,6 +89,91 @@ function normalizeKey(question) {
     .trim()
 }
 
+/**
+ * Looks at the last user message to decide whether it's a knowledge question
+ * we can answer with Wikipedia (e.g. "what is photosynthesis", "explain DNA")
+ * vs. a context-dependent request (e.g. "rewrite my notebook with bullets",
+ * "make a quiz from this", "translate this to Hindi"). Wikipedia can only
+ * help with the first kind.
+ */
+function isKnowledgeQuestion(text) {
+  if (!text || typeof text !== 'string') return false
+  const t = text.toLowerCase().trim()
+  if (t.length < 6 || t.length > 240) return false
+  // Positive signals — looks like a "what / why / how / who / when" question
+  if (/^(what|why|how|who|when|where|which|explain|describe|tell me about|define|summari[sz]e)\b/.test(t)) return true
+  if (/^.{1,80}\?$/.test(t)) return true   // short single-sentence question
+  return false
+}
+
+/**
+ * Strip role/instruction noise and pull the actual student question out of the
+ * messages array. Picks the LAST user message, since multi-turn chats usually
+ * land on the actual ask there.
+ */
+function lastUserText(messages) {
+  if (!Array.isArray(messages)) return ''
+  for (let i = messages.length - 1; i >= 0; i--) {
+    const m = messages[i]
+    if (m?.role === 'user' && typeof m.content === 'string') return m.content
+  }
+  return ''
+}
+
+/**
+ * Format a Wikipedia-sourced fallback as an OpenAI-shaped chat completion so
+ * the frontend treats it like any other response. The `_fallback` flag lets
+ * the UI render a small "AI was busy — Wikipedia answer" hint.
+ */
+function asChatCompletion(model, content, fallback = false) {
+  return {
+    id: 'kairo-fallback-' + Date.now(),
+    object: 'chat.completion',
+    created: Math.floor(Date.now() / 1000),
+    model,
+    choices: [{
+      index: 0,
+      finish_reason: 'stop',
+      message: { role: 'assistant', content },
+    }],
+    usage: { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 },
+    _fallback: fallback,
+  }
+}
+
+/**
+ * Build a Wikipedia-sourced markdown answer for a knowledge question. Returns
+ * null when no article can be found. Re-uses the same wiki helpers Solver
+ * uses so the answer style stays consistent across Kairo.
+ */
+async function chatWikipediaFallback(question) {
+  try {
+    const cleaned = cleanQuestionForSearch(question)
+    let title = await wikiSearchFirstTitle(cleaned)
+    if (!title) title = await wikiSearchFirstTitle(question)
+    if (!title) return null
+
+    const extractsUrl = `https://en.wikipedia.org/w/api.php?action=query&format=json&prop=extracts|info&exsentences=8&explaintext=1&inprop=url&titles=${encodeURIComponent(title)}&origin=*`
+    const r = await fetch(extractsUrl, { headers: { 'User-Agent': 'KairoEdu/1.0' } })
+    if (!r.ok) return null
+    const d = await r.json()
+    const page = Object.values(d?.query?.pages || {})[0]
+    const extract = page?.extract
+    if (!extract) return null
+    const pageUrl = page.fullurl || `https://en.wikipedia.org/wiki/${encodeURIComponent(title)}`
+    return [
+      `## ${title}`,
+      ``,
+      extract,
+      ``,
+      `---`,
+      `*AI is busy right now — this answer is sourced from Wikipedia. [Read the full article →](${pageUrl})*`,
+    ].join('\n')
+  } catch {
+    return null
+  }
+}
+
 router.post('/chat', async (req, res) => {
   const { messages, model = 'openai/gpt-oss-20b:free', stream = false } = req.body
 
@@ -101,6 +186,8 @@ router.post('/chat', async (req, res) => {
     return res.status(503).json({ error: 'OPENROUTER_API_KEY not configured on server.' })
   }
 
+  // Wrap the full attempt so any failure can fall through to Wikipedia / a
+  // friendly degraded message — never a raw 5xx + stack trace for the user.
   try {
     const upstream = await fetch(OR_URL, {
       method: 'POST',
@@ -112,6 +199,13 @@ router.post('/chat', async (req, res) => {
       },
       body: JSON.stringify({ model, messages, stream }),
     })
+
+    // Even when fetch resolves, upstream may have returned 429 / 5xx — treat
+    // that as a failure so the fallback path can run.
+    if (!upstream.ok) {
+      const text = await upstream.text().catch(() => '')
+      throw new Error(`upstream ${upstream.status}: ${text.slice(0, 160)}`)
+    }
 
     if (!stream) {
       const data = await upstream.json()
@@ -133,8 +227,45 @@ router.post('/chat', async (req, res) => {
     }
     res.end()
   } catch (err) {
-    console.error('[aiChat]', err.message)
-    res.status(500).json({ error: 'Upstream request failed.' })
+    console.warn('[aiChat] upstream failed, attempting fallback:', err.message)
+
+    // ── Fallback path ──────────────────────────────────────────────────
+    // 1. If the user asked a knowledge question, try Wikipedia.
+    // 2. Otherwise return a graceful "AI is busy" message shaped like a
+    //    chat completion so the frontend renders it inline.
+    // Streaming requests can't fall back cleanly mid-stream — only fall
+    // back if we haven't started writing the SSE headers yet.
+    if (res.headersSent) {
+      return res.end()
+    }
+
+    const userQ = lastUserText(messages)
+    if (isKnowledgeQuestion(userQ)) {
+      const wiki = await chatWikipediaFallback(userQ)
+      if (wiki) {
+        return res.json(asChatCompletion('wikipedia-fallback', wiki, true))
+      }
+    }
+
+    // Final graceful message — shaped as a normal chat completion so the
+    // UI doesn't have to special-case it. Mark _fallback=true so it can
+    // show a subtle "retry in a moment" hint if it wants to.
+    return res.json(asChatCompletion(
+      'busy-fallback',
+      [
+        '## Kairo is a little busy right now',
+        '',
+        "Our AI is handling a lot of requests at this moment, so I couldn't reach a model in time.",
+        '',
+        '**While you wait, you can:**',
+        '- Try the **Solver** — it has its own backup brain and almost always works',
+        '- Open **Flashcards** or the **Concept Map** — those run fully on-device',
+        '- Try again in 30 seconds',
+        '',
+        '*This is a graceful fallback, not a real outage — your data is safe.*',
+      ].join('\n'),
+      true,
+    ))
   }
 })
 
