@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Play, Pause, RotateCcw } from 'lucide-react'
+import { Play, Pause, RotateCcw, Brain, Coffee, Leaf } from 'lucide-react'
 
 type Mode = 'focus' | 'short' | 'long'
 
@@ -92,7 +92,10 @@ export default function Pomodoro() {
                 background: mode === m ? `${MODE_COLORS[m]}20` : 'transparent',
                 color: mode === m ? MODE_COLORS[m] : '#6B7280', transition: 'all 0.15s',
               }}>
-                {m === 'focus' ? '🧠 Focus' : m === 'short' ? '☕ Short' : '🌿 Long'}
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                  {m === 'focus' ? <Brain size={12} /> : m === 'short' ? <Coffee size={12} /> : <Leaf size={12} />}
+                  {m === 'focus' ? 'Focus' : m === 'short' ? 'Short' : 'Long'}
+                </span>
               </button>
             ))}
           </div>
@@ -157,7 +160,10 @@ export default function Pomodoro() {
           {/* Tips */}
           <div style={{ background: '#0E1117', border: '1px solid #1f2532', borderRadius: 14, padding: 20, marginBottom: 14 }}>
             <div style={{ fontSize: 12, fontWeight: 700, color: mode === 'focus' ? '#66D9FF' : '#A5B4FC', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 }}>
-              {mode === 'focus' ? '🧠 Focus Tips' : '☕ Break Tips'}
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                {mode === 'focus' ? <Brain size={13} /> : <Coffee size={13} />}
+                {mode === 'focus' ? 'Focus Tips' : 'Break Tips'}
+              </span>
             </div>
             {mode === 'focus' ? [
               'Close all social media tabs',
