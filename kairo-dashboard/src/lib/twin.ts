@@ -752,6 +752,11 @@ export function track(args: TrackArgs): TwinState {
     })
   }
 
+  // SQLITE PROTOCOL — PHASE III · mirror this event into the relational
+  // `events` table so new SQL-backed pages can query indexed history. Fire
+  // and forget — the kv blob is still authoritative if SQLite isn't around.
+  storage.mirrorEvent(getUserKey(), event)
+
   // Recompute eagerly — it's cheap.
   recompute(state)
   saveState(state)

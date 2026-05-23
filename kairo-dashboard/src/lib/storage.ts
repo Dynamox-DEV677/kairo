@@ -42,6 +42,11 @@ interface KairoDesktopDB {
   removeSync: (key: string) => void
   /** List every key currently in the SQLite kv table. */
   listKeysSync: () => string[]
+
+  // Phase III — relational query API. Optional because preload from an older
+  // Electron build won't expose them.
+  query?:       (sql: string, params?: any[]) => Promise<{ ok: boolean; rows: any[]; error?: string }>
+  insertEvent?: (userKey: string, ev: any)    => Promise<boolean>
 }
 
 declare global {
@@ -57,11 +62,58 @@ declare global {
 let _backend: Backend | null = null
 const _memory = new Map<string, string>()
 
+/** Marker key — once SQLite holds the data, we never run the localStorage→SQLite
+ *  copy again for this device. Keyed on the major version so future re-migrations
+ *  (e.g. when Phase III lands and we need to rebuild indexes) can bump the suffix
+ *  to force one more sweep. */
+const MIGRATION_DONE_KEY = 'kairo:storage:migrated:v1'
+
+/**
+ * One-shot migration on the first run that detects SQLite is available.
+ * Reads every `kairo:` / `kairo_` key from localStorage and copies it into
+ * SQLite. The localStorage copy is left in place — if SQLite ever fails to
+ * load on a future boot we silently fall back and the data is still there.
+ *
+ * Idempotent: a marker is written into SQLite the first time this finishes,
+ * so subsequent boots skip the copy.
+ */
+function migrateLocalStorageToSqlite(db: NonNullable<NonNullable<Window['kairoDesktop']>['db']>) {
+  try {
+    if (db.getSync(MIGRATION_DONE_KEY)) return
+    if (typeof localStorage === 'undefined') {
+      db.setSync(MIGRATION_DONE_KEY, String(Date.now()))
+      return
+    }
+    let copied = 0
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i)
+      if (!k) continue
+      if (!(k.startsWith('kairo:') || k.startsWith('kairo_'))) continue
+      const v = localStorage.getItem(k)
+      if (v === null) continue
+      // Don't clobber anything the user has already touched in SQLite this run.
+      if (db.getSync(k) !== null) continue
+      db.setSync(k, v)
+      copied++
+    }
+    db.setSync(MIGRATION_DONE_KEY, String(Date.now()))
+    if (copied > 0) {
+      // eslint-disable-next-line no-console
+      console.info(`[kairo:storage] migrated ${copied} keys → SQLite`)
+    }
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.warn('[kairo:storage] migration failed (non-fatal):', e)
+  }
+}
+
 function detectBackend(): Backend {
   if (_backend) return _backend
   try {
-    if (typeof window !== 'undefined' && window.kairoDesktop?.db?.getSync) {
+    const db = typeof window !== 'undefined' ? window.kairoDesktop?.db : undefined
+    if (db?.getSync) {
       _backend = 'sqlite'
+      migrateLocalStorageToSqlite(db)
       return _backend
     }
     if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
@@ -153,4 +205,50 @@ export function getJSON<T = unknown>(key: string): T | null {
 
 export function setJSON(key: string, value: unknown): void {
   setRaw(key, JSON.stringify(value))
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// SQLITE PROTOCOL — PHASE III · async relational query API
+// ════════════════════════════════════════════════════════════════════════════
+//
+// These helpers expose real SQL to renderer code WITHOUT touching the
+// existing localStorage-blob model. The 17 importers of twin.ts keep using
+// loadState() / getMistakes() / etc. New code that needs proper indexes or
+// ORDER-BY-at-scale calls hasSqlQuery() first and uses sqlQuery() when true.
+//
+// Outside Electron, hasSqlQuery() returns false and pages just keep using
+// the blob path. Nothing breaks.
+
+export interface SqlResult<Row = any> {
+  ok:     boolean
+  rows:   Row[]
+  error?: string
+}
+
+/** Returns true when the active backend supports real SQL (Electron + better-sqlite3). */
+export function hasSqlQuery(): boolean {
+  detectBackend()
+  return _backend === 'sqlite' && !!window.kairoDesktop?.db?.query
+}
+
+/** Run a read-only SQL query against the local SQLite database. */
+export async function sqlQuery<Row = any>(sql: string, params: any[] = []): Promise<SqlResult<Row>> {
+  if (!hasSqlQuery()) return { ok: false, rows: [], error: 'no-sqlite' }
+  try {
+    const r = await window.kairoDesktop!.db!.query!(sql, params)
+    return { ok: !!r?.ok, rows: r?.rows ?? [], error: r?.error }
+  } catch (e: any) {
+    return { ok: false, rows: [], error: String(e?.message || e) }
+  }
+}
+
+/**
+ * Mirror an event into the relational `events` table. twin.ts calls this
+ * from track() so the SQL queries above stay in sync with the blob. No-op
+ * when SQLite isn't available — the kv blob is still authoritative.
+ */
+export async function mirrorEvent(userKey: string, ev: any): Promise<void> {
+  if (!hasSqlQuery()) return
+  try { await window.kairoDesktop!.db!.insertEvent!(userKey, ev) }
+  catch { /* ignore — kv blob is the source of truth */ }
 }

@@ -13,6 +13,7 @@
 const { app, BrowserWindow, Menu, shell, ipcMain, nativeTheme } = require('electron')
 const path = require('path')
 const updater = require('./updater')
+const db      = require('./db')
 
 // Default to production. Override via env when iterating against a local Vite dev server.
 const KAIRO_URL = process.env.KAIRO_URL || 'https://kairo-daily-edu.vercel.app'
@@ -132,6 +133,24 @@ ipcMain.handle('kairo:get-version',  () => app.getVersion())
 ipcMain.handle('kairo:get-platform', () => process.platform)
 // Banner's "Restart" button → swap to the new binary + relaunch.
 ipcMain.handle('kairo:restart-to-update', () => updater.applyAndRestart())
+
+// ─── SQLite Protocol — Phase II ────────────────────────────────────────────
+// Synchronous IPC channels for storage.ts. We use `ipcMain.on(..., e => { e.returnValue = ... })`
+// so the renderer can call `ipcRenderer.sendSync(...)` and treat the DB as a
+// drop-in replacement for localStorage's synchronous API. Payloads are small
+// (KV strings), so the renderer block is sub-millisecond in practice.
+ipcMain.on('kairo:db:get',        (e, key)         => { e.returnValue = db.get(key) })
+ipcMain.on('kairo:db:set',        (e, key, value)  => { db.set(key, value); e.returnValue = true })
+ipcMain.on('kairo:db:remove',     (e, key)         => { db.remove(key);     e.returnValue = true })
+ipcMain.on('kairo:db:list-keys',  (e)              => { e.returnValue = db.listKeys() })
+ipcMain.on('kairo:db:ready',      (e)              => { e.returnValue = db.ready() })
+ipcMain.on('kairo:db:size',       (e)              => { e.returnValue = db.size() })
+
+// SQLITE PROTOCOL — PHASE III · relational query API (async, since SQL can
+// take longer than a sub-ms KV read). Read-only and write-keyword-checked
+// inside db.query().
+ipcMain.handle('kairo:db:query',         (_e, sql, params)   => db.query(sql, params))
+ipcMain.handle('kairo:db:insert-event',  (_e, userKey, ev)   => { db.insertEvent(userKey, ev); return true })
 
 // ─── App lifecycle ─────────────────────────────────────────────────────────
 nativeTheme.themeSource = 'dark'           // always-dark window chrome

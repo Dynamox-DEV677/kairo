@@ -1,6 +1,6 @@
 {
   "name": "kairo-desktop",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Kairo — desktop wrapper for the AI learning operating system",
   "main": "main.js",
   "author": {
@@ -10,11 +10,11 @@
   "homepage": "https://kairo-daily-edu.vercel.app",
   "license": "MIT",
   "scripts": {
-    "start":     "electron .",
-    "dist:win":  "electron-builder --win --x64",
-    "dist:mac":  "electron-builder --mac",
-    "dist:linux":"electron-builder --linux",
-    "postinstall":"electron-builder install-app-deps"
+    "start": "electron .",
+    "dist:win": "electron-builder --win --x64",
+    "dist:mac": "electron-builder --mac",
+    "dist:linux": "electron-builder --linux",
+    "postinstall": "electron-builder install-app-deps"
   },
   "build": {
     "appId": "app.kairo.desktop",
@@ -36,16 +36,30 @@
       "main.js",
       "preload.js",
       "updater.js",
+      "db.js",
       "splash.html",
       "assets/**/*",
       "!dist/**/*",
       "!**/*.map"
     ],
+    "asarUnpack": [
+      "**/node_modules/better-sqlite3/**/*"
+    ],
     "win": {
       "icon": "assets/icon.ico",
       "target": [
-        { "target": "nsis",     "arch": ["x64"] },
-        { "target": "portable", "arch": ["x64"] }
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
       ]
     },
     "nsis": {
@@ -60,8 +74,20 @@
       "icon": "assets/icon.png",
       "category": "public.app-category.education",
       "target": [
-        { "target": "dmg",  "arch": ["x64", "arm64"] },
-        { "target": "zip",  "arch": ["x64", "arm64"] }
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
       ]
     },
     "linux": {
@@ -74,8 +100,9 @@
     }
   },
   "dependencies": {
-    "electron-updater": "^6.3.9",
-    "electron-log": "^5.2.0"
+    "better-sqlite3": "^11.10.0",
+    "electron-log": "^5.2.0",
+    "electron-updater": "^6.3.9"
   },
   "devDependencies": {
     "electron": "^33.2.0",
