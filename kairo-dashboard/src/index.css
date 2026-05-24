@@ -1186,3 +1186,222 @@ html[data-theme="light"] [style*="rgb(10, 10, 10) none repeat scroll"],
 html[data-theme="light"] [style*="rgb(17, 17, 17) none repeat scroll"]
 { background-color: #fafafa !important; }
 
+/* ════════════════════════════════════════════════════════════════════════════
+   REFINEMENT LAYER — softer / more tactile / Apple Vision Pro feel
+   ════════════════════════════════════════════════════════════════════════════
+   Additive only. None of the rules here override layout / function;
+   they only soften corners, add subtle motion, and introduce opt-in
+   utilities (.kr-floating, .kr-bubble, .kr-soft-scroll, .kr-draggable)
+   for pages that want the "floating intelligent module" feel without
+   the rest of the app having to change.
+
+   Three principles:
+     · Curvature   — radii bump up where it's safe
+     · Breath      — soft spring transitions on hover / interaction
+     · Layering    — subtle ambient shadow that says "this is alive"
+   ──────────────────────────────────────────────────────────────────────── */
+
+:root {
+  /* Refinement tokens — distinct from the existing --r-*, --s-* vars so the
+     two layers can evolve independently. Refinement vars use --kx- prefix. */
+  --kx-radius-pill:   999px;
+  --kx-radius-card:   22px;
+  --kx-radius-panel:  28px;
+  --kx-radius-input:  16px;
+
+  --kx-shadow-rest:   0 10px 30px rgba(0, 0, 0, 0.28), 0 0 0 1px rgba(255, 255, 255, 0.025);
+  --kx-shadow-hover:  0 18px 48px rgba(0, 0, 0, 0.38), 0 0 0 1px rgba(102, 217, 255, 0.18);
+  --kx-shadow-drag:   0 28px 80px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(102, 217, 255, 0.32),
+                      0 0 60px rgba(79, 124, 255, 0.18);
+
+  --kx-spring:        cubic-bezier(0.22, 1, 0.36, 1);
+  --kx-spring-slow:   cubic-bezier(0.16, 1, 0.30, 1);
+  --kx-ambient-blur:  saturate(165%) blur(20px);
+}
+
+/* ── Soft scroll — momentum + scroll-snap friendliness on any container ── */
+.kr-soft-scroll {
+  overflow: auto;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-gutter: stable both-edges;
+}
+.kr-soft-scroll::-webkit-scrollbar { width: 8px; height: 8px; }
+.kr-soft-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+.kr-soft-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(102, 217, 255, 0.20);
+  background-clip: content-box;
+}
+
+/* ── Floating module — the headline utility ────────────────────────────────
+   Wrap any panel/card with `.kr-floating` and it becomes a softly-rounded
+   glass surface with hover lift + ambient shadow. Drop-in safe; if the
+   element already has a background colour, the .kr-floating overlay
+   layers on top via box-shadow only.
+   ────────────────────────────────────────────────────────────────────── */
+.kr-floating {
+  position: relative;
+  border-radius: var(--kx-radius-card);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.035) 0%, rgba(255, 255, 255, 0.018) 100%);
+  backdrop-filter: var(--kx-ambient-blur);
+  -webkit-backdrop-filter: var(--kx-ambient-blur);
+  border: 1px solid rgba(255, 255, 255, 0.045);
+  box-shadow: var(--kx-shadow-rest);
+  transition:
+    transform 0.36s var(--kx-spring),
+    box-shadow 0.36s var(--kx-spring),
+    border-color 0.36s var(--kx-spring);
+  will-change: transform;
+}
+.kr-floating:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--kx-shadow-hover);
+  border-color: rgba(102, 217, 255, 0.16);
+}
+/* Subtle inner highlight along the top edge — gives the impression of
+   an ambient light source above the workspace. */
+.kr-floating::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 1px;
+  border-radius: inherit;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.10), transparent);
+  pointer-events: none;
+}
+
+/* Bigger / softer variant for top-level panels (map / canvas / editor) */
+.kr-floating-lg {
+  border-radius: var(--kx-radius-panel);
+}
+
+/* Bubble variant — fully pill-shaped (used by input bars, command palettes) */
+.kr-bubble {
+  border-radius: var(--kx-radius-pill);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.018) 100%);
+  backdrop-filter: var(--kx-ambient-blur);
+  -webkit-backdrop-filter: var(--kx-ambient-blur);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: var(--kx-shadow-rest);
+  transition: box-shadow 0.36s var(--kx-spring), border-color 0.36s var(--kx-spring);
+}
+.kr-bubble:focus-within {
+  border-color: rgba(102, 217, 255, 0.30);
+  box-shadow: var(--kx-shadow-hover);
+}
+
+/* ── Draggable affordance — pairs with FloatingModule.tsx ─────────────────
+   When a Framer-Motion drag picks up an element, JS adds .kr-dragging.
+   We bump the shadow + scale subtly via CSS so the JS only needs to manage
+   transform; the rest is layered on. */
+.kr-draggable {
+  cursor: grab;
+  user-select: none;
+  transition: box-shadow 0.24s var(--kx-spring), transform 0.24s var(--kx-spring);
+}
+.kr-draggable:active,
+.kr-draggable.kr-dragging {
+  cursor: grabbing;
+}
+.kr-draggable.kr-dragging {
+  box-shadow: var(--kx-shadow-drag);
+  border-color: rgba(102, 217, 255, 0.32) !important;
+  z-index: 50;
+}
+.kr-draggable.kr-dragging::after {
+  /* Subtle blur halo BEHIND the dragged module — feels like depth */
+  content: '';
+  position: absolute;
+  inset: -24px;
+  border-radius: inherit;
+  background: radial-gradient(closest-side, rgba(79, 124, 255, 0.10), transparent 70%);
+  filter: blur(20px);
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* ── Tactile button — drop-in upgrade for any <button class="kr-tactile"> */
+.kr-tactile {
+  border-radius: var(--kx-radius-pill);
+  transition:
+    transform 0.18s var(--kx-spring),
+    background 0.18s var(--kx-spring),
+    box-shadow 0.18s var(--kx-spring);
+  -webkit-tap-highlight-color: transparent;
+}
+.kr-tactile:hover { transform: translateY(-1px); }
+.kr-tactile:active { transform: translateY(0) scale(0.97); }
+
+/* ── Input — pill-shaped, soft focus ring ─────────────────────────────── */
+.kr-input-soft {
+  border-radius: var(--kx-radius-input);
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  transition:
+    border-color 0.24s var(--kx-spring),
+    background 0.24s var(--kx-spring),
+    box-shadow 0.24s var(--kx-spring);
+}
+.kr-input-soft:focus,
+.kr-input-soft:focus-within {
+  border-color: rgba(102, 217, 255, 0.32);
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow: 0 0 0 3px rgba(79, 124, 255, 0.08);
+  outline: none;
+}
+
+/* ── Resize handle — visual element FloatingModule renders when resizable. */
+.kr-resize-handle {
+  position: absolute;
+  bottom: 6px; right: 6px;
+  width: 14px; height: 14px;
+  cursor: nwse-resize;
+  opacity: 0; transition: opacity 0.22s var(--kx-spring);
+  pointer-events: auto;
+  border-radius: 4px;
+}
+.kr-floating:hover .kr-resize-handle,
+.kr-floating:focus-within .kr-resize-handle {
+  opacity: 0.55;
+}
+.kr-resize-handle::before,
+.kr-resize-handle::after {
+  content: '';
+  position: absolute; right: 2px;
+  background: rgba(255, 255, 255, 0.55);
+  border-radius: 1px;
+}
+.kr-resize-handle::before { width: 2px; height: 8px; bottom: 2px; }
+.kr-resize-handle::after  { width: 8px; height: 2px; bottom: 2px; }
+
+/* ── Soft fade edges — for horizontal scrollers (.kr-fade-edges) ──────── */
+.kr-fade-edges {
+  position: relative;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 24px, #000 calc(100% - 24px), transparent 100%);
+          mask-image: linear-gradient(90deg, transparent 0, #000 24px, #000 calc(100% - 24px), transparent 100%);
+}
+
+/* ── Respect motion preferences ──────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .kr-floating,
+  .kr-bubble,
+  .kr-draggable,
+  .kr-tactile,
+  .kr-input-soft {
+    transition: none !important;
+  }
+  .kr-floating:hover { transform: none; }
+}
+
+/* ── Smooth scroll globally — opt-in via .kr-app-scroll on a root container.
+       We don't touch html { scroll-behavior } directly to avoid surprising
+       any page that relies on instant scrolling for layout calculations. */
+.kr-app-scroll { scroll-behavior: smooth; }
+
