@@ -419,6 +419,11 @@ function PersonalSignup({ onLogin, onBack }: any) {
   const [err, setErr]           = useState('')
   const [exists, setExists]     = useState(false)   // shows recovery options
   const [resetSent, setResetSent] = useState(false) // reset-email confirmation
+  // Personal signup used to silently force role='student', which meant any
+  // teacher signing up without a school code ended up with a student sidebar
+  // and zero access to teacher tools. Default to student because that's the
+  // common case; teachers tap the Teacher chip.
+  const [role, setRole] = useState<'student' | 'teacher'>('student')
 
   async function sendPasswordReset() {
     setBusy(true); setErr('')
@@ -459,6 +464,7 @@ function PersonalSignup({ onLogin, onBack }: any) {
         name:          name.trim(),
         email:         email.trim().toLowerCase(),
         password,
+        role,
         class_name:    cls.trim() || undefined,
         board:         board || undefined,
         avatar_base64: avatar || undefined,
@@ -466,7 +472,10 @@ function PersonalSignup({ onLogin, onBack }: any) {
       const profile: AuthProfile = {
         id:            data.user?.id,
         name:          data.user?.name,
-        role:          'student',
+        // Trust the role the server actually persisted — falls back to the
+        // form's selection so the new account lands on the right sidebar
+        // even if the server returns a partial row.
+        role:          data.user?.role || role,
         avatar_url:    data.user?.avatar_url,
         cls:           data.user?.class_name,
         board:         data.user?.board || board,
@@ -497,7 +506,9 @@ function PersonalSignup({ onLogin, onBack }: any) {
           const profile: AuthProfile = {
             id:            signed.user!.id,
             name:          (userRow as any)?.name || name.trim(),
-            role:          'student',
+            // Preserve whatever role the DB already has — never silently
+            // downgrade an existing teacher to a student.
+            role:          (userRow as any)?.role || role,
             avatar_url:    (userRow as any)?.avatar_url,
             cls:           (userRow as any)?.class_name,
             board:         (userRow as any)?.board || board,
@@ -540,7 +551,45 @@ function PersonalSignup({ onLogin, onBack }: any) {
           </button>
         </div>
       </Field>
-      <Field label="Class / Grade" icon={GraduationCap} hint="Optional — helps tailor content">
+      {/* Role picker — Student or Teacher. Defaults to Student. Without this
+          every personal signup got silently registered as a student, which
+          broke teachers signing up without a school code. */}
+      <Field label="I am a..." icon={Users}>
+        <div style={{ display: 'flex', gap: 8 }}>
+          {([
+            { id: 'student', label: 'Student', icon: GraduationCap, desc: 'I want to learn' },
+            { id: 'teacher', label: 'Teacher', icon: BookOpen,      desc: 'I want to teach' },
+          ] as const).map(opt => {
+            const active = role === opt.id
+            const Icon = opt.icon
+            return (
+              <button key={opt.id} type="button" onClick={() => setRole(opt.id)}
+                style={{
+                  flex: 1,
+                  padding: '12px 14px', borderRadius: 11,
+                  background: active ? 'rgba(79, 124, 255, 0.12)' : '#0E1117',
+                  border: `1px solid ${active ? '#4F7CFF' : '#1f2532'}`,
+                  cursor: 'pointer', fontFamily: 'inherit',
+                  display: 'flex', alignItems: 'center', gap: 10,
+                  transition: 'all 0.15s',
+                }}>
+                <div style={{
+                  width: 32, height: 32, borderRadius: 8, flexShrink: 0,
+                  background: active ? 'linear-gradient(135deg,#4F7CFF,#2046C2)' : '#1a1f2e',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  <Icon size={14} color={active ? '#fff' : '#B1B5BA'} />
+                </div>
+                <div style={{ textAlign: 'left' }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: active ? '#A5B4FC' : '#fafafa' }}>{opt.label}</div>
+                  <div style={{ fontSize: 10.5, color: '#9CA3AF', marginTop: 1 }}>{opt.desc}</div>
+                </div>
+              </button>
+            )
+          })}
+        </div>
+      </Field>
+      <Field label="Class / Grade" icon={GraduationCap} hint={role === 'teacher' ? 'Optional — class you teach' : 'Optional — helps tailor content'}>
         <input value={cls} onChange={e => setCls(e.target.value)} placeholder="e.g. 9, 10A, Class 11" style={inp} />
       </Field>
       <Field label="Board" icon={BookOpen} hint="Optional — for syllabus matching">

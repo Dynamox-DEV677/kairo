@@ -17,6 +17,7 @@ import {
   sendWelcomeJoinEmail,
   sendWelcomePersonalEmail,
   sendSignInEmail,
+  getTransporter,
 } from '../email/index.js'
 import { getClientIp, isIpInRange }            from '../middleware/schoolAuth.js'
 
@@ -66,6 +67,53 @@ async function checkNetworkForLogin(schoolId, clientIp) {
     total:    rules.length,
   }
 }
+
+// ── Email diagnostic ──────────────────────────────────────────────────────────
+// Lets you check from a browser tab whether SMTP is actually configured in the
+// running Vercel deployment. No keys exposed — just yes/no flags.
+//
+//   GET /api/users/email-status        → just config
+//   GET /api/users/email-status?to=x@y → send a test "sign-in" template
+router.get('/email-status', async (req, res) => {
+  const hasFrom = !!process.env.KAIRO_EMAIL
+  const hasPwd  = !!process.env.KAIRO_EMAIL_APP_PASSWORD
+  const transport = getTransporter()
+  const transportReady = !!transport
+
+  // Optional live probe: pass ?to=someone@example.com to actually send a
+  // 1-line test email. Useful for verifying the Gmail App Password without
+  // creating a real account every time.
+  const to = (req.query.to || '').toString().trim()
+  let probe = null
+  if (to) {
+    if (!hasFrom || !hasPwd || !transportReady) {
+      probe = { ok: false, reason: 'transport-not-configured' }
+    } else {
+      try {
+        const info = await transport.sendMail({
+          from:    process.env.KAIRO_EMAIL,
+          to,
+          subject: 'Kairo · email diagnostic test',
+          text:    'If you got this, KAIRO_EMAIL + KAIRO_EMAIL_APP_PASSWORD are working.',
+        })
+        probe = { ok: true, messageId: info.messageId }
+      } catch (e) {
+        probe = { ok: false, reason: String(e?.message || e).slice(0, 240) }
+      }
+    }
+  }
+
+  res.json({
+    KAIRO_EMAIL_set:              hasFrom,
+    KAIRO_EMAIL_APP_PASSWORD_set: hasPwd,
+    transport_ready:              transportReady,
+    from_address:                 hasFrom ? process.env.KAIRO_EMAIL : null,
+    test_send:                    probe,
+    hint: transportReady
+      ? 'Transport configured. Use ?to=you@example.com to send a real test message.'
+      : 'Set KAIRO_EMAIL (Gmail address) and KAIRO_EMAIL_APP_PASSWORD (16-char Gmail App Password) in Vercel env vars, then redeploy.',
+  })
+})
 
 // ── Register: Create auth user + join school ──────────────────────────────────
 router.post('/register', async (req, res) => {
@@ -220,6 +268,12 @@ router.post('/register', async (req, res) => {
 // Creates auth user + profile with school_id = null.
 router.post('/register-personal', async (req, res) => {
   const { email, password, name, class_name, board, avatar_base64 } = req.body
+  // Accept a role param (added so teachers can sign up without a school
+  // code). Defaults to 'student' for backwards compat with existing
+  // frontends. Anything not in the allow-list collapses to 'student' so
+  // a malicious payload can never promote itself to admin.
+  const rawRole = (req.body?.role || 'student').toString().toLowerCase()
+  const role    = rawRole === 'teacher' ? 'teacher' : 'student'
 
   if (!email || !password) return res.status(400).json({ error: 'email and password are required.' })
   if (!name)               return res.status(400).json({ error: 'name is required.' })
@@ -270,7 +324,7 @@ router.post('/register-personal', async (req, res) => {
     // Layer B: retry with minimal columns if A errors with schema mismatch
     // Layer C: if even B fails, log it and CONTINUE — the user can still
     //          sign in; Login.tsx auto-provisions the row on first login.
-    const profile = await tryInsertPersonalProfile(authUser.id, name.trim(), avatarUrl, class_name, board)
+    const profile = await tryInsertPersonalProfile(authUser.id, name.trim(), avatarUrl, class_name, board, role)
 
     // ─── 4. Sign in for immediate session ────────────────────────────────
     const { data: signInData } = await supabaseAdmin.auth.signInWithPassword({
@@ -278,28 +332,46 @@ router.post('/register-personal', async (req, res) => {
       password,
     })
 
-    console.log(`[Users] ✓ Registered personal: ${name} (${authUser.id})`)
+    console.log(`[Users] ✓ Registered personal: ${name} as ${role} (${authUser.id})`)
 
-    // Welcome email — never blocks
-    try {
-      sendWelcomePersonalEmail({
-        to:        email.trim().toLowerCase(),
-        name:      name.trim(),
-        className: class_name || null,
-        board:     board || null,
-      }).catch(() => {})
-    } catch { /* swallow */ }
+    // Welcome email — never blocks the response. We resolve a tiny
+    // status object that the response surfaces so the UI can show
+    // either "check your inbox" or "we couldn't send a welcome email"
+    // without keeping the user waiting.
+    const emailStatus = await (async () => {
+      try {
+        const info = await sendWelcomePersonalEmail({
+          to:        email.trim().toLowerCase(),
+          name:      name.trim(),
+          className: class_name || null,
+          board:     board || null,
+        })
+        if (info?.messageId) {
+          return { sent: true, messageId: info.messageId }
+        }
+        // Transport returns null when KAIRO_EMAIL / APP_PASSWORD aren't
+        // configured in env (or when the SMTP call itself failed).
+        return { sent: false, reason: 'transport-skipped-or-failed' }
+      } catch (e) {
+        return { sent: false, reason: String(e?.message || e).slice(0, 200) }
+      }
+    })()
+
+    if (!emailStatus.sent) {
+      console.warn(`[Users] welcome email NOT sent → ${email}: ${emailStatus.reason}`)
+    }
 
     res.status(201).json({
       message: 'Personal account created.',
       user: profile || {
-        id: authUser.id, name: name.trim(), role: 'student',
+        id: authUser.id, name: name.trim(), role,
         school_id: null, avatar_url: avatarUrl,
         class_name: class_name || null, board: board || null,
       },
       access_token:  signInData?.session?.access_token  || null,
       refresh_token: signInData?.session?.refresh_token || null,
       expires_in:    signInData?.session?.expires_in    || 3600,
+      email_status:  emailStatus,
     })
   } catch (e) {
     console.error('[Users/register-personal] FATAL:', e.message)
@@ -351,12 +423,14 @@ async function tryInsertSchoolProfile(id, name, role, schoolId, avatarUrl, statu
  * Successful insert continues; failure logs but doesn't bubble — the auth
  * user is created and Login.tsx will provision the row on first login.
  */
-async function tryInsertPersonalProfile(id, name, avatarUrl, class_name, board) {
+async function tryInsertPersonalProfile(id, name, avatarUrl, class_name, board, role = 'student') {
+  // Defensive clamp — never let an unexpected role slip through.
+  const safeRole = role === 'teacher' ? 'teacher' : 'student'
   const attempts = [
-    { id, name, role: 'student', school_id: null, avatar_url: avatarUrl, status: 'active', class_name: class_name || null, board: board || null },
-    { id, name, role: 'student', school_id: null, avatar_url: avatarUrl, class_name: class_name || null, board: board || null },
-    { id, name, role: 'student', school_id: null, avatar_url: avatarUrl },
-    { id, name, role: 'student' },
+    { id, name, role: safeRole, school_id: null, avatar_url: avatarUrl, status: 'active', class_name: class_name || null, board: board || null },
+    { id, name, role: safeRole, school_id: null, avatar_url: avatarUrl, class_name: class_name || null, board: board || null },
+    { id, name, role: safeRole, school_id: null, avatar_url: avatarUrl },
+    { id, name, role: safeRole },
   ]
   for (let i = 0; i < attempts.length; i++) {
     const { data, error } = await supabaseAdmin
