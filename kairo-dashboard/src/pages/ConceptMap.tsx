@@ -16,19 +16,25 @@
  */
 import { useEffect, useState, useRef, useMemo } from 'react'
 import { motion } from 'framer-motion'
-import { Network, RefreshCw, Maximize2, Sparkles, Brush, Workflow } from 'lucide-react'
+import {
+  Network, RefreshCw, Maximize2, Sparkles, Brush, Workflow,
+  Lightbulb, Search, Target, Handshake, Settings as SettingsIcon,
+  Atom, FlaskConical, Microscope, Calculator, BookOpen, Rocket,
+  Landmark, Globe, Brain, Zap,
+} from 'lucide-react'
 import {
   getConceptGraph, recordConcept,
   type ConceptNode, type ConceptEdge,
 } from '../lib/twin'
 
 // ──────────────────────────────────────────────────────────────────────────
-// Illustrated view — hand-drawn cloud / doodle style.
+// Illustrated view — premium dark monochrome with hexagonal nodes.
 //
 // The Concept Map can render in two modes:
-//   • 'illustrated' (default): paper-notebook look with pastel cloud nodes,
-//     curvy doodle arrows, scattered sparkle stars, sticky-note labels.
-//     Easier to read at a glance for students; reads like a study sheet.
+//   • 'illustrated' (default): infographic-style hexagonal nodes on a
+//     dark diamond-pattern background. Thin white outlines, line-art
+//     icons flanking each node, all-caps uppercase titles. Reads like
+//     a premium business diagram.
 //   • 'pro': the original force-graph view — every concept + auto-discovered
 //     edges, drag-to-rearrange. Power tool, still here.
 //
@@ -36,22 +42,18 @@ import {
 // ──────────────────────────────────────────────────────────────────────────
 type ViewMode = 'illustrated' | 'pro'
 
-// Pastel palette + accent — same hue across stages so the page reads as
-// one coherent design rather than crayon-box random. Each cloud picks
-// from this rotation so colours don't repeat back-to-back.
-const PASTELS = [
-  { fill: '#FFF3B0', edge: '#E0A800', text: '#7A5A00' },  // butter yellow
-  { fill: '#C7E0FF', edge: '#6FA8FF', text: '#1A4DBF' },  // sky blue
-  { fill: '#D8C8FF', edge: '#8B6BFF', text: '#3F1F9B' },  // lavender
-  { fill: '#FFC9D7', edge: '#FF7AA0', text: '#9B1C45' },  // blush pink
-  { fill: '#B7E9C5', edge: '#4FBF7A', text: '#1F6B3A' },  // mint green
-  { fill: '#FFD7B8', edge: '#FF9248', text: '#9B4A0A' },  // peach
-  { fill: '#FFB7B7', edge: '#FF6868', text: '#9B1818' },  // coral
-]
-const PAPER_BG = '#FCFAF4'   // warm off-white "notebook" background
-const PAPER_INK = '#1F2532'  // matte ink for arrows + outlines
-
-const HANDWRITTEN_FONT = "'Caveat', 'Patrick Hand', 'Comic Neue', 'Marker Felt', cursive"
+// Monochrome palette — strict black/white/gray. The whole point of this
+// view is restraint: every element competes for attention only with the
+// concept text itself, never with colour.
+const MONO = {
+  bg:          '#08090C',       // near-black canvas
+  bgPattern:   '#14151B',       // pattern accent (diamonds + dot grid)
+  ink:         '#FFFFFF',       // node outline + headline text
+  inkDim:      '#9CA3AF',       // body text
+  inkFaint:    '#4B5563',       // hairline strokes
+  accent:      '#FFFFFF',       // selected / hover treatment
+}
+const HEADLINE_FONT = "'Inter Tight', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif"
 
 const C = {
   bg:        '#050505',
@@ -195,8 +197,8 @@ export default function ConceptMap() {
         {/* The map itself — illustrated or pro */}
         <div className="cm-graph-box" style={{
           marginTop: 22, position: 'relative',
-          background: mode === 'illustrated' ? PAPER_BG : C.panel,
-          border: `1px solid ${mode === 'illustrated' ? 'rgba(0,0,0,0.06)' : C.border}`,
+          background: mode === 'illustrated' ? MONO.bg : C.panel,
+          border: `1px solid ${mode === 'illustrated' ? 'rgba(255,255,255,0.06)' : C.border}`,
           borderRadius: 16, overflow: 'hidden',
           minHeight: 'clamp(420px, 70vh, 640px)',
           transition: 'background 0.3s ease',
@@ -545,15 +547,16 @@ function Input({ value, onChange, placeholder }: { value: string; onChange: (v: 
 }
 
 // ══════════════════════════════════════════════════════════════════════════
-// ILLUSTRATED CONCEPT MAP
+// ILLUSTRATED CONCEPT MAP — Premium dark hexagonal infographic
 // ══════════════════════════════════════════════════════════════════════════
-// Hand-drawn "study sheet" view. Picks the most-visited concept as the centre
-// (or user-selected) and shows up to 6 connected concepts as satellites in
-// pastel cloud shapes with curvy doodle arrows between them.
+// Centre concept sits in a chamfered-hexagon node. Up to 6 satellites
+// arrange around it in a flat 3×2 grid (top row, middle row, bottom row),
+// each with a line-art icon flanking it on the outside edge and a thin
+// hairline connecting it to the centre.
 //
-// Everything is generated at render time from a deterministic hash of each
-// concept name so positions, rotations, and cloud shapes stay stable
-// between renders — the layout doesn't jitter when the page rebuilds.
+// Strict monochrome palette: black canvas with subtle diamond-pattern
+// background, white node outlines, uppercase Inter Tight headlines,
+// gray body text. Every element earns its space.
 
 const VIEWBOX_W = 1100
 const VIEWBOX_H = 600
@@ -573,21 +576,29 @@ interface IllustratedMapProps {
   setCenterId: (id: string | null) => void
 }
 
+/** Map a subject string to a line-art icon component for the satellite flank. */
+function iconForSubject(subject?: string): React.ElementType {
+  const s = (subject || '').toLowerCase()
+  if (s.includes('math'))     return Calculator
+  if (s.includes('physic'))   return Atom
+  if (s.includes('chem'))     return FlaskConical
+  if (s.includes('bio'))      return Microscope
+  if (s.includes('space'))    return Rocket
+  if (s.includes('english'))  return BookOpen
+  if (s.includes('history'))  return Landmark
+  if (s.includes('geo'))      return Globe
+  return Lightbulb
+}
+
 function IllustratedMap({ graph, centerId, setCenterId }: IllustratedMapProps) {
   // ── Pick centre + satellites ────────────────────────────────────────────
   const { center, satellites } = useMemo(() => {
     if (graph.nodes.length === 0) return { center: null, satellites: [] }
-
-    // Centre: explicit selection if it still exists, else most-visited concept.
     let center: ConceptNode | undefined =
       centerId ? graph.nodes.find(n => n.id === centerId) : undefined
     if (!center) {
       center = [...graph.nodes].sort((a, b) => (b.visits ?? 0) - (a.visits ?? 0))[0]
     }
-
-    // Satellites: any concept connected to centre via an edge. If we end up
-    // with fewer than 5, fill from same-subject siblings (sorted by visits),
-    // then from the global top-visited list. Either way we cap at 6.
     const connected = new Set<string>()
     for (const e of graph.edges) {
       if (e.from === center.id) connected.add(e.to)
@@ -596,14 +607,13 @@ function IllustratedMap({ graph, centerId, setCenterId }: IllustratedMapProps) {
     let sats = graph.nodes
       .filter(n => connected.has(n.id) && n.id !== center!.id)
       .sort((a, b) => (b.visits ?? 0) - (a.visits ?? 0))
-
-    if (sats.length < 5) {
+    if (sats.length < 6) {
       const sameSubject = graph.nodes
         .filter(n => n.id !== center!.id && n.subject === center!.subject && !sats.some(s => s.id === n.id))
         .sort((a, b) => (b.visits ?? 0) - (a.visits ?? 0))
       sats = [...sats, ...sameSubject]
     }
-    if (sats.length < 5) {
+    if (sats.length < 6) {
       const filler = graph.nodes
         .filter(n => n.id !== center!.id && !sats.some(s => s.id === n.id))
         .sort((a, b) => (b.visits ?? 0) - (a.visits ?? 0))
@@ -614,31 +624,36 @@ function IllustratedMap({ graph, centerId, setCenterId }: IllustratedMapProps) {
 
   if (!center) return null
 
-  // Layout — satellites in a roomy ellipse around the centre. Slight
-  // per-cloud jitter so it doesn't read as a perfect circle.
+  // ── Layout — 6 satellites in a 3×2 grid around the centre ──────────────
+  // Format: { x, y, iconSide } — iconSide tells the node which edge to flank
+  // its icon on so it always points OUTWARD from the centre.
   const cx = VIEWBOX_W / 2
   const cy = VIEWBOX_H / 2
-  const rx = 380
-  const ry = 220
-  const count = satellites.length || 1
+  const POSITIONS: { x: number; y: number; iconSide: 'left' | 'right' }[] = [
+    { x: 245, y: 130, iconSide: 'left'  },  // top-left
+    { x: 855, y: 130, iconSide: 'right' },  // top-right
+    { x: 175, y: 300, iconSide: 'left'  },  // middle-left
+    { x: 925, y: 300, iconSide: 'right' },  // middle-right
+    { x: 245, y: 470, iconSide: 'left'  },  // bottom-left
+    { x: 855, y: 470, iconSide: 'right' },  // bottom-right
+  ]
 
   return (
     <div style={{
       position: 'relative',
       width: '100%',
       minHeight: 'clamp(420px, 70vh, 640px)',
-      // Subtle paper texture — radial gradients give a warm hand-made feel
+      // Diamond-pattern background — created with CSS gradients.
+      backgroundColor: MONO.bg,
       backgroundImage: `
-        radial-gradient(circle at 30% 20%, rgba(252, 230, 200, 0.22) 0%, transparent 40%),
-        radial-gradient(circle at 80% 75%, rgba(220, 220, 255, 0.20) 0%, transparent 40%),
-        radial-gradient(circle at 10% 90%, rgba(255, 220, 230, 0.18) 0%, transparent 35%)
+        linear-gradient(135deg, ${MONO.bgPattern} 25%, transparent 25%),
+        linear-gradient(225deg, ${MONO.bgPattern} 25%, transparent 25%),
+        linear-gradient(315deg, ${MONO.bgPattern} 25%, transparent 25%),
+        linear-gradient( 45deg, ${MONO.bgPattern} 25%, transparent 25%)
       `,
+      backgroundSize: '32px 32px',
+      backgroundPosition: '16px 0, 16px 0, 0 0, 0 0',
     }}>
-      {/* Google Font — Caveat — embedded inline so the page works offline-first */}
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&display=swap');
-      `}</style>
-
       <svg
         viewBox={`0 0 ${VIEWBOX_W} ${VIEWBOX_H}`}
         width="100%"
@@ -646,378 +661,235 @@ function IllustratedMap({ graph, centerId, setCenterId }: IllustratedMapProps) {
         preserveAspectRatio="xMidYMid meet"
         style={{ display: 'block', minHeight: 'clamp(420px, 70vh, 640px)' }}
       >
-        <defs>
-          {/* Hand-drawn arrowhead — used by every doodle arrow */}
-          <marker
-            id="doodleArrow"
-            viewBox="0 0 10 10"
-            refX="8" refY="5"
-            markerWidth="5" markerHeight="5"
-            orient="auto-start-reverse"
-          >
-            <path d="M 0 0 L 9 5 L 0 10 Z" fill={PAPER_INK} />
-          </marker>
-        </defs>
-
-        {/* ── Background sparkles (scattered around the canvas) ──────────── */}
-        {Array.from({ length: 14 }, (_, i) => {
-          const px = 60 + hash01('sparkle-x' + i) * (VIEWBOX_W - 120)
-          const py = 40 + hash01('sparkle-y' + i) * (VIEWBOX_H - 80)
-          const sz = 6 + hash01('sparkle-s' + i) * 10
-          const rot = hash01('sparkle-r' + i) * 360
-          return <Sparkle key={i} x={px} y={py} size={sz} rotation={rot} />
-        })}
-
-        {/* ── Doodle arrows from centre to each satellite ───────────────── */}
+        {/* ── Connecting hairlines — centre → each satellite ─────────────── */}
         {satellites.map((sat, i) => {
-          const angle = (i / count) * Math.PI * 2 - Math.PI / 2
-          const jitter = (hash01(sat.id + 'jit', 7) - 0.5) * 0.4
-          const tx = cx + Math.cos(angle + jitter) * rx
-          const ty = cy + Math.sin(angle + jitter) * ry
+          const p = POSITIONS[i]
           return (
-            <DoodleArrow
-              key={'arr-' + sat.id}
-              from={{ x: cx, y: cy }}
-              to={{ x: tx, y: ty }}
-              seed={sat.id}
+            <line
+              key={'edge-' + sat.id}
+              x1={cx} y1={cy} x2={p.x} y2={p.y}
+              stroke={MONO.inkFaint}
+              strokeWidth={1}
+              strokeLinecap="round"
+              opacity={0.55}
             />
           )
         })}
 
-        {/* ── Centre cloud ─────────────────────────────────────────────── */}
-        <CloudNode
+        {/* ── Centre hexagon ────────────────────────────────────────────── */}
+        <HexNode
           x={cx} y={cy}
-          width={300} height={220}
-          fill="#FFF3B0" edge="#E0A800" text="#5A4500"
-          title="ILLUSTRATED"
-          titleSmall="CONCEPT MAP"
+          width={260} height={170}
+          title="CONCEPT"
+          titleSecond="MAP"
           subtitle={center.name}
-          handwritten
-          big
-          seed={center.id}
+          isCenter
           onClick={() => setCenterId(null)}
         />
 
-        {/* ── Satellite clouds ─────────────────────────────────────────── */}
+        {/* ── Satellite hexagons ─────────────────────────────────────────── */}
         {satellites.map((sat, i) => {
-          const angle  = (i / count) * Math.PI * 2 - Math.PI / 2
-          const jitter = (hash01(sat.id + 'jit', 7) - 0.5) * 0.4
-          const tx     = cx + Math.cos(angle + jitter) * rx
-          const ty     = cy + Math.sin(angle + jitter) * ry
-          const pal    = PASTELS[i % PASTELS.length]
+          const p = POSITIONS[i]
+          const Icon = iconForSubject(sat.subject)
           return (
-            <g key={sat.id}>
-              {/* Numbered badge — sits over the cloud's top-left */}
-              <NumberBadge
-                x={tx - 110}
-                y={ty - 70}
-                num={i + 1}
-                fill={pal.fill}
-                stroke={pal.edge}
-              />
-              <CloudNode
-                x={tx} y={ty}
-                width={200} height={130}
-                fill={pal.fill} edge={pal.edge} text={pal.text}
-                title="A great title"
-                subtitle={sat.name}
-                seed={sat.id}
-                onClick={() => setCenterId(sat.id)}
-              />
-            </g>
+            <HexNode
+              key={sat.id}
+              x={p.x} y={p.y}
+              width={240} height={130}
+              title={sat.name.toUpperCase()}
+              subtitle={(sat.subject || 'Concept').toUpperCase() + ' · ' + (sat.visits || 1) + ' visit' + ((sat.visits || 1) === 1 ? '' : 's')}
+              icon={Icon}
+              iconSide={p.iconSide}
+              onClick={() => setCenterId(sat.id)}
+            />
           )
         })}
-
-        {/* ── Sticky "highlighted title" labels — 3 outer tags pinned to
-              the canvas edges, chosen from leftover concepts so the
-              composition feels populated even with a small graph. ───── */}
-        {graph.nodes
-          .filter(n => n.id !== center.id && !satellites.some(s => s.id === n.id))
-          .slice(0, 3)
-          .map((n, i) => {
-            const slots = [
-              { x: 110, y: 80 },
-              { x: VIEWBOX_W - 110, y: 90 },
-              { x: VIEWBOX_W - 130, y: VIEWBOX_H - 80 },
-            ]
-            const s = slots[i]
-            return (
-              <StickyTag
-                key={'tag-' + n.id}
-                x={s.x}
-                y={s.y}
-                label={n.name}
-                fill={PASTELS[(i + 3) % PASTELS.length].fill}
-                edge={PASTELS[(i + 3) % PASTELS.length].edge}
-              />
-            )
-          })}
       </svg>
 
-      {/* Hint card overlay — desktop only, bottom-left */}
+      {/* Hint badge — bottom-left, neutral on dark */}
       <div style={{
         position: 'absolute', bottom: 14, left: 16,
-        fontFamily: HANDWRITTEN_FONT,
-        fontSize: 18, color: '#5A4500', fontWeight: 700,
-        background: 'rgba(255, 248, 220, 0.78)',
-        padding: '6px 12px',
-        borderRadius: 14,
-        border: '1.5px solid rgba(224, 168, 0, 0.4)',
-        transform: 'rotate(-2deg)',
+        fontFamily: HEADLINE_FONT, fontSize: 10, fontWeight: 700,
+        color: MONO.inkDim, letterSpacing: 2,
+        textTransform: 'uppercase',
+        background: 'rgba(255, 255, 255, 0.04)',
+        padding: '6px 10px',
+        borderRadius: 6,
+        border: `1px solid rgba(255, 255, 255, 0.08)`,
       }}>
-        ✨ Click any cloud to recentre the map
+        Click any node to recentre
       </div>
     </div>
   )
 }
 
 // ──────────────────────────────────────────────────────────────────────────
-// Cloud node — hand-drawn-feeling blob with title + subtitle inside
+// Hexagon node — chamfered rectangle with uppercase title + body text
 // ──────────────────────────────────────────────────────────────────────────
-interface CloudNodeProps {
+interface HexNodeProps {
   x: number; y: number
   width: number; height: number
-  fill: string; edge: string; text: string
   title: string
-  titleSmall?: string
+  titleSecond?: string      // optional second line for the centre node ("MAP")
   subtitle: string
-  big?: boolean
-  handwritten?: boolean
-  seed: string
+  isCenter?: boolean
+  icon?: React.ElementType
+  iconSide?: 'left' | 'right'
   onClick?: () => void
 }
-function CloudNode({
-  x, y, width, height, fill, edge, text,
-  title, titleSmall, subtitle, big, handwritten, seed, onClick,
-}: CloudNodeProps) {
-  // Slight rotation per cloud — pulled from a stable hash so it doesn't jitter
-  const tilt = (hash01(seed + 'tilt', 13) - 0.5) * 6
-  const path = useMemo(() => cloudPath(width, height, seed), [width, height, seed])
+function HexNode({
+  x, y, width, height, title, titleSecond, subtitle, isCenter, icon: Icon, iconSide, onClick,
+}: HexNodeProps) {
+  // Chamfered-rectangle path. chamfer = how deep the corner cut goes.
+  // Centre node gets a bigger chamfer so it reads as more distinct.
+  const chamfer = isCenter ? 22 : 16
+  const w2 = width / 2
+  const h2 = height / 2
+  const c  = chamfer
+  // Octagonal path centred on (0, 0).
+  const path = [
+    `M ${-w2 + c} ${-h2}`,
+    `L ${ w2 - c} ${-h2}`,
+    `L ${ w2}     ${-h2 + c}`,
+    `L ${ w2}     ${ h2 - c}`,
+    `L ${ w2 - c} ${ h2}`,
+    `L ${-w2 + c} ${ h2}`,
+    `L ${-w2}     ${ h2 - c}`,
+    `L ${-w2}     ${-h2 + c}`,
+    `Z`,
+  ].join(' ')
+
+  // Icon position — outside the chamfered edge it sits on, vertically centred.
+  // Sized so a 28px-stroke icon fits comfortably.
+  const iconSize = 28
+  const iconOffset = w2 + 32
 
   return (
     <g
-      transform={`translate(${x}, ${y}) rotate(${tilt})`}
+      transform={`translate(${x}, ${y})`}
       style={{ cursor: onClick ? 'pointer' : 'default' }}
       onClick={onClick}
     >
-      {/* The cloud silhouette — fill + a slightly-offset double stroke for hand-drawn feel */}
-      <path d={path} fill={fill} stroke={edge} strokeWidth={2.5} strokeLinejoin="round" />
-      <path d={path} fill="none" stroke={edge} strokeWidth={1} strokeLinejoin="round" opacity={0.5}
-        transform="translate(1.5, 1.5)" />
+      {/* Outline — thin white. No fill (so the diamond bg shows through subtly). */}
+      <path
+        d={path}
+        fill="rgba(8, 9, 12, 0.85)"
+        stroke={MONO.ink}
+        strokeWidth={isCenter ? 2.5 : 1.6}
+        strokeLinejoin="miter"
+      />
 
-      {/* Inside text — handwritten or sans depending on cloud */}
-      {handwritten ? (
+      {/* Title — uppercase, bold, tracked */}
+      {isCenter ? (
         <>
-          <text
-            textAnchor="middle"
-            y={titleSmall ? -8 : 0}
-            fontFamily={HANDWRITTEN_FONT}
-            fontSize={big ? 38 : 22}
-            fontWeight={700}
-            fill={text}
-          >
+          <text textAnchor="middle" y={-10}
+            fontFamily={HEADLINE_FONT} fontSize={36} fontWeight={800}
+            fill={MONO.ink} letterSpacing="2">
             {title}
           </text>
-          {titleSmall && (
-            <text
-              textAnchor="middle"
-              y={26}
-              fontFamily={HANDWRITTEN_FONT}
-              fontSize={big ? 32 : 18}
-              fontWeight={700}
-              fill={text}
-            >
-              {titleSmall}
+          {titleSecond && (
+            <text textAnchor="middle" y={28}
+              fontFamily={HEADLINE_FONT} fontSize={36} fontWeight={800}
+              fill={MONO.ink} letterSpacing="2">
+              {titleSecond}
             </text>
           )}
-          <text
-            textAnchor="middle"
-            y={big ? 64 : 42}
-            fontFamily="'Inter', sans-serif"
-            fontSize={11}
-            fontWeight={500}
-            fill={text}
-            opacity={0.85}
-            style={{ textTransform: 'capitalize' }}
-          >
-            {clip(subtitle, 26)}
+          <text textAnchor="middle" y={62}
+            fontFamily={HEADLINE_FONT} fontSize={11} fontWeight={600}
+            fill={MONO.inkDim} letterSpacing="2.5"
+            style={{ textTransform: 'uppercase' }}>
+            {clipText(subtitle, 24)}
           </text>
         </>
       ) : (
         <>
-          <text
-            textAnchor="middle"
+          {/* Two-line title — break long concept names */}
+          <TwoLineUppercase
+            text={clipText(title, 36)}
             y={-12}
-            fontFamily={HANDWRITTEN_FONT}
-            fontSize={22}
-            fontWeight={700}
-            fill={text}
-          >
-            {title}
-          </text>
-          <text
-            textAnchor="middle"
-            y={12}
-            fontFamily="'Inter', sans-serif"
-            fontSize={11.5}
-            fontWeight={600}
-            fill={text}
-            style={{ textTransform: 'capitalize' }}
-          >
-            {clip(subtitle, 26)}
-          </text>
-          <text
-            textAnchor="middle"
-            y={32}
-            fontFamily="'Inter', sans-serif"
-            fontSize={9.5}
-            fontWeight={500}
-            fill={text}
-            opacity={0.7}
-          >
-            Click to focus →
+            fontSize={18}
+            fontWeight={800}
+          />
+          <text textAnchor="middle" y={36}
+            fontFamily={HEADLINE_FONT} fontSize={9.5} fontWeight={600}
+            fill={MONO.inkDim} letterSpacing="2"
+            style={{ textTransform: 'uppercase' }}>
+            {clipText(subtitle, 36)}
           </text>
         </>
+      )}
+
+      {/* Icon — line-art, sits outside the chamfered edge */}
+      {Icon && iconSide && (
+        <foreignObject
+          x={iconSide === 'right' ? iconOffset - iconSize / 2 : -iconOffset - iconSize / 2}
+          y={-iconSize / 2}
+          width={iconSize}
+          height={iconSize}
+        >
+          {/* Lucide renders as <svg>; embed it via the foreignObject. */}
+          <div
+            xmlns="http://www.w3.org/1999/xhtml"
+            style={{
+              width: iconSize, height: iconSize,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}
+          >
+            <Icon size={iconSize} color={MONO.ink} strokeWidth={1.5} />
+          </div>
+        </foreignObject>
       )}
     </g>
   )
 }
 
-function clip(s: string, n: number) {
+function clipText(s: string, n: number) {
   return s.length > n ? s.slice(0, n - 1) + '…' : s
 }
 
 /**
- * Build a cloud silhouette path centred on (0, 0) within the given bounding box.
- * Uses 7 sinusoidal "bumps" around an ellipse so each cloud has its own profile
- * but stays visually balanced.
+ * Render `text` as a single line if it's short, or split mid-word into two
+ * uppercase lines so long concept names don't overflow the hexagon. Used by
+ * satellite titles only — the centre's title is always pre-set to fit.
  */
-function cloudPath(width: number, height: number, seed: string): string {
-  const bumps = 7
-  const rx = width / 2 * 0.95
-  const ry = height / 2 * 0.85
-  const variance = 0.18    // 0 = ellipse, higher = bumpier
-  const pts: { x: number; y: number; cx: number; cy: number }[] = []
-  for (let i = 0; i < bumps; i++) {
-    const a = (i / bumps) * Math.PI * 2 - Math.PI / 2
-    // Per-bump radius offset — stable per seed.
-    const off = (hash01(seed + 'bump' + i, 31) - 0.5) * 2 * variance
-    const r1 = 1 + off
-    const x = Math.cos(a) * rx * r1
-    const y = Math.sin(a) * ry * r1
-    // Control point for the bump bulge — pushes outward between vertices.
-    const aMid = a + Math.PI / bumps
-    const bulge = 1 + 0.18 + (hash01(seed + 'mid' + i, 41) - 0.5) * 0.1
-    pts.push({
-      x, y,
-      cx: Math.cos(aMid) * rx * bulge,
-      cy: Math.sin(aMid) * ry * bulge,
-    })
-  }
-  // Build the SVG path — Q (quadratic) for each bump gives the rounded cloud feel.
-  let d = `M ${pts[0].x.toFixed(2)} ${pts[0].y.toFixed(2)}`
-  for (let i = 0; i < bumps; i++) {
-    const cur  = pts[i]
-    const next = pts[(i + 1) % bumps]
-    d += ` Q ${cur.cx.toFixed(2)} ${cur.cy.toFixed(2)} ${next.x.toFixed(2)} ${next.y.toFixed(2)}`
-  }
-  d += ' Z'
-  return d
-}
-
-// ──────────────────────────────────────────────────────────────────────────
-// Doodle arrow — curvy bezier with marker tip
-// ──────────────────────────────────────────────────────────────────────────
-function DoodleArrow({
-  from, to, seed,
-}: { from: { x: number; y: number }; to: { x: number; y: number }; seed: string }) {
-  // Shrink ends so the arrow doesn't poke through the cloud interiors.
-  const dx = to.x - from.x
-  const dy = to.y - from.y
-  const len = Math.sqrt(dx * dx + dy * dy)
-  const ux = dx / len
-  const uy = dy / len
-  const startInset = 110
-  const endInset   = 105
-  const sx = from.x + ux * startInset
-  const sy = from.y + uy * startInset
-  const ex = to.x   - ux * endInset
-  const ey = to.y   - uy * endInset
-
-  // Control point — perpendicular jog, seeded.
-  const mx = (sx + ex) / 2
-  const my = (sy + ey) / 2
-  const perpX = -uy
-  const perpY =  ux
-  const curveAmt = 30 + hash01(seed + 'curve', 51) * 60
-  const dir = hash01(seed + 'dir', 53) > 0.5 ? 1 : -1
-  const cpx = mx + perpX * curveAmt * dir
-  const cpy = my + perpY * curveAmt * dir
-
-  return (
-    <path
-      d={`M ${sx.toFixed(1)} ${sy.toFixed(1)} Q ${cpx.toFixed(1)} ${cpy.toFixed(1)} ${ex.toFixed(1)} ${ey.toFixed(1)}`}
-      fill="none"
-      stroke={PAPER_INK}
-      strokeWidth={1.8}
-      strokeLinecap="round"
-      strokeDasharray="0"
-      markerEnd="url(#doodleArrow)"
-      opacity={0.78}
-    />
-  )
-}
-
-// ──────────────────────────────────────────────────────────────────────────
-// Numbered badge — small coloured circle with a digit, like the reference
-// ──────────────────────────────────────────────────────────────────────────
-function NumberBadge({ x, y, num, fill, stroke }: { x: number; y: number; num: number; fill: string; stroke: string }) {
-  return (
-    <g transform={`translate(${x}, ${y})`}>
-      <circle r={18} fill={fill} stroke={stroke} strokeWidth={2.2} />
-      <text textAnchor="middle" dominantBaseline="central"
-        fontFamily="'Inter', sans-serif" fontSize={14} fontWeight={800} fill={stroke}>
-        {num}
+function TwoLineUppercase({ text, y, fontSize, fontWeight }: {
+  text: string; y: number; fontSize: number; fontWeight: number
+}) {
+  // Break point — first space past the midpoint of the string.
+  const t = text.trim()
+  if (t.length <= 14) {
+    return (
+      <text textAnchor="middle" y={y + fontSize * 0.4}
+        fontFamily={HEADLINE_FONT} fontSize={fontSize} fontWeight={fontWeight}
+        fill={MONO.ink} letterSpacing="1.5"
+        style={{ textTransform: 'uppercase' }}>
+        {t}
       </text>
-    </g>
-  )
-}
-
-// ──────────────────────────────────────────────────────────────────────────
-// Sticky tag — tiny rotated label pinned to the canvas edge
-// ──────────────────────────────────────────────────────────────────────────
-function StickyTag({ x, y, label, fill, edge }: { x: number; y: number; label: string; fill: string; edge: string }) {
-  const tilt = (hash01(label + 'tilt', 17) - 0.5) * 12
-  const w = 130
-  const h = 44
+    )
+  }
+  // Find a split — closest space to midpoint, else hard-break.
+  const mid = Math.floor(t.length / 2)
+  let breakIdx = -1
+  for (let off = 0; off < t.length; off++) {
+    if (t[mid + off] === ' ') { breakIdx = mid + off; break }
+    if (mid - off > 0 && t[mid - off] === ' ') { breakIdx = mid - off; break }
+  }
+  const line1 = breakIdx > 0 ? t.slice(0, breakIdx) : t.slice(0, mid)
+  const line2 = breakIdx > 0 ? t.slice(breakIdx + 1) : t.slice(mid)
   return (
-    <g transform={`translate(${x}, ${y}) rotate(${tilt})`}>
-      <rect x={-w / 2} y={-h / 2} width={w} height={h} rx={20}
-        fill={fill} stroke={edge} strokeWidth={1.8} />
-      <text textAnchor="middle" dominantBaseline="central"
-        fontFamily={HANDWRITTEN_FONT} fontSize={16} fontWeight={700} fill={PAPER_INK}>
-        {clip(label, 18)}
+    <>
+      <text textAnchor="middle" y={y}
+        fontFamily={HEADLINE_FONT} fontSize={fontSize} fontWeight={fontWeight}
+        fill={MONO.ink} letterSpacing="1.5"
+        style={{ textTransform: 'uppercase' }}>
+        {line1}
       </text>
-    </g>
-  )
-}
-
-// ──────────────────────────────────────────────────────────────────────────
-// Sparkle — 4-point doodle star
-// ──────────────────────────────────────────────────────────────────────────
-function Sparkle({ x, y, size, rotation }: { x: number; y: number; size: number; rotation: number }) {
-  // 4-pointed sparkle: two crossed teardrop shapes
-  const r = size
-  return (
-    <g transform={`translate(${x}, ${y}) rotate(${rotation})`} opacity={0.55}>
-      <path
-        d={`M 0 ${-r} Q ${r * 0.18} 0 0 ${r} Q ${-r * 0.18} 0 0 ${-r} Z`}
-        fill={PAPER_INK}
-      />
-      <path
-        d={`M ${-r} 0 Q 0 ${r * 0.18} ${r} 0 Q 0 ${-r * 0.18} ${-r} 0 Z`}
-        fill={PAPER_INK}
-      />
-    </g>
+      <text textAnchor="middle" y={y + fontSize + 2}
+        fontFamily={HEADLINE_FONT} fontSize={fontSize} fontWeight={fontWeight}
+        fill={MONO.ink} letterSpacing="1.5"
+        style={{ textTransform: 'uppercase' }}>
+        {line2}
+      </text>
+    </>
   )
 }
