@@ -6,6 +6,7 @@
 import express from 'express'
 import { searchManyParallel } from '../services/imageSearch.js'
 import { supabaseAdmin } from '../services/supabase.js'
+import groqPool from '../services/groqPool.js'
 
 const router = express.Router()
 const OR_URL = 'https://openrouter.ai/api/v1/chat/completions'
@@ -442,7 +443,20 @@ const GROQ_MODELS = [
   'llama-3.1-8b-instant',        // hedge — sub-second on weak load
 ]
 
+/**
+ * Run one Groq model. The `apiKey` param is optional — when omitted we draw
+ * a key from the rotating groqPool. When the response is a 429 (or 5xx),
+ * we report the bad key back to the pool so it gets parked for 60 s and the
+ * next request skips it.
+ */
 async function callGroqOne(model, question, apiKey, timeout = 7000) {
+  // Legacy callers can still pass an explicit key (e.g. the /solver/status
+  // probe). Otherwise rotate through the pool.
+  const key = apiKey || groqPool.next()
+  if (!key) {
+    throw new Error(`groq/${model}: no live keys (all 429-cooling or none configured)`)
+  }
+
   const ctrl = new AbortController()
   const timer = setTimeout(() => ctrl.abort(), timeout)
   try {
@@ -450,7 +464,7 @@ async function callGroqOne(model, question, apiKey, timeout = 7000) {
       method: 'POST',
       signal: ctrl.signal,
       headers: {
-        'Authorization': `Bearer ${apiKey}`,
+        'Authorization': `Bearer ${key}`,
         'Content-Type':  'application/json',
       },
       body: JSON.stringify({
@@ -465,6 +479,10 @@ async function callGroqOne(model, question, apiKey, timeout = 7000) {
       }),
     })
     if (!resp.ok) {
+      // Rate-limit or upstream blip → park this key so siblings can rotate.
+      if (resp.status === 429 || resp.status >= 500) {
+        try { groqPool.markBad(key, resp.status) } catch { /* ignore */ }
+      }
       const t = await resp.text()
       throw new Error(`groq/${model} HTTP ${resp.status}: ${t.slice(0, 120)}`)
     }
@@ -573,13 +591,18 @@ async function getSolverPlan(question) {
   // Build the race — every OpenRouter model + every Groq model.
   // Groq has its own quota separate from OpenRouter, so when OR is throttled
   // Groq still works. Racing multiple Groq models hedges against any single
-  // Groq model being slow/deprecated under load.
+  // Groq model being slow/deprecated under load. Each Groq call draws a fresh
+  // key from the rotating pool — see services/groqPool.js.
   const tasks = RACE_MODELS.map(m => callModel(m, question, apiKey, 7000))
-  if (process.env.GROQ_API_KEY) {
-    tasks.push(...callGroqAll(question, process.env.GROQ_API_KEY, 7000))
-    console.log(`[solver] racing ${RACE_MODELS.length} OpenRouter + ${GROQ_MODELS.length} Groq models`)
+  const groqStatus = groqPool.status()
+  if (groqStatus.live > 0) {
+    // Pass apiKey=null so callGroqOne draws from the pool. Each Groq model
+    // in the race picks an INDEPENDENT key — so two models from one request
+    // never share a key's quota.
+    tasks.push(...GROQ_MODELS.map(m => callGroqOne(m, question, null, 7000)))
+    console.log(`[solver] racing ${RACE_MODELS.length} OpenRouter + ${GROQ_MODELS.length} Groq models (pool: ${groqStatus.hint})`)
   } else {
-    console.log(`[solver] racing ${RACE_MODELS.length} OpenRouter models (no Groq key set)`)
+    console.log(`[solver] racing ${RACE_MODELS.length} OpenRouter models (groq pool: ${groqStatus.hint})`)
   }
 
   let winner
@@ -995,7 +1018,8 @@ function parseJsonLoose(text) {
 // ────────────────────────────────────────────────────────────────────────────
 router.get('/solver/status', async (_req, res) => {
   const hasOR    = !!process.env.OPENROUTER_API_KEY
-  const hasGroq  = !!process.env.GROQ_API_KEY
+  const groqInfo = groqPool.status()
+  const hasGroq  = groqInfo.total > 0
   const hasModel = !!process.env.SOLVER_MODEL
 
   // Tiny probe question — picks up any classification issues without burning quota.
@@ -1033,8 +1057,10 @@ router.get('/solver/status', async (_req, res) => {
   }
   if (hasGroq) {
     for (const m of GROQ_MODELS) {
+      // Pass null so the probe draws from the pool too — gives a realistic
+      // health check of what real requests will see.
       probes.push(probeProvider(`groq:${m}`, () =>
-        callGroqOne(m, probe, process.env.GROQ_API_KEY, 5000)
+        callGroqOne(m, probe, null, 5000)
       ))
     }
   }
@@ -1059,10 +1085,16 @@ router.get('/solver/status', async (_req, res) => {
       GROQ_API_KEY_set:       hasGroq,
       SOLVER_MODEL_override:  hasModel ? process.env.SOLVER_MODEL : null,
     },
+    groq_pool: {
+      total_keys:    groqInfo.total,
+      live_keys:     groqInfo.live,
+      cooling_keys:  groqInfo.cooling,
+      hint:          groqInfo.hint,
+    },
     providers: results,
     hint: anyOk
       ? 'At least one provider is responding. The Solver will use the fastest one.'
-      : 'No providers responded. Check that OPENROUTER_API_KEY and/or GROQ_API_KEY are set in Vercel env vars and that you have redeployed since adding them.',
+      : 'No providers responded. Check that OPENROUTER_API_KEY and/or GROQ_API_KEYS are set in Vercel env vars and that you have redeployed since adding them.',
   })
 })
 
