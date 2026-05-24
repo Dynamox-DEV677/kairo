@@ -187,8 +187,8 @@ export default function TopBar({ title, onModelChange, profile, modelLocked, mod
             onClick={() => { setModeOpen(o => !o); setModelOpen(false) }}
             style={{
               display: 'flex', alignItems: 'center', gap: 6,
-              padding: '6px 11px', borderRadius: 7,
-              background: '#151922', border: '1px solid #1f2532',
+              padding: '7px 13px', borderRadius: 999,
+              background: 'rgba(255, 255, 255, 0.025)', border: '1px solid rgba(255, 255, 255, 0.08)',
               cursor: 'pointer', fontFamily: 'inherit',
               color: currentMode.color, fontSize: 12, fontWeight: 600,
             }}
@@ -253,8 +253,11 @@ export default function TopBar({ title, onModelChange, profile, modelLocked, mod
             }}
             style={{
               display: 'flex', alignItems: 'center', gap: 7,
-              padding: '6px 11px', borderRadius: 7,
-              background: '#151922', border: `1px solid ${modelLocked ? 'rgba(199, 210, 232, 0.35)' : '#1f2532'}`,
+              padding: '7px 13px', borderRadius: 999,
+              background: 'rgba(255, 255, 255, 0.025)',
+              border: `1px solid ${modelLocked ? 'rgba(199, 210, 232, 0.35)' : 'rgba(255, 255, 255, 0.08)'}`,
+              backdropFilter: 'blur(10px)',
+              WebkitBackdropFilter: 'blur(10px)',
               cursor: modelLocked ? 'not-allowed' : 'pointer',
               fontFamily: 'inherit', fontSize: 12,
               opacity: modelLocked ? 0.72 : 1,
@@ -330,24 +333,30 @@ export default function TopBar({ title, onModelChange, profile, modelLocked, mod
         {/* Divider */}
         <div style={{ width: 1, height: 20, background: '#1f2532' }} />
 
-        {/* Streak */}
+        {/* Streak — pill-shaped */}
         <div className="animate-streak" style={{
-          display: 'flex', alignItems: 'center', gap: 5,
-          padding: '5px 10px', borderRadius: 7,
+          display: 'flex', alignItems: 'center', gap: 6,
+          padding: '6px 12px', borderRadius: 999,
           background: 'rgba(79, 124, 255, 0.08)',
-          border: '1px solid rgba(79, 124, 255, 0.2)',
+          border: '1px solid rgba(79, 124, 255, 0.22)',
+          backdropFilter: 'blur(10px)',
+          WebkitBackdropFilter: 'blur(10px)',
+          transition: 'transform 0.22s cubic-bezier(0.22, 1, 0.36, 1)',
         }}>
           <Flame size={13} color="#4F7CFF" />
           <span style={{ fontSize: 12, fontWeight: 700, color: '#4F7CFF' }}>5</span>
           <span style={{ fontSize: 11, color: '#6B7280' }}>day streak</span>
         </div>
 
-        {/* XP */}
+        {/* XP — pill-shaped */}
         <div style={{
-          display: 'flex', alignItems: 'center', gap: 5,
-          padding: '5px 10px', borderRadius: 7,
+          display: 'flex', alignItems: 'center', gap: 6,
+          padding: '6px 12px', borderRadius: 999,
           background: 'rgba(199, 210, 232, 0.06)',
-          border: '1px solid rgba(199, 210, 232, 0.15)',
+          border: '1px solid rgba(199, 210, 232, 0.18)',
+          backdropFilter: 'blur(10px)',
+          WebkitBackdropFilter: 'blur(10px)',
+          transition: 'transform 0.22s cubic-bezier(0.22, 1, 0.36, 1)',
         }}>
           <Star size={12} color="#C7D2E8" />
           <span style={{ fontSize: 12, fontWeight: 700, color: '#C7D2E8' }}>450 XP</span>

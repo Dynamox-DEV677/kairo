@@ -168,27 +168,46 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
       {/* Logo area */}
       <div style={{ padding: '16px 16px 14px', borderBottom: `1px solid ${isDark ? '#1a1f2e' : '#e4e4e7'}` }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
-          <img src="/kairo_logo.png" alt="Kairo" style={{ width: 52, height: 52, objectFit: 'contain', borderRadius: 12 }} />
+          <img src="/kairo_logo.png" alt="Kairo" style={{ width: 52, height: 52, objectFit: 'contain', borderRadius: 16 }} />
           <div>
             <div style={{ fontSize: 16, fontWeight: 700, color: isDark ? '#fafafa' : '#18181b', letterSpacing: '-0.3px' }}>kairo</div>
             <div style={{ fontSize: 10, color: '#4F7CFF', fontWeight: 600, letterSpacing: 0.5, textTransform: 'uppercase' }}>Accelerate Your Academics</div>
           </div>
         </div>
 
-        {/* Search shortcut */}
+        {/* Search shortcut — pill-shaped Apple-style command bar */}
         <button style={{
-          width: '100%', padding: '8px 12px', background: '#151922',
-          border: '1px solid #1f2532', borderRadius: 8,
+          width: '100%', padding: '9px 14px',
+          background: 'rgba(255, 255, 255, 0.025)',
+          border: '1px solid rgba(255, 255, 255, 0.06)',
+          borderRadius: 999,
           display: 'flex', alignItems: 'center', gap: 8,
           color: '#6B7280', fontSize: 12, cursor: 'pointer',
-          fontFamily: 'inherit', transition: 'all 0.15s',
+          fontFamily: 'inherit',
+          transition: 'all 0.22s cubic-bezier(0.22, 1, 0.36, 1)',
+          backdropFilter: 'blur(10px)',
+          WebkitBackdropFilter: 'blur(10px)',
         }}
-          onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = '#4B5563' }}
-          onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = '#1f2532' }}
+          onMouseEnter={e => {
+            const b = e.currentTarget as HTMLButtonElement
+            b.style.borderColor = 'rgba(102, 217, 255, 0.30)'
+            b.style.background  = 'rgba(255, 255, 255, 0.04)'
+          }}
+          onMouseLeave={e => {
+            const b = e.currentTarget as HTMLButtonElement
+            b.style.borderColor = 'rgba(255, 255, 255, 0.06)'
+            b.style.background  = 'rgba(255, 255, 255, 0.025)'
+          }}
         >
           <MessageCircle size={12} />
-          <span>Ask anything...</span>
-          <span style={{ marginLeft: 'auto', fontSize: 10, background: '#1a1f2e', padding: '1px 6px', borderRadius: 4 }}>⌘K</span>
+          <span>Ask anything…</span>
+          <span style={{
+            marginLeft: 'auto', fontSize: 10, fontWeight: 600,
+            background: 'rgba(255, 255, 255, 0.05)',
+            border: '1px solid rgba(255, 255, 255, 0.06)',
+            padding: '2px 7px', borderRadius: 999,
+            letterSpacing: 0.3,
+          }}>⌘K</span>
         </button>
       </div>
 
@@ -439,15 +458,16 @@ function NavItemRow({ item, isActive, isHovered, isGenerating = false, onHover, 
       whileTap={{ scale: 0.98 }}
       style={{
         width: '100%', display: 'flex', alignItems: 'center', gap: 11,
-        padding: '10px 12px', borderRadius: 10, textDecoration: 'none',
+        padding: '10px 12px', borderRadius: 14, textDecoration: 'none',
         marginBottom: 4, cursor: 'pointer', border: 'none', fontFamily: 'inherit',
         // Active = faint blue accent fill (Apple-list pattern).
         // Hover = glass tint, not a solid panel.
         background: isActive
-          ? 'rgba(79, 124, 255, 0.07)'
-          : isHovered ? 'rgba(255, 255, 255, 0.035)' : 'transparent',
+          ? 'rgba(79, 124, 255, 0.10)'
+          : isHovered ? 'rgba(255, 255, 255, 0.04)' : 'transparent',
         position: 'relative',
-        transition: 'background 0.15s ease',
+        transition: 'background 0.22s cubic-bezier(0.22, 1, 0.36, 1), transform 0.22s cubic-bezier(0.22, 1, 0.36, 1)',
+        transform: isHovered ? 'translateX(2px)' : 'translateX(0)',
       }}
     >
       {/* Active indicator — softened shadow per the no-neon refinement */}
@@ -464,10 +484,10 @@ function NavItemRow({ item, isActive, isHovered, isGenerating = false, onHover, 
       )}
 
       <div style={{
-        width: 22, height: 22, borderRadius: 6,
-        background: isActive ? 'rgba(79, 124, 255, 0.12)' : 'transparent',
+        width: 26, height: 26, borderRadius: 8,
+        background: isActive ? 'rgba(79, 124, 255, 0.16)' : 'transparent',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        flexShrink: 0, transition: 'background 0.15s ease', position: 'relative',
+        flexShrink: 0, transition: 'background 0.22s cubic-bezier(0.22, 1, 0.36, 1)', position: 'relative',
       }}>
         <item.icon size={13} color={isActive ? '#A5B4FC' : '#6B7280'} />
         {/* Background generation pulse indicator */}

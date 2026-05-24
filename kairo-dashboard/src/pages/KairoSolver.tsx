@@ -473,15 +473,20 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
         </div>
       )}
 
-      {/* INPUT */}
+      {/* INPUT — floating glass dock, fully pill-shaped at the edges */}
       <div style={{
-        background: '#0E1117', border: `1px solid ${voiceOn ? 'rgba(102, 217, 255, 0.55)' : '#1f2532'}`,
-        borderRadius: 14, padding: 10,
+        background: 'linear-gradient(180deg, rgba(20, 24, 35, 0.85) 0%, rgba(14, 17, 23, 0.85) 100%)',
+        border: `1px solid ${voiceOn ? 'rgba(102, 217, 255, 0.55)' : 'rgba(255, 255, 255, 0.06)'}`,
+        borderRadius: 28, padding: '10px 12px',
         display: 'flex', alignItems: 'flex-end', gap: 10,
         marginBottom: 18, marginTop: showResult ? 0 : 14,
         position: 'relative', zIndex: 2,
-        transition: 'border-color .2s ease, box-shadow .2s ease',
-        boxShadow: voiceOn ? '0 0 28px rgba(79, 124, 255, 0.35)' : 'none',
+        transition: 'border-color .24s ease, box-shadow .24s ease',
+        boxShadow: voiceOn
+          ? '0 12px 36px rgba(79, 124, 255, 0.32), 0 0 0 1px rgba(102, 217, 255, 0.20), inset 0 1px 0 rgba(255, 255, 255, 0.04)'
+          : '0 12px 32px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.03)',
+        backdropFilter: 'blur(20px) saturate(160%)',
+        WebkitBackdropFilter: 'blur(20px) saturate(160%)',
       }}>
         <textarea
           ref={taRef}
@@ -504,10 +509,11 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
           <button
             onClick={toggleVoice}
             title={voiceOn ? 'Stop listening' : 'Speak your doubt'}
+            className="kr-tactile"
             style={{
               display: 'inline-flex', alignItems: 'center', gap: 6,
-              padding: '8px 12px', borderRadius: 10,
-              background: voiceOn ? 'rgba(102, 217, 255, 0.18)' : 'transparent',
+              padding: '8px 14px', borderRadius: 999,
+              background: voiceOn ? 'rgba(102, 217, 255, 0.18)' : 'rgba(255,255,255,0.03)',
               border: `1px solid ${voiceOn ? 'rgba(102, 217, 255, 0.55)' : 'rgba(255,255,255,0.08)'}`,
               color: voiceOn ? '#A5B4FC' : '#B1B5BA',
               fontFamily: 'inherit', fontSize: 12, fontWeight: 600,
@@ -521,10 +527,11 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
         {/* Exam plan button — replaces the deleted Panic Mode page */}
         {!busy && (
           <button onClick={() => setExamModal(true)} title="Plan your exam"
+            className="kr-tactile"
             style={{
               display: 'inline-flex', alignItems: 'center', gap: 6,
-              padding: '8px 12px', borderRadius: 10,
-              background: 'transparent',
+              padding: '8px 14px', borderRadius: 999,
+              background: 'rgba(255,255,255,0.03)',
               border: '1px solid rgba(255,255,255,0.08)',
               color: '#B1B5BA', fontFamily: 'inherit', fontSize: 12, fontWeight: 600,
               cursor: 'pointer',
@@ -676,47 +683,81 @@ function Hero({ onPick }: { onPick: (q: string) => void }) {
   return (
     <div style={{
       flex: 1, display: 'flex', flexDirection: 'column',
-      alignItems: 'center', justifyContent: 'center', gap: 18,
+      alignItems: 'center', justifyContent: 'center', gap: 24,
       position: 'relative',
     }}>
+      {/* Hero orb — fully circular with ambient halo. Two concentric layers
+          (outer glow + inner orb) give the impression of an AI presence
+          rather than a flat icon tile. */}
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-        style={{
-          width: 76, height: 76, borderRadius: 18,
-          // Match the rest of the brand — black squircle, soft purple halo.
-          background: '#050505',
-          border: '1px solid rgba(79, 124, 255, 0.25)',
+        transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+        style={{ position: 'relative', width: 124, height: 124 }}
+      >
+        {/* Soft outer halo — slow ambient pulse */}
+        <div className="animate-pulse-orb" style={{
+          position: 'absolute', inset: -18,
+          borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(102, 217, 255, 0.18) 0%, rgba(79, 124, 255, 0.10) 40%, transparent 70%)',
+          filter: 'blur(8px)',
+        }} />
+        {/* Glass ring */}
+        <div style={{
+          position: 'absolute', inset: 0,
+          borderRadius: '50%',
+          background: 'linear-gradient(180deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.02) 100%)',
+          border: '1px solid rgba(102, 217, 255, 0.32)',
+          backdropFilter: 'blur(16px) saturate(160%)',
+          WebkitBackdropFilter: 'blur(16px) saturate(160%)',
+          boxShadow: '0 12px 48px rgba(79, 124, 255, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.08)',
+        }} />
+        {/* Logo — inset so the ring breathes around it */}
+        <div style={{
+          position: 'absolute', inset: 22,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 0 40px rgba(79, 124, 255, 0.03)',
-          padding: 12,
         }}>
-        <img
-          src="/kairo_logo.png"
-          alt="Kairo"
-          style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-        />
+          <img
+            src="/kairo_logo.png"
+            alt="Kairo"
+            style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+          />
+        </div>
       </motion.div>
+
       <div style={{ textAlign: 'center', maxWidth: 520 }}>
-        <h1 style={{ fontSize: 26, fontWeight: 800, color: '#fafafa', margin: 0, letterSpacing: '-0.5px' }}>
+        <h1 style={{
+          fontSize: 30, fontWeight: 800, color: '#fafafa', margin: 0,
+          letterSpacing: '-0.6px',
+          background: 'linear-gradient(180deg, #FFFFFF 0%, #A5B4FC 100%)',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          backgroundClip: 'text',
+        }}>
           Kairo's Solver
         </h1>
-        <p style={{ fontSize: 13.5, color: '#B1B5BA', margin: '8px 0 0', lineHeight: 1.6 }}>
+        <p style={{ fontSize: 13.5, color: '#B1B5BA', margin: '10px 0 0', lineHeight: 1.65 }}>
           Ask anything. Kairo writes a clear explanation on the right and builds a
           live picture-book on the left — sourced from Wikimedia and educational image libraries.
         </p>
       </div>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center', maxWidth: 580, marginTop: 6 }}>
+
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, justifyContent: 'center', maxWidth: 620, marginTop: 6 }}>
         {SUGGESTIONS.map(s => (
           <motion.button key={s} onClick={() => onPick(s)}
-            whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
+            whileHover={{ scale: 1.04, y: -2 }} whileTap={{ scale: 0.97 }}
+            className="kr-tactile"
             style={{
-              padding: '8px 14px', borderRadius: 100,
-              background: 'rgba(79, 124, 255, 0.06)',
-              border: '1px solid rgba(79, 124, 255, 0.2)',
-              color: '#A5B4FC', fontFamily: 'inherit', fontSize: 12, fontWeight: 600,
+              padding: '10px 18px',
+              background: 'linear-gradient(180deg, rgba(102, 217, 255, 0.10) 0%, rgba(79, 124, 255, 0.04) 100%)',
+              border: '1px solid rgba(102, 217, 255, 0.22)',
+              color: '#A5B4FC',
+              fontFamily: 'inherit', fontSize: 12.5, fontWeight: 600,
+              letterSpacing: '-0.005em',
               cursor: 'pointer',
+              backdropFilter: 'blur(14px) saturate(140%)',
+              WebkitBackdropFilter: 'blur(14px) saturate(140%)',
+              boxShadow: '0 4px 14px rgba(79, 124, 255, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.04)',
             }}>
             {s}
           </motion.button>
@@ -1276,18 +1317,22 @@ const MD_COMPONENTS = {
 
 // ─── Styles ───────────────────────────────────────────────────────────────
 const btnSend: React.CSSProperties = {
-  padding: '9px 14px', borderRadius: 10,
-  background: 'linear-gradient(135deg, #4F7CFF, #4F7CFF)',
-  color: '#fff', border: 'none', fontFamily: 'inherit', fontSize: 12, fontWeight: 700,
+  padding: '9px 18px', borderRadius: 999,
+  background: 'linear-gradient(135deg, #66D9FF 0%, #4F7CFF 60%, #2046C2 100%)',
+  color: '#fff', border: 'none', fontFamily: 'inherit', fontSize: 12.5, fontWeight: 700,
+  letterSpacing: '-0.005em',
   display: 'flex', alignItems: 'center', gap: 6,
-  boxShadow: '0 0 16px rgba(79, 124, 255, 0.03)',
+  boxShadow: '0 8px 24px rgba(79, 124, 255, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.18)',
+  transition: 'transform 0.18s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.18s ease',
 }
 
 const btnStop: React.CSSProperties = {
-  padding: '9px 14px', borderRadius: 10,
-  background: '#0B1530', color: '#fff', border: 'none',
-  fontFamily: 'inherit', fontSize: 12, fontWeight: 700, cursor: 'pointer',
+  padding: '9px 18px', borderRadius: 999,
+  background: 'rgba(255, 255, 255, 0.04)', color: '#fff',
+  border: '1px solid rgba(255, 255, 255, 0.10)',
+  fontFamily: 'inherit', fontSize: 12.5, fontWeight: 700, cursor: 'pointer',
   display: 'flex', alignItems: 'center', gap: 6,
+  transition: 'all 0.18s cubic-bezier(0.22, 1, 0.36, 1)',
 }
 
 const arrowBtn: React.CSSProperties = {
