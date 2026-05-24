@@ -20,12 +20,15 @@
  *   - lab route if the topic has an interactive Kairo Lab
  *   - related concept chips, formulas
  */
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useMemo } from 'react'
+import GeoVisualMode from '../components/GeoVisualMode'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Send, StopCircle, Sparkles, Image as ImageIcon, Loader2,
   ChevronLeft, ChevronRight, Beaker, ExternalLink, BookOpen, Atom,
   Mic, MicOff, Calendar, X,
+  FileText as TextIcon, MapPin as MapPinIcon,
+  Box as Box3DIcon, LayoutPanelTop as BothIcon, Wand2,
 } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
@@ -43,6 +46,26 @@ interface ImageSlide {
   pageUrl?:    string
 }
 
+interface GeographySection {
+  heading: string
+  body:    string
+}
+
+/**
+ * Geography enrichment — present only when questionType==='geography'.
+ * Resolved server-side via Wikipedia coordinates so the Map Mode UI can
+ * auto-zoom without paying for a geocoder.
+ */
+export interface GeographyData {
+  name:     string
+  kind:     'region' | 'country' | 'city' | 'river' | 'mountain' | 'desert' | 'forest' | 'ocean' | 'continent' | 'other'
+  zoom:     number
+  lat:      number | null
+  lng:      number | null
+  sections: GeographySection[]
+  pageUrl:  string | null
+}
+
 interface TextPlan {
   questionType:    string
   topicKeyword:    string | null  // clean noun for Wikipedia article lookup
@@ -55,6 +78,7 @@ interface TextPlan {
   imageQueries:    string[]   // backend now ships these so /images skips the LLM call
   videoQuery?:     string     // search query for the explainer video
   modelUsed?:      string     // 'wikipedia-fallback' when AI was unavailable
+  geography?:      GeographyData | null    // populated when questionType==='geography'
 }
 
 interface SolverResponse extends TextPlan {
@@ -65,6 +89,21 @@ interface SolverResponse extends TextPlan {
   videoId:         string | null
   videoBusy:       boolean       // true while video search is in flight
 }
+
+/**
+ * Solver result presentation modes.
+ *
+ *   auto    — let Kairo pick. For geography questions this picks Map;
+ *             everything else falls through to the standard text/visual layout.
+ *   text    — explanation only, no images / map / video.
+ *   visual  — images + explanation (the original layout).
+ *   map     — Leaflet map + image carousel + structured sections + concept graph.
+ *   both    — wide split: text + visual + (map if geography).
+ *
+ * "3D" is shown in the picker but routes to Kairo Labs when the question
+ * supports a lab; otherwise it falls back to 'visual'.
+ */
+export type SolverViewMode = 'auto' | 'text' | 'visual' | 'map' | '3d' | 'both'
 
 interface KairoSolverProps {
   model?: string
@@ -92,6 +131,12 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
   const [voiceOn, setVoiceOn]           = useState(false)
   const [voiceSupported, setVoiceSupported] = useState(false)
   const [examModal, setExamModal]       = useState(false)
+  // Result presentation mode. Auto-switches to 'map' when the response
+  // has a geography section; user can override with the segmented chips.
+  const [viewMode, setViewMode]         = useState<SolverViewMode>('auto')
+  // True for the brief window after auto-switching — used to show a
+  // small "Auto-selected" badge so the user knows why the layout changed.
+  const [autoSwitched, setAutoSwitched] = useState(false)
   const abortRef = useRef<AbortController | null>(null)
   const taRef = useRef<HTMLTextAreaElement>(null)
   const recogRef = useRef<any>(null)
@@ -321,6 +366,35 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
 
   const showResult = !!topic
 
+  // ── Auto-suggest Map mode when the response is a geography question ────
+  // Only fires when the user is in 'auto' mode — explicit overrides stick.
+  // Fires the autoSwitched flag briefly so the UI can render a small badge.
+  useEffect(() => {
+    if (resp?.questionType === 'geography' && viewMode === 'auto' && resp.geography) {
+      setAutoSwitched(true)
+      const id = window.setTimeout(() => setAutoSwitched(false), 3600)
+      return () => window.clearTimeout(id)
+    }
+  }, [resp?.questionType, resp?.geography, viewMode])
+
+  // Reset the mode back to 'auto' on every new question so old overrides
+  // don't carry across asks (e.g. picked 'text' for math → asked about
+  // Amazon → should still auto-route to Map).
+  useEffect(() => {
+    if (resp) return
+    if (busy) setViewMode('auto')
+  }, [busy, resp])
+
+  // Compute the effective mode — what the renderer should actually show.
+  // 'auto' resolves to 'map' for geography and 'visual' for everything else.
+  const effectiveMode: SolverViewMode = useMemo(() => {
+    if (viewMode !== 'auto') return viewMode
+    if (resp?.questionType === 'geography' && resp.geography) return 'map'
+    return 'visual'
+  }, [viewMode, resp?.questionType, resp?.geography])
+
+  const isGeographyMap = effectiveMode === 'map' && resp?.questionType === 'geography' && resp.geography
+
   return (
     <div style={{
       flex: 1, height: '100%', display: 'flex', flexDirection: 'column',
@@ -339,34 +413,63 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
       {/* HERO — empty state */}
       {!showResult && <Hero onPick={ask} />}
 
-      {/* RESULT — split pane (stacks vertically on mobile via .ks-result) */}
+      {/* RESULT — mode chips + content */}
       {showResult && (
-        <div className="ks-result" style={{
+        <div className="ks-result-wrap" style={{
           flex: 1, minHeight: 0, position: 'relative', zIndex: 1,
-          display: 'grid',
-          gridTemplateColumns: 'minmax(0, 1.4fr) minmax(0, 1fr)',
-          gap: 14, paddingBottom: 14,
+          display: 'flex', flexDirection: 'column', gap: 10, paddingBottom: 14,
+          overflow: 'auto',
         }}>
-          {/* LEFT — video on top, slideshow strip below */}
-          <LeftPanel
-            videoId={resp?.videoId ?? null}
-            videoBusy={resp?.videoBusy === true}
-            slides={resp?.imageSlides || []}
-            imagesBusy={(busy && !resp) || resp?.imagesBusy === true}
-            topic={topic}
-            questionType={resp?.questionType}
-            imagesErr={resp?.imagesError}
+          {/* Mode segmented control */}
+          <ModeChipBar
+            mode={viewMode}
+            setMode={setViewMode}
+            hasGeography={!!resp?.geography}
+            supports3D={!!resp?.supports3D}
+            autoSwitched={autoSwitched}
           />
 
-          {/* RIGHT — explanation */}
-          <ExplanationPanel
-            resp={resp}
-            busy={busy && !resp}
-            error={error}
-            retryHint={retryHint}
-            onOpenLab={(route) => onNavigate?.('labs:' + route)}
-            onAskRelated={(c) => ask(c)}
-          />
+          {/* Geography Map Mode — full replacement layout */}
+          {isGeographyMap && resp && resp.geography ? (
+            <GeoVisualMode
+              topic={topic}
+              textExplanation={resp.textExplanation || ''}
+              geography={resp.geography}
+              imageSlides={resp.imageSlides || []}
+              imagesBusy={(busy && !resp) || resp.imagesBusy === true}
+              relatedConcepts={resp.relatedConcepts || []}
+              onAskRelated={(c) => ask(c)}
+            />
+          ) : (
+            // Default split-pane (stacks vertically on mobile via .ks-result)
+            <div className="ks-result" style={{
+              flex: 1, minHeight: 0, position: 'relative',
+              display: 'grid',
+              gridTemplateColumns: 'minmax(0, 1.4fr) minmax(0, 1fr)',
+              gap: 14,
+            }}>
+              {/* LEFT — video on top, slideshow strip below */}
+              <LeftPanel
+                videoId={resp?.videoId ?? null}
+                videoBusy={resp?.videoBusy === true}
+                slides={resp?.imageSlides || []}
+                imagesBusy={(busy && !resp) || resp?.imagesBusy === true}
+                topic={topic}
+                questionType={resp?.questionType}
+                imagesErr={resp?.imagesError}
+              />
+
+              {/* RIGHT — explanation */}
+              <ExplanationPanel
+                resp={resp}
+                busy={busy && !resp}
+                error={error}
+                retryHint={retryHint}
+                onOpenLab={(route) => onNavigate?.('labs:' + route)}
+                onAskRelated={(c) => ask(c)}
+              />
+            </div>
+          )}
         </div>
       )}
 
@@ -1193,4 +1296,106 @@ const arrowBtn: React.CSSProperties = {
   background: 'rgba(13,13,13,0.85)', backdropFilter: 'blur(10px)',
   border: '1px solid rgba(79, 124, 255, 0.3)', cursor: 'pointer',
   display: 'flex', alignItems: 'center', justifyContent: 'center',
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// ModeChipBar — Text / Visual / Map / 3D / Both segmented control
+// ══════════════════════════════════════════════════════════════════════════
+//
+// Shown above every result. The Map chip lights up only when the active
+// response includes a geography section (otherwise it's a no-op and we
+// dim it). 3D similarly only lights up when supports3D is true.
+//
+// When auto-suggest just kicked in, a small "Auto-selected" badge appears
+// next to the active chip for ~3 seconds so the user knows why the
+// layout changed.
+function ModeChipBar({
+  mode, setMode, hasGeography, supports3D, autoSwitched,
+}: {
+  mode: SolverViewMode
+  setMode: (m: SolverViewMode) => void
+  hasGeography: boolean
+  supports3D:   boolean
+  autoSwitched: boolean
+}) {
+  const chips: { id: SolverViewMode; label: string; icon: React.ElementType; available: boolean; hint?: string }[] = [
+    { id: 'text',   label: 'Text',    icon: TextIcon,    available: true },
+    { id: 'visual', label: 'Visual',  icon: ImageIcon,   available: true },
+    { id: 'map',    label: 'Map',     icon: MapPinIcon,  available: hasGeography, hint: hasGeography ? 'Geography detected' : 'Not a geography question' },
+    { id: '3d',     label: '3D',      icon: Box3DIcon,   available: supports3D,   hint: supports3D   ? 'Opens in Kairo Labs' : 'No 3D lab for this topic' },
+    { id: 'both',   label: 'Both',    icon: BothIcon,    available: true },
+  ]
+
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', gap: 10,
+      padding: '6px 10px',
+      background: 'rgba(20, 24, 35, 0.55)',
+      border: '1px solid rgba(255, 255, 255, 0.06)',
+      borderRadius: 12,
+      backdropFilter: 'blur(14px)',
+      WebkitBackdropFilter: 'blur(14px)',
+    }}>
+      <div style={{
+        fontFamily: "'Inter', system-ui, sans-serif",
+        fontSize: 9.5, fontWeight: 700, color: '#66D9FF',
+        textTransform: 'uppercase', letterSpacing: 1.8, paddingLeft: 4,
+      }}>
+        View
+      </div>
+
+      <div style={{ display: 'flex', gap: 4 }}>
+        {chips.map(c => {
+          const active = mode === c.id || (mode === 'auto' && c.id === (hasGeography ? 'map' : 'visual'))
+          return (
+            <button
+              key={c.id}
+              onClick={() => c.available && setMode(c.id)}
+              disabled={!c.available}
+              title={c.hint || c.label}
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 5,
+                padding: '6px 12px', borderRadius: 8,
+                border: 'none', cursor: c.available ? 'pointer' : 'not-allowed',
+                background: active ? 'rgba(79, 124, 255, 0.18)' : 'transparent',
+                color: active ? '#A5B4FC' : c.available ? '#CBD5E1' : '#4B5563',
+                fontFamily: 'inherit', fontWeight: 700, fontSize: 11.5,
+                opacity: c.available ? 1 : 0.45,
+                transition: 'all 0.18s',
+              }}
+            >
+              <c.icon size={12} />
+              {c.label}
+            </button>
+          )
+        })}
+      </div>
+
+      {/* Auto-selected badge — fades out after ~3.6s */}
+      <AnimatePresence>
+        {autoSwitched && (
+          <motion.div
+            initial={{ opacity: 0, x: -6 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -6 }}
+            transition={{ duration: 0.25 }}
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: 5,
+              padding: '4px 10px', borderRadius: 999,
+              background: 'rgba(102, 217, 255, 0.10)',
+              border: '1px solid rgba(102, 217, 255, 0.35)',
+              color: '#66D9FF',
+              fontFamily: "'Inter', system-ui, sans-serif",
+              fontSize: 10, fontWeight: 700,
+              textTransform: 'uppercase', letterSpacing: 1.2,
+              marginLeft: 'auto',
+            }}
+          >
+            <Wand2 size={10} />
+            Auto-selected · Map mode
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  )
 }

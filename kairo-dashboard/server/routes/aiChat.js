@@ -398,7 +398,14 @@ Your output MUST be a single valid JSON object (no markdown fences, no commentar
   "videoQuery":     <ONE short search query for an educational explainer video, e.g. "photosynthesis 3D animation for students" or "French Revolution causes documentary". Aim for content-creator style queries that find well-produced 5-10 minute lessons. Required>,
   "formulas":       [<key formulas as plain LaTeX strings, e.g. "F = ma" — empty array if N/A>],
   "relatedConcepts":[<3-5 related topics or follow-up questions, short strings>],
-  "textExplanation": <markdown string — concise but complete. Use ## sub-headings ("What you're seeing", "How it works", "Why it matters", "Real-world example"). Aim for 200-400 words.>
+  "textExplanation": <markdown string — concise but complete. Use ## sub-headings ("What you're seeing", "How it works", "Why it matters", "Real-world example"). Aim for 200-400 words.>,
+  "geography":      <null OR — only when questionType is "geography" — an object describing the location for the Map Mode UI:
+                     {
+                       "name":  <human-readable location name, e.g. "Amazon Rainforest", "Japan", "Nile River">,
+                       "kind":  "region" | "country" | "city" | "river" | "mountain" | "desert" | "forest" | "ocean" | "continent" | "other",
+                       "zoom":  <Leaflet zoom level: 3 for continents, 4-5 for countries / mega-regions, 6-7 for states / large features, 8-10 for cities, 11-13 for landmarks>,
+                       "sections": <array of FIVE-EIGHT structured learning blocks. Each: { "heading": <one of "Overview"|"Climate"|"Geography"|"Importance"|"Biodiversity"|"Countries"|"Economy"|"Culture"|"Fun Facts">, "body": <markdown paragraph, 1-3 sentences> }>
+                     }>
 }
 
 CRITICAL JSON ESCAPING RULES for textExplanation:
@@ -660,10 +667,95 @@ async function getSolverPlan(question) {
       : [],
     videoQuery:      sanitizeOneLine(plan.videoQuery || plan.topicKeyword || ''),
     modelUsed:       model,
+    geography:       null,    // fills in below when questionType==='geography'
   }
+
+  // ── Geography enrichment ────────────────────────────────────────────────
+  // When the model classifies this as geography, resolve lat/lng + bounds
+  // from Wikipedia so the frontend's Map Mode can auto-zoom to the right
+  // region. Fire-and-forget timing — capped at 1.5s so we never delay the
+  // user-visible text response.
+  if (normalized.questionType === 'geography') {
+    const rawGeo = plan.geography && typeof plan.geography === 'object' ? plan.geography : null
+    const sections = Array.isArray(rawGeo?.sections)
+      ? rawGeo.sections.slice(0, 8)
+          .filter(s => s && typeof s === 'object' && s.heading && s.body)
+          .map(s => ({
+            heading: sanitizeOneLine(String(s.heading)).slice(0, 40),
+            body:    sanitizeMarkdown(String(s.body)).slice(0, 600),
+          }))
+      : []
+
+    const geoName = sanitizeOneLine(rawGeo?.name || normalized.topicKeyword || '')
+    const geoKind = ['region','country','city','river','mountain','desert','forest','ocean','continent','other']
+      .includes(rawGeo?.kind) ? rawGeo.kind : 'region'
+    const aiZoom  = Number.isFinite(Number(rawGeo?.zoom))
+      ? Math.max(2, Math.min(14, Number(rawGeo.zoom)))
+      : 5
+
+    let coords = null
+    try {
+      coords = await Promise.race([
+        wikiResolveCoords(geoName || question),
+        new Promise(res => setTimeout(() => res(null), 1500)),
+      ])
+    } catch { /* timeout / network — non-fatal */ }
+
+    normalized.geography = {
+      name:     geoName || (coords?.title || ''),
+      kind:     geoKind,
+      zoom:     aiZoom,
+      lat:      coords?.lat ?? null,
+      lng:      coords?.lng ?? null,
+      sections,
+      pageUrl:  coords?.pageUrl || null,
+    }
+  }
+
   cacheSet(cacheKey, normalized)                                  // L1
   dbCacheSet(qKey, question, normalized, 'ai').catch(() => {})    // L2 (fire-and-forget)
   return normalized
+}
+
+/**
+ * Resolve a geographic name to { lat, lng, title, pageUrl } via Wikipedia.
+ * Cached in-memory for the warm Vercel instance. Returns null when the
+ * article has no coordinates (e.g. "Climate change" — concept, not place).
+ */
+const _wikiCoordCache = new Map()
+async function wikiResolveCoords(query) {
+  const key = (query || '').trim().toLowerCase()
+  if (!key) return null
+  if (_wikiCoordCache.has(key)) return _wikiCoordCache.get(key)
+  try {
+    // Step 1 — find the best-matching article title.
+    const title = await wikiSearchFirstTitle(query)
+    if (!title) { _wikiCoordCache.set(key, null); return null }
+
+    // Step 2 — fetch coordinates from that article.
+    // prop=coordinates gives the geographic point Wikipedia tags the article with.
+    const url = `https://en.wikipedia.org/w/api.php?action=query&format=json&prop=coordinates|info&inprop=url&titles=${encodeURIComponent(title)}&origin=*`
+    const r = await fetch(url, { headers: { 'User-Agent': 'KairoEdu/1.0' } })
+    if (!r.ok) { _wikiCoordCache.set(key, null); return null }
+    const d = await r.json()
+    const page = Object.values(d?.query?.pages || {})[0]
+    const coord = page?.coordinates?.[0]
+    if (!coord || typeof coord.lat !== 'number' || typeof coord.lon !== 'number') {
+      _wikiCoordCache.set(key, null)
+      return null
+    }
+    const out = {
+      lat:     coord.lat,
+      lng:     coord.lon,
+      title:   page?.title || title,
+      pageUrl: page?.fullurl || `https://en.wikipedia.org/wiki/${encodeURIComponent(title)}`,
+    }
+    _wikiCoordCache.set(key, out)
+    return out
+  } catch {
+    _wikiCoordCache.set(key, null)
+    return null
+  }
 }
 
 // ────────────────────────────────────────────────────────────────────────────
