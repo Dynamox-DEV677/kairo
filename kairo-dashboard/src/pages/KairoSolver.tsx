@@ -686,33 +686,35 @@ function Hero({ onPick }: { onPick: (q: string) => void }) {
       alignItems: 'center', justifyContent: 'center', gap: 24,
       position: 'relative',
     }}>
-      {/* Hero orb — fully circular with ambient halo. Two concentric layers
-          (outer glow + inner orb) give the impression of an AI presence
-          rather than a flat icon tile. */}
+      {/* Hero squircle — curved-square iOS-style app icon with ambient halo.
+          Two concentric layers (outer glow + glass tile) give the impression
+          of an AI presence rather than a flat icon. Same Apple "squircle"
+          radius family as the rest of the refinement layer. */}
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
         style={{ position: 'relative', width: 124, height: 124 }}
       >
-        {/* Soft outer halo — slow ambient pulse */}
+        {/* Soft outer halo — slow ambient pulse. Halo follows the squircle
+            shape, not a circle, so the glow reads as belonging to the tile. */}
         <div className="animate-pulse-orb" style={{
           position: 'absolute', inset: -18,
-          borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(102, 217, 255, 0.18) 0%, rgba(79, 124, 255, 0.10) 40%, transparent 70%)',
-          filter: 'blur(8px)',
+          borderRadius: 38,
+          background: 'radial-gradient(ellipse at center, rgba(102, 217, 255, 0.18) 0%, rgba(79, 124, 255, 0.10) 45%, transparent 75%)',
+          filter: 'blur(10px)',
         }} />
-        {/* Glass ring */}
+        {/* Glass tile — the curved square itself */}
         <div style={{
           position: 'absolute', inset: 0,
-          borderRadius: '50%',
+          borderRadius: 30,
           background: 'linear-gradient(180deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.02) 100%)',
           border: '1px solid rgba(102, 217, 255, 0.32)',
           backdropFilter: 'blur(16px) saturate(160%)',
           WebkitBackdropFilter: 'blur(16px) saturate(160%)',
           boxShadow: '0 12px 48px rgba(79, 124, 255, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.08)',
         }} />
-        {/* Logo — inset so the ring breathes around it */}
+        {/* Logo — inset so the tile breathes around it */}
         <div style={{
           position: 'absolute', inset: 22,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
