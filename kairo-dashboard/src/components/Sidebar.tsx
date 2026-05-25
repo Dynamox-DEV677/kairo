@@ -187,17 +187,30 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
       animate={{ width: expanded ? 240 : 72 }}
       transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
       style={{
+        // Float as an Apple-style curved rectangular panel. Margin lets it
+        // breathe away from every edge; the parent flex container fills
+        // the remaining space for the workspace. Removing borderRight makes
+        // it read as a panel rather than a column attached to the screen.
         flexShrink: 0,
-        height: '100%',
-        background: isDark ? '#0E1117' : '#fafafa',
-        borderRight: `1px solid ${isDark ? '#1a1f2e' : '#e4e4e7'}`,
+        margin: '10px 0 10px 10px',
+        height: 'calc(100% - 20px)',
+        background: isDark
+          ? 'linear-gradient(180deg, rgba(20, 24, 35, 0.78) 0%, rgba(14, 17, 23, 0.78) 100%)'
+          : 'rgba(255, 255, 255, 0.82)',
+        border: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.05)' : '#e4e4e7'}`,
+        borderRadius: 26,
+        boxShadow: isDark
+          ? '0 24px 60px rgba(0, 0, 0, 0.38), 0 0 0 1px rgba(255, 255, 255, 0.025) inset'
+          : '0 18px 48px rgba(0, 0, 0, 0.08)',
+        backdropFilter: 'blur(24px) saturate(160%)',
+        WebkitBackdropFilter: 'blur(24px) saturate(160%)',
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden',
-        transition: 'background 0.25s ease, border-color 0.25s ease',
+        transition: 'background 0.32s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.32s cubic-bezier(0.22, 1, 0.36, 1)',
       }}>
       {/* Logo area + collapse toggle */}
-      <div style={{ padding: '14px 12px', borderBottom: `1px solid ${isDark ? '#1a1f2e' : '#e4e4e7'}` }}>
+      <div style={{ padding: '14px 12px', borderBottom: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.04)' : '#e4e4e7'}` }}>
         <div style={{
           display: 'flex',
           alignItems: 'center',
@@ -528,7 +541,7 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
       </nav>
 
       {/* Bottom section */}
-      <div style={{ padding: '8px', borderTop: `1px solid ${isDark ? '#1a1f2e' : '#e4e4e7'}` }}>
+      <div style={{ padding: '8px', borderTop: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.04)' : '#e4e4e7'}` }}>
         {/* Settings row — icon-only when sidebar is shrunk */}
         <div style={{ display: 'flex', gap: 4, marginBottom: 6 }}>
           <button
