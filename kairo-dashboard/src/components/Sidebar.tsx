@@ -184,7 +184,7 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
 
   return (
     <motion.aside
-      animate={{ width: expanded ? 240 : 72 }}
+      animate={{ width: expanded ? 216 : 72 }}
       transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
       style={{
         // Float as an Apple-style curved rectangular panel. Margin lets it
@@ -235,14 +235,16 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
               >
                 <div style={{
                   fontSize: 16, fontWeight: 700,
-                  color: isDark ? '#fafafa' : '#18181b',
+                  color: isDark ? '#F5F5F7' : '#18181b',
                   letterSpacing: '-0.3px',
                   whiteSpace: 'nowrap',
                 }}>kairo</div>
                 <div style={{
-                  fontSize: 9.5, color: '#4F7CFF', fontWeight: 600,
-                  letterSpacing: 0.5, textTransform: 'uppercase',
+                  fontSize: 8.5, fontWeight: 600,
+                  color: 'rgba(102, 217, 255, 0.55)',
+                  letterSpacing: 1.6, textTransform: 'uppercase',
                   whiteSpace: 'nowrap',
+                  marginTop: 2,
                 }}>Accelerate Your Academics</div>
               </motion.div>
             )}
@@ -703,9 +705,11 @@ function NavItemRow({ item, isActive, isHovered, isGenerating = false, compact =
         // Active = soft blue pill (matches the Apple "active pill" mockup spec).
         // Hover = glass tint, not a solid panel.
         background: isActive
-          ? 'rgba(79, 124, 255, 0.14)'
+          ? 'linear-gradient(135deg, rgba(38, 58, 140, 0.32) 0%, rgba(38, 58, 140, 0.16) 100%)'
           : isHovered ? 'rgba(255, 255, 255, 0.04)' : 'transparent',
-        boxShadow: isActive ? '0 0 0 1px rgba(102, 217, 255, 0.20), 0 4px 14px rgba(79, 124, 255, 0.12)' : 'none',
+        boxShadow: isActive
+          ? '0 0 0 1px rgba(102, 217, 255, 0.22), 0 6px 18px rgba(38, 58, 140, 0.32)'
+          : 'none',
         position: 'relative',
         transition: 'background 0.22s cubic-bezier(0.22, 1, 0.36, 1), transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.22s cubic-bezier(0.22, 1, 0.36, 1)',
         transform: isHovered && !compact ? 'translateX(2px)' : 'translateX(0)',

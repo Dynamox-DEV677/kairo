@@ -400,12 +400,19 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
       flex: 1, height: '100%', display: 'flex', flexDirection: 'column',
       padding: '20px 24px 0', overflow: 'hidden', position: 'relative',
     }}>
-      {/* Ambient cinematic glow when result is up */}
+      {/* Ambient cinematic field — ultramarine→black drift behind everything.
+          Two layers: gradient (continuous breathing) + particle dots
+          (subtle twinkle). Both pointer-events: none so they never block UI. */}
+      <div className="kr-ambient-field" aria-hidden />
+      <div className="kr-particles"      aria-hidden />
+
+      {/* Stronger highlight glow only when result is up — the gradient
+          drift above is too subtle to anchor the eye on a busy panel. */}
       {showResult && (
         <div style={{
           position: 'absolute', top: '20%', left: '10%',
           width: 400, height: 400, borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(79, 124, 255, 0.10) 0%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(38, 58, 140, 0.18) 0%, transparent 70%)',
           pointerEvents: 'none', zIndex: 0,
         }} />
       )}
@@ -473,20 +480,22 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
         </div>
       )}
 
-      {/* INPUT — floating glass dock, fully pill-shaped at the edges */}
+      {/* INPUT — floating glass dock, fully pill-shaped at the edges.
+          Ultramarine focus ring when voice is on; deeper blur (28 px) and
+          more transparency than before to read as "really" floating. */}
       <div style={{
-        background: 'linear-gradient(180deg, rgba(20, 24, 35, 0.85) 0%, rgba(14, 17, 23, 0.85) 100%)',
+        background: 'linear-gradient(180deg, rgba(20, 24, 35, 0.65) 0%, rgba(11, 11, 15, 0.65) 100%)',
         border: `1px solid ${voiceOn ? 'rgba(102, 217, 255, 0.55)' : 'rgba(255, 255, 255, 0.06)'}`,
         borderRadius: 28, padding: '10px 12px',
         display: 'flex', alignItems: 'flex-end', gap: 10,
         marginBottom: 18, marginTop: showResult ? 0 : 14,
         position: 'relative', zIndex: 2,
-        transition: 'border-color .24s ease, box-shadow .24s ease',
+        transition: 'border-color .24s ease, box-shadow .24s ease, background .24s ease',
         boxShadow: voiceOn
-          ? '0 12px 36px rgba(79, 124, 255, 0.32), 0 0 0 1px rgba(102, 217, 255, 0.20), inset 0 1px 0 rgba(255, 255, 255, 0.04)'
-          : '0 12px 32px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.03)',
-        backdropFilter: 'blur(20px) saturate(160%)',
-        WebkitBackdropFilter: 'blur(20px) saturate(160%)',
+          ? '0 16px 44px rgba(38, 58, 140, 0.45), 0 0 0 3px rgba(38, 58, 140, 0.25), 0 0 0 1px rgba(102, 217, 255, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.05)'
+          : '0 16px 40px rgba(0, 0, 0, 0.40), 0 0 32px rgba(38, 58, 140, 0.10), inset 0 1px 0 rgba(255, 255, 255, 0.04)',
+        backdropFilter: 'blur(28px) saturate(170%)',
+        WebkitBackdropFilter: 'blur(28px) saturate(170%)',
       }}>
         <textarea
           ref={taRef}
@@ -696,23 +705,23 @@ function Hero({ onPick }: { onPick: (q: string) => void }) {
         transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
         style={{ position: 'relative', width: 124, height: 124 }}
       >
-        {/* Soft outer halo — slow ambient pulse. Halo follows the squircle
-            shape, not a circle, so the glow reads as belonging to the tile. */}
+        {/* Soft outer halo — ultramarine core fading to cyan rim. Pulses
+            slowly so the orb reads as a living presence. */}
         <div className="animate-pulse-orb" style={{
-          position: 'absolute', inset: -18,
-          borderRadius: 38,
-          background: 'radial-gradient(ellipse at center, rgba(102, 217, 255, 0.18) 0%, rgba(79, 124, 255, 0.10) 45%, transparent 75%)',
-          filter: 'blur(10px)',
+          position: 'absolute', inset: -22,
+          borderRadius: 40,
+          background: 'radial-gradient(ellipse at center, rgba(38, 58, 140, 0.42) 0%, rgba(38, 58, 140, 0.22) 38%, rgba(102, 217, 255, 0.12) 62%, transparent 80%)',
+          filter: 'blur(12px)',
         }} />
-        {/* Glass tile — the curved square itself */}
+        {/* Glass tile — ultramarine-tinted, cyan border highlight */}
         <div style={{
           position: 'absolute', inset: 0,
           borderRadius: 30,
-          background: 'linear-gradient(180deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.02) 100%)',
+          background: 'linear-gradient(180deg, rgba(38, 58, 140, 0.22) 0%, rgba(11, 11, 15, 0.55) 100%)',
           border: '1px solid rgba(102, 217, 255, 0.32)',
-          backdropFilter: 'blur(16px) saturate(160%)',
-          WebkitBackdropFilter: 'blur(16px) saturate(160%)',
-          boxShadow: '0 12px 48px rgba(79, 124, 255, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.08)',
+          backdropFilter: 'blur(18px) saturate(170%)',
+          WebkitBackdropFilter: 'blur(18px) saturate(170%)',
+          boxShadow: '0 14px 48px rgba(38, 58, 140, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.08)',
         }} />
         {/* Logo — inset so the tile breathes around it */}
         <div style={{
@@ -744,23 +753,35 @@ function Hero({ onPick }: { onPick: (q: string) => void }) {
         </p>
       </div>
 
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, justifyContent: 'center', maxWidth: 620, marginTop: 6 }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, justifyContent: 'center', maxWidth: 660, marginTop: 8 }}>
         {SUGGESTIONS.map(s => (
           <motion.button key={s} onClick={() => onPick(s)}
-            whileHover={{ scale: 1.04, y: -2 }} whileTap={{ scale: 0.97 }}
+            whileHover={{ scale: 1.04, y: -3 }} whileTap={{ scale: 0.97 }}
             className="kr-tactile"
             style={{
-              padding: '10px 18px',
-              background: 'linear-gradient(180deg, rgba(102, 217, 255, 0.10) 0%, rgba(79, 124, 255, 0.04) 100%)',
-              border: '1px solid rgba(102, 217, 255, 0.22)',
+              padding: '12px 22px',
+              background: 'linear-gradient(180deg, rgba(38, 58, 140, 0.22) 0%, rgba(11, 11, 15, 0.55) 100%)',
+              border: '1px solid rgba(102, 217, 255, 0.20)',
               color: '#A5B4FC',
-              fontFamily: 'inherit', fontSize: 12.5, fontWeight: 600,
+              fontFamily: 'inherit', fontSize: 13, fontWeight: 600,
               letterSpacing: '-0.005em',
               cursor: 'pointer',
-              backdropFilter: 'blur(14px) saturate(140%)',
-              WebkitBackdropFilter: 'blur(14px) saturate(140%)',
-              boxShadow: '0 4px 14px rgba(79, 124, 255, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.04)',
-            }}>
+              backdropFilter: 'blur(18px) saturate(160%)',
+              WebkitBackdropFilter: 'blur(18px) saturate(160%)',
+              boxShadow: '0 6px 18px rgba(38, 58, 140, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.05)',
+              transition: 'box-shadow 0.24s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.24s cubic-bezier(0.22, 1, 0.36, 1)',
+            }}
+            onMouseEnter={e => {
+              const b = e.currentTarget as HTMLButtonElement
+              b.style.borderColor = 'rgba(102, 217, 255, 0.55)'
+              b.style.boxShadow   = '0 10px 28px rgba(38, 58, 140, 0.45), 0 0 24px rgba(102, 217, 255, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.08)'
+            }}
+            onMouseLeave={e => {
+              const b = e.currentTarget as HTMLButtonElement
+              b.style.borderColor = 'rgba(102, 217, 255, 0.20)'
+              b.style.boxShadow   = '0 6px 18px rgba(38, 58, 140, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.05)'
+            }}
+          >
             {s}
           </motion.button>
         ))}
