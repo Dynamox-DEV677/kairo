@@ -8,6 +8,7 @@ import {
   Edit3, Lightbulb, FunctionSquare, Brain, TrendingUp, Star, Timer, Megaphone,
   Target, Activity, Zap, Compass, Network, Mic, Swords, Share2, AlertTriangle,
   Beaker, Cpu,
+  PanelLeftClose, PanelLeftOpen, MoreHorizontal, ChevronUp,
 } from 'lucide-react'
 import { useGeneration } from '../lib/generationContext'
 import { getRecentChats, deleteRecentChat, timeAgo } from '../lib/recentChats'
@@ -104,6 +105,11 @@ interface SidebarProps {
   onLogout?: () => void
 }
 
+/** How many nav items are visible by default before the "More" expander.
+ *  Matches the new Apple-style mockup — first 8 items are the daily-driver
+ *  set; the rest live one tap away. */
+const DEFAULT_VISIBLE = 8
+
 export default function Sidebar({ active, setActive, isDark, toggleTheme, profile, onLogout }: SidebarProps) {
   const [recentOpen, setRecentOpen]   = useState(true)
   const [hoveredItem, setHoveredItem] = useState<string | null>(null)
@@ -111,6 +117,29 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
   const [profilePic, setProfilePic] = useState<string | null>(() =>
     profile?.avatar_url || profile?.pic || localStorage.getItem('kairo_profile_pic')
   )
+
+  // Sidebar collapse state — expanded (240) or shrunk (72). Persisted per
+  // device so power users who like the icon-only mode keep it across sessions.
+  const [expanded, setExpanded] = useState<boolean>(() => {
+    try { return localStorage.getItem('kairo:sidebar:expanded') !== '0' }
+    catch { return true }
+  })
+  useEffect(() => {
+    try { localStorage.setItem('kairo:sidebar:expanded', expanded ? '1' : '0') }
+    catch { /* ignore */ }
+  }, [expanded])
+
+  // "Show more" toggle for the nav list — first DEFAULT_VISIBLE items show
+  // by default; the rest animate in when expanded. Persisted so repeat
+  // visitors don't have to re-expand every page load.
+  const [showAll, setShowAll] = useState<boolean>(() => {
+    try { return localStorage.getItem('kairo:sidebar:showAll') === '1' }
+    catch { return false }
+  })
+  useEffect(() => {
+    try { localStorage.setItem('kairo:sidebar:showAll', showAll ? '1' : '0') }
+    catch { /* ignore */ }
+  }, [showAll])
 
   // Listen for recent-chats updates from ChatWindow
   useEffect(() => {
@@ -154,97 +183,264 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
   }
 
   return (
-    <aside style={{
-      width: 240,
-      flexShrink: 0,
-      height: '100%',
-      background: isDark ? '#0E1117' : '#fafafa',
-      borderRight: `1px solid ${isDark ? '#1a1f2e' : '#e4e4e7'}`,
-      display: 'flex',
-      flexDirection: 'column',
-      overflow: 'hidden',
-      transition: 'background 0.25s ease, border-color 0.25s ease',
-    }}>
-      {/* Logo area */}
-      <div style={{ padding: '16px 16px 14px', borderBottom: `1px solid ${isDark ? '#1a1f2e' : '#e4e4e7'}` }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
-          <img src="/kairo_logo.png" alt="Kairo" style={{ width: 52, height: 52, objectFit: 'contain', borderRadius: 16 }} />
-          <div>
-            <div style={{ fontSize: 16, fontWeight: 700, color: isDark ? '#fafafa' : '#18181b', letterSpacing: '-0.3px' }}>kairo</div>
-            <div style={{ fontSize: 10, color: '#4F7CFF', fontWeight: 600, letterSpacing: 0.5, textTransform: 'uppercase' }}>Accelerate Your Academics</div>
-          </div>
+    <motion.aside
+      animate={{ width: expanded ? 240 : 72 }}
+      transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+      style={{
+        flexShrink: 0,
+        height: '100%',
+        background: isDark ? '#0E1117' : '#fafafa',
+        borderRight: `1px solid ${isDark ? '#1a1f2e' : '#e4e4e7'}`,
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
+        transition: 'background 0.25s ease, border-color 0.25s ease',
+      }}>
+      {/* Logo area + collapse toggle */}
+      <div style={{ padding: '14px 12px', borderBottom: `1px solid ${isDark ? '#1a1f2e' : '#e4e4e7'}` }}>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: expanded ? 12 : 0,
+          marginBottom: expanded ? 14 : 0,
+          justifyContent: expanded ? 'flex-start' : 'center',
+        }}>
+          <img
+            src="/kairo_logo.png"
+            alt="Kairo"
+            style={{ width: expanded ? 44 : 36, height: expanded ? 44 : 36, objectFit: 'contain', borderRadius: 14, transition: 'width 0.32s cubic-bezier(0.22, 1, 0.36, 1), height 0.32s cubic-bezier(0.22, 1, 0.36, 1)' }}
+          />
+          <AnimatePresence initial={false}>
+            {expanded && (
+              <motion.div
+                key="brand-text"
+                initial={{ opacity: 0, x: -6 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -6 }}
+                transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+                style={{ flex: 1, minWidth: 0, overflow: 'hidden' }}
+              >
+                <div style={{
+                  fontSize: 16, fontWeight: 700,
+                  color: isDark ? '#fafafa' : '#18181b',
+                  letterSpacing: '-0.3px',
+                  whiteSpace: 'nowrap',
+                }}>kairo</div>
+                <div style={{
+                  fontSize: 9.5, color: '#4F7CFF', fontWeight: 600,
+                  letterSpacing: 0.5, textTransform: 'uppercase',
+                  whiteSpace: 'nowrap',
+                }}>Accelerate Your Academics</div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+          {/* Collapse / expand toggle — chevron-style icon that flips with state */}
+          <button
+            onClick={() => setExpanded(e => !e)}
+            title={expanded ? 'Shrink sidebar' : 'Expand sidebar'}
+            aria-label={expanded ? 'Shrink sidebar' : 'Expand sidebar'}
+            style={{
+              width: 28, height: 28, borderRadius: 8,
+              background: 'transparent',
+              border: '1px solid rgba(255, 255, 255, 0.04)',
+              color: '#6B7280', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              flexShrink: 0,
+              transition: 'all 0.22s cubic-bezier(0.22, 1, 0.36, 1)',
+            }}
+            onMouseEnter={e => {
+              const b = e.currentTarget as HTMLButtonElement
+              b.style.background = 'rgba(255, 255, 255, 0.04)'
+              b.style.color = '#A5B4FC'
+            }}
+            onMouseLeave={e => {
+              const b = e.currentTarget as HTMLButtonElement
+              b.style.background = 'transparent'
+              b.style.color = '#6B7280'
+            }}
+          >
+            {expanded ? <PanelLeftClose size={14} /> : <PanelLeftOpen size={14} />}
+          </button>
         </div>
 
-        {/* Search shortcut — pill-shaped Apple-style command bar */}
-        <button style={{
-          width: '100%', padding: '9px 14px',
-          background: 'rgba(255, 255, 255, 0.025)',
-          border: '1px solid rgba(255, 255, 255, 0.06)',
-          borderRadius: 999,
-          display: 'flex', alignItems: 'center', gap: 8,
-          color: '#6B7280', fontSize: 12, cursor: 'pointer',
-          fontFamily: 'inherit',
-          transition: 'all 0.22s cubic-bezier(0.22, 1, 0.36, 1)',
-          backdropFilter: 'blur(10px)',
-          WebkitBackdropFilter: 'blur(10px)',
-        }}
-          onMouseEnter={e => {
-            const b = e.currentTarget as HTMLButtonElement
-            b.style.borderColor = 'rgba(102, 217, 255, 0.30)'
-            b.style.background  = 'rgba(255, 255, 255, 0.04)'
-          }}
-          onMouseLeave={e => {
-            const b = e.currentTarget as HTMLButtonElement
-            b.style.borderColor = 'rgba(255, 255, 255, 0.06)'
-            b.style.background  = 'rgba(255, 255, 255, 0.025)'
-          }}
-        >
-          <MessageCircle size={12} />
-          <span>Ask anything…</span>
-          <span style={{
-            marginLeft: 'auto', fontSize: 10, fontWeight: 600,
-            background: 'rgba(255, 255, 255, 0.05)',
-            border: '1px solid rgba(255, 255, 255, 0.06)',
-            padding: '2px 7px', borderRadius: 999,
-            letterSpacing: 0.3,
-          }}>⌘K</span>
-        </button>
+        {/* Search shortcut — hidden when sidebar is collapsed (no room) */}
+        <AnimatePresence initial={false}>
+          {expanded && (
+            <motion.button
+              key="search-shortcut"
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+              style={{
+                width: '100%', padding: '9px 14px',
+                background: 'rgba(255, 255, 255, 0.025)',
+                border: '1px solid rgba(255, 255, 255, 0.06)',
+                borderRadius: 999,
+                display: 'flex', alignItems: 'center', gap: 8,
+                color: '#6B7280', fontSize: 12, cursor: 'pointer',
+                fontFamily: 'inherit',
+                transition: 'all 0.22s cubic-bezier(0.22, 1, 0.36, 1)',
+                backdropFilter: 'blur(10px)',
+                WebkitBackdropFilter: 'blur(10px)',
+                marginTop: 4,
+              }}
+              onMouseEnter={e => {
+                const b = e.currentTarget as HTMLButtonElement
+                b.style.borderColor = 'rgba(102, 217, 255, 0.30)'
+                b.style.background  = 'rgba(255, 255, 255, 0.04)'
+              }}
+              onMouseLeave={e => {
+                const b = e.currentTarget as HTMLButtonElement
+                b.style.borderColor = 'rgba(255, 255, 255, 0.06)'
+                b.style.background  = 'rgba(255, 255, 255, 0.025)'
+              }}
+            >
+              <MessageCircle size={12} />
+              <span>Ask anything…</span>
+              <span style={{
+                marginLeft: 'auto', fontSize: 10, fontWeight: 600,
+                background: 'rgba(255, 255, 255, 0.05)',
+                border: '1px solid rgba(255, 255, 255, 0.06)',
+                padding: '2px 7px', borderRadius: 999,
+                letterSpacing: 0.3,
+              }}>⌘K</span>
+            </motion.button>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Nav */}
       <nav style={{ flex: 1, overflowY: 'auto', padding: '10px 8px' }}>
 
-        {/* Role-filtered nav — admins see only admin tools, etc. */}
+        {/* Role-filtered nav — admins see only admin tools, etc.
+            Layout:
+              · first DEFAULT_VISIBLE items are always shown
+              · the rest live behind a "Show more" toggle (showAll)
+              · each row collapses to icon-only when the sidebar is shrunk
+        */}
         {(() => {
           const { items, label, icon: SectionIcon } = navForRole(profile?.role)
+          const visible = showAll ? items : items.slice(0, DEFAULT_VISIBLE)
+          const hidden  = showAll ? [] : items.slice(DEFAULT_VISIBLE)
+          const hasMore = items.length > DEFAULT_VISIBLE
           return (
             <>
-              <div style={{
-                display: 'flex', alignItems: 'center', gap: 6,
-                padding: '4px 8px 6px',
-                color: '#4B5563', fontSize: 10,
-                fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1,
-              }}>
-                <SectionIcon size={10} />{label}
-              </div>
-              {items.map(item => (
+              {/* Section header — hidden when sidebar is shrunk (no horizontal room) */}
+              <AnimatePresence initial={false}>
+                {expanded && (
+                  <motion.div
+                    key="section-header"
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.22 }}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 6,
+                      padding: '4px 8px 6px',
+                      color: '#4B5563', fontSize: 10,
+                      fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1,
+                      overflow: 'hidden',
+                    }}
+                  >
+                    <SectionIcon size={10} />{label}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Default-visible items — first DEFAULT_VISIBLE */}
+              {visible.slice(0, DEFAULT_VISIBLE).map(item => (
                 <NavItemRow
                   key={item.to}
                   item={item}
                   isActive={active === item.to}
                   isHovered={hoveredItem === item.to}
                   isGenerating={!!(generating[item.to] && active !== item.to)}
+                  compact={!expanded}
                   onHover={setHoveredItem}
                   onClick={() => setActive(item.to)}
                 />
               ))}
+
+              {/* Overflow items — staggered animation when showAll flips on */}
+              <AnimatePresence initial={false}>
+                {showAll && items.slice(DEFAULT_VISIBLE).map((item, i) => (
+                  <motion.div
+                    key={item.to}
+                    initial={{ opacity: 0, y: -8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -6 }}
+                    transition={{
+                      duration: 0.28,
+                      delay: 0.02 * i,
+                      ease: [0.22, 1, 0.36, 1],
+                    }}
+                  >
+                    <NavItemRow
+                      item={item}
+                      isActive={active === item.to}
+                      isHovered={hoveredItem === item.to}
+                      isGenerating={!!(generating[item.to] && active !== item.to)}
+                      compact={!expanded}
+                      onHover={setHoveredItem}
+                      onClick={() => setActive(item.to)}
+                    />
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+
+              {/* Show more / Show less toggle — only when there's overflow */}
+              {hasMore && (
+                <button
+                  onClick={() => setShowAll(s => !s)}
+                  title={showAll ? 'Show fewer tools' : `Show ${hidden.length} more tools`}
+                  style={{
+                    width: '100%',
+                    display: 'flex', alignItems: 'center',
+                    gap: expanded ? 11 : 0,
+                    justifyContent: expanded ? 'flex-start' : 'center',
+                    padding: '8px 12px', borderRadius: 14,
+                    marginTop: 4, marginBottom: 4,
+                    background: 'transparent', border: 'none',
+                    cursor: 'pointer', fontFamily: 'inherit',
+                    color: '#6B7280', fontSize: 12, fontWeight: 600,
+                    transition: 'background 0.22s cubic-bezier(0.22, 1, 0.36, 1), color 0.22s cubic-bezier(0.22, 1, 0.36, 1)',
+                  }}
+                  onMouseEnter={e => {
+                    const b = e.currentTarget as HTMLButtonElement
+                    b.style.background = 'rgba(255, 255, 255, 0.035)'
+                    b.style.color = '#A5B4FC'
+                  }}
+                  onMouseLeave={e => {
+                    const b = e.currentTarget as HTMLButtonElement
+                    b.style.background = 'transparent'
+                    b.style.color = '#6B7280'
+                  }}
+                >
+                  <div style={{
+                    width: 26, height: 26, borderRadius: 8,
+                    background: 'transparent',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    flexShrink: 0,
+                  }}>
+                    {showAll ? <ChevronUp size={13} /> : <MoreHorizontal size={13} />}
+                  </div>
+                  {expanded && (
+                    <span style={{ flex: 1, textAlign: 'left', whiteSpace: 'nowrap' }}>
+                      {showAll ? 'Show less' : `${hidden.length} more`}
+                    </span>
+                  )}
+                </button>
+              )}
             </>
           )
         })()}
 
         <div style={{ height: 8 }} />
 
-        {/* Recent Activity */}
+        {/* Recent Activity — hidden when sidebar is shrunk (no room for chat titles) */}
+        {expanded && (
+        <>
         <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
           <div style={{ flex: 1 }}>
             <SectionHeader
@@ -327,29 +523,43 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
             </motion.div>
           )}
         </AnimatePresence>
+        </>
+        )}
       </nav>
 
       {/* Bottom section */}
       <div style={{ padding: '8px', borderTop: `1px solid ${isDark ? '#1a1f2e' : '#e4e4e7'}` }}>
-        {/* Settings + theme row */}
+        {/* Settings row — icon-only when sidebar is shrunk */}
         <div style={{ display: 'flex', gap: 4, marginBottom: 6 }}>
-          <button style={{
-            flex: 1, padding: '8px 10px', background: 'none',
-            border: '1px solid transparent', borderRadius: 7,
-            color: '#6B7280', fontSize: 12, cursor: 'pointer',
-            fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 7,
-            transition: 'all 0.12s',
-          }}
-            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = '#151922'; (e.currentTarget as HTMLButtonElement).style.color = '#fafafa' }}
-            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'none'; (e.currentTarget as HTMLButtonElement).style.color = '#6B7280' }}
+          <button
+            title={expanded ? undefined : 'Settings'}
+            style={{
+              flex: 1, padding: expanded ? '8px 10px' : '8px 0',
+              background: 'none',
+              border: '1px solid transparent', borderRadius: 14,
+              color: '#6B7280', fontSize: 12, cursor: 'pointer',
+              fontFamily: 'inherit',
+              display: 'flex', alignItems: 'center',
+              gap: expanded ? 7 : 0,
+              justifyContent: expanded ? 'flex-start' : 'center',
+              transition: 'all 0.22s cubic-bezier(0.22, 1, 0.36, 1)',
+            }}
+            onMouseEnter={e => {
+              const b = e.currentTarget as HTMLButtonElement
+              b.style.background = 'rgba(255, 255, 255, 0.04)'
+              b.style.color = '#fafafa'
+            }}
+            onMouseLeave={e => {
+              const b = e.currentTarget as HTMLButtonElement
+              b.style.background = 'none'
+              b.style.color = '#6B7280'
+            }}
             onClick={() => setActive('settings')}
           >
-            <Settings size={13} /> Settings
+            <Settings size={13} />
+            {expanded && <span>Settings</span>}
           </button>
-          {/* Theme toggle removed — Kairo is dark-only. */}
         </div>
-
-        {/* Upgrade CTA removed — monetisation deferred until later. */}
 
         {/* Hidden file input for profile pic */}
         <input
@@ -360,19 +570,25 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
           onChange={handleProfilePicChange}
         />
 
-        {/* User card */}
-        <div style={{ padding: '10px 10px 4px', display: 'flex', alignItems: 'center', gap: 9, marginTop: 4 }}>
+        {/* User card — collapses to just the avatar when sidebar is shrunk */}
+        <div style={{
+          padding: expanded ? '10px 10px 4px' : '8px 0 4px',
+          display: 'flex', alignItems: 'center',
+          gap: expanded ? 9 : 0,
+          justifyContent: expanded ? 'flex-start' : 'center',
+          marginTop: 4,
+        }}>
           <div
             onClick={() => fileInputRef.current?.click()}
-            title="Click to set profile picture"
+            title={expanded ? 'Click to set profile picture' : displayName}
             style={{
-              width: 32, height: 32, borderRadius: 8,
-              background: profilePic ? 'transparent' : 'linear-gradient(135deg, #4F7CFF, #4F7CFF)',
+              width: 32, height: 32, borderRadius: 10,
+              background: profilePic ? 'transparent' : 'linear-gradient(135deg, #4F7CFF, #2046C2)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               flexShrink: 0, fontSize: 12, fontWeight: 700, color: '#fff',
               cursor: 'pointer', position: 'relative', overflow: 'hidden',
               border: '2px solid transparent',
-              transition: 'border-color 0.15s',
+              transition: 'border-color 0.22s cubic-bezier(0.22, 1, 0.36, 1)',
             }}
             onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.borderColor = '#4F7CFF' }}
             onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.borderColor = 'transparent' }}
@@ -392,28 +608,32 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
               <Camera size={11} color="#fff" />
             </div>
           </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 12, fontWeight: 600, color: isDark ? '#fafafa' : '#18181b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{displayName}</div>
-            <div style={{ fontSize: 10, color: isDark ? '#4B5563' : '#B1B5BA' }}>{displaySub}</div>
-          </div>
-          <button
-            title="Log out"
-            onClick={() => {
-              localStorage.removeItem('kairo_token')
-              localStorage.removeItem('kairo_refresh')
-              localStorage.removeItem('kairo_profile')
-              if (onLogout) onLogout()
-              else window.location.reload()
-            }}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#4B5563', padding: 2 }}
-            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = '#f87171' }}
-            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = '#4B5563' }}
-          >
-            <LogOut size={13} />
-          </button>
+          {expanded && (
+            <>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 12, fontWeight: 600, color: isDark ? '#fafafa' : '#18181b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{displayName}</div>
+                <div style={{ fontSize: 10, color: isDark ? '#4B5563' : '#B1B5BA' }}>{displaySub}</div>
+              </div>
+              <button
+                title="Log out"
+                onClick={() => {
+                  localStorage.removeItem('kairo_token')
+                  localStorage.removeItem('kairo_refresh')
+                  localStorage.removeItem('kairo_profile')
+                  if (onLogout) onLogout()
+                  else window.location.reload()
+                }}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#4B5563', padding: 2 }}
+                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = '#f87171' }}
+                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = '#4B5563' }}
+              >
+                <LogOut size={13} />
+              </button>
+            </>
+          )}
         </div>
       </div>
-    </aside>
+    </motion.aside>
   )
 }
 
@@ -442,11 +662,13 @@ function SectionHeader({ label, icon: Icon, open, toggle }: { label: string; ico
   )
 }
 
-function NavItemRow({ item, isActive, isHovered, isGenerating = false, onHover, onClick }: {
+function NavItemRow({ item, isActive, isHovered, isGenerating = false, compact = false, onHover, onClick }: {
   item: NavItem
   isActive: boolean
   isHovered: boolean
   isGenerating?: boolean
+  /** When the sidebar is shrunk, render icon-only and centre. */
+  compact?: boolean
   onHover: (v: string | null) => void
   onClick: () => void
 }) {
@@ -456,18 +678,24 @@ function NavItemRow({ item, isActive, isHovered, isGenerating = false, onHover, 
       onMouseEnter={() => onHover(item.to)}
       onMouseLeave={() => onHover(null)}
       whileTap={{ scale: 0.98 }}
+      title={compact ? item.label : undefined}
       style={{
-        width: '100%', display: 'flex', alignItems: 'center', gap: 11,
-        padding: '10px 12px', borderRadius: 14, textDecoration: 'none',
+        width: '100%',
+        display: 'flex', alignItems: 'center',
+        gap: compact ? 0 : 11,
+        justifyContent: compact ? 'center' : 'flex-start',
+        padding: compact ? '10px 0' : '10px 12px',
+        borderRadius: 14, textDecoration: 'none',
         marginBottom: 4, cursor: 'pointer', border: 'none', fontFamily: 'inherit',
-        // Active = faint blue accent fill (Apple-list pattern).
+        // Active = soft blue pill (matches the Apple "active pill" mockup spec).
         // Hover = glass tint, not a solid panel.
         background: isActive
-          ? 'rgba(79, 124, 255, 0.10)'
+          ? 'rgba(79, 124, 255, 0.14)'
           : isHovered ? 'rgba(255, 255, 255, 0.04)' : 'transparent',
+        boxShadow: isActive ? '0 0 0 1px rgba(102, 217, 255, 0.20), 0 4px 14px rgba(79, 124, 255, 0.12)' : 'none',
         position: 'relative',
-        transition: 'background 0.22s cubic-bezier(0.22, 1, 0.36, 1), transform 0.22s cubic-bezier(0.22, 1, 0.36, 1)',
-        transform: isHovered ? 'translateX(2px)' : 'translateX(0)',
+        transition: 'background 0.22s cubic-bezier(0.22, 1, 0.36, 1), transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.22s cubic-bezier(0.22, 1, 0.36, 1)',
+        transform: isHovered && !compact ? 'translateX(2px)' : 'translateX(0)',
       }}
     >
       {/* Active indicator — softened shadow per the no-neon refinement */}
@@ -505,13 +733,16 @@ function NavItemRow({ item, isActive, isHovered, isGenerating = false, onHover, 
         )}
       </div>
 
-      <span style={{
-        fontSize: 13, fontWeight: isActive ? 600 : 400,
-        color: isActive ? '#fafafa' : '#9CA3AF',
-        flex: 1, textAlign: 'left',
-      }}>
-        {item.label}
-      </span>
+      {!compact && (
+        <span style={{
+          fontSize: 13, fontWeight: isActive ? 600 : 400,
+          color: isActive ? '#fafafa' : '#9CA3AF',
+          flex: 1, textAlign: 'left',
+          whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+        }}>
+          {item.label}
+        </span>
+      )}
 
       {isGenerating ? (
         <span style={{

@@ -98,14 +98,22 @@ export default function TopBar({ title, onModelChange, profile, modelLocked, mod
 
   return (
     <div style={{
-      height: 52, flexShrink: 0,
-      borderBottom: isAdmin ? '1px solid rgba(79, 124, 255, 0.25)' : '1px solid #1a1f2e',
+      // Apple-style floating curved panel — one long rectangle holding the
+      // title (left) and the controls (right). 22 px radius, glass blur,
+      // subtle border, soft floating shadow.
+      flexShrink: 0,
+      margin: '10px 12px 0',
+      borderRadius: 22,
+      border: isAdmin ? '1px solid rgba(79, 124, 255, 0.25)' : '1px solid rgba(255, 255, 255, 0.05)',
       display: 'flex', alignItems: 'center',
-      padding: '0 20px', gap: 10,
+      padding: '8px 16px', gap: 10,
+      minHeight: 56,
       background: isAdmin
-        ? 'linear-gradient(90deg, rgba(79, 124, 255, 0.06) 0%, rgba(13,13,13,0.95) 60%)'
-        : 'rgba(13,13,13,0.95)',
-      backdropFilter: 'blur(12px)',
+        ? 'linear-gradient(90deg, rgba(79, 124, 255, 0.06) 0%, rgba(20, 24, 35, 0.55) 60%)'
+        : 'rgba(255, 255, 255, 0.035)',
+      backdropFilter: 'blur(24px) saturate(160%)',
+      WebkitBackdropFilter: 'blur(24px) saturate(160%)',
+      boxShadow: '0 12px 32px rgba(0, 0, 0, 0.28), 0 0 0 1px rgba(255, 255, 255, 0.025) inset',
       zIndex: 200,
       position: 'relative',
     }}>
