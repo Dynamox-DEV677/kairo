@@ -10,6 +10,7 @@ import Ops from './Ops'
 import InsightPanel from '../components/InsightPanel'
 import Flashcards from './Flashcards'
 import StudyPlan from './StudyPlan'
+import ExamPlanner from './ExamPlanner'
 import EssayGrader from './EssayGrader'
 import ExamPredictor from './ExamPredictor'
 import QuestionPaper from './QuestionPaper'
@@ -56,6 +57,7 @@ const PAGE_TITLES: Record<string, string> = {
   ops:              'Ops Dashboard',
   flashcards:       'Flashcards & SRS',
   'study-plan':     'Study Plan',
+  'exam-planner':   'Exam Planner',
   essay:            'Grader',
   predictor:        'Exam Predictor',
   'question-paper': 'Question Paper',
@@ -229,6 +231,9 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
 
             {/* Study Plan */}
             <div style={pageStyle('study-plan')}><StudyPlan /></div>
+
+            {/* Exam Planner */}
+            <div style={pageStyle('exam-planner')}><ExamPlanner /></div>
 
             {/* Essay Grader */}
             <div style={pageStyle('essay')}><EssayGrader /></div>
