@@ -40,6 +40,8 @@ const TASK_POOL_MAP = {
   essay_grade:       'reason',
   exam_predict:      'reason',
   study_plan:        'reason',
+  exam_planner:      'reason',
+  exam_planner_replan: 'reason',
   lesson_plan:       'reason',
   // Code/structured output tasks
   flashcard_gen:     'reason',

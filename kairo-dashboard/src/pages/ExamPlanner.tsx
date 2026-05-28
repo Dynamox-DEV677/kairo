@@ -134,28 +134,36 @@ export default function ExamPlanner() {
 
   const userId = getUserId()
 
-  // ── Memory hook: prefill weak topics from Kairo's memory layer ─────────
+  // ── On mount: exam catalog, weak-topics from memory, saved plans ───────
   useEffect(() => {
-    fetch('/api/exam-planner/exams').then(r => r.json()).then(setExams).catch(() => {})
+    // Exam catalog
+    fetch('/api/exam-planner/exams')
+      .then(r => r.ok ? r.json() : [])
+      .then(setExams)
+      .catch(() => {})
 
-    // Pull weak topics from the user's Kairo memory if available
-    fetch('/api/memory/weak-topics', {
-      credentials: 'include',
-      headers: { 'x-user-id': userId || '' },
-    })
-      .then(r => r.ok ? r.json() : null)
-      .then(data => {
-        if (Array.isArray(data?.topics) && data.topics.length) {
-          setWeakAreas(data.topics.slice(0, 8).join(', '))
-        }
+    // Try to prefill weak topics from Kairo memory if the user has a
+    // valid auth token. Memory route needs Bearer auth — skip silently
+    // (no console-noise) on 401 / missing token.
+    const token = localStorage.getItem('kairo_token')
+    if (token) {
+      fetch('/api/memory/weak-topics', {
+        headers: { Authorization: `Bearer ${token}` },
       })
-      .catch(() => {/* memory route may not exist — no big deal */})
+        .then(r => r.ok ? r.json() : null)
+        .then(data => {
+          if (data && Array.isArray(data.topics) && data.topics.length) {
+            setWeakAreas(data.topics.slice(0, 8).join(', '))
+          }
+        })
+        .catch(() => {/* network error — silent */})
+    }
 
-    // Load saved plans
+    // Saved plans (will return [] silently if Supabase table isn't set up)
     if (userId) {
       fetch(`/api/exam-planner/list?user_id=${encodeURIComponent(userId)}`)
         .then(r => r.ok ? r.json() : [])
-        .then(setSavedPlans)
+        .then(d => { if (Array.isArray(d)) setSavedPlans(d) })
         .catch(() => {})
     }
   }, [userId])

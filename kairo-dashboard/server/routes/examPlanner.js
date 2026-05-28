@@ -13,8 +13,49 @@
 import { Router } from 'express'
 import { aiCall, parseJSON } from '../utils/ai.js'
 import { supabaseAdmin, SUPABASE_CONFIGURED } from '../services/supabase.js'
+import groqPool from '../services/groqPool.js'
 
 const router = Router()
+
+// ── Groq-first AI helper ────────────────────────────────────────────────
+// Tries Groq's 70B model (free, fast) using a rotating key pool. Falls
+// back to aiCall (OpenRouter) if Groq has no live keys OR fails. This
+// avoids the 500 we saw when only GROQ_API_KEYS is set in Vercel env.
+async function aiCallSmart({ taskType, messages, maxTokens = 4000, temperature = 0.4 }) {
+  // 1) Try Groq first
+  const key = groqPool.next()
+  if (key) {
+    try {
+      const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${key}`,
+          'Content-Type':  'application/json',
+        },
+        body: JSON.stringify({
+          model: 'llama-3.3-70b-versatile',
+          messages,
+          temperature,
+          max_tokens: maxTokens,
+          response_format: { type: 'json_object' },
+        }),
+      })
+      if (!r.ok) {
+        if (r.status === 429 || r.status >= 500) {
+          try { groqPool.markBad(key, r.status) } catch {}
+        }
+        throw new Error('groq http ' + r.status)
+      }
+      const data = await r.json()
+      const content = data?.choices?.[0]?.message?.content
+      if (content) return content
+    } catch (e) {
+      console.warn('[exam-planner] Groq failed, trying OpenRouter:', e.message)
+    }
+  }
+  // 2) Fall back to OpenRouter (aiCall)
+  return aiCall({ taskType, messages, maxTokens, temperature })
+}
 
 // Helper — return 503 if Supabase isn't set up. Used by the persistence
 // endpoints; the AI-only /generate + /replan + /exams endpoints don't
@@ -195,7 +236,7 @@ Rules:
 - Prioritize weak topics in the first 60% of the plan.`
 
   try {
-    const raw = await aiCall({
+    const raw = await aiCallSmart({
       taskType: 'exam_planner',
       messages: [{ role: 'user', content: prompt }],
       maxTokens: 4000,
@@ -210,7 +251,7 @@ Rules:
     return res.json(plan)
   } catch (err) {
     console.error('[exam-planner] generate failed:', err)
-    return res.status(500).json({ error: err.message })
+    return res.status(500).json({ error: err.message, hint: 'Set GROQ_API_KEYS or OPENROUTER_API_KEY in Vercel env, then redeploy.' })
   }
 })
 
@@ -278,7 +319,7 @@ Adjustments to make:
 Return ONLY valid JSON, no markdown.`
 
   try {
-    const raw = await aiCall({
+    const raw = await aiCallSmart({
       taskType: 'exam_planner_replan',
       messages: [{ role: 'user', content: prompt }],
       maxTokens: 3000,
@@ -335,6 +376,8 @@ router.post('/save', requireDB, async (req, res) => {
 })
 
 // GET /api/exam-planner/list?user_id=…
+// Returns [] (with a hint header) instead of 500 if the table doesn't
+// exist yet — keeps the UI usable before the schema SQL has been run.
 router.get('/list', requireDB, async (req, res) => {
   const { user_id } = req.query
   if (!user_id) return res.status(400).json({ error: 'user_id required' })
@@ -348,7 +391,15 @@ router.get('/list', requireDB, async (req, res) => {
     if (error) throw error
     res.json(data || [])
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    const msg = e?.message || ''
+    // "relation … does not exist" → table not migrated yet. Don't 500;
+    // just return [] with a hint header so the UI silently handles it.
+    if (msg.includes('does not exist') || msg.includes('schema cache')) {
+      res.setHeader('x-exam-planner-hint', 'run server/db/exam_plans_schema.sql in Supabase')
+      return res.json([])
+    }
+    console.error('[exam-planner] list:', e)
+    res.status(500).json({ error: msg })
   }
 })
 
