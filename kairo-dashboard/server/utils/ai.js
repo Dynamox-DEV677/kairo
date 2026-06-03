@@ -7,7 +7,12 @@
  *  - CODE tasks   → code-specialized model
  */
 
+import groqPool from '../services/groqPool.js'
+
 const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions'
+const GROQ_URL       = 'https://api.groq.com/openai/v1/chat/completions'
+// Groq's solver-grade models — fast + free. Tried before OpenRouter.
+const GROQ_MODELS = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant']
 
 // Task type → model mapping (ordered by preference)
 const MODEL_POOLS = {
@@ -80,6 +85,37 @@ export async function aiCall({ taskType = 'speed', messages, maxTokens = 1024, t
   const models = getModels(taskType)
   let lastError = null
 
+  // ── Groq first ──────────────────────────────────────────────────────
+  // Most Kairo deploys set GROQ_API_KEYS but NOT OPENROUTER_API_KEY, which
+  // is why callers were seeing "All models failed. Provider returned
+  // error" — the OpenRouter loop had no key. Try the rotating Groq pool
+  // before OpenRouter; fall through to OpenRouter only if Groq is dry.
+  for (const gModel of GROQ_MODELS) {
+    const key = groqPool.next()
+    if (!key) break   // no keys configured / all cooling down
+    try {
+      const res = await fetch(GROQ_URL, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ model: gModel, messages, temperature, max_tokens: maxTokens }),
+      })
+      if (!res.ok) {
+        if (res.status === 429 || res.status >= 500) {
+          try { groqPool.markBad(key, res.status) } catch {}
+        }
+        throw new Error(`groq ${res.status}`)
+      }
+      const data = await res.json()
+      const content = data.choices?.[0]?.message?.content
+      if (content) return content
+      throw new Error('groq empty')
+    } catch (err) {
+      lastError = err
+      console.warn(`[AI] Groq ${gModel} failed (${err.message}), trying next/OpenRouter…`)
+      // try next groq model, then fall to OpenRouter
+    }
+  }
+
   for (const model of models) {
     try {
       const res = await fetch(OPENROUTER_URL, {
@@ -118,7 +154,11 @@ export async function aiCall({ taskType = 'speed', messages, maxTokens = 1024, t
     }
   }
 
-  throw lastError || new Error('All AI models exhausted')
+  throw new Error(
+    'All AI providers failed (Groq + OpenRouter). ' +
+    'Check GROQ_API_KEYS / OPENROUTER_API_KEY are set in env and redeployed. ' +
+    'Last error: ' + (lastError?.message || 'unknown')
+  )
 }
 
 /**

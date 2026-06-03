@@ -81,6 +81,7 @@ const DRAWER_STUDENT = [
     items: [
       { to: 'study-plan',   label: 'Smart Timetable', icon: Calendar },
       { to: 'exam-planner', label: 'Exam Planner',    icon: Calendar },
+      { to: 'topic-architect', label: 'Topic Architect', icon: Brain },
       { to: 'school',       label: 'My Tasks',        icon: BookOpen },
       { to: 'quiz',         label: 'Adaptive Quiz',   icon: Brain },
       { to: 'focus',        label: 'Focus Mode',      icon: Target },

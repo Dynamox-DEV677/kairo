@@ -11,6 +11,7 @@ import InsightPanel from '../components/InsightPanel'
 import Flashcards from './Flashcards'
 import StudyPlan from './StudyPlan'
 import ExamPlanner from './ExamPlanner'
+import TopicArchitect from './TopicArchitect'
 import EssayGrader from './EssayGrader'
 import ExamPredictor from './ExamPredictor'
 import QuestionPaper from './QuestionPaper'
@@ -58,6 +59,7 @@ const PAGE_TITLES: Record<string, string> = {
   flashcards:       'Flashcards & SRS',
   'study-plan':     'Study Plan',
   'exam-planner':   'Exam Planner',
+  'topic-architect':'Topic Architect',
   essay:            'Grader',
   predictor:        'Exam Predictor',
   'question-paper': 'Question Paper',
@@ -234,6 +236,9 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
 
             {/* Exam Planner */}
             <div style={pageStyle('exam-planner')}><ExamPlanner /></div>
+
+            {/* Topic Architect */}
+            <div style={pageStyle('topic-architect')}><TopicArchitect /></div>
 
             {/* Essay Grader */}
             <div style={pageStyle('essay')}><EssayGrader /></div>

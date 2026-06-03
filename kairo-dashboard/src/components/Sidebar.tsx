@@ -46,6 +46,7 @@ const STUDENT_NAV: NavItem[] = [
   { label: 'My Tasks',        icon: BookOpen,        to: 'school',           color: '#66D9FF' },
   { label: 'Study Plan',      icon: Calendar,        to: 'study-plan',       color: '#A5B4FC' },
   { label: 'Exam Planner',    icon: Target,          to: 'exam-planner',     color: '#66D9FF' },
+  { label: 'Topic Architect', icon: Brain,           to: 'topic-architect',  color: '#A5B4FC' },
   { label: 'Adaptive Quiz',   icon: Brain,           to: 'quiz',             color: '#66D9FF' },
   { label: 'Writing Tools',   icon: Edit3,           to: 'writing',          color: '#A5B4FC' },
   { label: 'Concept Tools',   icon: Lightbulb,       to: 'concept',          color: '#66D9FF' },

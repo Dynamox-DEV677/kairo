@@ -19,6 +19,7 @@ import authRoutes          from './routes/auth.js'
 import flashcardRoutes     from './routes/flashcards.js'
 import studyPlanRoutes     from './routes/studyPlan.js'
 import examPlannerRoutes   from './routes/examPlanner.js'
+import topicArchitectRoutes from './routes/topicArchitect.js'
 import essayRoutes         from './routes/essay.js'
 import examRoutes          from './routes/exam.js'
 import questionPaperRoutes from './routes/questionPaper.js'
@@ -130,6 +131,7 @@ app.use('/api/auth',           authRoutes)
 app.use('/api/flashcards',     flashcardRoutes)
 app.use('/api/study-plan',     studyPlanRoutes)
 app.use('/api/exam-planner',   examPlannerRoutes)
+app.use('/api/topic-architect', topicArchitectRoutes)
 app.use('/api/essay',          essayRoutes)
 app.use('/api/exam',           examRoutes)
 app.use('/api/question-paper', questionPaperRoutes)
