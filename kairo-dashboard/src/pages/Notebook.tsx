@@ -160,7 +160,15 @@ export default function Notebook() {
       </button>
 
       {/* Auto-collected from unified memory engine — doubts + concepts + formulas */}
-      <AutoCollectedStrip />
+      <AutoCollectedStrip onBuilt={(id) => {
+        // Reload the notebook list so the freshly-built note appears,
+        // then open it so the student immediately SEES it was built.
+        const local = listNotebook({ limit: 200 })
+        const fresh = local.map(entryToNote)
+        setNotes(fresh)
+        const justMade = fresh.find(n => n.id === id)
+        if (justMade) setSelected(justMade)
+      }} />
 
       {/* Search + filters */}
       <div style={{ display: 'flex', gap: 10, marginBottom: 14, flexShrink: 0 }}>
@@ -274,7 +282,7 @@ export default function Notebook() {
 // Every chip is clickable: click → AI expands the chip data into a full
 // notebook entry (title, body, tags) using the existing /api/notes endpoint.
 // This is the "AI second brain auto-fills itself" piece from the spec.
-function AutoCollectedStrip() {
+function AutoCollectedStrip({ onBuilt }: { onBuilt?: (id: string) => void }) {
   const [doubts, setDoubts]     = useState<Doubt[]>([])
   const [concepts, setConcepts] = useState<Concept[]>([])
   const [formulas, setFormulas] = useState<Formula[]>([])
@@ -336,7 +344,7 @@ function AutoCollectedStrip() {
 
     try {
       // localStorage-first save — never errors on missing server tables
-      await saveToNotebook({
+      const saved = await saveToNotebook({
         kind:    args.kind,
         title:   args.title,
         content: body,
@@ -345,6 +353,10 @@ function AutoCollectedStrip() {
         source:  'auto-from-memory',
       })
       setToast(`Saved to Notebook: ${args.title}`)
+      // Tell the parent to reload + open the new note so it actually
+      // shows up. Without this the note saved silently and the user
+      // thought "the notebook isn't being built".
+      onBuilt?.(saved.id)
     } catch (e: any) {
       setToast(`Couldn't save — ${e?.message || 'try again'}`)
     } finally {
