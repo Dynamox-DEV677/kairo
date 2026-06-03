@@ -141,7 +141,7 @@ export default function KairoHome({ onNavigate }: Props) {
   }
 
   return (
-    <div style={{ padding: 24, maxWidth: 1150, margin: '0 auto', color: '#fafafa' }}>
+    <div style={{ padding: 24, maxWidth: 1150, margin: '0 auto', color: '#fafafa', height: '100%', overflowY: 'auto', boxSizing: 'border-box', width: '100%' }}>
       {/* ── Greeting header ─────────────────────────────────────────── */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 22, flexWrap: 'wrap', gap: 12 }}>
         <div>

@@ -300,7 +300,7 @@ export default function ExamPlanner() {
   ))
 
   return (
-    <div style={{ padding: 24, maxWidth: 1100, margin: '0 auto', color: '#fafafa' }}>
+    <div style={{ padding: 24, maxWidth: 1100, margin: '0 auto', color: '#fafafa', height: '100%', overflowY: 'auto', boxSizing: 'border-box', width: '100%' }}>
       <style>{PRINT_STYLE}</style>
 
       {/* ── Header ───────────────────────────────────────────────── */}

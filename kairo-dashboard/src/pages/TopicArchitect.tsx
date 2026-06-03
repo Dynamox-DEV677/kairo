@@ -95,7 +95,7 @@ export default function TopicArchitect() {
   }
 
   return (
-    <div style={{ padding: 24, maxWidth: 1100, margin: '0 auto', color: '#fafafa' }}>
+    <div style={{ padding: 24, maxWidth: 1100, margin: '0 auto', color: '#fafafa', height: '100%', overflowY: 'auto', boxSizing: 'border-box', width: '100%' }}>
       {/* Header */}
       <div style={{ marginBottom: 24 }}>
         <div style={{ fontSize: 11, letterSpacing: 4, textTransform: 'uppercase', color: '#66D9FF', marginBottom: 8, fontWeight: 700 }}>
