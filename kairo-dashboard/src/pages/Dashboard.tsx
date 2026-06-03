@@ -12,6 +12,7 @@ import Flashcards from './Flashcards'
 import StudyPlan from './StudyPlan'
 import ExamPlanner from './ExamPlanner'
 import TopicArchitect from './TopicArchitect'
+import KairoHome from './KairoHome'
 import EssayGrader from './EssayGrader'
 import ExamPredictor from './ExamPredictor'
 import QuestionPaper from './QuestionPaper'
@@ -54,6 +55,7 @@ import type { AuthProfile } from './Login'
 type Profile = AuthProfile
 
 const PAGE_TITLES: Record<string, string> = {
+  home:             'Home',
   doubt:            "Kairo's Solver",
   ops:              'Ops Dashboard',
   flashcards:       'Flashcards & SRS',
@@ -104,7 +106,7 @@ interface DashboardProps {
 
 export default function Dashboard({ profile, onLogout }: DashboardProps) {
   // Admins land on School Hub (their control center); everyone else on Kairo's Solver
-  const [active, setActive]           = useState(profile?.role === 'admin' ? 'school' : 'doubt')
+  const [active, setActive]           = useState(profile?.role === 'admin' ? 'school' : 'home')
   // Light mode is disabled — Kairo is dark-only. Keeping the state shape
   // so the rest of the file's `isDark ? darkColor : lightColor` ternaries
   // still resolve correctly; we just freeze it to true and never flip it.
@@ -206,6 +208,9 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
 
         <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
           <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+
+            {/* Home — the AI Student OS command center */}
+            <div style={pageStyle('home')}><KairoHome onNavigate={setActive} /></div>
 
             {/* Kairo's Solver — adaptive AI visual learning engine */}
             <div style={pageStyle('doubt')}>

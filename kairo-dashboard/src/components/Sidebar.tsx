@@ -28,6 +28,7 @@ interface NavItem {
 // Their functionality now lives inside Kairo OS / Kairo Solver respectively.
 // Colors are all variations of the brand purple — strict monochrome palette.
 const STUDENT_NAV: NavItem[] = [
+  { label: 'Home',            icon: Sparkles,        to: 'home',             color: '#66D9FF' },
   { label: 'Kairo OS',        icon: Cpu,             to: 'kairo-os',         color: '#66D9FF' },
   { label: "Kairo's Solver",  icon: MessageCircle,   to: 'doubt',            color: '#A5B4FC' },
   { label: 'Kairo Labs',      icon: Beaker,          to: 'labs',             color: '#66D9FF' },
