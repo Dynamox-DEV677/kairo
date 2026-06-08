@@ -109,24 +109,68 @@ function isModelUnavailable(msg: string) {
     m.includes('rate limit') || m.includes('context length')
 }
 
+// Per-model hard timeout — a free model that accepts the request but stalls
+// won't block the whole call; it gets aborted so we fall through to a winner.
+const PER_CALL_TIMEOUT_MS = 22000
+
+// One model call wrapped with its own abort + timeout. Returns the promise and
+// its controller so the race can cancel the losers (saves free-tier quota).
+function callWithTimeout(model: string, messages: Message[], parentSignal?: AbortSignal) {
+  const ctrl = new AbortController()
+  if (parentSignal) {
+    if (parentSignal.aborted) ctrl.abort()
+    else parentSignal.addEventListener('abort', () => ctrl.abort(), { once: true })
+  }
+  const timer = setTimeout(() => ctrl.abort(), PER_CALL_TIMEOUT_MS)
+  const p = callModel(model, messages, undefined, ctrl.signal).finally(() => clearTimeout(timer))
+  return { p, ctrl }
+}
+
 export async function chat({ model = DEFAULT_MODEL, messages, onChunk, signal }: ChatOptions): Promise<string> {
   // Build fallback chain: selected model → default → rest of chain
   const chain = Array.from(new Set([model, ...FALLBACK_CHAIN]))
 
-  let lastErr = ''
-
-  for (const m of chain) {
-    if (signal?.aborted) throw new DOMException('Aborted', 'AbortError')
-    try {
-      console.log(`[Kairo] Trying model: ${m}`)
-      return await callModel(m, messages, onChunk, signal)
-    } catch (e: any) {
-      if (e?.name === 'AbortError') throw e
-      lastErr = e?.message || 'Unknown error'
-      console.warn(`[Kairo] ${m} failed: ${lastErr}`)
-      if (!isModelUnavailable(lastErr)) throw e  // auth / network — don't retry
+  // ── Streaming path: must stay sequential (can't race a streamed response) ──
+  if (onChunk) {
+    let lastErr = ''
+    for (const m of chain) {
+      if (signal?.aborted) throw new DOMException('Aborted', 'AbortError')
+      try {
+        return await callModel(m, messages, onChunk, signal)
+      } catch (e: any) {
+        if (e?.name === 'AbortError') throw e
+        lastErr = e?.message || 'Unknown error'
+        console.warn(`[Kairo] ${m} failed: ${lastErr}`)
+        if (!isModelUnavailable(lastErr)) throw e  // auth / network — don't retry
+      }
     }
+    throw new Error(`All models failed. Last error: ${lastErr}`)
   }
 
-  throw new Error(`All models failed. Last error: ${lastErr}`)
+  // ── One-shot path: RACE the top models, first success wins ──
+  // Old code tried models one-at-a-time; on free tiers the first is often rate-
+  // limited/overloaded, so the waits stacked up. Racing returns the fastest
+  // available model and aborts the rest.
+  const racers = chain.slice(0, 3).map(m => callWithTimeout(m, messages, signal))
+  try {
+    const winner = await Promise.any(racers.map(r => r.p))
+    racers.forEach(r => { r.ctrl.abort() })           // cancel the losers
+    racers.forEach(r => { r.p.catch(() => {}) })       // swallow their late rejections
+    return winner
+  } catch {
+    racers.forEach(r => { r.ctrl.abort(); r.p.catch(() => {}) })
+    // Every raced model failed — last resort: try the remaining models in order.
+    let lastErr = 'all fast models failed'
+    for (const m of chain.slice(3)) {
+      if (signal?.aborted) throw new DOMException('Aborted', 'AbortError')
+      try {
+        return await callModel(m, messages, undefined, signal)
+      } catch (e: any) {
+        if (e?.name === 'AbortError') throw e
+        lastErr = e?.message || 'Unknown error'
+        if (!isModelUnavailable(lastErr)) throw e
+      }
+    }
+    throw new Error(`All models failed. Last error: ${lastErr}`)
+  }
 }

@@ -108,15 +108,39 @@ export default function CameraStudy() {
     }
   }
 
+  // Cap any captured/uploaded photo to <=1024px + JPEG q0.8 so the base64 stays
+  // small — a full-res phone photo was timing out the 10s serverless vision call
+  // (that was the real cause of the "An error occurred" crash).
+  function downscaleImage(dataUrl: string, maxDim = 1024, quality = 0.8): Promise<string> {
+    return new Promise((resolve) => {
+      const img = new Image()
+      img.onload = () => {
+        const scale = Math.min(1, maxDim / Math.max(img.width, img.height))
+        if (scale >= 1) { resolve(dataUrl); return }
+        const c = document.createElement('canvas')
+        c.width = Math.round(img.width * scale)
+        c.height = Math.round(img.height * scale)
+        const ctx = c.getContext('2d')
+        if (!ctx) { resolve(dataUrl); return }
+        ctx.drawImage(img, 0, 0, c.width, c.height)
+        resolve(c.toDataURL('image/jpeg', quality))
+      }
+      img.onerror = () => resolve(dataUrl)
+      img.src = dataUrl
+    })
+  }
+
   function snap() {
     const video = videoRef.current
     const canvas = canvasRef.current
     if (!video || !canvas) return
-    canvas.width  = video.videoWidth
-    canvas.height = video.videoHeight
+    const MAX = 1024
+    const s = Math.min(1, MAX / Math.max(video.videoWidth, video.videoHeight))
+    canvas.width  = Math.round(video.videoWidth * s)
+    canvas.height = Math.round(video.videoHeight * s)
     const ctx = canvas.getContext('2d')!
-    ctx.drawImage(video, 0, 0)
-    setImageData(canvas.toDataURL('image/jpeg', 0.9))
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
+    setImageData(canvas.toDataURL('image/jpeg', 0.8))
     stopCamera()
   }
 
@@ -136,8 +160,9 @@ export default function CameraStudy() {
       return
     }
     const reader = new FileReader()
-    reader.onload = ev => {
-      setImageData(ev.target?.result as string)
+    reader.onload = async ev => {
+      const small = await downscaleImage(ev.target?.result as string)
+      setImageData(small)
       setErr('')
     }
     reader.readAsDataURL(file)
@@ -161,8 +186,13 @@ export default function CameraStudy() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ model, messages }),
       })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data?.error || `HTTP ${res.status}`)
+      // Read as text first — the proxy sometimes returns a plain-text error
+      // (e.g. "An error occurred…" on timeout), which would crash res.json().
+      const raw = await res.text()
+      if (!res.ok) throw new Error((raw || `HTTP ${res.status}`).slice(0, 160))
+      let data: any
+      try { data = JSON.parse(raw) }
+      catch { throw new Error('The vision service returned an unexpected response (it may be overloaded or the photo too large). Try again or pick another model.') }
       const text = data?.choices?.[0]?.message?.content
       if (!text) throw new Error('Empty response — try a different model.')
       setResult(typeof text === 'string' ? text : JSON.stringify(text))

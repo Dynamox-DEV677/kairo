@@ -13,6 +13,8 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Activity, AlertTriangle, Sparkles, Repeat, Plus, X, Loader2 } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import remarkMath from 'remark-math'
+import rehypeKatex from 'rehype-katex'
 import { getMistakes, recordMistake, type MistakeRow } from '../lib/twin'
 import { chat } from '../lib/openrouter'
 
@@ -34,6 +36,14 @@ const C = {
 const GRAD_PILL = 'linear-gradient(135deg, #4F7CFF 0%, #2046C2 100%)'
 const FONT = "'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif"
 
+// The AI sometimes emits LaTeX with \( \) or \[ \] delimiters, but remark-math
+// only understands $...$ / $$...$$ — normalise so the math actually renders.
+function normalizeMath(md: string): string {
+  return md
+    .replace(/\\\[([\s\S]+?)\\\]/g, (_m, e) => `$$${e}$$`)
+    .replace(/\\\(([\s\S]+?)\\\)/g, (_m, e) => `$${e}$`)
+}
+
 export default function MistakeAnalysis() {
   const [rows, setRows] = useState<MistakeRow[]>([])
   const [adding, setAdding] = useState(false)
@@ -53,7 +63,7 @@ export default function MistakeAnalysis() {
     try {
       const reply = await chat({
         messages: [
-          { role: 'system', content: 'You are Kairo, a supportive tutor for Class 9-12 Indian students. Output clean markdown. No preamble.' },
+          { role: 'system', content: 'You are Kairo, a supportive tutor for Class 9-12 Indian students. Output clean markdown, using tables where useful. Wrap all math in KaTeX delimiters — inline as $...$, block as $$...$$. No preamble.' },
           { role: 'user',   content: prompt },
         ],
       })
@@ -328,8 +338,8 @@ function AiResultModal({ title, body, loading, onClose }: {
             <style>{`@keyframes kr-spin { to { transform: rotate(360deg) } } .kr-spin { animation: kr-spin .8s linear infinite }`}</style>
           </div>
         ) : (
-          <div style={{ fontSize: 14, color: C.textDim, lineHeight: 1.7 }}>
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>{body}</ReactMarkdown>
+          <div className="prose-ai" style={{ fontSize: 14, color: C.textDim, lineHeight: 1.7 }}>
+            <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>{normalizeMath(body)}</ReactMarkdown>
           </div>
         )}
       </motion.div>
