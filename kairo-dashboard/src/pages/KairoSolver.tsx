@@ -41,7 +41,7 @@ interface ImageSlide {
   url:         string
   thumb?:      string
   caption:     string
-  source:      'wikimedia' | 'pexels' | 'unsplash'
+  source:      'wikimedia' | 'pexels' | 'unsplash' | 'kairo-ai'
   attribution?: string
   pageUrl?:    string
 }
@@ -1028,7 +1028,7 @@ function Slideshow({ slides, busy, topic, questionType, err, compact = false }: 
                   padding: '1px 6px', borderRadius: 3,
                   background: 'rgba(79, 124, 255, 0.15)', color: '#A5B4FC',
                   textTransform: 'uppercase', letterSpacing: 0.8, fontWeight: 700,
-                }}>{current.source}</span>
+                }}>{current.source === 'kairo-ai' ? '✦ Kairo AI' : current.source}</span>
                 {current.attribution && <span style={{ pointerEvents: 'auto' }}>{current.attribution}</span>}
               </div>
             </div>
