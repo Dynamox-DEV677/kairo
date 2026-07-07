@@ -216,13 +216,14 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
       <div style={{ padding: '14px 12px', borderBottom: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.04)' : '#e4e4e7'}` }}>
         <div style={{
           display: 'flex',
+          flexDirection: expanded ? 'row' : 'column',
           alignItems: 'center',
-          gap: expanded ? 10 : 0,
+          gap: expanded ? 10 : 8,
           marginBottom: expanded ? 14 : 0,
           justifyContent: expanded ? 'flex-start' : 'center',
           // Glass brand card — the 216px sidebar leaves ~110px for text,
           // so logo + font sizes below are tuned to NEVER clip the brand.
-          padding: expanded ? '8px 10px' : '8px 6px',
+          padding: expanded ? '8px 10px' : '10px 6px',
           borderRadius: 16,
           background: 'linear-gradient(150deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%)',
           backdropFilter: 'blur(16px) saturate(150%)',
@@ -230,16 +231,26 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
           border: '1px solid rgba(102, 217, 255, 0.16)',
           boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06)',
         }}>
-          <img
-            src="/kairo_logo.png?v=3"
-            alt="Kairo OS"
-            style={{
-              width: expanded ? 48 : 42, height: expanded ? 48 : 42,
-              objectFit: 'contain', borderRadius: 14, flexShrink: 0,
-              filter: 'drop-shadow(0 0 14px rgba(102,217,255,0.45))',
-              transition: 'width 0.32s cubic-bezier(0.22, 1, 0.36, 1), height 0.32s cubic-bezier(0.22, 1, 0.36, 1)',
-            }}
-          />
+          {/* Curved-square logo tile — same squircle look as the app icon */}
+          <div style={{
+            width: expanded ? 48 : 42, height: expanded ? 48 : 42,
+            flexShrink: 0,
+            borderRadius: expanded ? 13 : 11,     // ~22% — iOS squircle ratio
+            background: 'linear-gradient(150deg, #0B0F1C 0%, #05060A 100%)',
+            border: '1px solid rgba(102, 217, 255, 0.30)',
+            display: 'grid', placeItems: 'center',
+            boxShadow: '0 6px 20px rgba(79,124,255,0.30), inset 0 1px 0 rgba(255,255,255,0.08)',
+            transition: 'width 0.32s cubic-bezier(0.22, 1, 0.36, 1), height 0.32s cubic-bezier(0.22, 1, 0.36, 1)',
+          }}>
+            <img
+              src="/kairo-mark.svg"
+              alt="Kairo OS"
+              style={{
+                width: '74%', height: '74%', objectFit: 'contain',
+                filter: 'drop-shadow(0 0 8px rgba(102,217,255,0.45))',
+              }}
+            />
+          </div>
           <AnimatePresence initial={false}>
             {expanded && (
               <motion.div
