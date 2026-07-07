@@ -255,26 +255,32 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
         : await fetchTextWithRetry()
       setRetryHint('')
 
+      // Casual small-talk ("what is the time?", "hi") gets a short note —
+      // no video, no storyboard, no lesson scaffolding.
+      const isCasual = text.questionType === 'casual' || (!text.videoQuery && text.imageQueries.length === 0)
+
       // Kick off the video search in parallel — it doesn't depend on images.
-      const videoPromise = fetch('/api/ai/solver/video', {
-        method: 'POST', headers,
-        body: JSON.stringify({
-          query:        text.videoQuery || text.topicKeyword || question,
-          topicKeyword: text.topicKeyword,
-        }),
-        signal: ctrl.signal,
-      })
-        .then(r => r.ok ? r.json() : { videoId: null })
-        .catch(() => ({ videoId: null }))
+      const videoPromise = isCasual
+        ? Promise.resolve({ videoId: null })
+        : fetch('/api/ai/solver/video', {
+            method: 'POST', headers,
+            body: JSON.stringify({
+              query:        text.videoQuery || text.topicKeyword || question,
+              topicKeyword: text.topicKeyword,
+            }),
+            signal: ctrl.signal,
+          })
+            .then(r => r.ok ? r.json() : { videoId: null })
+            .catch(() => ({ videoId: null }))
 
       // Paint text immediately, mark images + video as still loading
       setResp({
         ...text,
         imageSlides: [],
-        imagesBusy:  text.imageQueries.length > 0,
+        imagesBusy:  !isCasual && text.imageQueries.length > 0,
         imagesCached: false,
         videoId:     null,
-        videoBusy:   true,
+        videoBusy:   !isCasual,
       })
       setBusy(false)   // unlock input — user can keep reading
 
@@ -284,6 +290,9 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
       // (Notebook, Concept Map, Mistake Analysis, Formula Sheet) all read
       // from these. Fire-and-forget — failures should never block the UI.
       try {
+        // Small-talk never enters the memory engine — "what is the time?"
+        // shouldn't show up as a study doubt or concept-graph node.
+        if (isCasual) throw new Error('skip-memory')
         recordDoubt({
           question,
           answer:  text.textExplanation,
@@ -387,7 +396,10 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
 
   // Compute the effective mode — what the renderer should actually show.
   // 'auto' resolves to 'map' for geography and 'visual' for everything else.
+  // Casual small-talk ALWAYS renders as a plain text note — there's no
+  // video/storyboard to show, so visual mode would just be empty chrome.
   const effectiveMode: SolverViewMode = useMemo(() => {
+    if (resp?.questionType === 'casual') return 'text'
     if (viewMode !== 'auto') return viewMode
     if (resp?.questionType === 'geography' && resp.geography) return 'map'
     return 'visual'
