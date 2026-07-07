@@ -53,6 +53,135 @@ const GRAD = {
 }
 
 // ════════════════════════════════════════════════════════════════════════════
+// CINEMATIC INTRO — plays once per session when Kairo OS opens.
+// Letter-by-letter wordmark reveal in Space Grotesk, spinning boot ring,
+// gradient shine sweep, boot-log tagline, progress line. Click to skip.
+// ════════════════════════════════════════════════════════════════════════════
+function KairoOSIntro({ onDone }: { onDone: () => void }) {
+  // Auto-dismiss when the sequence completes; any click skips instantly.
+  useEffect(() => {
+    const t = setTimeout(onDone, 3500)
+    return () => clearTimeout(t)
+  }, [onDone])
+
+  const letters = 'KAIRO OS'.split('')
+
+  return createPortal(
+    <div onClick={onDone} style={{
+      position: 'fixed', inset: 0, zIndex: 99999,
+      background: '#020204',
+      display: 'flex', flexDirection: 'column',
+      alignItems: 'center', justifyContent: 'center',
+      cursor: 'pointer', overflow: 'hidden',
+      animation: 'kosOut .55s ease 2.95s forwards',
+    }}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap');
+        @keyframes kosOut     { to { opacity: 0; transform: scale(1.04); visibility: hidden } }
+        @keyframes kosLetter  { from { opacity: 0; transform: translateY(30px) scale(.92) }
+                                to   { opacity: 1; transform: translateY(0)    scale(1) } }
+        @keyframes kosRingSpin{ to { transform: rotate(360deg) } }
+        @keyframes kosPulse   { 0%,100% { transform: scale(1);    opacity: .35 }
+                                50%     { transform: scale(1.12); opacity: .8 } }
+        @keyframes kosFade    { from { opacity: 0; transform: translateY(10px) } to { opacity: 1; transform: translateY(0) } }
+        @keyframes kosShine   { from { transform: translateX(-160%) skewX(-18deg) } to { transform: translateX(260%) skewX(-18deg) } }
+        @keyframes kosBar     { from { width: 0% } to { width: 100% } }
+        @keyframes kosGlow    { 0%,100% { opacity: .5 } 50% { opacity: 1 } }
+      `}</style>
+
+      {/* Ambient ultramarine glow */}
+      <div style={{
+        position: 'absolute', width: 620, height: 620, borderRadius: '50%',
+        background: 'radial-gradient(circle, rgba(79,124,255,0.16) 0%, transparent 62%)',
+        animation: 'kosGlow 2.4s ease-in-out infinite',
+      }} />
+
+      {/* Boot ring — soft pulse + spinning arc */}
+      <div style={{ position: 'relative', width: 148, height: 148, marginBottom: 38 }}>
+        <div style={{
+          position: 'absolute', inset: 0, borderRadius: '50%',
+          border: '1px solid rgba(102,217,255,0.25)',
+          animation: 'kosPulse 2s ease-in-out infinite',
+        }} />
+        <div style={{
+          position: 'absolute', inset: 10, borderRadius: '50%',
+          border: '2px solid transparent',
+          borderTopColor: '#66D9FF', borderRightColor: 'rgba(79,124,255,0.45)',
+          animation: 'kosRingSpin 1.1s linear infinite',
+        }} />
+        <div style={{
+          position: 'absolute', inset: 0, display: 'grid', placeItems: 'center',
+          fontFamily: "'Space Grotesk', system-ui, sans-serif",
+          fontSize: 44, fontWeight: 700, color: '#fff',
+          textShadow: '0 0 26px rgba(102,217,255,0.65)',
+          animation: 'kosFade .6s ease .1s both',
+        }}>K</div>
+      </div>
+
+      {/* Wordmark — staggered letter reveal + shine sweep */}
+      <div style={{ position: 'relative', overflow: 'hidden', padding: '0 12px' }}>
+        <div style={{ display: 'flex', gap: 2 }}>
+          {letters.map((ch, i) => (
+            <span key={i} style={{
+              fontFamily: "'Space Grotesk', system-ui, sans-serif",
+              fontSize: 'clamp(44px, 8vw, 76px)', fontWeight: 700,
+              letterSpacing: '0.04em', lineHeight: 1,
+              color: '#fff',
+              display: 'inline-block',
+              minWidth: ch === ' ' ? '0.35em' : undefined,
+              opacity: 0,
+              animation: `kosLetter .55s cubic-bezier(.2,.9,.3,1.35) ${0.25 + i * 0.07}s forwards`,
+              textShadow: '0 0 34px rgba(79,124,255,0.5)',
+            }}>{ch}</span>
+          ))}
+        </div>
+        {/* shine sweep across the assembled wordmark */}
+        <div style={{
+          position: 'absolute', top: 0, bottom: 0, width: '34%',
+          background: 'linear-gradient(90deg, transparent, rgba(102,217,255,0.32), transparent)',
+          animation: 'kosShine 0.9s ease-in-out 1.35s both',
+          pointerEvents: 'none',
+        }} />
+      </div>
+
+      {/* Tagline + boot log */}
+      <div style={{
+        marginTop: 22, fontSize: 12, fontWeight: 700, letterSpacing: 6,
+        textTransform: 'uppercase', color: '#66D9FF',
+        fontFamily: "'Space Grotesk', system-ui, sans-serif",
+        animation: 'kosFade .6s ease 1.25s both',
+      }}>
+        Your academic twin is waking up
+      </div>
+      <div style={{
+        marginTop: 10, fontSize: 10.5, letterSpacing: 2.5, color: '#5B616E',
+        fontFamily: 'ui-monospace, monospace', textTransform: 'uppercase',
+        animation: 'kosFade .6s ease 1.7s both',
+      }}>
+        memory · vitals · mastery · predictions
+      </div>
+
+      {/* Progress line */}
+      <div style={{ position: 'absolute', bottom: 46, width: 220, height: 2, background: 'rgba(255,255,255,0.08)', borderRadius: 2, overflow: 'hidden' }}>
+        <div style={{
+          height: '100%', borderRadius: 2,
+          background: 'linear-gradient(90deg, #4F7CFF, #66D9FF)',
+          animation: 'kosBar 2.7s cubic-bezier(.3,.6,.4,1) .2s both',
+        }} />
+      </div>
+      <div style={{
+        position: 'absolute', bottom: 20, fontSize: 9.5, letterSpacing: 3,
+        color: '#3a3f4a', textTransform: 'uppercase',
+        animation: 'kosFade .6s ease 2s both',
+      }}>
+        click to skip
+      </div>
+    </div>,
+    document.body,
+  )
+}
+
+// ════════════════════════════════════════════════════════════════════════════
 // MAIN PAGE
 // ════════════════════════════════════════════════════════════════════════════
 
@@ -81,6 +210,17 @@ export default function KairoOS() {
   const [detail, setDetail] = useState<DetailKind | null>(null)
   const [backupOpen, setBackupOpen] = useState(false)
 
+  // Cinematic intro — shows once per session (sessionStorage flag).
+  const [showIntro, setShowIntro] = useState<boolean>(() => {
+    try { return sessionStorage.getItem('kairo-os:intro-seen') !== '1' } catch { return true }
+  })
+  const dismissIntro = () => {
+    try { sessionStorage.setItem('kairo-os:intro-seen', '1') } catch { /* private mode */ }
+    setShowIntro(false)
+  }
+  // Rendered into document.body via portal — prepend to every return branch.
+  const intro = showIntro ? <KairoOSIntro onDone={dismissIntro} /> : null
+
   function reload() {
     setSnap(getDashboard())
   }
@@ -104,6 +244,7 @@ export default function KairoOS() {
   if (isMobile) {
     return (
       <>
+        {intro}
         <KairoOSMobile
           onNavigate={(route) => {
             const setActive = (window as any).__kairoSetActive
@@ -155,17 +296,19 @@ export default function KairoOS() {
     reload()
   }
 
-  if (!snap) return <PageSkeleton />
+  if (!snap) return <>{intro}<PageSkeleton /></>
 
   if (!snap.hasData) {
-    return <EmptyState onRefresh={onRefresh} onSeed={onSeed} />
+    return <>{intro}<EmptyState onRefresh={onRefresh} onSeed={onSeed} /></>
   }
 
   return (
-    // The Dashboard wraps every page in a `position:absolute; inset:0; flex`
-    // container — pages must own their own scroll. Without `overflow-y:auto`
-    // here, content past the viewport is clipped and the user can't reach
-    // recommendations / timeline / footer.
+    <>
+    {intro}
+    {/* The Dashboard wraps every page in a `position:absolute; inset:0; flex`
+        container — pages must own their own scroll. Without `overflow-y:auto`
+        here, content past the viewport is clipped and the user can't reach
+        recommendations / timeline / footer. */}
     <div className="kr-page" style={{
       width: '100%',
       height: '100%',
@@ -178,6 +321,7 @@ export default function KairoOS() {
       padding: '24px 24px 80px',
     }}>
       <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap');
         @keyframes kr-spin { to { transform: rotate(360deg) } }
         @keyframes kr-glow { 0%,100% { opacity: .55 } 50% { opacity: .95 } }
         .kr-spin { animation: kr-spin .8s linear infinite }
@@ -278,6 +422,7 @@ export default function KairoOS() {
         onChange={reload}
       />
     </div>
+    </>
   )
 }
 
@@ -300,10 +445,14 @@ function Header({ twin, onRefresh, onWipe, pulse, onBackup }: { twin: Twin; onRe
             fontSize: 11, fontWeight: 700, letterSpacing: 2.2, textTransform: 'uppercase',
             background: GRAD.text, WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent',
           }}>
-            Kairo OS  ·  Academic Twin
+            Academic Twin  ·  Learning Intelligence
           </div>
-          <h1 style={{ margin: '2px 0 0', fontSize: 24, fontWeight: 800, color: C.text, letterSpacing: -0.4 }}>
-            Your learning intelligence
+          <h1 style={{
+            margin: '2px 0 0', fontSize: 26, fontWeight: 700, color: C.text, letterSpacing: 0.3,
+            fontFamily: "'Space Grotesk', system-ui, sans-serif",
+            textShadow: '0 0 22px rgba(79,124,255,0.35)',
+          }}>
+            Kairo OS
           </h1>
           <div style={{ fontSize: 11.5, color: C.textFaint, marginTop: 2 }}>
             {pulse ? (
@@ -370,7 +519,7 @@ function TwinVoice({ obs }: { obs: Observation }) {
       </div>
       <div style={{ position: 'relative', flex: 1 }}>
         <div style={{ fontSize: 10, fontWeight: 700, color: toneColor, textTransform: 'uppercase', letterSpacing: 1.6 }}>
-          Kairo  ·  {obs.kind}
+          Kairo OS  ·  {obs.kind}
         </div>
         <div style={{ fontSize: 16, fontWeight: 700, color: C.text, marginTop: 4, letterSpacing: -0.2 }}>
           {obs.title}
@@ -541,7 +690,7 @@ function StyleCard({ twin, openDetail }: { twin: Twin; openDetail: (k: DetailKin
         fontSize: 12.5, color: C.textDim, lineHeight: 1.55,
       }}>
         <span style={{ color: top.color, fontWeight: 700 }}>You're a {top.label.toLowerCase()} learner.</span>{' '}
-        Kairo will preferentially surface {top.label.toLowerCase()} content (labs, flashcards, notes) when you next ask for help.
+        Kairo OS will preferentially surface {top.label.toLowerCase()} content (labs, flashcards, notes) when you next ask for help.
       </div>
     </Card>
   )
@@ -575,7 +724,7 @@ function PerformanceCard({ twin, mastery, openDetail }: { twin: Twin; mastery: (
           {twin.focusBestHour != null ? (
             <>You score highest around <span style={{ color: C.text, fontWeight: 700 }}>{twin.focusBestHour}:00</span>{twin.focusAvgMinutes ? ` · avg session ${twin.focusAvgMinutes} min` : ''}</>
           ) : (
-            <>Build a study habit and Kairo will pinpoint your best hour.</>
+            <>Build a study habit and Kairo OS will pinpoint your best hour.</>
           )}
         </div>
         <span style={{
@@ -729,7 +878,7 @@ function RetentionCard({ mastery, forgetting, openDetail }: { mastery: (MasteryR
     return (
       <Card>
         <CardTitle icon={<Brain size={13} />}>Memory retention</CardTitle>
-        <EmptyInline icon={<Brain size={20} color={C.textFaint} />} text="Your forgetting curve appears here once Kairo sees you study a topic." />
+        <EmptyInline icon={<Brain size={20} color={C.textFaint} />} text="Your forgetting curve appears here once Kairo OS sees you study a topic." />
       </Card>
     )
   }
@@ -951,7 +1100,7 @@ function ObservationsCard({ obs }: { obs: Observation[] }) {
     return (
       <Card>
         <CardTitle icon={<Award size={13} />}>Insights</CardTitle>
-        <EmptyInline icon={<Award size={20} color={C.textFaint} />} text="Kairo will surface insights as patterns emerge in your studying." />
+        <EmptyInline icon={<Award size={20} color={C.textFaint} />} text="Kairo OS will surface insights as patterns emerge in your studying." />
       </Card>
     )
   }
