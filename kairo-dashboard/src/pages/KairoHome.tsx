@@ -16,6 +16,7 @@ import {
   Sparkles, Loader2, Flame, Brain, Target, TrendingUp, Calendar,
   AlertTriangle, CheckCircle2, Settings2, Network, History, Gauge, ArrowRight,
 } from 'lucide-react'
+import KairoGyro from '../components/KairoGyro'
 
 // ── Profile (localStorage) ─────────────────────────────────────────────
 interface ExamDate { name: string; date: string }
@@ -196,6 +197,13 @@ export default function KairoHome({ onNavigate }: Props) {
           </div>
           <button onClick={() => { setEditing(false); fetchBrief() }} style={{ ...primaryBtn, marginTop: 12 }}>Save & re-brief</button>
         </motion.div>
+      )}
+
+      {/* ── Council thinking — gyro while the first brief loads ─────── */}
+      {loading && !brief && (
+        <div style={{ padding: '28px 0 8px' }}>
+          <KairoGyro fullPage label="Your council is thinking" sub="mentor · planner · analyst · exam · motivation · memory" />
+        </div>
       )}
 
       {/* ── Top row: exam countdown + prediction + motivation ───────── */}

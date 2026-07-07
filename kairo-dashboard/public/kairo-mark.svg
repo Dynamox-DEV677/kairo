@@ -1,0 +1,31 @@
+<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" fill="none">
+  <!-- Kairo mark — cursive K wearing a graduation cap.
+       White on transparent; recolor via CSS filter or swap stroke/fill. -->
+  <g stroke="#ffffff" stroke-width="17" stroke-linecap="round" stroke-linejoin="round">
+    <!-- stem: cap tip → sweeping descent → bottom-left loop → middle junction -->
+    <path d="M268 138
+             C 264 196, 246 268, 216 336
+             C 196 380, 162 434, 122 452
+             C 90 466, 64 444, 76 414
+             C 90 378, 146 350, 202 330
+             C 238 317, 266 308, 292 300" />
+    <!-- arm: upper-right open loop sweeping into the junction -->
+    <path d="M372 152
+             C 402 128, 436 150, 420 188
+             C 402 232, 344 276, 292 300" />
+    <!-- leg: junction → down-right → upward flick tail -->
+    <path d="M292 300
+             C 322 318, 350 366, 362 412
+             C 370 440, 398 452, 420 434" />
+  </g>
+  <!-- graduation cap perched on the stem tip, tilted like the reference -->
+  <g fill="#ffffff" transform="rotate(-14 268 100)">
+    <!-- mortarboard diamond -->
+    <path d="M268 124 L 328 100 L 268 76 L 208 100 Z" />
+    <!-- slim head band under the board -->
+    <path d="M247 114 L 247 132 Q 268 142 289 132 L 289 114 Q 268 124 247 114 Z" />
+    <!-- tassel: cord from left corner + bob -->
+    <path d="M212 104 L 208 144" stroke="#ffffff" stroke-width="6" stroke-linecap="round" fill="none" />
+    <path d="M202 144 L 214 144 L 212 164 L 204 164 Z" />
+  </g>
+</svg>

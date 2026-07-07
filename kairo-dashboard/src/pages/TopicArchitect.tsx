@@ -11,6 +11,7 @@ import {
   Sparkles, Loader2, Brain, CheckCircle2, XCircle, Map as MapIcon,
   HelpCircle, History, ListOrdered, Clock, ChevronDown, Target,
 } from 'lucide-react'
+import KairoGyro from '../components/KairoGyro'
 
 interface StudyPoint { point: string; why: string }
 interface MapNode { id: string; label: string }
@@ -159,6 +160,10 @@ export default function TopicArchitect() {
           </div>
         )}
       </div>
+
+      {loading && !plan && (
+        <KairoGyro fullPage label="Planning your topic" sub="what to study · questions · maps · pyq insights" />
+      )}
 
       <AnimatePresence>
         {plan && (

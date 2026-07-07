@@ -14,6 +14,7 @@ import {
   Sparkles, Target, Calendar, Clock, AlertTriangle, Trophy, BookOpen,
   Loader2, ChevronRight, RefreshCw, Save, Printer, Folder, X, Check, Brain,
 } from 'lucide-react'
+import KairoGyro from '../components/KairoGyro'
 
 // ── Types ────────────────────────────────────────────────────────────────
 interface ExamMeta { id: string; label: string; subjects: string[]; durationHrs: number | null }
@@ -430,6 +431,10 @@ export default function ExamPlanner() {
           </div>
         )}
       </div>
+
+      {loading && !plan && (
+        <KairoGyro fullPage label="Building your exam plan" sub="priorities · schedule · milestones" />
+      )}
 
       {/* ── Plan output ─────────────────────────────────────────── */}
       <AnimatePresence>

@@ -24,6 +24,7 @@ import {
 } from '../lib/twin'
 import { confirmDialog } from '../components/ConfirmModal'
 import TwinBackupModal from '../components/TwinBackupModal'
+import KairoGyro from '../components/KairoGyro'
 import { useIsMobile } from '../lib/useIsMobile'
 import KairoOSMobile from './KairoOSMobile'
 
@@ -111,11 +112,13 @@ function KairoOSIntro({ onDone }: { onDone: () => void }) {
         }} />
         <div style={{
           position: 'absolute', inset: 0, display: 'grid', placeItems: 'center',
-          fontFamily: "'Space Grotesk', system-ui, sans-serif",
-          fontSize: 44, fontWeight: 700, color: '#fff',
-          textShadow: '0 0 26px rgba(102,217,255,0.65)',
           animation: 'kosFade .6s ease .1s both',
-        }}>K</div>
+        }}>
+          <img src="/kairo-mark.svg" alt="" style={{
+            width: 76, height: 76, objectFit: 'contain',
+            filter: 'drop-shadow(0 0 20px rgba(102,217,255,0.6))',
+          }} />
+        </div>
       </div>
 
       {/* Wordmark — staggered letter reveal + shine sweep */}
@@ -438,7 +441,7 @@ function Header({ twin, onRefresh, onWipe, pulse, onBackup }: { twin: Twin; onRe
           background: GRAD.pill, display: 'grid', placeItems: 'center',
           boxShadow: '0 8px 28px rgba(79, 124, 255, 0.03)',
         }}>
-          <Brain size={22} color="#fff" />
+          <img src="/kairo-mark.svg" alt="Kairo" style={{ width: 30, height: 30, objectFit: 'contain' }} />
         </div>
         <div>
           <div style={{
@@ -1823,9 +1826,11 @@ function EmptyInline({ icon, text }: { icon: React.ReactNode; text: string }) {
 
 function PageSkeleton() {
   return (
-    <div style={{ padding: 40, color: C.textDim }}>
-      <style>{`@keyframes kr-spin { to { transform: rotate(360deg) } } .kr-spin { animation: kr-spin .8s linear infinite }`}</style>
-      Loading your Twin…
+    <div style={{
+      width: '100%', height: '100%', background: C.bg,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+    }}>
+      <KairoGyro label="Loading your Twin" sub="memory · vitals · mastery" />
     </div>
   )
 }
