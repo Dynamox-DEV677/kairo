@@ -13,6 +13,7 @@ import StudyPlan from './StudyPlan'
 import ExamPlanner from './ExamPlanner'
 import TopicArchitect from './TopicArchitect'
 import KairoHome from './KairoHome'
+import KairoChat from './KairoChat'
 import EssayGrader from './EssayGrader'
 import ExamPredictor from './ExamPredictor'
 import QuestionPaper from './QuestionPaper'
@@ -107,6 +108,10 @@ interface DashboardProps {
 export default function Dashboard({ profile, onLogout }: DashboardProps) {
   // Admins land on School Hub (their control center); everyone else on Kairo's Solver
   const [active, setActive]           = useState(profile?.role === 'admin' ? 'school' : 'home')
+  // Solver surface: companion chat (default) vs the classic visual Solver.
+  const [solverUi, setSolverUi] = useState<'chat' | 'classic'>(() => {
+    try { return (localStorage.getItem('kairo:solver-ui') as 'chat' | 'classic') || 'chat' } catch { return 'chat' }
+  })
   // Light mode is disabled — Kairo is dark-only. Keeping the state shape
   // so the rest of the file's `isDark ? darkColor : lightColor` ternaries
   // still resolve correctly; we just freeze it to true and never flip it.
@@ -212,25 +217,51 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
             {/* Home — the AI Student OS command center */}
             <div style={pageStyle('home')}><KairoHome onNavigate={setActive} /></div>
 
-            {/* Kairo's Solver — adaptive AI visual learning engine */}
+            {/* Kairo's Solver — companion CHAT by default; classic visual
+                Solver one toggle away. Preference persists per device. */}
             <div style={pageStyle('doubt')}>
-              <KairoSolver
-                model={selectedModel}
-                onActiveChange={setSolverActive}
-                onNavigate={(target) => {
-                  // "labs:gravity" -> jump to labs page + dispatch event so the
-                  // KairoLabs page knows which lab to open.
-                  if (target.startsWith('labs:')) {
-                    const lab = target.slice('labs:'.length)
-                    setActive('labs')
-                    setTimeout(() => {
-                      window.dispatchEvent(new CustomEvent('kairo:open-lab', { detail: { id: lab } }))
-                    }, 100)
-                  } else {
-                    setActive(target)
-                  }
-                }}
-              />
+              <div style={{ flex: 1, minHeight: 0, position: 'relative', display: 'flex', flexDirection: 'column' }}>
+                {/* Chat ↔ Classic toggle */}
+                <button
+                  onClick={() => {
+                    const next = solverUi === 'chat' ? 'classic' : 'chat'
+                    setSolverUi(next)
+                    try { localStorage.setItem('kairo:solver-ui', next) } catch {}
+                  }}
+                  style={{
+                    position: 'absolute', top: 10, right: 14, zIndex: 20,
+                    padding: '6px 14px', borderRadius: 999, cursor: 'pointer',
+                    background: 'rgba(13,16,25,0.85)', backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(102,217,255,0.28)',
+                    color: '#66D9FF', fontSize: 11, fontWeight: 700,
+                    letterSpacing: 1, textTransform: 'uppercase', fontFamily: 'inherit',
+                  }}
+                >
+                  {solverUi === 'chat' ? '◈ Visual mode' : '💬 Chat mode'}
+                </button>
+
+                {solverUi === 'chat' ? (
+                  <KairoChat />
+                ) : (
+                  <KairoSolver
+                    model={selectedModel}
+                    onActiveChange={setSolverActive}
+                    onNavigate={(target) => {
+                      // "labs:gravity" -> jump to labs page + dispatch event so the
+                      // KairoLabs page knows which lab to open.
+                      if (target.startsWith('labs:')) {
+                        const lab = target.slice('labs:'.length)
+                        setActive('labs')
+                        setTimeout(() => {
+                          window.dispatchEvent(new CustomEvent('kairo:open-lab', { detail: { id: lab } }))
+                        }, 100)
+                      } else {
+                        setActive(target)
+                      }
+                    }}
+                  />
+                )}
+              </div>
             </div>
 
             {/* Flashcards */}
