@@ -437,11 +437,11 @@ function Header({ twin, onRefresh, onWipe, pulse, onBackup }: { twin: Twin; onRe
     <div className="kr-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14, flexWrap: 'wrap' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
         <div style={{
-          width: 44, height: 44, borderRadius: 12,
+          width: 60, height: 60, borderRadius: 16,
           background: GRAD.pill, display: 'grid', placeItems: 'center',
-          boxShadow: '0 8px 28px rgba(79, 124, 255, 0.03)',
+          boxShadow: '0 10px 32px rgba(79, 124, 255, 0.25)',
         }}>
-          <img src="/kairo-mark.svg" alt="Kairo" style={{ width: 30, height: 30, objectFit: 'contain' }} />
+          <img src="/kairo-mark.svg" alt="Kairo OS" style={{ width: 46, height: 46, objectFit: 'contain' }} />
         </div>
         <div>
           <div style={{

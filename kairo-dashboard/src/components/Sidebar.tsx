@@ -222,9 +222,14 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
           justifyContent: expanded ? 'flex-start' : 'center',
         }}>
           <img
-            src="/kairo_logo.png"
-            alt="Kairo"
-            style={{ width: expanded ? 44 : 36, height: expanded ? 44 : 36, objectFit: 'contain', borderRadius: 14, transition: 'width 0.32s cubic-bezier(0.22, 1, 0.36, 1), height 0.32s cubic-bezier(0.22, 1, 0.36, 1)' }}
+            src="/kairo_logo.png?v=3"
+            alt="Kairo OS"
+            style={{
+              width: expanded ? 54 : 40, height: expanded ? 54 : 40,
+              objectFit: 'contain', borderRadius: 14,
+              filter: 'drop-shadow(0 0 12px rgba(102,217,255,0.35))',
+              transition: 'width 0.32s cubic-bezier(0.22, 1, 0.36, 1), height 0.32s cubic-bezier(0.22, 1, 0.36, 1)',
+            }}
           />
           <AnimatePresence initial={false}>
             {expanded && (
@@ -237,11 +242,13 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
                 style={{ flex: 1, minWidth: 0, overflow: 'hidden' }}
               >
                 <div style={{
-                  fontSize: 16, fontWeight: 700,
+                  fontSize: 18, fontWeight: 700,
+                  fontFamily: "'Space Grotesk', system-ui, sans-serif",
                   color: isDark ? '#F5F5F7' : '#18181b',
-                  letterSpacing: '-0.3px',
+                  letterSpacing: '0.2px',
                   whiteSpace: 'nowrap',
-                }}>kairo</div>
+                  textShadow: isDark ? '0 0 18px rgba(79,124,255,0.35)' : 'none',
+                }}>Kairo OS</div>
                 <div style={{
                   fontSize: 8.5, fontWeight: 600,
                   color: 'rgba(102, 217, 255, 0.55)',

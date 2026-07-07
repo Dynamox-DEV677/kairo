@@ -6,7 +6,8 @@ html, body, #root {
   height: 100%;
   background: #050505;
   color: #fafafa;
-  font-family: 'Lora', 'Georgia', 'Times New Roman', serif;
+  /* Space Grotesk is the Kairo OS brand font — used app-wide. */
+  font-family: 'Space Grotesk', 'Inter', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -307,10 +308,10 @@ html, body, #root {
   --gl-inner:  inset 0 0 60px rgba(79, 124, 255, 0.05);
 }
 
-/* Force the entire mobile shell into the Inter / SF stack — feels native */
+/* Mobile shell uses the same Kairo OS brand font as desktop */
 .kairo-mobile,
 .kairo-mobile * {
-  font-family: 'Inter', 'SF Pro Display', 'SF Pro Text', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  font-family: 'Space Grotesk', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }

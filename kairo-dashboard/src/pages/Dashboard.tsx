@@ -171,7 +171,7 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
       overflow: 'hidden',
       background: isDark ? '#050505' : '#f4f4f5',
       color:      isDark ? '#fafafa' : '#18181b',
-      fontFamily: "'Lora', 'Georgia', serif",
+      fontFamily: "'Space Grotesk', 'Inter', system-ui, sans-serif",
       transition: 'background 0.25s ease',
     }}>
       {!isMobile && (
