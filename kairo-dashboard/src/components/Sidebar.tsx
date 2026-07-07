@@ -220,14 +220,22 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
           gap: expanded ? 12 : 0,
           marginBottom: expanded ? 14 : 0,
           justifyContent: expanded ? 'flex-start' : 'center',
+          // Glass brand card
+          padding: expanded ? '10px 12px' : '8px 6px',
+          borderRadius: 16,
+          background: 'linear-gradient(150deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%)',
+          backdropFilter: 'blur(16px) saturate(150%)',
+          WebkitBackdropFilter: 'blur(16px) saturate(150%)',
+          border: '1px solid rgba(102, 217, 255, 0.16)',
+          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06)',
         }}>
           <img
             src="/kairo_logo.png?v=3"
             alt="Kairo OS"
             style={{
-              width: expanded ? 54 : 40, height: expanded ? 54 : 40,
+              width: expanded ? 66 : 46, height: expanded ? 66 : 46,
               objectFit: 'contain', borderRadius: 14,
-              filter: 'drop-shadow(0 0 12px rgba(102,217,255,0.35))',
+              filter: 'drop-shadow(0 0 14px rgba(102,217,255,0.45))',
               transition: 'width 0.32s cubic-bezier(0.22, 1, 0.36, 1), height 0.32s cubic-bezier(0.22, 1, 0.36, 1)',
             }}
           />
@@ -242,12 +250,12 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
                 style={{ flex: 1, minWidth: 0, overflow: 'hidden' }}
               >
                 <div style={{
-                  fontSize: 18, fontWeight: 700,
+                  fontSize: 21, fontWeight: 700,
                   fontFamily: "'Space Grotesk', system-ui, sans-serif",
                   color: isDark ? '#F5F5F7' : '#18181b',
                   letterSpacing: '0.2px',
                   whiteSpace: 'nowrap',
-                  textShadow: isDark ? '0 0 18px rgba(79,124,255,0.35)' : 'none',
+                  textShadow: isDark ? '0 0 20px rgba(79,124,255,0.45)' : 'none',
                 }}>Kairo OS</div>
                 <div style={{
                   fontSize: 8.5, fontWeight: 600,

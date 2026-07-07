@@ -434,34 +434,44 @@ export default function KairoOS() {
 // ════════════════════════════════════════════════════════════════════════════
 function Header({ twin, onRefresh, onWipe, pulse, onBackup }: { twin: Twin; onRefresh: () => void; onWipe: () => void; pulse: boolean; onBackup: () => void }) {
   return (
-    <div className="kr-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14, flexWrap: 'wrap' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+    // Glass header band — the "front line" of Kairo OS.
+    <div className="kr-header" style={{
+      display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14, flexWrap: 'wrap',
+      padding: '18px 20px', borderRadius: 22,
+      background: 'linear-gradient(150deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%)',
+      backdropFilter: 'blur(18px) saturate(150%)',
+      WebkitBackdropFilter: 'blur(18px) saturate(150%)',
+      border: '1px solid rgba(102, 217, 255, 0.18)',
+      boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.07), 0 14px 44px rgba(79,124,255,0.10)',
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
         <div style={{
-          width: 60, height: 60, borderRadius: 16,
+          width: 76, height: 76, borderRadius: 20,
           background: GRAD.pill, display: 'grid', placeItems: 'center',
-          boxShadow: '0 10px 32px rgba(79, 124, 255, 0.25)',
+          boxShadow: '0 12px 38px rgba(79, 124, 255, 0.35)',
         }}>
-          <img src="/kairo-mark.svg" alt="Kairo OS" style={{ width: 46, height: 46, objectFit: 'contain' }} />
+          <img src="/kairo-mark.svg" alt="Kairo OS" style={{ width: 60, height: 60, objectFit: 'contain' }} />
         </div>
         <div>
           <div style={{
-            fontSize: 11, fontWeight: 700, letterSpacing: 2.2, textTransform: 'uppercase',
-            background: GRAD.text, WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent',
+            fontSize: 11, fontWeight: 700, letterSpacing: 3, textTransform: 'uppercase',
+            color: '#66D9FF',
           }}>
-            Academic Twin  ·  Learning Intelligence
+            Your Academic Twin · Live
           </div>
           <h1 style={{
-            margin: '2px 0 0', fontSize: 26, fontWeight: 700, color: C.text, letterSpacing: 0.3,
+            margin: '3px 0 0', fontSize: 34, fontWeight: 700, color: C.text, letterSpacing: 0.3,
             fontFamily: "'Space Grotesk', system-ui, sans-serif",
-            textShadow: '0 0 22px rgba(79,124,255,0.35)',
+            textShadow: '0 0 26px rgba(79,124,255,0.45)',
+            lineHeight: 1.05,
           }}>
             Kairo OS
           </h1>
-          <div style={{ fontSize: 11.5, color: C.textFaint, marginTop: 2 }}>
+          <div style={{ fontSize: 12, color: C.textFaint, marginTop: 5 }}>
             {pulse ? (
               <span style={{ color: C.green, fontWeight: 600 }}>● Recomputed just now</span>
             ) : (
-              <>Updated {formatRelative(twin.computedAt)}  ·  {twin.streakDays} day streak  ·  stored on this device</>
+              <>Synced {formatRelative(twin.computedAt)}  ·  🔥 {twin.streakDays}-day streak  ·  100% on-device</>
             )}
           </div>
         </div>
