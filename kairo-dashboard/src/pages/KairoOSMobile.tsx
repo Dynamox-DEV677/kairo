@@ -39,6 +39,14 @@ const C = {
   purpleSoft:'#DBE7FF',
 }
 
+// Glassmorphism card surface — translucent panel + backdrop blur. One
+// token so the whole mobile OS reads as a single glass system.
+const GLASS: React.CSSProperties = {
+  background: 'linear-gradient(150deg, rgba(255,255,255,0.055) 0%, rgba(255,255,255,0.018) 100%)',
+  backdropFilter: 'blur(16px) saturate(150%)',
+  WebkitBackdropFilter: 'blur(16px) saturate(150%)',
+}
+
 interface Props {
   onOpenDetail?: (kind: string, payload?: any) => void
   onNavigate:    (route: string) => void
@@ -217,9 +225,9 @@ function PulseHero({ pct, label, twin, pulsing, onRecompute }: {
       animate={{ opacity: 1, y: 0 }}
       style={{
         position: 'relative', padding: 22, borderRadius: 22,
-        background: `linear-gradient(180deg, ${C.panel} 0%, ${C.bg} 100%)`,
+        ...GLASS,
         border: '1px solid rgba(102, 217, 255, 0.22)',
-        boxShadow: '0 18px 50px rgba(79, 124, 255, 0.01), inset 0 1px 0 rgba(255,255,255,0.04)',
+        boxShadow: '0 18px 50px rgba(79, 124, 255, 0.08), inset 0 1px 0 rgba(255,255,255,0.06)',
         overflow: 'hidden',
       }}
     >
@@ -306,7 +314,7 @@ function MiniMetric({ label, value, unit }: { label: string; value: any; unit?: 
   return (
     <div style={{
       padding: '10px 12px', borderRadius: 12,
-      background: 'rgba(102, 217, 255, 0.06)',
+      ...GLASS,
       border: '1px solid rgba(102, 217, 255, 0.16)',
     }}>
       <div style={{ fontSize: 9.5, fontWeight: 700, color: C.purpleLite, textTransform: 'uppercase', letterSpacing: 1.4 }}>
@@ -347,7 +355,7 @@ function QuickAction({ label, icon: Icon, onClick, accent }: { label: string; ic
         flexShrink: 0,
         display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
         minWidth: 78, padding: '12px 10px',
-        background: 'rgba(102, 217, 255, 0.05)',
+        ...GLASS,
         border: '1px solid rgba(102, 217, 255, 0.18)',
         borderRadius: 16,
         color: C.text, fontFamily: 'inherit', cursor: 'pointer',
@@ -427,7 +435,7 @@ function VitalChip({ title, pct, unit = '%', tone, icon: Icon }: { title: string
       flexShrink: 0,
       minWidth: 130, padding: '14px 14px',
       borderRadius: 16,
-      background: `linear-gradient(180deg, rgba(102, 217, 255, 0.06) 0%, ${C.panel2} 100%)`,
+      ...GLASS,
       border: '1px solid rgba(102, 217, 255, 0.16)',
       display: 'flex', flexDirection: 'column', gap: 6,
     }}>
@@ -452,7 +460,7 @@ function TrajectoryCard({ trend, predicted, band, mastered, tracked }: {
   return (
     <div style={{
       padding: 16, borderRadius: 18,
-      background: `linear-gradient(180deg, ${C.panel} 0%, ${C.bg} 100%)`,
+      ...GLASS,
       border: '1px solid rgba(102, 217, 255, 0.16)',
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -504,7 +512,8 @@ function ReviseRow({ topic, subject, hours, onClick }: { topic: string; subject:
       style={{
         width: '100%', display: 'flex', alignItems: 'center', gap: 12,
         padding: '12px 14px', borderRadius: 14,
-        background: urgent ? 'rgba(102, 217, 255, 0.08)' : C.panel,
+        ...GLASS,
+        ...(urgent ? { background: 'linear-gradient(150deg, rgba(102,217,255,0.10) 0%, rgba(255,255,255,0.02) 100%)' } : {}),
         border: `1px solid ${urgent ? 'rgba(102, 217, 255, 0.30)' : 'rgba(102, 217, 255, 0.10)'}`,
         cursor: 'pointer', fontFamily: 'inherit', color: C.text, textAlign: 'left',
         WebkitTapHighlightColor: 'transparent',

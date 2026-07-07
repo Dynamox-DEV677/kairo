@@ -5,6 +5,7 @@ import { confirmDialog } from '../components/ConfirmModal'
 import TwinBackupModal from '../components/TwinBackupModal'
 import ResetPasscode from './ResetPasscode'
 import { seedDemo, resetAllData } from '../lib/twin'
+import { getRaw, setRaw, activeBackend } from '../lib/storage'
 
 const BOARDS = ['CBSE', 'ICSE', 'Maharashtra', 'Tamil Nadu', 'Karnataka', 'UP Board', 'Bihar Board']
 const CLASSES = ['6', '7', '8', '9', '10', '11', '12']
@@ -15,7 +16,11 @@ export default function Settings() {
   const [board, setBoard] = useState(stored.board || 'CBSE')
   const [cls, setCls] = useState(stored.cls || '10')
   const [role] = useState(stored.role || 'student')
-  const [pic, setPic] = useState<string | null>(localStorage.getItem('kairo_profile_pic'))
+  // Profile picture persists through the storage adapter — SQLite on the
+  // laptop when running inside the Electron app, localStorage on the web.
+  const [pic, setPic] = useState<string | null>(
+    () => getRaw('kairo_profile_pic') ?? localStorage.getItem('kairo_profile_pic'),
+  )
   const [notifs, setNotifs] = useState(true)
   const [saved, setSaved] = useState(false)
   const [backupOpen, setBackupOpen] = useState(false)
@@ -29,7 +34,11 @@ export default function Settings() {
     reader.onload = ev => {
       const url = ev.target?.result as string
       setPic(url)
-      localStorage.setItem('kairo_profile_pic', url)
+      // Adapter routes to SQLite (Electron) / localStorage (web).
+      setRaw('kairo_profile_pic', url)
+      // Mirror to localStorage too — Sidebar/MobileShell read it directly.
+      try { localStorage.setItem('kairo_profile_pic', url) } catch { /* quota */ }
+      console.log('[settings] profile pic saved via', activeBackend())
     }
     reader.readAsDataURL(file)
   }

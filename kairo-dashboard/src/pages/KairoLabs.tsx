@@ -182,8 +182,10 @@ export default function KairoLabs() {
 
   return (
     <div style={{
-      padding: '28px 36px 60px', maxWidth: 1240, margin: '0 auto',
-      height: '100%', overflowY: 'auto',
+      // clamp() keeps desktop spacing but collapses on phones; bottom
+      // padding clears the mobile tab bar.
+      padding: 'clamp(16px, 3vw, 28px) clamp(14px, 4vw, 36px) 110px', maxWidth: 1240, margin: '0 auto',
+      height: '100%', overflowY: 'auto', WebkitOverflowScrolling: 'touch',
       background: `
         radial-gradient(at 12% 0%, rgba(79, 124, 255, 0.10) 0%, transparent 36%),
         radial-gradient(at 88% 100%, rgba(32, 70, 194, 0.10) 0%, transparent 42%)`,
@@ -213,7 +215,7 @@ export default function KairoLabs() {
               background: 'linear-gradient(90deg, #A5B4FC, #66D9FF, #4F7CFF)', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent' }}>
               Kairo Labs  ·  3D Simulations
             </div>
-            <h1 style={{ margin: '4px 0 6px', fontSize: 32, fontWeight: 800, color: '#fafafa', letterSpacing: -0.6, lineHeight: 1.1 }}>
+            <h1 style={{ margin: '4px 0 6px', fontSize: 'clamp(22px, 5vw, 32px)', fontWeight: 800, color: '#fafafa', letterSpacing: -0.6, lineHeight: 1.1 }}>
               Drag the apple, watch it fall.
             </h1>
             <p style={{ margin: 0, fontSize: 14, color: '#B1B5BA', maxWidth: 640, lineHeight: 1.6 }}>
@@ -254,8 +256,9 @@ export default function KairoLabs() {
         })}
       </div>
 
-      {/* Lab grid — larger cards w/ 3D tilt */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 18, perspective: 1200 }}>
+      {/* Lab grid — larger cards w/ 3D tilt.
+          min(320px, 100%) stops cards overflowing on narrow phones. */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(320px, 100%), 1fr))', gap: 18, perspective: 1200 }}>
         <AnimatePresence>
           {visible.map((lab, i) => (
             <LabCard key={lab.id} lab={lab} delay={i * 0.04} onOpen={() => lab.ready && setActive(lab)} />
