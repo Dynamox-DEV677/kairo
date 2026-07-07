@@ -120,11 +120,30 @@ export default function GeoVisualMode({
   relatedConcepts,
   onAskRelated,
 }: GeoVisualModeProps) {
-  // Resolve effective lat/lng/zoom — fall back to kind-defaults if Wikipedia
-  // didn't have coordinates (e.g. the topic was "tectonic plates" — a concept,
-  // not a place).
-  const effectiveLat = geography.lat ?? FALLBACK_COORDS[geography.kind].lat
-  const effectiveLng = geography.lng ?? FALLBACK_COORDS[geography.kind].lng
+  // Client-side geocode fallback: when the backend couldn't resolve coords
+  // (Wikipedia articles for big natural features often carry no coordinate
+  // tag), ask Nominatim from the browser. Until/unless something resolves,
+  // we show the kind-default REGION but hide the labeled pin — the old
+  // behaviour drew "Amazon Rainforest" on a pin in the middle of India.
+  const [resolved, setResolved] = useState<{ lat: number; lng: number } | null>(null)
+  useEffect(() => {
+    setResolved(null)
+    const q = geography.name || topic
+    if (geography.lat != null || !q) return
+    let dead = false
+    fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=1`)
+      .then(r => (r.ok ? r.json() : null))
+      .then(arr => {
+        if (dead || !Array.isArray(arr) || !arr[0]?.lat) return
+        setResolved({ lat: parseFloat(arr[0].lat), lng: parseFloat(arr[0].lon) })
+      })
+      .catch(() => { /* offline — keep fallback view */ })
+    return () => { dead = true }
+  }, [geography.name, geography.lat, topic])
+
+  const located = geography.lat != null || resolved != null
+  const effectiveLat = geography.lat ?? resolved?.lat ?? FALLBACK_COORDS[geography.kind].lat
+  const effectiveLng = geography.lng ?? resolved?.lng ?? FALLBACK_COORDS[geography.kind].lng
   const effectiveZoom = geography.zoom || FALLBACK_COORDS[geography.kind].zoom
 
   return (
@@ -152,6 +171,7 @@ export default function GeoVisualMode({
           lng={effectiveLng}
           zoom={effectiveZoom}
           pageUrl={geography.pageUrl}
+          located={located}
         />
       </div>
 
@@ -256,8 +276,10 @@ interface MapPanelProps {
   lng:  number
   zoom: number
   pageUrl: string | null
+  /** false = coords are a kind-default guess — hide the labeled pin. */
+  located: boolean
 }
-function MapPanel({ name, kind, lat, lng, zoom, pageUrl }: MapPanelProps) {
+function MapPanel({ name, kind, lat, lng, zoom, pageUrl, located }: MapPanelProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }}
@@ -336,17 +358,23 @@ function MapPanel({ name, kind, lat, lng, zoom, pageUrl }: MapPanelProps) {
           />
           <FlyToOnChange lat={lat} lng={lng} zoom={zoom} />
 
-          {/* Pulsing marker — three concentric circles, the inner one solid. */}
-          <CircleMarker
-            center={[lat, lng]}
-            pathOptions={{ color: C.secondary, fillColor: C.primary, fillOpacity: 0.45, weight: 2 }}
-            radius={10}
-          >
-            <Tooltip direction="top" offset={[0, -10]} permanent>
-              {name}
-            </Tooltip>
-          </CircleMarker>
-          <PulseHalo lat={lat} lng={lng} />
+          {/* Pulsing marker — only when the coords are REAL. Drawing the
+              labeled pin on the kind-default fallback centre put "Amazon
+              Rainforest" in the middle of India. */}
+          {located && (
+            <>
+              <CircleMarker
+                center={[lat, lng]}
+                pathOptions={{ color: C.secondary, fillColor: C.primary, fillOpacity: 0.45, weight: 2 }}
+                radius={10}
+              >
+                <Tooltip direction="top" offset={[0, -10]} permanent>
+                  {name}
+                </Tooltip>
+              </CircleMarker>
+              <PulseHalo lat={lat} lng={lng} />
+            </>
+          )}
         </MapContainer>
       </div>
     </motion.div>

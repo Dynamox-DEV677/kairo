@@ -695,10 +695,22 @@ async function getSolverPlan(question) {
 
     let coords = null
     try {
+      // 3.5s budget — the old 1.5s raced Wikipedia's two round-trips and
+      // lost constantly, which nulled the coords and let the frontend
+      // draw pins at its India fallback (Amazon Rainforest in Hyderabad).
       coords = await Promise.race([
         wikiResolveCoords(geoName || question),
-        new Promise(res => setTimeout(() => res(null), 1500)),
+        new Promise(res => setTimeout(() => res(null), 3500)),
       ])
+      // Wikipedia articles for large natural features ("Amazon rainforest")
+      // often carry NO coordinates tag. Nominatim (OpenStreetMap) resolves
+      // basically every named place — use it as the second source.
+      if (!coords) {
+        coords = await Promise.race([
+          nominatimResolveCoords(geoName || question),
+          new Promise(res => setTimeout(() => res(null), 3000)),
+        ])
+      }
     } catch { /* timeout / network — non-fatal */ }
 
     normalized.geography = {
@@ -722,19 +734,46 @@ async function getSolverPlan(question) {
  * Cached in-memory for the warm Vercel instance. Returns null when the
  * article has no coordinates (e.g. "Climate change" — concept, not place).
  */
+/**
+ * Nominatim (OpenStreetMap) geocoder — resolves any named place to lat/lng.
+ * Free, no API key; requires a User-Agent and ≤1 req/s (we cache, so fine).
+ */
+const _nominatimCache = new Map()
+async function nominatimResolveCoords(query) {
+  const key = (query || '').trim().toLowerCase()
+  if (!key) return null
+  if (_nominatimCache.has(key)) return _nominatimCache.get(key)
+  try {
+    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`
+    const r = await fetch(url, { headers: { 'User-Agent': 'KairoEdu/1.0 (support@kairo.app)' } })
+    if (!r.ok) { _nominatimCache.set(key, null); return null }
+    const arr = await r.json()
+    const hit = Array.isArray(arr) ? arr[0] : null
+    if (!hit?.lat || !hit?.lon) { _nominatimCache.set(key, null); return null }
+    const out = {
+      lat:     parseFloat(hit.lat),
+      lng:     parseFloat(hit.lon),
+      title:   hit.display_name?.split(',')[0] || query,
+      pageUrl: null,
+    }
+    _nominatimCache.set(key, out)
+    return out
+  } catch {
+    _nominatimCache.set(key, null)
+    return null
+  }
+}
+
 const _wikiCoordCache = new Map()
 async function wikiResolveCoords(query) {
   const key = (query || '').trim().toLowerCase()
   if (!key) return null
   if (_wikiCoordCache.has(key)) return _wikiCoordCache.get(key)
   try {
-    // Step 1 — find the best-matching article title.
-    const title = await wikiSearchFirstTitle(query)
-    if (!title) { _wikiCoordCache.set(key, null); return null }
-
-    // Step 2 — fetch coordinates from that article.
-    // prop=coordinates gives the geographic point Wikipedia tags the article with.
-    const url = `https://en.wikipedia.org/w/api.php?action=query&format=json&prop=coordinates|info&inprop=url&titles=${encodeURIComponent(title)}&origin=*`
+    // ONE round-trip: generator=search finds the best article AND returns
+    // its coordinates in the same response. The old two-step (search,
+    // then coords) doubled the latency and kept losing the timeout race.
+    const url = `https://en.wikipedia.org/w/api.php?action=query&format=json&generator=search&gsrsearch=${encodeURIComponent(query)}&gsrlimit=1&prop=coordinates|info&inprop=url&origin=*`
     const r = await fetch(url, { headers: { 'User-Agent': 'KairoEdu/1.0' } })
     if (!r.ok) { _wikiCoordCache.set(key, null); return null }
     const d = await r.json()
@@ -747,8 +786,8 @@ async function wikiResolveCoords(query) {
     const out = {
       lat:     coord.lat,
       lng:     coord.lon,
-      title:   page?.title || title,
-      pageUrl: page?.fullurl || `https://en.wikipedia.org/wiki/${encodeURIComponent(title)}`,
+      title:   page?.title || query,
+      pageUrl: page?.fullurl || `https://en.wikipedia.org/wiki/${encodeURIComponent(page?.title || query)}`,
     }
     _wikiCoordCache.set(key, out)
     return out

@@ -828,21 +828,27 @@ function VideoPlayer({ videoId, busy, topic }: {
     <div style={{
       background: '#000', border: '1px solid #1f2532',
       borderRadius: 18, overflow: 'hidden', position: 'relative',
-      minHeight: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
+      minHeight: 0, display: 'flex', flexDirection: 'column',
     }}>
-      {/* Topic chip — "Kairo Lesson" framing, doesn't name the source */}
+      {/* Topic strip ABOVE the player — the old floating chip sat on top
+          of the video and covered the title. */}
       <div style={{
-        position: 'absolute', top: 12, left: 14, zIndex: 4,
-        padding: '6px 12px', borderRadius: 7,
-        background: 'rgba(13,13,13,0.85)', backdropFilter: 'blur(12px)',
-        border: '1px solid rgba(79, 124, 255, 0.3)',
+        flexShrink: 0,
+        padding: '8px 14px',
+        background: 'rgba(13,13,13,0.92)',
+        borderBottom: '1px solid rgba(79, 124, 255, 0.2)',
         fontSize: 10.5, color: '#A5B4FC', fontWeight: 700,
         textTransform: 'uppercase', letterSpacing: 1.5,
-        maxWidth: '70%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+        whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
         display: 'flex', alignItems: 'center', gap: 6,
       }}>
         <Sparkles size={11} /> Kairo lesson · {topic}
       </div>
+
+      <div style={{
+        flex: 1, minHeight: 0, position: 'relative',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}>
 
       {busy && (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, color: '#B1B5BA' }}>
@@ -895,6 +901,7 @@ function VideoPlayer({ videoId, busy, topic }: {
           </div>
         </>
       )}
+      </div>
     </div>
   )
 }
@@ -1011,6 +1018,23 @@ function Slideshow({ slides, busy, topic, questionType, err, compact = false }: 
               style={{
                 maxWidth: '100%', maxHeight: '100%', objectFit: 'contain',
                 borderRadius: 8,
+                // Hide the browser's broken-image icon while AI slides are
+                // still rendering server-side (Pollinations can take ~30s
+                // on a cold prompt). One retry after 8s usually catches it.
+                background: 'rgba(255,255,255,0.02)',
+              }}
+              onError={(e) => {
+                const img = e.currentTarget
+                const tries = Number(img.dataset.retries || '0')
+                if (tries < 2) {
+                  img.dataset.retries = String(tries + 1)
+                  const src = img.src
+                  img.style.opacity = '0.25'
+                  setTimeout(() => { img.src = ''; img.src = src; img.style.opacity = '1' }, 8000)
+                } else {
+                  // Give up — hide the broken frame entirely.
+                  img.style.display = 'none'
+                }
               }}
             />
             {/* Caption overlay */}
