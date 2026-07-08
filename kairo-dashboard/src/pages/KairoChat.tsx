@@ -85,7 +85,12 @@ export default function KairoChat() {
       const r = await fetch('/api/ai/solver/text', {
         method: 'POST', headers, body: JSON.stringify({ question: q }),
       })
-      if (!r.ok) throw new Error('Kairo is busy right now (' + r.status + ') — try again in a few seconds.')
+      if (!r.ok) {
+        // Prefer the server's own message ("question too long", rate-limit
+        // hints, …) over a generic busy line.
+        const j = await r.json().catch(() => null)
+        throw new Error(j?.error || 'Kairo is busy right now (' + r.status + ') — try again in a few seconds.')
+      }
       const text = await r.json()
 
       const casual = text.questionType === 'casual' ||

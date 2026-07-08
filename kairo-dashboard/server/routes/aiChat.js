@@ -806,7 +806,9 @@ async function wikiResolveCoords(query) {
 router.post('/solver/text', async (req, res) => {
   const question = (req.body?.question || '').toString().trim()
   if (!question) return res.status(400).json({ error: 'question required' })
-  if (question.length > 500) return res.status(400).json({ error: 'question too long (max 500 chars)' })
+  // Generous cap — long pasted problems are normal in chat. Guards against
+  // abuse, not against real questions.
+  if (question.length > 4000) return res.status(400).json({ error: 'Question too long (max 4000 characters) — trim it down a bit.' })
 
   try {
     const plan = await getSolverPlan(question)
@@ -938,7 +940,7 @@ async function findEducationalVideoId(query) {
 router.post('/solver', async (req, res) => {
   const question = (req.body?.question || '').toString().trim()
   if (!question) return res.status(400).json({ error: 'question required' })
-  if (question.length > 500) return res.status(400).json({ error: 'question too long (max 500 chars)' })
+  if (question.length > 4000) return res.status(400).json({ error: 'Question too long (max 4000 characters) — trim it down a bit.' })
 
   try {
     const plan = await getSolverPlan(question)
