@@ -19,11 +19,13 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Send, Loader2, Play, Image as ImageIcon, X, Sparkles } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-import { recordDoubt } from '../lib/twin'
+import { recordDoubt, recordMistake, recordFlashcard, recordConcept, getMistakes } from '../lib/twin'
+import { saveToNotebook } from '../lib/notebook'
 import { awardXP } from '../lib/game'
 import { useIsMobile } from '../hooks/useViewport'
 
 interface Slide { url: string; caption: string; source: string }
+interface DoneAction { label: string; view: string }
 interface Turn {
   id:       number
   role:     'user' | 'kairo'
@@ -34,9 +36,39 @@ interface Turn {
   videoId?: string | null
   slides?:  Slide[]
   mediaBusy?: boolean
+  // artifact the AI created for this turn (flashcards / note / concept)
+  done?:    DoneAction | null
   // UI expansion state
   showVideo?: boolean
   lightbox?:  number | null   // index into slides
+}
+
+// Execute an AI-requested artifact creation in the student's tools.
+// Returns a chip descriptor for the bubble, or null if nothing was made.
+function performAction(a: any): DoneAction | null {
+  try {
+    if (a.tool === 'flashcards' && a.cards?.length) {
+      a.cards.forEach((c: any) =>
+        recordFlashcard({ front: c.front, back: c.back, topic: a.topic || undefined, source: 'manual' }))
+      return { label: `Created ${a.cards.length} flashcards`, view: 'flashcards' }
+    }
+    if (a.tool === 'notebook' && (a.content || a.title)) {
+      saveToNotebook({
+        kind: 'note', title: a.title || a.topic || 'Kyno note',
+        content: a.content || '', tags: a.topic ? [a.topic] : [], source: 'kyno-chat',
+      })
+      return { label: 'Saved a note to your AI Notebook', view: 'notebook' }
+    }
+    if (a.tool === 'concept-map' && a.topic) {
+      recordConcept({ name: a.topic, related: a.related?.length ? a.related : undefined })
+      return { label: `Added “${a.topic}” to your Concept Map`, view: 'concept-map' }
+    }
+  } catch { /* never break the chat over an artifact */ }
+  return null
+}
+
+function openView(view: string) {
+  try { (window as any).__kairoSetActive?.(view) } catch { /* not mounted */ }
 }
 
 const C = {
@@ -82,8 +114,26 @@ export default function KairoChat() {
 
     const headers = { 'Content-Type': 'application/json' }
     try {
+      // Conversation memory + who the student is + their mistake profile ride
+      // along with every message — this is what makes Kyno a coach, not a
+      // one-shot answer machine.
+      const history = turns.slice(-8).map(t => ({
+        role: t.role === 'user' ? 'user' : 'kairo',
+        text: (t.text || '').slice(0, 500),
+      }))
+      let student: any = null
+      try {
+        const p = JSON.parse(localStorage.getItem('kairo_profile') || '{}')
+        student = { name: p.name, cls: p.cls, board: p.board }
+      } catch { /* fresh device */ }
+      let mistakes: any[] = []
+      try {
+        mistakes = getMistakes().slice(0, 10).map(m => ({ topic: m.topic, count: m.count, severity: m.severity }))
+      } catch { /* no twin data yet */ }
+
       const r = await fetch('/api/ai/solver/text', {
-        method: 'POST', headers, body: JSON.stringify({ question: q }),
+        method: 'POST', headers,
+        body: JSON.stringify({ question: q, history, student, mistakes }),
       })
       if (!r.ok) {
         // Prefer the server's own message ("question too long", rate-limit
@@ -93,8 +143,30 @@ export default function KairoChat() {
       }
       const text = await r.json()
 
-      const casual = text.questionType === 'casual' ||
+      const isQuiz = text.questionType === 'quiz'
+      const casual = isQuiz || text.questionType === 'casual' ||
         (!text.videoQuery && (!text.imageQueries || text.imageQueries.length === 0))
+
+      // The AI graded the student's previous quiz answer — feed the result
+      // into the twin so Mistake Analysis sees it.
+      if (text.quizCheck) {
+        try {
+          if (text.quizCheck.correct) awardXP('chat_answer')
+          else if (text.quizCheck.topic) recordMistake({ topic: text.quizCheck.topic, detail: 'quiz in Kyno chat' })
+        } catch { /* non-fatal */ }
+      }
+
+      // The AI created an artifact (flashcards / note / concept) — do it for
+      // real, then auto-open the tool so the student sees it.
+      let done: DoneAction | null = null
+      if (text.action) {
+        done = performAction(text.action)
+        if (done) {
+          try { window.dispatchEvent(new StorageEvent('storage', { key: 'kairo:twin:chat' })) } catch { /* older browsers */ }
+          const view = done.view
+          setTimeout(() => openView(view), 1200)
+        }
+      }
 
       const kairoTurn: Turn = {
         id: _id++, role: 'kairo',
@@ -104,13 +176,14 @@ export default function KairoChat() {
         videoId: null,
         slides: [],
         mediaBusy: !casual,
+        done,
         showVideo: false,
         lightbox: null,
       }
       setTurns(prev => [...prev, kairoTurn])
       setBusy(false)
 
-      // Memory engine + XP — study turns only.
+      // Memory engine + XP — study turns only (quiz has its own XP path).
       if (!casual) {
         try {
           recordDoubt({ question: q, answer: kairoTurn.text, topic: text.topicKeyword || undefined, source: 'chat' })
@@ -205,6 +278,22 @@ export default function KairoChat() {
                   <ReactMarkdown remarkPlugins={[remarkGfm]}>{t.text}</ReactMarkdown>
                 </div>
               ) : t.text}
+
+              {/* ── Created-artifact chip (flashcards / note / concept) ── */}
+              {t.role === 'kairo' && t.done && (
+                <button
+                  onClick={() => openView(t.done!.view)}
+                  style={{
+                    marginTop: 10, display: 'flex', alignItems: 'center', gap: 7,
+                    padding: '8px 13px', borderRadius: 10, cursor: 'pointer',
+                    background: 'rgba(74, 222, 128, 0.12)',
+                    border: '1px solid rgba(74, 222, 128, 0.4)',
+                    color: '#4ade80', fontFamily: 'inherit', fontSize: 12.5, fontWeight: 700,
+                  }}
+                >
+                  ✓ {t.done.label} — open →
+                </button>
+              )}
 
               {/* ── Media chips (kairo study turns) ─────────────────── */}
               {t.role === 'kairo' && !t.casual && (
@@ -464,10 +553,10 @@ function MediaStrip({ turn, onPatch }: { turn: Turn; onPatch: (id: number, p: Pa
 // ── First-open hero ──────────────────────────────────────────────────────
 function EmptyHero({ isMobile = false }: { isMobile?: boolean }) {
   const suggestions = [
-    'Explain photosynthesis simply',
-    'Why is the sky blue?',
-    'Help me with quadratic equations',
-    'What happened in 1857?',
+    'Quiz me on my weak topics',
+    'What should I study today?',
+    'Make flashcards on photosynthesis',
+    'Explain quadratic equations',
   ]
   return (
     <div style={{

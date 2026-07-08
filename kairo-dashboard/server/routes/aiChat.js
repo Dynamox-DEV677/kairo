@@ -392,7 +392,7 @@ CASUAL QUESTIONS: if the message is small-talk or a utility question rather than
 Your output MUST be a single valid JSON object (no markdown fences, no commentary, no leading text). Schema:
 
 {
-  "questionType":   "physics" | "chemistry" | "biology" | "math" | "history" | "geography" | "literature" | "general" | "casual",
+  "questionType":   "physics" | "chemistry" | "biology" | "math" | "history" | "geography" | "literature" | "general" | "casual" | "quiz",
   "topicKeyword":   <ONE clean 1-3 word noun phrase that names this topic — used to look up the matching Wikipedia article. Examples: "Photosynthesis", "French Revolution", "Newton's laws", "Mitosis". Must be the most likely exact Wikipedia article title. NEVER use vague phrases like "step by step" or "explained">,
   "supports3D":     boolean,
   "labRoute":       null | one of: ${Object.keys(KAIRO_LABS).map(k => `"${k}"`).join(' | ')},
@@ -417,10 +417,17 @@ Your output MUST be a single valid JSON object (no markdown fences, no commentar
                        "content": <notebook only: the full note as markdown, 150-400 words>,
                        "related": <concept-map only: 4-8 related concept names to connect to the topic>
                      }
-                     Asking ABOUT a topic is NOT an action — never set action for ordinary questions. When action is set, textExplanation should be a short confirmation of what you created (2-4 sentences) — the artifact content itself lives inside action.>
+                     Asking ABOUT a topic is NOT an action — never set action for ordinary questions. When action is set, textExplanation should be a short confirmation of what you created (2-4 sentences) — the artifact content itself lives inside action.>,
+  "quizCheck":      <null, OR — ONLY when the student's new message is an ANSWER to a quiz question you asked in the previous turn — { "correct": boolean, "topic": <short topic of that question> }>
 }
 
 CONVERSATION MEMORY: the user message may include a "Conversation so far" section and a "Student profile" line. Use them — resolve pronouns ("explain that again", "make flashcards on this") against the previous turns, keep continuity, and address the student by name occasionally when natural. Answer ONLY the student's new message; the rest is context.
+
+STUDY COACH MODE: the user message may include a "MISTAKE PROFILE" — the topics this student gets wrong, with counts and severity. You are not just an answer machine; you are their coach, and clearing that mistake list is the mission.
+- When the student asks what to study, how they're doing, or about their mistakes: use the mistake profile directly — name their worst topics, say why they matter, and give a concrete attack order.
+- When the student says "quiz me" / "test me" / "ask me questions" (or you're mid-quiz): set questionType="quiz". Ask EXACTLY ONE question per turn — prefer their weakest topics from the mistake profile. imageQueries=[], videoQuery="", formulas=[], relatedConcepts=[]. textExplanation = just the question (plus brief feedback on their last answer if there was one). Keep questions board-exam style for their class.
+- When their new message answers your previous quiz question: set quizCheck {correct, topic}. In textExplanation give honest feedback — if wrong, a 2-3 sentence explanation of the right answer — then ask the NEXT question (stay in questionType="quiz").
+- Even in normal explanations: if the topic asked about appears in their mistake profile, say so ("this is one of your weak spots — let's fix it properly") and go one level deeper on the exact confusion.
 
 CRITICAL JSON ESCAPING RULES for textExplanation:
 
@@ -495,7 +502,7 @@ async function callGroqOne(model, question, apiKey, timeout = 7000) {
           { role: 'user',   content: question },
         ],
         temperature: 0.3,
-        max_tokens:  1400,
+        max_tokens:  2000,
         response_format: { type: 'json_object' },
       }),
     })
@@ -554,7 +561,7 @@ async function callModel(model, question, apiKey, timeout = 7000) {
           { role: 'user',   content: question },
         ],
         temperature: 0.3,
-        max_tokens:  1400,
+        max_tokens:  2000,
       }),
     })
     if (!resp.ok) {
@@ -682,6 +689,29 @@ async function getSolverPlan(question) {
     videoQuery:      sanitizeOneLine(plan.videoQuery || plan.topicKeyword || ''),
     modelUsed:       model,
     geography:       null,    // fills in below when questionType==='geography'
+    // Quiz evaluation — present only when the student just answered a question.
+    quizCheck: (plan.quizCheck && typeof plan.quizCheck === 'object' && typeof plan.quizCheck.correct === 'boolean')
+      ? { correct: plan.quizCheck.correct, topic: sanitizeOneLine(String(plan.quizCheck.topic || '')).slice(0, 60) }
+      : null,
+    // Agentic action — only when the student explicitly asked to create something.
+    action: (() => {
+      const a = plan.action
+      if (!a || typeof a !== 'object' || !['flashcards', 'notebook', 'concept-map'].includes(a.tool)) return null
+      return {
+        tool:    a.tool,
+        topic:   sanitizeOneLine(String(a.topic || '')).slice(0, 80),
+        title:   sanitizeOneLine(String(a.title || '')).slice(0, 120),
+        content: typeof a.content === 'string' ? sanitizeMarkdown(a.content).slice(0, 6000) : '',
+        related: Array.isArray(a.related)
+          ? a.related.slice(0, 8).map(r => sanitizeOneLine(String(r)).slice(0, 60)).filter(Boolean)
+          : [],
+        cards: Array.isArray(a.cards)
+          ? a.cards.slice(0, 10)
+              .filter(c => c && c.front && c.back)
+              .map(c => ({ front: sanitizeOneLine(String(c.front)).slice(0, 200), back: String(c.back).slice(0, 400) }))
+          : [],
+      }
+    })(),
   }
 
   // ── Geography enrichment ────────────────────────────────────────────────
@@ -815,6 +845,36 @@ async function wikiResolveCoords(query) {
 // /api/ai/solver/text — fast path. Returns the LLM plan WITHOUT the images.
 // Designed to fit Vercel's 10s function timeout: only runs the LLM call.
 // ────────────────────────────────────────────────────────────────────────────
+// Fold optional chat context (conversation, student profile, mistake list)
+// into the question string, so getSolverPlan/caching/model calls stay
+// single-string. Distinct contexts naturally get distinct cache keys.
+function composeQuestion(question, history, student, mistakes) {
+  const parts = []
+  if (student && (student.name || student.cls)) {
+    const bits = []
+    if (student.name)  bits.push(`name: ${String(student.name).slice(0, 40)}`)
+    if (student.cls)   bits.push(`class ${String(student.cls).slice(0, 12)}`)
+    if (student.board) bits.push(String(student.board).slice(0, 24))
+    parts.push(`Student profile — ${bits.join(', ')}.`)
+  }
+  if (Array.isArray(mistakes) && mistakes.length) {
+    const rows = mistakes.slice(0, 10)
+      .filter(m => m && m.topic)
+      .map(m => `- ${String(m.topic).slice(0, 60)} (wrong ${m.count || 1}×${m.severity ? ', ' + String(m.severity).slice(0, 12) : ''})`)
+    if (rows.length) parts.push(`MISTAKE PROFILE (this student's weak topics):\n${rows.join('\n')}`)
+  }
+  if (Array.isArray(history) && history.length) {
+    const ctx = history
+      .filter(h => h && typeof h.text === 'string' && h.text.trim())
+      .slice(-8)
+      .map(h => `${h.role === 'user' ? 'Student' : 'Kyno'}: ${h.text.slice(0, 500)}`)
+      .join('\n')
+    if (ctx) parts.push(`Conversation so far:\n${ctx}`)
+  }
+  parts.push(`Student's new message: ${question}`)
+  return parts.length === 1 ? question : parts.join('\n\n')
+}
+
 router.post('/solver/text', async (req, res) => {
   const question = (req.body?.question || '').toString().trim()
   if (!question) return res.status(400).json({ error: 'question required' })
@@ -822,8 +882,12 @@ router.post('/solver/text', async (req, res) => {
   // abuse, not against real questions.
   if (question.length > 4000) return res.status(400).json({ error: 'Question too long (max 4000 characters) — trim it down a bit.' })
 
+  const history  = Array.isArray(req.body?.history)  ? req.body.history.slice(-8)   : []
+  const student  = (req.body?.student && typeof req.body.student === 'object') ? req.body.student : null
+  const mistakes = Array.isArray(req.body?.mistakes) ? req.body.mistakes.slice(0, 10) : []
+
   try {
-    const plan = await getSolverPlan(question)
+    const plan = await getSolverPlan(composeQuestion(question, history, student, mistakes))
     res.json(plan)
   } catch (e) {
     console.error('[solver/text]', e.message)
