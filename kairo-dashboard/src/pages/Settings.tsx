@@ -119,6 +119,8 @@ export default function Settings() {
     // Merge — replacing the object would drop id / tokens / school fields.
     const profile = { ...stored, name, board, cls, role }
     localStorage.setItem('kairo_profile', JSON.stringify(profile))
+    // Other mounted pages (Home greeting, sidebar) re-read on this event.
+    try { window.dispatchEvent(new CustomEvent('kairo:profile')) } catch { /* ssr */ }
     // Also push the name to the Supabase users row: App.tsx re-reads that
     // row on every refresh and would otherwise revert the name.
     if (stored.id && !stored.localMode) {

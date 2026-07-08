@@ -36,7 +36,16 @@ const PROFILE_KEY = 'kairo_student_profile'
 function loadProfile(): Profile {
   try {
     const raw = localStorage.getItem(PROFILE_KEY)
-    if (raw) return { ...defaultProfile(), ...JSON.parse(raw) }
+    if (raw) {
+      const saved = { ...defaultProfile(), ...JSON.parse(raw) }
+      // The account name (kairo_profile, edited in Settings) always wins —
+      // the copy cached in this store goes stale when the name changes.
+      try {
+        const p = JSON.parse(localStorage.getItem('kairo_profile') || '{}')
+        if (p.name) saved.name = p.name
+      } catch {}
+      return saved
+    }
   } catch {}
   return defaultProfile()
 }
@@ -132,6 +141,14 @@ export default function KairoHome({ onNavigate }: Props) {
   // Auto-load the brief once on mount
   useEffect(() => { fetchBrief() /* eslint-disable-next-line */ }, [])
 
+  // Home stays mounted while the user is in Settings — re-read the profile
+  // when Settings saves a new name so the greeting updates immediately.
+  useEffect(() => {
+    const onProfile = () => setProfile(loadProfile())
+    window.addEventListener('kairo:profile', onProfile)
+    return () => window.removeEventListener('kairo:profile', onProfile)
+  }, [])
+
   const nextExam = brief?.nextExam || (profile.examDates
     .map(e => ({ ...e, days: Math.max(0, Math.round((+new Date(e.date) - Date.now()) / 86400000)) }))
     .sort((a, b) => a.days - b.days)[0])
@@ -175,7 +192,25 @@ export default function KairoHome({ onNavigate }: Props) {
       {editing && (
         <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} style={{ ...card, padding: 18, marginBottom: 18, overflow: 'hidden' }}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))', gap: 14 }}>
-            <div><div style={lbl}>Name</div><input style={inp} value={profile.name} onChange={e => saveProfile({ ...profile, name: e.target.value })} /></div>
+            <div><div style={lbl}>Name</div><input style={inp} value={profile.name} onChange={e => {
+              saveProfile({ ...profile, name: e.target.value })
+              // Write through to the account profile so Settings / the rest
+              // of the app show the same name (loadProfile prefers it).
+              try {
+                const p = JSON.parse(localStorage.getItem('kairo_profile') || '{}')
+                localStorage.setItem('kairo_profile', JSON.stringify({ ...p, name: e.target.value }))
+              } catch {}
+            }} onBlur={async e => {
+              // Sync to the Supabase users row once, when done typing —
+              // App.tsx re-reads it on refresh and would revert otherwise.
+              try {
+                const p = JSON.parse(localStorage.getItem('kairo_profile') || '{}')
+                if (p.id && !p.localMode) {
+                  const { supabase } = await import('../lib/supabase')
+                  await supabase.from('users').update({ name: e.target.value }).eq('id', p.id)
+                }
+              } catch {}
+            }} /></div>
             <div><div style={lbl}>Primary exam</div>
               <select style={inp} value={profile.exam} onChange={e => saveProfile({ ...profile, exam: e.target.value as any })}>
                 <option value="jee">JEE</option><option value="neet">NEET</option>
