@@ -21,6 +21,7 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { recordDoubt } from '../lib/twin'
 import { awardXP } from '../lib/game'
+import { useIsMobile } from '../hooks/useViewport'
 
 interface Slide { url: string; caption: string; source: string }
 interface Turn {
@@ -59,6 +60,7 @@ export default function KairoChat() {
   const [input, setInput] = useState('')
   const [busy, setBusy] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
+  const isMobile = useIsMobile()
 
   // Auto-scroll to the newest message.
   useEffect(() => {
@@ -152,10 +154,11 @@ export default function KairoChat() {
       {/* ── Thread ─────────────────────────────────────────────────── */}
       <div ref={scrollRef} style={{
         flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch',
-        padding: '26px clamp(14px, 6vw, 90px) 20px',
-        display: 'flex', flexDirection: 'column', gap: 18,
+        // Mobile: tight gutters + room at the top for the mode-toggle pill.
+        padding: isMobile ? '50px 12px 10px' : '26px clamp(14px, 6vw, 90px) 20px',
+        display: 'flex', flexDirection: 'column', gap: isMobile ? 13 : 18,
       }}>
-        {turns.length === 0 && <EmptyHero />}
+        {turns.length === 0 && <EmptyHero isMobile={isMobile} />}
 
         {turns.map(t => (
           <motion.div
@@ -170,7 +173,7 @@ export default function KairoChat() {
             }}
           >
             {/* Avatar */}
-            {t.role === 'kairo' ? (
+            {t.role === 'kairo' && !isMobile ? (
               <div style={{
                 width: 34, height: 34, borderRadius: 10, flexShrink: 0, marginTop: 2,
                 background: 'linear-gradient(135deg, #4F7CFF, #2046C2)',
@@ -183,13 +186,13 @@ export default function KairoChat() {
 
             {/* Bubble */}
             <div style={{
-              maxWidth: 'min(680px, 86%)',
-              padding: '12px 16px',
+              maxWidth: isMobile ? '90%' : 'min(680px, 86%)',
+              padding: isMobile ? '10px 13px' : '12px 16px',
               borderRadius: t.role === 'user' ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
               ...(t.role === 'user'
                 ? { background: 'linear-gradient(135deg, rgba(79,124,255,0.30), rgba(32,70,194,0.24))', border: `1px solid rgba(102,217,255,0.28)` }
                 : { ...GLASS, border: `1px solid ${C.border}` }),
-              color: C.text, fontSize: 14.5, lineHeight: 1.65,
+              color: C.text, fontSize: isMobile ? 14 : 14.5, lineHeight: 1.6,
               overflowWrap: 'anywhere',
             }}>
               {t.role === 'kairo' ? (
@@ -209,14 +212,16 @@ export default function KairoChat() {
         {/* typing indicator */}
         {busy && (
           <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-            <div style={{
-              width: 34, height: 34, borderRadius: 10,
-              background: 'linear-gradient(135deg, #4F7CFF, #2046C2)',
-              display: 'grid', placeItems: 'center',
-            }}>
-              <img src="/kairo-mark.svg" alt="" style={{ width: 24, height: 24 }} />
-            </div>
-            <div style={{ ...GLASS, border: `1px solid ${C.border}`, borderRadius: 16, padding: '12px 18px', display: 'flex', gap: 5 }}>
+            {!isMobile && (
+              <div style={{
+                width: 34, height: 34, borderRadius: 10,
+                background: 'linear-gradient(135deg, #4F7CFF, #2046C2)',
+                display: 'grid', placeItems: 'center',
+              }}>
+                <img src="/kairo-mark.svg" alt="" style={{ width: 24, height: 24 }} />
+              </div>
+            )}
+            <div style={{ ...GLASS, border: `1px solid ${C.border}`, borderRadius: 16, padding: isMobile ? '10px 14px' : '12px 18px', display: 'flex', gap: 5 }}>
               {[0, 1, 2].map(i => (
                 <motion.span key={i}
                   animate={{ opacity: [0.25, 1, 0.25] }}
@@ -230,11 +235,16 @@ export default function KairoChat() {
       </div>
 
       {/* ── Composer ───────────────────────────────────────────────── */}
-      <div style={{ padding: '10px clamp(14px, 6vw, 90px) 18px', flexShrink: 0 }}>
+      <div style={{
+        padding: isMobile
+          ? '8px 10px calc(10px + env(safe-area-inset-bottom, 0px))'
+          : '10px clamp(14px, 6vw, 90px) 18px',
+        flexShrink: 0,
+      }}>
         <div style={{
           ...GLASS, border: `1px solid ${C.border}`,
-          borderRadius: 18, display: 'flex', alignItems: 'flex-end', gap: 8,
-          padding: '10px 10px 10px 18px',
+          borderRadius: isMobile ? 16 : 18, display: 'flex', alignItems: 'flex-end', gap: 8,
+          padding: isMobile ? '6px 6px 6px 14px' : '10px 10px 10px 18px',
           boxShadow: '0 12px 40px rgba(0,0,0,0.45)',
         }}>
           <textarea
@@ -243,24 +253,26 @@ export default function KairoChat() {
             onKeyDown={e => {
               if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() }
             }}
-            placeholder="Talk to Kairo — ask anything…"
+            placeholder={isMobile ? 'Ask anything…' : 'Talk to Kairo — ask anything…'}
             rows={1}
             style={{
               flex: 1, resize: 'none', background: 'transparent', border: 'none',
-              outline: 'none', color: C.text, fontSize: 14.5, fontFamily: 'inherit',
-              lineHeight: 1.5, maxHeight: 130, padding: '6px 0',
+              // 16px on mobile — anything smaller makes iOS zoom the page on focus.
+              outline: 'none', color: C.text, fontSize: isMobile ? 16 : 14.5, fontFamily: 'inherit',
+              lineHeight: 1.5, maxHeight: isMobile ? 100 : 130, padding: '6px 0',
             }}
             onInput={e => {
               const el = e.currentTarget
               el.style.height = 'auto'
-              el.style.height = Math.min(130, el.scrollHeight) + 'px'
+              el.style.height = Math.min(isMobile ? 100 : 130, el.scrollHeight) + 'px'
             }}
           />
           <button
             onClick={send}
             disabled={busy || !input.trim()}
             style={{
-              width: 42, height: 42, borderRadius: 13, border: 'none', cursor: 'pointer',
+              width: isMobile ? 38 : 42, height: isMobile ? 38 : 42,
+              borderRadius: 12, border: 'none', cursor: 'pointer',
               background: input.trim() && !busy
                 ? 'linear-gradient(135deg, #4F7CFF, #66D9FF)'
                 : 'rgba(255,255,255,0.06)',
@@ -272,9 +284,12 @@ export default function KairoChat() {
             {busy ? <Loader2 size={17} className="animate-spin" /> : <Send size={17} />}
           </button>
         </div>
-        <div style={{ textAlign: 'center', marginTop: 8, fontSize: 10, color: '#5B616E', letterSpacing: 1.5, textTransform: 'uppercase' }}>
-          Kairo OS · your study companion
-        </div>
+        {/* Footer tagline is desktop-only — the mobile shell already brands the page */}
+        {!isMobile && (
+          <div style={{ textAlign: 'center', marginTop: 8, fontSize: 10, color: '#5B616E', letterSpacing: 1.5, textTransform: 'uppercase' }}>
+            Kairo OS · your study companion
+          </div>
+        )}
       </div>
 
       {/* markdown styling scoped to chat bubbles */}
@@ -442,7 +457,7 @@ function MediaStrip({ turn, onPatch }: { turn: Turn; onPatch: (id: number, p: Pa
 }
 
 // ── First-open hero ──────────────────────────────────────────────────────
-function EmptyHero() {
+function EmptyHero({ isMobile = false }: { isMobile?: boolean }) {
   const suggestions = [
     'Explain photosynthesis simply',
     'Why is the sky blue?',
@@ -452,24 +467,25 @@ function EmptyHero() {
   return (
     <div style={{
       flex: 1, display: 'flex', flexDirection: 'column',
-      alignItems: 'center', justifyContent: 'center', gap: 14, minHeight: 300,
+      alignItems: 'center', justifyContent: 'center', gap: isMobile ? 11 : 14,
+      minHeight: isMobile ? 220 : 300,
     }}>
       <div style={{
-        width: 74, height: 74, borderRadius: 20,
+        width: isMobile ? 60 : 74, height: isMobile ? 60 : 74, borderRadius: isMobile ? 17 : 20,
         background: 'linear-gradient(135deg, #4F7CFF, #2046C2)',
         display: 'grid', placeItems: 'center',
         boxShadow: '0 16px 48px rgba(79,124,255,0.4)',
       }}>
-        <img src="/kairo-mark.svg" alt="" style={{ width: 54, height: 54, objectFit: 'contain' }} />
+        <img src="/kairo-mark.svg" alt="" style={{ width: isMobile ? 44 : 54, height: isMobile ? 44 : 54, objectFit: 'contain' }} />
       </div>
       <div style={{
-        fontSize: 26, fontWeight: 700, color: '#fafafa',
+        fontSize: isMobile ? 21 : 26, fontWeight: 700, color: '#fafafa',
         fontFamily: "'Space Grotesk', system-ui, sans-serif",
         textShadow: '0 0 24px rgba(79,124,255,0.4)',
       }}>
         Hey, I'm Kairo.
       </div>
-      <div style={{ fontSize: 13.5, color: '#9CA3AF', textAlign: 'center', maxWidth: 420, lineHeight: 1.6 }}>
+      <div style={{ fontSize: isMobile ? 12.5 : 13.5, color: '#9CA3AF', textAlign: 'center', maxWidth: 420, lineHeight: 1.6, padding: '0 8px' }}>
         Your study companion. Chat with me like a friend — when a topic needs
         visuals, I'll offer a video and pictures you can tap open.
       </div>

@@ -233,15 +233,17 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
                     try { localStorage.setItem('kairo:solver-ui', next) } catch {}
                   }}
                   style={{
-                    position: 'absolute', top: 10, right: 14, zIndex: 20,
-                    padding: '6px 14px', borderRadius: 999, cursor: 'pointer',
+                    position: 'absolute', top: isMobile ? 8 : 10, right: isMobile ? 10 : 14, zIndex: 20,
+                    padding: isMobile ? '5px 11px' : '6px 14px', borderRadius: 999, cursor: 'pointer',
                     background: 'rgba(13,16,25,0.85)', backdropFilter: 'blur(10px)',
                     border: '1px solid rgba(102,217,255,0.28)',
-                    color: '#66D9FF', fontSize: 11, fontWeight: 700,
+                    color: '#66D9FF', fontSize: isMobile ? 10 : 11, fontWeight: 700,
                     letterSpacing: 1, textTransform: 'uppercase', fontFamily: 'inherit',
                   }}
                 >
-                  {solverUi === 'chat' ? '◈ Visual mode' : '💬 Chat mode'}
+                  {solverUi === 'chat'
+                    ? (isMobile ? '◈ Visual' : '◈ Visual mode')
+                    : (isMobile ? '💬 Chat' : '💬 Chat mode')}
                 </button>
 
                 {solverUi === 'chat' ? (
