@@ -310,10 +310,15 @@ export function brandStrip() {
             <span style="background:${THEME.gradient.cta};-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">
               KYNO
             </span>
-            &nbsp;·&nbsp;Accelerate Your Academics
+            &nbsp;·&nbsp;By Kairo Industries
           </p>
           <p style="margin:8px 0 0;font-family:${THEME.font.family};font-size:10px;color:${THEME.text.faint};">
-            © ${new Date().getFullYear()} Kyno · Built for Indian classrooms.
+            © ${new Date().getFullYear()} Kairo Industries · Built for Indian classrooms.
+          </p>
+          <p style="margin:6px 0 0;font-family:${THEME.font.family};font-size:10px;color:${THEME.text.faint};">
+            <a href="mailto:kairoindustries.cor@gmail.com" style="color:${THEME.text.faint};text-decoration:none;">kairoindustries.cor@gmail.com</a>
+            &nbsp;·&nbsp;
+            <a href="tel:8778004043" style="color:${THEME.text.faint};text-decoration:none;">877 800 4043</a>
           </p>
         </td>
       </tr>

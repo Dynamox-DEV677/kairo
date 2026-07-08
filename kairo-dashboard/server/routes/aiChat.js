@@ -789,7 +789,7 @@ async function nominatimResolveCoords(query) {
   if (_nominatimCache.has(key)) return _nominatimCache.get(key)
   try {
     const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`
-    const r = await fetch(url, { headers: { 'User-Agent': 'KairoEdu/1.0 (support@kairo.app)' } })
+    const r = await fetch(url, { headers: { 'User-Agent': 'KairoEdu/1.0 (kairoindustries.cor@gmail.com)' } })
     if (!r.ok) { _nominatimCache.set(key, null); return null }
     const arr = await r.json()
     const hit = Array.isArray(arr) ? arr[0] : null

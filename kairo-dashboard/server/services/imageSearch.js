@@ -15,7 +15,7 @@ const WIKIPEDIA_REST  = 'https://en.wikipedia.org/api/rest_v1'
 const PEXELS_API      = 'https://api.pexels.com/v1/search'
 const UNSPLASH_API    = 'https://api.unsplash.com/search/photos'
 
-const UA = 'KairoEdu/1.0 (https://kairo-daily-edu.vercel.app; contact: support@kairo.app)'
+const UA = 'KairoEdu/1.0 (https://kairo-daily-edu.vercel.app; contact: kairoindustries.cor@gmail.com)'
 
 /**
  * Slide shape (JSDoc):

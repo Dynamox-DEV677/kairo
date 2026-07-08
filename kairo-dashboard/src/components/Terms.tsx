@@ -36,7 +36,8 @@ const C = {
 const FONT = "'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif"
 
 const EFFECTIVE_DATE = 'May 16, 2026'   // bump this whenever the text below changes
-const CONTACT_EMAIL  = 'quro.cor@gmail.com'
+const CONTACT_EMAIL  = 'kairoindustries.cor@gmail.com'
+const CONTACT_PHONE  = '877 800 4043'
 
 type Tab = 'terms' | 'privacy'
 const EV_OPEN = 'kairo:terms:open'
@@ -274,6 +275,10 @@ function TermsSheet({ tab, setTab, onClose }: {
               Questions? Email{' '}
               <a href={`mailto:${CONTACT_EMAIL}`} style={{ color: C.purpleSoft, textDecoration: 'none' }}>
                 {CONTACT_EMAIL}
+              </a>
+              {' '}· Call{' '}
+              <a href={`tel:${CONTACT_PHONE.replace(/\s/g, '')}`} style={{ color: C.purpleSoft, textDecoration: 'none' }}>
+                {CONTACT_PHONE}
               </a>
             </div>
             <button
@@ -531,9 +536,12 @@ function TermsBody() {
 
       <H>16. Contact</H>
       <P>
-        Questions, concerns, or legal notices: write to{' '}
+        Questions, concerns, or legal notices: write to Kairo Industries at{' '}
         <a href={`mailto:${CONTACT_EMAIL}`} style={{ color: C.purpleSoft, textDecoration: 'none' }}>
           {CONTACT_EMAIL}
+        </a>{' '}or call{' '}
+        <a href={`tel:${CONTACT_PHONE.replace(/\s/g, '')}`} style={{ color: C.purpleSoft, textDecoration: 'none' }}>
+          {CONTACT_PHONE}
         </a>.
       </P>
     </>
@@ -674,9 +682,12 @@ function PrivacyBody() {
       <H>13. Contact</H>
       <P>
         For privacy questions, data-access requests, or to report a
-        concern, email{' '}
+        concern, email Kairo Industries at{' '}
         <a href={`mailto:${CONTACT_EMAIL}`} style={{ color: C.purpleSoft, textDecoration: 'none' }}>
           {CONTACT_EMAIL}
+        </a>{' '}or call{' '}
+        <a href={`tel:${CONTACT_PHONE.replace(/\s/g, '')}`} style={{ color: C.purpleSoft, textDecoration: 'none' }}>
+          {CONTACT_PHONE}
         </a>.
       </P>
     </>

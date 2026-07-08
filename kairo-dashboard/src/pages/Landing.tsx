@@ -1703,9 +1703,10 @@ function Footer() {
           </SwissCell>
           <SwissCell span={3}>
             <FooterCol title="COMPANY" items={[
-              { label: 'About',         href: '/about' },
-              { label: 'Contact',       href: 'mailto:quro.cor@gmail.com' },
-              { label: 'System Status', href: '/status' },
+              { label: 'About',            href: '/about' },
+              { label: 'Contact',          href: 'mailto:kairoindustries.cor@gmail.com' },
+              { label: '📞 877 800 4043',  href: 'tel:8778004043' },
+              { label: 'System Status',    href: '/status' },
             ]} />
           </SwissCell>
           <SwissCell span={2}>

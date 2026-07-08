@@ -300,19 +300,32 @@ export default function AboutPage({ onExit }: Props) {
                   Want to help build, send feedback, or just say hi?
                   I read every email.
                 </p>
-                <a
-                  href="mailto:quro.cor@gmail.com"
-                  style={{
-                    marginTop: 38, display: 'inline-flex', alignItems: 'center', gap: 10,
-                    padding: '16px 26px', borderRadius: 12, textDecoration: 'none',
-                    background: C.white, color: C.ink,
-                    fontFamily: SANS, fontSize: 15, fontWeight: 700,
-                    boxShadow: `0 0 32px rgba(102, 217, 255, 0.03)`,
-                  }}>
-                  <Mail size={15} />
-                  quro.cor@gmail.com
-                  <ArrowRight size={15} />
-                </a>
+                <div style={{ display: 'flex', gap: 14, justifyContent: 'center', flexWrap: 'wrap' }}>
+                  <a
+                    href="mailto:kairoindustries.cor@gmail.com"
+                    style={{
+                      marginTop: 38, display: 'inline-flex', alignItems: 'center', gap: 10,
+                      padding: '16px 26px', borderRadius: 12, textDecoration: 'none',
+                      background: C.white, color: C.ink,
+                      fontFamily: SANS, fontSize: 15, fontWeight: 700,
+                      boxShadow: `0 0 32px rgba(102, 217, 255, 0.03)`,
+                    }}>
+                    <Mail size={15} />
+                    kairoindustries.cor@gmail.com
+                    <ArrowRight size={15} />
+                  </a>
+                  <a
+                    href="tel:8778004043"
+                    style={{
+                      marginTop: 38, display: 'inline-flex', alignItems: 'center', gap: 10,
+                      padding: '16px 26px', borderRadius: 12, textDecoration: 'none',
+                      background: 'transparent', color: C.text,
+                      border: `1px solid ${C.line}`,
+                      fontFamily: SANS, fontSize: 15, fontWeight: 700,
+                    }}>
+                    📞 877 800 4043
+                  </a>
+                </div>
               </SwissCell>
             </SwissRow>
           </section>
