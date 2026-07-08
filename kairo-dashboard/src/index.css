@@ -659,6 +659,22 @@ html, body, #root {
   }
   .nb-header h1 { font-size: 18px !important; }
   .nb-header p  { font-size: 12px !important; }
+
+  /* Phones: tighter gutters + never allow sideways page scroll */
+  .nb-page {
+    padding-left: 14px !important;
+    padding-right: 14px !important;
+    overflow-x: hidden !important;
+  }
+
+  /* Search + kind filter stack vertically */
+  .nb-tools { flex-direction: column !important; }
+  .nb-tools select { width: 100% !important; }
+
+  /* Split view collapses to one column; when a note is open, the note IS
+     the screen (the list hides) — closing it brings the list back. */
+  .nb-split { grid-template-columns: 1fr !important; }
+  .nb-split.has-sel .nb-list { display: none !important; }
 }
 
 @keyframes nb-fab-breath {

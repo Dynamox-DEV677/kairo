@@ -171,7 +171,7 @@ export default function Notebook() {
       }} />
 
       {/* Search + filters */}
-      <div style={{ display: 'flex', gap: 10, marginBottom: 14, flexShrink: 0 }}>
+      <div className="nb-tools" style={{ display: 'flex', gap: 10, marginBottom: 14, flexShrink: 0 }}>
         <div style={{ position: 'relative', flex: 1 }}>
           <Search size={13} color="#6B7280" style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)' }} />
           <input value={search} onChange={e => setSearch(e.target.value)}
@@ -186,9 +186,9 @@ export default function Notebook() {
       </div>
 
       {/* Body — split view */}
-      <div style={{ display: 'grid', gridTemplateColumns: selected ? '1fr 1.3fr' : '1fr', gap: 12, flex: 1, minHeight: 0 }}>
+      <div className={`nb-split${selected ? ' has-sel' : ''}`} style={{ display: 'grid', gridTemplateColumns: selected ? '1fr 1.3fr' : '1fr', gap: 12, flex: 1, minHeight: 0 }}>
         {/* List */}
-        <div style={{ overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 6 }}>
+        <div className="nb-list" style={{ overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 6 }}>
           {err && <div style={{ padding: '10px 14px', background: 'rgba(102, 217, 255, 0.08)', border: '1px solid rgba(102, 217, 255, 0.25)', borderRadius: 8, fontSize: 12, color: '#66D9FF' }}>{err}</div>}
           {loading && notes.length === 0 && <div style={{ textAlign: 'center', padding: '40px 0', color: '#6B7280' }}>Loading…</div>}
           {!loading && filtered.length === 0 && (
@@ -494,7 +494,12 @@ function chipBtn(busy: boolean): React.CSSProperties {
     background: busy ? 'rgba(102, 217, 255, 0.22)' : 'rgba(79, 124, 255, 0.08)',
     border: `1px solid ${busy ? 'rgba(102, 217, 255, 0.55)' : 'rgba(102, 217, 255, 0.32)'}`,
     fontSize: 11.5, color: '#e4e4e7', fontWeight: 500,
+    // Ellipsize instead of growing — a long formula chip must never be able
+    // to stretch the page wider than a phone screen.
     whiteSpace: 'nowrap',
+    maxWidth: '100%',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
     fontFamily: 'inherit',
     cursor: busy ? 'wait' : 'pointer',
     transition: 'all .15s ease',
