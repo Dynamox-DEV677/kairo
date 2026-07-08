@@ -1,5 +1,5 @@
 /**
- * Kairo — Landing.
+ * Kora — Landing.
  *
  * Hybrid design system (no random mixing):
  *
@@ -110,6 +110,7 @@ export default function Landing({ onGetStarted }: LandingProps) {
       <LabsShowcase />
       <TwinEssay />
       <DesktopApp />
+      <AboutFounder />
       <FinalCTA onGetStarted={onGetStarted} />
       <Footer />
     </div>
@@ -125,7 +126,7 @@ export default function Landing({ onGetStarted }: LandingProps) {
 function GlobalScrollLayer() {
   const mobile = useIsMobileViewport()
   const { scrollYProgress } = useScroll()
-  // KAIRO ghost drifts left as you scroll, ACADEMICS drifts right.
+  // KORA ghost drifts left as you scroll, ACADEMICS drifts right.
   const kx = useTransform(scrollYProgress, [0, 1], pxRange(mobile, ['8%',  '-22%']))
   const ax = useTransform(scrollYProgress, [0, 1], pxRange(mobile, ['-12%', '18%']))
   // Each band fades in and out at different scroll depths.
@@ -151,7 +152,7 @@ function GlobalScrollLayer() {
         fontWeight: 900, letterSpacing: '-0.09em', color: C.purpleInk,
         whiteSpace: 'nowrap',
       }}>
-        KAIRO
+        KORA
       </motion.div>
       <motion.div style={{
         position: 'absolute', bottom: '8%', left: '50%',
@@ -217,10 +218,10 @@ function Masthead({ onGetStarted }: { onGetStarted: () => void }) {
             <KairoMark size={28} />
             <div style={{ display: 'flex', flexDirection: 'column' }}>
               <span style={{ fontFamily: DISPLAY, fontSize: 14, fontWeight: 800, letterSpacing: -0.3 }}>
-                KAIRO
+                KORA
               </span>
               <span style={{ fontFamily: MONO, fontSize: 9, color: C.textFaint, letterSpacing: 2 }}>
-                EDU·OS
+                KAIRO INDUSTRIES
               </span>
             </div>
           </div>
@@ -306,19 +307,17 @@ function Hero({ onGetStarted }: { onGetStarted: () => void }) {
                 fontFamily: MONO, fontSize: 12, color: C.purple,
                 letterSpacing: 3, textTransform: 'uppercase', marginBottom: 32,
               }}>
-                — A future operating system for learning
+                — The AI Education System Built for the Future
               </div>
 
               <motion.h1 className="kr-display" style={{
                 fontFamily: DISPLAY, margin: 0,
-                fontSize: 'clamp(56px, 10.5vw, 168px)',
+                fontSize: 'clamp(72px, 13vw, 200px)',
                 lineHeight: 0.92, letterSpacing: '-0.045em', fontWeight: 800,
                 color: C.text,
                 x: line1X,
               }}>
-                KAIRO ISN'T A
-                <br />
-                LEARNING APP.
+                KORA
               </motion.h1>
 
               {/* Brutal divider */}
@@ -331,16 +330,16 @@ function Hero({ onGetStarted }: { onGetStarted: () => void }) {
 
               <motion.h2 className="kr-display" style={{
                 fontFamily: DISPLAY, margin: 0,
-                fontSize: 'clamp(56px, 10.5vw, 168px)',
-                lineHeight: 0.92, letterSpacing: '-0.045em', fontWeight: 800,
+                fontSize: 'clamp(40px, 6.5vw, 104px)',
+                lineHeight: 0.96, letterSpacing: '-0.04em', fontWeight: 800,
                 x: line2X,
               }}>
-                <span style={{ color: C.text }}>IT </span>
+                <span style={{ color: C.text }}>LEARN SMARTER. THINK DEEPER. </span>
                 <span style={{
                   background: `linear-gradient(180deg, ${C.purpleLite} 0%, ${C.purple} 50%, ${C.purpleHi} 100%)`,
                   WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
                   backgroundClip: 'text',
-                }}>LEARNS YOU.</span>
+                }}>CREATE FASTER.</span>
               </motion.h2>
             </SwissCell>
 
@@ -358,19 +357,20 @@ function Hero({ onGetStarted }: { onGetStarted: () => void }) {
                 fontFamily: SANS, fontSize: 19, lineHeight: 1.55, color: C.textDim,
                 margin: 0, maxWidth: 560,
               }}>
-                An AI that <em style={{ color: C.text, fontStyle: 'normal', borderBottom: `1px solid ${C.purple}` }}>remembers your mind</em> —
+                An AI that <em style={{ color: C.text, fontStyle: 'normal', borderBottom: `1px solid ${C.purple}` }}>understands every learner</em> —
                 what you've forgotten, what you keep missing, the moment you're about to need it next.
-                Built for Class 9–12 in India. CBSE · ICSE · State.
+                Built by <span style={{ color: C.text, fontWeight: 700 }}>Darshan</span>, Founder &amp; CEO of{' '}
+                <span style={{ color: C.text, fontWeight: 700 }}>Kairo Industries</span>.
               </p>
 
               <div style={{ display: 'flex', gap: 18, marginTop: 32, flexWrap: 'wrap' }}>
                 <button onClick={onGetStarted} style={bigCta}>
-                  Begin reading
+                  Get Started
                   <ArrowRight size={16} />
                 </button>
                 <button onClick={() => scrollToId('manifesto')} style={ghostCta}>
                   <ArrowDown size={14} />
-                  Skip the cover · open Issue 01
+                  Explore Kora
                 </button>
               </div>
             </SwissCell>
@@ -509,7 +509,7 @@ function Manifesto() {
               </motion.span>
               <br />
               <motion.span style={{ x: line2X, color: C.purpleSoft, display: 'inline-block' }}>
-                Kairo notices that you aren't.
+                Kora notices that you aren't.
               </motion.span>
             </h3>
 
@@ -523,7 +523,7 @@ function Manifesto() {
               <div>
                 <DropCap letter="W" />hen a board paper lands on your desk in March, the questions don't care what you forgot in November. The textbook is the same for forty million students. The teacher will tell you to revise. The coaching centre will sell you a planner. None of them know which formula left your head two Wednesdays ago.
                 <p style={{ margin: '16px 0' }}>
-                  Kairo is built on a different assumption — that the part of school that <em style={{ color: C.text }}>matters</em> isn't the content. It's the conversation between content and you. Between a chapter and your particular Wednesday.
+                  Kora is built on a different assumption — that the part of school that <em style={{ color: C.text }}>matters</em> isn't the content. It's the conversation between content and you. Between a chapter and your particular Wednesday.
                 </p>
               </div>
               <div>
@@ -531,14 +531,14 @@ function Manifesto() {
                   So we built a memory engine. Not for the textbook, but for <em style={{ color: C.text }}>you</em>. It watches what you ask, where you stumble, what you replay at 1 a.m. It remembers the formula you Googled, the question you flagged for review, the diagram you stared at for forty seconds.
                 </p>
                 <p style={{ margin: 0 }}>
-                  Then it tutors you back. With explanations only you needed. With flashcards that come back at the moment you're about to forget. With a study plan that reshapes itself when life gets in the way. This is the Twin. This is Kairo.
+                  Then it tutors you back. With explanations only you needed. With flashcards that come back at the moment you're about to forget. With a study plan that reshapes itself when life gets in the way. This is the Twin. This is Kora.
                 </p>
               </div>
             </motion.div>
 
             <motion.div style={{ x: quoteX }}>
               <PullQuote
-                text={`“Kairo doesn’t teach the textbook. It teaches the person reading it.”`}
+                text={`“Kora doesn’t teach the textbook. It teaches the person reading it.”`}
                 attribution={`— Editor’s note`}
               />
             </motion.div>
@@ -572,7 +572,7 @@ function BrutalDivider({ lines, kicker, tail }: {
         `linear-gradient(180deg, ${C.paper} 0%, ${C.ink} 50%, ${C.paper} 100%)`,
       position: 'relative', overflow: 'hidden', zIndex: 2,
     }}>
-      {/* Big watermark KAIRO */}
+      {/* Big watermark KORA */}
       <div aria-hidden style={{
         position: 'absolute', top: '50%', left: '50%',
         transform: 'translate(-50%, -50%)',
@@ -665,7 +665,7 @@ function BentoSection({ onGetStarted }: { onGetStarted: () => void }) {
               fontFamily: SANS, fontSize: 16.5, lineHeight: 1.65, color: C.textDim,
               maxWidth: 680, marginTop: 22,
             }}>
-              Kairo isn't a feature list. Each module is a sense organ for the Twin —
+              Kora isn't a feature list. Each module is a sense organ for the Twin —
               hearing your doubts, seeing your notebook, remembering your weak spots,
               breathing the syllabus back to you when you need it.
             </p>
@@ -677,7 +677,7 @@ function BentoSection({ onGetStarted }: { onGetStarted: () => void }) {
           <motion.div style={{ gridColumn: '1 / span 8', gridRow: 'span 2', x: driftL }}>
             <BentoCard span="col 1 / span 8" rowSpan={2} hero
               kicker="01 · Solver" title="Any doubt. Eight seconds."
-              body="Type any question. Kairo writes a step-by-step explanation, finds 4–6 relevant images, and pulls one matching video — all under eight seconds."
+              body="Type any question. Kora writes a step-by-step explanation, finds 4–6 relevant images, and pulls one matching video — all under eight seconds."
               icon={Sparkles}
               tag="LIVE · 24/7"
               embedded
@@ -686,7 +686,7 @@ function BentoSection({ onGetStarted }: { onGetStarted: () => void }) {
           <motion.div style={{ gridColumn: '9 / span 4', x: driftR }}>
             <BentoCard span="col 9 / span 4"
               kicker="02 · OS"
-              title="Kairo OS"
+              title="Kora"
               body="The memory engine. Tracks what you've studied, what you've forgotten, and what to do next."
               icon={Atom}
               embedded
@@ -696,7 +696,7 @@ function BentoSection({ onGetStarted }: { onGetStarted: () => void }) {
             <BentoCard span="col 9 / span 4"
               kicker="03 · Voice"
               title="Voice tutor"
-              body="Hold to speak. Kairo replies in voice and on-screen text. Hands-free, exam-night ready."
+              body="Hold to speak. Kora replies in voice and on-screen text. Hands-free, exam-night ready."
               icon={Mic}
               embedded
             />
@@ -757,7 +757,7 @@ function BentoSection({ onGetStarted }: { onGetStarted: () => void }) {
             <BentoCard span="col 8 / span 5"
               kicker="09 · Camera Study"
               title="Point at a textbook."
-              body="Snap a page. Kairo explains the question on it, step by step, with diagrams pulled in."
+              body="Snap a page. Kora explains the question on it, step by step, with diagrams pulled in."
               icon={Camera}
               embedded
             />
@@ -769,7 +769,7 @@ function BentoSection({ onGetStarted }: { onGetStarted: () => void }) {
             + 22 MORE TOOLS LIVE IN PRODUCTION
           </span>
           <button onClick={onGetStarted} style={bigCta}>
-            See them inside Kairo <ArrowRight size={16} />
+            See them inside Kora <ArrowRight size={16} />
           </button>
         </div>
       </Container>
@@ -949,7 +949,7 @@ function ConstructivistInterstitial() {
               }}>
                 The textbook is a brick.
                 <br />
-                <span style={{ color: C.purpleSoft }}>Kairo is a current.</span>
+                <span style={{ color: C.purpleSoft }}>Kora is a current.</span>
               </h3>
             </SwissCell>
             <SwissCell span={5}>
@@ -1011,7 +1011,7 @@ function LabsShowcase() {
       <Container>
         <SwissRow>
           <SwissCell span={3}>
-            <Eyebrow num="03" label="Kairo Labs" />
+            <Eyebrow num="03" label="Kora Labs" />
           </SwissCell>
           <SwissCell span={9}>
             <h3 className="kr-headline" style={{
@@ -1034,7 +1034,7 @@ function LabsShowcase() {
               maxWidth: 700, marginTop: 26,
             }}>
               <DropCap letter="A" /> diagram you can rotate is a different diagram.
-              Kairo Labs are full 3D simulations — drag, pinch, zoom, slide the
+              Kora Labs are full 3D simulations — drag, pinch, zoom, slide the
               variables. Every chapter in NCERT physics, chem, and biology gets
               its own interactive scene.
             </p>
@@ -1196,10 +1196,10 @@ function TwinEssay() {
               y: bodyY,
             }} className="kr-two-col">
               <div>
-                <DropCap letter="T" />he Twin lives on your device. Most of what Kairo
+                <DropCap letter="T" />he Twin lives on your device. Most of what Kora
                 remembers about you — every flashcard, every formula, every focus
                 session — sits in your browser's local storage, not on a server.
-                When you change devices, Kairo encrypts the whole Twin and ships it
+                When you change devices, Kora encrypts the whole Twin and ships it
                 over for a brief moment, then wipes the cloud copy.
                 <p style={{ margin: '16px 0' }}>
                   The Twin grows as you study. It learns the shape of your
@@ -1218,7 +1218,7 @@ function TwinEssay() {
                   and longer the moment you stumble.
                 </p>
                 <p style={{ margin: '16px 0 0' }}>
-                  This is the part of Kairo that, the longer you stay, the more
+                  This is the part of Kora that, the longer you stay, the more
                   it becomes <em style={{ color: C.text }}>only yours</em>.
                 </p>
               </div>
@@ -1281,7 +1281,7 @@ function DesktopApp() {
               lineHeight: 0.98, letterSpacing: '-0.03em', fontWeight: 800,
               margin: 0, color: C.text,
             }}>
-              <motion.span style={{ x: lx1, display: 'inline-block' }}>Kairo,</motion.span><br />
+              <motion.span style={{ x: lx1, display: 'inline-block' }}>Kora,</motion.span><br />
               <motion.span style={{
                 x: lx2,
                 display: 'inline-block',
@@ -1521,13 +1521,13 @@ function FinalCTA({ onGetStarted }: { onGetStarted: () => void }) {
             fontFamily: SERIF, fontSize: 19, color: C.textDim,
             maxWidth: 560, margin: '14px auto 0', lineHeight: 1.55,
           }}>
-            Sign up. Take five minutes. Kairo will read your first doubt,
+            Sign up. Take five minutes. Kora will read your first doubt,
             build your Twin, and have a personalised plan ready by the time
             you close the tab.
           </p>
 
           <button onClick={onGetStarted} style={{ ...bigCta, marginTop: 44, fontSize: 16 }}>
-            Open Kairo  <ArrowRight size={17} />
+            Open Kora  <ArrowRight size={17} />
           </button>
         </div>
       </Container>
@@ -1538,6 +1538,131 @@ function FinalCTA({ onGetStarted }: { onGetStarted: () => void }) {
 // ════════════════════════════════════════════════════════════════════════════
 // FOOTER — Swiss minimal
 // ════════════════════════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════════════════
+// ABOUT + FOUNDER — About Kora essay block and the premium founder card
+// ════════════════════════════════════════════════════════════════════════════
+function AboutFounder() {
+  const mobile = useIsMobileViewport()
+  return (
+    <section id="about" style={{
+      padding: '120px 0 130px', position: 'relative', zIndex: 2,
+      borderTop: `1px solid ${C.line}`,
+    }}>
+      <Container>
+        {/* — About Kora — */}
+        <SwissRow>
+          <SwissCell span={3}>
+            <Eyebrow num="07" label="About Kora" />
+          </SwissCell>
+          <SwissCell span={9}>
+            <h3 className="kr-headline" style={{
+              fontFamily: DISPLAY, fontSize: 'clamp(30px, 4vw, 56px)',
+              lineHeight: 1.04, letterSpacing: '-0.02em', fontWeight: 700,
+              margin: '0 0 32px', color: C.text, maxWidth: 820,
+            }}>
+              The world's smartest{' '}
+              <span style={{ color: C.purpleSoft }}>learning companion.</span>
+            </h3>
+            <p style={{
+              fontFamily: SERIF, fontSize: 17.5, lineHeight: 1.75, color: C.textDim,
+              margin: 0, maxWidth: 760,
+            }}>
+              Kora is an AI-powered education platform designed to transform how students
+              learn. Instead of simply answering questions, Kora understands every learner,
+              creates personalized learning paths, explains concepts visually, adapts to
+              individual strengths, and helps students achieve their full potential.
+            </p>
+            <p style={{
+              fontFamily: SERIF, fontSize: 17.5, lineHeight: 1.75, color: C.textDim,
+              margin: '18px 0 0', maxWidth: 760,
+            }}>
+              Built with cutting-edge artificial intelligence by{' '}
+              <em style={{ color: C.text, fontStyle: 'normal', borderBottom: `1px solid ${C.purple}` }}>
+                Kairo Industries
+              </em>, Kora aims to become the world's smartest learning companion.
+            </p>
+          </SwissCell>
+        </SwissRow>
+
+        {/* — Meet the Founder — premium glass card — */}
+        <SwissRow>
+          <SwissCell span={3}>
+            <div style={{ marginTop: mobile ? 56 : 96 }}>
+              <Eyebrow num="08" label="Meet the Founder" />
+            </div>
+          </SwissCell>
+          <SwissCell span={9}>
+            <motion.div
+              initial={{ opacity: 0, y: 28 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-80px' }}
+              transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+              style={{
+                marginTop: mobile ? 24 : 96,
+                borderRadius: 28,
+                border: `1px solid ${C.lineHi}`,
+                background: `linear-gradient(150deg, rgba(255,255,255,0.055) 0%, rgba(255,255,255,0.015) 55%, ${C.purpleInk}44 100%)`,
+                backdropFilter: 'blur(18px) saturate(150%)',
+                WebkitBackdropFilter: 'blur(18px) saturate(150%)',
+                padding: mobile ? '32px 24px' : '48px 56px',
+                display: 'flex',
+                flexDirection: mobile ? 'column' : 'row',
+                gap: mobile ? 28 : 56,
+                alignItems: mobile ? 'flex-start' : 'center',
+                boxShadow: `0 30px 90px rgba(0,0,0,0.45), 0 0 60px ${C.purpleHi}18`,
+                position: 'relative', overflow: 'hidden',
+              }}
+            >
+              {/* soft corner glow */}
+              <div aria-hidden style={{
+                position: 'absolute', top: -120, right: -120, width: 320, height: 320,
+                borderRadius: '50%', pointerEvents: 'none',
+                background: `radial-gradient(circle, ${C.purpleHi}33 0%, transparent 65%)`,
+              }} />
+
+              {/* Monogram avatar */}
+              <div style={{
+                width: mobile ? 84 : 116, height: mobile ? 84 : 116, flexShrink: 0,
+                borderRadius: '28%',
+                background: `linear-gradient(140deg, ${C.purpleSoft} 0%, ${C.purple} 45%, ${C.purpleDeep} 100%)`,
+                display: 'grid', placeItems: 'center',
+                fontFamily: DISPLAY, fontSize: mobile ? 38 : 52, fontWeight: 900, color: '#fff',
+                boxShadow: `0 18px 50px ${C.purpleHi}55, inset 0 0 30px rgba(0,0,0,0.25)`,
+                letterSpacing: '-0.02em',
+              }}>
+                D
+              </div>
+
+              <div style={{ minWidth: 0 }}>
+                <div style={{
+                  fontFamily: MONO, fontSize: 10.5, color: C.purple,
+                  letterSpacing: 3, textTransform: 'uppercase', marginBottom: 10,
+                }}>
+                  Founder & CEO · Kairo Industries
+                </div>
+                <div style={{
+                  fontFamily: DISPLAY, fontSize: mobile ? 32 : 44, fontWeight: 800,
+                  letterSpacing: '-0.03em', color: C.text, lineHeight: 1,
+                }}>
+                  Darshan
+                </div>
+                <p style={{
+                  fontFamily: SERIF, fontSize: mobile ? 15.5 : 18, lineHeight: 1.7,
+                  color: C.textDim, margin: '20px 0 0', maxWidth: 560, fontStyle: 'italic',
+                }}>
+                  “I believe education should be personal, intelligent, and accessible to
+                  everyone. Kora is built to become the world's most advanced AI learning
+                  platform.”
+                </p>
+              </div>
+            </motion.div>
+          </SwissCell>
+        </SwissRow>
+      </Container>
+    </section>
+  )
+}
+
 function Footer() {
   return (
     <footer style={{
@@ -1551,10 +1676,10 @@ function Footer() {
               <KairoMark size={36} />
               <div>
                 <div style={{ fontFamily: DISPLAY, fontSize: 18, fontWeight: 800, letterSpacing: -0.3 }}>
-                  KAIRO
+                  KORA
                 </div>
                 <div style={{ fontFamily: MONO, fontSize: 10, color: C.textFaint, letterSpacing: 1.8, marginTop: 2 }}>
-                  ACCELERATE · YOUR · ACADEMICS
+                  A · KAIRO · INDUSTRIES · PRODUCT
                 </div>
               </div>
             </div>
@@ -1562,8 +1687,8 @@ function Footer() {
               fontFamily: SANS, color: C.textFaint, fontSize: 13, lineHeight: 1.6, marginTop: 22,
               maxWidth: 320,
             }}>
-              Built for Class 9–12 students in India.
-              CBSE · ICSE · State boards.
+              The AI education system built for the future.
+              Built with ❤️ by Darshan.
             </p>
           </SwissCell>
 
@@ -1597,10 +1722,10 @@ function Footer() {
           gap: 18, flexWrap: 'wrap',
         }}>
           <span style={{ fontFamily: MONO, fontSize: 10, color: C.textVery, letterSpacing: 2 }}>
-            © {new Date().getFullYear()}  ·  KAIRO  ·  ISSUE №01  ·  MAY 2026
+            © {new Date().getFullYear()}  ·  KAIRO INDUSTRIES  ·  ALL RIGHTS RESERVED
           </span>
           <span style={{ fontFamily: MONO, fontSize: 10, color: C.textVery, letterSpacing: 2 }}>
-            CHENNAI · INDIA  /  v.2026.05
+            BUILT WITH ❤️ BY DARSHAN  ·  CHENNAI · INDIA
           </span>
         </div>
       </Container>
@@ -1762,7 +1887,7 @@ function PullQuote({ text, attribution }: { text: string; attribution: string })
   )
 }
 
-// Logo mark — the real Kairo brand image inside a rounded purple badge.
+// Logo mark — the real Kora brand image inside a rounded purple badge.
 function KairoMark({ size = 28, intense = false, centered = false }: {
   size?: number
   intense?: boolean
@@ -1785,7 +1910,7 @@ function KairoMark({ size = 28, intense = false, centered = false }: {
     }}>
       <img
         src="/kairo_logo.png"
-        alt="Kairo"
+        alt="Kora"
         style={{
           width: '78%', height: '78%', objectFit: 'contain',
           filter: intense ? 'drop-shadow(0 1px 3px rgba(0,0,0,0.35))' : 'none',

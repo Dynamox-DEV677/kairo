@@ -29,12 +29,12 @@ import WritingTools from './WritingTools'
 import ConceptTools from './ConceptTools'
 import FormulaSheet from './FormulaSheet'
 import AdaptiveQuiz from './AdaptiveQuiz'
-// Analytics + Gamification (My Progress) removed per spec — folded into Kairo OS
+// Analytics + Gamification (My Progress) removed per spec — folded into Kora
 import Pomodoro from './Pomodoro'
 import Announcement from './Announcement'
 import SchoolHub from './SchoolHub'
 import ParentDashboard from './ParentDashboard'
-// MemoryBrain removed per spec — folded into Kairo OS
+// MemoryBrain removed per spec — folded into Kora
 import FocusMode from './FocusMode'
 import CameraStudy from './CameraStudy'
 import MistakeAnalysis from './MistakeAnalysis'
@@ -42,13 +42,13 @@ import RevisionSimulator from './RevisionSimulator'
 import Notebook from './Notebook'
 // AdaptivePath removed — deprecated mobile route
 import ConceptMap from './ConceptMap'
-// VoiceTutor removed per spec — folded into Kairo Solver
+// VoiceTutor removed per spec — folded into Kora Solver
 import BattleMode from './BattleMode'
 import KnowledgeGraph from './KnowledgeGraph'
 import TeacherAssistant from './TeacherAssistant'
 import ExplainMistake from './ExplainMistake'
 import PerformancePredictor from './PerformancePredictor'
-// PanicMode removed per spec — exam scheduling now lives in Kairo Solver
+// PanicMode removed per spec — exam scheduling now lives in Kora Solver
 import KairoLabs from './KairoLabs'
 import KairoOS from './KairoOS'
 import { DEFAULT_MODEL } from '../lib/openrouter'
@@ -58,7 +58,7 @@ type Profile = AuthProfile
 
 const PAGE_TITLES: Record<string, string> = {
   home:             'Home',
-  doubt:            "Kairo's Solver",
+  doubt:            "Kora's Solver",
   ops:              'Ops Dashboard',
   flashcards:       'Flashcards & SRS',
   'study-plan':     'Study Plan',
@@ -77,11 +77,11 @@ const PAGE_TITLES: Record<string, string> = {
   concept:          'Concept Tools',
   formula:          'Formula Sheet',
   quiz:             'Adaptive Quiz',
-  // analytics + gamification removed — folded into Kairo OS
+  // analytics + gamification removed — folded into Kora
   pomodoro:         'Pomodoro Timer',
   announcement:     'Announcements',
   school:           'School Hub',
-  // memory removed — folded into Kairo OS
+  // memory removed — folded into Kora
   focus:            'Focus Mode',
   camera:           'Camera Study',
   mistakes:         'Mistake Analysis',
@@ -89,15 +89,15 @@ const PAGE_TITLES: Record<string, string> = {
   notebook:         'AI Notebook',
   adaptive:         'Adaptive Path',
   'concept-map':    'Concept Map',
-  // voice removed — folded into Kairo Solver
+  // voice removed — folded into Kora Solver
   battle:           'Battle Mode',
   knowledge:        'Knowledge Graph',
   'teacher-ai':     'AI Teacher Assistant',
   'explain-mistake': 'Explain My Mistake',
   'perf-predictor': 'Performance Predictor',
-  // panic removed — exam scheduling folded into Kairo Solver
-  labs:             'Kairo Labs',
-  'kairo-os':       'Kairo OS',
+  // panic removed — exam scheduling folded into Kora Solver
+  labs:             'Kora Labs',
+  'kairo-os':       'Kora',
   settings:         'Settings',
 }
 
@@ -107,13 +107,13 @@ interface DashboardProps {
 }
 
 export default function Dashboard({ profile, onLogout }: DashboardProps) {
-  // Admins land on School Hub (their control center); everyone else on Kairo's Solver
+  // Admins land on School Hub (their control center); everyone else on Kora's Solver
   const [active, setActive]           = useState(profile?.role === 'admin' ? 'school' : 'home')
   // Solver surface: companion chat (default) vs the classic visual Solver.
   const [solverUi, setSolverUi] = useState<'chat' | 'classic'>(() => {
     try { return (localStorage.getItem('kairo:solver-ui') as 'chat' | 'classic') || 'chat' } catch { return 'chat' }
   })
-  // Light mode is disabled — Kairo is dark-only. Keeping the state shape
+  // Light mode is disabled — Kora is dark-only. Keeping the state shape
   // so the rest of the file's `isDark ? darkColor : lightColor` ternaries
   // still resolve correctly; we just freeze it to true and never flip it.
   const [isDark]                       = useState(true)
@@ -121,7 +121,7 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
   const [lastQuestion, setLastQuestion] = useState('')
   const [hasContent, setHasContent]   = useState(false)
   const [selectedModel, setSelectedModel] = useState(DEFAULT_MODEL)
-  // Locked while a Kairo's Solver answer is on screen — context belongs to
+  // Locked while a Kora's Solver answer is on screen — context belongs to
   // the model that produced it. Cleared on "new chat" (next ask() call).
   const [solverActive, setSolverActive] = useState(false)
 
@@ -221,7 +221,7 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
             {/* Home — the AI Student OS command center */}
             <div style={pageStyle('home')}><KairoHome onNavigate={setActive} /></div>
 
-            {/* Kairo's Solver — companion CHAT by default; classic visual
+            {/* Kora's Solver — companion CHAT by default; classic visual
                 Solver one toggle away. Preference persists per device. */}
             <div style={pageStyle('doubt')}>
               <div style={{ flex: 1, minHeight: 0, position: 'relative', display: 'flex', flexDirection: 'column' }}>
@@ -326,7 +326,7 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
 
             {/* NOTE: 5 pages removed per spec — Analytics, Gamification (My
                 Progress), MemoryBrain (AI Memory), VoiceTutor, PanicMode.
-                Their functionality now lives inside Kairo OS / Kairo Solver. */}
+                Their functionality now lives inside Kora / Kora Solver. */}
 
             {/* Pomodoro */}
             <div style={pageStyle('pomodoro')}><Pomodoro /></div>
@@ -373,15 +373,15 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
             {/* Performance Predictor */}
             <div style={pageStyle('perf-predictor')}><PerformancePredictor /></div>
 
-            {/* Kairo Labs */}
+            {/* Kora Labs */}
             <div style={pageStyle('labs')}><KairoLabs /></div>
 
-            {/* Kairo OS — AI Academic Twin */}
+            {/* Kora — AI Academic Twin */}
             <div style={pageStyle('kairo-os')}><KairoOS /></div>
 
           </div>
 
-          {/* Insight panel — Kairo's Solver has its own slideshow column,
+          {/* Insight panel — Kora's Solver has its own slideshow column,
               so suppress the side panel on the doubt route. */}
           {false && active === 'doubt' && !isMobile && (
             <InsightPanel hasContent={hasContent} lastQuestion={lastQuestion} />

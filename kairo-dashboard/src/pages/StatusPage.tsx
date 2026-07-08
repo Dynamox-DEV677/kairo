@@ -1,5 +1,5 @@
 /**
- * /status — Kairo public status page.
+ * /status — Kora public status page.
  *
  * One page, no login. Polls /api/ops/status every 30 seconds. Shows the
  * absolute basics: are we up, how many users, how many schools, what's
@@ -79,7 +79,7 @@ export default function StatusPage({ onExit }: Props) {
       setReqAt(Date.now() - t0)
       setErr('')
     } catch (e: any) {
-      setErr(e?.message || 'Could not reach Kairo right now.')
+      setErr(e?.message || 'Could not reach Kora right now.')
       setSnap(null)
     } finally {
       setLoading(false)
@@ -149,9 +149,9 @@ export default function StatusPage({ onExit }: Props) {
   }[overall]
 
   const overallBlurb = {
-    ok:       'Kairo is up and running. Latest stats below.',
+    ok:       'Kora is up and running. Latest stats below.',
     degraded: 'Things still work, but one or more services are running slow. We\'re watching.',
-    down:     'Part of Kairo is offline. We\'re working on it — try again in a minute.',
+    down:     'Part of Kora is offline. We\'re working on it — try again in a minute.',
   }[overall]
 
   return (
@@ -167,12 +167,12 @@ export default function StatusPage({ onExit }: Props) {
 
         {/* Brand + back */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 28 }}>
-          <img src="/kairo_logo.png" alt="Kairo"
+          <img src="/kairo_logo.png" alt="Kora"
             style={{ width: 38, height: 38, borderRadius: 10, objectFit: 'contain',
                      filter: 'drop-shadow(0 0 18px rgba(79, 124, 255, 0.03))' }} />
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 14, fontWeight: 800, letterSpacing: -0.2, color: C.text }}>
-              Kairo Status
+              Kora Status
             </div>
             <div style={{ fontSize: 11, color: C.textFaint, marginTop: 2 }}>
               Live system health · refreshes every 30 s
@@ -180,7 +180,7 @@ export default function StatusPage({ onExit }: Props) {
           </div>
           {onExit && (
             <button onClick={onExit} style={navBtn}>
-              ← Back to Kairo
+              ← Back to Kora
             </button>
           )}
         </div>

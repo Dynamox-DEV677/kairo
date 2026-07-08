@@ -1,5 +1,5 @@
 /**
- * ResetPasscode — the full mobile-first Kairo OS passcode reset flow.
+ * ResetPasscode — the full mobile-first Kora passcode reset flow.
  *
  *   step 1  forgot   email entry
  *   step 2  verify   6-digit OTP

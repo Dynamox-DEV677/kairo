@@ -5,7 +5,7 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { chat } from '../lib/openrouter'
 
-const SYSTEM = `You are Kairo, an expert exam analyst for Indian board exams.
+const SYSTEM = `You are Kora, an expert exam analyst for Indian board exams.
 Predict the most likely exam topics based on 10-year patterns. Provide:
 1. High probability topics (very likely) — with reasoning
 2. Medium probability topics

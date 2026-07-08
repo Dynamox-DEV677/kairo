@@ -1,7 +1,7 @@
 /**
  * /api/ai/chat      — OpenRouter proxy
  * /api/ai/visualize — Nano Banana image generation (legacy, used as fallback)
- * /api/ai/solver    — Kairo's Solver: classify + image search + AI explanation
+ * /api/ai/solver    — Kora's Solver: classify + image search + AI explanation
  */
 import express from 'express'
 import { searchManyParallel } from '../services/imageSearch.js'
@@ -145,7 +145,7 @@ function asChatCompletion(model, content, fallback = false) {
 /**
  * Build a Wikipedia-sourced markdown answer for a knowledge question. Returns
  * null when no article can be found. Re-uses the same wiki helpers Solver
- * uses so the answer style stays consistent across Kairo.
+ * uses so the answer style stays consistent across Kora.
  */
 async function chatWikipediaFallback(question) {
   try {
@@ -196,7 +196,7 @@ router.post('/chat', async (req, res) => {
         'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
         'HTTP-Referer': process.env.ALLOWED_ORIGIN || 'https://kairo-daily-edu.vercel.app',
-        'X-Title': 'Kairo',
+        'X-Title': 'Kora',
       },
       body: JSON.stringify({ model, messages, stream }),
     })
@@ -254,7 +254,7 @@ router.post('/chat', async (req, res) => {
     return res.json(asChatCompletion(
       'busy-fallback',
       [
-        '## Kairo is a little busy right now',
+        '## Kora is a little busy right now',
         '',
         "Our AI is handling a lot of requests at this moment, so I couldn't reach a model in time.",
         '',
@@ -349,14 +349,14 @@ router.post('/visualize', async (req, res) => {
 })
 
 // ────────────────────────────────────────────────────────────────────────────
-// /api/ai/solver — Kairo's Solver
+// /api/ai/solver — Kora's Solver
 //
 // Single endpoint that powers the dual-panel learning experience:
 //   1. Calls the LLM in JSON mode to classify the question + plan a sequential
 //      visual storyboard (5-6 image search queries) + write the explanation
 //   2. Fans out the image queries in parallel against Wikimedia / Pexels /
 //      Unsplash (Wikimedia first — free, encyclopedic, no key)
-//   3. Detects if a Kairo Lab matches (gravity, pendulum, heart, etc.) and
+//   3. Detects if a Kora Lab matches (gravity, pendulum, heart, etc.) and
 //      returns a labRoute the frontend uses to render an "Open in Labs" CTA
 //   4. Caches the whole response by question for 1 hour
 //
@@ -383,11 +383,11 @@ const KAIRO_LABS = {
   graphs:     'function plotting, surfaces, 3D graphs of equations',
 }
 
-const SOLVER_SYSTEM = `You are Kairo's Solver — an AI that turns a student's question into a structured learning experience.
+const SOLVER_SYSTEM = `You are Kora's Solver — an AI that turns a student's question into a structured learning experience.
 
 Always answer the question. No matter the topic — science, math, history, biology, geography, literature, current events — give a clear, friendly explanation aimed at Indian school students (Class 6-12, CBSE/ICSE/state).
 
-CASUAL QUESTIONS: if the message is small-talk or a utility question rather than a STUDY topic — greetings ("hi", "how are you"), the time/date, jokes, thanks, "what's up", meta questions about Kairo itself — set questionType="casual". For casual: imageQueries=[], videoQuery="", supports3D=false, labRoute=null, formulas=[], relatedConcepts=[], geography=null, and textExplanation is a SHORT friendly note (1-3 sentences, NO ## headings, no lesson structure). Do not force a lesson out of small-talk.
+CASUAL QUESTIONS: if the message is small-talk or a utility question rather than a STUDY topic — greetings ("hi", "how are you"), the time/date, jokes, thanks, "what's up", meta questions about Kora itself — set questionType="casual". For casual: imageQueries=[], videoQuery="", supports3D=false, labRoute=null, formulas=[], relatedConcepts=[], geography=null, and textExplanation is a SHORT friendly note (1-3 sentences, NO ## headings, no lesson structure). Do not force a lesson out of small-talk.
 
 Your output MUST be a single valid JSON object (no markdown fences, no commentary, no leading text). Schema:
 
@@ -407,8 +407,20 @@ Your output MUST be a single valid JSON object (no markdown fences, no commentar
                        "kind":  "region" | "country" | "city" | "river" | "mountain" | "desert" | "forest" | "ocean" | "continent" | "other",
                        "zoom":  <Leaflet zoom level: 3 for continents, 4-5 for countries / mega-regions, 6-7 for states / large features, 8-10 for cities, 11-13 for landmarks>,
                        "sections": <array of FIVE-EIGHT structured learning blocks. Each: { "heading": <one of "Overview"|"Climate"|"Geography"|"Importance"|"Biodiversity"|"Countries"|"Economy"|"Culture"|"Fun Facts">, "body": <markdown paragraph, 1-3 sentences> }>
-                     }>
+                     }>,
+  "action":         <null, OR — ONLY when the student EXPLICITLY asks you to create/make/add something ("make flashcards on X", "create a concept map of Y", "save a note about Z", "add this to my notebook") — an object Kora uses to actually create the artifact in the student's tools:
+                     {
+                       "tool":    "flashcards" | "notebook" | "concept-map",
+                       "topic":   <short clean topic name>,
+                       "cards":   <flashcards only: array of 5-8 { "front": <question or term>, "back": <answer, 1-3 sentences> }>,
+                       "title":   <notebook only: note title>,
+                       "content": <notebook only: the full note as markdown, 150-400 words>,
+                       "related": <concept-map only: 4-8 related concept names to connect to the topic>
+                     }
+                     Asking ABOUT a topic is NOT an action — never set action for ordinary questions. When action is set, textExplanation should be a short confirmation of what you created (2-4 sentences) — the artifact content itself lives inside action.>
 }
+
+CONVERSATION MEMORY: the user message may include a "Conversation so far" section and a "Student profile" line. Use them — resolve pronouns ("explain that again", "make flashcards on this") against the previous turns, keep continuity, and address the student by name occasionally when natural. Answer ONLY the student's new message; the rest is context.
 
 CRITICAL JSON ESCAPING RULES for textExplanation:
 
@@ -533,7 +545,7 @@ async function callModel(model, question, apiKey, timeout = 7000) {
         'Authorization': `Bearer ${apiKey}`,
         'Content-Type':  'application/json',
         'HTTP-Referer':  process.env.ALLOWED_ORIGIN || 'https://kairo-daily-edu.vercel.app',
-        'X-Title':       'Kairo Solver',
+        'X-Title':       'Kora Solver',
       },
       body: JSON.stringify({
         model,
@@ -879,7 +891,7 @@ router.post('/solver/images', async (req, res) => {
 // /api/ai/solver/video — find one educational video for the topic.
 // No API key — scrapes the public search results page for the first video ID.
 // Cached 24h. Frontend embeds it via youtube-nocookie + modestbranding so it
-// reads as "the Kairo lesson video" rather than a third-party embed.
+// reads as "the Kora lesson video" rather than a third-party embed.
 // ────────────────────────────────────────────────────────────────────────────
 router.post('/solver/video', async (req, res) => {
   const query = (req.body?.query || req.body?.topicKeyword || req.body?.question || '').toString().trim()
@@ -1005,7 +1017,7 @@ async function synthesizePlanFromWikipedia(question) {
 
   const pageUrl = page.fullurl || `https://en.wikipedia.org/wiki/${encodeURIComponent(title)}`
 
-  // 3. Detect if any Kairo Lab matches.
+  // 3. Detect if any Kora Lab matches.
   let labRoute = null
   const lower = title.toLowerCase() + ' ' + extract.toLowerCase()
   for (const [k, hints] of Object.entries(KAIRO_LABS)) {

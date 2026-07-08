@@ -1,7 +1,7 @@
 /**
  * /about — the founder story.
  *
- * Editorial single-page about Darshan, the 9th-grader who started Kairo.
+ * Editorial single-page about Darshan, the 9th-grader who started Kora.
  * Same Swiss / editorial / brutalist visual language as the landing.
  * Strict monochrome BLACK · DEEP PURPLE · WHITE. Mobile-first.
  */
@@ -72,7 +72,7 @@ export default function AboutPage({ onExit }: Props) {
             padding: '14px 0', gap: 16,
           }}>
             <button onClick={onExit} style={navBtn}>
-              <ArrowLeft size={14} /> Back to Kairo
+              <ArrowLeft size={14} /> Back to Kora
             </button>
             <span style={{
               fontFamily: MONO, fontSize: 10, color: C.textVery, letterSpacing: 1.8,
@@ -128,7 +128,7 @@ export default function AboutPage({ onExit }: Props) {
                     lineHeight: 1.02, letterSpacing: '-0.02em', fontWeight: 700,
                     color: C.purpleSoft,
                   }}>
-                    Class 9 · Builder of Kairo.
+                    Class 9 · Builder of Kora.
                   </h2>
                 </motion.div>
               </SwissCell>
@@ -158,13 +158,13 @@ export default function AboutPage({ onExit }: Props) {
                 }}>
                   <DropCap letter="M" />y name is Darshan. I'm a 9th-grader in
                   Chennai trying to crack 490 out of 500 in my boards. The
-                  reason Kairo exists is simple — every student in India is
+                  reason Kora exists is simple — every student in India is
                   taught the same way, with the same textbook, on the same
                   timetable. None of it knows me. None of it remembers what
                   I forgot in November when the March paper lands on my desk.
 
                   <p style={{ margin: '18px 0' }}>
-                    I started Kairo as a side project — a way to teach myself
+                    I started Kora as a side project — a way to teach myself
                     to ship software while I was studying for school. The first
                     version was a doubt-solver for myself. Then it became a
                     flashcards engine for the chapters I kept failing. Then it
@@ -173,7 +173,7 @@ export default function AboutPage({ onExit }: Props) {
                   </p>
 
                   <p style={{ margin: '0 0 18px' }}>
-                    Today Kairo has <em style={{ color: C.text }}>more than 40
+                    Today Kora has <em style={{ color: C.text }}>more than 40
                     AI features</em>, a memory engine called the Twin that
                     lives on your device, 3D physics labs for every NCERT
                     chapter, voice tutoring, a parent dashboard, a school
@@ -226,18 +226,18 @@ export default function AboutPage({ onExit }: Props) {
                   display: 'flex', flexDirection: 'column', gap: 14,
                   fontFamily: SANS, fontSize: 15, lineHeight: 1.6, color: C.textDim,
                 }}>
-                  <ShipItem n="01" head="Kairo OS"
+                  <ShipItem n="01" head="Kora"
                     body="An AI operating system for students. Memory engine, voice tutor, study plan, focus mode — all built and deployed in production." />
-                  <ShipItem n="02" head="Kairo's Solver"
+                  <ShipItem n="02" head="Kora's Solver"
                     body="Any doubt, eight seconds. Step-by-step explanation with live image + video accompaniment, all pulled in real time." />
-                  <ShipItem n="03" head="Kairo Labs"
+                  <ShipItem n="03" head="Kora Labs"
                     body="3D physics, chemistry, biology simulations. Drag, pinch, change variables — diagrams you can touch." />
                   <ShipItem n="04" head="School Operations Hub"
                     body="Admin + teacher tools for whole schools — attendance, announcements, fee reminders, admission bot." />
                   <ShipItem n="05" head="Parent Dashboard"
                     body="Parents see what their child studied today, their scores, and message teachers — all in one place." />
                   <ShipItem n="06" head="Privacy-First Architecture"
-                    body="Most of Kairo lives on your device. The cloud is just a transit lane — data is wiped after sync." />
+                    body="Most of Kora lives on your device. The cloud is just a transit lane — data is wiped after sync." />
                 </ul>
               </SwissCell>
             </SwissRow>
@@ -258,14 +258,14 @@ export default function AboutPage({ onExit }: Props) {
                   maxWidth: 820,
                 }}>
                   "Indian students don't lack effort. They lack tools that
-                  understand them. Kairo is my attempt to fix that — one
+                  understand them. Kora is my attempt to fix that — one
                   feature at a time, until every student has an AI that
                   knows their mind."
                   <div style={{
                     marginTop: 18, fontFamily: MONO, fontSize: 11, color: C.purpleSoft,
                     fontStyle: 'normal', letterSpacing: 1.6,
                   }}>
-                    — Darshan · Founder · Kairo
+                    — Darshan · Founder · Kora
                   </div>
                 </blockquote>
               </SwissCell>
@@ -330,7 +330,7 @@ export default function AboutPage({ onExit }: Props) {
             fontFamily: MONO, fontSize: 10, color: C.textVery, letterSpacing: 2,
             flexWrap: 'wrap', gap: 16,
           }}>
-            <span>© {new Date().getFullYear()}  ·  KAIRO  ·  COLOPHON</span>
+            <span>© {new Date().getFullYear()}  ·  KORA  ·  COLOPHON</span>
             <span>CHENNAI · INDIA  /  v.2026.05</span>
           </div>
         </Container>

@@ -1,5 +1,5 @@
 /**
- * Kairo Onboarding — four modes: Sign In · Personal · Join School · Create School
+ * Kora Onboarding — four modes: Sign In · Personal · Join School · Create School
  *
  *   Sign In        : email + password → supabase.auth.signInWithPassword
  *   Personal       : 1-step → POST /api/users/register-personal (no school)
@@ -93,7 +93,7 @@ function AmbientWordmarks() {
           whiteSpace: 'nowrap', lineHeight: 1,
           willChange: 'transform',
         }}>
-          KAIRO
+          KORA
         </div>
         <div className="kr-ghost-b" style={{
           position: 'absolute', bottom: '6%', left: '50%',
@@ -154,15 +154,15 @@ export default function Login({ onLogin }: LoginProps) {
       <div style={{ width: '100%', maxWidth: 480, padding: '28px 20px 48px', display: 'flex', flexDirection: 'column', position: 'relative', zIndex: 2 }}>
         {/* Logo */}
         <div style={{ textAlign: 'center', marginBottom: 22, flexShrink: 0 }}>
-          <img src="/kairo_logo.png" alt="Kairo"
+          <img src="/kairo-mark.svg" alt="Kora"
             style={{
               width: 64, height: 64, borderRadius: 16, objectFit: 'contain',
               margin: '0 auto 14px', display: 'block',
               filter: 'drop-shadow(0 0 20px rgba(79, 124, 255, 0.03))',
             }} />
-          <h1 style={{ fontSize: 24, fontWeight: 800, color: '#fafafa', margin: 0, letterSpacing: '-0.5px' }}>kairo</h1>
+          <h1 style={{ fontSize: 24, fontWeight: 800, color: '#fafafa', margin: 0, letterSpacing: '-0.5px' }}>kora</h1>
           <p style={{ fontSize: 11, color: '#4F7CFF', fontWeight: 700, letterSpacing: 4, marginTop: 4, textTransform: 'uppercase' }}>
-            Accelerate Your Academics
+            By Kairo Industries
           </p>
         </div>
 
@@ -217,17 +217,17 @@ export default function Login({ onLogin }: LoginProps) {
 function ChooseMode({ setMode }: { setMode: (m: Mode) => void }) {
   return (
     <div>
-      <h2 style={{ fontSize: 20, fontWeight: 700, color: '#fafafa', margin: 0, marginBottom: 6 }}>Welcome</h2>
-      <p style={{ fontSize: 13, color: '#9CA3AF', marginBottom: 24 }}>Pick how you'd like to continue.</p>
+      <h2 style={{ fontSize: 20, fontWeight: 700, color: '#fafafa', margin: 0, marginBottom: 6 }}>Welcome to Kora</h2>
+      <p style={{ fontSize: 13, color: '#9CA3AF', marginBottom: 24 }}>Continue your AI learning journey.</p>
 
       <ChoiceCard onClick={() => setMode('signin')} icon={Mail}
         title="Sign In" desc="Email + password — already a member" />
       <ChoiceCard onClick={() => setMode('personal')} icon={GraduationCap}
-        title="Sign Up — Personal" desc="I'm a student, no school code needed" highlight />
+        title="Create your Kora Account" desc="I'm a student, no school code needed" highlight />
       <ChoiceCard onClick={() => setMode('join')} icon={Building2}
         title="Join School" desc="I have a school join code" />
       <ChoiceCard onClick={() => setMode('create')} icon={Sparkles}
-        title="Create School" desc="Start a new school on Kairo" />
+        title="Create School" desc="Start a new school on Kora" />
     </div>
   )
 }
@@ -309,7 +309,7 @@ function SignIn({ onLogin, onBack }: any) {
       if (!userRow) {
         const fallbackName = (data.user.user_metadata as any)?.name
           || data.user.email?.split('@')[0]
-          || 'Kairo Student'
+          || 'Kora Student'
         try {
           await supabase.from('users').insert({
             id:        data.user.id,
@@ -865,7 +865,7 @@ function JoinSchool({ onLogin, onBack }: any) {
   return (
     <Wizard
       back={() => setStep(3)} step={4} of={4}
-      title="Link to Your Child" subtitle="Get the access code from your child's Kairo app.">
+      title="Link to Your Child" subtitle="Get the access code from your child's Kora app.">
       <Field label="Student's Name" icon={User} hint="As shown on report cards">
         <input autoFocus value={studentName} onChange={e => setStudentName(e.target.value)}
           placeholder="e.g. Ananya Iyer" style={inp} />
@@ -967,7 +967,7 @@ function CreateSchool({ onLogin, onBack }: any) {
   }
 
   if (step === 1) return (
-    <Wizard back={onBack} step={1} of={2} title="Create School" subtitle="Let's set up your school on Kairo.">
+    <Wizard back={onBack} step={1} of={2} title="Create School" subtitle="Let's set up your school on Kora.">
       <Field label="School Name" icon={Building2}>
         <input autoFocus value={schoolName} onChange={e => setSchoolName(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && schoolName.trim() && setStep(2)}
@@ -1005,7 +1005,7 @@ function CreateSchool({ onLogin, onBack }: any) {
         }
         setErr(''); createSchool()
       }} icon={Sparkles}>Create School</PrimaryBtn>
-      <TermsAcceptLine action="creating a school on Kairo" />
+      <TermsAcceptLine action="creating a school on Kora" />
     </Wizard>
   )
 
@@ -1038,7 +1038,7 @@ function CreateSchool({ onLogin, onBack }: any) {
       <div style={{ padding: '12px 14px', borderRadius: 8, background: 'rgba(165, 180, 252, 0.06)', border: '1px solid rgba(165, 180, 252, 0.3)', marginBottom: 14 }}>
         <span style={{ fontSize: 11, fontWeight: 700, color: '#A5B4FC', textTransform: 'uppercase', letterSpacing: 1 }}>Free during launch</span>
         <p style={{ fontSize: 11, color: '#B1B5BA', margin: 0, marginTop: 4, lineHeight: 1.5 }}>
-          Your school has full access — no payment required while Kairo is in early access. Share the join code with your teachers and students to bring them on board.
+          Your school has full access — no payment required while Kora is in early access. Share the join code with your teachers and students to bring them on board.
         </p>
       </div>
 

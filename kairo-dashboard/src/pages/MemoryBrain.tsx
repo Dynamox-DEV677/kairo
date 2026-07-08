@@ -1,5 +1,5 @@
 /**
- * AI Memory Brain — what Kairo remembers about you
+ * AI Memory Brain — what Kora remembers about you
  *
  * Shows:
  *  - Weak Areas (signal < -0.2)
@@ -54,7 +54,7 @@ export default function MemoryBrain() {
     setLoading(true); setErr('')
     // localStorage-first — read from twin instead of /api/memory.
     // The DB cleanup deleted the `memory` table; the twin is now the
-    // canonical store for everything Kairo "remembers" about the user.
+    // canonical store for everything Kora "remembers" about the user.
     try {
       const state    = dumpState()
       const mistakes = getMistakes()
@@ -115,11 +115,11 @@ export default function MemoryBrain() {
   async function forget(_id: string) {
     // Forgetting a single derived entry is a no-op — the twin keeps the
     // underlying event. Use "Wipe Twin" in KairoOS for full reset.
-    alert('Use Kairo OS → Wipe Twin to clear individual entries.')
+    alert('Use Kora → Wipe Twin to clear individual entries.')
   }
 
   async function wipeAll() {
-    if (!confirm('Forget everything Kairo has learned about you? This cannot be undone.')) return
+    if (!confirm('Forget everything Kora has learned about you? This cannot be undone.')) return
     clearTwin()
     await load()
   }
@@ -145,7 +145,7 @@ export default function MemoryBrain() {
         <div style={{ flex: 1 }}>
           <h1 style={{ fontSize: 20, fontWeight: 700, color: '#fafafa', margin: 0 }}>AI Memory Brain</h1>
           <p style={{ fontSize: 13, color: '#6B7280', marginTop: 4 }}>
-            Kairo remembers your weak topics, mistakes, and wins — and personalizes every AI response with this context.
+            Kora remembers your weak topics, mistakes, and wins — and personalizes every AI response with this context.
           </p>
         </div>
         <button
@@ -195,8 +195,8 @@ export default function MemoryBrain() {
                 Your memory is empty
               </h3>
               <p style={{ fontSize: 13, color: '#9CA3AF', maxWidth: 460, margin: '0 auto', lineHeight: 1.6 }}>
-                Take a quiz, ask Kairo's Solver, or get an essay graded —
-                Kairo will start tracking what you know and what to practice.
+                Take a quiz, ask Kora's Solver, or get an essay graded —
+                Kora will start tracking what you know and what to practice.
               </p>
             </div>
           )}
@@ -250,7 +250,7 @@ export default function MemoryBrain() {
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: 12, fontWeight: 600, color: '#fafafa' }}>Forget everything</div>
                 <div style={{ fontSize: 11, color: '#9CA3AF', marginTop: 2 }}>
-                  Reset Kairo's memory of you. Future AI responses won't be personalized until new data is collected.
+                  Reset Kora's memory of you. Future AI responses won't be personalized until new data is collected.
                 </div>
               </div>
               <button onClick={wipeAll} disabled={busy === 'all'} style={{

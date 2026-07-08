@@ -76,7 +76,7 @@ export default function ResetPasswordPage({ onDone }: Props) {
       <div style={{ width: '100%', maxWidth: 460, padding: '28px 20px 48px' }}>
         {/* Logo */}
         <div style={{ textAlign: 'center', marginBottom: 22 }}>
-          <img src="/kairo_logo.png" alt="Kairo"
+          <img src="/kairo_logo.png" alt="Kora"
             style={{
               width: 64, height: 64, borderRadius: 16, objectFit: 'contain',
               margin: '0 auto 14px', display: 'block',

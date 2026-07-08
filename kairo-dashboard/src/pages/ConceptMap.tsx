@@ -1,5 +1,5 @@
 /**
- * Concept Map — auto-built from the unified Kairo memory engine.
+ * Concept Map — auto-built from the unified Kora memory engine.
  *
  * Reads `getConceptGraph()` from twin.ts which discovers nodes from:
  *   1. Every topic the user has touched in any event (auto-discovery)
@@ -10,7 +10,7 @@
  *
  * The result is a real neural-graph of "what this student has learned and
  * how their concepts connect" — built entirely from localStorage, evolving
- * every time they use Kairo. Drag any node to rearrange. Zoom + pan.
+ * every time they use Kora. Drag any node to rearrange. Zoom + pan.
  *
  * Strict palette: black + deep purple + white only.
  */

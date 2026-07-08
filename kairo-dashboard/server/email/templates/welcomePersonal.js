@@ -18,7 +18,7 @@ export function renderWelcomePersonalHtml({ name, className, board }) {
   const body = [
     intro({
       greeting: `Hey <span style="color:${THEME.brand.purpleLite};font-weight:700;">${safeName}</span>,`,
-      lead: `Welcome to Kairo. This is your personal AI study companion — built specifically for Indian Class 9–12 students preparing for boards, JEE, NEET, and CUET.`,
+      lead: `Welcome to Kora. This is your personal AI study companion — built specifically for Indian Class 9–12 students preparing for boards, JEE, NEET, and CUET.`,
     }),
     dataPanel({
       title: 'Your study profile',
@@ -30,9 +30,9 @@ export function renderWelcomePersonalHtml({ name, className, board }) {
       ],
     }),
     bulletList({
-      title: 'Your first 60 seconds in Kairo',
+      title: 'Your first 60 seconds in Kora',
       items: [
-        'Open Kairo Solver and ask your hardest doubt — get an AI explanation tuned to your level',
+        'Open Kora Solver and ask your hardest doubt — get an AI explanation tuned to your level',
         'Snap a photo of homework and get a step-by-step walkthrough',
         'Join Battle Mode for a 5-minute daily challenge across your subjects',
         'Build a Smart Timetable that adapts as your strengths shift',
@@ -43,7 +43,7 @@ export function renderWelcomePersonalHtml({ name, className, board }) {
     infoCard({
       kind: 'brand',
       title: 'Pro tip',
-      body: `Hit ⌘K (or Ctrl+K) anywhere in Kairo to open the AI Solver. It remembers every doubt you ask and quietly builds a map of your weak topics in the background.`,
+      body: `Hit ⌘K (or Ctrl+K) anywhere in Kora to open the AI Solver. It remembers every doubt you ask and quietly builds a map of your weak topics in the background.`,
     }),
     divider(),
     `<p style="margin:8px 0 0;font-family:${THEME.font.family};font-size:12px;color:${THEME.text.dim};line-height:1.65;text-align:center;">
@@ -52,10 +52,10 @@ export function renderWelcomePersonalHtml({ name, className, board }) {
   ].join('')
 
   return shell({
-    title:     `Welcome to Kairo, ${name}`,
+    title:     `Welcome to Kora, ${name}`,
     preheader: `Your personal AI study companion is ready, ${name}.`,
     hero: hero({
-      title:    `Welcome to Kairo`,
+      title:    `Welcome to Kora`,
       subtitle: `Your personal AI study companion is ready.`,
       accent:   'logo',
     }),
@@ -66,21 +66,21 @@ export function renderWelcomePersonalHtml({ name, className, board }) {
 
 export function renderWelcomePersonalText({ name, className, board }) {
   return [
-    `Welcome to Kairo, ${name}!`,
+    `Welcome to Kora, ${name}!`,
     ``,
     `Your personal AI study companion is ready.`,
     `Class: ${className || 'Self-study'}  ·  Board: ${board || 'Custom syllabus'}`,
     ``,
-    `Open Kairo: ${appUrl()}`,
+    `Open Kora: ${appUrl()}`,
     ``,
-    `— Kairo · Accelerate Your Academics`,
+    `— Kora · Accelerate Your Academics`,
   ].join('\n')
 }
 
 export function sendWelcomePersonalEmail({ to, name, className, board }) {
   return send({
     to,
-    subject: `Welcome to Kairo, ${name}`,
+    subject: `Welcome to Kora, ${name}`,
     html:    renderWelcomePersonalHtml({ name, className, board }),
     text:    renderWelcomePersonalText({ name, className, board }),
   })

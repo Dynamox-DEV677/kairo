@@ -55,7 +55,7 @@ createRoot(document.getElementById('root')!).render(
 // PWA: register SW, show full-screen splash when a new version is ready
 initPwa({
   onUpdateAvailable(reload) {
-    // Full-screen blocking splash — Kairo logo + title + spinning refresh icon.
+    // Full-screen blocking splash — Kora logo + title + spinning refresh icon.
     // Vanilla DOM so it works even if React is mid-tree and about to swap out.
     const splash = document.createElement('div')
     splash.id = 'kairo-update-splash'
@@ -74,17 +74,17 @@ initPwa({
         @keyframes kairo-pulse   { 0%,100% { opacity: 0.85 } 50% { opacity: 1 } }
       </style>
 
-      <img src="/kairo_logo.png" alt="Kairo"
+      <img src="/kairo-mark.svg" alt="Kora"
            style="width: 96px; height: 96px; border-radius: 22px;
                   box-shadow: 0 0 50px rgba(79, 124, 255, 0.32);
                   animation: kairo-pulse 1.6s ease-in-out infinite;" />
 
       <div style="text-align: center;">
         <div style="font-size: 30px; font-weight: 800; color: #fafafa;
-                    letter-spacing: -1px; line-height: 1;">kairo</div>
+                    letter-spacing: -1px; line-height: 1;">kora</div>
         <div style="font-size: 11px; font-weight: 700; color: #4F7CFF;
                     letter-spacing: 6px; margin-top: 10px;">
-          ACCELERATE YOUR ACADEMICS
+          BY KAIRO INDUSTRIES
         </div>
       </div>
 
@@ -107,6 +107,6 @@ initPwa({
     requestAnimationFrame(() => setTimeout(() => reload(), 600))
   },
   onOfflineReady() {
-    console.log('[Kairo] Ready to use offline.')
+    console.log('[Kora] Ready to use offline.')
   },
 })

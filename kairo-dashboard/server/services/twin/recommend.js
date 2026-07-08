@@ -10,7 +10,7 @@
  *
  * Categories of recommendation:
  *   revise      a topic on the verge of being forgotten
- *   lab         a Kairo Lab matching the student's learning style + weak area
+ *   lab         a Kora Lab matching the student's learning style + weak area
  *   flashcard   spaced-repetition practice for a weak topic
  *   quiz        check progress on a recently-improved topic
  *   break       take a break (high burnout risk)

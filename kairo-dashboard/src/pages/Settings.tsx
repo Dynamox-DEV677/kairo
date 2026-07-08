@@ -136,7 +136,7 @@ export default function Settings() {
   async function clearData() {
     const ok = await confirmDialog({
       title:        'Clear all saved data?',
-      body:         'Your local Kairo profile, settings, and Twin data will be erased from this device. Your account on the server is not affected.',
+      body:         'Your local Kora profile, settings, and Twin data will be erased from this device. Your account on the server is not affected.',
       confirmLabel: 'Yes, clear everything',
       cancelLabel:  'Keep my data',
       tone:         'danger',
@@ -162,7 +162,7 @@ export default function Settings() {
   async function resetToFresh() {
     const ok = await confirmDialog({
       title:        'Reset to fresh state?',
-      body:         'Wipes every Kairo data store on this device — Twin events, flashcards, mistakes, concept graph, study history, recent chats. Your login stays signed in.',
+      body:         'Wipes every Kora data store on this device — Twin events, flashcards, mistakes, concept graph, study history, recent chats. Your login stays signed in.',
       confirmLabel: 'Reset everything',
       cancelLabel:  'Keep my data',
       tone:         'danger',
@@ -324,7 +324,7 @@ export default function Settings() {
       {/* Avatar decoration — Discord-style rings & orbiters */}
       <Section icon={<Sparkles size={14} />} title="Avatar decoration">
         <p style={{ fontSize: 12.5, color: '#9CA3AF', marginBottom: 14, lineHeight: 1.5 }}>
-          Pick a ring or orbiter that hangs around your profile picture everywhere in Kairo.
+          Pick a ring or orbiter that hangs around your profile picture everywhere in Kora.
         </p>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
           {DECORATIONS.map(d => (
@@ -352,7 +352,7 @@ export default function Settings() {
       {/* Font — changes the type across the whole app */}
       <Section icon={<Type size={14} />} title="App font">
         <p style={{ fontSize: 12.5, color: '#9CA3AF', marginBottom: 14, lineHeight: 1.5 }}>
-          Changes the font across all of Kairo OS, instantly. Sticks after refresh.
+          Changes the font across all of Kora, instantly. Sticks after refresh.
         </p>
         <div style={{ display: 'grid', gap: 8 }}>
           {FONTS.map(f => (
@@ -406,7 +406,7 @@ export default function Settings() {
         </div>
 
         <p style={{ fontSize: 13, color: '#9CA3AF', marginBottom: 14, lineHeight: 1.6 }}>
-          Your study history syncs to your Kairo account automatically. Sign in on any phone or laptop and you'll see the sprint animation as your data arrives — then the cloud copy is wiped immediately so your data only ever lives on the device in your hand.
+          Your study history syncs to your Kora account automatically. Sign in on any phone or laptop and you'll see the sprint animation as your data arrives — then the cloud copy is wiped immediately so your data only ever lives on the device in your hand.
         </p>
 
         <div style={{
@@ -441,7 +441,7 @@ export default function Settings() {
       {/* Security */}
       <Section icon={<KeyRound size={14} />} title="Security">
         <p style={{ fontSize: 13, color: '#9CA3AF', marginBottom: 14, lineHeight: 1.6 }}>
-          Your 6-digit Kairo OS passcode locks the app on this device. Forgot it? Reset it via email below.
+          Your 6-digit Kora passcode locks the app on this device. Forgot it? Reset it via email below.
         </p>
         <button
           onClick={() => setResetOpen(true)}
@@ -462,7 +462,7 @@ export default function Settings() {
           will reach for these every time they open Settings. */}
       <Section icon={<Sparkles size={14} />} title="Demo & Data">
         <p style={{ fontSize: 13, color: '#9CA3AF', marginBottom: 14, lineHeight: 1.6 }}>
-          Populate Kairo with realistic Class 10 CBSE activity so the dashboard, Flashcards,
+          Populate Kora with realistic Class 10 CBSE activity so the dashboard, Flashcards,
           Mistake Analysis, Concept Map and Formula Sheet all read as a real student's history.
           Use "Reset" to wipe and start clean.
         </p>
@@ -518,7 +518,7 @@ export default function Settings() {
 
       {/* About */}
       <div style={{ padding: '20px 0', borderTop: '1px solid #1a1f2e', marginTop: 8 }}>
-        <p style={{ fontSize: 11, color: '#27272a' }}>Kairo v1.0 · Built for Indian students · Powered by OpenRouter</p>
+        <p style={{ fontSize: 11, color: '#27272a' }}>Kora v1.0 · Built for Indian students · Powered by OpenRouter</p>
       </div>
 
       <TwinBackupModal open={backupOpen} onClose={() => setBackupOpen(false)} />

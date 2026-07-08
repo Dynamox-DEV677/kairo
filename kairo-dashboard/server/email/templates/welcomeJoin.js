@@ -24,7 +24,7 @@ export function renderWelcomeJoinHtml({ name, role, schoolName, requireApproval 
     : infoCard({
         kind: 'success',
         title: 'Account active',
-        body: `You can sign in right now and start using every Kairo feature available to your role.`,
+        body: `You can sign in right now and start using every Kora feature available to your role.`,
       })
 
   const features = role === 'student' ? [
@@ -46,7 +46,7 @@ export function renderWelcomeJoinHtml({ name, role, schoolName, requireApproval 
   const body = [
     intro({
       greeting: `Hey <span style="color:${THEME.brand.purpleLite};font-weight:700;">${safeName}</span>,`,
-      lead: `Welcome to <strong style="color:${THEME.text.primary};">${safeSchool}</strong> on Kairo as a <strong style="color:${THEME.brand.purpleLite};">${safeRole}</strong>. You're in. Let's get to work.`,
+      lead: `Welcome to <strong style="color:${THEME.text.primary};">${safeSchool}</strong> on Kora as a <strong style="color:${THEME.brand.purpleLite};">${safeRole}</strong>. You're in. Let's get to work.`,
     }),
     pendingCard,
     bulletList({
@@ -54,7 +54,7 @@ export function renderWelcomeJoinHtml({ name, role, schoolName, requireApproval 
       items: features,
       style: 'check',
     }),
-    button({ href: appUrl(), label: 'Open Kairo' }),
+    button({ href: appUrl(), label: 'Open Kora' }),
     divider(),
     `<p style="margin:8px 0 0;font-family:${THEME.font.family};font-size:12px;color:${THEME.text.dim};line-height:1.65;text-align:center;">
        Stuck or have questions? Just reply to this email — a real human reads every one.
@@ -62,8 +62,8 @@ export function renderWelcomeJoinHtml({ name, role, schoolName, requireApproval 
   ].join('')
 
   return shell({
-    title:     `Welcome to ${schoolName} · Kairo`,
-    preheader: `${name}, you're now part of ${schoolName} on Kairo.`,
+    title:     `Welcome to ${schoolName} · Kora`,
+    preheader: `${name}, you're now part of ${schoolName} on Kora.`,
     hero: hero({
       title:    `Welcome to ${schoolName}`,
       subtitle: `You're in. Let's get to work.`,
@@ -77,21 +77,21 @@ export function renderWelcomeJoinHtml({ name, role, schoolName, requireApproval 
 
 export function renderWelcomeJoinText({ name, role, schoolName, requireApproval }) {
   return [
-    `Welcome to ${schoolName} on Kairo, ${name}!`,
+    `Welcome to ${schoolName} on Kora, ${name}!`,
     ``,
     `You're now part of ${schoolName} as a ${role}.`,
     requireApproval && role === 'student' ? `Your account is awaiting admin approval — we'll email you the moment it's ready.` : `Your account is active. Sign in to get started.`,
     ``,
-    `Open Kairo: ${appUrl()}`,
+    `Open Kora: ${appUrl()}`,
     ``,
-    `— Kairo · Accelerate Your Academics`,
+    `— Kora · Accelerate Your Academics`,
   ].filter(Boolean).join('\n')
 }
 
 export function sendWelcomeJoinEmail({ to, name, role, schoolName, requireApproval }) {
   return send({
     to,
-    subject: `Welcome to ${schoolName} · Kairo`,
+    subject: `Welcome to ${schoolName} · Kora`,
     html:    renderWelcomeJoinHtml({ name, role, schoolName, requireApproval }),
     text:    renderWelcomeJoinText({ name, role, schoolName, requireApproval }),
   })

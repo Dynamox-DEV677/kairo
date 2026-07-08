@@ -53,7 +53,7 @@ export function renderSignInHtml({ name, userAgent, deviceLabel, ip, location, t
   const body = [
     intro({
       greeting: `Hey <span style="color:${THEME.brand.purpleLite};font-weight:700;">${safeName}</span>,`,
-      lead: `A new sign-in to your Kairo account was just recorded. If this was you, you're good — there's nothing to do.`,
+      lead: `A new sign-in to your Kora account was just recorded. If this was you, you're good — there's nothing to do.`,
     }),
     dataPanel({ title: 'Sign-in details', rows }),
     infoCard({
@@ -70,7 +70,7 @@ export function renderSignInHtml({ name, userAgent, deviceLabel, ip, location, t
   ].join('')
 
   return shell({
-    title:     'New sign-in to your Kairo account',
+    title:     'New sign-in to your Kora account',
     preheader: `New sign-in detected · ${device} · ${when}`,
     hero: hero({
       title:    'New sign-in detected',
@@ -88,7 +88,7 @@ export function renderSignInText({ name, userAgent, deviceLabel, ip, location, t
   return [
     `Hey ${name || 'there'},`,
     ``,
-    `A new sign-in to your Kairo account was just recorded.`,
+    `A new sign-in to your Kora account was just recorded.`,
     ``,
     `Time:   ${when}`,
     `Device: ${device}`,
@@ -98,14 +98,14 @@ export function renderSignInText({ name, userAgent, deviceLabel, ip, location, t
     `If this wasn't you: reset your password and revoke sessions immediately.`,
     `Review security: ${appUrl()}/settings/security`,
     ``,
-    `— Kairo Security`,
+    `— Kora Security`,
   ].filter(Boolean).join('\n')
 }
 
 export function sendSignInEmail({ to, name, userAgent, ip, location, time, deviceLabel }) {
   return send({
     to,
-    subject: 'New sign-in to your Kairo account',
+    subject: 'New sign-in to your Kora account',
     html:    renderSignInHtml({ name, userAgent, deviceLabel, ip, location, time }),
     text:    renderSignInText({ name, userAgent, deviceLabel, ip, location, time }),
   })

@@ -1,7 +1,7 @@
 /**
  * Twin event ingestion.
  *
- * recordEvent() is the single entry point. Every other Kairo route that wants
+ * recordEvent() is the single entry point. Every other Kora route that wants
  * the Academic Twin to "see" what happened calls this. Fire-and-forget — never
  * blocks the caller, never throws.
  *
@@ -15,7 +15,7 @@ import { supabaseAdmin } from '../supabase.js'
 // ─────────────────────────────────────────────────────────────────────────────
 // quiz_answered   interactive    yes (0..100) yes          one row per question
 // quiz_completed  interactive    yes          —             aggregate, fires once per session
-// lab_opened      visual         —            —             which Kairo Lab they entered
+// lab_opened      visual         —            —             which Kora Lab they entered
 // lab_explored    visual         —            —             interacted with a part / control
 // flashcard_review repetition    —            yes          SRS review
 // essay_graded    text           yes          —             grader output

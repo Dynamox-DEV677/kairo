@@ -195,7 +195,7 @@ export default function Notebook() {
             <div style={{ ...card, padding: '40px 24px', textAlign: 'center' }}>
               <StickyNote size={28} color="#6B7280" style={{ marginBottom: 12 }} />
               <p style={{ fontSize: 13, color: '#9CA3AF', margin: 0 }}>
-                {notes.length === 0 ? "Empty notebook — generate flashcards or use Kairo's Solver to start filling it." : 'No matches.'}
+                {notes.length === 0 ? "Empty notebook — generate flashcards or use Kora's Solver to start filling it." : 'No matches.'}
               </p>
             </div>
           )}
@@ -334,7 +334,7 @@ function AutoCollectedStrip({ onBuilt }: { onBuilt?: (id: string) => void }) {
         messages: [
           {
             role: 'system',
-            content: 'You are Kairo, a study notebook author. Given a topic or doubt, write a clean, exam-ready markdown note for an Indian high-school student. Structure: short summary, key points (3-5 bullets), worked example or formula if relevant, common mistake. Keep total length under 200 words. Output only markdown, no preamble.',
+            content: 'You are Kora, a study notebook author. Given a topic or doubt, write a clean, exam-ready markdown note for an Indian high-school student. Structure: short summary, key points (3-5 bullets), worked example or formula if relevant, common mistake. Keep total length under 200 words. Output only markdown, no preamble.',
           },
           { role: 'user', content: args.raw },
         ],
@@ -435,7 +435,7 @@ function AutoCollectedStrip({ onBuilt }: { onBuilt?: (id: string) => void }) {
         })}
         {tab === 'formulas' && (
           formulas.length === 0
-            ? <span style={{ fontSize: 12, color: '#9CA3AF' }}>No formulas yet. They'll appear here as Kairo extracts them from your solver answers.</span>
+            ? <span style={{ fontSize: 12, color: '#9CA3AF' }}>No formulas yet. They'll appear here as Kora extracts them from your solver answers.</span>
             : formulas.map(f => {
                 const id = `formula:${f.id}`
                 const isBusy = working === id
@@ -458,10 +458,10 @@ function AutoCollectedStrip({ onBuilt }: { onBuilt?: (id: string) => void }) {
               })
         )}
         {tab === 'doubts' && doubts.length === 0 && (
-          <span style={{ fontSize: 12, color: '#9CA3AF' }}>No doubts yet. Ask the Kairo Solver something — every Q&A auto-saves here.</span>
+          <span style={{ fontSize: 12, color: '#9CA3AF' }}>No doubts yet. Ask the Kora Solver something — every Q&A auto-saves here.</span>
         )}
         {tab === 'concepts' && concepts.length === 0 && (
-          <span style={{ fontSize: 12, color: '#9CA3AF' }}>No concepts yet. Take a quiz or open a lab — Kairo will discover concepts automatically.</span>
+          <span style={{ fontSize: 12, color: '#9CA3AF' }}>No concepts yet. Take a quiz or open a lab — Kora will discover concepts automatically.</span>
         )}
       </div>
 

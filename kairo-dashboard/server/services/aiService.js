@@ -50,7 +50,7 @@ Rules:
 - Subject: concise, under 60 chars
 - Body: plain text, 3-5 short paragraphs, NO markdown
 - Include student name, amount, due date naturally in the text
-- Sign off as "Kairo School Admin"
+- Sign off as "Kora School Admin"
 - Do NOT include salutation (Dear Parent), we add that separately`
 
   try {
@@ -59,7 +59,7 @@ Rules:
       headers: {
         'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
         'Content-Type': 'application/json',
-        'X-Title': 'Kairo Fee Reminder',
+        'X-Title': 'Kora Fee Reminder',
       },
       body: JSON.stringify({
         model: MODEL,
@@ -112,7 +112,7 @@ If you have already made the payment, please disregard this message or contact u
 Thank you for your cooperation.
 
 Warm regards,
-Kairo School Admin`
+Kora School Admin`
 
   return { subject, body }
 }

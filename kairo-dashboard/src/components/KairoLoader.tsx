@@ -3,7 +3,7 @@
  *
  * Drop in anywhere a spinner would normally go. Renders a full-bleed
  * dark canvas, fades particles in, draws curved blue lines that "travel"
- * across the space leaving soft trails, then *assembles* the Kairo K
+ * across the space leaving soft trails, then *assembles* the Kora K
  * via SVG path-draw animations (pathLength on three strokes, staggered).
  * After the K locks, a soft pulse runs, then the wordmark + tagline
  * reveal via opacity + blur + upward motion. The whole sequence loops
@@ -259,7 +259,7 @@ function EmergingLines({
   )
 }
 
-// ─── Logo assembly — the actual Kairo mark materialises from centre out ────
+// ─── Logo assembly — the actual Kora mark materialises from centre out ────
 //
 // The brand mark is a hand-drawn organic logo (PNG, transparent on dark).
 // Without a vector source we can't path-draw individual strokes, so the
@@ -319,7 +319,7 @@ function LogoAssemble({ reduce }: { reduce: boolean | null }) {
           }}
         />
 
-        {/* The actual Kairo mark.
+        {/* The actual Kora mark.
 
             Reveal stack:
               - clip-path circle expands centre-out (the "construct" gesture)
@@ -331,7 +331,7 @@ function LogoAssemble({ reduce }: { reduce: boolean | null }) {
             If you want the full mark visible bump to 100%. */}
         <motion.img
           src="/kairo_logo.png"
-          alt="Kairo"
+          alt="Kora"
           draggable={false}
           initial={{
             opacity: 0,
@@ -398,7 +398,7 @@ function LogoAssemble({ reduce }: { reduce: boolean | null }) {
   )
 }
 
-// ─── Caption — KAIRO + tagline, opacity + blur + translateY ─────────────────
+// ─── Caption — KORA + tagline, opacity + blur + translateY ─────────────────
 function CaptionReveal({
   wordmark, tagline, reduce,
 }: { wordmark: string; tagline: string; reduce: boolean | null }) {
@@ -468,7 +468,7 @@ function Vignette() {
 export default function KairoLoader({
   duration  = 8000,
   loop      = true,
-  wordmark  = 'KAIRO',
+  wordmark  = 'KORA',
   tagline   = 'Your AI Education System',
   onLoopComplete,
   fullscreen = true,

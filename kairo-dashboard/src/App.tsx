@@ -26,7 +26,7 @@ export default function App() {
   const [checking, setChecking] = useState(true)
   // Default view: web visitors land on the cinematic marketing page; users
   // running inside the Electron desktop shell skip straight to sign-in
-  // (there's no point selling them on Kairo — they already downloaded it).
+  // (there's no point selling them on Kora — they already downloaded it).
   // window.kairoDesktop is exposed by kairo-electron/preload.js.
   const [view, setView] = useState<View>(() => {
     if (typeof window !== 'undefined' && (window as any).kairoDesktop?.isDesktop) {

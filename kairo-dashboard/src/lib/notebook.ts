@@ -1,7 +1,7 @@
 /**
  * Notebook — pure localStorage store with optional server mirroring.
  *
- * The Kairo DB cleanup deleted the `notebooks` / `notes` tables. So this
+ * The Kora DB cleanup deleted the `notebooks` / `notes` tables. So this
  * file now treats localStorage as the single source of truth for every
  * note. Server POSTs are attempted as a fire-and-forget mirror, but their
  * failure never affects the local data.

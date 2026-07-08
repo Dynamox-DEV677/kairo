@@ -223,7 +223,7 @@ Return ONLY a JSON array:
         .filter(x => x.picked !== null && x.picked !== x.correct)
         .map(x => x.q.q)
         .slice(0, 3)
-      const sys = `You are the Kairo Judge — a calm, sharp AI examiner. You have just watched a battle between a student and Kairo's AI rival (${AI_PROFILES[aiLevel].name}, "${AI_PROFILES[aiLevel].tag}").
+      const sys = `You are the Kora Judge — a calm, sharp AI examiner. You have just watched a battle between a student and Kora's AI rival (${AI_PROFILES[aiLevel].name}, "${AI_PROFILES[aiLevel].tag}").
 
 Return ONLY this JSON:
 {"verdict": "1 sentence verdict, max 22 words, addressed to the student in 2nd person", "tips": ["tip 1", "tip 2"], "tone": "praise|neutral|tough"}
@@ -301,7 +301,7 @@ Tips: each tip is one specific actionable line (max 18 words) — reference the 
   function pickAnswer(i: number) {
     const next = [...answers]; next[idx] = i; setAnswers(next)
     // Feed unified memory engine — every battle answer flows into the twin
-    // so Mistake Analysis + Kairo OS see your battle performance too.
+    // so Mistake Analysis + Kora see your battle performance too.
     try {
       const q = questions[idx]
       if (q && daily) {
@@ -530,7 +530,7 @@ Tips: each tip is one specific actionable line (max 18 words) — reference the 
               <Gavel size={15} color="#000" />
             </div>
             <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 10, fontWeight: 700, color: '#A5B4FC', textTransform: 'uppercase', letterSpacing: 1.4 }}>Kairo Judge</div>
+              <div style={{ fontSize: 10, fontWeight: 700, color: '#A5B4FC', textTransform: 'uppercase', letterSpacing: 1.4 }}>Kora Judge</div>
               <div style={{ fontSize: 11, color: '#9CA3AF' }}>Independent verdict on this round</div>
             </div>
           </div>
@@ -668,10 +668,10 @@ Tips: each tip is one specific actionable line (max 18 words) — reference the 
                 AI Sparring · unlimited
               </div>
               <h3 style={{ fontSize: 18, fontWeight: 800, color: '#fafafa', margin: 0, marginTop: 4 }}>
-                Battle Kairo's AI rival
+                Battle Kora's AI rival
               </h3>
               <p style={{ fontSize: 12, color: '#B1B5BA', margin: 0, marginTop: 4 }}>
-                6 fresh questions on <strong>{daily.challenge.topic}</strong> · race the AI to answer first · Kairo Judge gives a verdict at the end.
+                6 fresh questions on <strong>{daily.challenge.topic}</strong> · race the AI to answer first · Kora Judge gives a verdict at the end.
               </p>
             </div>
           </div>

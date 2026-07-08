@@ -144,7 +144,7 @@ export default function ExamPlanner() {
       .then(setExams)
       .catch(() => {})
 
-    // Try to prefill weak topics from Kairo memory if the user has a
+    // Try to prefill weak topics from Kora memory if the user has a
     // valid auth token. Memory route needs Bearer auth — skip silently
     // (no console-noise) on 401 / missing token.
     const token = localStorage.getItem('kairo_token')

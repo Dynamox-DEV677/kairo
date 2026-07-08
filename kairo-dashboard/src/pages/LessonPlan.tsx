@@ -5,7 +5,7 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { chat } from '../lib/openrouter'
 
-const SYSTEM = `You are Kairo, an expert pedagogy advisor for Indian school teachers.
+const SYSTEM = `You are Kora, an expert pedagogy advisor for Indian school teachers.
 Create a detailed NEP 2020-aligned lesson plan including:
 - Learning objectives, materials needed, introduction/hook
 - Main teaching activities, student activities

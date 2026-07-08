@@ -98,7 +98,7 @@ router.get('/test-send', async (req, res) => {
 
   const info = await send({
     to,
-    subject: '[Kairo Test] Email system is working',
+    subject: '[Kora Test] Email system is working',
     html,
     text,
   })
@@ -145,7 +145,7 @@ router.get('/', (_req, res) => {
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Kairo · Email Previews</title>
+  <title>Kora · Email Previews</title>
   <style>
     :root {
       color-scheme: dark;
@@ -250,9 +250,9 @@ router.get('/', (_req, res) => {
 </head>
 <body>
   <div class="wrap">
-    <h1>Kairo · Email Previews</h1>
+    <h1>Kora · Email Previews</h1>
     <p class="subtitle">
-      Every Kairo email template, rendered with sample data. Click a card to open the HTML preview in a new tab —
+      Every Kora email template, rendered with sample data. Click a card to open the HTML preview in a new tab —
       that's exactly what users receive in Gmail / Apple Mail / Outlook.
     </p>
     <div class="grid">${rows}</div>

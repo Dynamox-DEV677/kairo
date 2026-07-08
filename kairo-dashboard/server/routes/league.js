@@ -1,5 +1,5 @@
 /**
- * Kairo League — weekly XP leaderboard (Duolingo-style).
+ * Kora League — weekly XP leaderboard (Duolingo-style).
  *
  *   POST /api/league/xp     { user_id, name, week, xp }  → upsert weekly score
  *   GET  /api/league/board  ?week=YYYY-MM-DD&user_id=…   → top 20 + your rank

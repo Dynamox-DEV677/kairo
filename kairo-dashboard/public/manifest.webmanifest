@@ -1,7 +1,7 @@
 {
-  "name": "Kairo OS — AI Learning Operating System",
-  "short_name": "Kairo OS",
-  "description": "AI-powered learning operating system for Indian students — solver, exam planner, flashcards, and an academic twin that remembers how you learn.",
+  "name": "Kora – AI Education System",
+  "short_name": "Kora",
+  "description": "Kora is an AI-powered education platform developed by Kairo Industries to help students learn faster, smarter, and more effectively.",
   "id": "/",
   "start_url": "/",
   "scope": "/",

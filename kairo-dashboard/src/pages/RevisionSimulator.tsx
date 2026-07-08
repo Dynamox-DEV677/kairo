@@ -150,7 +150,7 @@ export default function RevisionSimulator() {
     next[idx] = i
     setAnswers(next)
     // Feed unified memory engine — every answer becomes a twin event so
-    // Mistake Analysis / Concept Map / Kairo OS update in real time.
+    // Mistake Analysis / Concept Map / Kora update in real time.
     try {
       const q = questions[idx]
       if (q) {
@@ -548,7 +548,7 @@ function ResultsView({ questions, answers, onReset }: any) {
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
         <Sparkles size={14} color="#A5B4FC" />
         <div style={{ fontSize: 12, color: '#A5B4FC' }}>
-          Results saved to your AI Memory — Kairo will weight these in future personalization.
+          Results saved to your AI Memory — Kora will weight these in future personalization.
         </div>
       </div>
 

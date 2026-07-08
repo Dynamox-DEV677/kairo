@@ -1,7 +1,7 @@
 /**
- * Kairo Chat — the AI companion conversation.
+ * Kora Chat — the AI companion conversation.
  *
- * A normal ChatGPT-style multi-turn chat: you talk, Kairo answers in a
+ * A normal ChatGPT-style multi-turn chat: you talk, Kora answers in a
  * bubble. Media is OPT-IN — each study answer gets small chips under it
  * (▶ video thumbnail, 🖼 image thumbs). Click a chip and the video/image
  * expands inline. Casual small-talk gets a plain note with no chips.
@@ -89,7 +89,7 @@ export default function KairoChat() {
         // Prefer the server's own message ("question too long", rate-limit
         // hints, …) over a generic busy line.
         const j = await r.json().catch(() => null)
-        throw new Error(j?.error || 'Kairo is busy right now (' + r.status + ') — try again in a few seconds.')
+        throw new Error(j?.error || 'Kora is busy right now (' + r.status + ') — try again in a few seconds.')
       }
       const text = await r.json()
 
@@ -258,7 +258,7 @@ export default function KairoChat() {
             onKeyDown={e => {
               if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() }
             }}
-            placeholder={isMobile ? 'Ask anything…' : 'Talk to Kairo — ask anything…'}
+            placeholder={isMobile ? 'Ask anything…' : 'Talk to Kora — ask anything…'}
             rows={1}
             style={{
               flex: 1, resize: 'none', background: 'transparent', border: 'none',
@@ -292,7 +292,7 @@ export default function KairoChat() {
         {/* Footer tagline is desktop-only — the mobile shell already brands the page */}
         {!isMobile && (
           <div style={{ textAlign: 'center', marginTop: 8, fontSize: 10, color: '#5B616E', letterSpacing: 1.5, textTransform: 'uppercase' }}>
-            Kairo OS · your study companion
+            Kora · your study companion
           </div>
         )}
       </div>
@@ -488,11 +488,11 @@ function EmptyHero({ isMobile = false }: { isMobile?: boolean }) {
         fontFamily: "'Space Grotesk', system-ui, sans-serif",
         textShadow: '0 0 24px rgba(79,124,255,0.4)',
       }}>
-        Hey, I'm Kairo.
+        Hi! I'm Kora AI.
       </div>
-      <div style={{ fontSize: isMobile ? 12.5 : 13.5, color: '#9CA3AF', textAlign: 'center', maxWidth: 420, lineHeight: 1.6, padding: '0 8px' }}>
-        Your study companion. Chat with me like a friend — when a topic needs
-        visuals, I'll offer a video and pictures you can tap open.
+      <div style={{ fontSize: isMobile ? 12.5 : 13.5, color: '#9CA3AF', textAlign: 'center', maxWidth: 440, lineHeight: 1.6, padding: '0 8px' }}>
+        I'm here to help you learn anything, prepare for exams, solve problems
+        step-by-step, and become the best version of yourself.
       </div>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center', maxWidth: 560, marginTop: 6 }}>
         {suggestions.map(s => (

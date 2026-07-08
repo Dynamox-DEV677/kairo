@@ -1,5 +1,5 @@
 /**
- * Kairo Labs — interactive 3D learning simulations.
+ * Kora Labs — interactive 3D learning simulations.
  * Lists available labs; clicking one opens the simulation full-bleed.
  */
 import { useState, useEffect, lazy, Suspense, useRef } from 'react'
@@ -147,7 +147,7 @@ export default function KairoLabs() {
   const [activeLab, setActive] = useState<Lab | null>(null)
   const [filter, setFilter]    = useState<'all' | 'Physics' | 'Chemistry' | 'Biology' | 'Math' | 'Space'>('all')
 
-  // Listen for "open this lab" events from Kairo's Solver
+  // Listen for "open this lab" events from Kora's Solver
   useEffect(() => {
     function onOpen(e: Event) {
       const id = (e as CustomEvent).detail?.id
@@ -213,7 +213,7 @@ export default function KairoLabs() {
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 2.2, textTransform: 'uppercase',
               background: 'linear-gradient(90deg, #A5B4FC, #66D9FF, #4F7CFF)', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent' }}>
-              Kairo Labs  ·  3D Simulations
+              Kora Labs  ·  3D Simulations
             </div>
             <h1 style={{ margin: '4px 0 6px', fontSize: 'clamp(22px, 5vw, 32px)', fontWeight: 800, color: '#fafafa', letterSpacing: -0.6, lineHeight: 1.1 }}>
               Drag the apple, watch it fall.

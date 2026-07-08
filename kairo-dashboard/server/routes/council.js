@@ -40,7 +40,7 @@ router.post('/brief', async (req, res) => {
     .sort((a, b) => a.days - b.days)
   const nextExam = withDays[0] || null
 
-  const prompt = `You are the AI Council inside Kairo — a team of six mentors (Mentor, Planner, Analyst, Exam strategist, Motivation coach, Memory keeper) studying ONE student. Produce today's command-center brief.
+  const prompt = `You are the AI Council inside Kora — a team of six mentors (Mentor, Planner, Analyst, Exam strategist, Motivation coach, Memory keeper) studying ONE student. Produce today's command-center brief.
 
 Student: ${name}
 Primary exam: ${exam.toUpperCase()}

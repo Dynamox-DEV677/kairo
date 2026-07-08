@@ -67,7 +67,7 @@ function verifyResetToken(token) {
  */
 async function findAuthUser(email) {
   // Supabase admin doesn't have a "lookup by email" helper — we paginate.
-  // For Kairo's current scale this is acceptable; bump page size if needed.
+  // For Kora's current scale this is acceptable; bump page size if needed.
   let page = 1
   for (;;) {
     const { data, error } = await supabaseAdmin.auth.admin.listUsers({ page, perPage: 200 })

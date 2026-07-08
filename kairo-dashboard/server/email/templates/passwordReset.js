@@ -25,7 +25,7 @@ export function renderPasswordResetHtml({
   const body = [
     intro({
       greeting: `Hey <span style="color:${THEME.brand.purpleLite};font-weight:700;">${safeName}</span>,`,
-      lead: `Someone — probably you — requested a password reset for your Kairo account. Click the button below to set a new password.`,
+      lead: `Someone — probably you — requested a password reset for your Kora account. Click the button below to set a new password.`,
     }),
     button({ href: resetUrl, label: 'Reset your password' }),
     infoCard({
@@ -54,7 +54,7 @@ export function renderPasswordResetHtml({
   ].join('')
 
   return shell({
-    title:     'Reset your Kairo password',
+    title:     'Reset your Kora password',
     preheader: `Reset your password — link expires in ${expiresInMinutes} minutes.`,
     hero: hero({
       title:    `Reset your password`,
@@ -71,7 +71,7 @@ export function renderPasswordResetText({ name, resetUrl, expiresInMinutes = 30,
   return [
     `Hey ${name || 'there'},`,
     ``,
-    `Someone requested a password reset for your Kairo account.`,
+    `Someone requested a password reset for your Kora account.`,
     `Click the link below to set a new password (expires in ${expiresInMinutes} minutes):`,
     ``,
     resetUrl,
@@ -83,14 +83,14 @@ export function renderPasswordResetText({ name, resetUrl, expiresInMinutes = 30,
     ``,
     `Didn't request this? Ignore the email — the link will expire on its own.`,
     ``,
-    `— Kairo Security`,
+    `— Kora Security`,
   ].join('\n')
 }
 
 export function sendPasswordResetEmail({ to, name, resetUrl, expiresInMinutes, ip, userAgent, time }) {
   return send({
     to,
-    subject: 'Reset your Kairo password',
+    subject: 'Reset your Kora password',
     html:    renderPasswordResetHtml({ name, resetUrl, expiresInMinutes, ip, userAgent, time }),
     text:    renderPasswordResetText({ name, resetUrl, expiresInMinutes, ip, userAgent, time }),
   })

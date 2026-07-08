@@ -3,8 +3,8 @@
  *
  * Animated check + halo + soft particle burst.
  *  "Passcode reset complete"
- *  "Kairo is ready."
- *  [ Continue to Kairo ]
+ *  "Kora is ready."
+ *  [ Continue to Kora ]
  */
 import { useEffect } from 'react'
 import { motion } from 'framer-motion'
@@ -28,10 +28,10 @@ export default function Step5Success({ onContinue }: Props) {
       stepIndex={5} stepCount={5}
       logo={null}
       title="Passcode reset complete"
-      subtitle="Kairo is ready."
+      subtitle="Kora is ready."
       footer={
         <PrimaryButton onClick={onContinue}>
-          Continue to Kairo
+          Continue to Kora
         </PrimaryButton>
       }
     >
@@ -114,7 +114,7 @@ export default function Step5Success({ onContinue }: Props) {
           padding: '0 12px',
         }}
       >
-        Your new 6-digit passcode is saved. Use it next time Kairo OS asks
+        Your new 6-digit passcode is saved. Use it next time Kora asks
         you to unlock.
       </motion.p>
     </ResetShell>

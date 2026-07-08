@@ -1,5 +1,5 @@
 /**
- * Kairo Game Engine — the Duolingo-style habit loop.
+ * Kora Game Engine — the Duolingo-style habit loop.
  *
  *   XP        every study action earns XP (awardXP)
  *   Levels    quadratic curve — early levels fast, later ones earned
@@ -20,7 +20,7 @@ const KEY = 'kairo:game:v1'
 
 // ── XP amounts per action ──────────────────────────────────────────────
 export const XP_ACTIONS: Record<string, { xp: number; label: string }> = {
-  chat_answer:    { xp: 10, label: 'Asked Kairo' },
+  chat_answer:    { xp: 10, label: 'Asked Kora' },
   flashcard_gen:  { xp: 10, label: 'Generated flashcards' },
   flashcard_rev:  { xp: 5,  label: 'Reviewed a card' },
   topic_plan:     { xp: 15, label: 'Planned a topic' },
@@ -33,12 +33,12 @@ export const XP_ACTIONS: Record<string, { xp: number; label: string }> = {
 // ── Daily quest pool (3 picked per day, deterministic) ────────────────
 interface QuestDef { id: string; label: string; action: string; target: number; bonus: number }
 const QUEST_POOL: QuestDef[] = [
-  { id: 'ask3',    label: 'Ask Kairo 3 questions',   action: 'chat_answer',   target: 3,  bonus: 30 },
+  { id: 'ask3',    label: 'Ask Kora 3 questions',   action: 'chat_answer',   target: 3,  bonus: 30 },
   { id: 'rev10',   label: 'Review 10 flashcards',    action: 'flashcard_rev', target: 10, bonus: 40 },
   { id: 'plan1',   label: 'Plan 1 topic',            action: 'topic_plan',    target: 1,  bonus: 25 },
   { id: 'quiz1',   label: 'Complete a quiz',         action: 'quiz_done',     target: 1,  bonus: 30 },
   { id: 'lab1',    label: 'Open a 3D lab',           action: 'lab_open',      target: 1,  bonus: 20 },
-  { id: 'ask5',    label: 'Ask Kairo 5 questions',   action: 'chat_answer',   target: 5,  bonus: 50 },
+  { id: 'ask5',    label: 'Ask Kora 5 questions',   action: 'chat_answer',   target: 5,  bonus: 50 },
   { id: 'note2',   label: 'Build 2 notebook notes',  action: 'note_built',    target: 2,  bonus: 25 },
 ]
 
@@ -136,7 +136,7 @@ export function badges(s: GameState): Badge[] {
     { id: 'lvl5',    label: 'Scholar',      desc: 'Reach level 5',                 earned: level >= 5 },
     { id: 'lvl10',   label: 'Sage',         desc: 'Reach level 10',                earned: level >= 10 },
     { id: 'streak7', label: 'On Fire',      desc: '7-day streak',                  earned: s.streak >= 7 },
-    { id: 'ask50',   label: 'Curious Mind', desc: 'Ask Kairo 50 questions',        earned: (life.chat_answer || 0) >= 50 },
+    { id: 'ask50',   label: 'Curious Mind', desc: 'Ask Kora 50 questions',        earned: (life.chat_answer || 0) >= 50 },
     { id: 'rev100',  label: 'Memory Master',desc: 'Review 100 flashcards',         earned: (life.flashcard_rev || 0) >= 100 },
   ]
 }

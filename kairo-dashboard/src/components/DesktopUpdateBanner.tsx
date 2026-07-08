@@ -147,7 +147,7 @@ export default function DesktopUpdateBanner() {
 
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 12.5, fontWeight: 700, letterSpacing: '-0.01em' }}>
-                  Downloading Kairo {version || ''}
+                  Downloading Kora {version || ''}
                 </div>
                 <div style={{
                   fontSize: 11, color: '#8B92A0', marginTop: 1,
@@ -207,7 +207,7 @@ export default function DesktopUpdateBanner() {
 
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 13.5, fontWeight: 700, letterSpacing: '-0.01em' }}>
-                  Kairo {version} is ready
+                  Kora {version} is ready
                 </div>
                 <div style={{
                   fontSize: 11.5, color: '#8B92A0', marginTop: 2,

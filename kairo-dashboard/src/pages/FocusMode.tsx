@@ -49,7 +49,7 @@ export default function FocusMode() {
           localStorage.setItem(STORAGE, String(next))
           setTotalMin(next)
           if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
-            new Notification('Kairo Focus Mode', { body: 'Session complete. Take a 5-minute break.' })
+            new Notification('Kora Focus Mode', { body: 'Session complete. Take a 5-minute break.' })
           }
           return 0
         }

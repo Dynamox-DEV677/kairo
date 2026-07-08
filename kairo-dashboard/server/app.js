@@ -161,7 +161,7 @@ app.use('/api/gamification',   gamificationRoutes)
 app.use('/api/schools',        schoolRoutes)
 app.use('/api/users',          passwordResetRoutes)    // forgot-password, reset-password (mounted first so /forgot-password resolves before any catch-alls)
 app.use('/api/users',          usersV2Routes)
-app.use('/api/passcode',       passcodeRoutes)         // 6-digit OTP for Kairo OS device passcode reset
+app.use('/api/passcode',       passcodeRoutes)         // 6-digit OTP for Kora device passcode reset
 app.use('/api/notes',          notesRoutes)
 app.use('/api/notifications',  notificationsRoutes)
 
@@ -194,7 +194,7 @@ app.use('/api/knowledge',      knowledgeRoutes)
 // v12 — Payments + subscription lifecycle
 app.use('/api/payments',       paymentRoutes)
 
-// Kairo OS · Twin — only the /api/twin/snapshot endpoints are used now
+// Kora · Twin — only the /api/twin/snapshot endpoints are used now
 // (GET/POST/DELETE) for cross-device sync.
 app.use('/api/twin',           twinRoutes)
 
@@ -203,7 +203,7 @@ app.get('/health', (_req, res) => {
   res.json({
     status:    'ok',
     version:   '3.0.0',
-    service:   'Kairo Education Platform Backend',
+    service:   'Kora Education Platform Backend',
     serverless: !!process.env.VERCEL,
     features: [
       'fee-reminders', 'auth', 'flashcards-srs', 'study-plans',

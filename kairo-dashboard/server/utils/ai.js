@@ -86,7 +86,7 @@ export async function aiCall({ taskType = 'speed', messages, maxTokens = 1024, t
   let lastError = null
 
   // ── Groq first ──────────────────────────────────────────────────────
-  // Most Kairo deploys set GROQ_API_KEYS but NOT OPENROUTER_API_KEY, which
+  // Most Kora deploys set GROQ_API_KEYS but NOT OPENROUTER_API_KEY, which
   // is why callers were seeing "All models failed. Provider returned
   // error" — the OpenRouter loop had no key. Try the rotating Groq pool
   // before OpenRouter; fall through to OpenRouter only if Groq is dry.
@@ -123,7 +123,7 @@ export async function aiCall({ taskType = 'speed', messages, maxTokens = 1024, t
         headers: {
           'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
           'Content-Type': 'application/json',
-          'X-Title': 'Kairo Education Platform',
+          'X-Title': 'Kora Education Platform',
         },
         body: JSON.stringify({
           model,

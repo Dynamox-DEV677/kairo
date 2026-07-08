@@ -7,7 +7,7 @@
  *
  *   const yes = await confirmDialog({
  *     title:    'Wipe your Twin?',
- *     body:     "Everything Kairo OS learned about you will be erased from this device.",
+ *     body:     "Everything Kora learned about you will be erased from this device.",
  *     confirmLabel: 'Yes, wipe',
  *     tone:     'danger',
  *   })

@@ -1,5 +1,5 @@
 /**
- * Passcode OTP Email — 6-digit verification code for Kairo OS passcode reset.
+ * Passcode OTP Email — 6-digit verification code for Kora passcode reset.
  *
  * Variables: { name, code, expiresInMinutes, ip, userAgent }
  */
@@ -46,13 +46,13 @@ export function renderPasscodeOtpHtml({
   const body = [
     intro({
       greeting: `Hey <span style="color:${THEME.brand.purpleLite};font-weight:700;">${safeName}</span>,`,
-      lead: `Use the 6-digit code below to reset your Kairo OS passcode. Type it into the open Kairo screen on your device.`,
+      lead: `Use the 6-digit code below to reset your Kora passcode. Type it into the open Kora screen on your device.`,
     }),
     otpBox,
     infoCard({
       kind: 'warning',
       title: `Code expires in ${expiresInMinutes} minutes`,
-      body: `Keep this code private. Kairo will never ask for it over chat, phone, or any other channel. If you didn't request a passcode reset, ignore this email — your existing passcode stays the same.`,
+      body: `Keep this code private. Kora will never ask for it over chat, phone, or any other channel. If you didn't request a passcode reset, ignore this email — your existing passcode stays the same.`,
     }),
     dataPanel({
       title: 'Request details',
@@ -65,13 +65,13 @@ export function renderPasscodeOtpHtml({
     divider(),
     `<p style="margin:8px 0 14px;font-family:${THEME.font.family};font-size:13px;color:${THEME.text.muted};line-height:1.7;">
        <strong style="color:${THEME.text.primary};">Didn't request this?</strong>
-       Someone may have entered your email on the Kairo reset screen by mistake. Your account is safe — the code only works alongside your active reset session, and it expires fast.
+       Someone may have entered your email on the Kora reset screen by mistake. Your account is safe — the code only works alongside your active reset session, and it expires fast.
      </p>`,
   ].join('\n')
 
   return shell({
-    previewText: `Your Kairo passcode reset code: ${code}`,
-    title:       'Reset your Kairo passcode',
+    previewText: `Your Kora passcode reset code: ${code}`,
+    title:       'Reset your Kora passcode',
     body,
   })
 }
@@ -80,15 +80,15 @@ export function renderPasscodeOtpText({ name = '', code, expiresInMinutes = 10 }
   return [
     `Hey ${name || 'there'},`,
     ``,
-    `Use this 6-digit code to reset your Kairo OS passcode:`,
+    `Use this 6-digit code to reset your Kora passcode:`,
     ``,
     `    ${code}`,
     ``,
-    `The code expires in ${expiresInMinutes} minutes. Keep it private — Kairo will never ask for it through any other channel.`,
+    `The code expires in ${expiresInMinutes} minutes. Keep it private — Kora will never ask for it through any other channel.`,
     ``,
     `If you didn't request this, ignore this email. Your passcode stays the same.`,
     ``,
-    `— Kairo`,
+    `— Kora`,
   ].join('\n')
 }
 
@@ -112,7 +112,7 @@ export async function sendPasscodeOtpEmail({
   const text = renderPasscodeOtpText({ name, code, expiresInMinutes })
   return send({
     to,
-    subject: `Your Kairo passcode reset code: ${code}`,
+    subject: `Your Kora passcode reset code: ${code}`,
     html,
     text,
   })

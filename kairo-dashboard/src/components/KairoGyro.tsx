@@ -1,12 +1,12 @@
 /**
- * KairoGyro — the signature Kairo OS loading animation.
+ * KairoGyro — the signature Kora loading animation.
  *
  * A 3D gyroscope: three rings spinning on differently-tilted axes at
  * different speeds around a glowing core, wrapped in a soft pulsing
- * halo. Matches the Kairo OS boot-intro aesthetic (ultramarine + cyan).
+ * halo. Matches the Kora boot-intro aesthetic (ultramarine + cyan).
  *
  * LOGO-SWAPPABLE: the center is a `logo` slot. Today it defaults to a
- * glowing core dot; when the new Kairo logo lands, set DEFAULT_LOGO
+ * glowing core dot; when the new Kora logo lands, set DEFAULT_LOGO
  * below once and every loader in the app updates.
  *
  * (Not to be confused with components/KairoLoader.tsx — that's the old
@@ -21,7 +21,7 @@
  */
 import type { ReactNode } from 'react'
 
-// The Kairo mark (cursive K + graduation cap) — public/kairo-mark.svg.
+// The Kora mark (cursive K + graduation cap) — public/kairo-mark.svg.
 // Swap the src here once and every loader in the app updates.
 const DEFAULT_LOGO: ReactNode = (
   <img
