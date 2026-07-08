@@ -4,6 +4,14 @@ import './index.css'
 import App from './App.tsx'
 import { initPwa } from './lib/pwa'
 
+// ── Apply the user's chosen app font before first paint ─────────────────
+// Settings stores the font stack in localStorage ('kairo:font'); the CSS
+// reads var(--kairo-font). Doing this here avoids a font flash on load.
+try {
+  const savedFont = localStorage.getItem('kairo:font')
+  if (savedFont) document.documentElement.style.setProperty('--kairo-font', savedFont)
+} catch { /* private mode */ }
+
 // ── Global error reporter ────────────────────────────────────────────────
 // Any unhandled exception or rejected promise gets POSTed to /api/ops/error
 // so it appears on the /ops dashboard (and to anything polling status).

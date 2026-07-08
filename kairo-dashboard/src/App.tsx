@@ -183,7 +183,14 @@ export default function App() {
             school = s
           }
 
+          // Keep locally-edited extras (board/cls from Settings) that the
+          // users table doesn't store — otherwise a refresh wipes them.
+          let cachedExtras: any = {}
+          try { cachedExtras = cached ? JSON.parse(cached) : {} } catch {}
+
           const freshProfile: AuthProfile = {
+            ...(cachedExtras.board ? { board: cachedExtras.board } : {}),
+            ...(cachedExtras.cls   ? { cls:   cachedExtras.cls }   : {}),
             id:              userRow?.id              || session.user.id,
             name:            userRow?.name            || session.user.email || '',
             role:            userRow?.role            || 'student',

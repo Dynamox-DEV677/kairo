@@ -19,6 +19,7 @@ import {
   AlertTriangle, Beaker,
 } from 'lucide-react'
 import type { AuthProfile } from '../pages/Login'
+import { DecoratedAvatar } from './AvatarDecor'
 
 interface NavItem {
   to: string
@@ -542,17 +543,7 @@ function MobileDrawer({
             display: 'flex', alignItems: 'center', gap: 10,
             padding: '8px 4px',
           }}>
-            <div style={{
-              width: 36, height: 36, borderRadius: 9,
-              background: profilePic ? 'transparent' : 'linear-gradient(135deg,#4F7CFF,#4F7CFF)',
-              overflow: 'hidden', flexShrink: 0,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 13, fontWeight: 700, color: '#fff',
-            }}>
-              {profilePic
-                ? <img src={profilePic} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                : (profile?.name?.charAt(0).toUpperCase() || 'K')}
-            </div>
+            <DecoratedAvatar pic={profilePic} name={profile?.name || 'K'} size={34} rounded={9} />
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{
                 fontSize: 13, fontWeight: 600,

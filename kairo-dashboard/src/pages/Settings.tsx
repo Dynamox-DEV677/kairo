@@ -1,11 +1,21 @@
 import { useState, useRef } from 'react'
 import { motion } from 'framer-motion'
-import { Camera, User, Bell, Shield, Trash2, Check, FileJson, Smartphone, Laptop, ChevronsRight, KeyRound, Sparkles, RotateCcw } from 'lucide-react'
+import { Camera, User, Bell, Shield, Trash2, Check, FileJson, Smartphone, Laptop, ChevronsRight, KeyRound, Sparkles, RotateCcw, Mail, Type } from 'lucide-react'
 import { confirmDialog } from '../components/ConfirmModal'
 import TwinBackupModal from '../components/TwinBackupModal'
 import ResetPasscode from './ResetPasscode'
 import { seedDemo, resetAllData } from '../lib/twin'
 import { getRaw, setRaw, activeBackend } from '../lib/storage'
+import { DecoratedAvatar, DECORATIONS, getDecor, setDecor } from '../components/AvatarDecor'
+
+// App-wide font choices (all loaded in index.html). Value = CSS stack.
+const FONTS = [
+  { id: 'grotesk', label: 'Space Grotesk', stack: "'Space Grotesk', 'Inter', system-ui, sans-serif" },
+  { id: 'inter',   label: 'Inter',         stack: "'Inter', system-ui, sans-serif" },
+  { id: 'poppins', label: 'Poppins',       stack: "'Poppins', 'Inter', system-ui, sans-serif" },
+  { id: 'lora',    label: 'Lora (serif)',  stack: "'Lora', Georgia, serif" },
+  { id: 'caveat',  label: 'Caveat (handwritten)', stack: "'Caveat', cursive" },
+]
 
 const BOARDS = ['CBSE', 'ICSE', 'Maharashtra', 'Tamil Nadu', 'Karnataka', 'UP Board', 'Bihar Board']
 const CLASSES = ['6', '7', '8', '9', '10', '11', '12']
@@ -27,6 +37,68 @@ export default function Settings() {
   const [resetOpen, setResetOpen] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
 
+  // Avatar decoration (Discord-style ring/orbit around the pic)
+  const [decor, setDecorSel] = useState(getDecor())
+  function pickDecor(id: string) { setDecor(id); setDecorSel(id) }
+
+  // App-wide font — applied live + persisted for the boot script in main.tsx
+  const [fontId, setFontId] = useState(() => {
+    try {
+      const saved = localStorage.getItem('kairo:font')
+      return FONTS.find(f => f.stack === saved)?.id || 'grotesk'
+    } catch { return 'grotesk' }
+  })
+  function pickFont(id: string) {
+    const f = FONTS.find(x => x.id === id)
+    if (!f) return
+    setFontId(id)
+    document.documentElement.style.setProperty('--kairo-font', f.stack)
+    try { localStorage.setItem('kairo:font', f.stack) } catch { /* quota */ }
+  }
+
+  // Email change — 6-digit code sent to the NEW address
+  const [emailCur] = useState<string>(stored.email || '')
+  const [newEmail, setNewEmail] = useState('')
+  const [emailCode, setEmailCode] = useState('')
+  const [emailStep, setEmailStep] = useState<'idle' | 'sending' | 'code' | 'verifying' | 'done'>('idle')
+  const [emailErr, setEmailErr] = useState('')
+
+  async function requestEmailCode() {
+    setEmailErr('')
+    setEmailStep('sending')
+    try {
+      const r = await fetch('/api/account/email-change/request', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ new_email: newEmail, name }),
+      })
+      const j = await r.json().catch(() => ({}))
+      if (!r.ok) throw new Error(j.error || 'Could not send the code.')
+      setEmailStep('code')
+    } catch (e: any) {
+      setEmailErr(e.message || 'Could not send the code.')
+      setEmailStep('idle')
+    }
+  }
+
+  async function verifyEmailCode() {
+    setEmailErr('')
+    setEmailStep('verifying')
+    try {
+      const r = await fetch('/api/account/email-change/verify', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ new_email: newEmail, code: emailCode, user_id: stored.id || '' }),
+      })
+      const j = await r.json().catch(() => ({}))
+      if (!r.ok) throw new Error(j.error || 'Verification failed.')
+      const merged = { ...JSON.parse(localStorage.getItem('kairo_profile') || '{}'), email: newEmail.trim().toLowerCase() }
+      localStorage.setItem('kairo_profile', JSON.stringify(merged))
+      setEmailStep('done')
+    } catch (e: any) {
+      setEmailErr(e.message || 'Verification failed.')
+      setEmailStep('code')
+    }
+  }
+
   function handlePic(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
@@ -43,9 +115,18 @@ export default function Settings() {
     reader.readAsDataURL(file)
   }
 
-  function save() {
-    const profile = { name, board, cls, role }
+  async function save() {
+    // Merge — replacing the object would drop id / tokens / school fields.
+    const profile = { ...stored, name, board, cls, role }
     localStorage.setItem('kairo_profile', JSON.stringify(profile))
+    // Also push the name to the Supabase users row: App.tsx re-reads that
+    // row on every refresh and would otherwise revert the name.
+    if (stored.id && !stored.localMode) {
+      try {
+        const { supabase } = await import('../lib/supabase')
+        await supabase.from('users').update({ name }).eq('id', stored.id)
+      } catch { /* offline — local copy still saved */ }
+    }
     setSaved(true)
     setTimeout(() => setSaved(false), 2000)
   }
@@ -112,18 +193,9 @@ export default function Settings() {
           <motion.div
             whileHover={{ scale: 1.05 }}
             onClick={() => fileRef.current?.click()}
-            style={{
-              width: 68, height: 68, borderRadius: 18, overflow: 'hidden',
-              background: pic ? 'transparent' : 'linear-gradient(135deg, #4F7CFF, #4F7CFF)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              cursor: 'pointer', flexShrink: 0, position: 'relative',
-              border: '2px solid #1f2532',
-            }}
+            style={{ cursor: 'pointer', flexShrink: 0 }}
           >
-            {pic
-              ? <img src={pic} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              : <span style={{ fontSize: 22, fontWeight: 800, color: '#fff' }}>{name.charAt(0).toUpperCase()}</span>
-            }
+            <DecoratedAvatar pic={pic} name={name} size={64} decor={decor} rounded={18} />
           </motion.div>
           <div>
             <p style={{ fontSize: 14, fontWeight: 600, color: '#fafafa', marginBottom: 4 }}>{name || 'Your Name'}</p>
@@ -171,6 +243,137 @@ export default function Settings() {
         >
           {saved ? <><Check size={14} /> Saved!</> : 'Save changes'}
         </motion.button>
+      </Section>
+
+      {/* Email — change via 6-digit code sent to the new address */}
+      <Section icon={<Mail size={14} />} title="Email">
+        <p style={{ fontSize: 12.5, color: '#9CA3AF', marginBottom: 12, lineHeight: 1.5 }}>
+          {emailCur
+            ? <>Signed in as <span style={{ color: '#fafafa', fontWeight: 600 }}>{emailCur}</span>. </>
+            : null}
+          To switch to a new email, we send a 6-digit code to the new address to prove it's yours.
+        </p>
+
+        {emailStep === 'done' ? (
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 8, padding: '11px 14px',
+            borderRadius: 10, background: 'rgba(74, 222, 128, 0.1)',
+            border: '1px solid rgba(74, 222, 128, 0.35)',
+            fontSize: 13, color: '#4ade80', fontWeight: 600,
+          }}>
+            <Check size={14} /> Email updated to {newEmail.trim().toLowerCase()}
+          </div>
+        ) : (
+          <div style={{ display: 'grid', gap: 10 }}>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <input
+                value={newEmail}
+                onChange={e => setNewEmail(e.target.value)}
+                placeholder="new@email.com"
+                type="email"
+                disabled={emailStep === 'sending' || emailStep === 'verifying'}
+                style={{ ...inp, flex: 1 }}
+              />
+              <button
+                onClick={requestEmailCode}
+                disabled={!newEmail.includes('@') || emailStep === 'sending' || emailStep === 'verifying'}
+                style={{
+                  padding: '9px 16px', borderRadius: 9, border: 'none', cursor: 'pointer',
+                  background: '#4F7CFF', color: '#fff', fontFamily: 'inherit',
+                  fontSize: 12.5, fontWeight: 700, whiteSpace: 'nowrap',
+                  opacity: !newEmail.includes('@') || emailStep === 'sending' ? 0.55 : 1,
+                }}
+              >
+                {emailStep === 'sending' ? 'Sending…' : emailStep === 'code' || emailStep === 'verifying' ? 'Resend code' : 'Send code'}
+              </button>
+            </div>
+
+            {(emailStep === 'code' || emailStep === 'verifying') && (
+              <div style={{ display: 'flex', gap: 8 }}>
+                <input
+                  value={emailCode}
+                  onChange={e => setEmailCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                  placeholder="6-digit code"
+                  inputMode="numeric"
+                  style={{ ...inp, flex: 1, letterSpacing: 6, fontWeight: 700, textAlign: 'center' }}
+                />
+                <button
+                  onClick={verifyEmailCode}
+                  disabled={emailCode.length !== 6 || emailStep === 'verifying'}
+                  style={{
+                    padding: '9px 16px', borderRadius: 9, border: 'none', cursor: 'pointer',
+                    background: '#4ade80', color: '#04150a', fontFamily: 'inherit',
+                    fontSize: 12.5, fontWeight: 800, whiteSpace: 'nowrap',
+                    opacity: emailCode.length !== 6 || emailStep === 'verifying' ? 0.55 : 1,
+                  }}
+                >
+                  {emailStep === 'verifying' ? 'Checking…' : 'Verify & change'}
+                </button>
+              </div>
+            )}
+
+            {emailErr && (
+              <p style={{ fontSize: 12, color: '#f87171', margin: 0 }}>{emailErr}</p>
+            )}
+          </div>
+        )}
+      </Section>
+
+      {/* Avatar decoration — Discord-style rings & orbiters */}
+      <Section icon={<Sparkles size={14} />} title="Avatar decoration">
+        <p style={{ fontSize: 12.5, color: '#9CA3AF', marginBottom: 14, lineHeight: 1.5 }}>
+          Pick a ring or orbiter that hangs around your profile picture everywhere in Kairo.
+        </p>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
+          {DECORATIONS.map(d => (
+            <button
+              key={d.id}
+              onClick={() => pickDecor(d.id)}
+              title={d.label}
+              style={{
+                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
+                padding: '10px 8px 8px', borderRadius: 14, cursor: 'pointer',
+                background: decor === d.id ? 'rgba(79, 124, 255, 0.14)' : 'rgba(255,255,255,0.03)',
+                border: decor === d.id ? '1.5px solid #4F7CFF' : '1.5px solid rgba(255,255,255,0.08)',
+                width: 84, fontFamily: 'inherit',
+              }}
+            >
+              <DecoratedAvatar pic={pic} name={name} size={40} decor={d.id} rounded={11} />
+              <span style={{ fontSize: 10.5, fontWeight: 700, color: decor === d.id ? '#A5B4FC' : '#9CA3AF' }}>
+                {d.label}
+              </span>
+            </button>
+          ))}
+        </div>
+      </Section>
+
+      {/* Font — changes the type across the whole app */}
+      <Section icon={<Type size={14} />} title="App font">
+        <p style={{ fontSize: 12.5, color: '#9CA3AF', marginBottom: 14, lineHeight: 1.5 }}>
+          Changes the font across all of Kairo OS, instantly. Sticks after refresh.
+        </p>
+        <div style={{ display: 'grid', gap: 8 }}>
+          {FONTS.map(f => (
+            <button
+              key={f.id}
+              onClick={() => pickFont(f.id)}
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                padding: '12px 16px', borderRadius: 11, cursor: 'pointer', textAlign: 'left',
+                background: fontId === f.id ? 'rgba(79, 124, 255, 0.14)' : 'rgba(255,255,255,0.03)',
+                border: fontId === f.id ? '1.5px solid #4F7CFF' : '1.5px solid rgba(255,255,255,0.08)',
+              }}
+            >
+              <span style={{ fontFamily: f.stack, fontSize: 15, fontWeight: 600, color: '#fafafa' }}>
+                {f.label}
+              </span>
+              <span style={{ fontFamily: f.stack, fontSize: 12.5, color: '#9CA3AF' }}>
+                The quick brown fox
+              </span>
+              {fontId === f.id && <Check size={15} color="#4F7CFF" style={{ marginLeft: 10, flexShrink: 0 }} />}
+            </button>
+          ))}
+        </div>
       </Section>
 
       {/* Notifications */}

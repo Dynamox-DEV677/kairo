@@ -13,6 +13,7 @@ import {
 import { useGeneration } from '../lib/generationContext'
 import { getRecentChats, deleteRecentChat, timeAgo } from '../lib/recentChats'
 import type { RecentChat } from '../lib/recentChats'
+import { DecoratedAvatar } from './AvatarDecor'
 
 interface NavItem {
   label: string
@@ -120,6 +121,13 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
   const [profilePic, setProfilePic] = useState<string | null>(() =>
     profile?.avatar_url || profile?.pic || localStorage.getItem('kairo_profile_pic')
   )
+  // Bumps when Settings picks a new avatar decoration → avatar re-renders
+  const [decorTick, setDecorTick] = useState(0)
+  useEffect(() => {
+    const onDecor = () => setDecorTick(t => t + 1)
+    window.addEventListener('kairo:decor', onDecor)
+    return () => window.removeEventListener('kairo:decor', onDecor)
+  }, [])
 
   // Sidebar collapse state — expanded (240) or shrunk (72). Persisted per
   // device so power users who like the icon-only mode keep it across sessions.
@@ -626,32 +634,10 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
           <div
             onClick={() => fileInputRef.current?.click()}
             title={expanded ? 'Click to set profile picture' : displayName}
-            style={{
-              width: 32, height: 32, borderRadius: 10,
-              background: profilePic ? 'transparent' : 'linear-gradient(135deg, #4F7CFF, #2046C2)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              flexShrink: 0, fontSize: 12, fontWeight: 700, color: '#fff',
-              cursor: 'pointer', position: 'relative', overflow: 'hidden',
-              border: '2px solid transparent',
-              transition: 'border-color 0.22s cubic-bezier(0.22, 1, 0.36, 1)',
-            }}
-            onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.borderColor = '#4F7CFF' }}
-            onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.borderColor = 'transparent' }}
+            style={{ cursor: 'pointer', flexShrink: 0 }}
           >
-            {profilePic ? (
-              <img src={profilePic} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-            ) : displayName.charAt(0).toUpperCase()}
-            <div style={{
-              position: 'absolute', inset: 0,
-              background: 'rgba(0,0,0,0.55)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              opacity: 0, transition: 'opacity 0.15s',
-            }}
-              onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.opacity = '1' }}
-              onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.opacity = '0' }}
-            >
-              <Camera size={11} color="#fff" />
-            </div>
+            {/* key={decorTick} re-reads the saved decoration when Settings changes it */}
+            <DecoratedAvatar key={decorTick} pic={profilePic} name={displayName} size={30} rounded={10} />
           </div>
           {expanded && (
             <>
