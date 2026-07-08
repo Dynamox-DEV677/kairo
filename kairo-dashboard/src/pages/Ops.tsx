@@ -1,5 +1,5 @@
 /**
- * Ops Dashboard — Jarvis-style live status of Kora.
+ * Ops Dashboard — Jarvis-style live status of Kyno.
  *
  * Polls /api/ops/status every 30s. Same JSON Claude Cowork (or any
  * monitoring tool) can fetch directly. Public — no auth.
@@ -76,7 +76,7 @@ export default function Ops() {
         </div>
         <div style={{ flex: 1 }}>
           <h1 style={{ fontSize: 22, fontWeight: 800, color: '#fafafa', margin: 0, letterSpacing: '-0.5px' }}>
-            Kora Ops
+            Kyno Ops
           </h1>
           <p style={{ fontSize: 12, color: '#9CA3AF', margin: '4px 0 0' }}>
             Live status — auto-refreshes every 30s · Public JSON at <code style={{ background: '#1a1a2e', padding: '1px 6px', borderRadius: 4, color: '#A5B4FC', fontSize: 11 }}>/api/ops/status</code>

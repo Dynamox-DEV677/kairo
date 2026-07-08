@@ -93,7 +93,7 @@ router.get('/email-status', async (req, res) => {
         const info = await transport.sendMail({
           from:    process.env.KAIRO_EMAIL,
           to,
-          subject: 'Kora · email diagnostic test',
+          subject: 'Kyno · email diagnostic test',
           text:    'If you got this, KAIRO_EMAIL + KAIRO_EMAIL_APP_PASSWORD are working.',
         })
         probe = { ok: true, messageId: info.messageId }
@@ -264,7 +264,7 @@ router.post('/register', async (req, res) => {
 })
 
 // ── Register Personal: standalone student, no school ──────────────────────────
-// For individuals using Kora on their own (not via a school).
+// For individuals using Kyno on their own (not via a school).
 // Creates auth user + profile with school_id = null.
 router.post('/register-personal', async (req, res) => {
   const { email, password, name, class_name, board, avatar_base64 } = req.body

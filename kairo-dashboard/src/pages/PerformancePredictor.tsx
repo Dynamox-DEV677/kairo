@@ -133,7 +133,7 @@ export default function PerformancePredictor() {
 
       const reply = await chat({
         messages: [
-          { role: 'system', content: `You are Kora, an expert exam coach. Read the student's predicted performance and give a tight, actionable report.
+          { role: 'system', content: `You are Kyno, an expert exam coach. Read the student's predicted performance and give a tight, actionable report.
 
 ## What I see
 2-3 sentences interpreting the trajectory.
@@ -145,7 +145,7 @@ export default function PerformancePredictor() {
 1 specific subject that's most likely to drag the overall result. Why.
 
 ## Action plan (this week)
-3-4 specific items, each tied to a Kora feature (Revision Simulator, Adaptive Path, Kora's Solver, Camera Study).
+3-4 specific items, each tied to a Kyno feature (Revision Simulator, Adaptive Path, Kyno's Solver, Camera Study).
 
 Keep it under 200 words. No fluff.` },
           { role: 'user', content: `My predicted performance:\n\n${summary}\n\nGive me your read.` },

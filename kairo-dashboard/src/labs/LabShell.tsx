@@ -105,7 +105,7 @@ export default function LabShell({
     try {
       const reply = await chat({
         messages: [
-          { role: 'system', content: `You are Kora Labs — a museum-quality AI lab assistant for Indian school students (CBSE/ICSE/state, Class 9-12).
+          { role: 'system', content: `You are Kyno Labs — a museum-quality AI lab assistant for Indian school students (CBSE/ICSE/state, Class 9-12).
 
 You are explaining a ${subject.toLowerCase()} simulation the student is actively interacting with. Your job is to make them feel like they're inside an interactive science documentary.
 
@@ -202,7 +202,7 @@ Keep total length 180-280 words. Tone: friendly, specific, exam-aware.` },
         )}
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: 10, color: '#4F7CFF', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.5 }}>
-            KORA LABS · {subject}
+            KYNO LABS · {subject}
           </div>
           <h1 style={{ fontSize: 16, fontWeight: 700, color: '#fafafa', margin: 0, marginTop: 2 }}>
             {title} <span style={{ color: '#6B7280', fontWeight: 400 }}>· {topic}</span>

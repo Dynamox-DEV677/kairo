@@ -4,7 +4,7 @@
  *   ┌────────────────────────┐
  *   │ ◀ Back      step 2/5  │  ← header (safe-area aware)
  *   │                       │
- *   │   Kora logo          │
+ *   │   Kyno logo          │
  *   │                       │
  *   │   {children}          │  ← scroll-safe body
  *   │                       │
@@ -26,7 +26,7 @@ interface Props {
   stepIndex:    number          // 1-5
   stepCount:    number          // 5
   onBack?:      () => void
-  /** Replaces the default Kora logo block. */
+  /** Replaces the default Kyno logo block. */
   logo?:        ReactNode
   /** Big page title (large H1). */
   title:        string
@@ -280,7 +280,7 @@ export function TextButton({ children, onClick, disabled }: {
   )
 }
 
-/** Compact Kora wordmark badge — used as the default logo block. */
+/** Compact Kyno wordmark badge — used as the default logo block. */
 export function KairoBadge() {
   return (
     <div style={{
@@ -300,7 +300,7 @@ export function KairoBadge() {
         background: GRADIENT_TEXT, WebkitBackgroundClip: 'text',
         backgroundClip: 'text', WebkitTextFillColor: 'transparent',
       }}>
-        KORA
+        KYNO
       </span>
     </div>
   )

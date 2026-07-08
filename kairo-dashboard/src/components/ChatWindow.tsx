@@ -21,7 +21,7 @@ const SUGGESTIONS = [
   { emoji: '📜', text: 'Summarise Chapter 1 History' },
 ]
 
-const SYSTEM = `You are Kora, an expert AI tutor for Indian school students (CBSE, ICSE, and state boards, Class 6–12).
+const SYSTEM = `You are Kyno, an expert AI tutor for Indian school students (CBSE, ICSE, and state boards, Class 6–12).
 Help students understand concepts clearly, solve problems step by step, and prepare for board exams.
 Be concise, encouraging, and use markdown for structure.
 For math use $...$ for inline and $$...$$ for display equations on their own line.
@@ -235,7 +235,7 @@ export default function ChatWindow({ onNewMessage, onNavigate, model = DEFAULT_M
                   boxShadow: '0 0 40px rgba(79, 124, 255, 0.04), 0 0 80px rgba(79, 124, 255, 0.02)',
                   border: '1px solid #27272a',
                 }}>
-                  <img src="/kairo_logo.png" alt="Kora" style={{ width: 48, height: 48, objectFit: 'contain' }} />
+                  <img src="/kairo_logo.png" alt="Kyno" style={{ width: 48, height: 48, objectFit: 'contain' }} />
                 </div>
               </div>
 
@@ -330,7 +330,7 @@ export default function ChatWindow({ onNewMessage, onNavigate, model = DEFAULT_M
               <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#4F7CFF', animation: 'dot-bounce 1.2s ease-in-out 0.2s infinite' }} />
               <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#4F7CFF', animation: 'dot-bounce 1.2s ease-in-out 0.4s infinite' }} />
             </div>
-            <span style={{ fontSize: 12, color: '#6B7280' }}>Kora is thinking…</span>
+            <span style={{ fontSize: 12, color: '#6B7280' }}>Kyno is thinking…</span>
           </motion.div>
         )}
 

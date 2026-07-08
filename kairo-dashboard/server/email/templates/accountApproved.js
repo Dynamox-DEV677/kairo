@@ -23,9 +23,9 @@ export function renderAccountApprovedHtml({ name, role, schoolName }) {
     infoCard({
       kind: 'success',
       title: 'Account active',
-      body: `Every Kora feature for ${safeRole}s is now unlocked. Sign in and pick up where you left off.`,
+      body: `Every Kyno feature for ${safeRole}s is now unlocked. Sign in and pick up where you left off.`,
     }),
-    button({ href: appUrl(), label: 'Sign in to Kora' }),
+    button({ href: appUrl(), label: 'Sign in to Kyno' }),
     divider(),
     `<p style="margin:8px 0 0;font-family:${THEME.font.family};font-size:12px;color:${THEME.text.dim};line-height:1.65;text-align:center;">
        Welcome aboard — ${safeSchool} is glad to have you.
@@ -34,7 +34,7 @@ export function renderAccountApprovedHtml({ name, role, schoolName }) {
 
   return shell({
     title:     `You're approved · ${schoolName}`,
-    preheader: `Your Kora account at ${schoolName} is approved.`,
+    preheader: `Your Kyno account at ${schoolName} is approved.`,
     hero: hero({
       title:    `You're approved`,
       subtitle: `Welcome aboard at ${schoolName}.`,
@@ -51,11 +51,11 @@ export function renderAccountApprovedText({ name, role, schoolName }) {
     `Hey ${name},`,
     ``,
     `Your ${role} account at ${schoolName} has been approved.`,
-    `Every Kora feature is now unlocked.`,
+    `Every Kyno feature is now unlocked.`,
     ``,
     `Sign in: ${appUrl()}`,
     ``,
-    `— Kora · Accelerate Your Academics`,
+    `— Kyno · Accelerate Your Academics`,
   ].join('\n')
 }
 

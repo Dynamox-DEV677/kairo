@@ -1,6 +1,9 @@
 <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" fill="none">
-  <!-- Kairo mark — cursive K wearing a graduation cap.
-       White on transparent; recolor via CSS filter or swap stroke/fill. -->
+  <!-- Brand mark — cursive K wearing a graduation cap.
+       White on transparent; recolor via CSS filter or swap stroke/fill.
+       Outer <g> recenters the artwork so padding is uniform on all sides —
+       keeps the mark optically centered in every tile, avatar and icon. -->
+  <g transform="translate(6 -11)">
   <g stroke="#ffffff" stroke-width="17" stroke-linecap="round" stroke-linejoin="round">
     <!-- stem: cap tip → sweeping descent → bottom-left loop → middle junction -->
     <path d="M268 138
@@ -27,5 +30,6 @@
     <!-- tassel: cord from left corner + bob -->
     <path d="M212 104 L 208 144" stroke="#ffffff" stroke-width="6" stroke-linecap="round" fill="none" />
     <path d="M202 144 L 214 144 L 212 164 L 204 164 Z" />
+  </g>
   </g>
 </svg>

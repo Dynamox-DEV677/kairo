@@ -1,5 +1,5 @@
 /**
- * FloatingModule — Kora's softer, more tactile panel wrapper.
+ * FloatingModule — Kyno's softer, more tactile panel wrapper.
  *
  * This is the refinement-pass primitive: drop it around ANY existing panel
  * to give it the new Apple Vision Pro / Arc Browser feel without rebuilding

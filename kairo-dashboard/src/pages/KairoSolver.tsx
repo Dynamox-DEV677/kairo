@@ -1,5 +1,5 @@
 /**
- * Kora's Solver — adaptive AI visual learning engine.
+ * Kyno's Solver — adaptive AI visual learning engine.
  *
  *   ┌────────────────────────────┐ ┌────────────────────┐
  *   │                            │ │ ## What you're     │
@@ -9,7 +9,7 @@
  *   │    ←/→ keyboard nav,       │ │ Formulas:          │
  *   │    parallax + fade)        │ │   F = ma           │
  *   │                            │ │ Related: ...       │
- *   └────────────────────────────┘ │ [Open in Kora Labs]│
+ *   └────────────────────────────┘ │ [Open in Kyno Labs]│
  *   ┌─────────────────────────────────┐
  *   │  ask anything…              ▶   │
  *   └─────────────────────────────────┘
@@ -17,7 +17,7 @@
  * Powered by /api/ai/solver — single call returns:
  *   - markdown text (right panel)
  *   - 5 sequential image slides from Wikimedia / Pexels / Unsplash (left)
- *   - lab route if the topic has an interactive Kora Lab
+ *   - lab route if the topic has an interactive Kyno Lab
  *   - related concept chips, formulas
  */
 import { useState, useRef, useEffect, useMemo } from 'react'
@@ -93,14 +93,14 @@ interface SolverResponse extends TextPlan {
 /**
  * Solver result presentation modes.
  *
- *   auto    — let Kora pick. For geography questions this picks Map;
+ *   auto    — let Kyno pick. For geography questions this picks Map;
  *             everything else falls through to the standard text/visual layout.
  *   text    — explanation only, no images / map / video.
  *   visual  — images + explanation (the original layout).
  *   map     — Leaflet map + image carousel + structured sections + concept graph.
  *   both    — wide split: text + visual + (map if geography).
  *
- * "3D" is shown in the picker but routes to Kora Labs when the question
+ * "3D" is shown in the picker but routes to Kyno Labs when the question
  * supports a lab; otherwise it falls back to 'visual'.
  */
 export type SolverViewMode = 'auto' | 'text' | 'visual' | 'map' | '3d' | 'both'
@@ -579,7 +579,7 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
         `}</style>
       </div>
 
-      {/* Exam planner modal — saves to localStorage so Kora countdown works */}
+      {/* Exam planner modal — saves to localStorage so Kyno countdown works */}
       <AnimatePresence>
         {examModal && <ExamPlanModal onClose={() => setExamModal(false)} />}
       </AnimatePresence>
@@ -646,7 +646,7 @@ function ExamPlanModal({ onClose }: { onClose: () => void }) {
         </div>
         <h3 style={{ margin: 0, fontSize: 18, fontWeight: 800 }}>Add an exam to your countdown</h3>
         <p style={{ margin: '4px 0 14px', fontSize: 12.5, color: '#9CA3AF' }}>
-          Saved on this device. Kora will show the countdown + adjust your weak-topic revisions toward the exam date.
+          Saved on this device. Kyno will show the countdown + adjust your weak-topic revisions toward the exam date.
         </p>
         <ExamLabel>Subject *</ExamLabel>
         <ExamInput value={subject} onChange={setSubject} placeholder="e.g. Physics" autoFocus />
@@ -742,7 +742,7 @@ function Hero({ onPick }: { onPick: (q: string) => void }) {
         }}>
           <img
             src="/kairo_logo.png"
-            alt="Kora"
+            alt="Kyno"
             style={{ width: '100%', height: '100%', objectFit: 'contain' }}
           />
         </div>
@@ -757,10 +757,10 @@ function Hero({ onPick }: { onPick: (q: string) => void }) {
           WebkitTextFillColor: 'transparent',
           backgroundClip: 'text',
         }}>
-          Kora's Solver
+          Kyno's Solver
         </h1>
         <p style={{ fontSize: 13.5, color: '#B1B5BA', margin: '10px 0 0', lineHeight: 1.65 }}>
-          Ask anything. Kora writes a clear explanation on the right and builds a
+          Ask anything. Kyno writes a clear explanation on the right and builds a
           live picture-book on the left — sourced from Wikimedia and educational image libraries.
         </p>
       </div>
@@ -854,7 +854,7 @@ function VideoPlayer({ videoId, busy, topic }: {
         whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
         display: 'flex', alignItems: 'center', gap: 6,
       }}>
-        <Sparkles size={11} /> Kora lesson · {topic}
+        <Sparkles size={11} /> Kyno lesson · {topic}
       </div>
 
       <div style={{
@@ -898,7 +898,7 @@ function VideoPlayer({ videoId, busy, topic }: {
               border: 'none', borderRadius: 0,
             }}
           />
-          {/* Subtle top-right Kora overlay — visually reframes the player.
+          {/* Subtle top-right Kyno overlay — visually reframes the player.
               Does NOT cover playback controls or the video itself. */}
           <div style={{
             position: 'absolute', bottom: 8, right: 12, zIndex: 4,
@@ -909,7 +909,7 @@ function VideoPlayer({ videoId, busy, topic }: {
             textTransform: 'uppercase', letterSpacing: 1,
             pointerEvents: 'none',
           }}>
-            Kora
+            Kyno
           </div>
         </>
       )}
@@ -1064,7 +1064,7 @@ function Slideshow({ slides, busy, topic, questionType, err, compact = false }: 
                   padding: '1px 6px', borderRadius: 3,
                   background: 'rgba(79, 124, 255, 0.15)', color: '#A5B4FC',
                   textTransform: 'uppercase', letterSpacing: 0.8, fontWeight: 700,
-                }}>{current.source === 'kairo-ai' ? '✦ Kora AI' : current.source}</span>
+                }}>{current.source === 'kairo-ai' ? '✦ Kyno AI' : current.source}</span>
                 {current.attribution && <span style={{ pointerEvents: 'auto' }}>{current.attribution}</span>}
               </div>
             </div>
@@ -1126,7 +1126,7 @@ function SlideshowSkeleton() {
         }}>
         <img
           src="/kairo_logo.png"
-          alt="Kora"
+          alt="Kyno"
           style={{ width: '100%', height: '100%', objectFit: 'contain' }}
         />
       </motion.div>
@@ -1168,7 +1168,7 @@ function ExplanationPanel({ resp, busy, error, retryHint, onOpenLab, onAskRelate
         textTransform: 'uppercase', letterSpacing: 1.5,
         display: 'flex', alignItems: 'center', gap: 6,
       }}>
-        <Sparkles size={12} /> Kora says
+        <Sparkles size={12} /> Kyno says
         {resp?.modelUsed === 'wikipedia-fallback' && (
           <span style={{
             marginLeft: 'auto',
@@ -1279,7 +1279,7 @@ function ExplanationPanel({ resp, busy, error, retryHint, onOpenLab, onAskRelate
                 <Beaker size={16} color="#fff" />
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 13, fontWeight: 700 }}>Open in Kora Labs</div>
+                <div style={{ fontSize: 13, fontWeight: 700 }}>Open in Kyno Labs</div>
                 <div style={{ fontSize: 11, color: '#B1B5BA', marginTop: 1 }}>
                   Tweak parameters, watch it live in 3D
                 </div>
@@ -1426,7 +1426,7 @@ function ModeChipBar({
     { id: 'text',   label: 'Text',    icon: TextIcon,    available: true },
     { id: 'visual', label: 'Visual',  icon: ImageIcon,   available: true },
     { id: 'map',    label: 'Map',     icon: MapPinIcon,  available: hasGeography, hint: hasGeography ? 'Geography detected' : 'Not a geography question' },
-    { id: '3d',     label: '3D',      icon: Box3DIcon,   available: supports3D,   hint: supports3D   ? 'Opens in Kora Labs' : 'No 3D lab for this topic' },
+    { id: '3d',     label: '3D',      icon: Box3DIcon,   available: supports3D,   hint: supports3D   ? 'Opens in Kyno Labs' : 'No 3D lab for this topic' },
     { id: 'both',   label: 'Both',    icon: BothIcon,    available: true },
   ]
 

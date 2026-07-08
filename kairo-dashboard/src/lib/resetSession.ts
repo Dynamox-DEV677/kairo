@@ -1,7 +1,7 @@
 /**
- * resetSession.ts — local-only Kora passcode reset session.
+ * resetSession.ts — local-only Kyno passcode reset session.
  *
- * Kora keeps a SEPARATE 6-digit device passcode (different from the
+ * Kyno keeps a SEPARATE 6-digit device passcode (different from the
  * Supabase account password). This file is the entire state machine
  * behind the Reset Passcode flow.
  *

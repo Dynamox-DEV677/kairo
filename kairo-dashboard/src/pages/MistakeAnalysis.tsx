@@ -1,8 +1,8 @@
 /**
- * Mistake Analysis — auto-populated from the unified Kora memory engine.
+ * Mistake Analysis — auto-populated from the unified Kyno memory engine.
  *
  * Every wrong answer or low-score event the user has produced anywhere in
- * Kora (quiz, battle, revision sim, adaptive quiz, solver) flows into the
+ * Kyno (quiz, battle, revision sim, adaptive quiz, solver) flows into the
  * Twin's event log. This page reads `getMistakes()` from twin.ts which groups
  * them by topic, computes severity, and surfaces a ranked list of weak areas.
  *
@@ -63,7 +63,7 @@ export default function MistakeAnalysis() {
     try {
       const reply = await chat({
         messages: [
-          { role: 'system', content: 'You are Kora, a supportive tutor for Class 9-12 Indian students. Output clean markdown, using tables where useful. Wrap all math in KaTeX delimiters — inline as $...$, block as $$...$$. No preamble.' },
+          { role: 'system', content: 'You are Kyno, a supportive tutor for Class 9-12 Indian students. Output clean markdown, using tables where useful. Wrap all math in KaTeX delimiters — inline as $...$, block as $$...$$. No preamble.' },
           { role: 'user',   content: prompt },
         ],
       })
@@ -101,7 +101,7 @@ export default function MistakeAnalysis() {
         <Header onAddManual={() => setAdding(true)} />
 
         <div className="kr-mst-kpi" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14, marginTop: 22 }}>
-          <Kpi label="Total mistakes"   value={totalMistakes}    hint="across every Kora activity" />
+          <Kpi label="Total mistakes"   value={totalMistakes}    hint="across every Kyno activity" />
           <Kpi label="Recurring topics" value={recurringTopics}  hint="≥ 3 wrong attempts" />
           <Kpi label="High-severity"    value={highSeverity}     hint="needs attention now" highlight={highSeverity > 0} />
         </div>
@@ -153,7 +153,7 @@ function Header({ onAddManual }: { onAddManual: () => void }) {
             Mistake Analysis  ·  Auto-tracked
           </div>
           <h1 style={{ margin: '4px 0 0', fontSize: 26, fontWeight: 800, letterSpacing: -0.5 }}>
-            What Kora has spotted you struggle with.
+            What Kyno has spotted you struggle with.
           </h1>
           <p style={{ margin: '6px 0 0', fontSize: 13, color: C.textFaint, lineHeight: 1.55, maxWidth: 640 }}>
             Pulled from every quiz, battle, revision, lab, and adaptive test — grouped by topic, ranked by how much attention each needs right now.
@@ -328,7 +328,7 @@ function AiResultModal({ title, body, loading, onClose }: {
         </button>
 
         <div style={{ fontSize: 10.5, fontWeight: 700, color: C.purple, textTransform: 'uppercase', letterSpacing: 2 }}>
-          Kora  ·  AI tutor
+          Kyno  ·  AI tutor
         </div>
         <h3 style={{ margin: '4px 0 14px', fontSize: 19, fontWeight: 800, letterSpacing: -0.3 }}>{title}</h3>
 
@@ -408,7 +408,7 @@ function AddMistakeModal({ onClose, onSaved }: { onClose: () => void; onSaved: (
         }}>
         <h3 style={{ margin: 0, fontSize: 18, fontWeight: 800 }}>Log a mistake</h3>
         <p style={{ margin: '4px 0 14px', fontSize: 12.5, color: C.textFaint }}>
-          What did you get wrong? Kora will use this to build patterns + suggest revisions.
+          What did you get wrong? Kyno will use this to build patterns + suggest revisions.
         </p>
         <Label>Topic *</Label>
         <Input value={topic} onChange={setTopic} placeholder="e.g. quadratic equations" autoFocus />

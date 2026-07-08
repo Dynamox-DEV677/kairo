@@ -4,10 +4,10 @@
  * Phases (timed in ms from mount):
  *   0   ── Black canvas + radial-purple glow fades in (0 → 1, 600ms)
  *   200 ── Neural grid lines stroke-draw across the field (200 → 1000ms)
- *   500 ── Kora logo scales 0.3 → 1.0 with elastic spring + bloom
+ *   500 ── Kyno logo scales 0.3 → 1.0 with elastic spring + bloom
  *   900 ── 18 particles burst outward from logo, fading at the edges
  *   1200── Logo gets a subtle breathing pulse + violet halo
- *   1300── "Kora" wordmark types in below the logo (700ms)
+ *   1300── "Kyno" wordmark types in below the logo (700ms)
  *   1700── "Your AI academic twin" subtitle fades up
  *   2200── Progress bar fills from 0 → 100% (final 600ms)
  *   2800── Entire splash fades out → dashboard revealed
@@ -225,7 +225,7 @@ export default function SplashScreen({ onComplete, duration = 3000 }: Props) {
               >
                 <img
                   src="/kairo_logo.png"
-                  alt="Kora"
+                  alt="Kyno"
                   width={120} height={120}
                   decoding="async" loading="eager"
                   draggable={false}
@@ -288,13 +288,13 @@ export default function SplashScreen({ onComplete, duration = 3000 }: Props) {
                 lineHeight: 1,
               }}
             >
-              {/* "Kora" — gradient white→ultramarine for a metallic look */}
+              {/* "Kyno" — gradient white→ultramarine for a metallic look */}
               <span style={{
                 background: 'linear-gradient(90deg, #FFFFFF 0%, #DBE7FF 40%, #A5B4FC 75%, #2A4FE0 100%)',
                 WebkitBackgroundClip: 'text', backgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
               }}>
-                Kora
+                Kyno
               </span>
 
               {/* White "AI" pill — small, sits on the wordmark baseline.

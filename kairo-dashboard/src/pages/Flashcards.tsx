@@ -54,7 +54,7 @@ const GRAD = {
 
 interface Card { front: string; back: string }
 
-const SYSTEM = `You are Kora, an expert tutor for Indian school students.
+const SYSTEM = `You are Kyno, an expert tutor for Indian school students.
 When given a chapter or topic, generate exactly 10 flashcards in this JSON format:
 [{"front": "Question or term", "back": "Concise but complete answer or definition"}]
 Return ONLY the JSON array, no other text. Make cards exam-realistic.`
@@ -252,7 +252,7 @@ export default function Flashcards() {
 
             {/* Suggested decks (auto-built from weak topics) */}
             {suggestions.length > 0 && (
-              <Section title="Built for you" subtitle="Decks Kora recommends from your weakest topics" icon={<Target size={13} />}>
+              <Section title="Built for you" subtitle="Decks Kyno recommends from your weakest topics" icon={<Target size={13} />}>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 12 }}>
                   {suggestions.map(s => (
                     <SuggestedDeckCard key={s.title} title={s.title} subject={s.subject} severity={s.severity} count={s.count}

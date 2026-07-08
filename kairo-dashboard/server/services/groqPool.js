@@ -3,7 +3,7 @@
  *
  * Why this exists
  *   Groq's free tier is rate-limited per account (30 req/min for Llama 3.3 70B).
- *   When Kora gets a burst — judges/teachers/students all hitting at once —
+ *   When Kyno gets a burst — judges/teachers/students all hitting at once —
  *   a single key tops out fast and every subsequent request fails with 429.
  *
  *   This module pools many Groq keys (one per Google/Outlook/Yahoo account

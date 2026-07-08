@@ -108,7 +108,7 @@ export default function TopicArchitect() {
           Give a topic. Get the whole plan.
         </h1>
         <p style={{ color: '#9CA3AF', fontSize: 14, marginTop: 8 }}>
-          Kora acts like a whole coaching institute for one topic — what to study, what to skip,
+          Kyno acts like a whole coaching institute for one topic — what to study, what to skip,
           concept maps, practice questions, and how it's been asked before.
         </p>
       </div>

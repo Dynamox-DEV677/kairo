@@ -3,8 +3,8 @@
  *
  * Animated check + halo + soft particle burst.
  *  "Passcode reset complete"
- *  "Kora is ready."
- *  [ Continue to Kora ]
+ *  "Kyno is ready."
+ *  [ Continue to Kyno ]
  */
 import { useEffect } from 'react'
 import { motion } from 'framer-motion'
@@ -28,10 +28,10 @@ export default function Step5Success({ onContinue }: Props) {
       stepIndex={5} stepCount={5}
       logo={null}
       title="Passcode reset complete"
-      subtitle="Kora is ready."
+      subtitle="Kyno is ready."
       footer={
         <PrimaryButton onClick={onContinue}>
-          Continue to Kora
+          Continue to Kyno
         </PrimaryButton>
       }
     >
@@ -114,7 +114,7 @@ export default function Step5Success({ onContinue }: Props) {
           padding: '0 12px',
         }}
       >
-        Your new 6-digit passcode is saved. Use it next time Kora asks
+        Your new 6-digit passcode is saved. Use it next time Kyno asks
         you to unlock.
       </motion.p>
     </ResetShell>

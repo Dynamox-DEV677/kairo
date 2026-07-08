@@ -7,7 +7,7 @@
  *
  *   shell({
  *     title:       'You\'re in',           // <title> + fallback subject
- *     preheader:   'Welcome to Kora.',     // inbox preview
+ *     preheader:   'Welcome to Kyno.',     // inbox preview
  *     hero:        hero({ title, subtitle }),  // pre-built <tr>
  *     body:        '<!-- inner HTML -->',
  *     footerNote:  'Joined as student · Greenwood Public School',
@@ -26,7 +26,7 @@ import { THEME } from './theme.js'
 import { footer, brandStrip, preheader } from './components.js'
 
 export function shell({
-  title       = 'Kora',
+  title       = 'Kyno',
   preheader: prehead = '',
   hero,
   body,

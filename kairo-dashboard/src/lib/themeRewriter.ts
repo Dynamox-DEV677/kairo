@@ -1,7 +1,7 @@
 /**
- * Light-mode theme rewriter for Kora.
+ * Light-mode theme rewriter for Kyno.
  *
- * Most of Kora's components paint themselves with hard-coded inline styles
+ * Most of Kyno's components paint themselves with hard-coded inline styles
  * (background: '#050505', color: '#fafafa', border: '1px solid #1f2532'),
  * which the browser normalises to rgb()/rgba() form in the actual inline
  * style attribute. CSS attribute selectors can't reliably cover every

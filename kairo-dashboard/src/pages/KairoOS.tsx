@@ -1,5 +1,5 @@
 /**
- * Kora — the AI Academic Twin dashboard.
+ * Kyno — the AI Academic Twin dashboard.
  *
  * Reads everything from localStorage via src/lib/twin.ts. No network calls.
  * Each student's data lives entirely on their own device (Netflix-downloads
@@ -54,7 +54,7 @@ const GRAD = {
 }
 
 // ════════════════════════════════════════════════════════════════════════════
-// CINEMATIC INTRO — plays once per session when Kora opens.
+// CINEMATIC INTRO — plays once per session when Kyno opens.
 // Letter-by-letter wordmark reveal in Space Grotesk, spinning boot ring,
 // gradient shine sweep, boot-log tagline, progress line. Click to skip.
 // ════════════════════════════════════════════════════════════════════════════
@@ -65,7 +65,7 @@ function KairoOSIntro({ onDone }: { onDone: () => void }) {
     return () => clearTimeout(t)
   }, [onDone])
 
-  const letters = 'KORA'.split('')
+  const letters = 'KYNO'.split('')
 
   return createPortal(
     <div onClick={onDone} style={{
@@ -272,7 +272,7 @@ export default function KairoOS() {
   async function onWipe() {
     const ok = await confirmDialog({
       title:        'Wipe your Twin?',
-      body:         "Everything Kora has learned about you on this device will be permanently erased. Schools, marks, and other school data are not affected.",
+      body:         "Everything Kyno has learned about you on this device will be permanently erased. Schools, marks, and other school data are not affected.",
       confirmLabel: 'Yes, wipe my Twin',
       cancelLabel:  'Keep my Twin',
       tone:         'danger',
@@ -434,7 +434,7 @@ export default function KairoOS() {
 // ════════════════════════════════════════════════════════════════════════════
 function Header({ twin, onRefresh, onWipe, pulse, onBackup }: { twin: Twin; onRefresh: () => void; onWipe: () => void; pulse: boolean; onBackup: () => void }) {
   return (
-    // Glass header band — the "front line" of Kora.
+    // Glass header band — the "front line" of Kyno.
     <div className="kr-header" style={{
       display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14, flexWrap: 'wrap',
       padding: '18px 20px', borderRadius: 22,
@@ -450,7 +450,7 @@ function Header({ twin, onRefresh, onWipe, pulse, onBackup }: { twin: Twin; onRe
           background: GRAD.pill, display: 'grid', placeItems: 'center',
           boxShadow: '0 12px 38px rgba(79, 124, 255, 0.35)',
         }}>
-          <img src="/kairo-mark.svg" alt="Kora" style={{ width: 60, height: 60, objectFit: 'contain' }} />
+          <img src="/kairo-mark.svg" alt="Kyno" style={{ width: 60, height: 60, objectFit: 'contain' }} />
         </div>
         <div>
           <div style={{
@@ -465,7 +465,7 @@ function Header({ twin, onRefresh, onWipe, pulse, onBackup }: { twin: Twin; onRe
             textShadow: '0 0 26px rgba(79,124,255,0.45)',
             lineHeight: 1.05,
           }}>
-            Kora
+            Kyno
           </h1>
           <div style={{ fontSize: 12, color: C.textFaint, marginTop: 5 }}>
             {pulse ? (
@@ -532,7 +532,7 @@ function TwinVoice({ obs }: { obs: Observation }) {
       </div>
       <div style={{ position: 'relative', flex: 1 }}>
         <div style={{ fontSize: 10, fontWeight: 700, color: toneColor, textTransform: 'uppercase', letterSpacing: 1.6 }}>
-          Kora  ·  {obs.kind}
+          Kyno  ·  {obs.kind}
         </div>
         <div style={{ fontSize: 16, fontWeight: 700, color: C.text, marginTop: 4, letterSpacing: -0.2 }}>
           {obs.title}
@@ -703,7 +703,7 @@ function StyleCard({ twin, openDetail }: { twin: Twin; openDetail: (k: DetailKin
         fontSize: 12.5, color: C.textDim, lineHeight: 1.55,
       }}>
         <span style={{ color: top.color, fontWeight: 700 }}>You're a {top.label.toLowerCase()} learner.</span>{' '}
-        Kora will preferentially surface {top.label.toLowerCase()} content (labs, flashcards, notes) when you next ask for help.
+        Kyno will preferentially surface {top.label.toLowerCase()} content (labs, flashcards, notes) when you next ask for help.
       </div>
     </Card>
   )
@@ -737,7 +737,7 @@ function PerformanceCard({ twin, mastery, openDetail }: { twin: Twin; mastery: (
           {twin.focusBestHour != null ? (
             <>You score highest around <span style={{ color: C.text, fontWeight: 700 }}>{twin.focusBestHour}:00</span>{twin.focusAvgMinutes ? ` · avg session ${twin.focusAvgMinutes} min` : ''}</>
           ) : (
-            <>Build a study habit and Kora will pinpoint your best hour.</>
+            <>Build a study habit and Kyno will pinpoint your best hour.</>
           )}
         </div>
         <span style={{
@@ -891,7 +891,7 @@ function RetentionCard({ mastery, forgetting, openDetail }: { mastery: (MasteryR
     return (
       <Card>
         <CardTitle icon={<Brain size={13} />}>Memory retention</CardTitle>
-        <EmptyInline icon={<Brain size={20} color={C.textFaint} />} text="Your forgetting curve appears here once Kora sees you study a topic." />
+        <EmptyInline icon={<Brain size={20} color={C.textFaint} />} text="Your forgetting curve appears here once Kyno sees you study a topic." />
       </Card>
     )
   }
@@ -1113,7 +1113,7 @@ function ObservationsCard({ obs }: { obs: Observation[] }) {
     return (
       <Card>
         <CardTitle icon={<Award size={13} />}>Insights</CardTitle>
-        <EmptyInline icon={<Award size={20} color={C.textFaint} />} text="Kora will surface insights as patterns emerge in your studying." />
+        <EmptyInline icon={<Award size={20} color={C.textFaint} />} text="Kyno will surface insights as patterns emerge in your studying." />
       </Card>
     )
   }
@@ -1210,8 +1210,8 @@ function PrivacyFooter({ onWipe, eventCount }: { onWipe: () => void; eventCount:
       <Sparkles size={14} color={C.purple} />
       <div style={{ flex: 1, minWidth: 260, fontSize: 12, color: C.textDim, lineHeight: 1.55 }}>
         <span style={{ color: C.text, fontWeight: 700 }}>Stored on this device only.</span>{' '}
-        Your Kora profile ({eventCount} events) lives in your browser's localStorage —
-        none of this is uploaded to Kora's servers. Clearing your browser data wipes it.
+        Your Kyno profile ({eventCount} events) lives in your browser's localStorage —
+        none of this is uploaded to Kyno's servers. Clearing your browser data wipes it.
       </div>
       <button onClick={onWipe} style={{
         ...chipBtn(), color: C.red, borderColor: 'rgba(102, 217, 255, 0.14)', flexShrink: 0,
@@ -1421,7 +1421,7 @@ function renderDetail(
         subtitle: 'How much of what you studied you still remember.',
         value: `${Math.round(twin.retentionScore * 100)}`,
         valueSuffix: '/ 100',
-        explanation: 'Kora runs every topic through an Ebbinghaus forgetting curve. Each correct quiz or flashcard review boosts memory strength; time decays it. This is the weighted average across all topics you\'ve touched.',
+        explanation: 'Kyno runs every topic through an Ebbinghaus forgetting curve. Each correct quiz or flashcard review boosts memory strength; time decays it. This is the weighted average across all topics you\'ve touched.',
         rowsTitle: 'Top retained topics',
         rows: retainingRows.length === 0
           ? []
@@ -1453,7 +1453,7 @@ function renderDetail(
         rowsTitle: 'Last 14 days',
         rows: dayRows,
         tips: [
-          'Aim for at least one Kora session per day, even if short.',
+          'Aim for at least one Kyno session per day, even if short.',
           'Use the streak counter as a daily commitment, not a chore.',
           'Block 20 minutes at your best hour — see the Trajectory card.',
         ],
@@ -1496,25 +1496,25 @@ function renderDetail(
         icon: Flame, accent: C.red,
         kindLabel: 'AI Pulse · Habit',
         title: 'Streak',
-        subtitle: 'Consecutive days you\'ve studied with Kora.',
+        subtitle: 'Consecutive days you\'ve studied with Kyno.',
         value: `${twin.streakDays}`,
         valueSuffix: twin.streakDays === 1 ? 'day' : 'days',
         explanation: sameDay
           ? `Today counts ✓. Come back tomorrow to extend your streak.`
-          : `Open Kora any time today (quiz, lab, flashcard, or solver) to keep the streak going. A missed day resets to 0 — but mastery doesn\'t reset.`,
+          : `Open Kyno any time today (quiz, lab, flashcard, or solver) to keep the streak going. A missed day resets to 0 — but mastery doesn\'t reset.`,
         rowsTitle: 'Last 7 days',
         rows: dayRows,
         tips: [
           'A 5-minute flashcard run is enough to bank a day.',
           'Stack the streak with a habit you already do (after dinner, before bed).',
-          'Long streaks correlate strongly with predicted exam scores in Kora data.',
+          'Long streaks correlate strongly with predicted exam scores in Kyno data.',
         ],
       }
     }
     case 'style': {
       const m = kind.modality
       const meta: Record<Modality, { label: string; color: string; icon: any; explain: string; tip: string }> = {
-        visual:      { label: 'Visual',      color: C.purple, icon: Eye,               explain: 'You learn best from labs, diagrams, and 3D visualizations. Every lab you open boosts this.', tip: 'Open Kora Labs first when starting a new topic.' },
+        visual:      { label: 'Visual',      color: C.purple, icon: Eye,               explain: 'You learn best from labs, diagrams, and 3D visualizations. Every lab you open boosts this.', tip: 'Open Kyno Labs first when starting a new topic.' },
         interactive: { label: 'Interactive', color: C.blue,   icon: MousePointerClick, explain: 'You learn best by doing — Battle Mode, Adaptive Quiz, drag-and-drop labs. Every quiz answer boosts this.', tip: 'Start each session with a 5-question quiz to prime your brain.' },
         text:        { label: 'Reading',     color: C.cyan,   icon: BookOpen,          explain: 'You learn best from notes, articles, and written explanations. Every notebook entry boosts this.', tip: 'Convert AI answers into Notebook entries — re-reading them is high-yield.' },
         repetition:  { label: 'Repetition',  color: C.green,  icon: Repeat,            explain: 'You learn best by spaced review — flashcards, voice mode, drilling formulas. Every flashcard review boosts this.', tip: 'Run flashcards twice a day at your best hour.' },
@@ -1557,7 +1557,7 @@ function renderDetail(
         subtitle: 'Slope of your recent scores over time.',
         value: `${twin.performanceTrend > 0 ? '+' : ''}${(twin.performanceTrend * 100).toFixed(0)}%`,
         valueSuffix: 'vs. baseline',
-        explanation: `Your recent scores are ${dir}. Kora fits a linear slope to your last 20 graded events — anything above +5% is true upward momentum, below −5% means it\'s time to slow down and revise.`,
+        explanation: `Your recent scores are ${dir}. Kyno fits a linear slope to your last 20 graded events — anything above +5% is true upward momentum, below −5% means it\'s time to slow down and revise.`,
         rowsTitle: 'Last 12 scored events',
         rows: recent.length === 0 ? [] : recent.map(e => ({
           label:      titleCase(e.topic || 'untitled'),
@@ -1579,7 +1579,7 @@ function renderDetail(
         icon: Trophy, accent: C.purple,
         kindLabel: 'Trajectory',
         title: 'Predicted exam score',
-        subtitle: 'Where Kora thinks you\'d land today.',
+        subtitle: 'Where Kyno thinks you\'d land today.',
         value: twin.predictedExamScore != null ? `${twin.predictedExamScore}` : '—',
         valueSuffix: twin.predictedExamScore != null ? `% · grade ${twin.predictedBand || '—'}` : 'need more data',
         explanation: 'A blend of mastery × confidence × consistency, weighted by exam-style difficulty. Updates every time you finish a quiz or essay. Treat it as a directional signal, not a guarantee.',
@@ -1637,7 +1637,7 @@ function renderDetail(
         subtitle: 'Pacing & fatigue signals from the last 7 days.',
         value: `${Math.round(twin.burnoutRisk * 100)}%`,
         valueSuffix: 'risk',
-        explanation: 'Kora watches for long sessions, late-night study, drops in correctness, and over-density across days. A high score doesn\'t mean stop — it means rest. Sleep is study.',
+        explanation: 'Kyno watches for long sessions, late-night study, drops in correctness, and over-density across days. A high score doesn\'t mean stop — it means rest. Sleep is study.',
         rowsTitle: 'Signals contributing',
         rows: [
           { label: 'Events in last 24h',       value: `${lastDay.length}`,    valueColor: lastDay.length > 30 ? C.red : C.textDim, dot: lastDay.length > 30 ? C.red : C.green },
@@ -1661,7 +1661,7 @@ function renderDetail(
         subtitle: 'Days active in the last 14 days.',
         value: `${Math.round(twin.consistencyScore * 100)}%`,
         valueSuffix: `(${Math.round(twin.consistencyScore * 14)} of 14)`,
-        explanation: 'Same data as the Pulse Consistency tile — shown here as a vital because it\'s the single highest leading indicator of exam outcomes in Kora data.',
+        explanation: 'Same data as the Pulse Consistency tile — shown here as a vital because it\'s the single highest leading indicator of exam outcomes in Kyno data.',
         rowsTitle: 'Day-by-day activity',
         rows: dayRows,
         tips: [
@@ -1681,7 +1681,7 @@ function renderDetail(
         subtitle: 'Combined with predicted exam grade.',
         value: `${Math.round(twin.confidence * 100)}%`,
         valueSuffix: twin.predictedExamScore != null ? `→ predicted ${twin.predictedExamScore}%` : '',
-        explanation: `Confidence × difficulty curves into the exam prediction. Right now Kora expects you to score around ${twin.predictedExamScore ?? '—'}${twin.predictedExamScore != null ? '%' : ''}${twin.predictedBand ? ` (grade ${twin.predictedBand})` : ''}.`,
+        explanation: `Confidence × difficulty curves into the exam prediction. Right now Kyno expects you to score around ${twin.predictedExamScore ?? '—'}${twin.predictedExamScore != null ? '%' : ''}${twin.predictedBand ? ` (grade ${twin.predictedBand})` : ''}.`,
         rowsTitle: 'Recent graded events',
         rows: recentScores.length === 0 ? [] : recentScores.map(e => ({
           label:      titleCase(e.topic || 'untitled'),
@@ -1745,7 +1745,7 @@ function renderDetail(
         subtitle: 'Predicted to drop below 60% retention soon.',
         value: hours < 24 ? `${Math.round(hours)}h` : `${Math.round(hours / 24)}d`,
         valueSuffix: 'until forgetting',
-        explanation: `Without review, Kora expects retention on "${kind.topic}" to fall below the 60% threshold in roughly ${hours < 24 ? `${Math.round(hours)} hours` : `${Math.round(hours / 24)} days`}. A single correct flashcard or quiz answer resets the curve.`,
+        explanation: `Without review, Kyno expects retention on "${kind.topic}" to fall below the 60% threshold in roughly ${hours < 24 ? `${Math.round(hours)} hours` : `${Math.round(hours / 24)} days`}. A single correct flashcard or quiz answer resets the curve.`,
         rowsTitle: 'Recent activity',
         rows: topicEvents.length === 0 ? [] : topicEvents.map(e => ({
           label:      labelFor(e.type),
@@ -1864,7 +1864,7 @@ function EmptyState({ onRefresh, onSeed }: { onRefresh: () => void; onSeed: () =
       }}>
         <Brain size={28} color="#fff" />
       </div>
-      <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: C.text }}>Kora is waking up</h2>
+      <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: C.text }}>Kyno is waking up</h2>
       <p style={{ margin: 0, fontSize: 13, color: C.textFaint, maxWidth: 420, textAlign: 'center', lineHeight: 1.6 }}>
         Take a quiz, open a lab, or review flashcards. Every interaction starts shaping your Academic Twin —
         which lives entirely on this device, never on our servers.

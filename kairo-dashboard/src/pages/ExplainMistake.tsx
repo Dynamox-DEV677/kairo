@@ -31,7 +31,7 @@ const lbl: React.CSSProperties = {
   fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.8,
 }
 
-const SYSTEM = `You are Kora, a master AI tutor for Indian school students.
+const SYSTEM = `You are Kyno, a master AI tutor for Indian school students.
 
 A student got a question wrong. Your job is NOT to grade — it's to teach them how to never make this mistake again.
 

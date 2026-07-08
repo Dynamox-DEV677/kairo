@@ -489,7 +489,7 @@ html, body, #root {
 .kairo-mobile .h-scroll > *,
 .kairo-mobile [data-h-scroll="true"] > * { scroll-snap-align: start; flex-shrink: 0; }
 
-/* Kora Labs lab cards on mobile: ensure no horizontal overflow */
+/* Kyno Labs lab cards on mobile: ensure no horizontal overflow */
 .kairo-mobile [style*="gridTemplateColumns"][style*="auto-fill, minmax(320px"],
 .kairo-mobile [style*="gridTemplateColumns"][style*="auto-fill, minmax(280px"] {
   grid-template-columns: 1fr !important;
@@ -693,7 +693,7 @@ html, body, #root {
   gap: 12px !important;
 }
 
-/* Kora Labs canvas wrappers — full-width, fixed aspect ratio on mobile */
+/* Kyno Labs canvas wrappers — full-width, fixed aspect ratio on mobile */
 .kairo-mobile [data-r3f-canvas-host],
 .kairo-mobile [class*="lab-canvas"],
 .kairo-mobile [class*="LabCanvas"] {
@@ -742,7 +742,7 @@ html, body, #root {
    Page-specific mobile fixes from the latest screenshots
    ════════════════════════════════════════════════════════════════════════ */
 
-/* Kora Solver — stack the lesson-video pane and "Kora says" pane vertically
+/* Kyno Solver — stack the lesson-video pane and "Kyno says" pane vertically
    instead of squeezing them side-by-side. */
 .kairo-mobile .ks-result {
   grid-template-columns: 1fr !important;
@@ -833,7 +833,7 @@ html, body, #root {
 }
 
 /* ════════════════════════════════════════════════════════════════════════════
-   LIGHT THEME — overrides every common dark inline-style colour Kora uses.
+   LIGHT THEME — overrides every common dark inline-style colour Kyno uses.
    Activated by Dashboard.tsx via document.documentElement.setAttribute(
      'data-theme', 'light'). Because the codebase paints everything with
    inline `style={{ background: '#050505' }}` etc., we cannot rely on CSS
@@ -963,7 +963,7 @@ html[data-theme="light"] [style*="color:#d4d4d8"]
 /* Mid greys are already readable on light; no override needed for
    #B1B5BA, #9CA3AF, #6B7280, #4B5563 — they all work on white. */
 
-/* ── Specific Kora-OS / mobile token vars ─────────────────────────────── */
+/* ── Specific Kyno-OS / mobile token vars ─────────────────────────────── */
 html[data-theme="light"] {
   --c-bg:        #fafafa;
   --c-bg-elev1:  #ffffff;
@@ -1009,7 +1009,7 @@ html[data-theme="light"] [class*="grad-text"] {
   background-clip: text !important;
 }
 
-/* Pure white text inside gradients (Kora hero "Eight seconds.") — keep */
+/* Pure white text inside gradients (Kyno hero "Eight seconds.") — keep */
 
 /* ── Glow utility — soften on light so it doesn't look like a halo around
    a white card. Keep purple cast, drop intensity. ─────────────────────── */

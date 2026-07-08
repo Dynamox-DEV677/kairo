@@ -1,5 +1,5 @@
 /**
- * Kora email module — single entry point.
+ * Kyno email module — single entry point.
  *
  * Import these named functions to send emails:
  *

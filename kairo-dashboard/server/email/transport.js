@@ -13,7 +13,7 @@ import nodemailer from 'nodemailer'
 
 const FROM_EMAIL  = process.env.KAIRO_EMAIL
 const APP_PWD     = (process.env.KAIRO_EMAIL_APP_PASSWORD || '').replace(/\s+/g, '')
-const FROM_NAME   = process.env.KAIRO_EMAIL_FROM_NAME || 'Kora · Accelerate Your Academics'
+const FROM_NAME   = process.env.KAIRO_EMAIL_FROM_NAME || 'Kyno · Accelerate Your Academics'
 
 let _transporter = null
 

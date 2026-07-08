@@ -26,7 +26,7 @@ export default function App() {
   const [checking, setChecking] = useState(true)
   // Default view: web visitors land on the cinematic marketing page; users
   // running inside the Electron desktop shell skip straight to sign-in
-  // (there's no point selling them on Kora — they already downloaded it).
+  // (there's no point selling them on Kyno — they already downloaded it).
   // window.kairoDesktop is exposed by kairo-electron/preload.js.
   const [view, setView] = useState<View>(() => {
     if (typeof window !== 'undefined' && (window as any).kairoDesktop?.isDesktop) {
@@ -167,11 +167,28 @@ export default function App() {
         if (session) {
           // maybeSingle() — no 406 when the row doesn't exist (auth user
           // without a public.users profile, e.g. legacy or partial-signup).
-          const { data: userRow } = await supabase
+          let { data: userRow } = await supabase
             .from('users')
             .select('id, name, role, school_id, avatar_url')
             .eq('id', session.user.id)
             .maybeSingle()
+
+          // First-time OAuth (Google) accounts arrive with a session but no
+          // public.users row — provision one so the rest of the app works.
+          if (!userRow) {
+            const meta: any = session.user.user_metadata || {}
+            const fallbackName = meta.full_name || meta.name
+              || session.user.email?.split('@')[0] || 'Kyno Student'
+            const newRow = {
+              id:         session.user.id,
+              name:       fallbackName,
+              role:       'student',
+              school_id:  null as any,
+              avatar_url: meta.avatar_url || meta.picture || null,
+            }
+            try { await supabase.from('users').insert(newRow) } catch { /* RLS may block */ }
+            userRow = newRow as any
+          }
 
           let school: any = null
           if (userRow?.school_id) {

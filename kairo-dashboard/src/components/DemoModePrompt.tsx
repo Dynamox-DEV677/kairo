@@ -4,7 +4,7 @@
  * Surfaces a non-blocking toast in the bottom-right that offers to seed
  * the dashboard with a realistic Class 10 CBSE student. Aimed at judges
  * / teachers / first-time visitors so they don't bounce off an empty
- * Kora the moment they land.
+ * Kyno the moment they land.
  *
  * Shown when ALL of these are true:
  *   - The user has just landed on the Dashboard (post-login)
@@ -86,7 +86,7 @@ export default function DemoModePrompt({ delayMs = 1400 }: Props) {
       seedDemo()
       localStorage.setItem(promptStorageKey(), 'accepted:' + Date.now())
       // Reload so every page in the app re-reads from the now-seeded twin.
-      // Routes that subscribe to `storage` events (Kora) would still
+      // Routes that subscribe to `storage` events (Kyno) would still
       // update without this, but Solver / Notebook / Formula Sheet read
       // on mount only.
       window.location.reload()
@@ -152,7 +152,7 @@ export default function DemoModePrompt({ delayMs = 1400 }: Props) {
               </div>
               <p style={{ margin: '4px 0 0', fontSize: 12, color: '#B1B5BA', lineHeight: 1.55 }}>
                 Skip the empty dashboard — load two weeks of realistic Class 10 CBSE activity
-                so you can explore Kora, Flashcards, Concept Map and Mistake Analysis with
+                so you can explore Kyno, Flashcards, Concept Map and Mistake Analysis with
                 real data.
               </p>
             </div>

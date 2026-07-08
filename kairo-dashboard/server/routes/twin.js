@@ -1,5 +1,5 @@
 /**
- * Kora · Academic Twin REST API.
+ * Kyno · Academic Twin REST API.
  *
  *   GET  /api/twin                      twin snapshot (current user)
  *   POST /api/twin/refresh              force recompute (twin + recs + obs)

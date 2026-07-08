@@ -58,7 +58,7 @@ interface ScheduleBlock {
   type?: 'study' | 'revision' | 'practice' | 'rest'
 }
 
-const SYSTEM = `You are Kora, an expert AI study coach for Indian board exam students.
+const SYSTEM = `You are Kyno, an expert AI study coach for Indian board exam students.
 Generate a SMART weekly study schedule that:
 1. Distributes study time across days based on exam proximity (closer exams = more time).
 2. Front-loads weak topics in mornings/early sessions when focus is highest.
@@ -217,7 +217,7 @@ Generate the JSON schedule and markdown plan as instructed.`
             {weakTopics.length
               ? <>Pulled <strong>{weakTopics.length} weak topic{weakTopics.length === 1 ? '' : 's'}</strong> from your AI Memory. AI will weight these heavier.</>
               : memoryCount === 0
-                ? <>No memory data yet — schedule will be balanced. Use Kora's Solver, Grader, or quizzes to teach Kora your weak spots.</>
+                ? <>No memory data yet — schedule will be balanced. Use Kyno's Solver, Grader, or quizzes to teach Kyno your weak spots.</>
                 : <>Memory has {memoryCount} entries but no weak topics flagged yet.</>}
           </span>
           <button onClick={loadMemory} style={{

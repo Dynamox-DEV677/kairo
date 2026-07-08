@@ -1,5 +1,5 @@
 /**
- * Kora — Academic Twin engine, fully client-side.
+ * Kyno — Academic Twin engine, fully client-side.
  *
  * DESIGN
  *   Every student's learning model lives in their own browser, not in our
@@ -120,7 +120,7 @@ export interface Recommendation {
   createdAt:  number
 }
 
-// ─── Domain records — every other Kora system reads/writes here ──────────────
+// ─── Domain records — every other Kyno system reads/writes here ──────────────
 export interface Doubt {
   id:        string
   ts:        number
@@ -314,7 +314,7 @@ export function clearTwin() {
 }
 
 /**
- * Reset to fresh state — wipes EVERY Kora-owned localStorage key, not
+ * Reset to fresh state — wipes EVERY Kyno-owned localStorage key, not
  * just the current twin bucket. Used by the Settings "Reset to fresh
  * state" button so a demo run can return to a clean slate without
  * logging out and back in.
@@ -339,7 +339,7 @@ export function resetAllData() {
     ) toRemove.push(k)
   }
   for (const k of toRemove) storage.removeRaw(k)
-  // Notify any listeners (Kora subscribes to `storage` events)
+  // Notify any listeners (Kyno subscribes to `storage` events)
   try {
     window.dispatchEvent(new StorageEvent('storage', { key: storageKey() }))
   } catch { /* ignore */ }
@@ -716,7 +716,7 @@ interface TrackArgs {
 
 /**
  * The single public entry point. Drop this into any code path where the
- * student does something Kora should "see".
+ * student does something Kyno should "see".
  *
  *   track({ type: 'lab_opened',  subject: 'Biology', topic: 'cell' })
  *   track({ type: 'quiz_answered', subject: 'Math', topic: 'vectors', correct: true, score: 90, difficulty: 0.7 })
@@ -765,7 +765,7 @@ export function track(args: TrackArgs): TwinState {
 
 /**
  * Seed a small set of realistic backdated events so a fresh account
- * has something to look at on Kora. Used by both the desktop and
+ * has something to look at on Kyno. Used by both the desktop and
  * mobile empty-state "Try with demo data" buttons.
  *
  * Why here instead of in each page component?
@@ -1507,7 +1507,7 @@ export function dumpState(): TwinState {
 }
 
 // ════════════════════════════════════════════════════════════════════════════
-// UNIFIED MEMORY API — every other Kora system reads/writes through here
+// UNIFIED MEMORY API — every other Kyno system reads/writes through here
 // ════════════════════════════════════════════════════════════════════════════
 //
 // The Twin's `events` array captures behavioural signal (correctness, timing,

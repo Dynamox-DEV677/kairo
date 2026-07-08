@@ -105,7 +105,7 @@ async function _deliver({ schoolId, student, fee, trigger, tone, logId }) {
     const fullBody = `Dear Parent,\n\n${body}`
 
     await transporter.sendMail({
-      from: `"Kora School Admin" <${gmail}>`,
+      from: `"Kyno School Admin" <${gmail}>`,
       to: student.parent_email,
       subject,
       text: fullBody,
@@ -143,8 +143,8 @@ function toHtml(text, subject) {
 .body{font-size:15px;color:#333;line-height:1.7}
 .footer{margin-top:28px;font-size:12px;color:#aaa;border-top:1px solid #eee;padding-top:14px}</style>
 </head><body><div class="card">
-<div class="logo">📚 Kora</div>
+<div class="logo">📚 Kyno</div>
 <div class="body">${escaped}</div>
-<div class="footer">Automated message from Kora School Management. Do not reply.</div>
+<div class="footer">Automated message from Kyno School Management. Do not reply.</div>
 </div></body></html>`
 }

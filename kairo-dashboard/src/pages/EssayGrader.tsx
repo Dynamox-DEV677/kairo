@@ -5,7 +5,7 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { chat } from '../lib/openrouter'
 
-const SYSTEM = `You are Kora, an expert AI teaching assistant for Indian school students (CBSE/ICSE/state boards).
+const SYSTEM = `You are Kyno, an expert AI teaching assistant for Indian school students (CBSE/ICSE/state boards).
 
 Your job is to grade the student's answer AND teach them how to write a better one.
 

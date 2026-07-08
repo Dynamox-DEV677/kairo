@@ -1,5 +1,5 @@
 /**
- * LabKit — the Kora Labs Style System.
+ * LabKit — the Kyno Labs Style System.
  *
  * One file = everything you need to ship a new GLB-backed interactive lab.
  *
@@ -419,7 +419,7 @@ function Field({ label, body }: { label: string; body: string }) {
 }
 
 // ════════════════════════════════════════════════════════════════════════════
-// STYLE TOKENS — the Kora Labs design system, in one place
+// STYLE TOKENS — the Kyno Labs design system, in one place
 // ════════════════════════════════════════════════════════════════════════════
 export const LAB_PALETTE = {
   // Subject-tinted backgrounds

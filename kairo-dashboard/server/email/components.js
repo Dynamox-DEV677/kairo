@@ -1,5 +1,5 @@
 /**
- * Kora email components — small, composable HTML builders.
+ * Kyno email components — small, composable HTML builders.
  *
  * Every function takes an options object and returns an HTML STRING that is
  * already inlined and email-safe. Compose them inside templates with simple
@@ -10,7 +10,7 @@
  *       body: [
  *         intro({ greeting: 'Hey Darshan', message: '…' }),
  *         infoCard({ kind: 'success', title: 'Account active', body: '…' }),
- *         button({ href: '…', label: 'Open Kora' }),
+ *         button({ href: '…', label: 'Open Kyno' }),
  *       ].join(''),
  *     })
  *
@@ -289,7 +289,7 @@ export function footer({ note, schoolName } = {}) {
                 </p>
               ` : ''}
               <p style="margin:0;font-family:${THEME.font.family};font-size:11.5px;color:${THEME.text.faint};line-height:1.55;">
-                You received this because you have a Kora account ${tag}.
+                You received this because you have a Kyno account ${tag}.
               </p>
             </td>
           </tr>
@@ -308,12 +308,12 @@ export function brandStrip() {
         <td align="center" style="padding:14px 0 30px;">
           <p style="margin:0;font-family:${THEME.font.family};font-size:10.5px;color:${THEME.text.faint};letter-spacing:2.2px;text-transform:uppercase;font-weight:700;">
             <span style="background:${THEME.gradient.cta};-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">
-              KORA
+              KYNO
             </span>
             &nbsp;·&nbsp;Accelerate Your Academics
           </p>
           <p style="margin:8px 0 0;font-family:${THEME.font.family};font-size:10px;color:${THEME.text.faint};">
-            © ${new Date().getFullYear()} Kora · Built for Indian classrooms.
+            © ${new Date().getFullYear()} Kyno · Built for Indian classrooms.
           </p>
         </td>
       </tr>

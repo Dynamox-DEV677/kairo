@@ -1,5 +1,5 @@
 /**
- * TwinBackupModal — export / import your Kora twin so it can travel
+ * TwinBackupModal — export / import your Kyno twin so it can travel
  * between devices without any server involvement.
  *
  * Render path: any page can mount <TwinBackupModal open={...} onClose={...} />.
@@ -332,7 +332,7 @@ export default function TwinBackupModal({ open, onClose, onChange }: Props) {
               }}>
                 <Sparkles size={13} color={C.purpleLite} style={{ marginTop: 2, flexShrink: 0 }} />
                 <p style={{ margin: 0, fontSize: 11.5, color: C.textDim, lineHeight: 1.55 }}>
-                  Keep this file private — it contains every doubt, mistake, and formula Kora has learned about you.
+                  Keep this file private — it contains every doubt, mistake, and formula Kyno has learned about you.
                   Save it somewhere only you can reach (cloud drive, email-to-self, AirDrop).
                 </p>
               </div>
@@ -492,7 +492,7 @@ function ModeCard({ selected, onClick, title, sub }: { selected: boolean; onClic
 function ResultPanel({ result }: { result: ImportResult }) {
   if (!result.ok) {
     const msg = result.reason === 'invalid-json' ? 'That doesn\'t look like valid JSON.'
-              : result.reason === 'wrong-schema' ? 'This file isn\'t a Kora Twin backup. Schema mismatch.'
+              : result.reason === 'wrong-schema' ? 'This file isn\'t a Kyno Twin backup. Schema mismatch.'
               :                                     'No data found in the backup.'
     return (
       <div style={{
@@ -528,7 +528,7 @@ function ResultPanel({ result }: { result: ImportResult }) {
         </div>
       )}
       <div style={{ marginTop: 10, fontSize: 11, color: C.textFaint }}>
-        Kora will recompute on the next refresh. Reload the page to see everything in place.
+        Kyno will recompute on the next refresh. Reload the page to see everything in place.
       </div>
     </motion.div>
   )

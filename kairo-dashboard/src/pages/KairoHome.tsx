@@ -1,5 +1,5 @@
 /**
- * Kora Home — the AI Student Operating System command center.
+ * Kyno Home — the AI Student Operating System command center.
  *
  * The screen a student sees on login: a time-aware greeting, exam
  * countdowns, an AI-generated daily mission + mentor note, a weakness

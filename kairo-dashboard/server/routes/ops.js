@@ -1,6 +1,6 @@
 /**
  * Ops / Status API — public read endpoint that Claude Cowork (or any
- * monitoring tool) can poll to see Kora's live state.
+ * monitoring tool) can poll to see Kyno's live state.
  *
  *   GET  /api/ops/status   → JSON snapshot of deploy + DB + errors + features
  *   POST /api/ops/error    → frontend reports unhandled errors here
@@ -19,9 +19,9 @@ const ERROR_LOG_MAX = 50
 
 const FEATURES = [
   // Each feature: id, label, route, audience
-  { id: 'solver',         label: "Kora's Solver",         route: 'doubt',         audience: 'student' },
+  { id: 'solver',         label: "Kyno's Solver",         route: 'doubt',         audience: 'student' },
   { id: 'memory',         label: 'AI Memory Brain',        route: 'memory',        audience: 'student' },
-  { id: 'labs',           label: 'Kora Labs (3D sims)',   route: 'labs',          audience: 'student' },
+  { id: 'labs',           label: 'Kyno Labs (3D sims)',   route: 'labs',          audience: 'student' },
   { id: 'flashcards',     label: 'Flashcards & SRS',       route: 'flashcards',    audience: 'student' },
   { id: 'study-plan',     label: 'Study Plan',             route: 'study-plan',    audience: 'student' },
   { id: 'predictor',      label: 'Exam Predictor',         route: 'predictor',     audience: 'student' },

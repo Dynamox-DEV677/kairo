@@ -1,5 +1,5 @@
 /**
- * Kora — Terms & Conditions + Privacy Policy.
+ * Kyno — Terms & Conditions + Privacy Policy.
  *
  *   • <TermsHost />        — mount ONCE near the app root. Listens for
  *                            window events and portals the modal into <body>.
@@ -10,7 +10,7 @@
  *                            sign-up, create-school, etc.).
  *
  * Mobile-first. Strict monochrome purple palette to match the rest of the
- * Kora UI. No external state library — a single window event keeps the
+ * Kyno UI. No external state library — a single window event keeps the
  * door open for callers in any subtree.
  */
 import { useEffect, useRef, useState } from 'react'
@@ -55,7 +55,7 @@ export function TermsAcceptLine({ action = 'continuing' }: { action?: string }) 
       textAlign: 'center', margin: '12px 0 0', padding: '0 6px',
       fontFamily: FONT,
     }}>
-      By {action}, you agree to Kora's{' '}
+      By {action}, you agree to Kyno's{' '}
       <button onClick={() => openTerms('terms')} style={linkBtn}>
         Terms &amp; Conditions
       </button>
@@ -208,7 +208,7 @@ function TermsSheet({ tab, setTab, onClose }: {
               <div style={{
                 marginTop: 3, fontSize: 11, color: C.textFaint, letterSpacing: 0.2,
               }}>
-                Kora · Effective {EFFECTIVE_DATE}
+                Kyno · Effective {EFFECTIVE_DATE}
               </div>
             </div>
             <button
@@ -365,15 +365,15 @@ function TermsBody() {
   return (
     <>
       <div style={lead}>
-        Welcome to Kora — your AI academic twin. These Terms govern your
-        use of Kora's apps, websites, and services (collectively, the{' '}
+        Welcome to Kyno — your AI academic twin. These Terms govern your
+        use of Kyno's apps, websites, and services (collectively, the{' '}
         <Em>"Service"</Em>). By creating an account or using the Service you
-        agree to these Terms. If you don't agree, please don't use Kora.
+        agree to these Terms. If you don't agree, please don't use Kyno.
       </div>
 
-      <H>1. Who can use Kora</H>
+      <H>1. Who can use Kyno</H>
       <P>
-        Kora is built for students, teachers, parents, and school
+        Kyno is built for students, teachers, parents, and school
         administrators. You may use the Service if:
       </P>
       <L>
@@ -394,9 +394,9 @@ function TermsBody() {
         that show signs of compromise.
       </P>
 
-      <H>3. What Kora is (and isn't)</H>
+      <H>3. What Kyno is (and isn't)</H>
       <P>
-        Kora is an AI-powered learning companion. It generates explanations,
+        Kyno is an AI-powered learning companion. It generates explanations,
         flashcards, study plans, predictions, and other content based on
         your inputs. The Service is offered to support your learning — it is{' '}
         <Em>not a replacement</Em> for a qualified teacher, doctor, lawyer,
@@ -406,7 +406,7 @@ function TermsBody() {
 
       <H>4. AI-generated content — important</H>
       <P>
-        AI can be wrong. Outputs from Kora Solver, Kora, Voice Tutor,
+        AI can be wrong. Outputs from Kyno Solver, Kyno, Voice Tutor,
         flashcards, predictions, and other AI features may contain errors,
         omissions, or outdated information. Always verify important answers
         — especially those used in graded coursework, board examinations,
@@ -415,9 +415,9 @@ function TermsBody() {
         or other sensitive secrets into any AI prompt.
       </P>
 
-      <H>5. Your data &amp; the Kora Twin</H>
+      <H>5. Your data &amp; the Kyno Twin</H>
       <P>
-        Most of your Kora data — your study history, flashcards, formulas,
+        Most of your Kyno data — your study history, flashcards, formulas,
         notes, and the personalised "Twin" memory — lives directly on your
         device. We treat the cloud as a transit lane: when you sync across
         devices, your snapshot is uploaded, restored on the new device, and
@@ -428,12 +428,12 @@ function TermsBody() {
       <H>6. Acceptable use</H>
       <P>You agree not to:</P>
       <L>
-        <li>Use Kora to cheat on proctored or formally graded work,
+        <li>Use Kyno to cheat on proctored or formally graded work,
             including exams that explicitly forbid AI assistance.</li>
-        <li>Submit Kora-generated work as entirely your own in violation
+        <li>Submit Kyno-generated work as entirely your own in violation
             of your school's academic-integrity policy.</li>
         <li>Harass, threaten, or impersonate others — including teachers,
-            classmates, or Kora staff.</li>
+            classmates, or Kyno staff.</li>
         <li>Try to reverse-engineer, scrape, or systematically extract the
             Service or its AI models.</li>
         <li>Use the Service to generate illegal content, hate speech,
@@ -446,7 +446,7 @@ function TermsBody() {
 
       <H>7. School accounts</H>
       <P>
-        If you create a school on Kora, you warrant that you have authority
+        If you create a school on Kyno, you warrant that you have authority
         from the school to bind it to these Terms. The admin who created the
         school is responsible for inviting teachers and students, managing
         join codes, and complying with the school's own acceptable-use,
@@ -457,9 +457,9 @@ function TermsBody() {
 
       <H>8. Content you submit</H>
       <P>
-        You keep ownership of the content you submit to Kora — notes,
+        You keep ownership of the content you submit to Kyno — notes,
         questions, images, voice recordings, study materials. You grant
-        Kora a limited, worldwide, royalty-free licence to process,
+        Kyno a limited, worldwide, royalty-free licence to process,
         display, and store that content solely for the purpose of
         delivering the Service to you (for example: indexing it for your
         Twin, passing it to AI models to generate replies). We do not sell
@@ -468,8 +468,8 @@ function TermsBody() {
 
       <H>9. Intellectual property</H>
       <P>
-        The Kora name, logo, app, model scaffolds, prompts, designs, and
-        original written content are owned by Kora or its licensors. You
+        The Kyno name, logo, app, model scaffolds, prompts, designs, and
+        original written content are owned by Kyno or its licensors. You
         may not copy, modify, distribute, or create derivative works of
         these without our written permission. Open-source components are
         licensed under their respective open-source licences.
@@ -477,7 +477,7 @@ function TermsBody() {
 
       <H>10. Paid features &amp; billing</H>
       <P>
-        Kora is <Em>free during early access</Em>. We may introduce paid
+        Kyno is <Em>free during early access</Em>. We may introduce paid
         plans in future for advanced features or for schools. If we do, we
         will give you clear notice in advance and a separate set of billing
         terms will apply. We will never charge you without explicit consent
@@ -486,7 +486,7 @@ function TermsBody() {
 
       <H>11. Suspension &amp; termination</H>
       <P>
-        You may delete your Kora account at any time from{' '}
+        You may delete your Kyno account at any time from{' '}
         <Em>Settings → Security</Em>. We may suspend or terminate accounts
         that violate these Terms, that pose a security risk, or that we are
         required to remove by law. On termination, your local data on the
@@ -498,14 +498,14 @@ function TermsBody() {
       <P>
         The Service is provided <Em>"as is"</Em> and <Em>"as available"</Em>.
         We make no warranties about accuracy, fitness for a particular
-        purpose, or uninterrupted availability. Kora is not responsible
+        purpose, or uninterrupted availability. Kyno is not responsible
         for academic outcomes, exam scores, or decisions you make based on
         AI-generated content.
       </P>
 
       <H>13. Limitation of liability</H>
       <P>
-        To the maximum extent allowed by law, Kora, its founders, and its
+        To the maximum extent allowed by law, Kyno, its founders, and its
         contributors are <Em>not liable</Em> for indirect, incidental,
         consequential, or punitive damages, including loss of grades,
         scholarships, or opportunities. Our total liability for any claim
@@ -545,9 +545,9 @@ function PrivacyBody() {
   return (
     <>
       <div style={lead}>
-        Your privacy is core to Kora's design. This policy describes
+        Your privacy is core to Kyno's design. This policy describes
         what we collect, where it lives, and the choices you have. We try
-        hard to keep most of your data on your device — Kora is a learning
+        hard to keep most of your data on your device — Kyno is a learning
         twin, not a surveillance product.
       </div>
 
@@ -559,15 +559,15 @@ function PrivacyBody() {
         <li><Em>Learning activity</Em> — topics you study, flashcards you
             create, formulas saved, notes, quiz scores, focus sessions.
             Most of this lives on <Em>your device</Em>.</li>
-        <li><Em>AI prompts &amp; responses</Em> — what you ask Kora's AI
+        <li><Em>AI prompts &amp; responses</Em> — what you ask Kyno's AI
             features and what they say back.</li>
         <li><Em>Technical metadata</Em> — browser type, OS, IP address (for
             anti-abuse), session timestamps.</li>
       </L>
 
-      <H>2. Where your data lives — the Kora Twin</H>
+      <H>2. Where your data lives — the Kyno Twin</H>
       <P>
-        Kora's memory engine — your "Twin" — is stored primarily in your
+        Kyno's memory engine — your "Twin" — is stored primarily in your
         browser's <Em>local storage</Em>. When you sync across devices we
         encrypt and upload a snapshot, restore it on the new device, and{' '}
         <Em>delete the cloud copy</Em> shortly after. The server holds your
@@ -585,8 +585,8 @@ function PrivacyBody() {
 
       <H>4. Passcode &amp; email OTP</H>
       <P>
-        Your Kora device passcode is hashed with SHA-256 and stored
-        locally — Kora never sees the plain digits. When you reset your
+        Your Kyno device passcode is hashed with SHA-256 and stored
+        locally — Kyno never sees the plain digits. When you reset your
         passcode, we send a 6-digit one-time code to your email via our
         transactional email transport. The code is hashed in memory on the
         server, expires after 10 minutes, and is destroyed on first
@@ -595,7 +595,7 @@ function PrivacyBody() {
 
       <H>5. Cookies &amp; local storage</H>
       <P>
-        Kora uses local storage to keep you signed in and to hold your
+        Kyno uses local storage to keep you signed in and to hold your
         Twin. We do not use third-party advertising cookies or cross-site
         trackers.
       </P>
@@ -620,7 +620,7 @@ function PrivacyBody() {
 
       <H>7. Children's privacy</H>
       <P>
-        Kora can be used by students under 13 <Em>only</Em> when an
+        Kyno can be used by students under 13 <Em>only</Em> when an
         account is created and supervised by a parent, legal guardian, or
         authorised school administrator acting in loco parentis. If you
         believe a child has signed up without proper consent, email us and
@@ -629,7 +629,7 @@ function PrivacyBody() {
 
       <H>8. Your rights</H>
       <P>
-        You can view, export, or delete your Kora data at any time:
+        You can view, export, or delete your Kyno data at any time:
       </P>
       <L>
         <li><Em>View &amp; export</Em> — Settings → Data → Export Twin</li>
@@ -658,8 +658,8 @@ function PrivacyBody() {
 
       <H>11. International users</H>
       <P>
-        Kora is built primarily for users in India, but the Service may be
-        used from anywhere with internet access. By using Kora you
+        Kyno is built primarily for users in India, but the Service may be
+        used from anywhere with internet access. By using Kyno you
         consent to your data being processed in India and in the regions
         where our infrastructure providers operate.
       </P>

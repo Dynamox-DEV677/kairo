@@ -73,7 +73,7 @@ export default function MessageBubble({ message, isLast, isStreaming, onChipActi
           marginBottom: 6,
           textAlign: isUser ? 'right' : 'left',
         }}>
-          {isUser ? 'You' : 'Kora AI'}
+          {isUser ? 'You' : 'Kyno AI'}
         </div>
 
         {/* Bubble */}

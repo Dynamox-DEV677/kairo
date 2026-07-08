@@ -61,7 +61,7 @@ export function renderParentLinkedText({ name, studentName, schoolName }) {
     ``,
     `Open Parent Dashboard: ${appUrl()}/parent`,
     ``,
-    `— Kora · Accelerate Your Academics`,
+    `— Kyno · Accelerate Your Academics`,
   ].join('\n')
 }
 

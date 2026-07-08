@@ -29,7 +29,7 @@ interface NavItem {
 
 // ─── Item lists (role-aware, ordered by use frequency) ──────────────────────
 const STUDENT_BOTTOM: NavItem[] = [
-  { to: 'kairo-os',  label: 'Kora',    icon: Brain },
+  { to: 'kairo-os',  label: 'Kyno',    icon: Brain },
   { to: 'doubt',     label: 'Solve',    icon: MessageCircle },
   { to: 'battle',    label: 'Battle',   icon: Swords },
   { to: 'notebook',  label: 'Notes',    icon: BookOpen },
@@ -59,8 +59,8 @@ const DRAWER_STUDENT = [
   {
     title: 'Core',
     items: [
-      { to: 'kairo-os',       label: 'Kora',           icon: Brain },
-      { to: 'doubt',          label: "Kora's Solver",     icon: MessageCircle },
+      { to: 'kairo-os',       label: 'Kyno',           icon: Brain },
+      { to: 'doubt',          label: "Kyno's Solver",     icon: MessageCircle },
       { to: 'mistakes',       label: 'Mistake Analysis',   icon: Activity },
       { to: 'explain-mistake',label: 'Explain Mistake',    icon: AlertTriangle },
       { to: 'simulator',      label: 'Revision Simulator', icon: Zap },
@@ -69,7 +69,7 @@ const DRAWER_STUDENT = [
   {
     title: 'Tools',
     items: [
-      { to: 'labs',         label: 'Kora Labs',     icon: Beaker },
+      { to: 'labs',         label: 'Kyno Labs',     icon: Beaker },
       { to: 'flashcards',   label: 'Flashcards',     icon: BookMarked },
       { to: 'camera',       label: 'Camera Study',   icon: Camera },
       { to: 'concept-map',  label: 'Concept Map',    icon: Network },
@@ -112,7 +112,7 @@ const DRAWER_TEACHER = [
     title: 'AI Tools',
     items: [
       { to: 'teacher-ai',     label: 'AI Teacher Assistant', icon: Bot },
-      { to: 'doubt',          label: "Kora's Solver",         icon: MessageCircle },
+      { to: 'doubt',          label: "Kyno's Solver",         icon: MessageCircle },
       { to: 'essay',          label: 'Grader',                icon: FileText },
       { to: 'flashcards',     label: 'Flashcards',            icon: BookMarked },
     ],
@@ -422,7 +422,7 @@ function MobileDrawer({
           display: 'flex', flexDirection: 'column',
           boxShadow: '4px 0 40px rgba(0,0,0,0.6)',
         }}>
-        {/* Header — squircle brand tile + Kora wordmark (desktop-match) */}
+        {/* Header — squircle brand tile + Kyno wordmark (desktop-match) */}
         <div style={{
           margin: '14px 14px 8px',
           padding: '12px 14px',
@@ -439,7 +439,7 @@ function MobileDrawer({
             display: 'grid', placeItems: 'center',
             boxShadow: '0 6px 18px rgba(79,124,255,0.30), inset 0 1px 0 rgba(255,255,255,0.08)',
           }}>
-            <img src="/kairo-mark.svg" alt="Kora"
+            <img src="/kairo-mark.svg" alt="Kyno"
               style={{ width: '74%', height: '74%', objectFit: 'contain', filter: 'drop-shadow(0 0 8px rgba(102,217,255,0.45))' }} />
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
@@ -448,7 +448,7 @@ function MobileDrawer({
               fontFamily: "'Space Grotesk', system-ui, sans-serif",
               letterSpacing: 0.2,
               textShadow: '0 0 18px rgba(79,124,255,0.4)',
-            }}>Kora</div>
+            }}>Kyno</div>
             <div style={{ fontSize: 8.5, fontWeight: 600, color: 'rgba(102,217,255,0.6)', textTransform: 'uppercase', letterSpacing: 1.4 }}>
               AI Learning OS
             </div>
@@ -536,7 +536,7 @@ function MobileDrawer({
               }}>
               <Settings size={14} /> Settings
             </button>
-            {/* Theme toggle removed — Kora is dark-only. */}
+            {/* Theme toggle removed — Kyno is dark-only. */}
           </div>
 
           <div style={{

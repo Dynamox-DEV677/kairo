@@ -10,7 +10,7 @@
  *
  * Algorithms here are deliberately simple + interpretable. Each signal can be
  * inspected, explained to the student ("you're tagged 'visual' because 64%
- * of your activity is in Kora Labs and concept maps"), and tuned by hand.
+ * of your activity is in Kyno Labs and concept maps"), and tuned by hand.
  * We can swap in a real ML model later without changing the API surface.
  */
 import { supabaseAdmin } from '../supabase.js'
@@ -287,7 +287,7 @@ export async function recomputeTwin(userId) {
   // been applied yet — surface a clear error to the caller.
   const missingTable = (e) => e && (e.code === '42P01' || /relation .* does not exist/.test(e.message || ''))
   if (missingTable(eventsRes.error) && missingTable(masteryRes.error) && missingTable(sessionsRes.error)) {
-    const err = new Error('Kora schema not installed. Run kairo-dashboard/server/db/twin_schema.sql in your Supabase SQL editor.')
+    const err = new Error('Kyno schema not installed. Run kairo-dashboard/server/db/twin_schema.sql in your Supabase SQL editor.')
     err.code = 'TWIN_SCHEMA_MISSING'
     throw err
   }

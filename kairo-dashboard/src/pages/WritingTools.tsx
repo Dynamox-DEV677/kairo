@@ -166,13 +166,13 @@ function Editor() {
 
   const stats = useMemo(() => analyze(text), [text])
 
-  async function askKora() {
-    if (!text.trim() || text.length < 60) { setErr('Write at least 60 characters before asking Kora.'); return }
+  async function askKyno() {
+    if (!text.trim() || text.length < 60) { setErr('Write at least 60 characters before asking Kyno.'); return }
     setErr(''); setLoading(true); setCritique(null)
     try {
       const reply = await chat({
         messages: [
-          { role: 'system', content: `You are Kora's writing editor. Read the student's text and return ONLY this JSON:
+          { role: 'system', content: `You are Kyno's writing editor. Read the student's text and return ONLY this JSON:
 {"verdict":"1 sentence verdict (max 28 words)","rewrites":["clearer rewrite of the weakest sentence","another rewrite of any other weak sentence"],"suggestions":["1 short tip","1 short tip","1 short tip"]}
 
 Rules:
@@ -191,7 +191,7 @@ Rules:
         suggestions: Array.isArray(parsed.suggestions) ? parsed.suggestions.slice(0, 5).map((s: any) => String(s).slice(0, 200)) : [],
       })
     } catch (e: any) {
-      setErr(e.message || 'Kora could not analyze that.')
+      setErr(e.message || 'Kyno could not analyze that.')
     } finally {
       setLoading(false)
     }
@@ -216,7 +216,7 @@ Rules:
           <textarea
             value={text}
             onChange={e => setText(e.target.value)}
-            placeholder="Start writing. Kora scores your clarity in real time on the right →"
+            placeholder="Start writing. Kyno scores your clarity in real time on the right →"
             style={{
               width: '100%', minHeight: 420, padding: '18px 20px',
               background: 'transparent', border: 'none', outline: 'none',
@@ -233,7 +233,7 @@ Rules:
           </div>
         )}
 
-        <button onClick={askKora} disabled={loading}
+        <button onClick={askKyno} disabled={loading}
           style={{
             marginTop: 12, width: '100%', padding: '13px', borderRadius: 10, border: 'none',
             background: loading ? '#1a1f2e' : 'linear-gradient(135deg, #66D9FF, #4F7CFF)',
@@ -242,7 +242,7 @@ Rules:
             cursor: loading ? 'not-allowed' : 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
           }}>
-          <Sparkles size={14} /> {loading ? 'Kora is reading…' : 'Ask Kora for a critique'}
+          <Sparkles size={14} /> {loading ? 'Kyno is reading…' : 'Ask Kyno for a critique'}
         </button>
 
         <AnimatePresence>
@@ -253,7 +253,7 @@ Rules:
                 <div style={{ width: 28, height: 28, borderRadius: 8, background: 'linear-gradient(135deg, #66D9FF, #4F7CFF)', display: 'grid', placeItems: 'center' }}>
                   <Sparkles size={13} color="#000" />
                 </div>
-                <span style={{ fontSize: 11, color: '#66D9FF', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.4 }}>Kora's verdict</span>
+                <span style={{ fontSize: 11, color: '#66D9FF', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.4 }}>Kyno's verdict</span>
               </div>
               <p style={{ margin: 0, fontSize: 14, color: '#fafafa', fontWeight: 600, lineHeight: 1.55 }}>"{critique.verdict}"</p>
 

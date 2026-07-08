@@ -1,5 +1,5 @@
 /**
- * Kora Onboarding — four modes: Sign In · Personal · Join School · Create School
+ * Kyno Onboarding — four modes: Sign In · Personal · Join School · Create School
  *
  *   Sign In        : email + password → supabase.auth.signInWithPassword
  *   Personal       : 1-step → POST /api/users/register-personal (no school)
@@ -93,7 +93,7 @@ function AmbientWordmarks() {
           whiteSpace: 'nowrap', lineHeight: 1,
           willChange: 'transform',
         }}>
-          KORA
+          KYNO
         </div>
         <div className="kr-ghost-b" style={{
           position: 'absolute', bottom: '6%', left: '50%',
@@ -154,13 +154,13 @@ export default function Login({ onLogin }: LoginProps) {
       <div style={{ width: '100%', maxWidth: 480, padding: '28px 20px 48px', display: 'flex', flexDirection: 'column', position: 'relative', zIndex: 2 }}>
         {/* Logo */}
         <div style={{ textAlign: 'center', marginBottom: 22, flexShrink: 0 }}>
-          <img src="/kairo-mark.svg" alt="Kora"
+          <img src="/kairo-mark.svg" alt="Kyno"
             style={{
               width: 64, height: 64, borderRadius: 16, objectFit: 'contain',
               margin: '0 auto 14px', display: 'block',
               filter: 'drop-shadow(0 0 20px rgba(79, 124, 255, 0.03))',
             }} />
-          <h1 style={{ fontSize: 24, fontWeight: 800, color: '#fafafa', margin: 0, letterSpacing: '-0.5px' }}>kora</h1>
+          <h1 style={{ fontSize: 24, fontWeight: 800, color: '#fafafa', margin: 0, letterSpacing: '-0.5px' }}>kyno</h1>
           <p style={{ fontSize: 11, color: '#4F7CFF', fontWeight: 700, letterSpacing: 4, marginTop: 4, textTransform: 'uppercase' }}>
             By Kairo Industries
           </p>
@@ -215,19 +215,76 @@ export default function Login({ onLogin }: LoginProps) {
 // Choose mode landing
 // ════════════════════════════════════════════════════════════════════════════
 function ChooseMode({ setMode }: { setMode: (m: Mode) => void }) {
+  const [gBusy, setGBusy] = useState(false)
+  const [gErr, setGErr] = useState('')
+
+  // Google OAuth via Supabase — redirects to Google, then back here where
+  // App.tsx's restoreSession picks up the session (and auto-provisions a
+  // users row for first-time Google accounts).
+  async function googleSignIn() {
+    setGErr('')
+    setGBusy(true)
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo: window.location.origin },
+      })
+      if (error) throw new Error(error.message)
+      // Browser is navigating to Google now — leave the spinner on.
+    } catch (e: any) {
+      setGErr(e?.message || 'Google sign-in failed — try again.')
+      setGBusy(false)
+    }
+  }
+
   return (
     <div>
-      <h2 style={{ fontSize: 20, fontWeight: 700, color: '#fafafa', margin: 0, marginBottom: 6 }}>Welcome to Kora</h2>
-      <p style={{ fontSize: 13, color: '#9CA3AF', marginBottom: 24 }}>Continue your AI learning journey.</p>
+      <h2 style={{ fontSize: 20, fontWeight: 700, color: '#fafafa', margin: 0, marginBottom: 6 }}>Welcome to Kyno</h2>
+      <p style={{ fontSize: 13, color: '#9CA3AF', marginBottom: 18 }}>Continue your AI learning journey.</p>
+
+      {/* Sign in with Google */}
+      <motion.button
+        onClick={googleSignIn}
+        disabled={gBusy}
+        whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}
+        style={{
+          width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          gap: 10, padding: '12px 16px', borderRadius: 12, cursor: 'pointer',
+          background: '#fff', border: 'none',
+          color: '#1f1f1f', fontFamily: 'inherit', fontSize: 14, fontWeight: 600,
+          opacity: gBusy ? 0.7 : 1,
+          boxShadow: '0 6px 22px rgba(0,0,0,0.35)',
+        }}
+      >
+        {gBusy ? <Loader2 size={17} className="animate-spin" /> : (
+          <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden>
+            <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+            <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+            <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+            <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+          </svg>
+        )}
+        {gBusy ? 'Opening Google…' : 'Sign in with Google'}
+      </motion.button>
+      {gErr && (
+        <p style={{ fontSize: 12, color: '#f87171', margin: '10px 2px 0' }}>{gErr}</p>
+      )}
+
+      {/* or divider */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '18px 0' }}>
+        <div style={{ flex: 1, height: 1, background: '#1f2532' }} />
+        <span style={{ fontSize: 11, color: '#6B7280', fontWeight: 600, letterSpacing: 1 }}>OR</span>
+        <div style={{ flex: 1, height: 1, background: '#1f2532' }} />
+      </div>
 
       <ChoiceCard onClick={() => setMode('signin')} icon={Mail}
         title="Sign In" desc="Email + password — already a member" />
       <ChoiceCard onClick={() => setMode('personal')} icon={GraduationCap}
-        title="Create your Kora Account" desc="I'm a student, no school code needed" highlight />
+        title="Create your Kyno Account" desc="I'm a student, no school code needed" highlight />
       <ChoiceCard onClick={() => setMode('join')} icon={Building2}
         title="Join School" desc="I have a school join code" />
       <ChoiceCard onClick={() => setMode('create')} icon={Sparkles}
-        title="Create School" desc="Start a new school on Kora" />
+        title="Create School" desc="Start a new school on Kyno" />
     </div>
   )
 }
@@ -309,7 +366,7 @@ function SignIn({ onLogin, onBack }: any) {
       if (!userRow) {
         const fallbackName = (data.user.user_metadata as any)?.name
           || data.user.email?.split('@')[0]
-          || 'Kora Student'
+          || 'Kyno Student'
         try {
           await supabase.from('users').insert({
             id:        data.user.id,
@@ -865,7 +922,7 @@ function JoinSchool({ onLogin, onBack }: any) {
   return (
     <Wizard
       back={() => setStep(3)} step={4} of={4}
-      title="Link to Your Child" subtitle="Get the access code from your child's Kora app.">
+      title="Link to Your Child" subtitle="Get the access code from your child's Kyno app.">
       <Field label="Student's Name" icon={User} hint="As shown on report cards">
         <input autoFocus value={studentName} onChange={e => setStudentName(e.target.value)}
           placeholder="e.g. Ananya Iyer" style={inp} />
@@ -967,7 +1024,7 @@ function CreateSchool({ onLogin, onBack }: any) {
   }
 
   if (step === 1) return (
-    <Wizard back={onBack} step={1} of={2} title="Create School" subtitle="Let's set up your school on Kora.">
+    <Wizard back={onBack} step={1} of={2} title="Create School" subtitle="Let's set up your school on Kyno.">
       <Field label="School Name" icon={Building2}>
         <input autoFocus value={schoolName} onChange={e => setSchoolName(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && schoolName.trim() && setStep(2)}
@@ -1005,7 +1062,7 @@ function CreateSchool({ onLogin, onBack }: any) {
         }
         setErr(''); createSchool()
       }} icon={Sparkles}>Create School</PrimaryBtn>
-      <TermsAcceptLine action="creating a school on Kora" />
+      <TermsAcceptLine action="creating a school on Kyno" />
     </Wizard>
   )
 
@@ -1038,7 +1095,7 @@ function CreateSchool({ onLogin, onBack }: any) {
       <div style={{ padding: '12px 14px', borderRadius: 8, background: 'rgba(165, 180, 252, 0.06)', border: '1px solid rgba(165, 180, 252, 0.3)', marginBottom: 14 }}>
         <span style={{ fontSize: 11, fontWeight: 700, color: '#A5B4FC', textTransform: 'uppercase', letterSpacing: 1 }}>Free during launch</span>
         <p style={{ fontSize: 11, color: '#B1B5BA', margin: 0, marginTop: 4, lineHeight: 1.5 }}>
-          Your school has full access — no payment required while Kora is in early access. Share the join code with your teachers and students to bring them on board.
+          Your school has full access — no payment required while Kyno is in early access. Share the join code with your teachers and students to bring them on board.
         </p>
       </div>
 

@@ -1,5 +1,5 @@
 /**
- * Live Voice Tutor — speak to Kora, hear it back.
+ * Live Voice Tutor — speak to Kyno, hear it back.
  * Uses browser Web Speech API (free, no server cost):
  *   - SpeechRecognition  → transcribes student voice
  *   - speechSynthesis    → speaks AI response
@@ -20,7 +20,7 @@ interface Turn {
   id:   string
 }
 
-const SYSTEM = `You are Kora, a warm AI voice tutor for Indian school students (CBSE/ICSE/state boards).
+const SYSTEM = `You are Kyno, a warm AI voice tutor for Indian school students (CBSE/ICSE/state boards).
 You're speaking out loud — keep replies short (under 80 words), conversational, and clear.
 Avoid markdown, lists, or headings — use natural spoken language.
 For math, say expressions in words (e.g. "x squared plus three x").
@@ -246,7 +246,7 @@ export default function VoiceTutor() {
 
   async function saveSession() {
     if (turns.length === 0) return
-    const md = turns.map(t => `**${t.role === 'user' ? 'You' : 'Kora'}:** ${t.text}`).join('\n\n')
+    const md = turns.map(t => `**${t.role === 'user' ? 'You' : 'Kyno'}:** ${t.text}`).join('\n\n')
     const r = await saveToNotebook({
       kind: 'doubt',
       title: `Voice session · ${turns[0]?.text?.slice(0, 60) || 'Untitled'}`,
@@ -272,11 +272,11 @@ export default function VoiceTutor() {
         <div style={{ flex: 1 }}>
           <h1 style={{ fontSize: 20, fontWeight: 700, color: '#fafafa', margin: 0 }}>Voice Tutor</h1>
           <p style={{ fontSize: 13, color: '#6B7280', marginTop: 4 }}>
-            Talk to Kora naturally · personalized with your AI Memory
+            Talk to Kyno naturally · personalized with your AI Memory
           </p>
         </div>
         <button onClick={() => setMuted(m => !m)}
-          title={muted ? 'Unmute Kora' : 'Mute Kora'}
+          title={muted ? 'Unmute Kyno' : 'Mute Kyno'}
           style={{
             width: 36, height: 36, borderRadius: 9,
             background: muted ? 'rgba(102, 217, 255, 0.1)' : '#151922',

@@ -579,9 +579,9 @@ function EmptyState({ onSeed }: { onSeed?: () => void }) {
       }}>
         <Brain size={32} color="#000" />
       </div>
-      <h2 style={{ margin: 0, fontSize: 20, fontWeight: 800, color: C.text }}>Kora is waking up</h2>
+      <h2 style={{ margin: 0, fontSize: 20, fontWeight: 800, color: C.text }}>Kyno is waking up</h2>
       <p style={{ margin: 0, fontSize: 13, color: C.textFaint, maxWidth: 320, textAlign: 'center', lineHeight: 1.55 }}>
-        Take a quiz, open a lab, or ask the Solver. Your dashboard fills itself in as Kora learns how you study.
+        Take a quiz, open a lab, or ask the Solver. Your dashboard fills itself in as Kyno learns how you study.
       </p>
       {onSeed && (
         <button

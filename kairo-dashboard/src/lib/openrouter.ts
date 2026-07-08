@@ -1,4 +1,4 @@
-// Kora — OpenRouter client (proxied through backend so the key stays server-side)
+// Kyno — OpenRouter client (proxied through backend so the key stays server-side)
 
 const VITE_OR_KEY = import.meta.env.VITE_OPENROUTER_API_KEY as string | undefined
 const DIRECT_URL  = 'https://openrouter.ai/api/v1/chat/completions'
@@ -52,7 +52,7 @@ async function callModel(
   if (useDirect) {
     headers['Authorization'] = `Bearer ${VITE_OR_KEY}`
     headers['HTTP-Referer']  = window.location.origin
-    headers['X-Title']       = 'Kora'
+    headers['X-Title']       = 'Kyno'
   }
 
   const res = await fetch(url, {
@@ -140,7 +140,7 @@ export async function chat({ model = DEFAULT_MODEL, messages, onChunk, signal }:
       } catch (e: any) {
         if (e?.name === 'AbortError') throw e
         lastErr = e?.message || 'Unknown error'
-        console.warn(`[Kora] ${m} failed: ${lastErr}`)
+        console.warn(`[Kyno] ${m} failed: ${lastErr}`)
         if (!isModelUnavailable(lastErr)) throw e  // auth / network — don't retry
       }
     }

@@ -1,5 +1,5 @@
 /**
- * Geo Visual Mode — Kora Solver's geography intelligence layout.
+ * Geo Visual Mode — Kyno Solver's geography intelligence layout.
  *
  * Replaces the standard Solver result panel when:
  *    • the AI classifies the question as `geography`
@@ -74,7 +74,7 @@ interface GeoVisualModeProps {
 }
 
 // ──────────────────────────────────────────────────────────────────────────
-// Palette — matches the rest of Kora's dark theme exactly.
+// Palette — matches the rest of Kyno's dark theme exactly.
 // ──────────────────────────────────────────────────────────────────────────
 const C = {
   bg:        '#050505',
@@ -199,7 +199,7 @@ export default function GeoVisualMode({
 
       {/* Local styles — handle mobile stack + leaflet tile dark filter */}
       <style>{`
-        /* Leaflet tiles are light by default; nudge them to match Kora's dark theme. */
+        /* Leaflet tiles are light by default; nudge them to match Kyno's dark theme. */
         .ks-geo-map .leaflet-tile-pane {
           filter: hue-rotate(190deg) invert(0.92) brightness(0.95) saturate(0.85) contrast(1.05);
         }
@@ -613,7 +613,7 @@ function ExplanationPanel({
             fontFamily: FONT, fontSize: 9.5, fontWeight: 700,
             color: C.secondary, textTransform: 'uppercase', letterSpacing: 1.8,
           }}>
-            Kora says
+            Kyno says
           </div>
           <div style={{ fontFamily: FONT, fontSize: 12.5, fontWeight: 700, color: C.text, marginTop: 1 }}>
             {name}

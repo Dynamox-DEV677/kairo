@@ -1,5 +1,5 @@
 /**
- * Kora email design tokens.
+ * Kyno email design tokens.
  *
  * One source of truth for colors, spacing, typography. Templates and
  * components import from here so the visual identity stays consistent
@@ -84,7 +84,7 @@ export const THEME = {
   },
 }
 
-/** Build the Kora public app URL — used in CTA links. */
+/** Build the Kyno public app URL — used in CTA links. */
 export function appUrl() {
   const raw = process.env.ALLOWED_ORIGIN || 'https://kairo-daily-edu.vercel.app'
   // ALLOWED_ORIGIN may be a comma-separated list; take the first.

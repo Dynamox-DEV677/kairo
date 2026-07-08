@@ -1,5 +1,5 @@
 /**
- * Kora storage adapter — the chokepoint for every persistent read/write.
+ * Kyno storage adapter — the chokepoint for every persistent read/write.
  *
  * WHY
  *   twin.ts used to call `localStorage.getItem`/`setItem` directly. That made
@@ -194,7 +194,7 @@ export function listKeys(): string[] {
 }
 
 // ════════════════════════════════════════════════════════════════════════════
-// JSON convenience — most Kora code stores JSON blobs.
+// JSON convenience — most Kyno code stores JSON blobs.
 // ════════════════════════════════════════════════════════════════════════════
 
 export function getJSON<T = unknown>(key: string): T | null {

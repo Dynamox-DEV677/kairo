@@ -32,7 +32,7 @@ export function renderSchoolCreatedHtml({ name, schoolName, joinCode, plan, tria
   const body = [
     intro({
       greeting: `Hey <span style="color:${THEME.brand.purpleLite};font-weight:700;">${safeName}</span>,`,
-      lead: `<strong style="color:${THEME.text.primary};">${safeSchool}</strong> is now live on Kora. You're the admin — this is your control center.`,
+      lead: `<strong style="color:${THEME.text.primary};">${safeSchool}</strong> is now live on Kyno. You're the admin — this is your control center.`,
     }),
     codeBlock({
       value: safeCode,
@@ -57,7 +57,7 @@ export function renderSchoolCreatedHtml({ name, schoolName, joinCode, plan, tria
   ].filter(Boolean).join('')
 
   return shell({
-    title:     `${schoolName} is live on Kora`,
+    title:     `${schoolName} is live on Kyno`,
     preheader: `${schoolName} is live. Your join code: ${joinCode}`,
     hero: hero({
       title:    `${schoolName} is live`,
@@ -72,7 +72,7 @@ export function renderSchoolCreatedHtml({ name, schoolName, joinCode, plan, tria
 
 export function renderSchoolCreatedText({ name, schoolName, joinCode, plan, trial }) {
   return [
-    `${schoolName} is live on Kora!`,
+    `${schoolName} is live on Kyno!`,
     ``,
     `Hey ${name}, you're the admin.`,
     `Join code: ${joinCode}`,
@@ -82,14 +82,14 @@ export function renderSchoolCreatedText({ name, schoolName, joinCode, plan, tria
     ``,
     `Open Admin Dashboard: ${appUrl()}/admin`,
     ``,
-    `— Kora · Accelerate Your Academics`,
+    `— Kyno · Accelerate Your Academics`,
   ].filter(Boolean).join('\n')
 }
 
 export function sendSchoolCreatedEmail({ to, name, schoolName, joinCode, plan, trial }) {
   return send({
     to,
-    subject: `${schoolName} is live on Kora`,
+    subject: `${schoolName} is live on Kyno`,
     html:    renderSchoolCreatedHtml({ name, schoolName, joinCode, plan, trial }),
     text:    renderSchoolCreatedText({ name, schoolName, joinCode, plan, trial }),
   })

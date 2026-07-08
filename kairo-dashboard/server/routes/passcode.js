@@ -1,5 +1,5 @@
 /**
- * /api/passcode/* — Kora device passcode reset OTP flow.
+ * /api/passcode/* — Kyno device passcode reset OTP flow.
  *
  *   POST /api/passcode/send-otp     { email }     → emails a 6-digit code
  *   POST /api/passcode/verify-otp   { email, code } → checks the code

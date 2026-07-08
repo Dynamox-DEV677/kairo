@@ -112,7 +112,7 @@ export default function KnowledgeGraph() {
                 Everything you've learned. When and how.
               </h1>
               <p style={{ margin: '6px 0 0', fontSize: 13, color: C.textFaint, lineHeight: 1.55, maxWidth: 640 }}>
-                {entries.length} event{entries.length === 1 ? '' : 's'} pulled from your unified Kora memory. Doubts, quizzes, labs, concepts, formulas, cards — all your activity, chronologically.
+                {entries.length} event{entries.length === 1 ? '' : 's'} pulled from your unified Kyno memory. Doubts, quizzes, labs, concepts, formulas, cards — all your activity, chronologically.
               </p>
             </div>
           </div>

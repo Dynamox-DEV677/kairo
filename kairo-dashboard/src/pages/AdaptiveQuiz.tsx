@@ -184,7 +184,7 @@ function QuizScreen({ questions, onComplete }: any) {
     if (correct) setScore(s => s + 1)
     setAnswers(a => [...a, { question_index: index, answer: letter, correct }])
     // Feed the unified memory engine so Mistake Analysis + Concept Map +
-    // Kora see this attempt. Fire-and-forget.
+    // Kyno see this attempt. Fire-and-forget.
     try {
       track({
         type:    'quiz_answered',

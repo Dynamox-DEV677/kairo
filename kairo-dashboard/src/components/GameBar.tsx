@@ -1,5 +1,5 @@
 /**
- * GameBar — the Duolingo-style habit widget on Kora Home.
+ * GameBar — the Duolingo-style habit widget on Kyno Home.
  *
  *   Level ring + XP progress to next level
  *   Today's 3 quests with progress

@@ -26,13 +26,13 @@ interface NavItem {
 // ── Role-isolated navigation ─────────────────────────────────────────────────
 // Each role sees ONLY their own tools — no cross-access.
 // Per user spec: removed AI Memory · My Progress · Analytics · Voice Tutor · Panic Mode.
-// Their functionality now lives inside Kora / Kora Solver respectively.
+// Their functionality now lives inside Kyno / Kyno Solver respectively.
 // Colors are all variations of the brand purple — strict monochrome palette.
 const STUDENT_NAV: NavItem[] = [
   { label: 'Home',            icon: Sparkles,        to: 'home',             color: '#66D9FF' },
-  { label: 'Kora',        icon: Cpu,             to: 'kairo-os',         color: '#66D9FF' },
-  { label: "Kora's Solver",  icon: MessageCircle,   to: 'doubt',            color: '#A5B4FC' },
-  { label: 'Kora Labs',      icon: Beaker,          to: 'labs',             color: '#66D9FF' },
+  { label: 'Kyno',        icon: Cpu,             to: 'kairo-os',         color: '#66D9FF' },
+  { label: "Kyno's Solver",  icon: MessageCircle,   to: 'doubt',            color: '#A5B4FC' },
+  { label: 'Kyno Labs',      icon: Beaker,          to: 'labs',             color: '#66D9FF' },
   { label: 'Mistake Analysis',icon: Activity,        to: 'mistakes',         color: '#A5B4FC' },
   { label: 'Revision Sim',    icon: Zap,             to: 'simulator',        color: '#66D9FF' },
   { label: 'Concept Map',     icon: Network,         to: 'concept-map',      color: '#66D9FF' },
@@ -58,7 +58,7 @@ const STUDENT_NAV: NavItem[] = [
 
 const TEACHER_NAV: NavItem[] = [
   { label: 'AI Teacher',      icon: Bot,             to: 'teacher-ai',      color: '#A5B4FC' },
-  { label: "Kora's Solver",    icon: MessageCircle,   to: 'doubt',           color: '#A5B4FC' },
+  { label: "Kyno's Solver",    icon: MessageCircle,   to: 'doubt',           color: '#A5B4FC' },
   { label: 'Flashcards',      icon: BookMarked,      to: 'flashcards',      color: '#34d399' },
   { label: 'Grader',          icon: FileText,        to: 'essay',           color: '#f472b6' },
   { label: 'Tasks & Marks',   icon: BookOpen,        to: 'school',          color: '#C7D2E8' },
@@ -252,7 +252,7 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
           }}>
             <img
               src="/kairo-mark.svg"
-              alt="Kora"
+              alt="Kyno"
               style={{
                 width: '74%', height: '74%', objectFit: 'contain',
                 filter: 'drop-shadow(0 0 8px rgba(102,217,255,0.45))',
@@ -276,7 +276,7 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
                   letterSpacing: '0.2px',
                   whiteSpace: 'nowrap',
                   textShadow: isDark ? '0 0 20px rgba(79,124,255,0.45)' : 'none',
-                }}>Kora</div>
+                }}>Kyno</div>
                 <div style={{
                   fontSize: 8, fontWeight: 600,
                   color: 'rgba(102, 217, 255, 0.55)',
@@ -526,7 +526,7 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
             >
               {recents.length === 0 && (
                 <div style={{ padding: '8px 10px', fontSize: 11, color: isDark ? '#4B5563' : '#B1B5BA', fontStyle: 'italic' }}>
-                  No chats yet — ask anything in Kora's Solver
+                  No chats yet — ask anything in Kyno's Solver
                 </div>
               )}
               {recents.map(r => (

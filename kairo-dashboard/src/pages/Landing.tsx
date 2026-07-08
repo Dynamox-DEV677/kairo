@@ -1,5 +1,5 @@
 /**
- * Kora — Landing.
+ * Kyno — Landing.
  *
  * Hybrid design system (no random mixing):
  *
@@ -126,7 +126,7 @@ export default function Landing({ onGetStarted }: LandingProps) {
 function GlobalScrollLayer() {
   const mobile = useIsMobileViewport()
   const { scrollYProgress } = useScroll()
-  // KORA ghost drifts left as you scroll, ACADEMICS drifts right.
+  // KYNO ghost drifts left as you scroll, ACADEMICS drifts right.
   const kx = useTransform(scrollYProgress, [0, 1], pxRange(mobile, ['8%',  '-22%']))
   const ax = useTransform(scrollYProgress, [0, 1], pxRange(mobile, ['-12%', '18%']))
   // Each band fades in and out at different scroll depths.
@@ -152,7 +152,7 @@ function GlobalScrollLayer() {
         fontWeight: 900, letterSpacing: '-0.09em', color: C.purpleInk,
         whiteSpace: 'nowrap',
       }}>
-        KORA
+        KYNO
       </motion.div>
       <motion.div style={{
         position: 'absolute', bottom: '8%', left: '50%',
@@ -218,7 +218,7 @@ function Masthead({ onGetStarted }: { onGetStarted: () => void }) {
             <KairoMark size={28} />
             <div style={{ display: 'flex', flexDirection: 'column' }}>
               <span style={{ fontFamily: DISPLAY, fontSize: 14, fontWeight: 800, letterSpacing: -0.3 }}>
-                KORA
+                KYNO
               </span>
               <span style={{ fontFamily: MONO, fontSize: 9, color: C.textFaint, letterSpacing: 2 }}>
                 KAIRO INDUSTRIES
@@ -307,7 +307,7 @@ function Hero({ onGetStarted }: { onGetStarted: () => void }) {
                 fontFamily: MONO, fontSize: 12, color: C.purple,
                 letterSpacing: 3, textTransform: 'uppercase', marginBottom: 32,
               }}>
-                — The AI Education System Built for the Future
+                — Gear Up Your Acceleration
               </div>
 
               <motion.h1 className="kr-display" style={{
@@ -317,7 +317,7 @@ function Hero({ onGetStarted }: { onGetStarted: () => void }) {
                 color: C.text,
                 x: line1X,
               }}>
-                KORA
+                KYNO
               </motion.h1>
 
               {/* Brutal divider */}
@@ -334,12 +334,12 @@ function Hero({ onGetStarted }: { onGetStarted: () => void }) {
                 lineHeight: 0.96, letterSpacing: '-0.04em', fontWeight: 800,
                 x: line2X,
               }}>
-                <span style={{ color: C.text }}>LEARN SMARTER. THINK DEEPER. </span>
+                <span style={{ color: C.text }}>LEARN FASTER. THINK SMARTER. </span>
                 <span style={{
                   background: `linear-gradient(180deg, ${C.purpleLite} 0%, ${C.purple} 50%, ${C.purpleHi} 100%)`,
                   WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
                   backgroundClip: 'text',
-                }}>CREATE FASTER.</span>
+                }}>ACHIEVE MORE.</span>
               </motion.h2>
             </SwissCell>
 
@@ -365,12 +365,12 @@ function Hero({ onGetStarted }: { onGetStarted: () => void }) {
 
               <div style={{ display: 'flex', gap: 18, marginTop: 32, flexWrap: 'wrap' }}>
                 <button onClick={onGetStarted} style={bigCta}>
-                  Get Started
+                  Start Learning
                   <ArrowRight size={16} />
                 </button>
                 <button onClick={() => scrollToId('manifesto')} style={ghostCta}>
                   <ArrowDown size={14} />
-                  Explore Kora
+                  Explore Kyno
                 </button>
               </div>
             </SwissCell>
@@ -509,7 +509,7 @@ function Manifesto() {
               </motion.span>
               <br />
               <motion.span style={{ x: line2X, color: C.purpleSoft, display: 'inline-block' }}>
-                Kora notices that you aren't.
+                Kyno notices that you aren't.
               </motion.span>
             </h3>
 
@@ -523,7 +523,7 @@ function Manifesto() {
               <div>
                 <DropCap letter="W" />hen a board paper lands on your desk in March, the questions don't care what you forgot in November. The textbook is the same for forty million students. The teacher will tell you to revise. The coaching centre will sell you a planner. None of them know which formula left your head two Wednesdays ago.
                 <p style={{ margin: '16px 0' }}>
-                  Kora is built on a different assumption — that the part of school that <em style={{ color: C.text }}>matters</em> isn't the content. It's the conversation between content and you. Between a chapter and your particular Wednesday.
+                  Kyno is built on a different assumption — that the part of school that <em style={{ color: C.text }}>matters</em> isn't the content. It's the conversation between content and you. Between a chapter and your particular Wednesday.
                 </p>
               </div>
               <div>
@@ -531,14 +531,14 @@ function Manifesto() {
                   So we built a memory engine. Not for the textbook, but for <em style={{ color: C.text }}>you</em>. It watches what you ask, where you stumble, what you replay at 1 a.m. It remembers the formula you Googled, the question you flagged for review, the diagram you stared at for forty seconds.
                 </p>
                 <p style={{ margin: 0 }}>
-                  Then it tutors you back. With explanations only you needed. With flashcards that come back at the moment you're about to forget. With a study plan that reshapes itself when life gets in the way. This is the Twin. This is Kora.
+                  Then it tutors you back. With explanations only you needed. With flashcards that come back at the moment you're about to forget. With a study plan that reshapes itself when life gets in the way. This is the Twin. This is Kyno.
                 </p>
               </div>
             </motion.div>
 
             <motion.div style={{ x: quoteX }}>
               <PullQuote
-                text={`“Kora doesn’t teach the textbook. It teaches the person reading it.”`}
+                text={`“Kyno doesn’t teach the textbook. It teaches the person reading it.”`}
                 attribution={`— Editor’s note`}
               />
             </motion.div>
@@ -572,7 +572,7 @@ function BrutalDivider({ lines, kicker, tail }: {
         `linear-gradient(180deg, ${C.paper} 0%, ${C.ink} 50%, ${C.paper} 100%)`,
       position: 'relative', overflow: 'hidden', zIndex: 2,
     }}>
-      {/* Big watermark KORA */}
+      {/* Big watermark KYNO */}
       <div aria-hidden style={{
         position: 'absolute', top: '50%', left: '50%',
         transform: 'translate(-50%, -50%)',
@@ -665,7 +665,7 @@ function BentoSection({ onGetStarted }: { onGetStarted: () => void }) {
               fontFamily: SANS, fontSize: 16.5, lineHeight: 1.65, color: C.textDim,
               maxWidth: 680, marginTop: 22,
             }}>
-              Kora isn't a feature list. Each module is a sense organ for the Twin —
+              Kyno isn't a feature list. Each module is a sense organ for the Twin —
               hearing your doubts, seeing your notebook, remembering your weak spots,
               breathing the syllabus back to you when you need it.
             </p>
@@ -677,7 +677,7 @@ function BentoSection({ onGetStarted }: { onGetStarted: () => void }) {
           <motion.div style={{ gridColumn: '1 / span 8', gridRow: 'span 2', x: driftL }}>
             <BentoCard span="col 1 / span 8" rowSpan={2} hero
               kicker="01 · Solver" title="Any doubt. Eight seconds."
-              body="Type any question. Kora writes a step-by-step explanation, finds 4–6 relevant images, and pulls one matching video — all under eight seconds."
+              body="Type any question. Kyno writes a step-by-step explanation, finds 4–6 relevant images, and pulls one matching video — all under eight seconds."
               icon={Sparkles}
               tag="LIVE · 24/7"
               embedded
@@ -686,7 +686,7 @@ function BentoSection({ onGetStarted }: { onGetStarted: () => void }) {
           <motion.div style={{ gridColumn: '9 / span 4', x: driftR }}>
             <BentoCard span="col 9 / span 4"
               kicker="02 · OS"
-              title="Kora"
+              title="Kyno"
               body="The memory engine. Tracks what you've studied, what you've forgotten, and what to do next."
               icon={Atom}
               embedded
@@ -696,7 +696,7 @@ function BentoSection({ onGetStarted }: { onGetStarted: () => void }) {
             <BentoCard span="col 9 / span 4"
               kicker="03 · Voice"
               title="Voice tutor"
-              body="Hold to speak. Kora replies in voice and on-screen text. Hands-free, exam-night ready."
+              body="Hold to speak. Kyno replies in voice and on-screen text. Hands-free, exam-night ready."
               icon={Mic}
               embedded
             />
@@ -757,7 +757,7 @@ function BentoSection({ onGetStarted }: { onGetStarted: () => void }) {
             <BentoCard span="col 8 / span 5"
               kicker="09 · Camera Study"
               title="Point at a textbook."
-              body="Snap a page. Kora explains the question on it, step by step, with diagrams pulled in."
+              body="Snap a page. Kyno explains the question on it, step by step, with diagrams pulled in."
               icon={Camera}
               embedded
             />
@@ -769,7 +769,7 @@ function BentoSection({ onGetStarted }: { onGetStarted: () => void }) {
             + 22 MORE TOOLS LIVE IN PRODUCTION
           </span>
           <button onClick={onGetStarted} style={bigCta}>
-            See them inside Kora <ArrowRight size={16} />
+            See them inside Kyno <ArrowRight size={16} />
           </button>
         </div>
       </Container>
@@ -949,7 +949,7 @@ function ConstructivistInterstitial() {
               }}>
                 The textbook is a brick.
                 <br />
-                <span style={{ color: C.purpleSoft }}>Kora is a current.</span>
+                <span style={{ color: C.purpleSoft }}>Kyno is a current.</span>
               </h3>
             </SwissCell>
             <SwissCell span={5}>
@@ -1011,7 +1011,7 @@ function LabsShowcase() {
       <Container>
         <SwissRow>
           <SwissCell span={3}>
-            <Eyebrow num="03" label="Kora Labs" />
+            <Eyebrow num="03" label="Kyno Labs" />
           </SwissCell>
           <SwissCell span={9}>
             <h3 className="kr-headline" style={{
@@ -1034,7 +1034,7 @@ function LabsShowcase() {
               maxWidth: 700, marginTop: 26,
             }}>
               <DropCap letter="A" /> diagram you can rotate is a different diagram.
-              Kora Labs are full 3D simulations — drag, pinch, zoom, slide the
+              Kyno Labs are full 3D simulations — drag, pinch, zoom, slide the
               variables. Every chapter in NCERT physics, chem, and biology gets
               its own interactive scene.
             </p>
@@ -1196,10 +1196,10 @@ function TwinEssay() {
               y: bodyY,
             }} className="kr-two-col">
               <div>
-                <DropCap letter="T" />he Twin lives on your device. Most of what Kora
+                <DropCap letter="T" />he Twin lives on your device. Most of what Kyno
                 remembers about you — every flashcard, every formula, every focus
                 session — sits in your browser's local storage, not on a server.
-                When you change devices, Kora encrypts the whole Twin and ships it
+                When you change devices, Kyno encrypts the whole Twin and ships it
                 over for a brief moment, then wipes the cloud copy.
                 <p style={{ margin: '16px 0' }}>
                   The Twin grows as you study. It learns the shape of your
@@ -1218,7 +1218,7 @@ function TwinEssay() {
                   and longer the moment you stumble.
                 </p>
                 <p style={{ margin: '16px 0 0' }}>
-                  This is the part of Kora that, the longer you stay, the more
+                  This is the part of Kyno that, the longer you stay, the more
                   it becomes <em style={{ color: C.text }}>only yours</em>.
                 </p>
               </div>
@@ -1281,7 +1281,7 @@ function DesktopApp() {
               lineHeight: 0.98, letterSpacing: '-0.03em', fontWeight: 800,
               margin: 0, color: C.text,
             }}>
-              <motion.span style={{ x: lx1, display: 'inline-block' }}>Kora,</motion.span><br />
+              <motion.span style={{ x: lx1, display: 'inline-block' }}>Kyno,</motion.span><br />
               <motion.span style={{
                 x: lx2,
                 display: 'inline-block',
@@ -1521,13 +1521,13 @@ function FinalCTA({ onGetStarted }: { onGetStarted: () => void }) {
             fontFamily: SERIF, fontSize: 19, color: C.textDim,
             maxWidth: 560, margin: '14px auto 0', lineHeight: 1.55,
           }}>
-            Sign up. Take five minutes. Kora will read your first doubt,
+            Sign up. Take five minutes. Kyno will read your first doubt,
             build your Twin, and have a personalised plan ready by the time
             you close the tab.
           </p>
 
           <button onClick={onGetStarted} style={{ ...bigCta, marginTop: 44, fontSize: 16 }}>
-            Open Kora  <ArrowRight size={17} />
+            Open Kyno  <ArrowRight size={17} />
           </button>
         </div>
       </Container>
@@ -1539,7 +1539,7 @@ function FinalCTA({ onGetStarted }: { onGetStarted: () => void }) {
 // FOOTER — Swiss minimal
 // ════════════════════════════════════════════════════════════════════════════
 // ════════════════════════════════════════════════════════════════════════════
-// ABOUT + FOUNDER — About Kora essay block and the premium founder card
+// ABOUT + FOUNDER — About Kyno essay block and the premium founder card
 // ════════════════════════════════════════════════════════════════════════════
 function AboutFounder() {
   const mobile = useIsMobileViewport()
@@ -1549,10 +1549,10 @@ function AboutFounder() {
       borderTop: `1px solid ${C.line}`,
     }}>
       <Container>
-        {/* — About Kora — */}
+        {/* — About Kyno — */}
         <SwissRow>
           <SwissCell span={3}>
-            <Eyebrow num="07" label="About Kora" />
+            <Eyebrow num="07" label="About Kyno" />
           </SwissCell>
           <SwissCell span={9}>
             <h3 className="kr-headline" style={{
@@ -1567,8 +1567,8 @@ function AboutFounder() {
               fontFamily: SERIF, fontSize: 17.5, lineHeight: 1.75, color: C.textDim,
               margin: 0, maxWidth: 760,
             }}>
-              Kora is an AI-powered education platform designed to transform how students
-              learn. Instead of simply answering questions, Kora understands every learner,
+              Kyno is an AI-powered education platform designed to transform how students
+              learn. Instead of simply answering questions, Kyno understands every learner,
               creates personalized learning paths, explains concepts visually, adapts to
               individual strengths, and helps students achieve their full potential.
             </p>
@@ -1579,7 +1579,7 @@ function AboutFounder() {
               Built with cutting-edge artificial intelligence by{' '}
               <em style={{ color: C.text, fontStyle: 'normal', borderBottom: `1px solid ${C.purple}` }}>
                 Kairo Industries
-              </em>, Kora aims to become the world's smartest learning companion.
+              </em>, Kyno aims to become the world's smartest learning companion.
             </p>
           </SwissCell>
         </SwissRow>
@@ -1651,7 +1651,7 @@ function AboutFounder() {
                   color: C.textDim, margin: '20px 0 0', maxWidth: 560, fontStyle: 'italic',
                 }}>
                   “I believe education should be personal, intelligent, and accessible to
-                  everyone. Kora is built to become the world's most advanced AI learning
+                  everyone. Kyno is built to become the world's most advanced AI learning
                   platform.”
                 </p>
               </div>
@@ -1676,7 +1676,7 @@ function Footer() {
               <KairoMark size={36} />
               <div>
                 <div style={{ fontFamily: DISPLAY, fontSize: 18, fontWeight: 800, letterSpacing: -0.3 }}>
-                  KORA
+                  KYNO
                 </div>
                 <div style={{ fontFamily: MONO, fontSize: 10, color: C.textFaint, letterSpacing: 1.8, marginTop: 2 }}>
                   A · KAIRO · INDUSTRIES · PRODUCT
@@ -1887,7 +1887,7 @@ function PullQuote({ text, attribution }: { text: string; attribution: string })
   )
 }
 
-// Logo mark — the real Kora brand image inside a rounded purple badge.
+// Logo mark — the real Kyno brand image inside a rounded purple badge.
 function KairoMark({ size = 28, intense = false, centered = false }: {
   size?: number
   intense?: boolean
@@ -1910,7 +1910,7 @@ function KairoMark({ size = 28, intense = false, centered = false }: {
     }}>
       <img
         src="/kairo_logo.png"
-        alt="Kora"
+        alt="Kyno"
         style={{
           width: '78%', height: '78%', objectFit: 'contain',
           filter: intense ? 'drop-shadow(0 1px 3px rgba(0,0,0,0.35))' : 'none',

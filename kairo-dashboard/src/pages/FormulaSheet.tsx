@@ -202,7 +202,7 @@ function CollectedFormulas({ formulas, onReload }: { formulas: TwinFormula[]; on
           No formulas yet
         </h3>
         <p style={{ margin: 0, fontSize: 13, color: C.textFaint, maxWidth: 460, marginInline: 'auto', lineHeight: 1.6 }}>
-          Ask the Solver something with an equation in the answer — Kora extracts it and pins it here automatically.
+          Ask the Solver something with an equation in the answer — Kyno extracts it and pins it here automatically.
         </p>
       </div>
     )
