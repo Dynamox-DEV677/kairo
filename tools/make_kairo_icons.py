@@ -54,14 +54,30 @@ def make_transparent_logo() -> Image.Image:
     return Image.merge('RGBA', (white, white, white, luminance))
 
 
+# How much of the source frame to keep (center crop). The raw logo PNG
+# has the mark floating in a big black field — at favicon sizes it read
+# as a black square with a speck. 0.56 zooms in so the K fills ~80% of
+# the icon. Maskable keeps extra padding for the OS-applied mask.
+CROP_KEEP          = 0.56
+CROP_KEEP_MASKABLE = 0.72
+
+def _center_crop(img: Image.Image, keep: float) -> Image.Image:
+    w, h = img.size
+    kw, kh = int(w * keep), int(h * keep)
+    x0 = (w - kw) // 2
+    y0 = (h - kh) // 2
+    return img.crop((x0, y0, x0 + kw, y0 + kh))
+
 # ─── 2. Apply iOS-style rounded corners to the dark electron source ────────
 def make_squircle_icon(size: int, *, maskable: bool = False) -> Image.Image:
     """
-    Take the user-supplied black-background electron PNG, scale to the
-    requested icon size, then mask with an iOS-spec rounded square.
-    Maskable PWA icons skip the rounding (the OS applies its own mask).
+    Take the user-supplied black-background electron PNG, zoom into the
+    mark (center crop), scale to the requested icon size, then mask with
+    an iOS-spec rounded square. Maskable PWA icons skip the rounding
+    (the OS applies its own mask) and keep a safer margin.
     """
     src = Image.open(SRC_ELECTRON_DARK).convert('RGBA')
+    src = _center_crop(src, CROP_KEEP_MASKABLE if maskable else CROP_KEEP)
     # Resize with high-quality Lanczos
     icon = src.resize((size, size), Image.LANCZOS)
 

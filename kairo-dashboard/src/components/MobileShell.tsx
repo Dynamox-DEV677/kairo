@@ -231,19 +231,21 @@ function MobileTopBar({
       position: 'sticky', top: 0, zIndex: 90,
       height: 'calc(52px + env(safe-area-inset-top))',
       paddingTop: 'env(safe-area-inset-top)',
-      background: isDark ? 'rgba(13,13,13,0.92)' : 'rgba(255,255,255,0.92)',
-      backdropFilter: 'blur(14px)',
-      borderBottom: `1px solid ${isDark ? '#1a1f2e' : '#e4e4e7'}`,
+      // iOS-style frosted glass bar
+      background: 'rgba(10, 13, 20, 0.72)',
+      backdropFilter: 'blur(24px) saturate(160%)',
+      WebkitBackdropFilter: 'blur(24px) saturate(160%)',
+      borderBottom: '1px solid rgba(102,217,255,0.12)',
       display: 'flex', alignItems: 'center', gap: 8,
       padding: '0 14px',
     }}>
       <button onClick={onOpenDrawer} aria-label="Menu" style={{
-        width: 38, height: 38, borderRadius: 9,
-        background: isDark ? '#151922' : '#f4f4f5',
-        border: `1px solid ${isDark ? '#1f2532' : '#e4e4e7'}`,
+        width: 38, height: 38, borderRadius: 12,
+        background: 'rgba(255,255,255,0.05)',
+        border: '1px solid rgba(255,255,255,0.10)',
         cursor: 'pointer', flexShrink: 0,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        color: isDark ? '#B1B5BA' : '#6B7280',
+        color: '#B1B5BA',
       }}>
         <Menu size={18} />
       </button>
@@ -409,71 +411,109 @@ function MobileDrawer({
         style={{
           position: 'fixed', top: 0, left: 0, bottom: 0, zIndex: 101,
           width: 'min(82vw, 320px)',
-          background: isDark ? '#0E1117' : '#fafafa',
+          // Frosted glass over the page — matches the desktop sidebar system
+          background: 'linear-gradient(160deg, rgba(12,16,26,0.92) 0%, rgba(6,8,13,0.94) 100%)',
+          backdropFilter: 'blur(26px) saturate(160%)',
+          WebkitBackdropFilter: 'blur(26px) saturate(160%)',
+          borderRight: '1px solid rgba(102,217,255,0.14)',
           paddingTop: 'env(safe-area-inset-top)',
           paddingBottom: 'env(safe-area-inset-bottom)',
           display: 'flex', flexDirection: 'column',
-          boxShadow: '4px 0 30px rgba(0,0,0,0.5)',
+          boxShadow: '4px 0 40px rgba(0,0,0,0.6)',
         }}>
-        {/* Header */}
+        {/* Header — squircle brand tile + Kairo OS wordmark (desktop-match) */}
         <div style={{
-          padding: '18px 18px 14px',
-          borderBottom: `1px solid ${isDark ? '#1a1f2e' : '#e4e4e7'}`,
+          margin: '14px 14px 8px',
+          padding: '12px 14px',
+          borderRadius: 18,
+          background: 'linear-gradient(150deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%)',
+          border: '1px solid rgba(102,217,255,0.16)',
+          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06)',
           display: 'flex', alignItems: 'center', gap: 12,
         }}>
-          <img src="/kairo_logo.png" alt="Kairo"
-            style={{ width: 40, height: 40, borderRadius: 10, objectFit: 'contain', flexShrink: 0 }} />
+          <div style={{
+            width: 46, height: 46, borderRadius: 12, flexShrink: 0,
+            background: 'linear-gradient(150deg, #0B0F1C 0%, #05060A 100%)',
+            border: '1px solid rgba(102,217,255,0.30)',
+            display: 'grid', placeItems: 'center',
+            boxShadow: '0 6px 18px rgba(79,124,255,0.30), inset 0 1px 0 rgba(255,255,255,0.08)',
+          }}>
+            <img src="/kairo-mark.svg" alt="Kairo OS"
+              style={{ width: '74%', height: '74%', objectFit: 'contain', filter: 'drop-shadow(0 0 8px rgba(102,217,255,0.45))' }} />
+          </div>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 16, fontWeight: 800, color: isDark ? '#fafafa' : '#18181b' }}>kairo</div>
-            <div style={{ fontSize: 10, fontWeight: 600, color: '#4F7CFF', textTransform: 'uppercase', letterSpacing: 1 }}>
-              Accelerate Your Academics
+            <div style={{
+              fontSize: 17, fontWeight: 700, color: '#F5F5F7',
+              fontFamily: "'Space Grotesk', system-ui, sans-serif",
+              letterSpacing: 0.2,
+              textShadow: '0 0 18px rgba(79,124,255,0.4)',
+            }}>Kairo OS</div>
+            <div style={{ fontSize: 8.5, fontWeight: 600, color: 'rgba(102,217,255,0.6)', textTransform: 'uppercase', letterSpacing: 1.4 }}>
+              AI Learning OS
             </div>
           </div>
           <button onClick={onClose} style={{
-            width: 34, height: 34, borderRadius: 8,
-            background: isDark ? '#151922' : '#f4f4f5',
-            border: `1px solid ${isDark ? '#1f2532' : '#e4e4e7'}`,
-            color: isDark ? '#B1B5BA' : '#9CA3AF', cursor: 'pointer',
+            width: 32, height: 32, borderRadius: 10,
+            background: 'rgba(255,255,255,0.05)',
+            border: '1px solid rgba(255,255,255,0.10)',
+            color: '#B1B5BA', cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
             <X size={15} />
           </button>
         </div>
 
-        {/* Items */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '8px 0' }}>
+        {/* Items — iOS Settings-style grouped cards */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '6px 14px 12px', WebkitOverflowScrolling: 'touch' }}>
           {groups.map(group => (
-            <div key={group.title} style={{ marginBottom: 14 }}>
+            <div key={group.title} style={{ marginBottom: 16 }}>
               <div style={{
-                fontSize: 10, fontWeight: 700, color: isDark ? '#6B7280' : '#B1B5BA',
-                textTransform: 'uppercase', letterSpacing: 1.5,
-                padding: '6px 18px',
+                fontSize: 10, fontWeight: 700, color: '#6B7280',
+                textTransform: 'uppercase', letterSpacing: 1.6,
+                padding: '4px 12px 6px',
               }}>{group.title}</div>
-              {group.items.map(item => {
-                const isActive = active === item.to
-                const Icon = item.icon
-                return (
-                  <motion.button key={item.to}
-                    whileTap={{ scale: 0.97 }}
-                    onClick={() => go(item.to)}
-                    style={{
-                      width: '100%', padding: '12px 18px',
-                      background: isActive
-                        ? 'rgba(79, 124, 255, 0.10)'
-                        : 'transparent',
-                      border: 'none', cursor: 'pointer',
-                      display: 'flex', alignItems: 'center', gap: 12,
-                      color: isActive ? '#4F7CFF' : (isDark ? '#d4d4d8' : '#4B5563'),
-                      fontFamily: 'inherit', fontSize: 14, fontWeight: isActive ? 600 : 500,
-                      borderLeft: `3px solid ${isActive ? '#4F7CFF' : 'transparent'}`,
-                      WebkitTapHighlightColor: 'transparent',
-                    }}>
-                    <Icon size={17} style={{ flexShrink: 0 }} />
-                    <span style={{ flex: 1, textAlign: 'left' }}>{item.label}</span>
-                    {isActive && <ChevronRight size={14} />}
-                  </motion.button>
-                )
-              })}
+              {/* Rounded glass card holding the group's rows */}
+              <div style={{
+                borderRadius: 14, overflow: 'hidden',
+                background: 'rgba(255,255,255,0.035)',
+                border: '1px solid rgba(255,255,255,0.07)',
+              }}>
+                {group.items.map((item, idx) => {
+                  const isActive = active === item.to
+                  const Icon = item.icon
+                  return (
+                    <motion.button key={item.to}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => go(item.to)}
+                      style={{
+                        width: '100%', padding: '11px 12px',
+                        background: isActive ? 'rgba(79, 124, 255, 0.14)' : 'transparent',
+                        border: 'none', cursor: 'pointer',
+                        display: 'flex', alignItems: 'center', gap: 12,
+                        color: isActive ? '#66D9FF' : '#d4d4d8',
+                        fontFamily: 'inherit', fontSize: 14, fontWeight: isActive ? 700 : 500,
+                        borderBottom: idx < group.items.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none',
+                        WebkitTapHighlightColor: 'transparent',
+                        minHeight: 46,
+                      }}>
+                      {/* iOS-style icon tile */}
+                      <span style={{
+                        width: 28, height: 28, borderRadius: 8, flexShrink: 0,
+                        display: 'grid', placeItems: 'center',
+                        background: isActive
+                          ? 'linear-gradient(135deg, #4F7CFF, #2046C2)'
+                          : 'rgba(102,217,255,0.08)',
+                        border: isActive ? 'none' : '1px solid rgba(102,217,255,0.14)',
+                        color: isActive ? '#fff' : '#A5B4FC',
+                      }}>
+                        <Icon size={15} />
+                      </span>
+                      <span style={{ flex: 1, textAlign: 'left' }}>{item.label}</span>
+                      <ChevronRight size={14} style={{ color: isActive ? '#66D9FF' : '#3a3f4a' }} />
+                    </motion.button>
+                  )
+                })}
+              </div>
             </div>
           ))}
         </div>
