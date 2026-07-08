@@ -191,6 +191,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+drop trigger if exists notes_updated_at on notes;
 CREATE TRIGGER notes_updated_at
   BEFORE UPDATE ON notes
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
@@ -207,18 +208,22 @@ ALTER TABLE notes         ENABLE ROW LEVEL SECURITY;
 ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
 
 -- Schools: anyone can read, only service role can write
+drop policy if exists "schools_public_read" on schools;
 CREATE POLICY "schools_public_read"
   ON schools FOR SELECT USING (true);
 
+drop policy if exists "schools_service_insert" on schools;
 CREATE POLICY "schools_service_insert"
   ON schools FOR INSERT
   WITH CHECK (auth.role() = 'service_role');
 
 -- Users: can read own profile; service role can do anything
+drop policy if exists "users_read_own" on users;
 CREATE POLICY "users_read_own"
   ON users FOR SELECT
   USING (auth.uid() = id);
 
+drop policy if exists "users_read_same_school" on users;
 CREATE POLICY "users_read_same_school"
   ON users FOR SELECT
   USING (
@@ -227,21 +232,25 @@ CREATE POLICY "users_read_same_school"
     )
   );
 
+drop policy if exists "users_insert_own" on users;
 CREATE POLICY "users_insert_own"
   ON users FOR INSERT
   WITH CHECK (auth.uid() = id);
 
+drop policy if exists "users_update_own" on users;
 CREATE POLICY "users_update_own"
   ON users FOR UPDATE
   USING (auth.uid() = id);
 
 -- Notes: user owns their notes
+drop policy if exists "notes_owner_all" on notes;
 CREATE POLICY "notes_owner_all"
   ON notes FOR ALL
   USING (auth.uid() = user_id)
   WITH CHECK (auth.uid() = user_id);
 
 -- Notifications: users see their school's active ones
+drop policy if exists "notifs_read_school" on notifications;
 CREATE POLICY "notifs_read_school"
   ON notifications FOR SELECT
   USING (
@@ -250,6 +259,7 @@ CREATE POLICY "notifs_read_school"
   );
 
 -- Only teachers (or service role) can INSERT notifications
+drop policy if exists "notifs_teacher_insert" on notifications;
 CREATE POLICY "notifs_teacher_insert"
   ON notifications FOR INSERT
   WITH CHECK (
@@ -385,6 +395,7 @@ CREATE INDEX IF NOT EXISTS idx_users_status           ON users(status);
 
 -- â”€â”€ TRIGGERS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 -- Auto-update updated_at on tasks
+drop trigger if exists tasks_updated_at on tasks;
 CREATE TRIGGER tasks_updated_at
   BEFORE UPDATE ON tasks
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
@@ -396,30 +407,35 @@ ALTER TABLE task_submissions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE login_logs      ENABLE ROW LEVEL SECURITY;
 
 -- network_rules: only visible to same school members
+drop policy if exists "network_rules_school_read" on network_rules;
 CREATE POLICY "network_rules_school_read"
   ON network_rules FOR SELECT
   USING (
     school_id IN (SELECT school_id FROM users WHERE id = auth.uid())
   );
 
+drop policy if exists "network_rules_service_write" on network_rules;
 CREATE POLICY "network_rules_service_write"
   ON network_rules FOR ALL
   USING (auth.role() = 'service_role')
   WITH CHECK (auth.role() = 'service_role');
 
 -- tasks: visible to members of the same school
+drop policy if exists "tasks_school_read" on tasks;
 CREATE POLICY "tasks_school_read"
   ON tasks FOR SELECT
   USING (
     school_id IN (SELECT school_id FROM users WHERE id = auth.uid())
   );
 
+drop policy if exists "tasks_service_write" on tasks;
 CREATE POLICY "tasks_service_write"
   ON tasks FOR ALL
   USING (auth.role() = 'service_role')
   WITH CHECK (auth.role() = 'service_role');
 
 -- task_submissions: student owns their own; service role does everything
+drop policy if exists "submissions_student_own" on task_submissions;
 CREATE POLICY "submissions_student_own"
   ON task_submissions FOR SELECT
   USING (
@@ -429,16 +445,19 @@ CREATE POLICY "submissions_student_own"
     )
   );
 
+drop policy if exists "submissions_service_write" on task_submissions;
 CREATE POLICY "submissions_service_write"
   ON task_submissions FOR ALL
   USING (auth.role() = 'service_role')
   WITH CHECK (auth.role() = 'service_role');
 
 -- login_logs: users see their own; service role full access
+drop policy if exists "login_logs_own_read" on login_logs;
 CREATE POLICY "login_logs_own_read"
   ON login_logs FOR SELECT
   USING (user_id = auth.uid());
 
+drop policy if exists "login_logs_service_write" on login_logs;
 CREATE POLICY "login_logs_service_write"
   ON login_logs FOR ALL
   USING (auth.role() = 'service_role')
@@ -605,11 +624,13 @@ CREATE INDEX IF NOT EXISTS idx_marks_teacher         ON marks(teacher_id);
 
 -- â”€â”€ TRIGGERS (idempotent) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 DO $$ BEGIN
+  drop trigger if exists tasks_updated_at on tasks;
   CREATE TRIGGER tasks_updated_at  BEFORE UPDATE ON tasks
     FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN
+  drop trigger if exists marks_updated_at on marks;
   CREATE TRIGGER marks_updated_at  BEFORE UPDATE ON marks
     FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
@@ -625,47 +646,56 @@ ALTER TABLE marks            ENABLE ROW LEVEL SECURITY;
 
 -- Service role bypasses everything; we add minimal user-side reads where helpful.
 DO $$ BEGIN
+  drop policy if exists "network_rules_school_read" on network_rules;
   CREATE POLICY "network_rules_school_read" ON network_rules FOR SELECT
     USING (school_id IN (SELECT school_id FROM users WHERE id = auth.uid()));
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN
+  drop policy if exists "tasks_school_read" on tasks;
   CREATE POLICY "tasks_school_read" ON tasks FOR SELECT
     USING (school_id IN (SELECT school_id FROM users WHERE id = auth.uid()));
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN
+  drop policy if exists "submissions_student_own" on task_submissions;
   CREATE POLICY "submissions_student_own" ON task_submissions FOR SELECT
     USING (student_id = auth.uid()
       OR EXISTS (SELECT 1 FROM users WHERE id = auth.uid() AND role IN ('teacher','admin')));
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN
+  drop policy if exists "login_logs_own_read" on login_logs;
   CREATE POLICY "login_logs_own_read" ON login_logs FOR SELECT
     USING (user_id = auth.uid());
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN
+  drop policy if exists "parent_codes_student_read" on parent_codes;
   CREATE POLICY "parent_codes_student_read" ON parent_codes FOR SELECT
     USING (student_id = auth.uid());
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN
+  drop policy if exists "parent_links_parent_read" on parent_links;
   CREATE POLICY "parent_links_parent_read" ON parent_links FOR SELECT
     USING (parent_id = auth.uid());
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN
+  drop policy if exists "marks_read_own_student" on marks;
   CREATE POLICY "marks_read_own_student" ON marks FOR SELECT
     USING (student_id = auth.uid());
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN
+  drop policy if exists "marks_read_parent" on marks;
   CREATE POLICY "marks_read_parent" ON marks FOR SELECT
     USING (student_id IN (SELECT student_id FROM parent_links WHERE parent_id = auth.uid()));
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN
+  drop policy if exists "marks_read_teacher_or_admin" on marks;
   CREATE POLICY "marks_read_teacher_or_admin" ON marks FOR SELECT
     USING (school_id IN (SELECT school_id FROM users WHERE id = auth.uid())
       AND EXISTS (SELECT 1 FROM users WHERE id = auth.uid() AND role IN ('teacher','admin')));
@@ -673,36 +703,43 @@ EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- Service-role write policies (cover all tables)
 DO $$ BEGIN
+  drop policy if exists "network_rules_service" on network_rules;
   CREATE POLICY "network_rules_service" ON network_rules FOR ALL
     USING (auth.role() = 'service_role') WITH CHECK (auth.role() = 'service_role');
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN
+  drop policy if exists "login_logs_service" on login_logs;
   CREATE POLICY "login_logs_service" ON login_logs FOR ALL
     USING (auth.role() = 'service_role') WITH CHECK (auth.role() = 'service_role');
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN
+  drop policy if exists "tasks_service" on tasks;
   CREATE POLICY "tasks_service" ON tasks FOR ALL
     USING (auth.role() = 'service_role') WITH CHECK (auth.role() = 'service_role');
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN
+  drop policy if exists "submissions_service" on task_submissions;
   CREATE POLICY "submissions_service" ON task_submissions FOR ALL
     USING (auth.role() = 'service_role') WITH CHECK (auth.role() = 'service_role');
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN
+  drop policy if exists "parent_codes_service" on parent_codes;
   CREATE POLICY "parent_codes_service" ON parent_codes FOR ALL
     USING (auth.role() = 'service_role') WITH CHECK (auth.role() = 'service_role');
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN
+  drop policy if exists "parent_links_service" on parent_links;
   CREATE POLICY "parent_links_service" ON parent_links FOR ALL
     USING (auth.role() = 'service_role') WITH CHECK (auth.role() = 'service_role');
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN
+  drop policy if exists "marks_service" on marks;
   CREATE POLICY "marks_service" ON marks FOR ALL
     USING (auth.role() = 'service_role') WITH CHECK (auth.role() = 'service_role');
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
@@ -749,12 +786,14 @@ INSERT INTO storage.buckets (id, name, public)
 
 -- Storage RLS â€” anyone can read; only service role writes. Skip if duplicate.
 DO $$ BEGIN
+  drop policy if exists "kairo_public_read" on storage.objects;
   CREATE POLICY "kairo_public_read"
     ON storage.objects FOR SELECT
     USING (bucket_id = 'kairo-public');
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN
+  drop policy if exists "kairo_public_service_write" on storage.objects;
   CREATE POLICY "kairo_public_service_write"
     ON storage.objects FOR ALL
     USING (bucket_id = 'kairo-public' AND auth.role() = 'service_role')
@@ -821,6 +860,7 @@ CREATE INDEX IF NOT EXISTS idx_marks_subject         ON marks(subject);
 
 -- â”€â”€ 6. Auto-update updated_at on marks â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 DO $$ BEGIN
+  drop trigger if exists marks_updated_at on marks;
   CREATE TRIGGER marks_updated_at
     BEFORE UPDATE ON marks
     FOR EACH ROW EXECUTE FUNCTION update_updated_at();
@@ -832,30 +872,36 @@ ALTER TABLE parent_links ENABLE ROW LEVEL SECURITY;
 ALTER TABLE marks        ENABLE ROW LEVEL SECURITY;
 
 -- parent_codes: student sees their own codes; service role does everything
+drop policy if exists "parent_codes_student_read" on parent_codes;
 CREATE POLICY "parent_codes_student_read"
   ON parent_codes FOR SELECT
   USING (student_id = auth.uid());
 
+drop policy if exists "parent_codes_service" on parent_codes;
 CREATE POLICY "parent_codes_service"
   ON parent_codes FOR ALL
   USING (auth.role() = 'service_role')
   WITH CHECK (auth.role() = 'service_role');
 
 -- parent_links: parent sees their own links; service role full
+drop policy if exists "parent_links_parent_read" on parent_links;
 CREATE POLICY "parent_links_parent_read"
   ON parent_links FOR SELECT
   USING (parent_id = auth.uid());
 
+drop policy if exists "parent_links_service" on parent_links;
 CREATE POLICY "parent_links_service"
   ON parent_links FOR ALL
   USING (auth.role() = 'service_role')
   WITH CHECK (auth.role() = 'service_role');
 
 -- marks: students/parents/teachers/admins see relevant rows; writes via service role
+drop policy if exists "marks_read_own_student" on marks;
 CREATE POLICY "marks_read_own_student"
   ON marks FOR SELECT
   USING (student_id = auth.uid());
 
+drop policy if exists "marks_read_teacher_or_admin" on marks;
 CREATE POLICY "marks_read_teacher_or_admin"
   ON marks FOR SELECT
   USING (
@@ -863,6 +909,7 @@ CREATE POLICY "marks_read_teacher_or_admin"
     AND EXISTS (SELECT 1 FROM users WHERE id = auth.uid() AND role IN ('teacher', 'admin'))
   );
 
+drop policy if exists "marks_read_parent" on marks;
 CREATE POLICY "marks_read_parent"
   ON marks FOR SELECT
   USING (
@@ -871,6 +918,7 @@ CREATE POLICY "marks_read_parent"
     )
   );
 
+drop policy if exists "marks_service" on marks;
 CREATE POLICY "marks_service"
   ON marks FOR ALL
   USING (auth.role() = 'service_role')
@@ -1083,21 +1131,27 @@ ALTER TABLE study_sessions         ENABLE ROW LEVEL SECURITY;
 DO $$
 BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'twin_events_self_read') THEN
+    drop policy if exists twin_events_self_read on twin_events;
     CREATE POLICY twin_events_self_read           ON twin_events           FOR SELECT USING (auth.uid() = user_id);
   END IF;
   IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'knowledge_mastery_self_read') THEN
+    drop policy if exists knowledge_mastery_self_read on knowledge_mastery;
     CREATE POLICY knowledge_mastery_self_read     ON knowledge_mastery     FOR SELECT USING (auth.uid() = user_id);
   END IF;
   IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'academic_twins_self_read') THEN
+    drop policy if exists academic_twins_self_read on academic_twins;
     CREATE POLICY academic_twins_self_read        ON academic_twins        FOR SELECT USING (auth.uid() = user_id);
   END IF;
   IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'twin_observations_self_read') THEN
+    drop policy if exists twin_observations_self_read on twin_observations;
     CREATE POLICY twin_observations_self_read     ON twin_observations     FOR SELECT USING (auth.uid() = user_id);
   END IF;
   IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'twin_recommendations_self_read') THEN
+    drop policy if exists twin_recommendations_self_read on twin_recommendations;
     CREATE POLICY twin_recommendations_self_read  ON twin_recommendations  FOR SELECT USING (auth.uid() = user_id);
   END IF;
   IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'study_sessions_self_read') THEN
+    drop policy if exists study_sessions_self_read on study_sessions;
     CREATE POLICY study_sessions_self_read        ON study_sessions        FOR SELECT USING (auth.uid() = user_id);
   END IF;
 END $$;
@@ -1134,7 +1188,7 @@ CREATE INDEX IF NOT EXISTS twin_snapshots_updated_idx
 -- endpoints already check req.user.id, but defense-in-depth is cheap.
 ALTER TABLE twin_snapshots ENABLE ROW LEVEL SECURITY;
 
-DROP POLICY IF EXISTS "twin_snapshots own"   ON twin_snapshots;
+drop policy if exists "twin_snapshots own" on twin_snapshots;
 CREATE POLICY "twin_snapshots own" ON twin_snapshots
   USING        (auth.uid() = user_id)
   WITH CHECK   (auth.uid() = user_id);
@@ -1165,6 +1219,7 @@ CREATE TABLE IF NOT EXISTS solver_cache (
 CREATE INDEX IF NOT EXISTS idx_solver_cache_hits ON solver_cache(hit_count DESC);
 -- Trigger auto-updates updated_at on row update
 DO $$ BEGIN
+  drop trigger if exists solver_cache_updated_at on solver_cache;
   CREATE TRIGGER solver_cache_updated_at
     BEFORE UPDATE ON solver_cache
     FOR EACH ROW EXECUTE FUNCTION update_updated_at();
@@ -1173,6 +1228,7 @@ EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 -- Service role only â€” no end-user direct access
 ALTER TABLE solver_cache ENABLE ROW LEVEL SECURITY;
 DO $$ BEGIN
+  drop policy if exists solver_cache_service on solver_cache;
   CREATE POLICY solver_cache_service ON solver_cache FOR ALL
     USING (auth.role() = 'service_role') WITH CHECK (auth.role() = 'service_role');
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
@@ -1232,17 +1288,16 @@ create index if not exists exam_plans_active_idx  on exam_plans(user_id, is_arch
 
 alter table exam_plans enable row level security;
 
-drop policy if exists "users read own plans"   on exam_plans;
-drop policy if exists "users insert own plans" on exam_plans;
-drop policy if exists "users update own plans" on exam_plans;
-drop policy if exists "users delete own plans" on exam_plans;
-
+drop policy if exists "users read own plans" on exam_plans;
 create policy "users read own plans"
   on exam_plans for select  using (auth.uid() = user_id);
+drop policy if exists "users insert own plans" on exam_plans;
 create policy "users insert own plans"
   on exam_plans for insert  with check (auth.uid() = user_id);
+drop policy if exists "users update own plans" on exam_plans;
 create policy "users update own plans"
   on exam_plans for update  using (auth.uid() = user_id);
+drop policy if exists "users delete own plans" on exam_plans;
 create policy "users delete own plans"
   on exam_plans for delete  using (auth.uid() = user_id);
 

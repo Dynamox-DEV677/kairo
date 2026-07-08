@@ -4,13 +4,9 @@ import './index.css'
 import App from './App.tsx'
 import { initPwa } from './lib/pwa'
 
-// ── Apply the user's chosen app font before first paint ─────────────────
-// Settings stores the font stack in localStorage ('kairo:font'); the CSS
-// reads var(--kairo-font). Doing this here avoids a font flash on load.
-try {
-  const savedFont = localStorage.getItem('kairo:font')
-  if (savedFont) document.documentElement.style.setProperty('--kairo-font', savedFont)
-} catch { /* private mode */ }
+// Font changer was removed (messy on mobile) — clear any previously saved
+// custom font so every device returns to the default Space Grotesk.
+try { localStorage.removeItem('kairo:font') } catch { /* private mode */ }
 
 // ── Global error reporter ────────────────────────────────────────────────
 // Any unhandled exception or rejected promise gets POSTed to /api/ops/error

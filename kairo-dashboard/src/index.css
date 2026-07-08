@@ -675,6 +675,9 @@ html, body, #root {
      the screen (the list hides) — closing it brings the list back. */
   .nb-split { grid-template-columns: 1fr !important; }
   .nb-split.has-sel .nb-list { display: none !important; }
+
+  /* Open note: tighter padding so content gets the width */
+  .nb-detail { padding: 14px !important; }
 }
 
 @keyframes nb-fab-breath {

@@ -1,21 +1,12 @@
 import { useState, useRef } from 'react'
 import { motion } from 'framer-motion'
-import { Camera, User, Bell, Shield, Trash2, Check, FileJson, Smartphone, Laptop, ChevronsRight, KeyRound, Sparkles, RotateCcw, Mail, Type } from 'lucide-react'
+import { Camera, User, Bell, Shield, Trash2, Check, FileJson, Smartphone, Laptop, ChevronsRight, KeyRound, Sparkles, RotateCcw, Mail } from 'lucide-react'
 import { confirmDialog } from '../components/ConfirmModal'
 import TwinBackupModal from '../components/TwinBackupModal'
 import ResetPasscode from './ResetPasscode'
 import { seedDemo, resetAllData } from '../lib/twin'
 import { getRaw, setRaw, activeBackend } from '../lib/storage'
 import { DecoratedAvatar, DECORATIONS, getDecor, setDecor } from '../components/AvatarDecor'
-
-// App-wide font choices (all loaded in index.html). Value = CSS stack.
-const FONTS = [
-  { id: 'grotesk', label: 'Space Grotesk', stack: "'Space Grotesk', 'Inter', system-ui, sans-serif" },
-  { id: 'inter',   label: 'Inter',         stack: "'Inter', system-ui, sans-serif" },
-  { id: 'poppins', label: 'Poppins',       stack: "'Poppins', 'Inter', system-ui, sans-serif" },
-  { id: 'lora',    label: 'Lora (serif)',  stack: "'Lora', Georgia, serif" },
-  { id: 'caveat',  label: 'Caveat (handwritten)', stack: "'Caveat', cursive" },
-]
 
 const BOARDS = ['CBSE', 'ICSE', 'Maharashtra', 'Tamil Nadu', 'Karnataka', 'UP Board', 'Bihar Board']
 const CLASSES = ['6', '7', '8', '9', '10', '11', '12']
@@ -40,21 +31,6 @@ export default function Settings() {
   // Avatar decoration (Discord-style ring/orbit around the pic)
   const [decor, setDecorSel] = useState(getDecor())
   function pickDecor(id: string) { setDecor(id); setDecorSel(id) }
-
-  // App-wide font — applied live + persisted for the boot script in main.tsx
-  const [fontId, setFontId] = useState(() => {
-    try {
-      const saved = localStorage.getItem('kairo:font')
-      return FONTS.find(f => f.stack === saved)?.id || 'grotesk'
-    } catch { return 'grotesk' }
-  })
-  function pickFont(id: string) {
-    const f = FONTS.find(x => x.id === id)
-    if (!f) return
-    setFontId(id)
-    document.documentElement.style.setProperty('--kairo-font', f.stack)
-    try { localStorage.setItem('kairo:font', f.stack) } catch { /* quota */ }
-  }
 
   // Email change — 6-digit code sent to the NEW address
   const [emailCur] = useState<string>(stored.email || '')
@@ -344,35 +320,6 @@ export default function Settings() {
               <span style={{ fontSize: 10.5, fontWeight: 700, color: decor === d.id ? '#A5B4FC' : '#9CA3AF' }}>
                 {d.label}
               </span>
-            </button>
-          ))}
-        </div>
-      </Section>
-
-      {/* Font — changes the type across the whole app */}
-      <Section icon={<Type size={14} />} title="App font">
-        <p style={{ fontSize: 12.5, color: '#9CA3AF', marginBottom: 14, lineHeight: 1.5 }}>
-          Changes the font across all of Kyno, instantly. Sticks after refresh.
-        </p>
-        <div style={{ display: 'grid', gap: 8 }}>
-          {FONTS.map(f => (
-            <button
-              key={f.id}
-              onClick={() => pickFont(f.id)}
-              style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                padding: '12px 16px', borderRadius: 11, cursor: 'pointer', textAlign: 'left',
-                background: fontId === f.id ? 'rgba(79, 124, 255, 0.14)' : 'rgba(255,255,255,0.03)',
-                border: fontId === f.id ? '1.5px solid #4F7CFF' : '1.5px solid rgba(255,255,255,0.08)',
-              }}
-            >
-              <span style={{ fontFamily: f.stack, fontSize: 15, fontWeight: 600, color: '#fafafa' }}>
-                {f.label}
-              </span>
-              <span style={{ fontFamily: f.stack, fontSize: 12.5, color: '#9CA3AF' }}>
-                The quick brown fox
-              </span>
-              {fontId === f.id && <Check size={15} color="#4F7CFF" style={{ marginLeft: 10, flexShrink: 0 }} />}
             </button>
           ))}
         </div>

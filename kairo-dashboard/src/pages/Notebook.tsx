@@ -242,7 +242,7 @@ export default function Notebook() {
         {/* Detail / editor */}
         <AnimatePresence mode="wait">
           {selected && (
-            <motion.div key={selected.id}
+            <motion.div key={selected.id} className="nb-detail"
               initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}
               style={{ ...card, padding: 22, overflowY: 'auto' }}>
               <NoteDetail
@@ -555,7 +555,9 @@ function NoteDetail({ note, editing, onClose, onTogglePin, onDelete, onEdit, onS
 
   return (
     <>
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 16 }}>
+      {/* flexWrap: on phones the action buttons drop below the title instead
+          of crushing it into "Doubt:…" */}
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 16, flexWrap: 'wrap' }}>
         <div style={{
           width: 36, height: 36, borderRadius: 9,
           background: `${meta.color}18`,
@@ -563,7 +565,7 @@ function NoteDetail({ note, editing, onClose, onTogglePin, onDelete, onEdit, onS
         }}>
           <meta.icon size={16} color={meta.color} />
         </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ flex: 1, minWidth: 180 }}>
           {editing ? (
             <input value={title} onChange={e => setTitle(e.target.value)}
               style={{
@@ -572,17 +574,17 @@ function NoteDetail({ note, editing, onClose, onTogglePin, onDelete, onEdit, onS
                 color: '#fafafa', fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box',
               }} />
           ) : (
-            <h2 style={{ fontSize: 18, fontWeight: 700, color: '#fafafa', margin: 0, lineHeight: 1.3 }}>
+            <h2 style={{ fontSize: 18, fontWeight: 700, color: '#fafafa', margin: 0, lineHeight: 1.3, overflowWrap: 'anywhere' }}>
               {note.title}
             </h2>
           )}
-          <div style={{ fontSize: 11, color: '#6B7280', marginTop: 6, display: 'flex', gap: 10 }}>
+          <div style={{ fontSize: 11, color: '#6B7280', marginTop: 6, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
             <span style={{ color: meta.color, fontWeight: 600 }}>{meta.label}</span>
             {note.subject && <span>{note.subject}</span>}
             <span>{new Date(note.updated_at).toLocaleString()}</span>
           </div>
         </div>
-        <div style={{ display: 'flex', gap: 4 }}>
+        <div style={{ display: 'flex', gap: 4, marginLeft: 'auto' }}>
           <button onClick={onTogglePin} title={note.pinned ? 'Unpin' : 'Pin'}
             style={{ padding: 6, borderRadius: 7, border: '1px solid #1f2532', background: '#151922', cursor: 'pointer', color: note.pinned ? '#A5B4FC' : '#9CA3AF' }}>
             {note.pinned ? <Pin size={12} /> : <PinOff size={12} />}
