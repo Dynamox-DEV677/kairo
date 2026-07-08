@@ -14,6 +14,7 @@ import ExamPlanner from './ExamPlanner'
 import TopicArchitect from './TopicArchitect'
 import KairoHome from './KairoHome'
 import KairoChat from './KairoChat'
+import { XPToast } from '../components/GameBar'
 import EssayGrader from './EssayGrader'
 import ExamPredictor from './ExamPredictor'
 import QuestionPaper from './QuestionPaper'
@@ -213,6 +214,9 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
 
         <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
           <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+
+            {/* Floating "+XP" toasts — app-wide */}
+            <XPToast />
 
             {/* Home — the AI Student OS command center */}
             <div style={pageStyle('home')}><KairoHome onNavigate={setActive} /></div>

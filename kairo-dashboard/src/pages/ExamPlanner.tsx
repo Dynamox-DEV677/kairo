@@ -15,6 +15,7 @@ import {
   Loader2, ChevronRight, RefreshCw, Save, Printer, Folder, X, Check, Brain,
 } from 'lucide-react'
 import KairoGyro from '../components/KairoGyro'
+import { awardXP } from '../lib/game'
 
 // ── Types ────────────────────────────────────────────────────────────────
 interface ExamMeta { id: string; label: string; subjects: string[]; durationHrs: number | null }
@@ -186,6 +187,7 @@ export default function ExamPlanner() {
       const data = await r.json()
       if (data.error) throw new Error(data.error)
       setPlan(data)
+      try { awardXP('exam_plan') } catch { /* non-fatal */ }
     } catch (e: any) {
       setError(e.message || 'Failed to generate plan')
     } finally {

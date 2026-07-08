@@ -17,6 +17,7 @@ import {
   AlertTriangle, CheckCircle2, Settings2, Network, History, Gauge, ArrowRight,
 } from 'lucide-react'
 import KairoGyro from '../components/KairoGyro'
+import { GameBar } from '../components/GameBar'
 
 // ── Profile (localStorage) ─────────────────────────────────────────────
 interface ExamDate { name: string; date: string }
@@ -198,6 +199,9 @@ export default function KairoHome({ onNavigate }: Props) {
           <button onClick={() => { setEditing(false); fetchBrief() }} style={{ ...primaryBtn, marginTop: 12 }}>Save & re-brief</button>
         </motion.div>
       )}
+
+      {/* ── Game bar: level · daily quests · weekly league ──────────── */}
+      <GameBar />
 
       {/* ── Council thinking — gyro while the first brief loads ─────── */}
       {loading && !brief && (

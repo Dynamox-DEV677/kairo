@@ -20,6 +20,7 @@ import { Send, Loader2, Play, Image as ImageIcon, X, Sparkles } from 'lucide-rea
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { recordDoubt } from '../lib/twin'
+import { awardXP } from '../lib/game'
 
 interface Slide { url: string; caption: string; source: string }
 interface Turn {
@@ -102,11 +103,12 @@ export default function KairoChat() {
       setTurns(prev => [...prev, kairoTurn])
       setBusy(false)
 
-      // Memory engine — study turns only.
+      // Memory engine + XP — study turns only.
       if (!casual) {
         try {
           recordDoubt({ question: q, answer: kairoTurn.text, topic: text.topicKeyword || undefined, source: 'chat' })
         } catch { /* non-fatal */ }
+        try { awardXP('chat_answer') } catch { /* non-fatal */ }
       }
 
       // Media attaches late as chips — the chat never blocks on it.

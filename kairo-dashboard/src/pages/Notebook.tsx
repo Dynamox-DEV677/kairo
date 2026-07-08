@@ -357,6 +357,7 @@ function AutoCollectedStrip({ onBuilt }: { onBuilt?: (id: string) => void }) {
       // shows up. Without this the note saved silently and the user
       // thought "the notebook isn't being built".
       onBuilt?.(saved.id)
+      try { const { awardXP } = await import('../lib/game'); awardXP('note_built') } catch { /* non-fatal */ }
     } catch (e: any) {
       setToast(`Couldn't save — ${e?.message || 'try again'}`)
     } finally {

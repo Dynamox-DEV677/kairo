@@ -12,6 +12,7 @@ import {
   HelpCircle, History, ListOrdered, Clock, ChevronDown, Target,
 } from 'lucide-react'
 import KairoGyro from '../components/KairoGyro'
+import { awardXP } from '../lib/game'
 
 interface StudyPoint { point: string; why: string }
 interface MapNode { id: string; label: string }
@@ -90,6 +91,7 @@ export default function TopicArchitect() {
       const data = await r.json()
       if (data.error) throw new Error(data.error)
       setPlan(data)
+      try { awardXP('topic_plan') } catch { /* non-fatal */ }
     } catch (e: any) {
       setError(e.message || 'Failed to plan this topic')
     } finally { setLoading(false) }
