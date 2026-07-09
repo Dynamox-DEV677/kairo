@@ -109,6 +109,14 @@ interface DashboardProps {
 export default function Dashboard({ profile, onLogout }: DashboardProps) {
   // Admins land on School Hub (their control center); everyone else on Kyno's Solver
   const [active, setActive]           = useState(profile?.role === 'admin' ? 'school' : 'home')
+  // Lazy page mounting: a page renders only after its FIRST visit, then stays
+  // mounted (state survives tab switches). Mounting all ~35 pages at boot made
+  // every page fetch + animate simultaneously — the whole app felt slow.
+  const [visited, setVisited] = useState<Set<string>>(() => new Set([profile?.role === 'admin' ? 'school' : 'home']))
+  useEffect(() => {
+    setVisited(prev => (prev.has(active) ? prev : new Set(prev).add(active)))
+  }, [active])
+  const mounted = (id: string) => visited.has(id)
   // Solver surface: companion chat (default) vs the classic visual Solver.
   const [solverUi, setSolverUi] = useState<'chat' | 'classic'>(() => {
     try { return (localStorage.getItem('kairo:solver-ui') as 'chat' | 'classic') || 'chat' } catch { return 'chat' }
@@ -219,11 +227,12 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
             <XPToast />
 
             {/* Home — the AI Student OS command center */}
-            <div style={pageStyle('home')}><KairoHome onNavigate={setActive} /></div>
+            <div style={pageStyle('home')}>{mounted('home') && <KairoHome onNavigate={setActive} />}</div>
 
             {/* Kyno's Solver — companion CHAT by default; classic visual
                 Solver one toggle away. Preference persists per device. */}
             <div style={pageStyle('doubt')}>
+              {mounted('doubt') && (
               <div style={{ flex: 1, minHeight: 0, position: 'relative', display: 'flex', flexDirection: 'column' }}>
                 {/* Chat ↔ Classic toggle */}
                 <button
@@ -268,116 +277,117 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
                   />
                 )}
               </div>
+              )}
             </div>
 
             {/* Flashcards */}
-            <div style={pageStyle('flashcards')}><Flashcards /></div>
+            <div style={pageStyle('flashcards')}>{mounted('flashcards') && <Flashcards />}</div>
 
             {/* Study Plan */}
-            <div style={pageStyle('study-plan')}><StudyPlan /></div>
+            <div style={pageStyle('study-plan')}>{mounted('study-plan') && <StudyPlan />}</div>
 
             {/* Exam Planner */}
-            <div style={pageStyle('exam-planner')}><ExamPlanner /></div>
+            <div style={pageStyle('exam-planner')}>{mounted('exam-planner') && <ExamPlanner />}</div>
 
             {/* Topic Architect */}
-            <div style={pageStyle('topic-architect')}><TopicArchitect /></div>
+            <div style={pageStyle('topic-architect')}>{mounted('topic-architect') && <TopicArchitect />}</div>
 
             {/* Essay Grader */}
-            <div style={pageStyle('essay')}><EssayGrader /></div>
+            <div style={pageStyle('essay')}>{mounted('essay') && <EssayGrader />}</div>
 
             {/* Exam Predictor */}
-            <div style={pageStyle('predictor')}><ExamPredictor /></div>
+            <div style={pageStyle('predictor')}>{mounted('predictor') && <ExamPredictor />}</div>
 
             {/* Question Paper */}
-            <div style={pageStyle('question-paper')}><QuestionPaper /></div>
+            <div style={pageStyle('question-paper')}>{mounted('question-paper') && <QuestionPaper />}</div>
 
             {/* Lesson Plan */}
-            <div style={pageStyle('lesson-plan')}><LessonPlan /></div>
+            <div style={pageStyle('lesson-plan')}>{mounted('lesson-plan') && <LessonPlan />}</div>
 
             {/* Parent Message */}
-            <div style={pageStyle('parent-message')}><ParentMessage /></div>
+            <div style={pageStyle('parent-message')}>{mounted('parent-message') && <ParentMessage />}</div>
 
             {/* Settings */}
-            <div style={pageStyle('settings')}><Settings /></div>
+            <div style={pageStyle('settings')}>{mounted('settings') && <Settings />}</div>
 
             {/* Fee Reminder */}
-            <div style={pageStyle('fee-reminder')}><FeeReminder /></div>
+            <div style={pageStyle('fee-reminder')}>{mounted('fee-reminder') && <FeeReminder />}</div>
 
             {/* Admission Bot */}
-            <div style={pageStyle('admission')}><AdmissionBot /></div>
+            <div style={pageStyle('admission')}>{mounted('admission') && <AdmissionBot />}</div>
 
             {/* Attendance */}
-            <div style={pageStyle('attendance')}><Attendance /></div>
+            <div style={pageStyle('attendance')}>{mounted('attendance') && <Attendance />}</div>
 
             {/* Timetable */}
-            <div style={pageStyle('timetable')}><Timetable /></div>
+            <div style={pageStyle('timetable')}>{mounted('timetable') && <Timetable />}</div>
 
             {/* Writing Tools */}
-            <div style={pageStyle('writing')}><WritingTools /></div>
+            <div style={pageStyle('writing')}>{mounted('writing') && <WritingTools />}</div>
 
             {/* Concept Tools */}
-            <div style={pageStyle('concept')}><ConceptTools /></div>
+            <div style={pageStyle('concept')}>{mounted('concept') && <ConceptTools />}</div>
 
             {/* Formula Sheet */}
-            <div style={pageStyle('formula')}><FormulaSheet /></div>
+            <div style={pageStyle('formula')}>{mounted('formula') && <FormulaSheet />}</div>
 
             {/* Adaptive Quiz */}
-            <div style={pageStyle('quiz')}><AdaptiveQuiz /></div>
+            <div style={pageStyle('quiz')}>{mounted('quiz') && <AdaptiveQuiz />}</div>
 
             {/* NOTE: 5 pages removed per spec — Analytics, Gamification (My
                 Progress), MemoryBrain (AI Memory), VoiceTutor, PanicMode.
                 Their functionality now lives inside Kyno / Kyno Solver. */}
 
             {/* Pomodoro */}
-            <div style={pageStyle('pomodoro')}><Pomodoro /></div>
+            <div style={pageStyle('pomodoro')}>{mounted('pomodoro') && <Pomodoro />}</div>
 
             {/* Announcement */}
-            <div style={pageStyle('announcement')}><Announcement /></div>
+            <div style={pageStyle('announcement')}>{mounted('announcement') && <Announcement />}</div>
 
             {/* School Hub */}
-            <div style={pageStyle('school')}>{profile && <SchoolHub profile={profile} />}</div>
+            <div style={pageStyle('school')}>{mounted('school') && profile && <SchoolHub profile={profile} />}</div>
 
             {/* Focus Mode */}
-            <div style={pageStyle('focus')}><FocusMode /></div>
+            <div style={pageStyle('focus')}>{mounted('focus') && <FocusMode />}</div>
 
             {/* Camera Study */}
-            <div style={pageStyle('camera')}><CameraStudy /></div>
+            <div style={pageStyle('camera')}>{mounted('camera') && <CameraStudy />}</div>
 
             {/* Mistake Analysis */}
-            <div style={pageStyle('mistakes')}><MistakeAnalysis /></div>
+            <div style={pageStyle('mistakes')}>{mounted('mistakes') && <MistakeAnalysis />}</div>
 
             {/* Revision Simulator */}
-            <div style={pageStyle('simulator')}><RevisionSimulator /></div>
+            <div style={pageStyle('simulator')}>{mounted('simulator') && <RevisionSimulator />}</div>
 
             {/* AI Notebook */}
-            <div style={pageStyle('notebook')}><Notebook /></div>
+            <div style={pageStyle('notebook')}>{mounted('notebook') && <Notebook />}</div>
 
             {/* Concept Map */}
-            <div style={pageStyle('concept-map')}><ConceptMap /></div>
+            <div style={pageStyle('concept-map')}>{mounted('concept-map') && <ConceptMap />}</div>
 
             {/* Battle Mode */}
-            <div style={pageStyle('battle')}><BattleMode /></div>
+            <div style={pageStyle('battle')}>{mounted('battle') && <BattleMode />}</div>
 
             {/* Knowledge Graph */}
-            <div style={pageStyle('knowledge')}><KnowledgeGraph /></div>
+            <div style={pageStyle('knowledge')}>{mounted('knowledge') && <KnowledgeGraph />}</div>
 
             {/* Ops Dashboard — live status, public JSON at /api/ops/status */}
-            <div style={pageStyle('ops')}><Ops /></div>
+            <div style={pageStyle('ops')}>{mounted('ops') && <Ops />}</div>
 
             {/* AI Teacher Assistant */}
-            <div style={pageStyle('teacher-ai')}><TeacherAssistant /></div>
+            <div style={pageStyle('teacher-ai')}>{mounted('teacher-ai') && <TeacherAssistant />}</div>
 
             {/* Explain My Mistake */}
-            <div style={pageStyle('explain-mistake')}><ExplainMistake /></div>
+            <div style={pageStyle('explain-mistake')}>{mounted('explain-mistake') && <ExplainMistake />}</div>
 
             {/* Performance Predictor */}
-            <div style={pageStyle('perf-predictor')}><PerformancePredictor /></div>
+            <div style={pageStyle('perf-predictor')}>{mounted('perf-predictor') && <PerformancePredictor />}</div>
 
             {/* Kyno Labs */}
-            <div style={pageStyle('labs')}><KairoLabs /></div>
+            <div style={pageStyle('labs')}>{mounted('labs') && <KairoLabs />}</div>
 
             {/* Kyno — AI Academic Twin */}
-            <div style={pageStyle('kairo-os')}><KairoOS /></div>
+            <div style={pageStyle('kairo-os')}>{mounted('kairo-os') && <KairoOS />}</div>
 
           </div>
 
