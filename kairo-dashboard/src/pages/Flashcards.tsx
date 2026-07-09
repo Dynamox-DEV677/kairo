@@ -195,10 +195,10 @@ export default function Flashcards() {
                 <div style={{ fontSize: 11, color: C.purple, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.6, marginBottom: 8 }}>
                   Generate a deck
                 </div>
-                <div style={{ display: 'flex', gap: 10, marginBottom: 14 }}>
+                <div className="mob-stack-flex" style={{ display: 'flex', gap: 10, marginBottom: 14 }}>
                   <input
                     style={{
-                      flex: 1, background: C.panel2, border: `1px solid ${C.borderSoft}`, borderRadius: 12,
+                      flex: 1, minWidth: 0, background: C.panel2, border: `1px solid ${C.borderSoft}`, borderRadius: 12,
                       padding: '13px 18px', fontSize: 15, color: C.text, outline: 'none',
                       fontFamily: 'inherit', transition: 'border-color 0.2s, box-shadow 0.2s',
                     }}

@@ -197,8 +197,10 @@ router.post('/chat', async (req, res) => {
   const wantVision = messagesHaveImages(messages)
   let order = wantVision ? [...CHAT_MODELS_VISION] : [...CHAT_MODELS_TEXT]
   // Honor a requested Groq model id; legacy OpenRouter ids (":free") are ignored.
-  if (typeof model === 'string' && model && !model.endsWith(':free') && !wantVision) {
-    order = [model, ...order.filter(m => m !== model)]
+  if (typeof model === 'string' && model && !model.endsWith(':free')) {
+    if (!wantVision || CHAT_MODELS_VISION.includes(model)) {
+      order = [model, ...order.filter(m => m !== model)]
+    }
   }
 
   // Wrap the full attempt so any failure can fall through to Wikipedia / a

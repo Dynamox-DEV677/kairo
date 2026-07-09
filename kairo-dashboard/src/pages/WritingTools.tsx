@@ -29,12 +29,14 @@ export default function WritingTools() {
         <p style={{ fontSize: 13, color: '#6B7280', marginTop: 4 }}>AI-powered writing enhancement for exam success</p>
       </div>
 
-      <div style={{ display: 'flex', gap: 4, marginBottom: 24, background: '#0E1117', border: '1px solid #1f2532', borderRadius: 10, padding: 4 }}>
+      {/* Tabs scroll sideways on phones — five columns at 390px broke labels mid-word */}
+      <div style={{ display: 'flex', gap: 4, marginBottom: 24, background: '#0E1117', border: '1px solid #1f2532', borderRadius: 10, padding: 4, overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
         {TABS.map(t => (
           <button key={t.id} onClick={() => setTab(t.id)} style={{
-            flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-            padding: '7px 8px', borderRadius: 7, border: 'none', fontFamily: 'inherit',
+            flex: '1 0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+            padding: '7px 12px', borderRadius: 7, border: 'none', fontFamily: 'inherit',
             fontSize: 12, fontWeight: tab === t.id ? 600 : 400, cursor: 'pointer',
+            whiteSpace: 'nowrap',
             background: tab === t.id ? '#1f2532' : 'transparent',
             color: tab === t.id ? '#66D9FF' : '#6B7280', transition: 'all 0.15s',
           }}>

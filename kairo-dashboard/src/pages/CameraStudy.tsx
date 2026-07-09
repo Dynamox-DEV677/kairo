@@ -17,22 +17,18 @@ import {
 } from 'lucide-react'
 import { saveRecentChat, makeTitle } from '../lib/recentChats'
 
-// ── Vision-capable free models on OpenRouter ─────────────────────────────────
+// ── Groq multimodal models — the /api/ai/chat proxy routes every image
+//    request to these (Llama-4), so the picker reflects what actually runs.
 const VISION_MODELS = [
   {
-    id: 'qwen/qwen2.5-vl-72b-instruct:free',
-    label: 'Qwen 2.5 VL 72B',
-    desc:  'Strong general image understanding · best for diagrams + handwriting',
+    id: 'meta-llama/llama-4-scout-17b-16e-instruct',
+    label: 'Llama 4 Scout',
+    desc:  'Fast image understanding · best for diagrams, handwriting + homework shots',
   },
   {
-    id: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',
-    label: 'Nemotron Nano Omni 30B',
-    desc:  'Multimodal reasoning · solid for math + science problems',
-  },
-  {
-    id: 'qianfan/qianfan-ocr-fast:free',
-    label: 'Qianfan OCR Fast',
-    desc:  'OCR-specialized · fastest for plain text extraction',
+    id: 'meta-llama/llama-4-maverick-17b-128e-instruct',
+    label: 'Llama 4 Maverick',
+    desc:  'Deeper multimodal reasoning · solid for tricky math + science problems',
   },
 ]
 

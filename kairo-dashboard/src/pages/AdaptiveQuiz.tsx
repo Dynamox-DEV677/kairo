@@ -59,7 +59,7 @@ export default function AdaptiveQuiz() {
           <p style={{ fontSize: 13, color: '#6B7280', marginTop: 4 }}>MCQ quiz that adapts to your difficulty level</p>
         </div>
         <button onClick={() => { if (screen !== 'history') { loadHistory(); setScreen('history') } else setScreen('setup') }}
-          style={{ ...btn(true, '#0E1117'), border: '1px solid #1f2532', color: '#9CA3AF' }}>
+          style={{ ...btn(true, '#0E1117'), border: '1px solid #1f2532', color: '#9CA3AF', whiteSpace: 'nowrap', flexShrink: 0 }}>
           <History size={13} /> History
         </button>
       </div>

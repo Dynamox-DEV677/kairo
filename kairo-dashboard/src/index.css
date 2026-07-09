@@ -687,6 +687,9 @@ html, body, #root {
      collapses to a single column (Camera Study, Exam Planner, Concept
      Tools, Quiz, Fee Reminder, Announcements, Formula Sheet, Predictor) */
   .mob-stack { grid-template-columns: 1fr !important; }
+
+  /* Same idea for flex rows (e.g. Flashcards' topic input + Generate button) */
+  .mob-stack-flex { flex-direction: column !important; align-items: stretch !important; }
 }
 
 @keyframes nb-fab-breath {
