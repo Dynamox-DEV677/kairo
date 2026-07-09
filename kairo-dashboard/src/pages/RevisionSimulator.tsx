@@ -519,7 +519,7 @@ function ResultsView({ questions, answers, onReset }: any) {
           position: 'absolute', top: -40, right: -40, width: 200, height: 200,
           borderRadius: '50%', background: `${gradeColor}20`, filter: 'blur(60px)',
         }} />
-        <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 22 }}>
+        <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 22, flexWrap: 'wrap' }}>
           <div style={{
             width: 80, height: 80, borderRadius: 18,
             background: `${gradeColor}18`, border: `2px solid ${gradeColor}40`,

@@ -404,7 +404,8 @@ function WeekGrid({ blocks }: { blocks: ScheduleBlock[] }) {
   for (const d of DAYS) byDay[d].sort((a, b) => a.start.localeCompare(b.start))
 
   return (
-    <div style={{
+    // .week-grid: phones get 7 real 150px columns that scroll sideways
+    <div className="week-grid" style={{
       display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 8,
     }}>
       {DAYS.map(d => (

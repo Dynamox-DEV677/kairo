@@ -334,7 +334,10 @@ html, body, #root {
   overflow-x: hidden;
 }
 
-/* Make sure no inline-style content can break the viewport */
+/* Make sure no inline-style content can break the viewport.
+   NOTE: break-word (not `anywhere`) — `anywhere` licensed breaking EVERY
+   word at EVERY letter, which turned narrow flex items into vertical
+   letter-strips ("Gravity" one letter per line, "NEE T", "Explai n"). */
 .kairo-mobile h1,
 .kairo-mobile h2,
 .kairo-mobile h3,
@@ -342,13 +345,41 @@ html, body, #root {
 .kairo-mobile span,
 .kairo-mobile div {
   min-width: 0;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
   word-break: normal;
+}
+
+/* Buttons and their labels NEVER letter-wrap — rows wrap whole buttons */
+.kairo-mobile button,
+.kairo-mobile button span {
+  overflow-wrap: normal;
+  word-break: keep-all;
+  white-space: nowrap;
 }
 
 /* Pills / chips that contain short labels — never break them onto multiple lines */
 .kairo-mobile [style*="borderRadius: 999"]:not([class*="kr-card"]) {
   white-space: nowrap;
+}
+
+/* Segmented tab rows: on phones become a swipeable strip instead of
+   crushing labels (Concept Tools, etc.) */
+@media (max-width: 768px) {
+  .seg-scroll {
+    display: flex !important;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .seg-scroll > * { flex: 1 0 auto; }
+
+  /* Study Plan week view: 7 real columns that scroll sideways, instead of
+     7 × 40px letter-strips */
+  .week-grid {
+    grid-template-columns: repeat(7, minmax(150px, 1fr)) !important;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 8px;
+  }
 }
 
 /* ── KairoOS dashboard: force 2-col stat grids to stay 2-col (not collapse to 1) on phones

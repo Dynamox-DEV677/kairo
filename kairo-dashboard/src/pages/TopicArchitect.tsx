@@ -126,7 +126,7 @@ export default function TopicArchitect() {
         <div style={{ display: 'flex', gap: 18, alignItems: 'flex-end', marginTop: 16, flexWrap: 'wrap' }}>
           <div>
             <label style={lbl}>Exam</label>
-            <div style={{ display: 'flex', gap: 6 }}>
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
               {EXAMS.map(e => (
                 <button key={e.id} onClick={() => setExam(e.id)} style={{
                   padding: '8px 16px', fontSize: 13, fontWeight: 700, borderRadius: 8, cursor: 'pointer',

@@ -186,7 +186,7 @@ Keep total length 180-280 words. Tone: friendly, specific, exam-aware.` },
       {/* Header */}
       <div style={{
         padding: '14px 24px', borderBottom: '1px solid #1a1f2e',
-        display: 'flex', alignItems: 'center', gap: 14, flexShrink: 0,
+        display: 'flex', alignItems: 'center', gap: 14, flexShrink: 0, flexWrap: 'wrap',
         background: 'rgba(13,13,13,0.7)', backdropFilter: 'blur(12px)',
       }}>
         {onBack && (
@@ -200,7 +200,7 @@ Keep total length 180-280 words. Tone: friendly, specific, exam-aware.` },
             <ArrowLeft size={14} />
           </button>
         )}
-        <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ flex: 1, minWidth: 160 }}>
           <div style={{ fontSize: 10, color: '#4F7CFF', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.5 }}>
             KYNO LABS · {subject}
           </div>

@@ -351,7 +351,7 @@ function Header({ onRefresh, nodeCount, edgeCount, mode, setMode }: {
         </div>
       </div>
 
-      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+      <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
         {/* View-mode segmented control — Illustrated ↔ Pro */}
         <div style={{
           display: 'inline-flex', padding: 3,

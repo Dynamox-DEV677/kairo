@@ -28,7 +28,7 @@ export default function ConceptTools() {
         <p style={{ fontSize: 13, color: '#6B7280', marginTop: 4 }}>Simplify concepts · Visual mindmaps · Doubt history</p>
       </div>
 
-      <div style={{ display: 'flex', gap: 4, marginBottom: 24, background: '#0E1117', border: '1px solid #1f2532', borderRadius: 10, padding: 4 }}>
+      <div className="seg-scroll" style={{ display: 'flex', gap: 4, marginBottom: 24, background: '#0E1117', border: '1px solid #1f2532', borderRadius: 10, padding: 4 }}>
         {TABS.map(t => (
           <button key={t.id} onClick={() => setTab(t.id)} style={{
             flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
