@@ -164,7 +164,7 @@ Now teach me how to never make this mistake again, following your structure exac
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: result || busy ? '1fr 1.3fr' : '1fr', gap: 16 }}>
+      <div className="mob-stack" style={{ display: 'grid', gridTemplateColumns: result || busy ? '1fr 1.3fr' : '1fr', gap: 16 }}>
         {/* Form */}
         <div style={{ ...card, padding: 22 }}>
           <div style={{ marginBottom: 14 }}>
