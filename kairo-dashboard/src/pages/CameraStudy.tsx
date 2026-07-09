@@ -358,7 +358,7 @@ export default function CameraStudy() {
       {/* Image preview + actions */}
       {imageData && (
         <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
-          style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
+          className="mob-stack" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
           <div style={{
             background: '#0E1117', border: '1px solid #1f2532', borderRadius: 14, padding: 12,
             position: 'relative',

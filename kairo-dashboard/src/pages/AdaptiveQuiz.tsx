@@ -92,7 +92,7 @@ export default function AdaptiveQuiz() {
 
 function SetupScreen({ form, setForm, onStart, loading, err }: any) {
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+    <div className="mob-stack" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
       <div style={card}>
         <h3 style={{ fontSize: 14, fontWeight: 700, color: '#fafafa', margin: '0 0 16px' }}>Quiz Settings</h3>
         <div style={{ marginBottom: 12 }}>

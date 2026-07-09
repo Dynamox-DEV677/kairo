@@ -369,7 +369,7 @@ export default function ExamPlanner() {
 
       {/* ── Form card ────────────────────────────────────────────── */}
       <div id="exam-planner-form" style={{ ...card, padding: 24, marginBottom: 24 }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18 }}>
+        <div className="mob-stack" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18 }}>
           <div>
             <label style={lbl}><Target size={11} style={{ verticalAlign: 'middle', marginRight: 4 }} />Exam</label>
             <select style={inp} value={exam} onChange={e => setExam(e.target.value)}>
@@ -578,7 +578,7 @@ export default function ExamPlanner() {
             </div>
 
             {/* Milestones + advice */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
+            <div className="mob-stack" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
               <div style={{ ...card, padding: 18 }}>
                 <h3 style={{ fontSize: 13, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: '#66D9FF', margin: '0 0 12px', display: 'flex', alignItems: 'center', gap: 8 }}>
                   <Trophy size={14} /> Milestones

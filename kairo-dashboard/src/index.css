@@ -682,6 +682,11 @@ html, body, #root {
   /* Home gamification row (Level · Quests · League): one card per row on
      phones — three columns at 390px squeezed "0/100 XP" into a vertical strip */
   .kg-gamebar { grid-template-columns: 1fr !important; }
+
+  /* Generic phone rule: any fixed multi-column pane marked .mob-stack
+     collapses to a single column (Camera Study, Exam Planner, Concept
+     Tools, Quiz, Fee Reminder, Announcements, Formula Sheet, Predictor) */
+  .mob-stack { grid-template-columns: 1fr !important; }
 }
 
 @keyframes nb-fab-breath {

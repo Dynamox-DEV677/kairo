@@ -45,7 +45,7 @@ export default function ExamPredictor() {
       </div>
 
       <div style={{ background: '#0E1117', border: '1px solid #1f2532', borderRadius: 14, padding: 24, marginBottom: 24 }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14, marginBottom: 20 }}>
+        <div className="mob-stack" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14, marginBottom: 20 }}>
           <div>
             <label style={{ fontSize: 11, fontWeight: 600, color: '#9CA3AF', display: 'block', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.8 }}>Board</label>
             {sel(board, setBoard, ['CBSE','ICSE','Maharashtra HSC','Tamil Nadu','Karnataka','UP Board','Bihar Board'])}

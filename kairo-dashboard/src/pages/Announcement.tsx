@@ -166,7 +166,7 @@ function AnnouncementViewer({ a }: { a: any }) {
         )}
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+      <div className="mob-stack" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
         {/* WhatsApp version */}
         {a.whatsapp_message && (
           <div style={{ background: '#0E1117', border: '1px solid #1f2532', borderRadius: 14, padding: 16 }}>

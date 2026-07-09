@@ -445,7 +445,7 @@ function SheetViewer({ sheet }: { sheet: any }) {
       )}
 
       {(sheet.tips?.length > 0 || sheet.common_mistakes?.length > 0) && (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+        <div className="mob-stack" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
           {sheet.tips?.length > 0 && (
             <div style={{ ...card, borderColor: 'rgba(102, 217, 255, 0.3)' }}>
               <div style={{ fontSize: 11, fontWeight: 700, color: C.purpleLite, textTransform: 'uppercase', letterSpacing: 1.4, marginBottom: 8 }}>Quick tips</div>
