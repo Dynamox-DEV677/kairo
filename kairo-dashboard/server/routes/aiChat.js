@@ -175,37 +175,62 @@ async function chatWikipediaFallback(question) {
   }
 }
 
+// ── Groq-only chat proxy ─────────────────────────────────────────────────────
+// Every in-app AI helper (Notebook builder, Essay Grader, Camera Study, …)
+// goes through here. OpenRouter was slow + 429-happy on the free tier, so the
+// whole app now runs on the Groq key pool (~1s responses, 10 rotating keys).
+const CHAT_MODELS_TEXT   = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant']
+// Groq's multimodal Llama-4 models accept OpenAI-style image_url content —
+// this is what powers Camera Study now.
+const CHAT_MODELS_VISION = ['meta-llama/llama-4-scout-17b-16e-instruct', 'meta-llama/llama-4-maverick-17b-128e-instruct']
+
+const messagesHaveImages = (messages) =>
+  messages.some(m => Array.isArray(m?.content) && m.content.some(p => p?.type === 'image_url'))
+
 router.post('/chat', async (req, res) => {
-  const { messages, model = 'openai/gpt-oss-20b:free', stream = false } = req.body
+  const { messages, model, stream = false } = req.body
 
   if (!messages?.length) {
     return res.status(400).json({ error: 'messages array required' })
   }
 
-  const apiKey = process.env.OPENROUTER_API_KEY
-  if (!apiKey) {
-    return res.status(503).json({ error: 'OPENROUTER_API_KEY not configured on server.' })
+  const wantVision = messagesHaveImages(messages)
+  let order = wantVision ? [...CHAT_MODELS_VISION] : [...CHAT_MODELS_TEXT]
+  // Honor a requested Groq model id; legacy OpenRouter ids (":free") are ignored.
+  if (typeof model === 'string' && model && !model.endsWith(':free') && !wantVision) {
+    order = [model, ...order.filter(m => m !== model)]
   }
 
   // Wrap the full attempt so any failure can fall through to Wikipedia / a
   // friendly degraded message — never a raw 5xx + stack trace for the user.
   try {
-    const upstream = await fetch(OR_URL, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-        'HTTP-Referer': process.env.ALLOWED_ORIGIN || 'https://kairo-daily-edu.vercel.app',
-        'X-Title': 'Kyno',
-      },
-      body: JSON.stringify({ model, messages, stream }),
-    })
-
-    // Even when fetch resolves, upstream may have returned 429 / 5xx — treat
-    // that as a failure so the fallback path can run.
-    if (!upstream.ok) {
-      const text = await upstream.text().catch(() => '')
-      throw new Error(`upstream ${upstream.status}: ${text.slice(0, 160)}`)
+    let upstream = null
+    let lastErr  = null
+    for (const m of order) {
+      const key = groqPool.next()
+      if (!key) { lastErr = new Error('no live Groq keys (all cooling or none configured)'); break }
+      try {
+        const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ model: m, messages, stream, max_tokens: 2048 }),
+        })
+        if (!r.ok) {
+          if (r.status === 429 || r.status >= 500) {
+            try { groqPool.markBad(key, r.status) } catch { /* ignore */ }
+          }
+          const text = await r.text().catch(() => '')
+          throw new Error(`groq/${m} ${r.status}: ${text.slice(0, 160)}`)
+        }
+        upstream = r
+        break
+      } catch (e) {
+        lastErr = e
+        console.warn('[aiChat/chat] model failed, trying next:', e.message)
+      }
+    }
+    if (!upstream) {
+      throw lastErr || new Error('all Groq models failed')
     }
 
     if (!stream) {
@@ -599,39 +624,17 @@ async function getSolverPlan(question) {
     return dbHit.plan
   }
 
-  const apiKey = process.env.OPENROUTER_API_KEY
-  if (!apiKey) throw new Error('OPENROUTER_API_KEY not configured on server.')
-
-  // Race the full pool of free OpenRouter models in parallel. Promise.any
-  // resolves on the first model that returns valid JSON. Failures and
-  // per-call timeouts (7s) are ignored. Wall-clock max ~7s; usually 2-4s.
-  const RACE_MODELS = [
-    process.env.SOLVER_MODEL,                                // operator override
-    'openai/gpt-oss-20b:free',
-    'google/gemma-4-31b-it:free',
-    'meta-llama/llama-3.3-70b-instruct:free',
-    'qwen/qwen3-coder:free',
-    'nvidia/nemotron-3-super-120b-a12b:free',
-    'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',
-    'openai/gpt-oss-120b:free',
-  ].filter(Boolean)
-
-  // Build the race — every OpenRouter model + every Groq model.
-  // Groq has its own quota separate from OpenRouter, so when OR is throttled
-  // Groq still works. Racing multiple Groq models hedges against any single
-  // Groq model being slow/deprecated under load. Each Groq call draws a fresh
-  // key from the rotating pool — see services/groqPool.js.
-  const tasks = RACE_MODELS.map(m => callModel(m, question, apiKey, 7000))
+  // Groq-only: race every Groq model in parallel — Promise.any resolves on
+  // the first that returns valid JSON. Each call draws an INDEPENDENT key
+  // from the rotating pool (services/groqPool.js), so two models from one
+  // request never share a key's quota. OpenRouter was removed: its free pool
+  // was slow and 429-throttled; Groq answers in ~1s.
   const groqStatus = groqPool.status()
-  if (groqStatus.live > 0) {
-    // Pass apiKey=null so callGroqOne draws from the pool. Each Groq model
-    // in the race picks an INDEPENDENT key — so two models from one request
-    // never share a key's quota.
-    tasks.push(...GROQ_MODELS.map(m => callGroqOne(m, question, null, 7000)))
-    console.log(`[solver] racing ${RACE_MODELS.length} OpenRouter + ${GROQ_MODELS.length} Groq models (pool: ${groqStatus.hint})`)
-  } else {
-    console.log(`[solver] racing ${RACE_MODELS.length} OpenRouter models (groq pool: ${groqStatus.hint})`)
+  if (groqStatus.live === 0) {
+    throw new Error('No live Groq keys — set GROQ_API_KEYS in env (pool: ' + groqStatus.hint + ')')
   }
+  const tasks = GROQ_MODELS.map(m => callGroqOne(m, question, null, 7000))
+  console.log(`[solver] racing ${GROQ_MODELS.length} Groq models (pool: ${groqStatus.hint})`)
 
   let winner
   try {

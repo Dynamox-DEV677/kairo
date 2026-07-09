@@ -76,6 +76,7 @@ router.get('/status', async (_req, res) => {
     },
     env: {
       hasOpenRouter:   !!process.env.OPENROUTER_API_KEY,
+      hasGroq:         !!(process.env.GROQ_API_KEYS || process.env.GROQ_API_KEY),
       hasGemini:       !!process.env.GEMINI_API_KEY,
       hasPexels:       !!process.env.PEXELS_API_KEY,
       hasUnsplash:     !!process.env.UNSPLASH_ACCESS_KEY,

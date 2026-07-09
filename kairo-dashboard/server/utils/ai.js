@@ -9,29 +9,15 @@
 
 import groqPool from '../services/groqPool.js'
 
-const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions'
-const GROQ_URL       = 'https://api.groq.com/openai/v1/chat/completions'
-// Groq's solver-grade models — fast + free. Tried before OpenRouter.
-const GROQ_MODELS = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant']
+const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions'
 
-// Task type → model mapping (ordered by preference)
+// Groq-only (OpenRouter removed — slow + 429-throttled on the free tier).
+// Task type → Groq model order: speed-y tasks lead with the sub-second 8B,
+// reasoning/structured tasks lead with the smarter 70B.
 const MODEL_POOLS = {
-  speed: [
-    'openai/gpt-oss-20b:free',
-    'google/gemma-4-31b-it:free',
-    'meta-llama/llama-3.3-70b-instruct:free',
-  ],
-  reason: [
-    'openai/gpt-oss-120b:free',
-    'meta-llama/llama-3.3-70b-instruct:free',
-    'nvidia/nemotron-3-super-120b-a12b:free',
-    'openai/gpt-oss-20b:free',
-  ],
-  code: [
-    'qwen/qwen3-coder:free',
-    'openai/gpt-oss-120b:free',
-    'meta-llama/llama-3.3-70b-instruct:free',
-  ],
+  speed:  ['llama-3.1-8b-instant',    'llama-3.3-70b-versatile'],
+  reason: ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant'],
+  code:   ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant'],
 }
 
 // Which task types map to which pool
@@ -85,12 +71,7 @@ export async function aiCall({ taskType = 'speed', messages, maxTokens = 1024, t
   const models = getModels(taskType)
   let lastError = null
 
-  // ── Groq first ──────────────────────────────────────────────────────
-  // Most Kyno deploys set GROQ_API_KEYS but NOT OPENROUTER_API_KEY, which
-  // is why callers were seeing "All models failed. Provider returned
-  // error" — the OpenRouter loop had no key. Try the rotating Groq pool
-  // before OpenRouter; fall through to OpenRouter only if Groq is dry.
-  for (const gModel of GROQ_MODELS) {
+  for (const gModel of models) {
     const key = groqPool.next()
     if (!key) break   // no keys configured / all cooling down
     try {
@@ -111,52 +92,13 @@ export async function aiCall({ taskType = 'speed', messages, maxTokens = 1024, t
       throw new Error('groq empty')
     } catch (err) {
       lastError = err
-      console.warn(`[AI] Groq ${gModel} failed (${err.message}), trying next/OpenRouter…`)
-      // try next groq model, then fall to OpenRouter
-    }
-  }
-
-  for (const model of models) {
-    try {
-      const res = await fetch(OPENROUTER_URL, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
-          'Content-Type': 'application/json',
-          'X-Title': 'Kyno Education Platform',
-        },
-        body: JSON.stringify({
-          model,
-          messages,
-          temperature,
-          max_tokens: maxTokens,
-        }),
-      })
-
-      if (!res.ok) {
-        const errText = await res.text()
-        throw new Error(`HTTP ${res.status}: ${errText}`)
-      }
-
-      const data = await res.json()
-      const content = data.choices?.[0]?.message?.content
-      if (!content) throw new Error('Empty AI response')
-
-      return content
-
-    } catch (err) {
-      lastError = err
-      if (isUnavailable(err.message)) {
-        console.warn(`[AI] Model ${model} unavailable, trying next…`)
-        continue
-      }
-      throw err // non-model error, don't retry
+      console.warn(`[AI] Groq ${gModel} failed (${err.message}), trying next…`)
     }
   }
 
   throw new Error(
-    'All AI providers failed (Groq + OpenRouter). ' +
-    'Check GROQ_API_KEYS / OPENROUTER_API_KEY are set in env and redeployed. ' +
+    'Groq AI unavailable. Check GROQ_API_KEYS is set in env and redeployed ' +
+    '(pool: ' + groqPool.status().hint + '). ' +
     'Last error: ' + (lastError?.message || 'unknown')
   )
 }

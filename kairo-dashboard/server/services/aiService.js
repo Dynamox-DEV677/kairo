@@ -2,13 +2,12 @@
  * AI Service
  * ──────────
  * Generates dynamic, non-robotic fee reminder email content
- * via OpenRouter (same API used by the dashboard).
+ * via the shared Groq-backed aiCall helper.
  *
  * Falls back to a clean template if AI is unavailable.
  */
 
-const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions'
-const MODEL = process.env.AI_MODEL || 'openai/gpt-oss-20b:free'
+import { aiCall } from '../utils/ai.js'
 
 const TONE_INSTRUCTIONS = {
   friendly: 'Write in a warm, friendly and encouraging tone. Be polite and understanding.',
@@ -54,25 +53,12 @@ Rules:
 - Do NOT include salutation (Dear Parent), we add that separately`
 
   try {
-    const res = await fetch(OPENROUTER_URL, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
-        'Content-Type': 'application/json',
-        'X-Title': 'Kyno Fee Reminder',
-      },
-      body: JSON.stringify({
-        model: MODEL,
-        messages: [{ role: 'user', content: prompt }],
-        temperature: 0.7,
-        max_tokens: 512,
-      }),
+    const raw = await aiCall({
+      taskType: 'speed',
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.7,
+      maxTokens: 512,
     })
-
-    if (!res.ok) throw new Error(`AI API ${res.status}`)
-
-    const data = await res.json()
-    const raw = data.choices?.[0]?.message?.content || ''
     const cleaned = raw.replace(/```json|```/g, '').trim()
     const parsed = JSON.parse(cleaned)
 

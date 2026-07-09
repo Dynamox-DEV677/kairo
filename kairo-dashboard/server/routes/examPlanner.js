@@ -251,7 +251,7 @@ Rules:
     return res.json(plan)
   } catch (err) {
     console.error('[exam-planner] generate failed:', err)
-    return res.status(500).json({ error: err.message, hint: 'Set GROQ_API_KEYS or OPENROUTER_API_KEY in Vercel env, then redeploy.' })
+    return res.status(500).json({ error: err.message, hint: 'Set GROQ_API_KEYS in Vercel env, then redeploy.' })
   }
 })
 
