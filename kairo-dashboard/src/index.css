@@ -349,12 +349,13 @@ html, body, #root {
   word-break: normal;
 }
 
-/* Buttons and their labels NEVER letter-wrap — rows wrap whole buttons */
+/* Buttons never break MID-WORD ("Explai n") — but they may still wrap
+   BETWEEN words, so long descriptions inside big card-buttons (Camera
+   Study's model cards etc.) stay inside the screen. */
 .kairo-mobile button,
 .kairo-mobile button span {
   overflow-wrap: normal;
   word-break: keep-all;
-  white-space: nowrap;
 }
 
 /* Pills / chips that contain short labels — never break them onto multiple lines */
