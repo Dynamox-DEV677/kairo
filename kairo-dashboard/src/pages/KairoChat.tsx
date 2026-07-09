@@ -19,6 +19,8 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Send, Loader2, Play, Image as ImageIcon, X, Sparkles } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import remarkMath from 'remark-math'
+import rehypeKatex from 'rehype-katex'
 import { recordDoubt, recordMistake, recordFlashcard, recordConcept, getMistakes } from '../lib/twin'
 import { saveToNotebook } from '../lib/notebook'
 import { awardXP } from '../lib/game'
@@ -275,7 +277,12 @@ export default function KairoChat() {
             }}>
               {t.role === 'kairo' ? (
                 <div className="kc-md">
-                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{t.text}</ReactMarkdown>
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm, remarkMath]}
+                    rehypePlugins={[rehypeKatex]}
+                  >
+                    {t.text}
+                  </ReactMarkdown>
                 </div>
               ) : t.text}
 
@@ -396,6 +403,8 @@ export default function KairoChat() {
         .kc-md code { background: rgba(102,217,255,0.10); padding: 1px 5px; border-radius: 4px; font-size: 13px; }
         .kc-md table { border-collapse: collapse; margin: 8px 0; }
         .kc-md th, .kc-md td { border: 1px solid rgba(255,255,255,0.12); padding: 5px 10px; font-size: 13px; }
+        .kc-md .katex { font-size: 1.05em; color: #fafafa; }
+        .kc-md .katex-display { margin: 8px 0; overflow-x: auto; overflow-y: hidden; padding: 2px 0; }
       `}</style>
     </div>
   )
