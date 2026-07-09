@@ -678,6 +678,10 @@ html, body, #root {
 
   /* Open note: tighter padding so content gets the width */
   .nb-detail { padding: 14px !important; }
+
+  /* Home gamification row (Level · Quests · League): one card per row on
+     phones — three columns at 390px squeezed "0/100 XP" into a vertical strip */
+  .kg-gamebar { grid-template-columns: 1fr !important; }
 }
 
 @keyframes nb-fab-breath {

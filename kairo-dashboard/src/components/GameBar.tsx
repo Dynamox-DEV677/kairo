@@ -45,7 +45,9 @@ export function GameBar() {
   const earned = badges(s).filter(b => b.earned)
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr 1fr', gap: 16, marginBottom: 16 }}>
+    // .kg-gamebar collapses to a single column on phones (index.css) — three
+    // side-by-side cards at 390px squeezed "0/100 XP" into a vertical strip.
+    <div className="kg-gamebar" style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr 1fr', gap: 16, marginBottom: 16 }}>
       {/* ── Level + streak ─────────────────────────────────────────── */}
       <div style={{ ...GLASS, padding: 18 }}>
         <div style={{ ...lbl, color: '#66D9FF', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}>

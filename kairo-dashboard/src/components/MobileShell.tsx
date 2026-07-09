@@ -232,10 +232,10 @@ function MobileTopBar({
       position: 'sticky', top: 0, zIndex: 90,
       height: 'calc(52px + env(safe-area-inset-top))',
       paddingTop: 'env(safe-area-inset-top)',
-      // iOS-style frosted glass bar
-      background: 'rgba(10, 13, 20, 0.72)',
-      backdropFilter: 'blur(24px) saturate(160%)',
-      WebkitBackdropFilter: 'blur(24px) saturate(160%)',
+      // iOS-style frosted bar — light blur; heavy blur stalls weak GPUs
+      background: 'rgba(10, 13, 20, 0.9)',
+      backdropFilter: 'blur(10px)',
+      WebkitBackdropFilter: 'blur(10px)',
       borderBottom: '1px solid rgba(102,217,255,0.12)',
       display: 'flex', alignItems: 'center', gap: 8,
       padding: '0 14px',
@@ -312,9 +312,9 @@ function BottomNav({
         pointerEvents: 'auto',
         display: 'flex', alignItems: 'stretch', gap: 4,
         padding: '6px 8px',
-        background: 'rgba(14, 14, 22, 0.72)',
-        backdropFilter: 'blur(24px) saturate(180%)',
-        WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+        background: 'rgba(14, 14, 22, 0.9)',
+        backdropFilter: 'blur(10px)',
+        WebkitBackdropFilter: 'blur(10px)',
         border: '1px solid rgba(102, 217, 255, 0.22)',
         borderRadius: 22,
         boxShadow: '0 20px 60px rgba(0,0,0,0.55), 0 0 40px rgba(79, 124, 255, 0.01), inset 0 1px 0 rgba(255,255,255,0.05)',
@@ -412,10 +412,9 @@ function MobileDrawer({
         style={{
           position: 'fixed', top: 0, left: 0, bottom: 0, zIndex: 101,
           width: 'min(82vw, 320px)',
-          // Frosted glass over the page — matches the desktop sidebar system
-          background: 'linear-gradient(160deg, rgba(12,16,26,0.92) 0%, rgba(6,8,13,0.94) 100%)',
-          backdropFilter: 'blur(26px) saturate(160%)',
-          WebkitBackdropFilter: 'blur(26px) saturate(160%)',
+          // Near-opaque panel, NO backdrop blur: a 26px blur over the whole
+          // page froze weak GPUs (30s+ input lag on integrated graphics).
+          background: 'linear-gradient(160deg, rgba(12,16,26,0.985) 0%, rgba(6,8,13,0.99) 100%)',
           borderRight: '1px solid rgba(102,217,255,0.14)',
           paddingTop: 'env(safe-area-inset-top)',
           paddingBottom: 'env(safe-area-inset-bottom)',
@@ -450,7 +449,7 @@ function MobileDrawer({
               textShadow: '0 0 18px rgba(79,124,255,0.4)',
             }}>Kyno</div>
             <div style={{ fontSize: 8.5, fontWeight: 600, color: 'rgba(102,217,255,0.6)', textTransform: 'uppercase', letterSpacing: 1.4 }}>
-              AI Learning OS
+              Kairo Industries
             </div>
           </div>
           <button onClick={onClose} style={{

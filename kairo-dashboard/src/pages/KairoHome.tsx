@@ -246,7 +246,7 @@ export default function KairoHome({ onNavigate }: Props) {
       )}
 
       {/* ── Top row: exam countdown + prediction + motivation ───────── */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 1.1fr 0.8fr', gap: 16, marginBottom: 16 }}>
+      <div className="kg-gamebar" style={{ display: 'grid', gridTemplateColumns: '1.1fr 1.1fr 0.8fr', gap: 16, marginBottom: 16 }}>
         {/* Exam countdowns */}
         <div style={{ ...card, padding: 18 }}>
           <div style={{ ...lbl, color: '#66D9FF', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}><Calendar size={12} /> Exam tracker</div>
@@ -296,7 +296,7 @@ export default function KairoHome({ onNavigate }: Props) {
       </div>
 
       {/* ── Today's mission + mentor note ───────────────────────────── */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 16, marginBottom: 16 }}>
+      <div className="kg-gamebar" style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 16, marginBottom: 16 }}>
         <div style={{ ...card, padding: 18, borderColor: 'rgba(102,217,255,0.25)' }}>
           <div style={{ ...lbl, color: '#66D9FF', marginBottom: 14, display: 'flex', alignItems: 'center', gap: 6 }}><Target size={12} /> Today's focus</div>
           {brief?.todaysFocus?.length ? brief.todaysFocus.map((f, i) => (
