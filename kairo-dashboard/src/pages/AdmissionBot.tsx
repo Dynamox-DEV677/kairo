@@ -230,7 +230,7 @@ function ChatTab({ ctx }: { ctx: SchoolCtx }) {
   ]
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 20, minHeight: 540 }}>
+    <div className="mob-stack" style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 20, minHeight: 540 }}>
       {/* Chat window */}
       <div style={{ ...card, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         <div style={{ padding: '14px 18px', borderBottom: '1px solid #1a1f2e', display: 'flex', alignItems: 'center', gap: 10 }}>

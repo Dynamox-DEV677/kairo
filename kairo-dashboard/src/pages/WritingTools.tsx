@@ -203,7 +203,9 @@ Rules:
   const clarityLabel = stats.clarity >= 80 ? 'Crystal' : stats.clarity >= 60 ? 'Good' : stats.clarity >= 40 ? 'Cloudy' : 'Foggy'
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 14 }}>
+    // .mob-stack: the fixed 320px sidebar ate almost the whole phone screen,
+    // squeezing the editor toolbar text into a hairline vertical strip.
+    <div className="mob-stack" style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 14 }}>
       {/* LEFT — editor */}
       <div>
         <div style={{ ...card, padding: 0, overflow: 'hidden' }}>
