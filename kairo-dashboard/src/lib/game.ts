@@ -188,6 +188,42 @@ export function awardXP(action: keyof typeof XP_ACTIONS) {
   syncLeague(s)
 }
 
+/**
+ * Award a specific XP amount for actions whose XP is computed elsewhere
+ * (Battle Mode = score × per-correct, adaptive quiz, etc.). Flows into the
+ * same level / streak / weekly-league economy and fires the same `kairo:xp`
+ * toast as awardXP, so a battle win now moves the Home level ring and league.
+ */
+export function awardXPAmount(amount: number, label: string) {
+  const gained = Math.round(amount)
+  if (!gained || gained <= 0) return
+  const s = loadGame()
+  rollover(s)
+
+  const before = levelFromXP(s.totalXP).level
+
+  // streak — first XP of the day extends it
+  const t = today()
+  if (s.lastActive !== t) {
+    s.streak = s.streak + 1
+    s.lastActive = t
+  }
+
+  s.totalXP += gained
+  s.todayXP += gained
+  s.weekXP  += gained
+  const after = levelFromXP(s.totalXP)
+  save(s)
+
+  try {
+    window.dispatchEvent(new CustomEvent('kairo:xp', {
+      detail: { amount: gained, reason: label, total: s.totalXP, level: after.level, levelUp: after.level > before, streak: s.streak },
+    }))
+  } catch { /* SSR */ }
+
+  syncLeague(s)
+}
+
 // ── Weekly league sync ────────────────────────────────────────────────
 function userIdentity(): { id: string; name: string } {
   let id = '', name = 'Student'

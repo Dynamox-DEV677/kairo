@@ -12,6 +12,7 @@ import {
 import { api } from '../lib/api'
 import { chat } from '../lib/openrouter'
 import { track } from '../lib/twin'
+import { awardXPAmount } from '../lib/game'
 import {
   getDailyLocal, getStatsLocal, getLeaderboardLocal,
   submitLocal, isMissingBackend,
@@ -262,6 +263,14 @@ Tips: each tip is one specific actionable line (max 18 words) — reference the 
     if (aiTimerRef.current) window.clearTimeout(aiTimerRef.current)
     const correct = finalAnswers.filter((a, i) => a === questions[i]?.answer).length
     const aiCorrect = aiAnswers.filter((a, i) => a !== null && a === questions[i]?.answer).length
+
+    // Feed the unified gamification economy so battles count toward the Home
+    // level ring, streak and weekly league (previously battle XP was isolated
+    // in battleLocal / the server and never reached game.ts). Matches the XP
+    // shown on the results screen: correct × per-correct, + a sparring-win bonus.
+    const perCorrect = daily?.xp_per_correct || (mode === 'spar' ? 10 : 14)
+    const battleXP = correct * perCorrect + (mode === 'spar' && correct > aiCorrect ? 20 : 0)
+    awardXPAmount(battleXP, mode === 'spar' ? 'Battle — sparring win' : 'Battle — daily challenge')
 
     if (mode === 'daily') {
       setSubmitting(true)
