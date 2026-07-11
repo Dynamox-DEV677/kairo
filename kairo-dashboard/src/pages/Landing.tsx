@@ -107,7 +107,7 @@ export default function Landing({ onGetStarted }: LandingProps) {
       <BrutalDivider lines={['STOP', 'MEMORIZING.']} kicker="—" tail={['START', 'UNDERSTANDING.']} />
       <BentoSection onGetStarted={onGetStarted} />
       <ConstructivistInterstitial />
-      <LabsShowcase />
+      <LabsShowcase onGetStarted={onGetStarted} />
       <TwinEssay />
       <DesktopApp />
       <AboutFounder />
@@ -237,10 +237,15 @@ function Masthead({ onGetStarted }: { onGetStarted: () => void }) {
               ['03', 'Labs'],
               ['04', 'Twin'],
             ].map(([n, label]) => (
-              <span key={n} style={{ display: 'inline-flex', gap: 6, alignItems: 'baseline' }}>
+              <button key={n} onClick={() => scrollToId(String(label).toLowerCase())}
+                style={{
+                  display: 'inline-flex', gap: 6, alignItems: 'baseline',
+                  background: 'none', border: 'none', padding: 0, cursor: 'pointer',
+                  font: 'inherit', color: 'inherit', letterSpacing: 'inherit', textTransform: 'inherit',
+                }}>
                 <span style={{ color: C.purple }}>{n}</span>
                 <span>{label}</span>
-              </span>
+              </button>
             ))}
           </nav>
 
@@ -972,7 +977,7 @@ function ConstructivistInterstitial() {
 // ════════════════════════════════════════════════════════════════════════════
 // LABS SHOWCASE — massive editorial cards (scroll-linked drift)
 // ════════════════════════════════════════════════════════════════════════════
-function LabsShowcase() {
+function LabsShowcase({ onGetStarted }: { onGetStarted: () => void }) {
   const labs = [
     { name: 'Gravity',          tag: 'PHYSICS · 11', glyph: Atom },
     { name: 'Newton\'s Cradle', tag: 'PHYSICS · 9',  glyph: Activity },
@@ -1044,17 +1049,17 @@ function LabsShowcase() {
         {/* Hero lab + supporting */}
         <motion.div style={{ marginTop: 80, display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: 24, y: gridY }}
           className="kr-lab-grid">
-          <LabTile big lab={labs[0]} />
+          <LabTile big lab={labs[0]} onOpen={onGetStarted} />
           <div style={{ display: 'grid', gap: 24, gridTemplateRows: '1fr 1fr' }}>
-            <LabTile lab={labs[1]} />
-            <LabTile lab={labs[2]} />
+            <LabTile lab={labs[1]} onOpen={onGetStarted} />
+            <LabTile lab={labs[2]} onOpen={onGetStarted} />
           </div>
         </motion.div>
 
         <div style={{ marginTop: 24, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}
           className="kr-lab-grid-2">
-          <motion.div style={{ x: labL }}><LabTile lab={labs[3]} /></motion.div>
-          <motion.div style={{ x: labR }}><LabTile lab={labs[4]} /></motion.div>
+          <motion.div style={{ x: labL }}><LabTile lab={labs[3]} onOpen={onGetStarted} /></motion.div>
+          <motion.div style={{ x: labR }}><LabTile lab={labs[4]} onOpen={onGetStarted} /></motion.div>
         </div>
 
         <div style={{
@@ -1080,10 +1085,13 @@ function LabsShowcase() {
   )
 }
 
-function LabTile({ lab, big = false }: { lab: { name: string; tag: string; glyph: any }; big?: boolean }) {
+function LabTile({ lab, big = false, onOpen }: { lab: { name: string; tag: string; glyph: any }; big?: boolean; onOpen?: () => void }) {
   const Icon = lab.glyph
   return (
     <motion.div whileHover={{ y: -3 }} transition={{ type: 'spring', stiffness: 200, damping: 22 }}
+      onClick={onOpen}
+      role={onOpen ? 'button' : undefined} tabIndex={onOpen ? 0 : undefined}
+      onKeyDown={onOpen ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onOpen() } } : undefined}
       style={{
         position: 'relative', aspectRatio: big ? '1.7 / 1' : '1.7 / 1',
         background:
@@ -2006,6 +2014,9 @@ function GlobalStyles() {
       }
       @media (max-width: 420px) {
         .kr-container { padding: 0 14px !important; }
+        /* Brutalist words (MEMORIZING. / UNDERSTANDING.) stayed ~54px down to
+           420px and clipped past the content box — scale them to the viewport. */
+        .kr-brutal { font-size: clamp(28px, 10.5vw, 54px) !important; }
       }
     `}</style>
   )

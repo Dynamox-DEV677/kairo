@@ -89,7 +89,6 @@ const PAGE_TITLES: Record<string, string> = {
   mistakes:         'Mistake Analysis',
   simulator:        'Revision Simulator',
   notebook:         'AI Notebook',
-  adaptive:         'Adaptive Path',
   'concept-map':    'Concept Map',
   // voice removed — folded into Kyno Solver
   battle:           'Battle Mode',
