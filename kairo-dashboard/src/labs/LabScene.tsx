@@ -13,7 +13,7 @@
  * OrbitControls. The scene defaults can be overridden via the `tint`,
  * `cameraPos`, `fogColor`, `particles` props.
  */
-import { useMemo, useRef } from 'react'
+import { useMemo, useRef, useState, useEffect } from 'react'
 import type { ReactNode } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { Stars } from '@react-three/drei'
@@ -52,8 +52,26 @@ export default function LabScene({
   shadows   = true,
   className,
 }: LabSceneProps) {
+  // Pause the WebGL render loop when the canvas is off-screen (e.g. the user
+  // navigated away — the Labs page stays mounted but hidden). Stops the
+  // GPU/battery drain of a 3D scene rendering behind display:none.
+  const wrapRef = useRef<HTMLDivElement>(null)
+  const [visible, setVisible] = useState(true)
+  useEffect(() => {
+    const el = wrapRef.current
+    if (!el || typeof IntersectionObserver === 'undefined') return
+    const io = new IntersectionObserver(
+      ([entry]) => setVisible(entry.isIntersecting && entry.intersectionRatio > 0),
+      { threshold: 0 },
+    )
+    io.observe(el)
+    return () => io.disconnect()
+  }, [])
+
   return (
+    <div ref={wrapRef} style={{ width: '100%', height: '100%' }}>
     <Canvas
+      frameloop={visible ? 'always' : 'never'}
       shadows={shadows}
       camera={{ position: cameraPos, fov: cameraFov, near: 0.1, far: 200 }}
       dpr={[1, 1.6]}
@@ -96,6 +114,7 @@ export default function LabScene({
 
       {children}
     </Canvas>
+    </div>
   )
 }
 
