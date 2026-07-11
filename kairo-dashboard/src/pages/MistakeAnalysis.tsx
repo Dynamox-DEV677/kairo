@@ -143,7 +143,7 @@ function Header({ onAddManual }: { onAddManual: () => void }) {
     <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 14, flexWrap: 'wrap' }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
         <div style={{
-          width: 46, height: 46, borderRadius: 13, background: GRAD_PILL,
+          width: 46, height: 46, borderRadius: 13, flexShrink: 0, background: GRAD_PILL,
           display: 'grid', placeItems: 'center', boxShadow: '0 10px 30px rgba(79, 124, 255, 0.03)',
         }}>
           <Activity size={22} color="#fff" />

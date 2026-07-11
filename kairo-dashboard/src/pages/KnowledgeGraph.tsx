@@ -97,7 +97,7 @@ export default function KnowledgeGraph() {
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 14, flexWrap: 'wrap' }}>
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
             <div style={{
-              width: 46, height: 46, borderRadius: 13,
+              width: 46, height: 46, borderRadius: 13, flexShrink: 0,
               background: 'linear-gradient(135deg, #4F7CFF 0%, #2046C2 100%)',
               display: 'grid', placeItems: 'center',
               boxShadow: '0 10px 30px rgba(79, 124, 255, 0.03)',

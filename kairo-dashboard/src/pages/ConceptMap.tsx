@@ -80,6 +80,9 @@ export default function ConceptMap() {
   const [hover, setHover] = useState<string | null>(null)
   const [dragId, setDragId] = useState<string | null>(null)
   const svgRef = useRef<SVGSVGElement>(null)
+  // Pan + zoom for the Pro graph: content is wrapped in a <g transform> so it
+  // can be pinch-zoomed / dragged / +- buttoned on mobile. k=scale, x/y=pan.
+  const [view, setView] = useState({ k: 1, x: 0, y: 0 })
   // View mode — illustrated (default) or pro. Persisted per device.
   const [mode, setMode] = useState<ViewMode>(() => {
     try { return (localStorage.getItem('kairo:conceptmap:view') as ViewMode) || 'illustrated' }
@@ -133,23 +136,95 @@ export default function ConceptMap() {
     return () => window.removeEventListener('storage', onStorage)
   }, [])
 
-  // Drag handling
+  // ── Pan / zoom / drag ────────────────────────────────────────────────
   const dragOffsetRef = useRef({ ox: 0, oy: 0 })
-  function startDrag(e: React.PointerEvent, id: string) {
-    e.preventDefault()
-    setDragId(id)
-    const p = positions.get(id)!
-    dragOffsetRef.current = { ox: p.x - e.clientX, oy: p.y - e.clientY }
+  const ptrs = useRef<Map<number, { x: number; y: number }>>(new Map())
+  const pinchRef = useRef<{ dist: number; k: number; x: number; y: number; mx: number; my: number } | null>(null)
+  const panRef = useRef<{ x: number; y: number; vx: number; vy: number } | null>(null)
+
+  // client px → viewBox coords (accounts for preserveAspectRatio letterboxing)
+  function toViewBox(cx: number, cy: number) {
+    const svg = svgRef.current
+    const m = svg?.getScreenCTM()
+    if (!svg || !m) return { x: cx, y: cy }
+    const pt = svg.createSVGPoint(); pt.x = cx; pt.y = cy
+    const p = pt.matrixTransform(m.inverse())
+    return { x: p.x, y: p.y }
   }
-  function onMove(e: React.PointerEvent) {
-    if (!dragId) return
-    setPositions(prev => {
-      const next = new Map(prev)
-      next.set(dragId, { x: e.clientX + dragOffsetRef.current.ox, y: e.clientY + dragOffsetRef.current.oy })
-      return next
+  // undo the current pan/zoom → content coords
+  const toContent = (vbx: number, vby: number) => ({ x: (vbx - view.x) / view.k, y: (vby - view.y) / view.k })
+
+  const clampK = (k: number) => Math.max(0.5, Math.min(4, k))
+  function zoomBy(factor: number) {
+    setView(v => {
+      const k = clampK(v.k * factor)
+      const cx = 550, cy = 310  // viewBox centre — zoom toward the middle
+      return { k, x: cx - (cx - v.x) * (k / v.k), y: cy - (cy - v.y) * (k / v.k) }
     })
   }
-  function endDrag() { setDragId(null) }
+  const resetView = () => setView({ k: 1, x: 0, y: 0 })
+
+  // Node drag — in content space so the node tracks the finger under any zoom.
+  function startDrag(e: React.PointerEvent, id: string) {
+    e.preventDefault(); e.stopPropagation()   // don't also begin a background pan
+    try { (e.target as Element).setPointerCapture(e.pointerId) } catch { /* ignore */ }
+    setDragId(id)
+    const vb = toViewBox(e.clientX, e.clientY)
+    const c = toContent(vb.x, vb.y)
+    const p = positions.get(id)!
+    dragOffsetRef.current = { ox: p.x - c.x, oy: p.y - c.y }
+  }
+
+  // Background gestures: 1 finger = pan, 2 fingers = pinch-zoom.
+  function onSurfaceDown(e: React.PointerEvent) {
+    ptrs.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
+    if (ptrs.current.size === 2) {
+      const [a, b] = [...ptrs.current.values()]
+      const mid = toViewBox((a.x + b.x) / 2, (a.y + b.y) / 2)
+      pinchRef.current = { dist: Math.hypot(a.x - b.x, a.y - b.y), k: view.k, x: view.x, y: view.y, mx: mid.x, my: mid.y }
+      panRef.current = null
+    } else if (ptrs.current.size === 1) {
+      panRef.current = { x: e.clientX, y: e.clientY, vx: view.x, vy: view.y }
+    }
+  }
+
+  function onMove(e: React.PointerEvent) {
+    if (ptrs.current.has(e.pointerId)) ptrs.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
+
+    // Pinch — keep the two-finger midpoint fixed on screen.
+    if (pinchRef.current && ptrs.current.size >= 2) {
+      const [a, b] = [...ptrs.current.values()]
+      const pr = pinchRef.current
+      const k = clampK(pr.k * (Math.hypot(a.x - b.x, a.y - b.y) / (pr.dist || 1)))
+      setView({ k, x: pr.mx - (pr.mx - pr.x) * (k / pr.k), y: pr.my - (pr.my - pr.y) * (k / pr.k) })
+      return
+    }
+    // Node drag
+    if (dragId) {
+      const vb = toViewBox(e.clientX, e.clientY)
+      const c = toContent(vb.x, vb.y)
+      setPositions(prev => {
+        const next = new Map(prev)
+        next.set(dragId, { x: c.x + dragOffsetRef.current.ox, y: c.y + dragOffsetRef.current.oy })
+        return next
+      })
+      return
+    }
+    // Single-finger pan
+    if (panRef.current) {
+      const rect = svgRef.current?.getBoundingClientRect()
+      const sx = rect ? 1100 / rect.width : 1
+      const sy = rect ? 620 / rect.height : 1
+      const pn = panRef.current
+      setView(v => ({ ...v, x: pn.vx + (e.clientX - pn.x) * sx, y: pn.vy + (e.clientY - pn.y) * sy }))
+    }
+  }
+
+  function endDrag(e?: React.PointerEvent) {
+    if (e) ptrs.current.delete(e.pointerId); else ptrs.current.clear()
+    if (ptrs.current.size < 2) pinchRef.current = null
+    if (ptrs.current.size === 0) { panRef.current = null; setDragId(null) }
+  }
 
   // Stats
   const subjectStats = useMemo(() => {
@@ -214,12 +289,13 @@ export default function ConceptMap() {
               ref={svgRef}
               viewBox="0 0 1100 620"
               width="100%" height="100%"
+              onPointerDown={onSurfaceDown}
               onPointerMove={onMove}
-              onPointerUp={endDrag} onPointerLeave={endDrag}
+              onPointerUp={endDrag} onPointerLeave={endDrag} onPointerCancel={endDrag}
               preserveAspectRatio="xMidYMid meet"
               style={{
-                display: 'block', cursor: dragId ? 'grabbing' : 'default',
-                touchAction: 'pinch-zoom',
+                display: 'block', cursor: dragId ? 'grabbing' : (panRef.current ? 'grabbing' : 'grab'),
+                touchAction: 'none',   // we handle pinch/pan ourselves
                 minHeight: 'clamp(420px, 70vh, 640px)',
               }}>
               <defs>
@@ -232,6 +308,9 @@ export default function ConceptMap() {
                   <stop offset="100%" stopColor="#A5B4FC" stopOpacity="0.35"/>
                 </linearGradient>
               </defs>
+
+              {/* Pan/zoom transform — everything inside moves & scales together */}
+              <g transform={`translate(${view.x} ${view.y}) scale(${view.k})`}>
 
               {/* Edges */}
               {graph.edges.map((e, i) => {
@@ -283,7 +362,40 @@ export default function ConceptMap() {
                   </g>
                 )
               })}
+              </g>
             </svg>
+          )}
+
+          {/* Zoom controls — Pro view. Pinch to zoom / drag to pan on touch;
+              these buttons work anywhere (finger-friendly on mobile). */}
+          {graph.nodes.length > 0 && mode === 'pro' && (
+            <div style={{
+              position: 'absolute', top: 12, right: 12,
+              display: 'flex', flexDirection: 'column', gap: 6, zIndex: 3,
+            }}>
+              {[
+                { label: '+', act: () => zoomBy(1.3), title: 'Zoom in' },
+                { label: '−', act: () => zoomBy(1 / 1.3), title: 'Zoom out' },
+              ].map(b => (
+                <button key={b.label} onClick={b.act} title={b.title} aria-label={b.title}
+                  style={{
+                    width: 40, height: 40, borderRadius: 11, cursor: 'pointer',
+                    background: 'rgba(6,6,10,0.72)', backdropFilter: 'blur(10px)',
+                    border: `1px solid ${C.borderSoft}`, color: C.text,
+                    fontSize: 22, fontWeight: 700, lineHeight: 1,
+                    display: 'grid', placeItems: 'center', fontFamily: FONT,
+                  }}>{b.label}</button>
+              ))}
+              <button onClick={resetView} title="Reset view" aria-label="Reset view"
+                style={{
+                  width: 40, height: 40, borderRadius: 11, cursor: 'pointer',
+                  background: 'rgba(6,6,10,0.72)', backdropFilter: 'blur(10px)',
+                  border: `1px solid ${C.borderSoft}`, color: C.textFaint,
+                  display: 'grid', placeItems: 'center',
+                }}>
+                <Maximize2 size={16} />
+              </button>
+            </div>
           )}
 
           {/* Legend — Pro view only (mastery is meaningless in the illustrated layout) */}
@@ -301,13 +413,15 @@ export default function ConceptMap() {
             </div>
           )}
 
-          {/* Tip — Pro view only */}
+          {/* Tip — Pro view only. Top-left so it clears the zoom buttons
+              (top-right) and the mastery legend (bottom-left). */}
           {mode === 'pro' && (
             <div style={{
-              position: 'absolute', bottom: 12, right: 12,
-              fontSize: 10.5, color: C.textFaint, letterSpacing: 1.2, textTransform: 'uppercase', fontWeight: 600,
+              position: 'absolute', top: 14, left: 14, maxWidth: 190,
+              fontSize: 10, color: C.textFaint, letterSpacing: 1, textTransform: 'uppercase', fontWeight: 600, lineHeight: 1.5,
+              pointerEvents: 'none',
             }}>
-              Drag nodes to rearrange  ·  Bigger = more visited
+              Pinch or +/− to zoom  ·  drag to pan  ·  drag a node to move it
             </div>
           )}
         </div>
@@ -330,7 +444,7 @@ function Header({ onRefresh, nodeCount, edgeCount, mode, setMode }: {
     <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 14, flexWrap: 'wrap' }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
         <div style={{
-          width: 46, height: 46, borderRadius: 13,
+          width: 46, height: 46, borderRadius: 13, flexShrink: 0,
           background: 'linear-gradient(135deg, #4F7CFF 0%, #2046C2 100%)',
           display: 'grid', placeItems: 'center',
           boxShadow: '0 10px 30px rgba(79, 124, 255, 0.03)',
