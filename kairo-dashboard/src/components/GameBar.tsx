@@ -174,43 +174,68 @@ export function GameBar() {
 }
 
 // ── Floating "+XP" toasts — mount once (Dashboard) ─────────────────────
+interface XPToastItem { id: number; amount: number; reason: string; levelUp: boolean; level: number; streak: number }
+
 export function XPToast() {
-  const [toasts, setToasts] = useState<{ id: number; amount: number; reason: string; levelUp: boolean }[]>([])
+  const [toasts, setToasts] = useState<XPToastItem[]>([])
 
   useEffect(() => {
     let n = 1
     const onXP = (e: Event) => {
-      const d = (e as CustomEvent).detail
+      const d = (e as CustomEvent).detail || {}
       const id = n++
-      setToasts(prev => [...prev, { id, amount: d.amount, reason: d.reason, levelUp: d.levelUp }])
-      setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 2600)
+      // Cap the stack at 4 so rapid-fire XP (e.g. flashcard reviews) doesn't
+      // pile up off-screen.
+      setToasts(prev => [...prev.slice(-3), {
+        id, amount: d.amount, reason: d.reason,
+        levelUp: !!d.levelUp, level: d.level ?? 1, streak: d.streak ?? 0,
+      }])
+      setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), d.levelUp ? 3800 : 2600)
     }
     window.addEventListener('kairo:xp', onXP)
     return () => window.removeEventListener('kairo:xp', onXP)
   }, [])
 
   return (
-    <div style={{ position: 'fixed', bottom: 96, right: 22, zIndex: 9999, display: 'flex', flexDirection: 'column', gap: 8, pointerEvents: 'none' }}>
+    <div style={{ position: 'fixed', bottom: 96, right: 22, zIndex: 9999, display: 'flex', flexDirection: 'column', gap: 8, pointerEvents: 'none', alignItems: 'flex-end' }}>
       <AnimatePresence>
         {toasts.map(t => (
           <motion.div key={t.id}
-            initial={{ opacity: 0, y: 18, scale: 0.9 }}
+            initial={{ opacity: 0, y: 18, scale: 0.82 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -14 }}
+            exit={{ opacity: 0, y: -14, scale: 0.9 }}
+            transition={{ type: 'spring', stiffness: 380, damping: 22 }}
             style={{
-              padding: '10px 16px', borderRadius: 12,
+              position: 'relative', overflow: 'hidden',
+              padding: t.levelUp ? '13px 20px' : '10px 15px', borderRadius: 13,
               background: t.levelUp
-                ? 'linear-gradient(135deg, rgba(255,180,74,0.95), rgba(255,120,60,0.9))'
-                : 'linear-gradient(135deg, rgba(79,124,255,0.95), rgba(32,70,194,0.92))',
-              border: '1px solid rgba(255,255,255,0.25)',
-              boxShadow: '0 10px 32px rgba(0,0,0,0.5)',
+                ? 'linear-gradient(135deg, #FFB44A, #FF7A3C)'
+                : 'linear-gradient(135deg, #4F7CFF, #2046C2)',
+              border: '1px solid rgba(255,255,255,0.28)',
+              boxShadow: t.levelUp ? '0 12px 40px rgba(255,140,60,0.45)' : '0 10px 30px rgba(79,124,255,0.4)',
               color: '#fff', fontFamily: "'Space Grotesk', system-ui, sans-serif",
+              display: 'flex', alignItems: 'center', gap: 11, minWidth: 150,
             }}>
-            <div style={{ fontSize: 15, fontWeight: 900 }}>
-              {t.levelUp ? '🎉 LEVEL UP!' : `+${t.amount} XP`}
+            {/* one-shot light sheen across the pill */}
+            <motion.div
+              initial={{ x: '-130%' }} animate={{ x: '170%' }}
+              transition={{ duration: 0.9, ease: 'easeOut' }}
+              style={{ position: 'absolute', top: 0, bottom: 0, width: '45%', background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent)', pointerEvents: 'none' }} />
+            <div style={{ width: 34, height: 34, borderRadius: 10, background: 'rgba(255,255,255,0.18)', display: 'grid', placeItems: 'center', flexShrink: 0 }}>
+              {t.levelUp ? <Trophy size={18} /> : <Zap size={17} />}
             </div>
-            <div style={{ fontSize: 10.5, opacity: 0.9, letterSpacing: 0.5 }}>
-              {t.levelUp ? `+${t.amount} XP · ${t.reason}` : t.reason}
+            <div style={{ position: 'relative', minWidth: 0 }}>
+              <div style={{ fontSize: t.levelUp ? 16 : 15, fontWeight: 900, lineHeight: 1.1, display: 'flex', alignItems: 'center', gap: 7 }}>
+                {t.levelUp ? `Level ${t.level}!` : `+${t.amount} XP`}
+                {!t.levelUp && t.streak >= 2 && (
+                  <span style={{ fontSize: 11, fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: 2, opacity: 0.95 }}>
+                    <Flame size={12} /> {t.streak}
+                  </span>
+                )}
+              </div>
+              <div style={{ fontSize: 10.5, opacity: 0.92, letterSpacing: 0.3, marginTop: 2 }}>
+                {t.levelUp ? `+${t.amount} XP · ${t.reason}` : t.reason}
+              </div>
             </div>
           </motion.div>
         ))}
