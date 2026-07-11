@@ -24,7 +24,7 @@ export default function Announcement() {
 
   function load() {
     setLoading(true)
-    get(`/announcement?school_id=${SCHOOL_ID}`).then(setAnnouncements).catch(console.error).finally(() => setLoading(false))
+    get(`/announcement?school_id=${SCHOOL_ID}`).then(d => setAnnouncements(Array.isArray(d) ? d : [])).catch(console.error).finally(() => setLoading(false))
   }
   useEffect(load, [])
 

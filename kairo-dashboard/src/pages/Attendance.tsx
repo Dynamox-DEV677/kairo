@@ -67,10 +67,11 @@ function MarkTab() {
     setLoading(true)
     get(`/students?school_id=${SCHOOL_ID}`)
       .then(s => {
-        setStudents(s)
+        const arr = Array.isArray(s) ? s : []
+        setStudents(arr)
         // Default all to present
         const def: Record<string, AttStatus> = {}
-        s.forEach((st: any) => { def[st._id] = 'present' })
+        arr.forEach((st: any) => { def[st._id] = 'present' })
         setAttendance(def)
       })
       .catch(console.error)
@@ -255,7 +256,7 @@ function StatsTab() {
   const [loadingStats, setLoadingStats] = useState(false)
 
   useEffect(() => {
-    get(`/students?school_id=${SCHOOL_ID}`).then(s => { setStudents(s); if (s.length) setSelected(s[0]._id) }).catch(console.error).finally(() => setLoading(false))
+    get(`/students?school_id=${SCHOOL_ID}`).then(s => { const arr = Array.isArray(s) ? s : []; setStudents(arr); if (arr.length) setSelected(arr[0]._id) }).catch(console.error).finally(() => setLoading(false))
   }, [])
 
   useEffect(() => {

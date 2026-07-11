@@ -136,7 +136,13 @@ export default function ParentDashboard({ profile, onLogout }: ParentDashboardPr
       .then(d => {
         setMarks(d.marks || [])
         setStudent(d.student || null)
-        setSummary(d.summary || null)
+        // Guarantee the nested arrays exist so the render path can never throw
+        // on a partial/older API response (.length/.slice/.map downstream).
+        setSummary(d.summary ? {
+          ...d.summary,
+          strong_subjects: Array.isArray(d.summary.strong_subjects) ? d.summary.strong_subjects : [],
+          weak_subjects:   Array.isArray(d.summary.weak_subjects)   ? d.summary.weak_subjects   : [],
+        } : null)
       })
       .catch(e => setErr(e.message))
       .finally(() => setLoading(false))

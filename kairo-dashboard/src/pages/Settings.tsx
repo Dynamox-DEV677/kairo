@@ -11,8 +11,15 @@ import { DecoratedAvatar, DECORATIONS, getDecor, setDecor } from '../components/
 const BOARDS = ['CBSE', 'ICSE', 'Maharashtra', 'Tamil Nadu', 'Karnataka', 'UP Board', 'Bihar Board']
 const CLASSES = ['6', '7', '8', '9', '10', '11', '12']
 
+// Corrupt/partial localStorage must not throw during render (no crash → no
+// white-screen). Falls back to an empty profile.
+function safeProfile(): any {
+  try { return JSON.parse(localStorage.getItem('kairo_profile') || '{}') || {} }
+  catch { return {} }
+}
+
 export default function Settings() {
-  const stored = JSON.parse(localStorage.getItem('kairo_profile') || '{}')
+  const stored = safeProfile()
   const [name, setName] = useState(stored.name || 'Arjun Sharma')
   const [board, setBoard] = useState(stored.board || 'CBSE')
   const [cls, setCls] = useState(stored.cls || '10')
@@ -66,7 +73,7 @@ export default function Settings() {
       })
       const j = await r.json().catch(() => ({}))
       if (!r.ok) throw new Error(j.error || 'Verification failed.')
-      const merged = { ...JSON.parse(localStorage.getItem('kairo_profile') || '{}'), email: newEmail.trim().toLowerCase() }
+      const merged = { ...safeProfile(), email: newEmail.trim().toLowerCase() }
       localStorage.setItem('kairo_profile', JSON.stringify(merged))
       setEmailStep('done')
     } catch (e: any) {

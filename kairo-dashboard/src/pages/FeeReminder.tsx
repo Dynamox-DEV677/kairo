@@ -106,7 +106,7 @@ function StudentsTab() {
 
   function load() {
     setLoading(true)
-    get(`/students?school_id=${SCHOOL_ID}`).then(setStudents).catch(console.error).finally(() => setLoading(false))
+    get(`/students?school_id=${SCHOOL_ID}`).then(s => setStudents(Array.isArray(s) ? s : [])).catch(console.error).finally(() => setLoading(false))
   }
   useEffect(load, [])
 
@@ -203,7 +203,7 @@ function FeesTab() {
     Promise.all([
       get(`/fees?school_id=${SCHOOL_ID}`),
       get(`/students?school_id=${SCHOOL_ID}`),
-    ]).then(([f, s]) => { setFees(f); setStudents(s) }).catch(console.error).finally(() => setLoading(false))
+    ]).then(([f, s]) => { setFees(Array.isArray(f) ? f : []); setStudents(Array.isArray(s) ? s : []) }).catch(console.error).finally(() => setLoading(false))
   }
   useEffect(load, [])
 

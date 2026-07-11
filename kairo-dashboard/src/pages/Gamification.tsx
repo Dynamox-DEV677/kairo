@@ -21,7 +21,9 @@ export default function Gamification() {
       get(`/gamification/badges?school_id=${SCHOOL_ID}&user_id=${USER_ID}`),
       get(`/gamification/leaderboard?school_id=${SCHOOL_ID}`),
     ]).then(([p, b, l]) => {
-      setProfile(p); setBadges(b); setLboard(l)
+      setProfile(p)
+      setBadges(Array.isArray(b) ? b : [])
+      setLboard(Array.isArray(l) ? l : [])
     }).catch(console.error).finally(() => setLoading(false))
   }, [])
 

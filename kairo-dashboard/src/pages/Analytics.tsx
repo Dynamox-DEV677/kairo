@@ -128,7 +128,7 @@ function WeakAreasTab() {
         ))}
       </div>
 
-      {data.weak_areas.length === 0 ? (
+      {(data.weak_areas?.length ?? 0) === 0 ? (
         <div style={{ ...card, textAlign: 'center', padding: 40 }}>
           <div style={{ fontSize: 32 }}>🎉</div>
           <div style={{ fontSize: 14, color: '#A5B4FC', fontWeight: 600, marginTop: 8 }}>No weak areas detected!</div>

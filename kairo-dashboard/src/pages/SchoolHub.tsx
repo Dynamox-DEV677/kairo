@@ -599,7 +599,23 @@ function AdminHealthMonitor() {
 
   const load = useCallback(async () => {
     setLoading(true); setErr('')
-    try { setData(await api('/school-health')) }
+    try {
+      // Normalize the shape so a partial/older API response can never throw
+      // on a deep access during render (alerts/engagement/classPerformance/…).
+      const d: any = await api('/school-health')
+      setData(d && typeof d === 'object' ? {
+        ...d,
+        alerts:           Array.isArray(d.alerts) ? d.alerts : [],
+        classPerformance: Array.isArray(d.classPerformance) ? d.classPerformance : [],
+        teacherLoad:      Array.isArray(d.teacherLoad) ? d.teacherLoad : [],
+        engagement: {
+          ...(d.engagement || {}),
+          last7: { marks: 0, tasks: 0, subs: 0, notifs: 0, ...(d.engagement?.last7 || {}) },
+          trend: { ...(d.engagement?.trend || {}) },
+        },
+        leadFunnel: { new: 0, contacted: 0, admitted: 0, ...(d.leadFunnel || {}) },
+      } : null)
+    }
     catch (e: any) { setErr(e.message) }
     finally { setLoading(false) }
   }, [])
@@ -2044,7 +2060,11 @@ function StudentMarks({ profile, schoolId }: { profile: AuthProfile; schoolId: s
     ])
       .then(([md, cd]) => {
         setMarks(md.marks || [])
-        setSummary(md.summary || null)
+        setSummary(md.summary ? {
+          ...md.summary,
+          strong_subjects: Array.isArray(md.summary.strong_subjects) ? md.summary.strong_subjects : [],
+          weak_subjects:   Array.isArray(md.summary.weak_subjects)   ? md.summary.weak_subjects   : [],
+        } : null)
         setCode(cd.code || null)
         setCodeExpiry(cd.expires_at || null)
       })

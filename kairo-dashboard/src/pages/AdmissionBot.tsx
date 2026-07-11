@@ -366,7 +366,7 @@ function LeadsTab() {
   const load = useCallback(() => {
     setLoading(true); setErr('')
     api('/admission/leads' + (filter === 'all' ? '' : `?status=${filter}`))
-      .then(setLeads)
+      .then(d => setLeads(Array.isArray(d) ? d : []))
       .catch(e => setErr(e.message))
       .finally(() => setLoading(false))
   }, [filter])
