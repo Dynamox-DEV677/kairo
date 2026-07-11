@@ -62,13 +62,22 @@ function fresh(): GameState {
   }
 }
 
-function today() { return new Date().toISOString().slice(0, 10) }
+// Local YYYY-MM-DD — NOT toISOString(), which is UTC and rolls the "day" at
+// 05:30 in IST (UTC+5:30), resetting streaks/quests mid-morning. Using the
+// device's local date makes the day boundary local midnight everywhere.
+function localYMD(d: Date = new Date()): string {
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
+}
+function today() { return localYMD() }
 function weekKey() {
   const d = new Date()
-  // Monday-based ISO-ish week key: YYYY-Www
+  // Monday-based week key: YYYY-MM-DD of the local Monday
   const day = (d.getDay() + 6) % 7
   const monday = new Date(d); monday.setDate(d.getDate() - day)
-  return monday.toISOString().slice(0, 10)          // week identified by its Monday
+  return localYMD(monday)          // week identified by its Monday (local)
 }
 
 export function loadGame(): GameState {
@@ -94,7 +103,7 @@ function rollover(s: GameState) {
     // streak bookkeeping: yesterday active → streak continues on next earn;
     // gap of 2+ days → streak broken.
     const y = new Date(); y.setDate(y.getDate() - 1)
-    const yest = y.toISOString().slice(0, 10)
+    const yest = localYMD(y)
     if (s.lastActive !== yest && s.lastActive !== t) s.streak = 0
     s.todayKey = t
     s.todayXP = 0

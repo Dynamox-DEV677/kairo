@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Brain, CheckCircle, XCircle, Trophy, RotateCcw, History, Target, Zap, BarChart3, Award, ArrowRight } from 'lucide-react'
 import { post, get } from '../lib/api'
 import { track } from '../lib/twin'
+import { awardXP } from '../lib/game'
 
 const SCHOOL_ID = 'demo_school'
 
@@ -37,6 +38,10 @@ export default function AdaptiveQuiz() {
   }
 
   async function onComplete(score: number, answers: any[]) {
+    // Client XP: completes the "quiz_done" daily quest and moves the level
+    // ring / streak / league. Previously quiz_done XP was never awarded, so
+    // its daily quest could never be finished.
+    try { awardXP('quiz_done') } catch { /* ignore */ }
     try {
       const r = await post('/quiz/complete', { school_id: SCHOOL_ID, session_id: sessionId, score, total: questions.length, answers, subject: form.subject })
       setFinalResult({ score, total: questions.length, ...r })

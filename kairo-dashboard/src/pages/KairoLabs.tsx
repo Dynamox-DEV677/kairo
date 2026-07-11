@@ -8,6 +8,7 @@ import {
   Beaker, Atom, Heart, Activity, Sparkles, Lock,
   ArrowRight, Loader2, Globe, Dna, Rocket, Brain,
 } from 'lucide-react'
+import { awardXP } from '../lib/game'
 
 // Lazy-load each R3F lab — only fetched when student opens it.
 // This keeps the main bundle small.
@@ -158,6 +159,16 @@ export default function KairoLabs() {
     window.addEventListener('kairo:open-lab', onOpen)
     return () => window.removeEventListener('kairo:open-lab', onOpen)
   }, [])
+
+  // Award "lab_open" XP once each time a (ready) lab is opened — this was
+  // never awarded before, so its daily quest could never complete. Keyed on
+  // the lab id so re-opening a different lab counts again.
+  useEffect(() => {
+    if (activeLab && activeLab.ready) {
+      try { awardXP('lab_open') } catch { /* ignore */ }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeLab?.id])
 
   // Active lab — full-bleed
   if (activeLab && activeLab.ready && activeLab.Component) {
