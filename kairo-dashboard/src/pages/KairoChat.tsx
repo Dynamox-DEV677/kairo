@@ -336,9 +336,11 @@ export default function KairoChat() {
       </div>
 
       {/* ── Composer ───────────────────────────────────────────────── */}
+      {/* Mobile bottom padding clears the floating bottom-nav dock (~96px +
+          safe-area) so the input sits above it instead of hiding behind it. */}
       <div style={{
         padding: isMobile
-          ? '8px 10px calc(10px + env(safe-area-inset-bottom, 0px))'
+          ? '8px 10px calc(100px + env(safe-area-inset-bottom, 0px))'
           : '10px clamp(14px, 6vw, 90px) 18px',
         flexShrink: 0,
       }}>

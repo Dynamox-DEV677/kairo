@@ -235,6 +235,15 @@ html, body, #root {
   bottom: calc(96px + env(safe-area-inset-bottom)) !important;
 }
 
+/* Kyno's Solver composer: it lives at the bottom of a fixed-height overflow-
+   hidden column, so on phones it sat behind the floating bottom-nav dock with
+   only 18px clearance. Lift it above the dock (dock ~= 96px + safe-area). */
+@media (max-width: 768px) {
+  .ks-composer {
+    margin-bottom: calc(100px + env(safe-area-inset-bottom)) !important;
+  }
+}
+
 /* Concept Map on phones: it's a wide landscape layout that "meet"-scales to a
    tiny cluster floating in a tall empty box on a portrait screen. Render it
    larger (nodes ~1.7x) and let the user swipe horizontally so it's readable. */

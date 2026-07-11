@@ -494,8 +494,10 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
 
       {/* INPUT — floating glass dock, fully pill-shaped at the edges.
           Ultramarine focus ring when voice is on; deeper blur (28 px) and
-          more transparency than before to read as "really" floating. */}
-      <div style={{
+          more transparency than before to read as "really" floating.
+          .ks-composer gets extra bottom margin on phones (index.css) so it
+          clears the floating bottom-nav dock instead of hiding behind it. */}
+      <div className="ks-composer" style={{
         background: 'linear-gradient(180deg, rgba(20, 24, 35, 0.65) 0%, rgba(11, 11, 15, 0.65) 100%)',
         border: `1px solid ${voiceOn ? 'rgba(102, 217, 255, 0.55)' : 'rgba(255, 255, 255, 0.06)'}`,
         borderRadius: 28, padding: '10px 12px',
