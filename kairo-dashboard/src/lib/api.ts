@@ -122,6 +122,28 @@ export async function api(path: string, options: RequestInit = {}): Promise<any>
   return data
 }
 
+/**
+ * Turn a raw thrown error into a calm, human message for the UI.
+ * Browser network failures ("Failed to fetch"), HTML-error-page parse
+ * failures ("Unexpected token '<'"), aborts and 5xx all become friendly
+ * copy; server-provided readable messages (data.error) pass through.
+ */
+export function friendlyError(e: any): string {
+  const msg = (e?.message || String(e ?? '')).trim()
+  if (!msg) return 'Something went wrong. Please try again.'
+  const low = msg.toLowerCase()
+  if (
+    low.includes('failed to fetch') || low.includes('networkerror') ||
+    low.includes('network request failed') || low.includes('load failed') ||
+    low.includes('unexpected token') || low.includes('aborted') ||
+    low.includes('the operation was aborted') || low.includes('timeout')
+  ) return 'Couldn’t reach Kyno — check your connection and try again.'
+  if (/^api error 5\d\d/i.test(msg) || /\b50[234]\b/.test(msg)) {
+    return 'Kyno’s servers are busy right now. Give it a moment and try again.'
+  }
+  return msg
+}
+
 export const get  = (path: string) => api(path)
 export const post = (path: string, body: any) => api(path, { method: 'POST', body: JSON.stringify(body) })
 export const put  = (path: string, body: any) => api(path, { method: 'PUT',  body: JSON.stringify(body) })

@@ -10,7 +10,7 @@ import {
 } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-import { api } from '../lib/api'
+import { api, friendlyError } from '../lib/api'
 import {
   listNotebook, deleteNotebookEntry, updateNotebookEntry,
   saveToNotebook, type NoteEntry,
@@ -547,7 +547,7 @@ function NoteDetail({ note, editing, onClose, onTogglePin, onDelete, onEdit, onS
         }),
       })
       onSaved({ ...note, title, content, subject: subject || null, tags: tags.split(',').map(t => t.trim()).filter(Boolean), updated_at: new Date().toISOString() })
-    } catch (e: any) { alert(e.message) }
+    } catch (e: any) { alert(friendlyError(e)) }
     finally { setSaving(false) }
   }
 
@@ -669,7 +669,7 @@ function CreateModal({ onClose, onCreated }: { onClose: () => void; onCreated: (
       // localStorage-first — survives DB cleanup
       await saveToNotebook({ kind, title, content, subject: subject || null })
       onCreated()
-    } catch (e: any) { alert(e.message); setSaving(false) }
+    } catch (e: any) { alert(friendlyError(e)); setSaving(false) }
   }
 
   return (

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { UserCheck, UserX, AlertTriangle, BarChart2, ChevronDown } from 'lucide-react'
-import { get, post } from '../lib/api'
+import { get, post, friendlyError } from '../lib/api'
 
 const SCHOOL_ID = 'demo_school'
 const TODAY = new Date().toISOString().slice(0, 10)
@@ -94,7 +94,7 @@ function MarkTab() {
       await post('/attendance/bulk', { school_id: SCHOOL_ID, date, records })
       setSaved(true)
       setTimeout(() => setSaved(false), 3000)
-    } catch (e: any) { alert(e.message) }
+    } catch (e: any) { alert(friendlyError(e)) }
     finally { setSaving(false) }
   }
 

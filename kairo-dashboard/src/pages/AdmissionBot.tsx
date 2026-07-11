@@ -6,7 +6,7 @@ import {
 } from 'lucide-react'
 
 // ── Auth-aware fetch (auto-refreshes expired Supabase JWTs) ──────────────────
-import { api } from '../lib/api'
+import { api, friendlyError } from '../lib/api'
 
 // Public fetch (no auth) — for the chat preview
 async function publicApi(path: string, opts: RequestInit = {}): Promise<any> {
@@ -198,7 +198,7 @@ function ChatTab({ ctx }: { ctx: SchoolCtx }) {
       const userCount = messages.filter(m => m.role === 'user').length + 1
       if (userCount === 3 && !leadSaved) setShowLead(true)
     } catch (e: any) {
-      setMessages(m => [...m, { role: 'assistant', content: `Sorry, I had trouble responding. ${e.message}` }])
+      setMessages(m => [...m, { role: 'assistant', content: 'Sorry, I had trouble responding just now — please try that again in a moment.' }])
     }
     setLoading(false)
   }
@@ -218,7 +218,7 @@ function ChatTab({ ctx }: { ctx: SchoolCtx }) {
         role: 'assistant',
         content: `Thank you, ${leadForm.parent_name || 'there'}! We've saved your details. Our admissions team will contact you${leadForm.phone ? ' at ' + leadForm.phone : ''} within 24 hours.`,
       }])
-    } catch (e: any) { alert(e.message) }
+    } catch (e: any) { alert(friendlyError(e)) }
   }
 
   const quickQs = [
@@ -375,13 +375,13 @@ function LeadsTab() {
 
   async function updateStatus(id: string, status: string) {
     try { await api(`/admission/leads/${id}`, { method: 'PUT', body: JSON.stringify({ status }) }); load() }
-    catch (e: any) { alert(e.message) }
+    catch (e: any) { alert(friendlyError(e)) }
   }
 
   async function remove(id: string) {
     if (!confirm('Delete this lead permanently?')) return
     try { await api(`/admission/leads/${id}`, { method: 'DELETE' }); load() }
-    catch (e: any) { alert(e.message) }
+    catch (e: any) { alert(friendlyError(e)) }
   }
 
   const allStatuses = ['all', 'new', 'contacted', 'admitted', 'rejected', 'not_interested']
