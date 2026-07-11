@@ -76,7 +76,12 @@ Rules:
     const raw = await aiCall({
       taskType: 'study_plan',
       messages: [{ role: 'user', content: prompt }],
-      maxTokens: 1600,
+      // The brief JSON is small (greeting, 3-4 focus items, a short mentor
+      // note, a few integers). 700 tokens fits it comfortably and roughly
+      // halves generation time on the 70B model, so the request completes
+      // well inside Vercel's 10s hobby ceiling instead of getting killed
+      // mid-flight (which surfaces to the client as "Failed to fetch").
+      maxTokens: 700,
       temperature: 0.6,
     })
     const brief = parseJSON(raw)

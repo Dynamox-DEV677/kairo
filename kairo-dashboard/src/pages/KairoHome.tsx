@@ -126,16 +126,39 @@ export default function KairoHome({ onNavigate }: Props) {
 
   const fetchBrief = useCallback(async () => {
     setLoading(true); setError(null)
+
+    // One request attempt, guarded by a client-side timeout so a hung
+    // connection can't leave the button stuck on "Thinking…" forever.
+    const attempt = async () => {
+      const ctrl = new AbortController()
+      const timer = setTimeout(() => ctrl.abort(), 30000)
+      try {
+        const r = await fetch('/api/council/brief', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(profile), signal: ctrl.signal,
+        })
+        if (!r.ok) throw new Error('Server returned ' + r.status)
+        const data = await r.json()
+        if (data.error) throw new Error(data.error)
+        return data
+      } finally { clearTimeout(timer) }
+    }
+
     try {
-      const r = await fetch('/api/council/brief', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(profile),
-      })
-      if (!r.ok) throw new Error('Server returned ' + r.status)
-      const data = await r.json()
-      if (data.error) throw new Error(data.error)
+      let data
+      try {
+        data = await attempt()
+      } catch {
+        // The brief runs an LLM that can be slow on a cold start; a warm
+        // second try almost always lands. Retry once before surfacing.
+        data = await attempt()
+      }
       setBrief(data)
-    } catch (e: any) { setError(e.message) } finally { setLoading(false) }
+    } catch {
+      // Keep it calm — the rest of the page (streak, quests, league, exam
+      // tracker) is all local data and works regardless of this call.
+      setError("Couldn't reach your AI council just now. Tap “Refresh brief” to try again — everything else still works.")
+    } finally { setLoading(false) }
   }, [profile])
 
   // Auto-load the brief once on mount
