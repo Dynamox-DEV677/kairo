@@ -235,6 +235,23 @@ html, body, #root {
   bottom: calc(96px + env(safe-area-inset-bottom)) !important;
 }
 
+/* Concept Map on phones: it's a wide landscape layout that "meet"-scales to a
+   tiny cluster floating in a tall empty box on a portrait screen. Render it
+   larger (nodes ~1.7x) and let the user swipe horizontally so it's readable. */
+@media (max-width: 640px) {
+  .cm-map-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    min-height: 0 !important;
+  }
+  .cm-map-svg {
+    width: 640px !important;
+    min-width: 640px;
+    height: 349px !important;      /* 640 * 600/1100 preserves aspect */
+    min-height: 349px !important;
+  }
+}
+
 /* ChatWindow's input border — give the input area its own breathing room from the nav */
 .kairo-mobile [style*="border-top: 1px solid #1a1f2e"]:last-child,
 .kairo-mobile [style*="border-top: 1px solid #1f2532"]:last-child,

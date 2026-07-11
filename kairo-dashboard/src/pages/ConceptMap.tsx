@@ -639,7 +639,7 @@ function IllustratedMap({ graph, centerId, setCenterId }: IllustratedMapProps) {
   ]
 
   return (
-    <div style={{
+    <div className="cm-map-wrap" style={{
       position: 'relative',
       width: '100%',
       minHeight: 'clamp(420px, 70vh, 640px)',
@@ -655,6 +655,7 @@ function IllustratedMap({ graph, centerId, setCenterId }: IllustratedMapProps) {
       backgroundPosition: '16px 0, 16px 0, 0 0, 0 0',
     }}>
       <svg
+        className="cm-map-svg"
         viewBox={`0 0 ${VIEWBOX_W} ${VIEWBOX_H}`}
         width="100%"
         height="100%"
