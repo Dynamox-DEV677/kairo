@@ -734,8 +734,27 @@ html, body, #root {
   .nb-split { grid-template-columns: 1fr !important; }
   .nb-split.has-sel .nb-list { display: none !important; }
 
-  /* Open note: tighter padding so content gets the width */
-  .nb-detail { padding: 14px !important; }
+  /* Open note = a full-screen reader on phones: big, scrollable, readable.
+     Covers the whole screen (above the dock) so the definition/content has
+     room; close via the X in the header. */
+  .nb-split.has-sel .nb-detail {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 300 !important;
+    margin: 0 !important;
+    border: none !important;
+    border-radius: 0 !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+    background: #0a0a0a !important;
+    padding: max(18px, env(safe-area-inset-top)) 18px calc(40px + env(safe-area-inset-bottom)) 18px !important;
+  }
+  /* Readable body + heading in the full-screen reader */
+  .nb-split.has-sel .nb-detail .prose-ai {
+    font-size: 16px !important;
+    line-height: 1.72 !important;
+  }
+  .nb-split.has-sel .nb-detail h2 { font-size: 22px !important; }
 
   /* Home gamification row (Level · Quests · League): one card per row on
      phones — three columns at 390px squeezed "0/100 XP" into a vertical strip */
