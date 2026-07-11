@@ -512,7 +512,7 @@ function FlipCard({ front, back, flipped, onFlip }: { front: string; back: strin
         transition={{ duration: 0.55, ease: [0.2, 0.8, 0.2, 1] }}
         whileHover={{ scale: 1.01 }}
         style={{
-          width: '100%', height: 280, borderRadius: 18, cursor: 'pointer',
+          width: '100%', height: 'clamp(280px, 46vh, 380px)', borderRadius: 18, cursor: 'pointer',
           position: 'relative', transformStyle: 'preserve-3d',
           background: 'transparent', border: 'none', padding: 0,
           fontFamily: 'inherit',
@@ -567,6 +567,8 @@ function Face({ side, text, active }: { side: 'front' | 'back'; text: string; ac
         color: C.text, lineHeight: 1.5, maxWidth: 640,
         fontFamily: '"Charter", "Iowan Old Style", Georgia, serif',
         position: 'relative',
+        // Long answers scroll inside the face instead of being hard-clipped.
+        maxHeight: '100%', overflowY: 'auto', overflowWrap: 'anywhere',
       }}>
         {text}
       </p>

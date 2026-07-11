@@ -142,10 +142,12 @@ export default function Login({ onLogin }: LoginProps) {
           mobile. pointerEvents: none so they never intercept taps. */}
       <AmbientWordmarks />
 
-      {/* Ambient glow */}
+      {/* Ambient glow — absolute (not fixed) so the root's overflowX:hidden
+          actually clips it; capped to the viewport so it never forces a
+          horizontal scrollbar on phones (<600px). */}
       <div style={{
-        position: 'fixed', top: '15%', left: '50%', transform: 'translateX(-50%)',
-        width: 600, height: 600, borderRadius: '50%',
+        position: 'absolute', top: '15%', left: '50%', transform: 'translateX(-50%)',
+        width: 'min(600px, 100vw)', height: 'min(600px, 100vw)', borderRadius: '50%',
         background: 'radial-gradient(circle, rgba(79, 124, 255, 0.10) 0%, transparent 70%)',
         pointerEvents: 'none',
         zIndex: 1,
@@ -1077,8 +1079,9 @@ function CreateSchool({ onLogin, onBack }: any) {
           Your School Join Code
         </div>
         <code style={{
-          fontSize: 22, fontFamily: 'monospace', fontWeight: 800, color: '#fafafa',
-          letterSpacing: 3, display: 'block', marginBottom: 8,
+          fontSize: 'clamp(15px, 5.5vw, 22px)', fontFamily: 'monospace', fontWeight: 800, color: '#fafafa',
+          letterSpacing: 2, display: 'block', marginBottom: 8,
+          wordBreak: 'break-all', overflowWrap: 'anywhere', maxWidth: '100%',
         }}>
           {result.passcode}
         </code>

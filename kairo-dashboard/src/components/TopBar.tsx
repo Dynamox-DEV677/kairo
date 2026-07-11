@@ -180,8 +180,8 @@ export default function TopBar({ title, onModelChange, profile, modelLocked, mod
           </button>
         </div>
       ) : (
-        <div style={{ flex: 1 }}>
-          <h1 style={{ fontSize: 14, fontWeight: 600, color: '#fafafa', letterSpacing: '-0.2px' }}>{title}</h1>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <h1 style={{ fontSize: 14, fontWeight: 600, color: '#fafafa', letterSpacing: '-0.2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{title}</h1>
         </div>
       )}
 

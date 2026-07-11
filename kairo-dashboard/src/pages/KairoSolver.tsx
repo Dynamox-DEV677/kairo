@@ -520,7 +520,7 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
             : (showResult ? 'Ask another question…' : 'Ask anything — physics, biology, math, history…')}
           disabled={busy}
           style={{
-            flex: 1, background: 'transparent', border: 'none', outline: 'none',
+            flex: 1, minWidth: 0, background: 'transparent', border: 'none', outline: 'none',
             color: '#fafafa', fontFamily: 'inherit', fontSize: 14, resize: 'none',
             padding: '8px 6px', lineHeight: 1.5, maxHeight: 140,
           }}
@@ -1432,7 +1432,7 @@ function ModeChipBar({
 
   return (
     <div style={{
-      display: 'flex', alignItems: 'center', gap: 10,
+      display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap',
       padding: '6px 10px',
       background: 'rgba(20, 24, 35, 0.55)',
       border: '1px solid rgba(255, 255, 255, 0.06)',
@@ -1448,7 +1448,7 @@ function ModeChipBar({
         View
       </div>
 
-      <div style={{ display: 'flex', gap: 4 }}>
+      <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
         {chips.map(c => {
           const active = mode === c.id || (mode === 'auto' && c.id === (hasGeography ? 'map' : 'visual'))
           return (

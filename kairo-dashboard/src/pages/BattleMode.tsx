@@ -349,7 +349,7 @@ Tips: each tip is one specific actionable line (max 18 words) — reference the 
     const prof = AI_PROFILES[aiLevel]
     const RivalIcon = prof.icon
     return (
-      <div style={{ padding: '28px 36px', maxWidth: 760, margin: '0 auto', height: '100%', overflowY: 'auto' }}>
+      <div style={{ padding: 'clamp(16px, 5vw, 28px) clamp(14px, 4vw, 36px)', maxWidth: 760, margin: '0 auto', height: '100%', overflowY: 'auto' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 22 }}>
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 11, color: '#A5B4FC', marginBottom: 6, fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase' }}>
@@ -460,7 +460,7 @@ Tips: each tip is one specific actionable line (max 18 words) — reference the 
     const prof      = AI_PROFILES[aiLevel]
     const RivalIcon = prof.icon
     return (
-      <div style={{ padding: '28px 36px', maxWidth: 720, margin: '0 auto', height: '100%', overflowY: 'auto' }}>
+      <div style={{ padding: 'clamp(16px, 5vw, 28px) clamp(14px, 4vw, 36px)', maxWidth: 720, margin: '0 auto', height: '100%', overflowY: 'auto' }}>
         <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
           style={{ ...card, padding: 32, textAlign: 'center', marginBottom: 18 }}>
           {isSpar ? (
@@ -572,7 +572,7 @@ Tips: each tip is one specific actionable line (max 18 words) — reference the 
 
   // ── LOBBY ────────────────────────────────────────────────────────────
   return (
-    <div style={{ padding: '28px 36px', maxWidth: 1100, margin: '0 auto', height: '100%', overflowY: 'auto' }}>
+    <div style={{ padding: 'clamp(16px, 5vw, 28px) clamp(14px, 4vw, 36px)', maxWidth: 1100, margin: '0 auto', height: '100%', overflowY: 'auto' }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 22 }}>
         <div style={{
