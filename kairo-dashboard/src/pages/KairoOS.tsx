@@ -149,17 +149,19 @@ function KairoOSIntro({ onDone }: { onDone: () => void }) {
 
       {/* Tagline + boot log */}
       <div style={{
-        marginTop: 22, fontSize: 12, fontWeight: 700, letterSpacing: 6,
+        marginTop: 22, fontSize: 'clamp(9px, 3vw, 12px)', fontWeight: 700, letterSpacing: 4,
         textTransform: 'uppercase', color: '#66D9FF',
         fontFamily: "'Space Grotesk', system-ui, sans-serif",
         animation: 'kosFade .6s ease 1.25s both',
+        maxWidth: '88vw', padding: '0 16px', textAlign: 'center',
       }}>
         Your academic twin is waking up
       </div>
       <div style={{
-        marginTop: 10, fontSize: 10.5, letterSpacing: 2.5, color: '#5B616E',
+        marginTop: 10, fontSize: 'clamp(8px, 2.4vw, 10.5px)', letterSpacing: 2, color: '#5B616E',
         fontFamily: 'ui-monospace, monospace', textTransform: 'uppercase',
         animation: 'kosFade .6s ease 1.7s both',
+        maxWidth: '88vw', padding: '0 16px', textAlign: 'center',
       }}>
         memory · vitals · mastery · predictions
       </div>

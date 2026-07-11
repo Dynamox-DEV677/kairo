@@ -723,11 +723,12 @@ Tips: each tip is one specific actionable line (max 18 words) — reference the 
 
       {/* Leaderboard */}
       <div style={{ ...card, padding: 18 }}>
-        {/* flexWrap + nowrap title: on narrow phones the range pills drop to a
-            second line instead of squeezing "School Leaderboard" vertical */}
+        {/* minWidth: 0 lets the title actually shrink inside the flex row (the
+            flexbox default min-width:auto otherwise keeps its full nowrap
+            width, pushing it to overlap the range pills instead of truncating) */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14, flexWrap: 'wrap' }}>
           <Trophy size={15} color="#A5B4FC" />
-          <h3 style={{ fontSize: 14, fontWeight: 700, color: '#fafafa', margin: 0, flex: 1, whiteSpace: 'nowrap' }}>School Leaderboard</h3>
+          <h3 style={{ fontSize: 14, fontWeight: 700, color: '#fafafa', margin: 0, flex: 1, minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>School Leaderboard</h3>
           <div style={{ display: 'flex', gap: 4, background: '#0E1117', border: '1px solid #1f2532', borderRadius: 8, padding: 3, flexShrink: 0 }}>
             {(['today', 'week', 'all'] as const).map(r => (
               <button key={r} onClick={() => setTab(r)}

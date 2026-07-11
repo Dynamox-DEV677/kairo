@@ -202,7 +202,7 @@ export default function Flashcards() {
                       padding: '13px 18px', fontSize: 15, color: C.text, outline: 'none',
                       fontFamily: 'inherit', transition: 'border-color 0.2s, box-shadow 0.2s',
                     }}
-                    placeholder="A chapter, topic, or paste a question…"
+                    placeholder="Chapter, topic, or a question…"
                     value={topic}
                     onChange={e => setTopic(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && generate()}
