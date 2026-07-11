@@ -7,7 +7,7 @@ import {
   GraduationCap, Shield, Sparkles, DollarSign, Bot, UserCheck, Grid3x3, Building2,
   Edit3, Lightbulb, FunctionSquare, Brain, TrendingUp, Star, Timer, Megaphone,
   Target, Activity, Zap, Compass, Network, Mic, Swords, Share2, AlertTriangle,
-  Beaker, Cpu,
+  Beaker, Cpu, Trophy,
   PanelLeftClose, PanelLeftOpen, MoreHorizontal, ChevronUp,
 } from 'lucide-react'
 import { useGeneration } from '../lib/generationContext'
@@ -38,6 +38,7 @@ const STUDENT_NAV: NavItem[] = [
   { label: 'Concept Map',     icon: Network,         to: 'concept-map',      color: '#66D9FF' },
   { label: 'AI Notebook',     icon: BookOpen,        to: 'notebook',         color: '#A5B4FC' },
   { label: 'Battle Mode',     icon: Swords,          to: 'battle',           color: '#66D9FF' },
+  { label: 'League',          icon: Trophy,          to: 'league',           color: '#FFB44A' },
   { label: 'Explain Mistake', icon: AlertTriangle,   to: 'explain-mistake',  color: '#A5B4FC' },
   { label: 'Predictor',       icon: TrendingUp,      to: 'perf-predictor',   color: '#66D9FF' },
   { label: 'Knowledge Graph', icon: Share2,          to: 'knowledge',        color: '#A5B4FC' },

@@ -46,6 +46,7 @@ import ConceptMap from './ConceptMap'
 // VoiceTutor removed per spec — folded into Kyno Solver
 import BattleMode from './BattleMode'
 import KnowledgeGraph from './KnowledgeGraph'
+import League from './League'
 import TeacherAssistant from './TeacherAssistant'
 import ExplainMistake from './ExplainMistake'
 import PerformancePredictor from './PerformancePredictor'
@@ -93,6 +94,7 @@ const PAGE_TITLES: Record<string, string> = {
   // voice removed — folded into Kyno Solver
   battle:           'Battle Mode',
   knowledge:        'Knowledge Graph',
+  league:           'League',
   'teacher-ai':     'AI Teacher Assistant',
   'explain-mistake': 'Explain My Mistake',
   'perf-predictor': 'Performance Predictor',
@@ -373,6 +375,9 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
 
             {/* Battle Mode */}
             <div style={pageStyle('battle')}>{mounted('battle') && <BattleMode />}</div>
+
+            {/* League — full XP leaderboard (week / month / all-time) */}
+            <div style={pageStyle('league')}>{mounted('league') && <League />}</div>
 
             {/* Knowledge Graph */}
             <div style={pageStyle('knowledge')}>{mounted('knowledge') && <KnowledgeGraph />}</div>

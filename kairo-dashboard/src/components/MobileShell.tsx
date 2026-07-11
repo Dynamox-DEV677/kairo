@@ -16,7 +16,7 @@ import {
   TrendingUp, Megaphone, Bell, DollarSign, Bot, UserCheck, Grid3x3,
   Building2, GraduationCap, Shield, Sparkles, Settings, LogOut,
   Sun, Moon, Menu, X, MoreHorizontal, ChevronRight, Key, Copy, Check,
-  AlertTriangle, Beaker,
+  AlertTriangle, Beaker, Trophy,
 } from 'lucide-react'
 import type { AuthProfile } from '../pages/Login'
 import { DecoratedAvatar } from './AvatarDecor'
@@ -93,6 +93,7 @@ const DRAWER_STUDENT = [
     title: 'Progress',
     items: [
       { to: 'battle',          label: 'Battle Mode',       icon: Swords },
+      { to: 'league',          label: 'League',            icon: Trophy },
       { to: 'perf-predictor',  label: 'Performance Predictor', icon: TrendingUp },
       { to: 'notebook',        label: 'AI Notebook',       icon: BookOpen },
     ],

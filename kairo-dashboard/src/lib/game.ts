@@ -273,3 +273,30 @@ export async function fetchLeaderboard(): Promise<{ rank: number; rows: { name: 
     return await r.json()
   } catch { return null }
 }
+
+// Local YYYY-MM for the month leaderboard window.
+export function monthKey(): string {
+  const d = new Date()
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+}
+
+export interface LeagueBoard {
+  rank: number
+  total: number
+  rows: { name: string; xp: number; you: boolean }[]
+  youXp?: number
+  offline?: boolean
+}
+
+/** Range-aware league fetch for the full League page (week | month | all). */
+export async function fetchLeagueBoard(range: 'week' | 'month' | 'all' = 'week'): Promise<LeagueBoard | null> {
+  try {
+    const { id } = userIdentity()
+    const params = new URLSearchParams({ range, user_id: id })
+    if (range === 'week')  params.set('week', weekKey())
+    if (range === 'month') params.set('month', monthKey())
+    const r = await fetch(`/api/league/board?${params.toString()}`)
+    if (!r.ok) return null
+    return await r.json()
+  } catch { return null }
+}
