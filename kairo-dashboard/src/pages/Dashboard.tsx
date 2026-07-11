@@ -15,6 +15,7 @@ import TopicArchitect from './TopicArchitect'
 import KairoHome from './KairoHome'
 import KairoChat from './KairoChat'
 import { XPToast } from '../components/GameBar'
+import ErrorBoundary from '../components/ErrorBoundary'
 import EssayGrader from './EssayGrader'
 import ExamPredictor from './ExamPredictor'
 import QuestionPaper from './QuestionPaper'
@@ -226,6 +227,11 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
             {/* Floating "+XP" toasts — app-wide */}
             <XPToast />
 
+            {/* One boundary around all routed pages: a render crash in any
+                page shows a recoverable fallback instead of white-screening
+                the whole SPA. The sidebar / bottom-nav live outside it. */}
+            <ErrorBoundary>
+
             {/* Home — the AI Student OS command center */}
             <div style={pageStyle('home')}>{mounted('home') && <KairoHome onNavigate={setActive} />}</div>
 
@@ -388,6 +394,8 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
 
             {/* Kyno — AI Academic Twin */}
             <div style={pageStyle('kairo-os')}>{mounted('kairo-os') && <KairoOS />}</div>
+
+            </ErrorBoundary>
 
           </div>
 

@@ -66,7 +66,6 @@ const TEACHER_NAV: NavItem[] = [
   { label: 'Lesson Plan',     icon: Calendar,        to: 'lesson-plan',     color: '#38bdf8' },
   { label: 'Parent Message',  icon: Bell,            to: 'parent-message',  color: '#4F7CFF' },
   { label: 'Announcements',   icon: Megaphone,       to: 'announcement',    color: '#f472b6' },
-  { label: 'Analytics',       icon: TrendingUp,      to: 'analytics',       color: '#A5B4FC' },
 ]
 
 // Admin = command center ONLY. No student learning tools.
@@ -167,6 +166,20 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
     setActive('doubt')
     window.dispatchEvent(new CustomEvent('kairo:load-chat', { detail: { id: 'new' } }))
   }
+
+  // ⌘K / Ctrl+K opens the "Ask anything" chat — the search chip advertises
+  // this shortcut, so wire it for real.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && (e.key === 'k' || e.key === 'K')) {
+        e.preventDefault()
+        newChat()
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
   function removeChat(e: React.MouseEvent, id: string) {
     e.stopPropagation()
     deleteRecentChat(id)
@@ -321,6 +334,7 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
           {expanded && (
             <motion.button
               key="search-shortcut"
+              onClick={newChat}
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}

@@ -149,7 +149,6 @@ const DRAWER_ADMIN = [
   {
     title: 'Insights',
     items: [
-      { to: 'analytics',      label: 'Analytics',            icon: Activity },
       { to: 'ops',            label: 'Ops Dashboard',        icon: Grid3x3 },
     ],
   },

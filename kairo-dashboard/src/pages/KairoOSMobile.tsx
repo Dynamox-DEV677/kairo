@@ -152,7 +152,7 @@ export default function KairoOSMobile({ onNavigate, onOpenBackup }: Props) {
         {snap.recommendations[0] && (
           <section style={{ padding: '0 18px' }}>
             <SectionLabel inline>Recommended now</SectionLabel>
-            <TopRecommendation rec={snap.recommendations[0]} onClick={() => onNavigate('memory')} />
+            <TopRecommendation rec={snap.recommendations[0]} onClick={() => onNavigate('knowledge')} />
           </section>
         )}
 
