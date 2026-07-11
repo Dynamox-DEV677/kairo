@@ -64,8 +64,12 @@ export function GameBar() {
                 style={{ transition: 'stroke-dashoffset .6s ease' }}
               />
             </svg>
+            {/* top/left/width/height instead of inset:0 — the global mobile
+                rule that lifts full-page inset:0 overlays above the dock
+                (index.css) was collapsing this tiny ring's number to the top. */}
             <div style={{
-              position: 'absolute', inset: 0, display: 'grid', placeItems: 'center',
+              position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
+              display: 'grid', placeItems: 'center',
               fontSize: 22, fontWeight: 900, color: '#fafafa',
             }}>{level}</div>
           </div>

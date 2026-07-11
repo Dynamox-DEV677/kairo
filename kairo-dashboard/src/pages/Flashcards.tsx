@@ -528,7 +528,7 @@ function FlipCard({ front, back, flipped, onFlip }: { front: string; back: strin
 function Face({ side, text, active }: { side: 'front' | 'back'; text: string; active: boolean }) {
   return (
     <div style={{
-      position: 'absolute', inset: 0,
+      position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
       backfaceVisibility: 'hidden',
       WebkitBackfaceVisibility: 'hidden',
       transform: side === 'back' ? 'rotateY(180deg)' : 'rotateY(0deg)',
