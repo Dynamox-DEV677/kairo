@@ -220,9 +220,18 @@ html, body, #root {
   grid-template-columns: repeat(2, 1fr) !important;
 }
 
-/* Pages with inset:0 — lift them above the floating dock (96px dock incl margin + safe-area) */
-.kairo-mobile [style*="position: absolute"][style*="inset: 0"],
-.kairo-mobile [style*="position: 'absolute'"][style*="inset: 0"] {
+/* Full-page inset:0 scroll containers — lift them above the floating dock
+   (96px dock incl margin + safe-area). Scoped to overflow-scrolling fills
+   ONLY: this rule used to match EVERY position:absolute inset:0 element,
+   which collapsed centered mini-content — ring numbers (Level, timers,
+   clarity, accuracy), glow orbs, flip-card faces — to zero height and jammed
+   them to the top. Centered content uses flex/grid, not overflow:auto, so
+   requiring an overflow-scroll style targets real page fills without the
+   collateral damage. */
+.kairo-mobile [style*="position: absolute"][style*="inset: 0"][style*="overflow-y: auto"],
+.kairo-mobile [style*="position: absolute"][style*="inset: 0"][style*="overflow: auto"],
+.kairo-mobile [style*="position: 'absolute'"][style*="inset: 0"][style*="overflowY: 'auto'"],
+.kairo-mobile [style*="position: 'absolute'"][style*="inset: 0"][style*="overflow: 'auto'"] {
   bottom: calc(96px + env(safe-area-inset-bottom)) !important;
 }
 

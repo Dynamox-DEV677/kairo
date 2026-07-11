@@ -102,7 +102,7 @@ export default function Pomodoro() {
 
           {/* Circle timer */}
           <div style={{ position: 'relative', width: 200, height: 200, marginBottom: 20 }}>
-            <svg width="200" height="200" style={{ position: 'absolute', inset: 0, transform: 'rotate(-90deg)' }}>
+            <svg width="200" height="200" style={{ position: 'absolute', top: 0, left: 0, transform: 'rotate(-90deg)' }}>
               <circle cx="100" cy="100" r={r} fill="none" stroke="#1f2532" strokeWidth="8" />
               <motion.circle
                 cx="100" cy="100" r={r} fill="none" stroke={color} strokeWidth="8"
@@ -111,7 +111,7 @@ export default function Pomodoro() {
                 transition={{ duration: 0.3 }}
               />
             </svg>
-            <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
               <div style={{ fontSize: 38, fontWeight: 800, color: '#fafafa', fontFamily: 'monospace' }}>{fmt(timeLeft)}</div>
               <div style={{ fontSize: 11, color: '#6B7280', marginTop: 2 }}>{MODE_LABELS[mode]}</div>
             </div>

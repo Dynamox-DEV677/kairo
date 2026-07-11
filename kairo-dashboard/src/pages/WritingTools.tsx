@@ -302,7 +302,7 @@ Rules:
                 animate={{ strokeDashoffset: 2 * Math.PI * 56 * (1 - stats.clarity / 100) }}
                 transition={{ duration: 0.6 }} />
             </svg>
-            <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
               <div style={{ fontSize: 36, fontWeight: 800, color: clarityColor, letterSpacing: -1.4, lineHeight: 1 }}>{stats.clarity}</div>
               <div style={{ fontSize: 10, color: '#6B7280', marginTop: 2, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.4 }}>/ 100</div>
             </div>
