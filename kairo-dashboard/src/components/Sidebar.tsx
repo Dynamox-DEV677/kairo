@@ -32,7 +32,6 @@ const STUDENT_NAV: NavItem[] = [
   { label: 'Home',            icon: Sparkles,        to: 'home',             color: '#66D9FF' },
   { label: 'Kyno',        icon: Cpu,             to: 'kairo-os',         color: '#66D9FF' },
   { label: "Kyno's Solver",  icon: MessageCircle,   to: 'doubt',            color: '#A5B4FC' },
-  { label: 'Kyno Labs',      icon: Beaker,          to: 'labs',             color: '#66D9FF' },
   { label: 'Mistake Analysis',icon: Activity,        to: 'mistakes',         color: '#A5B4FC' },
   { label: 'Revision Sim',    icon: Zap,             to: 'simulator',        color: '#66D9FF' },
   { label: 'Concept Map',     icon: Network,         to: 'concept-map',      color: '#66D9FF' },

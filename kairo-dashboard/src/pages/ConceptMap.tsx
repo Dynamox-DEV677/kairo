@@ -567,10 +567,6 @@ function Empty() {
           onClick={go('doubt')}
           style={emptyCtaSecondary}
         >Ask the Solver</button>
-        <button
-          onClick={go('labs')}
-          style={emptyCtaSecondary}
-        >Open a Lab</button>
       </div>
       <p style={{ margin: '10px 0 0', fontSize: 11, color: C.textFaint, letterSpacing: 1.2, textTransform: 'uppercase', fontWeight: 600 }}>
         Stored on this device only

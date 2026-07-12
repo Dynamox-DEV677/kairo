@@ -142,7 +142,6 @@ export default function KairoOSMobile({ onNavigate, onOpenBackup }: Props) {
             <QuickAction label="Solve a doubt" icon={MessageCircle} onClick={() => onNavigate('doubt')}      accent={C.purple} />
             <QuickAction label="Battle"         icon={Swords}        onClick={() => onNavigate('battle')}     accent={C.purpleLite} />
             <QuickAction label="Flashcards"    icon={BookMarked}    onClick={() => onNavigate('flashcards')} accent={C.purpleSoft} />
-            <QuickAction label="Open a lab"    icon={Beaker}        onClick={() => onNavigate('labs')}       accent={C.purple} />
             <QuickAction label="Take notes"     icon={BookOpen}      onClick={() => onNavigate('notebook')}   accent={C.purpleLite} />
             <QuickAction label="Backup"         icon={FileJson}      onClick={onOpenBackup}                    accent={C.purpleSoft} />
           </div>

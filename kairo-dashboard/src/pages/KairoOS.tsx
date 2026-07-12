@@ -1516,7 +1516,7 @@ function renderDetail(
     case 'style': {
       const m = kind.modality
       const meta: Record<Modality, { label: string; color: string; icon: any; explain: string; tip: string }> = {
-        visual:      { label: 'Visual',      color: C.purple, icon: Eye,               explain: 'You learn best from labs, diagrams, and 3D visualizations. Every lab you open boosts this.', tip: 'Open Kyno Labs first when starting a new topic.' },
+        visual:      { label: 'Visual',      color: C.purple, icon: Eye,               explain: 'You learn best from diagrams and visual explanations. Ask the Solver for a visual breakdown of a topic.', tip: 'Start new topics with a diagram or visual summary from the Solver.' },
         interactive: { label: 'Interactive', color: C.blue,   icon: MousePointerClick, explain: 'You learn best by doing — Battle Mode, Adaptive Quiz, drag-and-drop labs. Every quiz answer boosts this.', tip: 'Start each session with a 5-question quiz to prime your brain.' },
         text:        { label: 'Reading',     color: C.cyan,   icon: BookOpen,          explain: 'You learn best from notes, articles, and written explanations. Every notebook entry boosts this.', tip: 'Convert AI answers into Notebook entries — re-reading them is high-yield.' },
         repetition:  { label: 'Repetition',  color: C.green,  icon: Repeat,            explain: 'You learn best by spaced review — flashcards, voice mode, drilling formulas. Every flashcard review boosts this.', tip: 'Run flashcards twice a day at your best hour.' },
@@ -1729,7 +1729,7 @@ function renderDetail(
           'You\'ve mastered this. Re-touch once a week to keep it locked.',
           'Try a hard question on this topic to push to expert.',
         ] : [
-          'Open a Lab on this topic — your style benefits from visual context.',
+          'Ask the Solver for a visual breakdown of this topic — your style benefits from visual context.',
           'Generate flashcards on this topic from the Solver and drill twice a day.',
           'Take a 5-question Adaptive Quiz at medium difficulty and review wrong answers.',
         ],

@@ -444,7 +444,7 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
             mode={viewMode}
             setMode={setViewMode}
             hasGeography={!!resp?.geography}
-            supports3D={!!resp?.supports3D}
+            supports3D={false}  /* Kyno Labs paused — no 3D routing for now */
             autoSwitched={autoSwitched}
           />
 
@@ -1260,8 +1260,8 @@ function ExplanationPanel({ resp, busy, error, retryHint, onOpenLab, onAskRelate
             </div>
           )}
 
-          {/* Lab CTA */}
-          {resp.labRoute && (
+          {/* Lab CTA — hidden while Kyno Labs is paused (restore: drop `false &&`) */}
+          {false && resp.labRoute && (
             <motion.button
               whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}
               onClick={() => onOpenLab(resp.labRoute!)}

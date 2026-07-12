@@ -69,7 +69,6 @@ const DRAWER_STUDENT = [
   {
     title: 'Tools',
     items: [
-      { to: 'labs',         label: 'Kyno Labs',     icon: Beaker },
       { to: 'flashcards',   label: 'Flashcards',     icon: BookMarked },
       { to: 'camera',       label: 'Camera Study',   icon: Camera },
       { to: 'concept-map',  label: 'Concept Map',    icon: Network },
