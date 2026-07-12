@@ -296,6 +296,32 @@ function BottomNav({
   active, setActive, profile, onOpenMore,
 }: MobileShellProps & { onOpenMore: () => void }) {
   const items = getBottomNav(profile?.role)
+
+  // Hide the dock while a text field is focused so it never covers the
+  // composer / send button (and frees space for the keyboard). It slides back
+  // up the moment focus leaves the field.
+  const [hidden, setHidden] = useState(false)
+  useEffect(() => {
+    const isField = (el: any) => {
+      if (!el) return false
+      if (el.tagName === 'TEXTAREA' || el.isContentEditable) return true
+      if (el.tagName === 'INPUT') {
+        const t = (el.getAttribute('type') || 'text').toLowerCase()
+        return !['checkbox', 'radio', 'button', 'submit', 'reset', 'file', 'range', 'color'].includes(t)
+      }
+      return false
+    }
+    const onIn  = (e: FocusEvent) => { if (isField(e.target)) setHidden(true) }
+    // Delay the re-check so moving between two fields doesn't flash the dock.
+    const onOut = () => { setTimeout(() => { if (!isField(document.activeElement)) setHidden(false) }, 60) }
+    document.addEventListener('focusin', onIn)
+    document.addEventListener('focusout', onOut)
+    return () => {
+      document.removeEventListener('focusin', onIn)
+      document.removeEventListener('focusout', onOut)
+    }
+  }, [])
+
   // Parent gets no bottom nav (uses standalone dashboard)
   if (profile?.role === 'parent') return null
 
@@ -306,6 +332,10 @@ function BottomNav({
       paddingLeft: 12, paddingRight: 12,
       display: 'flex', justifyContent: 'center',
       pointerEvents: 'none',
+      // Slide down out of the way while typing; slide back on blur.
+      transform: hidden ? 'translateY(160%)' : 'translateY(0)',
+      opacity: hidden ? 0 : 1,
+      transition: 'transform 0.28s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease',
     }}>
       <div style={{
         pointerEvents: 'auto',
