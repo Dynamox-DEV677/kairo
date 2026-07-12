@@ -156,11 +156,11 @@ export default function Login({ onLogin }: LoginProps) {
       <div style={{ width: '100%', maxWidth: 480, padding: '28px 20px 48px', display: 'flex', flexDirection: 'column', position: 'relative', zIndex: 2 }}>
         {/* Logo */}
         <div style={{ textAlign: 'center', marginBottom: 22, flexShrink: 0 }}>
-          <img src="/kairo-mark.svg" alt="Kyno"
+          <img src="/kyno-logo.png" alt="Kyno"
             style={{
-              width: 64, height: 64, borderRadius: 16, objectFit: 'contain',
-              margin: '0 auto 14px', display: 'block',
-              filter: 'drop-shadow(0 0 20px rgba(79, 124, 255, 0.03))',
+              width: 82, height: 'auto', objectFit: 'contain',
+              margin: '0 auto 12px', display: 'block',
+              filter: 'drop-shadow(0 0 28px rgba(79, 124, 255, 0.30))',
             }} />
           <h1 style={{ fontSize: 24, fontWeight: 800, color: '#fafafa', margin: 0, letterSpacing: '-0.5px' }}>kyno</h1>
           <p style={{ fontSize: 11, color: '#4F7CFF', fontWeight: 700, letterSpacing: 4, marginTop: 4, textTransform: 'uppercase' }}>
