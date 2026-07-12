@@ -198,9 +198,11 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
     setTopic(question)
     setInput('')
     setBusy(true)
-    onActiveChange?.(true)   // lock model selector
     if (taRef.current) taRef.current.style.height = 'auto'
 
+    // Cancel any still-in-flight request from a previous question so its late
+    // image/video results can't clobber this new answer.
+    abortRef.current?.abort()
     const ctrl = new AbortController()
     abortRef.current = ctrl
 
@@ -254,6 +256,9 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
         ? cacheHit
         : await fetchTextWithRetry()
       setRetryHint('')
+      // Defensive: a cached/edge response could omit imageQueries. Never let
+      // `.length` throw and turn a good answer into an error.
+      if (!Array.isArray(text.imageQueries)) text.imageQueries = []
 
       // Casual small-talk ("what is the time?", "hi") gets a short note —
       // no video, no storyboard, no lesson scaffolding.
@@ -319,8 +324,10 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
         }
       } catch { /* ignore */ }
 
-      // When the video lands, merge it in (independent of images).
+      // When the video lands, merge it in (independent of images). Skip if
+      // this request was superseded/aborted so it can't clobber a newer answer.
       videoPromise.then((v: any) => {
+        if (ctrl.signal.aborted) return
         setResp(prev => prev ? { ...prev, videoId: v?.videoId || null, videoBusy: false } : prev)
       })
 
@@ -341,11 +348,13 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
         signal: ctrl.signal,
       })
       if (!imgRes.ok) {
+        if (ctrl.signal.aborted) return
         const e = await imgRes.json().catch(() => ({}))
         setResp(prev => prev ? { ...prev, imagesBusy: false, imagesError: e.error || `Image search failed (${imgRes.status})` } : prev)
         return
       }
       const img = await imgRes.json() as { imageSlides: ImageSlide[]; cached: boolean }
+      if (ctrl.signal.aborted) return
       setResp(prev => prev ? {
         ...prev,
         imageSlides:  img.imageSlides || [],
@@ -393,6 +402,15 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
     if (resp) return
     if (busy) setViewMode('auto')
   }, [busy, resp])
+
+  // Lock the model selector only while a request is in flight; unlock when it
+  // finishes (and on unmount). Previously onActiveChange fired true on the
+  // first ask and was never reset, leaving the picker disabled all session.
+  useEffect(() => {
+    onActiveChange?.(busy)
+    return () => { onActiveChange?.(false) }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [busy])
 
   // Compute the effective mode — what the renderer should actually show.
   // 'auto' resolves to 'map' for geography and 'visual' for everything else.
