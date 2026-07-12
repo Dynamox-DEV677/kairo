@@ -1,6 +1,3 @@
-/**
- * Timetable Management Routes (no auth required — school_id from body/query)
- */
 import { Router } from 'express'
 import { db } from '../db/index.js'
 import { aiCall, parseJSON } from '../utils/ai.js'

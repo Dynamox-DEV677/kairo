@@ -4,14 +4,8 @@ import './index.css'
 import App from './App.tsx'
 import { initPwa } from './lib/pwa'
 
-// Font changer was removed (messy on mobile) — clear any previously saved
-// custom font so every device returns to the default Space Grotesk.
-try { localStorage.removeItem('kairo:font') } catch { /* private mode */ }
+try { localStorage.removeItem('kairo:font') } catch {  }
 
-// ── Global error reporter ────────────────────────────────────────────────
-// Any unhandled exception or rejected promise gets POSTed to /api/ops/error
-// so it appears on the /ops dashboard (and to anything polling status).
-// Throttled so a runaway loop doesn't spam the endpoint.
 const REPORT_THROTTLE_MS = 5000
 let lastReportTs = 0
 function reportError(msg: string, extras: Record<string, any> = {}) {
@@ -27,7 +21,7 @@ function reportError(msg: string, extras: Record<string, any> = {}) {
       userAgent:  navigator.userAgent.slice(0, 200),
       ...extras,
     }),
-  }).catch(() => { /* swallow — never let the reporter throw */ })
+  }).catch(() => {  })
 }
 window.addEventListener('error', (e) => {
   reportError(e.message || 'window.error', {
@@ -48,11 +42,8 @@ createRoot(document.getElementById('root')!).render(
   </StrictMode>,
 )
 
-// PWA: register SW, show full-screen splash when a new version is ready
 initPwa({
   onUpdateAvailable(reload) {
-    // Full-screen blocking splash — Kyno logo + title + spinning refresh icon.
-    // Vanilla DOM so it works even if React is mid-tree and about to swap out.
     const splash = document.createElement('div')
     splash.id = 'kairo-update-splash'
     splash.style.cssText = `
@@ -99,7 +90,6 @@ initPwa({
     `
     document.body.appendChild(splash)
 
-    // Trigger the actual reload after the splash has rendered for a beat
     requestAnimationFrame(() => setTimeout(() => reload(), 600))
   },
   onOfflineReady() {

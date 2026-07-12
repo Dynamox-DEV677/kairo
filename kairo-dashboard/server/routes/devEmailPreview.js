@@ -1,20 +1,3 @@
-/**
- * Dev Email Preview routes.
- *
- *   GET /api/dev/emails                  → index page listing every template
- *   GET /api/dev/emails/:id              → render a template (HTML body)
- *   GET /api/dev/emails/:id?fmt=text     → render the plain-text fallback
- *   GET /api/dev/emails/:id?raw=1        → returns the raw HTML source as text/plain
- *
- * Protected by NODE_ENV — in production these routes return 404 unless
- * `KAIRO_ALLOW_EMAIL_PREVIEW=1` is set. Vercel preview deployments are NOT
- * production, so previews stay browsable on staging.
- *
- * Why this exists:
- *   - Designers iterate on templates without sending real email
- *   - QA can verify rendering on Gmail / Outlook / Apple Mail visually
- *   - CI can diff snapshots of every template's HTML
- */
 
 import { Router } from 'express'
 import { PREVIEW, listPreviews, renderPreviewHtml, renderPreviewText } from '../email/preview.js'
@@ -23,15 +6,11 @@ import { getTransporter, getFromAddress, send } from '../email/transport.js'
 
 const router = Router()
 
-// Production guard — opt-in via env var
 function previewAllowed() {
   if (process.env.KAIRO_ALLOW_EMAIL_PREVIEW === '1') return true
   return process.env.NODE_ENV !== 'production'
 }
 
-// ── /status — ALWAYS available, even in production ─────────────────────────
-// Tells you exactly why the email system isn't sending. Hit this first when
-// debugging "no email arrived" issues.
 router.get('/status', async (_req, res) => {
   const hasEmail = !!process.env.KAIRO_EMAIL
   const hasPwd   = !!(process.env.KAIRO_EMAIL_APP_PASSWORD || '').replace(/\s+/g, '')
@@ -41,8 +20,6 @@ router.get('/status', async (_req, res) => {
   let verifyError  = null
   if (t) {
     try {
-      // Nodemailer .verify() does an SMTP handshake — confirms the credentials
-      // are valid without actually sending mail.
       await t.verify()
       verifyResult = 'ok'
     } catch (e) {
@@ -60,8 +37,8 @@ router.get('/status', async (_req, res) => {
     },
     from_address:      getFromAddress(),
     transporter_ready: !!t,
-    smtp_verify:       verifyResult,           // 'ok' | 'failed' | null
-    smtp_error:        verifyError,            // human-readable error if verify failed
+    smtp_verify:       verifyResult,
+    smtp_error:        verifyError,
     hint: !hasEmail || !hasPwd
       ? 'Set KAIRO_EMAIL and KAIRO_EMAIL_APP_PASSWORD in Vercel env vars and redeploy.'
       : verifyResult === 'failed'
@@ -72,9 +49,6 @@ router.get('/status', async (_req, res) => {
   })
 })
 
-// ── /test-send — actually attempts to send a real email ────────────────────
-// Use this to verify end-to-end delivery: `?to=you@example.com`
-// Available in dev / when KAIRO_ALLOW_EMAIL_PREVIEW=1. Otherwise 404.
 router.get('/test-send', async (req, res) => {
   if (!previewAllowed()) return res.status(404).json({ error: 'Not found.' })
 
@@ -91,7 +65,6 @@ router.get('/test-send', async (req, res) => {
     })
   }
 
-  // Send the welcome-personal template as a real test email
   const sample = PREVIEW['welcome-personal'].sample
   const html   = PREVIEW['welcome-personal'].renderHtml(sample)
   const text   = PREVIEW['welcome-personal'].renderText(sample)
@@ -125,7 +98,6 @@ router.use((req, res, next) => {
   next()
 })
 
-// ── Index page ─────────────────────────────────────────────────────────────
 router.get('/', (_req, res) => {
   const items = listPreviews()
   const rows = items.map(p => `
@@ -267,35 +239,29 @@ router.get('/', (_req, res) => {
 </html>`)
 })
 
-// ── Render a single template ───────────────────────────────────────────────
 router.get('/:id', (req, res) => {
   const id = req.params.id
   const preview = PREVIEW[id]
   if (!preview) return res.status(404).json({ error: `Unknown email template id: ${id}` })
 
-  // Build overrides from the query string — string values only, anything that
-  // matches one of the sample fields gets overridden.
   const overrides = {}
   for (const [k, v] of Object.entries(req.query || {})) {
     if (k === 'fmt' || k === 'raw') continue
     if (k in preview.sample) overrides[k] = v
   }
 
-  // Plain-text fallback
   if (req.query.fmt === 'text') {
     const text = renderPreviewText(id, overrides) || ''
     res.setHeader('Content-Type', 'text/plain; charset=utf-8')
     return res.end(text)
   }
 
-  // View HTML source as text (useful for diffing / pasting into spam-score tools)
   if (req.query.raw === '1') {
     const html = renderPreviewHtml(id, overrides) || ''
     res.setHeader('Content-Type', 'text/plain; charset=utf-8')
     return res.end(html)
   }
 
-  // Render the full HTML (what users actually receive)
   const html = renderPreviewHtml(id, overrides)
   if (!html) return res.status(500).json({ error: 'Render failed.' })
   res.setHeader('Content-Type', 'text/html; charset=utf-8')

@@ -1,25 +1,15 @@
-/**
- * Study Plan Routes
- *
- * POST /api/study-plan/create      AI generates a full daily study plan
- * GET  /api/study-plan/:id         Get a plan
- * GET  /api/study-plan             List plans for school
- * PUT  /api/study-plan/:id/progress  Mark day/task complete
- * DELETE /api/study-plan/:id
- */
 import { Router } from 'express'
 import { db } from '../db/index.js'
 import { aiCall, parseJSON } from '../utils/ai.js'
 
 const router = Router()
 
-// ── Create study plan ──────────────────────────────────────────────────────────
 router.post('/create', async (req, res) => {
   const {
     student_id,
     student_name,
-    exam_date,           // YYYY-MM-DD
-    subjects,            // [{ name, weak_topics: [] }]
+    exam_date,
+    subjects,
     daily_hours = 4,
     board = 'CBSE',
     class: cls = '10',
@@ -89,7 +79,7 @@ Rules:
       board,
       class: cls,
       plan,
-      completed_tasks: [],   // array of "date|subject|topic" keys
+      completed_tasks: [],
       created_at: new Date().toISOString(),
     })
 
@@ -99,7 +89,6 @@ Rules:
   }
 })
 
-// ── List plans ─────────────────────────────────────────────────────────────────
 router.get('/', async (req, res) => {
   try {
     const plans = await db.studyPlans
@@ -111,7 +100,6 @@ router.get('/', async (req, res) => {
   }
 })
 
-// ── Get single plan ────────────────────────────────────────────────────────────
 router.get('/:id', async (req, res) => {
   try {
     const plan = await db.studyPlans.findOneAsync({ _id: req.params.id, school_id: req.body?.school_id || req.query?.school_id || 'demo_school' })
@@ -122,7 +110,6 @@ router.get('/:id', async (req, res) => {
   }
 })
 
-// ── Mark task complete ─────────────────────────────────────────────────────────
 router.put('/:id/progress', async (req, res) => {
   const { date, subject, topic, done = true } = req.body
   if (!date || !subject || !topic) return res.status(400).json({ error: 'date, subject, topic required.' })
@@ -144,7 +131,6 @@ router.put('/:id/progress', async (req, res) => {
   }
 })
 
-// ── Delete plan ────────────────────────────────────────────────────────────────
 router.delete('/:id', async (req, res) => {
   await db.studyPlans.removeAsync({ _id: req.params.id, school_id: req.body?.school_id || req.query?.school_id || 'demo_school' }, {})
   res.json({ message: 'Plan deleted.' })

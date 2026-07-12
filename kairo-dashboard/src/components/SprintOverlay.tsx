@@ -1,12 +1,3 @@
-/**
- * SprintOverlay — full-screen "your data is sprinting over" animation.
- *
- * Used by:
- *   - TwinBackupModal (manual import)
- *   - App.tsx (automatic pull from cloud on cross-device login)
- *
- * Strict monochrome palette.
- */
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -38,15 +29,10 @@ export const SPRINT_PHASES: { text: string; sub: string }[] = [
 export const SPRINT_MIN_MS = 3200
 
 interface Props {
-  /** When true, overlay is mounted. Parent owns the lifecycle. */
   open:        boolean
-  /** Optional override phase index. Self-rotates if not provided. */
   phaseIdx?:   number
-  /** Either render fullscreen (default) or inside a relative parent. */
   fullscreen?: boolean
-  /** Optional banner above the headline (e.g. "Welcome back"). */
   banner?:     string
-  /** Optional override headline / subhead. */
   headline?:   string
   subhead?:    string
 }
@@ -54,7 +40,6 @@ interface Props {
 export default function SprintOverlay({ open, phaseIdx, fullscreen = true, banner, headline, subhead }: Props) {
   const [auto, setAuto] = useState(0)
 
-  // Self-rotate phase when no external index is provided.
   useEffect(() => {
     if (!open || phaseIdx != null) return
     setAuto(0)
@@ -93,7 +78,6 @@ export default function SprintOverlay({ open, phaseIdx, fullscreen = true, banne
     >
       <style>{`@keyframes sprint-glow { 0%,100% { opacity: 0.45 } 50% { opacity: 1 } }`}</style>
 
-      {/* Backdrop orbs */}
       <div style={{
         position: 'absolute', top: '-20%', left: '15%',
         width: 280, height: 280, borderRadius: '50%',
@@ -109,9 +93,7 @@ export default function SprintOverlay({ open, phaseIdx, fullscreen = true, banne
         pointerEvents: 'none',
       }} />
 
-      {/* Device-to-device track */}
       <div style={{ position: 'relative', width: '100%', maxWidth: 460, height: 120, marginBottom: 26 }}>
-        {/* Source — file/laptop */}
         <motion.div
           animate={{ y: [-2, 2, -2] }}
           transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
@@ -141,7 +123,6 @@ export default function SprintOverlay({ open, phaseIdx, fullscreen = true, banne
           </motion.div>
         </motion.div>
 
-        {/* Track */}
         <div style={{
           position: 'absolute', left: 68, right: 68, top: '50%',
           height: 3, transform: 'translateY(-50%)',
@@ -159,7 +140,6 @@ export default function SprintOverlay({ open, phaseIdx, fullscreen = true, banne
           />
         </div>
 
-        {/* Particles */}
         {dots.map(i => (
           <motion.div
             key={i}
@@ -183,7 +163,6 @@ export default function SprintOverlay({ open, phaseIdx, fullscreen = true, banne
           />
         ))}
 
-        {/* Destination — brain */}
         <motion.div
           animate={{ y: [2, -2, 2] }}
           transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}

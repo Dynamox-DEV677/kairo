@@ -1,8 +1,3 @@
-/**
- * Lesson Plan Generator Routes
- *
- * POST /api/lesson-plan/generate
- */
 import { Router } from 'express'
 import { requireAuth } from '../middleware/auth.js'
 import { aiCall, parseJSON } from '../utils/ai.js'
@@ -17,7 +12,7 @@ router.post('/generate', async (req, res) => {
     class: cls = '10',
     board = 'CBSE',
     duration_minutes = 45,
-    teaching_style = 'interactive', // traditional | interactive | activity-based
+    teaching_style = 'interactive',
     has_smartboard = false,
   } = req.body
 

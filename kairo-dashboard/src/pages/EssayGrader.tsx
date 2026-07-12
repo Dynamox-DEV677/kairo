@@ -47,14 +47,13 @@ export default function EssayGrader() {
     if (!question.trim() || !answer.trim()) { setError('Fill in both question and answer'); return }
     setLoading(true); setError(''); setFeedback('')
 
-    // Pull memory context (best-effort)
     let memoryContext = ''
     try {
       const r = await fetch('/api/memory/context', {
         headers: { Authorization: `Bearer ${localStorage.getItem('kairo_token') || ''}` },
       })
       if (r.ok) memoryContext = (await r.json()).context || ''
-    } catch { /* non-fatal */ }
+    } catch {  }
 
     try {
       const r = await chat({
@@ -65,7 +64,6 @@ export default function EssayGrader() {
       })
       setFeedback(r)
 
-      // Parse score and write to memory brain (best-effort)
       const scoreMatch = r.match(/(\d+(?:\.\d+)?)\s*\/\s*(\d+(?:\.\d+)?)/)
       if (scoreMatch) {
         const got   = parseFloat(scoreMatch[1])
@@ -85,10 +83,10 @@ export default function EssayGrader() {
                 subject,
                 topic,
                 content: `Graded ${got}/${total}`,
-                signal:  Math.max(-1, Math.min(1, (pct - 0.5) * 2)),  // 0% → -1, 100% → +1
+                signal:  Math.max(-1, Math.min(1, (pct - 0.5) * 2)),
               }),
             })
-          } catch { /* memory is best-effort */ }
+          } catch {  }
         }
       }
     } catch (e: any) { setError(e.message) }

@@ -1,19 +1,6 @@
-/**
- * AI Observations — short, supportive insights generated from the twin state.
- *
- * Tone: encouraging, specific, never invasive. Each observation has a kind:
- *   insight       — discovered pattern ("you study best at 9 PM")
- *   pattern       — neutral fact about behaviour
- *   milestone     — celebration ("first 7-day streak!")
- *   concern       — supportive nudge ("burnout risk rising — take a walk")
- *   celebration   — performance win ("vectors up 23%")
- *
- * Rules-based for v1; the prompt-ready output can be LLM-rephrased async
- * without changing the wire format.
- */
 import { supabaseAdmin } from '../supabase.js'
 
-const KEEP_HOURS = 72       // surface each observation for ~3 days then expire
+const KEEP_HOURS = 72
 
 function isoIn(hours) {
   return new Date(Date.now() + hours * 3600_000).toISOString()
@@ -22,7 +9,6 @@ function isoIn(hours) {
 function buildObservations(twin, masteryRows, recentEvents) {
   const out = []
 
-  // ── Learning style ─────────────────────────────────────────────────────
   const styleEntries = [
     ['visual',      twin.style_visual,      'You learn better when you can SEE the concept.'],
     ['interactive', twin.style_interactive, 'You retain more when you DO something with the concept.'],
@@ -41,7 +27,6 @@ function buildObservations(twin, masteryRows, recentEvents) {
     })
   }
 
-  // ── Best focus hour ────────────────────────────────────────────────────
   if (twin.focus_best_hour != null) {
     const h = twin.focus_best_hour
     const window = h < 6 ? 'late night'
@@ -58,7 +43,6 @@ function buildObservations(twin, masteryRows, recentEvents) {
     })
   }
 
-  // ── Performance trend ──────────────────────────────────────────────────
   if (twin.performance_trend > 0.18) {
     out.push({
       kind:  'celebration',
@@ -77,7 +61,6 @@ function buildObservations(twin, masteryRows, recentEvents) {
     })
   }
 
-  // ── Burnout ────────────────────────────────────────────────────────────
   if (twin.burnout_risk > 0.55) {
     out.push({
       kind:  'concern',
@@ -88,7 +71,6 @@ function buildObservations(twin, masteryRows, recentEvents) {
     })
   }
 
-  // ── Streak milestones ──────────────────────────────────────────────────
   const streakMilestones = [3, 7, 14, 30, 60, 100]
   if (streakMilestones.includes(twin.streak_days)) {
     out.push({
@@ -100,7 +82,6 @@ function buildObservations(twin, masteryRows, recentEvents) {
     })
   }
 
-  // ── Mastery breakthroughs ──────────────────────────────────────────────
   const newlyStrong = masteryRows.filter(m => m.mastery >= 0.75 && m.attempts >= 5)
   if (newlyStrong.length > 0) {
     const m = newlyStrong[0]
@@ -114,7 +95,6 @@ function buildObservations(twin, masteryRows, recentEvents) {
     })
   }
 
-  // ── Weak topic awareness ───────────────────────────────────────────────
   const persistent = (twin.weak_topics || []).filter(w => (w.severity || 0) > 0.55).slice(0, 2)
   for (const w of persistent) {
     out.push({
@@ -127,7 +107,6 @@ function buildObservations(twin, masteryRows, recentEvents) {
     })
   }
 
-  // ── Consistency callout ────────────────────────────────────────────────
   if (twin.consistency_score >= 0.65) {
     out.push({
       kind:  'pattern',
@@ -149,14 +128,8 @@ function buildObservations(twin, masteryRows, recentEvents) {
   return out
 }
 
-/**
- * Recompute observations for a user.
- * Deletes the previous batch (older than 1 day) and inserts a fresh set.
- */
 export async function recomputeObservations(userId) {
   if (!userId) return []
-  // Pull twin + mastery + a small slice of recent events.
-  // Defensive against null .data (returned when a table doesn't exist).
   const [twinRes, masteryRes, eventsRes] = await Promise.all([
     supabaseAdmin.from('academic_twins').select('*').eq('user_id', userId).maybeSingle(),
     supabaseAdmin.from('knowledge_mastery').select('*').eq('user_id', userId).order('mastery', { ascending: false }),
@@ -170,7 +143,6 @@ export async function recomputeObservations(userId) {
   const obs = buildObservations(twin, masteryRows, events)
   if (!obs.length) return []
 
-  // Expire old observations (soft delete) and insert new ones
   try {
     await supabaseAdmin
       .from('twin_observations')

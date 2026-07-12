@@ -1,10 +1,3 @@
-/**
- * TwinBackupModal — export / import your Kyno twin so it can travel
- * between devices without any server involvement.
- *
- * Render path: any page can mount <TwinBackupModal open={...} onClose={...} />.
- * Currently mounted from KairoOS header + Settings.
- */
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -18,7 +11,6 @@ import {
 } from '../lib/twin'
 import SprintOverlay, { SPRINT_PHASES, SPRINT_MIN_MS } from './SprintOverlay'
 
-// ─── Strict monochrome palette ──────────────────────────────────────────────
 const C = {
   bg:        '#050505',
   panel:     '#0E1117',
@@ -39,7 +31,7 @@ const C = {
 interface Props {
   open:    boolean
   onClose: () => void
-  onChange?: () => void   // notify parent so it can reload its snapshot
+  onChange?: () => void
 }
 
 export default function TwinBackupModal({ open, onClose, onChange }: Props) {
@@ -52,7 +44,6 @@ export default function TwinBackupModal({ open, onClose, onChange }: Props) {
   const [phaseIdx,  setPhaseIdx]    = useState(0)
   const fileInputRef                = useRef<HTMLInputElement>(null)
 
-  // Snapshot the current state for stats display
   const stats = useMemo(() => {
     if (!open) return null
     try {
@@ -68,7 +59,6 @@ export default function TwinBackupModal({ open, onClose, onChange }: Props) {
     } catch { return null }
   }, [open])
 
-  // Close on ESC
   useEffect(() => {
     if (!open) return
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
@@ -76,7 +66,6 @@ export default function TwinBackupModal({ open, onClose, onChange }: Props) {
     return () => window.removeEventListener('keydown', onKey)
   }, [open, onClose])
 
-  // Reset state on open
   useEffect(() => {
     if (open) {
       setResult(null); setImportText(''); setCopied(false); setTab('export')
@@ -100,7 +89,7 @@ export default function TwinBackupModal({ open, onClose, onChange }: Props) {
       await navigator.clipboard.writeText(exportTwin())
       setCopied(true)
       setTimeout(() => setCopied(false), 1800)
-    } catch { /* permission denied — user can still use the download button */ }
+    } catch {  }
   }
 
   function onPickFile(e: React.ChangeEvent<HTMLInputElement>) {
@@ -115,12 +104,6 @@ export default function TwinBackupModal({ open, onClose, onChange }: Props) {
     reader.readAsText(file)
   }
 
-  /**
-   * Run the import with a cinematic "your data is sprinting" overlay.
-   * The actual import is synchronous and near-instant, but we deliberately
-   * gate it behind a minimum animation duration + a rotating phase ticker
-   * so the moment FEELS deliberate, not glitchy.
-   */
   async function runImport(text?: string) {
     const blob = (text ?? importText).trim()
     if (!blob) return
@@ -131,13 +114,10 @@ export default function TwinBackupModal({ open, onClose, onChange }: Props) {
 
     const t0 = Date.now()
 
-    // Rotate phase text every ~520ms so users always feel forward motion
     const phaseTimer = window.setInterval(() => {
       setPhaseIdx(i => Math.min(i + 1, SPRINT_PHASES.length - 1))
     }, 520)
 
-    // Run the actual (synchronous) import on the next microtask so the
-    // overlay paints first.
     await new Promise(r => setTimeout(r, 0))
     let r: ImportResult
     try {
@@ -146,7 +126,6 @@ export default function TwinBackupModal({ open, onClose, onChange }: Props) {
       r = { ok: false, reason: 'invalid-json' }
     }
 
-    // Hold the animation until at least SPRINT_MIN_MS has elapsed.
     const elapsed   = Date.now() - t0
     const remaining = Math.max(0, SPRINT_MIN_MS - elapsed)
     await new Promise(res => setTimeout(res, remaining))
@@ -160,11 +139,6 @@ export default function TwinBackupModal({ open, onClose, onChange }: Props) {
 
   return createPortal(
     <AnimatePresence>
-      {/* Backdrop — opaque + isolation context so the sidebar's profile
-          chip (and any other fixed-position sibling outside the portal)
-          can't leak through. Chromium has a documented issue where
-          backdrop-filter on a fixed div doesn't always cover fixed
-          siblings; bumping alpha + isolation kills that bleed. */}
       <motion.div
         key="tbm-backdrop"
         initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
@@ -188,8 +162,6 @@ export default function TwinBackupModal({ open, onClose, onChange }: Props) {
           position: 'fixed', top: '50%', left: '50%',
           transform: 'translate(-50%, -50%)',
           width: 'min(620px, calc(100vw - 32px))',
-          // Tighter cap — never exceeds 86vh so on short viewports the
-          // panel still has visible margins top + bottom.
           maxHeight: 'min(720px, calc(100vh - 48px))',
           zIndex: 9999,
           background: C.panel,
@@ -200,8 +172,6 @@ export default function TwinBackupModal({ open, onClose, onChange }: Props) {
           boxShadow: '0 24px 64px rgba(0, 0, 0, 0.70)',
         }}
       >
-        {/* HEADER — compact: no oversized icon block, one-line title +
-            short subtitle so the body has room. */}
         <div style={{
           padding: '14px 18px',
           borderBottom: `1px solid ${C.border}`,
@@ -232,7 +202,6 @@ export default function TwinBackupModal({ open, onClose, onChange }: Props) {
           </button>
         </div>
 
-        {/* TABS */}
         <div style={{
           display: 'flex', gap: 4, padding: '12px 18px 0',
           borderBottom: `1px solid ${C.borderSoft}`,
@@ -245,16 +214,13 @@ export default function TwinBackupModal({ open, onClose, onChange }: Props) {
           </TabBtn>
         </div>
 
-        {/* SPRINT OVERLAY — sits on top of the body while data "runs over" */}
         <AnimatePresence>
           {sprinting && <SprintOverlay open={true} phaseIdx={phaseIdx} fullscreen={false} />}
         </AnimatePresence>
 
-        {/* BODY */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '14px 18px 18px' }}>
           {tab === 'export' && (
             <>
-              {/* Step 1 visual — tighter, single-line copy */}
               <div style={{
                 display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14,
                 padding: '10px 12px', borderRadius: 10,
@@ -269,9 +235,6 @@ export default function TwinBackupModal({ open, onClose, onChange }: Props) {
                 </span>
               </div>
 
-              {/* Stats summary — 6 columns on desktop so all stats fit
-                  in one row and the body doesn't double-wrap. Drops
-                  to 3 cols below 520px. */}
               {stats && (
                 <div style={{ marginBottom: 14 }}>
                   <div style={{ fontSize: 10, fontWeight: 700, color: C.textFaint, textTransform: 'uppercase', letterSpacing: 1.4, marginBottom: 6 }}>
@@ -292,7 +255,6 @@ export default function TwinBackupModal({ open, onClose, onChange }: Props) {
                 </div>
               )}
 
-              {/* Buttons */}
               <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
                 <motion.button
                   whileHover={{ y: -2, boxShadow: '0 12px 30px rgba(79, 124, 255, 0.03)' }}
@@ -341,7 +303,6 @@ export default function TwinBackupModal({ open, onClose, onChange }: Props) {
 
           {tab === 'import' && (
             <>
-              {/* Mode toggle */}
               <div style={{ marginBottom: 16 }}>
                 <div style={{ fontSize: 10, fontWeight: 700, color: C.textFaint, textTransform: 'uppercase', letterSpacing: 1.4, marginBottom: 8 }}>
                   When importing
@@ -362,7 +323,6 @@ export default function TwinBackupModal({ open, onClose, onChange }: Props) {
                 </div>
               </div>
 
-              {/* File picker */}
               <input
                 ref={fileInputRef}
                 type="file" accept="application/json,.json"
@@ -387,7 +347,6 @@ export default function TwinBackupModal({ open, onClose, onChange }: Props) {
                 Pick a .json backup file
               </motion.button>
 
-              {/* Paste textarea */}
               <div style={{ fontSize: 10, fontWeight: 700, color: C.textFaint, textTransform: 'uppercase', letterSpacing: 1.4, marginBottom: 6 }}>
                 …or paste the JSON
               </div>
@@ -422,7 +381,6 @@ export default function TwinBackupModal({ open, onClose, onChange }: Props) {
                 <ClipboardPaste size={14} /> Apply ({mode})
               </motion.button>
 
-              {/* Result */}
               {result && <ResultPanel result={result} />}
             </>
           )}
@@ -433,7 +391,6 @@ export default function TwinBackupModal({ open, onClose, onChange }: Props) {
   )
 }
 
-// ─── Sub-components ─────────────────────────────────────────────────────────
 function TabBtn({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
     <button onClick={onClick} style={{

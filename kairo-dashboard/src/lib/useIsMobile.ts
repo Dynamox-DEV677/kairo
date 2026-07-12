@@ -1,10 +1,3 @@
-/**
- * useIsMobile — reactive viewport breakpoint hook.
- *
- * Returns `true` when the viewport is <= the breakpoint (default 768px).
- * Listens to `resize` + `orientationchange` so pages re-render when the user
- * rotates the device or resizes the window.
- */
 import { useEffect, useState } from 'react'
 
 export function useIsMobile(breakpoint = 768): boolean {

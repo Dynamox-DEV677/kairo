@@ -1,10 +1,3 @@
-/**
- * Camera Study Mode
- * Snap a photo of homework / textbook / notes → AI explains, solves,
- * makes flashcards, or summarizes.
- *
- * Uses OpenRouter free vision models (Qwen2.5-VL / Nemotron Nano Omni / Qianfan-OCR-Fast).
- */
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import ReactMarkdown from 'react-markdown'
@@ -17,8 +10,6 @@ import {
 } from 'lucide-react'
 import { saveRecentChat, makeTitle } from '../lib/recentChats'
 
-// ── Groq multimodal models — the /api/ai/chat proxy routes every image
-//    request to these (Llama-4), so the picker reflects what actually runs.
 const VISION_MODELS = [
   {
     id: 'meta-llama/llama-4-scout-17b-16e-instruct',
@@ -32,8 +23,6 @@ const VISION_MODELS = [
   },
 ]
 
-// IMPORTANT: every prompt enforces strict markdown rules so ReactMarkdown renders nicely.
-// "## Heading" with a space, "**bold**", "- bullet", $math$. NO "#Heading" without space.
 const MD_RULES = `
 
 Format your response in clean markdown:
@@ -76,7 +65,6 @@ export default function CameraStudy() {
   const videoRef     = useRef<HTMLVideoElement>(null)
   const canvasRef    = useRef<HTMLCanvasElement>(null)
 
-  // Stop any active camera when leaving the page
   useEffect(() => () => stopCamera(), [streamRef])
 
   function stopCamera() {
@@ -95,7 +83,6 @@ export default function CameraStudy() {
       })
       setStreamRef(stream)
       setShowCamera(true)
-      // Wait one frame so the <video> element is mounted
       requestAnimationFrame(() => {
         if (videoRef.current) videoRef.current.srcObject = stream
       })
@@ -104,9 +91,6 @@ export default function CameraStudy() {
     }
   }
 
-  // Cap any captured/uploaded photo to <=1024px + JPEG q0.8 so the base64 stays
-  // small — a full-res phone photo was timing out the 10s serverless vision call
-  // (that was the real cause of the "An error occurred" crash).
   function downscaleImage(dataUrl: string, maxDim = 1024, quality = 0.8): Promise<string> {
     return new Promise((resolve) => {
       const img = new Image()
@@ -182,8 +166,6 @@ export default function CameraStudy() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ model, messages }),
       })
-      // Read as text first — the proxy sometimes returns a plain-text error
-      // (e.g. "An error occurred…" on timeout), which would crash res.json().
       const raw = await res.text()
       if (!res.ok) throw new Error((raw || `HTTP ${res.status}`).slice(0, 160))
       let data: any
@@ -193,7 +175,6 @@ export default function CameraStudy() {
       if (!text) throw new Error('Empty response — try a different model.')
       setResult(typeof text === 'string' ? text : JSON.stringify(text))
 
-      // Auto-save to recent chats so the user can come back to it
       saveRecentChat({
         id: `cam_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
         title: makeTitle(`📷 ${action.label}: ${typeof text === 'string' ? text.slice(0, 80) : ''}`),
@@ -204,7 +185,6 @@ export default function CameraStudy() {
         updated: Date.now(),
       })
 
-      // If flashcards, also offer to navigate to flashcards page
       if (action.id === 'flashcards') {
         try {
           const match = (typeof text === 'string' ? text : '').match(/\[[\s\S]*\]/)
@@ -212,7 +192,7 @@ export default function CameraStudy() {
             const cards = JSON.parse(match[0])
             localStorage.setItem('kairo_camera_flashcards', JSON.stringify(cards))
           }
-        } catch { /* ignore */ }
+        } catch {  }
       }
     } catch (e: any) {
       setErr(e.message)
@@ -227,7 +207,6 @@ export default function CameraStudy() {
 
   return (
     <div style={{ padding: '28px 36px', maxWidth: 1100, margin: '0 auto', height: '100%', overflowY: 'auto' }}>
-      {/* Header */}
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 22 }}>
         <div style={{
           width: 44, height: 44, borderRadius: 11,
@@ -245,7 +224,6 @@ export default function CameraStudy() {
         </div>
       </div>
 
-      {/* Model picker */}
       <div style={{ marginBottom: 16 }}>
         <label style={{ fontSize: 11, fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: 1.5, display: 'block', marginBottom: 8 }}>
           Vision Model
@@ -271,7 +249,6 @@ export default function CameraStudy() {
         </div>
       </div>
 
-      {/* Image area */}
       {!imageData && !showCamera && (
         <div
           onDrop={onDrop}
@@ -321,7 +298,6 @@ export default function CameraStudy() {
         </div>
       )}
 
-      {/* Live camera preview */}
       <AnimatePresence>
         {showCamera && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
@@ -351,7 +327,6 @@ export default function CameraStudy() {
         )}
       </AnimatePresence>
 
-      {/* Image preview + actions */}
       {imageData && (
         <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
           className="mob-stack" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
@@ -370,7 +345,6 @@ export default function CameraStudy() {
             </button>
           </div>
 
-          {/* Actions */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
             {ACTIONS.map(a => {
               const isActive = activeAction === a.id && busy
@@ -415,7 +389,6 @@ export default function CameraStudy() {
         </div>
       )}
 
-      {/* Result */}
       <AnimatePresence>
         {result && (
           <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
@@ -460,19 +433,11 @@ export default function CameraStudy() {
   )
 }
 
-// ─── Markdown post-processor ────────────────────────────────────────────────
-// Vision LLMs sometimes emit malformed markdown (#Heading instead of # Heading,
-// stray <think> blocks, code fences around plain text). Clean it up before
-// passing to ReactMarkdown so headings, bold, lists actually render.
 function cleanMarkdown(s: string): string {
   return s
-    // Strip reasoning model thought-blocks
     .replace(/<\/?think(?:ing)?>[\s\S]*?<\/?think(?:ing)?>/gi, '')
-    // "##Step" → "## Step" (require space after hashes)
     .replace(/^(\s*#{1,6})([^\s#])/gm, '$1 $2')
-    // Stray code fences with no language at the very start/end of plain prose
     .replace(/^\s*```\s*$/gm, '')
-    // Collapse 3+ blank lines into 2
     .replace(/\n{3,}/g, '\n\n')
     .trim()
 }

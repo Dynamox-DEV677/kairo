@@ -1,8 +1,3 @@
-/**
- * Account Approved — sent when an admin approves a pending student/teacher.
- *
- * Variables: { name, role, schoolName }
- */
 import { THEME, appUrl } from '../theme.js'
 import { shell } from '../shell.js'
 import {

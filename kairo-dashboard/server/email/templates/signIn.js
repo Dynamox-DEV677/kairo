@@ -1,13 +1,3 @@
-/**
- * Sign-in security alert — sent when a user logs in successfully.
- *
- * Variables: { name, deviceLabel, ip, location, time }
- *
- *   deviceLabel — best-effort from User-Agent (e.g. "Chrome on Windows")
- *   ip          — client IP (optional)
- *   location    — best-effort geo (e.g. "Mumbai, IN") or null
- *   time        — Date object or ISO string
- */
 import { THEME, appUrl, formatTimestamp } from '../theme.js'
 import { shell } from '../shell.js'
 import {
@@ -18,7 +8,6 @@ import { send } from '../transport.js'
 function parseDevice(userAgent = '') {
   if (!userAgent) return 'Unknown device'
   const ua = userAgent
-  // Cheap user-agent sniff. Good enough for an email summary line.
   const browser =
     /Edg\//.test(ua)         ? 'Edge' :
     /Chrome\//.test(ua)      ? 'Chrome' :

@@ -1,60 +1,20 @@
-/**
- * FloatingModule — Kyno's softer, more tactile panel wrapper.
- *
- * This is the refinement-pass primitive: drop it around ANY existing panel
- * to give it the new Apple Vision Pro / Arc Browser feel without rebuilding
- * the page. Opt-in: no other code is affected.
- *
- *   <FloatingModule>
- *     ...your existing content...
- *   </FloatingModule>
- *
- * Capabilities (all optional, additive):
- *   • Softly-rounded glass surface with ambient hover lift
- *   • Drag-to-move (`draggable`) — Framer Motion spring physics
- *   • Resize handle (`resizable`) — drag bottom-right corner
- *   • Spring entrance — picks up the "everything is alive" feel
- *
- * The component renders a single <motion.div> with the .kr-floating utility
- * (defined in index.css). All the heavy styling lives in CSS so the
- * component stays tiny and you can theme it from one place later.
- *
- * USAGE NOTES
- *   • This is intentionally NOT a replacement for any existing component.
- *     Use it to upgrade specific panels you want to feel more tactile —
- *     not as a global wrapper for every <div>.
- *   • `draggable` works in any positioned container. By default we let
- *     Framer Motion's `dragConstraints` clamp the drag to the parent.
- *   • Honours `prefers-reduced-motion` automatically (transitions only).
- */
 import { useRef, useState } from 'react'
 import type { CSSProperties, ReactNode } from 'react'
 import { motion, useMotionValue } from 'framer-motion'
 
 export interface FloatingModuleProps {
-  /** Content of the module. */
   children: ReactNode
-  /** Add the larger-radius treatment (28px) — better for top-level panels. */
   large?:    boolean
-  /** Make the whole module draggable around its parent. */
   draggable?: boolean
-  /** Add a bottom-right resize handle. */
   resizable?: boolean
-  /** Optional initial size when resizable. Defaults to {width: 'auto', height: 'auto'}. */
   initialSize?: { width?: number | string; height?: number | string }
-  /** Animate in on mount. Default true. */
   animate?:  boolean
-  /** Extra class names. */
   className?: string
-  /** Extra inline styles. */
   style?:    CSSProperties
-  /** Fired when the drag starts. */
   onDragStart?: () => void
-  /** Fired when the drag ends. Receives the final {x, y} offset. */
   onDragEnd?: (offset: { x: number; y: number }) => void
 }
 
-/** Composes class names while skipping undefined / empty entries. */
 function cx(...parts: Array<string | undefined | false>) {
   return parts.filter(Boolean).join(' ')
 }
@@ -81,10 +41,6 @@ export default function FloatingModule({
   const x = useMotionValue(0)
   const y = useMotionValue(0)
 
-  // ── Resize handler — pointer-based, freezes the size on the host node ──
-  // We track size in component state so the resize sticks across renders.
-  // Each pointer-move recalculates against the start point + initial size
-  // (captured on pointer-down) to avoid drift.
   const resizeStateRef = useRef<{ startX: number; startY: number; w: number; h: number } | null>(null)
   function onResizePointerDown(e: React.PointerEvent) {
     e.stopPropagation()

@@ -1,11 +1,3 @@
-/**
- * Step 3 — Create the new 6-digit passcode.
- *
- *  - 6 dots that fill in as the user types
- *  - Custom numeric keypad (large taps, ripple on press)
- *  - Live strength meter: weak / good / strong
- *  - Auto-advance to step 4 once 6 digits are entered + strength != 'weak'
- */
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import ResetShell, { PrimaryButton, KairoBadge } from './ResetShell'
@@ -38,10 +30,8 @@ export default function Step3Create({ onBack, onContinue }: Props) {
     onContinue()
   }
 
-  // Auto-advance only when strength is good or strong
   useEffect(() => {
     if (pin.length === 6 && strength && strength !== 'weak') {
-      // small pause so the user sees the dots fill
       const t = window.setTimeout(() => continueIfValid(), 280)
       return () => clearTimeout(t)
     }
@@ -56,14 +46,13 @@ export default function Step3Create({ onBack, onContinue }: Props) {
   function handleDigit(d: string) {
     if (pin.length >= 6 || busy) return
     setPin(prev => (prev + d).slice(0, 6))
-    // Haptic-style — vibration API is best-effort
-    try { if ('vibrate' in navigator) (navigator as any).vibrate(8) } catch { /* ignore */ }
+    try { if ('vibrate' in navigator) (navigator as any).vibrate(8) } catch {  }
   }
   function handleBackspace() {
     if (busy) return
     setPin(prev => prev.slice(0, -1))
     setErr('')
-    try { if ('vibrate' in navigator) (navigator as any).vibrate(6) } catch { /* ignore */ }
+    try { if ('vibrate' in navigator) (navigator as any).vibrate(6) } catch {  }
   }
 
   return (
@@ -82,7 +71,6 @@ export default function Step3Create({ onBack, onContinue }: Props) {
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <PinDots filled={pin.length} large shake={!!err} />
 
-        {/* Strength chip — only after user starts typing */}
         <AnimatePresence>
           {pin.length > 0 && (
             <motion.div

@@ -1,8 +1,3 @@
-/**
- * Passcode OTP Email — 6-digit verification code for Kyno passcode reset.
- *
- * Variables: { name, code, expiresInMinutes, ip, userAgent }
- */
 import { THEME, formatTimestamp } from '../theme.js'
 import { shell } from '../shell.js'
 import {
@@ -92,10 +87,6 @@ export function renderPasscodeOtpText({ name = '', code, expiresInMinutes = 10 }
   ].join('\n')
 }
 
-/**
- * Send the OTP email. Returns the nodemailer info object on success,
- * `null` on misconfiguration / send failure.
- */
 export async function sendPasscodeOtpEmail({
   to,
   name = '',

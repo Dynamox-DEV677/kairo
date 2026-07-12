@@ -1,8 +1,3 @@
-/**
- * Chemical Reactions Lab — animated combustion of methane.
- * CH4 + 2 O2 → CO2 + 2 H2O
- * Atoms physically rearrange when "reaction" param triggers.
- */
 import { useRef, useMemo } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { OrbitControls, Text } from '@react-three/drei'
@@ -15,30 +10,25 @@ interface SimProps {
   playing: boolean
 }
 
-// Reactant + product positions for each atom (lerped over time)
 type AtomState = { sym: string; color: string; r: number; reactant: [number, number, number]; product: [number, number, number] }
 
 const ATOMS: AtomState[] = [
-  // CH4 (left side)
-  { sym: 'C', color: '#374151', r: 0.45, reactant: [-3, 0, 0],         product: [1.5, 0.5, 0] },     // becomes C in CO2
-  { sym: 'H', color: '#fafafa', r: 0.25, reactant: [-3.7, 0.7, 0],    product: [4.5, 1.5, 0] },     // → H in H2O #1
-  { sym: 'H', color: '#fafafa', r: 0.25, reactant: [-2.3, 0.7, 0],    product: [3.7, 1.5, 0] },     // → H in H2O #1
-  { sym: 'H', color: '#fafafa', r: 0.25, reactant: [-3.7, -0.7, 0.7], product: [4.5, -1.5, 0] },    // → H in H2O #2
-  { sym: 'H', color: '#fafafa', r: 0.25, reactant: [-2.3, -0.7, -0.7],product: [3.7, -1.5, 0] },    // → H in H2O #2
-  // 2 O2 (right side)
-  { sym: 'O', color: '#ef4444', r: 0.4, reactant: [3, 0.5, 0],         product: [2.4, 0.5, 0] },    // → O in CO2
-  { sym: 'O', color: '#ef4444', r: 0.4, reactant: [3.8, 0.5, 0],       product: [0.6, 0.5, 0] },    // → O in CO2
-  { sym: 'O', color: '#ef4444', r: 0.4, reactant: [3, -0.5, 0],        product: [4.1, 1.5, 0] },    // → O in H2O #1
-  { sym: 'O', color: '#ef4444', r: 0.4, reactant: [3.8, -0.5, 0],      product: [4.1, -1.5, 0] },   // → O in H2O #2
+  { sym: 'C', color: '#374151', r: 0.45, reactant: [-3, 0, 0],         product: [1.5, 0.5, 0] },     
+  { sym: 'H', color: '#fafafa', r: 0.25, reactant: [-3.7, 0.7, 0],    product: [4.5, 1.5, 0] },     
+  { sym: 'H', color: '#fafafa', r: 0.25, reactant: [-2.3, 0.7, 0],    product: [3.7, 1.5, 0] },     
+  { sym: 'H', color: '#fafafa', r: 0.25, reactant: [-3.7, -0.7, 0.7], product: [4.5, -1.5, 0] },    
+  { sym: 'H', color: '#fafafa', r: 0.25, reactant: [-2.3, -0.7, -0.7],product: [3.7, -1.5, 0] },    
+  { sym: 'O', color: '#ef4444', r: 0.4, reactant: [3, 0.5, 0],         product: [2.4, 0.5, 0] },    
+  { sym: 'O', color: '#ef4444', r: 0.4, reactant: [3.8, 0.5, 0],       product: [0.6, 0.5, 0] },    
+  { sym: 'O', color: '#ef4444', r: 0.4, reactant: [3, -0.5, 0],        product: [4.1, 1.5, 0] },    
+  { sym: 'O', color: '#ef4444', r: 0.4, reactant: [3.8, -0.5, 0],      product: [4.1, -1.5, 0] },   
 ]
 
 function ReactionSim({ params, playing }: SimProps) {
   return (
     <LabScene cameraPos={[0, 1.5, 9]} cameraFov={55} tint="#1a0a18" particles={45}>
-      {/* Heat-source glow — orange light intensity tied to temperature slider */}
       <pointLight position={[0, 0, 0]} intensity={params.temperature / 200} color="#4F7CFF" distance={8} />
       <ReactionAtoms params={params} playing={playing} />
-      {/* Equation labels — use ASCII subscripts (drei font lacks Unicode subscripts) */}
       <Text position={[-3, -3, 0]} fontSize={0.4} color="#B1B5BA" anchorX="center">CH4 + 2O2</Text>
       <Text position={[ 0, -3, 0]} fontSize={0.4} color="#C7D2E8" anchorX="center">→</Text>
       <Text position={[ 3, -3, 0]} fontSize={0.4} color="#B1B5BA" anchorX="center">CO2 + 2H2O</Text>
@@ -49,16 +39,14 @@ function ReactionSim({ params, playing }: SimProps) {
 
 function ReactionAtoms({ params, playing }: SimProps) {
   const groupRef = useRef<THREE.Group>(null)
-  const tRef = useRef(0)   // 0 → 1 → 0 oscillating
+  const tRef = useRef(0)   
 
   useFrame((_, dt) => {
     if (!playing) return
-    // Speed scales with temperature
     const cycleSpeed = (params.temperature / 600) * params.speed
     tRef.current += dt * cycleSpeed
     if (tRef.current > 2) tRef.current = 0
     const t = tRef.current
-    // 0..1 = forward, 1..2 = back
     const lerpT = t < 1 ? smoothstep(t) : smoothstep(2 - t)
 
     if (!groupRef.current) return

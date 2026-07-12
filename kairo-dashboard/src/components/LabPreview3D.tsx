@@ -1,22 +1,3 @@
-/**
- * Lab preview cards — live R3F mini-canvases for the landing page.
- *
- * Six variants, each a tiny self-contained scene built from primitives:
- *   solar     — sun + orbiting planets + dashed orbit ring
- *   heart     — beating chambered heart (procedural)
- *   dna       — rotating double helix with base pairs
- *   atom      — nucleus + 3 electron orbits on tilted axes
- *   vectors   — three glowing axis arrows + dot
- *   rocket    — vertical capsule rocket with flame
- *
- * Perf rules baked in:
- *   - `frameloop` flips to 'never' when card is out of viewport
- *   - DPR capped at 1.5 (vs default up to 2.0) — halves fragment cost
- *   - No shadows (huge cost when × 6 canvases on one page)
- *   - Geometry counts kept tiny (≤ 32 segments per sphere)
- *   - One ambient + one directional light per scene
- *   - Hover speeds up rotation + bumps emissive
- */
 import { useRef, useState, useEffect, useMemo } from 'react'
 import { Canvas, useFrame, type ThreeEvent } from '@react-three/fiber'
 import * as THREE from 'three'
@@ -25,7 +6,7 @@ export type LabVariant = 'solar' | 'heart' | 'dna' | 'atom' | 'vectors' | 'rocke
 
 interface LabPreview3DProps {
   variant: LabVariant
-  tint:    string       // per-card accent — feeds emissive + glow color
+  tint:    string       
   className?: string
 }
 
@@ -34,8 +15,6 @@ export default function LabPreview3D({ variant, tint, className }: LabPreview3DP
   const [visible, setVisible] = useState(false)
   const [hover,   setHover]   = useState(false)
 
-  // Only animate when this card is in the viewport — saves ~85% of GPU time
-  // across the 6-card grid since most cards are usually below the fold.
   useEffect(() => {
     if (!wrapRef.current) return
     const io = new IntersectionObserver(
@@ -67,16 +46,12 @@ export default function LabPreview3D({ variant, tint, className }: LabPreview3DP
 
         <Scene variant={variant} tint={tint} hover={hover} />
 
-        {/* Soft radial fog tint — gives every card the "portal" feel */}
         <fog attach="fog" args={[tint, 7, 14]} />
       </Canvas>
     </div>
   )
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// SCENE SWITCH
-// ════════════════════════════════════════════════════════════════════════════
 function Scene({ variant, tint, hover }: { variant: LabVariant; tint: string; hover: boolean }) {
   switch (variant) {
     case 'solar':   return <SolarScene   tint={tint} hover={hover} />
@@ -88,12 +63,8 @@ function Scene({ variant, tint, hover }: { variant: LabVariant; tint: string; ho
   }
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// 1) SOLAR — sun + orbiting planets
-// ════════════════════════════════════════════════════════════════════════════
 function SolarScene({ tint, hover }: { tint: string; hover: boolean }) {
   const group = useRef<THREE.Group>(null)
-  // Monochrome purple-scale planets — no blue/red/yellow.
   const planets = useMemo(() => [
     { r: 1.2, size: 0.13, speed: 1.5, color: '#9ca3af', phase: 0    },
     { r: 1.8, size: 0.20, speed: 1.0, color: '#66D9FF', phase: 0.7  },
@@ -109,23 +80,19 @@ function SolarScene({ tint, hover }: { tint: string; hover: boolean }) {
 
   return (
     <group ref={group}>
-      {/* Sun */}
       <mesh>
         <sphereGeometry args={[0.55, 32, 32]} />
         <meshStandardMaterial color="#66D9FF" emissive="#66D9FF" emissiveIntensity={hover ? 2.2 : 1.5} toneMapped={false} />
       </mesh>
-      {/* Sun corona */}
       <mesh>
         <sphereGeometry args={[0.75, 24, 24]} />
         <meshBasicMaterial color="#66D9FF" transparent opacity={0.22} side={THREE.BackSide} />
       </mesh>
 
-      {/* Orbit rings */}
       {planets.map((p, i) => (
         <OrbitRing key={i} radius={p.r} color={tint} />
       ))}
 
-      {/* Planets */}
       {planets.map((p, i) => <Planet key={i} {...p} hover={hover} />)}
     </group>
   )
@@ -166,16 +133,12 @@ function Planet({ r, size, speed, color, phase, hover }: { r: number; size: numb
   )
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// 2) HEART — beating chambers
-// ════════════════════════════════════════════════════════════════════════════
 function HeartScene({ tint, hover }: { tint: string; hover: boolean }) {
   const root = useRef<THREE.Group>(null)
   useFrame((state) => {
     const t = state.clock.elapsedTime
     if (!root.current) return
     root.current.rotation.y = Math.sin(t * 0.25) * 0.35 + (hover ? t * 0.2 : 0)
-    // BPM ~80 in preview
     const period = 0.75
     const phase  = (t % period) / period
     let pulse = 0
@@ -185,37 +148,30 @@ function HeartScene({ tint, hover }: { tint: string; hover: boolean }) {
   })
   return (
     <group ref={root} position={[0, -0.2, 0]} rotation={[0, -0.2, 0.1]}>
-      {/* LV (big, red) */}
       <mesh position={[0.55, -0.3, 0]}>
         <sphereGeometry args={[0.85, 24, 24]} />
         <meshStandardMaterial color="#4F7CFF" emissive="#4F7CFF" emissiveIntensity={hover ? 0.6 : 0.25} roughness={0.45} />
       </mesh>
-      {/* LV apex */}
       <mesh position={[0.55, -0.95, 0]} scale={[0.55, 0.7, 0.55]}>
         <sphereGeometry args={[1, 18, 18]} />
         <meshStandardMaterial color="#2046C2" emissive="#4F7CFF" emissiveIntensity={hover ? 0.55 : 0.20} roughness={0.45} />
       </mesh>
-      {/* RV */}
       <mesh position={[-0.45, -0.3, 0]} scale={[0.85, 0.95, 0.85]}>
         <sphereGeometry args={[0.85, 22, 22]} />
         <meshStandardMaterial color="#f43f5e" emissive="#f43f5e" emissiveIntensity={hover ? 0.6 : 0.25} roughness={0.45} />
       </mesh>
-      {/* LA */}
       <mesh position={[0.45, 0.65, 0]} scale={[0.7, 0.55, 0.7]}>
         <sphereGeometry args={[0.7, 18, 18]} />
         <meshStandardMaterial color="#A5B4FC" emissive="#A5B4FC" emissiveIntensity={hover ? 0.5 : 0.20} />
       </mesh>
-      {/* RA */}
       <mesh position={[-0.45, 0.65, 0]} scale={[0.7, 0.55, 0.7]}>
         <sphereGeometry args={[0.7, 18, 18]} />
         <meshStandardMaterial color="#d8b4fe" emissive="#d8b4fe" emissiveIntensity={hover ? 0.5 : 0.20} />
       </mesh>
-      {/* Aorta — quick curve approximation with a tilted torus arc */}
       <mesh position={[0.55, 1.1, 0]} rotation={[Math.PI / 2, 0, -0.3]}>
         <torusGeometry args={[0.35, 0.13, 12, 24, Math.PI]} />
         <meshStandardMaterial color="#66D9FF" emissive="#66D9FF" emissiveIntensity={hover ? 0.6 : 0.3} />
       </mesh>
-      {/* Pulse halo */}
       <mesh>
         <sphereGeometry args={[1.7, 24, 24]} />
         <meshBasicMaterial color={tint} transparent opacity={0.04} side={THREE.BackSide} />
@@ -224,9 +180,6 @@ function HeartScene({ tint, hover }: { tint: string; hover: boolean }) {
   )
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// 3) DNA — rotating double helix
-// ════════════════════════════════════════════════════════════════════════════
 function DnaScene({ tint, hover }: { tint: string; hover: boolean }) {
   const root = useRef<THREE.Group>(null)
   const pairs = 10
@@ -255,19 +208,16 @@ function DnaScene({ tint, hover }: { tint: string; hover: boolean }) {
     root.current.rotation.y = state.clock.elapsedTime * (hover ? 0.9 : 0.35)
   })
 
-  // Monochrome purple base-pair palette — light → deep across the helix.
   const baseColors = ['#DBE7FF', '#A5B4FC', '#66D9FF', '#4F7CFF']
 
   return (
     <group ref={root} scale={0.85}>
-      {/* Strands */}
       <mesh geometry={strandData.geomA}>
         <meshStandardMaterial color={tint} emissive={tint} emissiveIntensity={hover ? 1.0 : 0.5} />
       </mesh>
       <mesh geometry={strandData.geomB}>
         <meshStandardMaterial color={tint} emissive={tint} emissiveIntensity={hover ? 1.0 : 0.5} />
       </mesh>
-      {/* Base-pair rungs */}
       {Array.from({ length: pairs }).map((_, i) => {
         const t = i / (pairs - 1)
         const angle = t * Math.PI * 2 * turns
@@ -291,9 +241,6 @@ function DnaScene({ tint, hover }: { tint: string; hover: boolean }) {
   )
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// 4) ATOM — nucleus + electron orbits
-// ════════════════════════════════════════════════════════════════════════════
 function AtomScene({ tint, hover }: { tint: string; hover: boolean }) {
   const root = useRef<THREE.Group>(null)
   useFrame((state) => {
@@ -309,7 +256,6 @@ function AtomScene({ tint, hover }: { tint: string; hover: boolean }) {
 
   return (
     <group ref={root}>
-      {/* Nucleus */}
       <mesh>
         <sphereGeometry args={[0.42, 24, 24]} />
         <meshStandardMaterial color={tint} emissive={tint} emissiveIntensity={hover ? 1.8 : 1.0} toneMapped={false} />
@@ -319,7 +265,6 @@ function AtomScene({ tint, hover }: { tint: string; hover: boolean }) {
         <meshBasicMaterial color={tint} transparent opacity={0.22} side={THREE.BackSide} />
       </mesh>
 
-      {/* Three tilted orbits, each with its own rotating electron */}
       {orbits.map((o, i) => (
         <group key={i} rotation={o.tilt}>
           <OrbitRing radius={1.5 + i * 0.18} color={tint} />
@@ -345,9 +290,6 @@ function Electron({ radius, phase, speed, hover, color }: { radius: number; phas
   )
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// 5) VECTORS — three glowing axes
-// ════════════════════════════════════════════════════════════════════════════
 function VectorsScene({ tint: _tint, hover }: { tint: string; hover: boolean }) {
   const root = useRef<THREE.Group>(null)
   useFrame((state) => {
@@ -356,8 +298,6 @@ function VectorsScene({ tint: _tint, hover }: { tint: string; hover: boolean }) 
     root.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.2) * 0.18
   })
 
-  // Three purple shades — distinct enough to read as separate axes,
-  // never breaks the monochrome rule.
   const axes: Array<{ dir: [number, number, number]; color: string }> = [
     { dir: [1.6, 0, 0],   color: '#4F7CFF' },
     { dir: [0, 1.6, 0],   color: '#A5B4FC' },
@@ -366,7 +306,6 @@ function VectorsScene({ tint: _tint, hover }: { tint: string; hover: boolean }) 
 
   return (
     <group ref={root}>
-      {/* Center dot */}
       <mesh>
         <sphereGeometry args={[0.10, 16, 16]} />
         <meshStandardMaterial color="#ffffff" emissive="#ffffff" emissiveIntensity={1} />
@@ -374,7 +313,6 @@ function VectorsScene({ tint: _tint, hover }: { tint: string; hover: boolean }) 
 
       {axes.map((a, i) => <Arrow key={i} dir={a.dir} color={a.color} hover={hover} />)}
 
-      {/* Subtle floor grid */}
       <gridHelper args={[6, 12, 'rgba(255,255,255,0.08)', 'rgba(255,255,255,0.06)']} position={[0, -1.5, 0]} />
     </group>
   )
@@ -383,10 +321,8 @@ function VectorsScene({ tint: _tint, hover }: { tint: string; hover: boolean }) 
 function Arrow({ dir, color, hover }: { dir: [number, number, number]; color: string; hover: boolean }) {
   const target = new THREE.Vector3(...dir)
   const length = target.length()
-  // shaft
   const shaftMid = target.clone().multiplyScalar(0.45)
   const tipPos   = target.clone().multiplyScalar(0.92)
-  // quaternion that rotates +Y to the arrow direction
   const quat = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), target.clone().normalize())
 
   return (
@@ -399,16 +335,12 @@ function Arrow({ dir, color, hover }: { dir: [number, number, number]; color: st
         <coneGeometry args={[0.12, 0.24, 14]} />
         <meshStandardMaterial color={color} emissive={color} emissiveIntensity={hover ? 1.6 : 0.8} />
       </mesh>
-      {/* unused helpers — keep target/shaftMid/tipPos warnings down */}
       <group position={shaftMid as unknown as [number, number, number]} visible={false} />
       <group position={tipPos as unknown as [number, number, number]} visible={false} />
     </group>
   )
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// 6) ROCKET — vertical stack
-// ════════════════════════════════════════════════════════════════════════════
 function RocketScene({ tint, hover }: { tint: string; hover: boolean }) {
   const root = useRef<THREE.Group>(null)
   const flameRef = useRef<THREE.Mesh>(null)
@@ -425,39 +357,32 @@ function RocketScene({ tint, hover }: { tint: string; hover: boolean }) {
 
   return (
     <group ref={root} position={[0, -0.2, 0]}>
-      {/* Nose cone */}
       <mesh position={[0, 2.0, 0]}>
         <coneGeometry args={[0.32, 0.7, 24]} />
         <meshStandardMaterial color="#ffffff" emissive={tint} emissiveIntensity={hover ? 0.4 : 0.18} />
       </mesh>
-      {/* Body stage 1 */}
       <mesh position={[0, 1.05, 0]}>
         <cylinderGeometry args={[0.32, 0.32, 1.2, 28]} />
         <meshStandardMaterial color="#e5e7eb" />
       </mesh>
-      {/* Ring divider */}
       <mesh position={[0, 0.45, 0]}>
         <cylinderGeometry args={[0.34, 0.34, 0.06, 28]} />
         <meshStandardMaterial color="#6B7280" />
       </mesh>
-      {/* Body stage 2 (slightly fatter) */}
       <mesh position={[0, -0.05, 0]}>
         <cylinderGeometry args={[0.36, 0.40, 1.0, 28]} />
         <meshStandardMaterial color="#cbd5e1" />
       </mesh>
-      {/* Fins */}
       {[0, Math.PI * 2 / 3, Math.PI * 4 / 3].map((a, i) => (
         <mesh key={i} position={[Math.cos(a) * 0.45, -0.45, Math.sin(a) * 0.45]} rotation={[0, -a, 0]}>
           <boxGeometry args={[0.06, 0.55, 0.35]} />
           <meshStandardMaterial color="#94a3b8" />
         </mesh>
       ))}
-      {/* Engine bell */}
       <mesh position={[0, -0.8, 0]}>
         <coneGeometry args={[0.35, 0.35, 20, 1, true]} />
         <meshStandardMaterial color="#475569" side={THREE.DoubleSide} />
       </mesh>
-      {/* Flame */}
       <mesh ref={flameRef} position={[0, -1.15, 0]}>
         <coneGeometry args={[0.22, 0.7, 16]} />
         <meshBasicMaterial color="#66D9FF" transparent opacity={0.9} />

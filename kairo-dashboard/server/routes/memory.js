@@ -1,10 +1,3 @@
-/**
- * AI Memory — legacy route. The `ai_memory` table was deleted in the DB
- * cleanup; the client now stores memory in localStorage via src/lib/twin.ts.
- *
- * These endpoints stay mounted so old API callers don't get 404/500 — they
- * all return 200 with empty/no-op payloads. New code should not call them.
- */
 import { Router } from 'express'
 import { supabaseAdmin, requireSupabase } from '../services/supabase.js'
 import { requireSupabaseAuth } from '../middleware/supabaseAuth.js'
@@ -13,7 +6,6 @@ const router = Router()
 router.use(requireSupabase)
 router.use(requireSupabaseAuth)
 
-/** Detect "table doesn't exist" from a Supabase error. */
 function isMissingTable(err) {
   const msg = String(err?.message || err || '').toLowerCase()
   return msg.includes('does not exist')
@@ -21,7 +13,6 @@ function isMissingTable(err) {
       || msg.includes('ai_memory')
 }
 
-/** Empty payload in the shape the legacy UI expects. */
 const EMPTY_MEMORY = {
   total:       0,
   weak:        [],
@@ -32,7 +23,6 @@ const EMPTY_MEMORY = {
   all:         [],
 }
 
-// ── POST /track — accept the call, silently no-op if table is gone ──────────
 router.post('/track', async (req, res) => {
   try {
     const { type, subject, topic, content, signal, hits } = req.body || {}
@@ -60,7 +50,6 @@ router.post('/track', async (req, res) => {
   }
 })
 
-// ── GET / — return the legacy bucket shape or an empty payload ──────────────
 router.get('/', async (req, res) => {
   try {
     const { data, error } = await supabaseAdmin
@@ -101,7 +90,6 @@ router.get('/', async (req, res) => {
   }
 })
 
-// ── GET /context — compact summary string for AI prompts ────────────────────
 router.get('/context', async (req, res) => {
   try {
     const { data, error } = await supabaseAdmin
@@ -122,7 +110,6 @@ router.get('/context', async (req, res) => {
   }
 })
 
-// ── DELETE /:id ─────────────────────────────────────────────────────────────
 router.delete('/:id', async (req, res) => {
   try {
     const { error } = await supabaseAdmin
@@ -138,7 +125,6 @@ router.delete('/:id', async (req, res) => {
   }
 })
 
-// ── POST /clear ─────────────────────────────────────────────────────────────
 router.post('/clear', async (req, res) => {
   try {
     const { error } = await supabaseAdmin
@@ -153,7 +139,6 @@ router.post('/clear', async (req, res) => {
   }
 })
 
-// ─── Helper: build a compact prompt string from raw rows ────────────────────
 function buildPromptContext(rows) {
   if (!rows || rows.length === 0) return ''
   const weak    = rows.filter(r => r.type === 'weak_topic'   || (r.type === 'mistake' && r.signal < -0.3))

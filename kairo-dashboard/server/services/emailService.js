@@ -2,8 +2,6 @@ import { db } from '../db/index.js'
 import { getTransporter } from './credentialService.js'
 import { generateEmailContent } from './aiService.js'
 
-// ─── Send Single ──────────────────────────────────────────────────────────────
-
 export async function sendFeeReminder({ schoolId, studentId, feeId, trigger = 'manual', tone = 'friendly' }) {
   const student = await db.students.findOneAsync({ _id: studentId, school_id: schoolId, active: true })
   if (!student) throw new Error(`Student ${studentId} not found`)
@@ -22,8 +20,6 @@ export async function sendFeeReminder({ schoolId, studentId, feeId, trigger = 'm
   return _deliver({ schoolId, student, fee, trigger, tone, logId: log._id })
 }
 
-// ─── Bulk Send ────────────────────────────────────────────────────────────────
-
 export async function sendBulkReminders({ schoolId, trigger = 'manual', tone = 'friendly' }) {
   const fees = await db.fees.findAsync({ school_id: schoolId, status: 'pending' })
   if (!fees.length) return { sent: 0, failed: 0, skipped: 0, skip_reasons: [], message: 'No pending fees found for this school. Add fees in the Fees tab first.' }
@@ -32,7 +28,6 @@ export async function sendBulkReminders({ schoolId, trigger = 'manual', tone = '
   const oneDayAgo = new Date(Date.now() - 86400000).toISOString()
 
   for (const fee of fees) {
-    // Don't require active:true — newly inserted students may not have it set
     const student = await db.students.findOneAsync({ _id: fee.student_id })
     if (!student) {
       skipReasons.push({ fee_id: fee._id, reason: `Student ${fee.student_id} not found in DB` })
@@ -70,8 +65,6 @@ export async function sendBulkReminders({ schoolId, trigger = 'manual', tone = '
   return { sent, failed, skipped, skip_reasons: skipReasons }
 }
 
-// ─── Retry Failed ─────────────────────────────────────────────────────────────
-
 export async function retryFailed(schoolId, maxAttempts = 3) {
   const failed = await db.emailLogs.findAsync({ school_id: schoolId, status: 'failed', attempts: { $lt: maxAttempts } })
   let retried = 0, recovered = 0
@@ -89,8 +82,6 @@ export async function retryFailed(schoolId, maxAttempts = 3) {
 
   return { retried, recovered }
 }
-
-// ─── Internal Delivery ───────────────────────────────────────────────────────
 
 async function _deliver({ schoolId, student, fee, trigger, tone, logId }) {
   try {
@@ -129,8 +120,6 @@ async function _deliver({ schoolId, student, fee, trigger, tone, logId }) {
     return { success: false, logId, error: err.message }
   }
 }
-
-// ─── Helpers ─────────────────────────────────────────────────────────────────
 
 const sleep = ms => new Promise(r => setTimeout(r, ms))
 

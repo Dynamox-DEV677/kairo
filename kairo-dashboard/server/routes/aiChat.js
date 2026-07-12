@@ -1,8 +1,3 @@
-/**
- * /api/ai/chat      — OpenRouter proxy
- * /api/ai/visualize — Nano Banana image generation (legacy, used as fallback)
- * /api/ai/solver    — Kyno's Solver: classify + image search + AI explanation
- */
 import express from 'express'
 import { searchManyParallel } from '../services/imageSearch.js'
 import { supabaseAdmin } from '../services/supabase.js'
@@ -11,9 +6,6 @@ import groqPool from '../services/groqPool.js'
 const router = express.Router()
 const OR_URL = 'https://openrouter.ai/api/v1/chat/completions'
 
-// ── L1: in-memory cache (per-function-instance) ────────────────────────────
-// First line of defense — same Vercel function warm window hits this. Fast,
-// no network roundtrip. 24h TTL, 300 entries.
 const SOLVER_CACHE = new Map()
 const SOLVER_CACHE_TTL_MS = 24 * 60 * 60 * 1000
 const SOLVER_CACHE_MAX = 300
@@ -36,9 +28,6 @@ function cacheSet(key, data) {
   SOLVER_CACHE.set(key, { ts: Date.now(), data })
 }
 
-// ── L2: persistent cache in Supabase (shared across instances/users) ───────
-// Survives deploys, shared by every student. Lookup is ~50ms. Write is
-// best-effort (failures don't block the response).
 async function dbCacheGet(questionKey) {
   try {
     const { data, error } = await supabaseAdmin
@@ -58,7 +47,7 @@ async function dbCacheSet(questionKey, questionRaw, plan, source) {
       question_raw: questionRaw.slice(0, 500),
       plan,
       model_used: plan.modelUsed || null,
-      source,                                    // 'ai' or 'wikipedia'
+      source,
       hit_count: 0,
     }, { onConflict: 'question_key' })
   } catch (e) {
@@ -67,11 +56,9 @@ async function dbCacheSet(questionKey, questionRaw, plan, source) {
 }
 
 async function dbCacheBumpHit(questionKey) {
-  // Best-effort — no await needed; don't block the response.
   supabaseAdmin
     .rpc('increment_solver_hit', { qk: questionKey })
     .then(() => {}, () => {
-      // RPC may not exist yet — fall back to direct update
       supabaseAdmin.from('solver_cache').select('hit_count').eq('question_key', questionKey).maybeSingle()
         .then(({ data }) => data
           ? supabaseAdmin.from('solver_cache').update({ hit_count: (data.hit_count || 0) + 1 }).eq('question_key', questionKey)
@@ -80,7 +67,6 @@ async function dbCacheBumpHit(questionKey) {
     })
 }
 
-/** Normalize a question for cache keying. Lowercase, strip filler words, collapse whitespace. */
 function normalizeKey(question) {
   return question
     .toLowerCase()
@@ -90,28 +76,15 @@ function normalizeKey(question) {
     .trim()
 }
 
-/**
- * Looks at the last user message to decide whether it's a knowledge question
- * we can answer with Wikipedia (e.g. "what is photosynthesis", "explain DNA")
- * vs. a context-dependent request (e.g. "rewrite my notebook with bullets",
- * "make a quiz from this", "translate this to Hindi"). Wikipedia can only
- * help with the first kind.
- */
 function isKnowledgeQuestion(text) {
   if (!text || typeof text !== 'string') return false
   const t = text.toLowerCase().trim()
   if (t.length < 6 || t.length > 240) return false
-  // Positive signals — looks like a "what / why / how / who / when" question
   if (/^(what|why|how|who|when|where|which|explain|describe|tell me about|define|summari[sz]e)\b/.test(t)) return true
-  if (/^.{1,80}\?$/.test(t)) return true   // short single-sentence question
+  if (/^.{1,80}\?$/.test(t)) return true
   return false
 }
 
-/**
- * Strip role/instruction noise and pull the actual student question out of the
- * messages array. Picks the LAST user message, since multi-turn chats usually
- * land on the actual ask there.
- */
 function lastUserText(messages) {
   if (!Array.isArray(messages)) return ''
   for (let i = messages.length - 1; i >= 0; i--) {
@@ -121,11 +94,6 @@ function lastUserText(messages) {
   return ''
 }
 
-/**
- * Format a Wikipedia-sourced fallback as an OpenAI-shaped chat completion so
- * the frontend treats it like any other response. The `_fallback` flag lets
- * the UI render a small "AI was busy — Wikipedia answer" hint.
- */
 function asChatCompletion(model, content, fallback = false) {
   return {
     id: 'kairo-fallback-' + Date.now(),
@@ -142,11 +110,6 @@ function asChatCompletion(model, content, fallback = false) {
   }
 }
 
-/**
- * Build a Wikipedia-sourced markdown answer for a knowledge question. Returns
- * null when no article can be found. Re-uses the same wiki helpers Solver
- * uses so the answer style stays consistent across Kyno.
- */
 async function chatWikipediaFallback(question) {
   try {
     const cleaned = cleanQuestionForSearch(question)
@@ -175,13 +138,7 @@ async function chatWikipediaFallback(question) {
   }
 }
 
-// ── Groq-only chat proxy ─────────────────────────────────────────────────────
-// Every in-app AI helper (Notebook builder, Essay Grader, Camera Study, …)
-// goes through here. OpenRouter was slow + 429-happy on the free tier, so the
-// whole app now runs on the Groq key pool (~1s responses, 10 rotating keys).
 const CHAT_MODELS_TEXT   = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant']
-// Groq's multimodal Llama-4 models accept OpenAI-style image_url content —
-// this is what powers Camera Study now.
 const CHAT_MODELS_VISION = ['meta-llama/llama-4-scout-17b-16e-instruct', 'meta-llama/llama-4-maverick-17b-128e-instruct']
 
 const messagesHaveImages = (messages) =>
@@ -196,15 +153,12 @@ router.post('/chat', async (req, res) => {
 
   const wantVision = messagesHaveImages(messages)
   let order = wantVision ? [...CHAT_MODELS_VISION] : [...CHAT_MODELS_TEXT]
-  // Honor a requested Groq model id; legacy OpenRouter ids (":free") are ignored.
   if (typeof model === 'string' && model && !model.endsWith(':free')) {
     if (!wantVision || CHAT_MODELS_VISION.includes(model)) {
       order = [model, ...order.filter(m => m !== model)]
     }
   }
 
-  // Wrap the full attempt so any failure can fall through to Wikipedia / a
-  // friendly degraded message — never a raw 5xx + stack trace for the user.
   try {
     let upstream = null
     let lastErr  = null
@@ -219,7 +173,7 @@ router.post('/chat', async (req, res) => {
         })
         if (!r.ok) {
           if (r.status === 429 || r.status >= 500) {
-            try { groqPool.markBad(key, r.status) } catch { /* ignore */ }
+            try { groqPool.markBad(key, r.status) } catch {  }
           }
           const text = await r.text().catch(() => '')
           throw new Error(`groq/${m} ${r.status}: ${text.slice(0, 160)}`)
@@ -240,7 +194,6 @@ router.post('/chat', async (req, res) => {
       return res.json(data)
     }
 
-    // Stream SSE back to client
     res.setHeader('Content-Type', 'text/event-stream')
     res.setHeader('Cache-Control', 'no-cache')
     res.setHeader('Connection', 'keep-alive')
@@ -257,12 +210,6 @@ router.post('/chat', async (req, res) => {
   } catch (err) {
     console.warn('[aiChat] upstream failed, attempting fallback:', err.message)
 
-    // ── Fallback path ──────────────────────────────────────────────────
-    // 1. If the user asked a knowledge question, try Wikipedia.
-    // 2. Otherwise return a graceful "AI is busy" message shaped like a
-    //    chat completion so the frontend renders it inline.
-    // Streaming requests can't fall back cleanly mid-stream — only fall
-    // back if we haven't started writing the SSE headers yet.
     if (res.headersSent) {
       return res.end()
     }
@@ -275,9 +222,6 @@ router.post('/chat', async (req, res) => {
       }
     }
 
-    // Final graceful message — shaped as a normal chat completion so the
-    // UI doesn't have to special-case it. Mark _fallback=true so it can
-    // show a subtle "retry in a moment" hint if it wants to.
     return res.json(asChatCompletion(
       'busy-fallback',
       [
@@ -297,11 +241,6 @@ router.post('/chat', async (req, res) => {
   }
 })
 
-// ────────────────────────────────────────────────────────────────────────────
-// /api/ai/visualize  — Generate study-explainer images via Gemini 2.5 Flash
-//                      Image (a.k.a. "Nano Banana"). Returns N base64 PNGs that
-//                      the frontend cycles through as a slideshow.
-// ────────────────────────────────────────────────────────────────────────────
 const GEMINI_IMAGE_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent'
 
 router.post('/visualize', async (req, res) => {
@@ -314,9 +253,6 @@ router.post('/visualize', async (req, res) => {
     return res.status(503).json({ error: 'GEMINI_API_KEY not configured on server.' })
   }
 
-  // Build a small set of prompt variations so the slideshow shows different
-  // aspects of the same concept. The free Nano Banana tier is rate-limited per
-  // request, so we fan out small (default 4) and short.
   const variations = [
     `${style} of: ${topic}. Wide hero illustration, vibrant colours, labelled key parts.`,
     `${style} of: ${topic}. Close-up cross-section view, exam-board style.`,
@@ -327,7 +263,6 @@ router.post('/visualize', async (req, res) => {
   ].slice(0, Math.max(1, Math.min(6, count)))
 
   try {
-    // Generate in parallel — Gemini's Image endpoint accepts one prompt per call
     const results = await Promise.all(variations.map(async (prompt) => {
       try {
         const r = await fetch(`${GEMINI_IMAGE_URL}?key=${apiKey}`, {
@@ -346,13 +281,12 @@ router.post('/visualize', async (req, res) => {
           return null
         }
         const data = await r.json()
-        // Walk the response for an inline image part
         const parts = data?.candidates?.[0]?.content?.parts || []
         for (const p of parts) {
           if (p.inlineData?.data) {
             return {
               mime: p.inlineData.mimeType || 'image/png',
-              data: p.inlineData.data,    // base64
+              data: p.inlineData.data,
               prompt,
             }
           }
@@ -374,27 +308,6 @@ router.post('/visualize', async (req, res) => {
     res.status(500).json({ error: 'Image generation failed: ' + err.message })
   }
 })
-
-// ────────────────────────────────────────────────────────────────────────────
-// /api/ai/solver — Kyno's Solver
-//
-// Single endpoint that powers the dual-panel learning experience:
-//   1. Calls the LLM in JSON mode to classify the question + plan a sequential
-//      visual storyboard (5-6 image search queries) + write the explanation
-//   2. Fans out the image queries in parallel against Wikimedia / Pexels /
-//      Unsplash (Wikimedia first — free, encyclopedic, no key)
-//   3. Detects if a Kyno Lab matches (gravity, pendulum, heart, etc.) and
-//      returns a labRoute the frontend uses to render an "Open in Labs" CTA
-//   4. Caches the whole response by question for 1 hour
-//
-// Returns:
-//   {
-//     questionType, supports3D, labRoute,
-//     textExplanation, formulas[], relatedConcepts[],
-//     imageSlides: [{ url, thumb, caption, source, attribution, pageUrl }],
-//     cached: boolean
-//   }
-// ────────────────────────────────────────────────────────────────────────────
 
 const KAIRO_LABS = {
   gravity:    'Newton\'s laws, free fall, drop motion, weight',
@@ -476,37 +389,12 @@ Otherwise labRoute=null.
 
 CRITICAL: Output ONLY the JSON. Do not wrap in code fences. Do not say "Here is the JSON". Do not add any prose before or after.`
 
-// ─── Internal: do the LLM classification, return the plan + cache it ────
-// Used by both /solver/text and /solver/images so the frontend's two parallel
-// calls share one cached LLM result instead of paying for it twice.
-/**
- * Call Groq directly — completely separate quota from OpenRouter. Free forever
- * (14,400 req/day on the free tier), sub-second inference, no card required.
- * Only active if GROQ_API_KEY env var is set; otherwise this is dead code.
- *
- * Get a free key at: https://console.groq.com/keys
- */
-// Groq's stable solver-grade models (May 2026). Llama 8B is included as a
-// fast hedge: when 70B is slow under load, 8B usually still responds in <1s.
-//
-// NB: groq's deployment of `openai/gpt-oss-20b` was previously in this list,
-// but the diagnostic showed it returns HTTP 400 "Failed to generate JSON"
-// consistently — that deployment doesn't honor `response_format: json_object`
-// reliably. Removed so the Promise.any race isn't slowed by its 2s failure.
 const GROQ_MODELS = [
-  'llama-3.3-70b-versatile',     // primary — fast + smart
-  'llama-3.1-8b-instant',        // hedge — sub-second on weak load
+  'llama-3.3-70b-versatile',
+  'llama-3.1-8b-instant',
 ]
 
-/**
- * Run one Groq model. The `apiKey` param is optional — when omitted we draw
- * a key from the rotating groqPool. When the response is a 429 (or 5xx),
- * we report the bad key back to the pool so it gets parked for 60 s and the
- * next request skips it.
- */
 async function callGroqOne(model, question, apiKey, timeout = 7000) {
-  // Legacy callers can still pass an explicit key (e.g. the /solver/status
-  // probe). Otherwise rotate through the pool.
   const key = apiKey || groqPool.next()
   if (!key) {
     throw new Error(`groq/${model}: no live keys (all 429-cooling or none configured)`)
@@ -534,9 +422,8 @@ async function callGroqOne(model, question, apiKey, timeout = 7000) {
       }),
     })
     if (!resp.ok) {
-      // Rate-limit or upstream blip → park this key so siblings can rotate.
       if (resp.status === 429 || resp.status >= 500) {
-        try { groqPool.markBad(key, resp.status) } catch { /* ignore */ }
+        try { groqPool.markBad(key, resp.status) } catch {  }
       }
       const t = await resp.text()
       throw new Error(`groq/${model} HTTP ${resp.status}: ${t.slice(0, 120)}`)
@@ -553,21 +440,14 @@ async function callGroqOne(model, question, apiKey, timeout = 7000) {
   }
 }
 
-// Legacy single-model wrapper — kept so existing call sites still work, but
-// the new path is callGroqAll() which races every Groq model in parallel.
 async function callGroq(question, apiKey, timeout = 7000) {
   return callGroqOne(GROQ_MODELS[0], question, apiKey, timeout)
 }
 
-/** Race every Groq model in parallel. First valid JSON wins. */
 function callGroqAll(question, apiKey, timeout = 7000) {
   return GROQ_MODELS.map(m => callGroqOne(m, question, apiKey, timeout))
 }
 
-/**
- * Call one specific OpenRouter model with a hard per-call timeout. Throws
- * on any failure so Promise.any can pick the first successful winner.
- */
 async function callModel(model, question, apiKey, timeout = 7000) {
   const ctrl = new AbortController()
   const timer = setTimeout(() => ctrl.abort(), timeout)
@@ -607,30 +487,20 @@ async function callModel(model, question, apiKey, timeout = 7000) {
   }
 }
 
-
 async function getSolverPlan(question) {
-  // Two-tier cache: L1 (memory, per-instance, fast) → L2 (Supabase, shared).
   const qKey       = normalizeKey(question)
   const cacheKey   = 'plan:' + qKey
 
-  // L1: same Vercel function warm window — instant.
   const memHit = cacheGet(cacheKey)
   if (memHit) return memHit
 
-  // L2: Supabase — shared across every function instance and every user.
-  // ~50ms roundtrip but cuts every repeat question down from 5s+ to fast.
   const dbHit = await dbCacheGet(qKey)
   if (dbHit?.plan) {
-    cacheSet(cacheKey, dbHit.plan)   // promote into L1 for next time
-    dbCacheBumpHit(qKey)              // fire-and-forget
+    cacheSet(cacheKey, dbHit.plan)
+    dbCacheBumpHit(qKey)
     return dbHit.plan
   }
 
-  // Groq-only: race every Groq model in parallel — Promise.any resolves on
-  // the first that returns valid JSON. Each call draws an INDEPENDENT key
-  // from the rotating pool (services/groqPool.js), so two models from one
-  // request never share a key's quota. OpenRouter was removed: its free pool
-  // was slow and 429-throttled; Groq answers in ~1s.
   const groqStatus = groqPool.status()
   if (groqStatus.live === 0) {
     throw new Error('No live Groq keys — set GROQ_API_KEYS in env (pool: ' + groqStatus.hint + ')')
@@ -645,22 +515,17 @@ async function getSolverPlan(question) {
     const errs = aggregate.errors?.map(e => e.message).join(' · ') || 'unknown'
     console.error('[solver] all models failed:', errs)
 
-    // GRACEFUL DEGRADE: When every AI model fails, fall back to Wikipedia's
-    // article summary. Student still gets a useful answer — better than an
-    // error screen. Mark the plan with modelUsed='wikipedia-fallback' so the
-    // UI can show "AI is busy, this is Wikipedia's answer instead".
     try {
       const wikiPlan = await synthesizePlanFromWikipedia(question)
       if (wikiPlan) {
-        cacheSet(cacheKey, wikiPlan)               // L1
-        dbCacheSet(qKey, question, wikiPlan, 'wikipedia')  // L2, fire-and-forget
+        cacheSet(cacheKey, wikiPlan)
+        dbCacheSet(qKey, question, wikiPlan, 'wikipedia')
         return wikiPlan
       }
     } catch (e) {
       console.warn('[solver] wikipedia fallback also failed:', e.message)
     }
 
-    // Wikipedia fallback also failed — only THEN do we surface an error.
     const all429 = aggregate.errors?.every(e => /HTTP 429/.test(e.message || ''))
     if (all429) {
       const err = new Error('Free AI is busy and Wikipedia is unreachable. Try again in a minute.')
@@ -693,12 +558,10 @@ async function getSolverPlan(question) {
       : [],
     videoQuery:      sanitizeOneLine(plan.videoQuery || plan.topicKeyword || ''),
     modelUsed:       model,
-    geography:       null,    // fills in below when questionType==='geography'
-    // Quiz evaluation — present only when the student just answered a question.
+    geography:       null,
     quizCheck: (plan.quizCheck && typeof plan.quizCheck === 'object' && typeof plan.quizCheck.correct === 'boolean')
       ? { correct: plan.quizCheck.correct, topic: sanitizeOneLine(String(plan.quizCheck.topic || '')).slice(0, 60) }
       : null,
-    // Agentic action — only when the student explicitly asked to create something.
     action: (() => {
       const a = plan.action
       if (!a || typeof a !== 'object' || !['flashcards', 'notebook', 'concept-map'].includes(a.tool)) return null
@@ -719,11 +582,6 @@ async function getSolverPlan(question) {
     })(),
   }
 
-  // ── Geography enrichment ────────────────────────────────────────────────
-  // When the model classifies this as geography, resolve lat/lng + bounds
-  // from Wikipedia so the frontend's Map Mode can auto-zoom to the right
-  // region. Fire-and-forget timing — capped at 1.5s so we never delay the
-  // user-visible text response.
   if (normalized.questionType === 'geography') {
     const rawGeo = plan.geography && typeof plan.geography === 'object' ? plan.geography : null
     const sections = Array.isArray(rawGeo?.sections)
@@ -744,23 +602,17 @@ async function getSolverPlan(question) {
 
     let coords = null
     try {
-      // 3.5s budget — the old 1.5s raced Wikipedia's two round-trips and
-      // lost constantly, which nulled the coords and let the frontend
-      // draw pins at its India fallback (Amazon Rainforest in Hyderabad).
       coords = await Promise.race([
         wikiResolveCoords(geoName || question),
         new Promise(res => setTimeout(() => res(null), 3500)),
       ])
-      // Wikipedia articles for large natural features ("Amazon rainforest")
-      // often carry NO coordinates tag. Nominatim (OpenStreetMap) resolves
-      // basically every named place — use it as the second source.
       if (!coords) {
         coords = await Promise.race([
           nominatimResolveCoords(geoName || question),
           new Promise(res => setTimeout(() => res(null), 3000)),
         ])
       }
-    } catch { /* timeout / network — non-fatal */ }
+    } catch {  }
 
     normalized.geography = {
       name:     geoName || (coords?.title || ''),
@@ -773,20 +625,11 @@ async function getSolverPlan(question) {
     }
   }
 
-  cacheSet(cacheKey, normalized)                                  // L1
-  dbCacheSet(qKey, question, normalized, 'ai').catch(() => {})    // L2 (fire-and-forget)
+  cacheSet(cacheKey, normalized)
+  dbCacheSet(qKey, question, normalized, 'ai').catch(() => {})
   return normalized
 }
 
-/**
- * Resolve a geographic name to { lat, lng, title, pageUrl } via Wikipedia.
- * Cached in-memory for the warm Vercel instance. Returns null when the
- * article has no coordinates (e.g. "Climate change" — concept, not place).
- */
-/**
- * Nominatim (OpenStreetMap) geocoder — resolves any named place to lat/lng.
- * Free, no API key; requires a User-Agent and ≤1 req/s (we cache, so fine).
- */
 const _nominatimCache = new Map()
 async function nominatimResolveCoords(query) {
   const key = (query || '').trim().toLowerCase()
@@ -819,9 +662,6 @@ async function wikiResolveCoords(query) {
   if (!key) return null
   if (_wikiCoordCache.has(key)) return _wikiCoordCache.get(key)
   try {
-    // ONE round-trip: generator=search finds the best article AND returns
-    // its coordinates in the same response. The old two-step (search,
-    // then coords) doubled the latency and kept losing the timeout race.
     const url = `https://en.wikipedia.org/w/api.php?action=query&format=json&generator=search&gsrsearch=${encodeURIComponent(query)}&gsrlimit=1&prop=coordinates|info&inprop=url&origin=*`
     const r = await fetch(url, { headers: { 'User-Agent': 'KairoEdu/1.0' } })
     if (!r.ok) { _wikiCoordCache.set(key, null); return null }
@@ -846,13 +686,6 @@ async function wikiResolveCoords(query) {
   }
 }
 
-// ────────────────────────────────────────────────────────────────────────────
-// /api/ai/solver/text — fast path. Returns the LLM plan WITHOUT the images.
-// Designed to fit Vercel's 10s function timeout: only runs the LLM call.
-// ────────────────────────────────────────────────────────────────────────────
-// Fold optional chat context (conversation, student profile, mistake list)
-// into the question string, so getSolverPlan/caching/model calls stay
-// single-string. Distinct contexts naturally get distinct cache keys.
 function composeQuestion(question, history, student, mistakes) {
   const parts = []
   if (student && (student.name || student.cls)) {
@@ -883,8 +716,6 @@ function composeQuestion(question, history, student, mistakes) {
 router.post('/solver/text', async (req, res) => {
   const question = (req.body?.question || '').toString().trim()
   if (!question) return res.status(400).json({ error: 'question required' })
-  // Generous cap — long pasted problems are normal in chat. Guards against
-  // abuse, not against real questions.
   if (question.length > 4000) return res.status(400).json({ error: 'Question too long (max 4000 characters) — trim it down a bit.' })
 
   const history  = Array.isArray(req.body?.history)  ? req.body.history.slice(-8)   : []
@@ -896,32 +727,18 @@ router.post('/solver/text', async (req, res) => {
     res.json(plan)
   } catch (e) {
     console.error('[solver/text]', e.message)
-    // Preserve 429 (rate limited) so the UI can render a friendly retry hint;
-    // 503 if env not configured; everything else is upstream failure → 502.
     const code = e.statusCode
       || (e.message.includes('not configured') ? 503 : 502)
     res.status(code).json({ error: e.message, rateLimited: code === 429 })
   }
 })
 
-// ────────────────────────────────────────────────────────────────────────────
-// /api/ai/solver/images — pure image search. NO LLM call.
-//
-// Body: { queries: string[] }   ← frontend gets these from /solver/text
-//       { question: string }    ← legacy fallback if no queries provided
-//
-// Pure image search fits in ~2-3s, well under Vercel's 10s timeout.
-// ────────────────────────────────────────────────────────────────────────────
 router.post('/solver/images', async (req, res) => {
   const queries = Array.isArray(req.body?.queries)
     ? req.body.queries.filter(q => typeof q === 'string' && q.trim()).slice(0, 6)
     : []
-  // Prefer the AI-extracted topicKeyword (clean noun like "Photosynthesis")
-  // over the verbose question. Wikipedia's relevance algorithm misroutes
-  // long phrases like "photosynthesis step by step" to wrong articles.
   const topic = (req.body?.topicKeyword || req.body?.topic || req.body?.question || '').toString().trim()
 
-  // No queries provided? Fall back to question-based path (slower — runs LLM).
   if (queries.length === 0) {
     if (!topic) return res.status(400).json({ error: 'queries[] or topic required' })
 
@@ -941,7 +758,6 @@ router.post('/solver/images', async (req, res) => {
     }
   }
 
-  // Fast path: search the queries directly + Wikipedia topic fallback batch.
   const cacheKey = 'imagesByQ:' + (topic + '|' + queries.slice().sort().join('|')).toLowerCase()
   const cached = cacheGet(cacheKey)
   if (cached) return res.json({ imageSlides: cached, cached: true })
@@ -956,12 +772,6 @@ router.post('/solver/images', async (req, res) => {
   }
 })
 
-// ────────────────────────────────────────────────────────────────────────────
-// /api/ai/solver/video — find one educational video for the topic.
-// No API key — scrapes the public search results page for the first video ID.
-// Cached 24h. Frontend embeds it via youtube-nocookie + modestbranding so it
-// reads as "the Kyno lesson video" rather than a third-party embed.
-// ────────────────────────────────────────────────────────────────────────────
 router.post('/solver/video', async (req, res) => {
   const query = (req.body?.query || req.body?.topicKeyword || req.body?.question || '').toString().trim()
   if (!query) return res.status(400).json({ error: 'query required' })
@@ -981,11 +791,6 @@ router.post('/solver/video', async (req, res) => {
   }
 })
 
-/**
- * Scrape the first reasonable-looking video ID from a search results page.
- * No API key required — uses the public HTML search endpoint. Results are
- * keyed by ytInitialData embedded in the page.
- */
 async function findEducationalVideoId(query) {
   const enriched = query + ' educational explanation for students'
   const url = `https://www.youtube.com/results?search_query=${encodeURIComponent(enriched)}`
@@ -998,8 +803,6 @@ async function findEducationalVideoId(query) {
   if (!r.ok) return null
   const html = await r.text()
 
-  // The page contains many "videoId":"<ID>" strings. The first few are the
-  // top results. Pick the first one that isn't an obvious short/ad placeholder.
   const ids = []
   const re = /"videoId":"([a-zA-Z0-9_-]{11})"/g
   let m
@@ -1008,16 +811,9 @@ async function findEducationalVideoId(query) {
   }
   if (ids.length === 0) return null
 
-  // Prefer videos that aren't already in the cache as known-bad (future use).
-  // For now just return the first hit — search results are already ranked.
   return ids[0]
 }
 
-// ────────────────────────────────────────────────────────────────────────────
-// /api/ai/solver — legacy combined endpoint, kept for backwards compat.
-// New frontend code should use /solver/text + /solver/images in parallel.
-// This endpoint is timeout-prone on Vercel Hobby — see memory:vercel_timeouts.
-// ────────────────────────────────────────────────────────────────────────────
 router.post('/solver', async (req, res) => {
   const question = (req.body?.question || '').toString().trim()
   if (!question) return res.status(400).json({ error: 'question required' })
@@ -1035,9 +831,6 @@ router.post('/solver', async (req, res) => {
   }
 })
 
-// Strip filler words that make Wikipedia search match the wrong article.
-// "Photosynthesis step by step" → "photosynthesis" so the relevance
-// algorithm doesn't fixate on "step" and drag us to "The Natural Step".
 function cleanQuestionForSearch(q) {
   return q
     .toLowerCase()
@@ -1060,22 +853,13 @@ async function wikiSearchFirstTitle(query) {
   } catch { return null }
 }
 
-/**
- * GRACEFUL DEGRADE: build a solver plan from Wikipedia when every AI model
- * fails (rate limited, provider down, etc.). Student gets a real answer
- * sourced from the article — kept short, with a clear "AI was busy" prefix.
- */
 async function synthesizePlanFromWikipedia(question) {
-  // Strip filler words so the Wikipedia search matches on the actual topic.
   const cleaned = cleanQuestionForSearch(question)
 
-  // 1. Search Wikipedia — try the cleaned form first, fall back to raw.
   let title = await wikiSearchFirstTitle(cleaned)
   if (!title) title = await wikiSearchFirstTitle(question)
   if (!title) return null
 
-  // 2. Pull a LONGER extract — 12 sentences vs the summary endpoint's 2.
-  //    Plus the article's link list for related-concept chips.
   const extractsUrl = `https://en.wikipedia.org/w/api.php?action=query&format=json&prop=extracts|info|pageprops&exsentences=12&explaintext=1&inprop=url&titles=${encodeURIComponent(title)}&origin=*`
   const exr = await fetch(extractsUrl, { headers: { 'User-Agent': 'KairoEdu/1.0' } })
   if (!exr.ok) return null
@@ -1086,7 +870,6 @@ async function synthesizePlanFromWikipedia(question) {
 
   const pageUrl = page.fullurl || `https://en.wikipedia.org/wiki/${encodeURIComponent(title)}`
 
-  // 3. Detect if any Kyno Lab matches.
   let labRoute = null
   const lower = title.toLowerCase() + ' ' + extract.toLowerCase()
   for (const [k, hints] of Object.entries(KAIRO_LABS)) {
@@ -1094,7 +877,6 @@ async function synthesizePlanFromWikipedia(question) {
     if (tokens.some(t => lower.includes(t))) { labRoute = k; break }
   }
 
-  // 4. Pull a few related article titles for the "Explore further" chips.
   let relatedConcepts = []
   try {
     const linksUrl = `https://en.wikipedia.org/w/api.php?action=query&format=json&prop=links&pllimit=10&plnamespace=0&titles=${encodeURIComponent(title)}&origin=*`
@@ -1107,10 +889,8 @@ async function synthesizePlanFromWikipedia(question) {
         .filter(t => t && !/(list of|disambiguation)/i.test(t))
         .slice(0, 5)
     }
-  } catch { /* non-fatal */ }
+  } catch {  }
 
-  // 5. Split the extract into nice paragraphs and pick the first 2-3 as the
-  //    "What it is" body, then surface the rest behind a "More" link.
   const paragraphs = extract.split(/\n\n+/).filter(p => p.trim().length > 20)
   const intro = paragraphs.slice(0, 2).join('\n\n') || extract.slice(0, 800)
   const moreDetail = paragraphs.slice(2, 5).join('\n\n')
@@ -1139,44 +919,21 @@ async function synthesizePlanFromWikipedia(question) {
   }
 }
 
-/**
- * Repair LaTeX/markdown that came back through JSON.parse with single-backslash
- * sequences interpreted as control chars. The classic example:
- *
- *   AI emits "$\rightarrow$"  →  JSON.parse turns \r into a CR  →  string becomes
- *   "$<CR>ightarrow$" which renders as "ightarrow" with a stray carriage return.
- *
- * We restore the most common LaTeX commands by mapping the control char back
- * to a backslash whenever it's followed by alpha characters.
- *
- * Also: drop any orphan trailing "$$" that has no matching opener — those eat
- * the rest of the markdown and are a common AI mistake.
- */
 function sanitizeMarkdown(s) {
   if (!s || typeof s !== 'string') return ''
   let out = s
-    // CR followed by letters: \rightarrow, \rho, \rangle, etc.
     .replace(/\r([a-zA-Z])/g, '\\$1')
-    // Backspace followed by letters: \beta, \boxed, \bar, \binom, \bullet
     .replace(/\x08([a-zA-Z])/g, '\\$1')
-    // Form-feed followed by letters: \frac, \forall, \frown
     .replace(/\x0c([a-zA-Z])/g, '\\$1')
-    // Vertical tab: \vec, \varphi, \vee
     .replace(/\x0b([a-zA-Z])/g, '\\$1')
-    // Stray null / control chars elsewhere — drop
     .replace(/[\x00-\x08\x0b\x0c\x0e-\x1f]/g, '')
 
-  // Balance $$ blocks: if the count is odd, append a closing $$ on its own line.
   const ddCount = (out.match(/\$\$/g) || []).length
   if (ddCount % 2 === 1) out += '\n$$\n'
 
-  // Same for $: a stray single $ in the middle of prose tends to consume rest.
-  // Strip a lone $ that doesn't have a matching close in the same paragraph.
-  // Cheap heuristic: count $ inside each paragraph; if odd, neutralize the orphan.
   out = out.split('\n\n').map(para => {
     const dollars = (para.match(/\$/g) || []).length - (para.match(/\$\$/g) || []).length * 2
     if (dollars % 2 === 1) {
-      // Strip the LAST orphan single $ in this paragraph
       const idx = para.lastIndexOf('$')
       if (idx >= 0) return para.slice(0, idx) + para.slice(idx + 1)
     }
@@ -1186,7 +943,6 @@ function sanitizeMarkdown(s) {
   return out
 }
 
-/** Same idea, but for short single-line strings (formulas, search queries). */
 function sanitizeOneLine(s) {
   if (!s || typeof s !== 'string') return ''
   return s
@@ -1199,17 +955,11 @@ function sanitizeOneLine(s) {
     .slice(0, 200)
 }
 
-/**
- * Some models prepend "```json" or trailing prose. This pulls out the first
- * balanced { ... } object and JSON.parses it.
- */
 function parseJsonLoose(text) {
   if (!text) return null
-  // Strip markdown code fences if present
   const fence = text.match(/```(?:json)?\s*([\s\S]*?)```/i)
   const candidate = fence ? fence[1] : text
 
-  // Find the first { and the matching closing }
   const start = candidate.indexOf('{')
   if (start < 0) return null
   let depth = 0
@@ -1226,19 +976,12 @@ function parseJsonLoose(text) {
   return null
 }
 
-// ────────────────────────────────────────────────────────────────────────────
-// /api/ai/solver/status — diagnostic. Returns per-provider health so you can
-// see exactly which AI providers are available + working from a browser tab.
-//
-// Public endpoint — exposes which providers exist (yes/no) but never any keys.
-// ────────────────────────────────────────────────────────────────────────────
 router.get('/solver/status', async (_req, res) => {
   const hasOR    = !!process.env.OPENROUTER_API_KEY
   const groqInfo = groqPool.status()
   const hasGroq  = groqInfo.total > 0
   const hasModel = !!process.env.SOLVER_MODEL
 
-  // Tiny probe question — picks up any classification issues without burning quota.
   const probe = 'What is photosynthesis?'
 
   async function probeProvider(label, taskFn) {
@@ -1273,14 +1016,11 @@ router.get('/solver/status', async (_req, res) => {
   }
   if (hasGroq) {
     for (const m of GROQ_MODELS) {
-      // Pass null so the probe draws from the pool too — gives a realistic
-      // health check of what real requests will see.
       probes.push(probeProvider(`groq:${m}`, () =>
         callGroqOne(m, probe, null, 5000)
       ))
     }
   }
-  // Wikipedia fallback probe
   probes.push((async () => {
     const t0 = Date.now()
     try {

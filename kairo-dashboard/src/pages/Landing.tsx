@@ -1,30 +1,7 @@
-/**
- * Kyno — Landing.
- *
- * Hybrid design system (no random mixing):
- *
- *   Swiss          → foundation: 12-col grid, asymmetric spacing,
- *                    strict typographic hierarchy, alignment precision.
- *   Editorial      → storytelling: oversized type, drop caps, pull quotes,
- *                    section numbers, issue/date metadata.
- *   Bento          → content structure: feature cards in an asymmetric
- *                    grid with deliberately varying spans.
- *   Constructivist → composition: diagonal accents, rotated labels,
- *                    intersecting rules, motion lines.
- *   Brutalist      → personality: oversized statements, full-bleed
- *                    impact moments, hard contrast.
- *
- * Strict monochrome: BLACK · DEEP PURPLE · WHITE.
- * Accent: soft purple glow only — no rainbow gradients, no other hues.
- */
 import { useEffect, useRef, useState } from 'react'
 import { motion, useScroll, useTransform, useSpring } from 'framer-motion'
 import { openTerms } from '../components/Terms'
 
-// ─── Mobile guard ────────────────────────────────────────────────────────────
-// Disables parallax on phones so touch + scroll behave normally. Without this
-// the dramatic drifts (e.g. -18%→+12%) push content under the user's finger
-// and intercept gestures.
 function useIsMobileViewport(breakpoint = 768) {
   const [m, setM] = useState(() =>
     typeof window !== 'undefined' && window.innerWidth < breakpoint)
@@ -37,7 +14,6 @@ function useIsMobileViewport(breakpoint = 768) {
   return m
 }
 
-// Helper to pick mobile-safe range (all zeros) vs desktop range.
 function pxRange(mobile: boolean, range: [string, string]): [string, string] {
   return mobile ? ['0%', '0%'] : range
 }
@@ -46,16 +22,13 @@ import {
   Mic, Network, Activity, Camera, Compass, Zap, Eye,
 } from 'lucide-react'
 
-// ════════════════════════════════════════════════════════════════════════════
-// TOKENS — strictly BLACK · DEEP PURPLE · WHITE
-// ════════════════════════════════════════════════════════════════════════════
 const C = {
   black:       '#000000',
-  ink:         '#050505',   // pure dark paper
-  paper:       '#050505',   // page bg (slightly lifted)
-  panel:       '#101018',   // card bg
-  panel2:      '#151922',   // card bg, elevated
-  line:        'rgba(255,255,255,0.06)',   // hairline border
+  ink:         '#050505',
+  paper:       '#050505',
+  panel:       '#101018',
+  panel2:      '#151922',
+  line:        'rgba(255,255,255,0.06)',
   lineSoft:    '#15151e',
   lineHi:      'rgba(255,255,255,0.10)',
 
@@ -68,13 +41,12 @@ const C = {
 
   purpleLite:  '#DBE7FF',
   purpleSoft:  '#A5B4FC',
-  purple:      '#66D9FF',   // primary accent
+  purple:      '#66D9FF',
   purpleHi:    '#4F7CFF',
   purpleDeep:  '#2046C2',
   purpleInk:   '#0B1530',
 }
 
-// Typography
 const DISPLAY = "'Inter Tight', 'Inter', 'Neue Haas Grotesk Display', 'Helvetica Neue', system-ui, sans-serif"
 const SERIF   = "'Charter', 'Iowan Old Style', 'Source Serif Pro', Georgia, serif"
 const MONO    = "ui-monospace, 'SF Mono', 'Fira Code', 'JetBrains Mono', Menlo, monospace"
@@ -84,9 +56,6 @@ interface LandingProps {
   onGetStarted: () => void
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// MAIN
-// ════════════════════════════════════════════════════════════════════════════
 export default function Landing({ onGetStarted }: LandingProps) {
   return (
     <div style={{
@@ -117,25 +86,14 @@ export default function Landing({ onGetStarted }: LandingProps) {
   )
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// GLOBAL SCROLL LAYER — page-wide continuous parallax that runs underneath
-// every section. Two giant ghost wordmarks counter-drift the entire scroll
-// length, plus a slow gradient field that breathes with page progress.
-// This is what makes the WHOLE page feel parallax, not just each section.
-// ════════════════════════════════════════════════════════════════════════════
 function GlobalScrollLayer() {
   const mobile = useIsMobileViewport()
   const { scrollYProgress } = useScroll()
-  // KYNO ghost drifts left as you scroll, ACADEMICS drifts right.
   const kx = useTransform(scrollYProgress, [0, 1], pxRange(mobile, ['8%',  '-22%']))
   const ax = useTransform(scrollYProgress, [0, 1], pxRange(mobile, ['-12%', '18%']))
-  // Each band fades in and out at different scroll depths.
   const ko = useTransform(scrollYProgress, [0, 0.3, 0.7, 1], [0.04, 0.10, 0.06, 0.02])
   const ao = useTransform(scrollYProgress, [0, 0.3, 0.7, 1], [0.02, 0.06, 0.10, 0.05])
 
-  // Mobile: skip the fixed-position giant ghost text entirely. It eats touch
-  // even with pointer-events:none on some browsers and makes the page feel
-  // unresponsive.
   if (mobile) return null
 
   return (
@@ -169,9 +127,6 @@ function GlobalScrollLayer() {
   )
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// LAYERS — grain + halo for editorial / brutalist texture
-// ════════════════════════════════════════════════════════════════════════════
 function GrainOverlay() {
   return (
     <div aria-hidden style={{
@@ -195,9 +150,6 @@ function PurpleHalo() {
   )
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// MASTHEAD — Swiss minimal, editorial issue strip
-// ════════════════════════════════════════════════════════════════════════════
 function Masthead({ onGetStarted }: { onGetStarted: () => void }) {
   return (
     <header style={{
@@ -265,16 +217,12 @@ function Masthead({ onGetStarted }: { onGetStarted: () => void }) {
   )
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// HERO — editorial + brutalist
-// ════════════════════════════════════════════════════════════════════════════
 function Hero({ onGetStarted }: { onGetStarted: () => void }) {
   const mobile = useIsMobileViewport()
   const ref = useRef<HTMLDivElement>(null)
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] })
   const headlineY = useTransform(scrollYProgress, [0, 1], pxRange(mobile, ['0%', '-30%']))
   const headlineO = useTransform(scrollYProgress, [0, 0.8], mobile ? [1, 1] : [1, 0.4])
-  // Counter-parallax on the two giant lines — same technique as the brutal divider.
   const line1X    = useTransform(scrollYProgress, [0, 1], pxRange(mobile, ['0%', '-14%']))
   const line2X    = useTransform(scrollYProgress, [0, 1], pxRange(mobile, ['0%', '16%']))
   const kineticX  = useTransform(scrollYProgress, [0, 1], pxRange(mobile, ['0%', '12%']))
@@ -284,7 +232,6 @@ function Hero({ onGetStarted }: { onGetStarted: () => void }) {
     <section ref={ref} style={{ position: 'relative', paddingTop: 80, paddingBottom: 160, zIndex: 2 }}>
       <Container>
 
-        {/* Issue strip */}
         <SwissRow>
           <SwissCell span={4}>
             <Eyebrow num="00" label="Cover Story" />
@@ -297,12 +244,6 @@ function Hero({ onGetStarted }: { onGetStarted: () => void }) {
           </SwissCell>
         </SwissRow>
 
-        {/* Tagline + headline.
-            NOTE: we deliberately do NOT set initial/animate here. Mixing an
-            entrance animation with `style: { opacity: motionValue }` causes
-            Framer to leave opacity stuck at the `initial` value on first
-            paint — the hero went invisible. Scroll-bound y + opacity below
-            handle the motion; the headline just appears immediately. */}
         <motion.div
           style={{ y: headlineY, opacity: headlineO, marginTop: 60 }}
         >
@@ -325,7 +266,6 @@ function Hero({ onGetStarted }: { onGetStarted: () => void }) {
                 KYNO
               </motion.h1>
 
-              {/* Brutal divider */}
               <div style={{
                 width: 220, height: 4,
                 background: C.purple,
@@ -354,7 +294,6 @@ function Hero({ onGetStarted }: { onGetStarted: () => void }) {
           </SwissRow>
         </motion.div>
 
-        {/* Sub + CTAs */}
         <motion.div style={{ marginTop: 64, x: subX }}>
           <SwissRow>
             <SwissCell span={6}>
@@ -390,7 +329,6 @@ function Hero({ onGetStarted }: { onGetStarted: () => void }) {
 
       </Container>
 
-      {/* Page-number bottom corner */}
       <div style={{
         position: 'absolute', bottom: 24, right: 32,
         fontFamily: MONO, fontSize: 10, color: C.textVery,
@@ -402,14 +340,12 @@ function Hero({ onGetStarted }: { onGetStarted: () => void }) {
   )
 }
 
-// Kinetic geometric block — the constructivist "moving piece" beside the hero.
 function KineticBlock() {
   return (
     <div style={{
       position: 'relative', height: 420, marginTop: 16,
       display: 'flex', alignItems: 'center', justifyContent: 'center',
     }}>
-      {/* Centre purple disc */}
       <motion.div
         animate={{ scale: [1, 1.06, 1], opacity: [0.92, 1, 0.92] }}
         transition={{ duration: 5.5, repeat: Infinity, ease: 'easeInOut' }}
@@ -423,7 +359,6 @@ function KineticBlock() {
         <KairoMark size={80} centered intense />
       </motion.div>
 
-      {/* Constructivist orbital rings + diagonals */}
       <svg viewBox="-200 -200 400 400" width="100%" height="100%"
         style={{ position: 'absolute', inset: 0, zIndex: 1 }}>
         {[160, 180].map((r, i) => (
@@ -440,7 +375,6 @@ function KineticBlock() {
           stroke={C.purpleDeep} strokeWidth="0.5" opacity="0.25" />
       </svg>
 
-      {/* Rotated metadata labels */}
       <div style={{
         position: 'absolute', top: 6, left: 0,
         fontFamily: MONO, fontSize: 9.5, color: C.textFaint, letterSpacing: 2.4,
@@ -457,9 +391,6 @@ function KineticBlock() {
   )
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// MANIFESTO — editorial essay, drop-cap, pull-quote (scroll-linked drift)
-// ════════════════════════════════════════════════════════════════════════════
 function Manifesto() {
   const mobile = useIsMobileViewport()
   const ref = useRef<HTMLDivElement>(null)
@@ -473,7 +404,6 @@ function Manifesto() {
 
   return (
     <section ref={ref} id="manifesto" style={{ padding: '120px 0 100px', position: 'relative', zIndex: 2, overflow: 'hidden' }}>
-      {/* Ghost watermark behind the headline — louder, larger, more visible drift */}
       <motion.div aria-hidden style={{
         position: 'absolute', top: '30%', left: '50%',
         translateX: '-50%',
@@ -518,7 +448,6 @@ function Manifesto() {
               </motion.span>
             </h3>
 
-            {/* Two-column body — subtle scroll-linked drift opposite to headline */}
             <motion.div className="kr-two-col" style={{
               display: 'grid', gridTemplateColumns: '1fr 1fr', columnGap: 56,
               fontFamily: SERIF, fontSize: 17, lineHeight: 1.7,
@@ -554,9 +483,6 @@ function Manifesto() {
   )
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// BRUTAL DIVIDER — full-bleed, oversized statement
-// ════════════════════════════════════════════════════════════════════════════
 function BrutalDivider({ lines, kicker, tail }: {
   lines: string[]
   kicker?: string
@@ -577,7 +503,6 @@ function BrutalDivider({ lines, kicker, tail }: {
         `linear-gradient(180deg, ${C.paper} 0%, ${C.ink} 50%, ${C.paper} 100%)`,
       position: 'relative', overflow: 'hidden', zIndex: 2,
     }}>
-      {/* Big watermark KYNO */}
       <div aria-hidden style={{
         position: 'absolute', top: '50%', left: '50%',
         transform: 'translate(-50%, -50%)',
@@ -623,9 +548,6 @@ function BrutalDivider({ lines, kicker, tail }: {
   )
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// BENTO — asymmetric feature grid (scroll-linked drift)
-// ════════════════════════════════════════════════════════════════════════════
 function BentoSection({ onGetStarted }: { onGetStarted: () => void }) {
   const mobile = useIsMobileViewport()
   const ref = useRef<HTMLDivElement>(null)
@@ -634,7 +556,6 @@ function BentoSection({ onGetStarted }: { onGetStarted: () => void }) {
   const head2X = useTransform(scrollYProgress, [0, 1], pxRange(mobile, ['16%', '-10%']))
   const ghostX = useTransform(scrollYProgress, [0, 1], pxRange(mobile, ['14%', '-12%']))
   const bentoY = useTransform(scrollYProgress, [0, 1], pxRange(mobile, ['8%', '-8%']))
-  // Bento cards drift in alternating directions for kinetic depth.
   const driftL = useTransform(scrollYProgress, [0, 1], pxRange(mobile, ['0%', '-6%']))
   const driftR = useTransform(scrollYProgress, [0, 1], pxRange(mobile, ['0%', '6%']))
 
@@ -678,7 +599,6 @@ function BentoSection({ onGetStarted }: { onGetStarted: () => void }) {
         </SwissRow>
 
         <motion.div className="kr-bento" style={{ marginTop: 72, y: bentoY }}>
-          {/* Row 1 — left cluster drifts left, right cluster drifts right */}
           <motion.div style={{ gridColumn: '1 / span 8', gridRow: 'span 2', x: driftL }}>
             <BentoCard span="col 1 / span 8" rowSpan={2} hero
               kicker="01 · Solver" title="Any doubt. Eight seconds."
@@ -707,7 +627,6 @@ function BentoSection({ onGetStarted }: { onGetStarted: () => void }) {
             />
           </motion.div>
 
-          {/* Row 2 — left drifts left, mid stays, right drifts right */}
           <motion.div style={{ gridColumn: '1 / span 5', x: driftL }}>
             <BentoCard span="col 1 / span 5"
               kicker="04 · Labs"
@@ -738,7 +657,6 @@ function BentoSection({ onGetStarted }: { onGetStarted: () => void }) {
             />
           </motion.div>
 
-          {/* Row 3 — left drifts left, right drifts right */}
           <motion.div style={{ gridColumn: '1 / span 3', x: driftL }}>
             <BentoCard span="col 1 / span 3"
               kicker="07 · Predictor"
@@ -795,9 +713,6 @@ function BentoCard({ span, rowSpan = 1, hero = false, compact = false,
   icon?: any
   tag?: string
   visual?: 'lab'
-  /** When true, the card lives INSIDE a parallax wrapper that already owns
-   *  grid placement. Skip our own grid-column/row so it inherits 100% of
-   *  the wrapper's box. */
   embedded?: boolean
 }) {
   const [hover, setHover] = useState(false)
@@ -822,7 +737,6 @@ function BentoCard({ span, rowSpan = 1, hero = false, compact = false,
         minHeight: hero ? 0 : compact ? 160 : 220,
         boxShadow: hover ? `0 12px 50px rgba(79, 124, 255, 0.18)` : '0 0 0 transparent',
       }}>
-      {/* Constructivist corner cut */}
       <span aria-hidden style={{
         position: 'absolute', top: 0, right: 0, width: 28, height: 28,
         background: `linear-gradient(225deg, transparent 50%, ${C.lineHi} 50%)`,
@@ -862,7 +776,6 @@ function BentoCard({ span, rowSpan = 1, hero = false, compact = false,
         {body}
       </p>
 
-      {/* Lab visual filler */}
       {visual === 'lab' && (
         <div style={{
           marginTop: 'auto', height: 80, borderRadius: 14,
@@ -873,7 +786,6 @@ function BentoCard({ span, rowSpan = 1, hero = false, compact = false,
         </div>
       )}
 
-      {/* Icon — top-right when hero, bottom-right otherwise */}
       {Icon && (
         <div style={{
           position: 'absolute',
@@ -887,7 +799,6 @@ function BentoCard({ span, rowSpan = 1, hero = false, compact = false,
         </div>
       )}
 
-      {/* Hero-only stat strip */}
       {hero && (
         <div style={{
           marginTop: 'auto', paddingTop: 26,
@@ -904,21 +815,15 @@ function BentoCard({ span, rowSpan = 1, hero = false, compact = false,
   )
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// CONSTRUCTIVIST INTERSTITIAL — diagonal layout, rotated labels
-// ════════════════════════════════════════════════════════════════════════════
 function ConstructivistInterstitial() {
   const mobile = useIsMobileViewport()
   const ref = useRef<HTMLDivElement>(null)
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] })
-  // Skip the rotation on mobile — the diagonal slab feels off-axis on
-  // narrow viewports and can clip touch targets.
   const rotate = useTransform(scrollYProgress, [0, 1], mobile ? [0, 0] : [-2, 2])
 
   return (
     <section ref={ref} style={{ padding: '120px 0', position: 'relative', zIndex: 2 }}>
       <Container>
-        {/* Diagonal slab */}
         <motion.div style={{
           position: 'relative',
           background: C.panel,
@@ -927,7 +832,6 @@ function ConstructivistInterstitial() {
           rotate, transformOrigin: 'left top',
           boxShadow: `0 30px 90px rgba(32, 70, 194, 0.02), inset 0 0 80px rgba(79, 124, 255, 0.01)`,
         }}>
-          {/* Side rotated label */}
           <div style={{
             position: 'absolute', top: 38, left: -54,
             transform: 'rotate(-90deg)', transformOrigin: 'left top',
@@ -936,7 +840,6 @@ function ConstructivistInterstitial() {
             ¶ INTERLUDE · 03 · CONSTRUCTION
           </div>
 
-          {/* Intersecting line */}
           <svg viewBox="0 0 1000 200" preserveAspectRatio="none"
             style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
             <line x1="0" y1="180" x2="1000" y2="40"
@@ -974,9 +877,6 @@ function ConstructivistInterstitial() {
   )
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// LABS SHOWCASE — massive editorial cards (scroll-linked drift)
-// ════════════════════════════════════════════════════════════════════════════
 function LabsShowcase({ onGetStarted }: { onGetStarted: () => void }) {
   const labs = [
     { name: 'Gravity',          tag: 'PHYSICS · 11', glyph: Atom },
@@ -1046,7 +946,6 @@ function LabsShowcase({ onGetStarted }: { onGetStarted: () => void }) {
           </SwissCell>
         </SwissRow>
 
-        {/* Hero lab + supporting */}
         <motion.div style={{ marginTop: 80, display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: 24, y: gridY }}
           className="kr-lab-grid">
           <LabTile big lab={labs[0]} onOpen={onGetStarted} />
@@ -1103,7 +1002,6 @@ function LabTile({ lab, big = false, onOpen }: { lab: { name: string; tag: strin
         boxShadow: '0 20px 80px rgba(32, 70, 194, 0.01)',
       }}>
 
-      {/* Big floating glyph */}
       <div style={{
         position: 'absolute', right: big ? '8%' : '-8%', top: big ? '8%' : '-15%',
         width: big ? 320 : 220, height: big ? 320 : 220,
@@ -1148,9 +1046,6 @@ function LabTile({ lab, big = false, onOpen }: { lab: { name: string; tag: strin
   )
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// TWIN ESSAY — long-form editorial (scroll-linked drift)
-// ════════════════════════════════════════════════════════════════════════════
 function TwinEssay() {
   const mobile = useIsMobileViewport()
   const ref = useRef<HTMLDivElement>(null)
@@ -1245,9 +1140,6 @@ function TwinEssay() {
   )
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// DESKTOP APP — download section for the Electron build
-// ════════════════════════════════════════════════════════════════════════════
 function DesktopApp() {
   const mobile = useIsMobileViewport()
   const ref = useRef<HTMLDivElement>(null)
@@ -1256,15 +1148,12 @@ function DesktopApp() {
   const lx2 = useTransform(scrollYProgress, [0, 1], pxRange(mobile, ['14%', '-10%']))
   const ghostX = useTransform(scrollYProgress, [0, 1], pxRange(mobile, ['12%', '-10%']))
 
-  // The release page on GitHub. Builders upload .exe/.dmg/.AppImage there;
-  // these direct links resolve to the latest tagged build whenever it lands.
   const RELEASES = 'https://github.com/Dynamox-DEV677/kairo/releases/latest'
 
   return (
     <section ref={ref} id="desktop" style={{
       padding: '140px 0 120px', position: 'relative', zIndex: 2, overflow: 'hidden',
     }}>
-      {/* Ghost watermark */}
       <motion.div aria-hidden style={{
         position: 'absolute', top: '8%', left: '50%',
         translateX: '-50%',
@@ -1309,7 +1198,6 @@ function DesktopApp() {
               login. Same Twin, same data, same account everywhere.
             </p>
 
-            {/* Three download cards */}
             <div style={{
               display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16,
               marginTop: 48,
@@ -1337,7 +1225,6 @@ function DesktopApp() {
               />
             </div>
 
-            {/* Feature strip */}
             <div style={{
               marginTop: 40, padding: '20px 24px',
               borderRadius: 14,
@@ -1437,7 +1324,6 @@ function FeatureLine({ k, v }: { k: string; v: string }) {
   )
 }
 
-// Minimalist platform glyphs — drawn as inline SVG to stay on-brand.
 function WindowsGlyph() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="#fff">
@@ -1460,14 +1346,10 @@ function LinuxGlyph() {
   )
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// FINAL CTA — brutalist closer (scroll-linked drift + scale)
-// ════════════════════════════════════════════════════════════════════════════
 function FinalCTA({ onGetStarted }: { onGetStarted: () => void }) {
   const mobile = useIsMobileViewport()
   const ref = useRef<HTMLDivElement>(null)
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] })
-  // Dramatic scale + drift on BEGIN. Tamer on mobile.
   const beginScale = useTransform(scrollYProgress, [0, 0.5, 1],
     mobile ? [1, 1, 1] : [0.7, 1.05, 1.18])
   const beginX     = useTransform(scrollYProgress, [0, 1], pxRange(mobile, ['12%', '-12%']))
@@ -1483,7 +1365,6 @@ function FinalCTA({ onGetStarted }: { onGetStarted: () => void }) {
         `radial-gradient(80% 100% at 50% 50%, rgba(79, 124, 255, 0.18) 0%, ${C.ink} 70%)`,
       position: 'relative', zIndex: 2, overflow: 'hidden',
     }}>
-      {/* Animated halo that pulses larger with scroll */}
       <motion.div aria-hidden style={{
         position: 'absolute', top: '50%', left: '50%',
         translate: '-50% -50%',
@@ -1494,7 +1375,6 @@ function FinalCTA({ onGetStarted }: { onGetStarted: () => void }) {
         pointerEvents: 'none',
       }} />
 
-      {/* Ghost watermark — louder, larger */}
       <motion.div aria-hidden style={{
         position: 'absolute', top: '50%', left: '50%',
         translateX: '-50%', translateY: '-50%',
@@ -1543,12 +1423,6 @@ function FinalCTA({ onGetStarted }: { onGetStarted: () => void }) {
   )
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// FOOTER — Swiss minimal
-// ════════════════════════════════════════════════════════════════════════════
-// ════════════════════════════════════════════════════════════════════════════
-// ABOUT + FOUNDER — About Kyno essay block and the premium founder card
-// ════════════════════════════════════════════════════════════════════════════
 function AboutFounder() {
   const mobile = useIsMobileViewport()
   return (
@@ -1557,7 +1431,6 @@ function AboutFounder() {
       borderTop: `1px solid ${C.line}`,
     }}>
       <Container>
-        {/* — About Kyno — */}
         <SwissRow>
           <SwissCell span={3}>
             <Eyebrow num="07" label="About Kyno" />
@@ -1592,7 +1465,6 @@ function AboutFounder() {
           </SwissCell>
         </SwissRow>
 
-        {/* — Meet the Founder — premium glass card — */}
         <SwissRow>
           <SwissCell span={3}>
             <div style={{ marginTop: mobile ? 56 : 96 }}>
@@ -1621,14 +1493,12 @@ function AboutFounder() {
                 position: 'relative', overflow: 'hidden',
               }}
             >
-              {/* soft corner glow */}
               <div aria-hidden style={{
                 position: 'absolute', top: -120, right: -120, width: 320, height: 320,
                 borderRadius: '50%', pointerEvents: 'none',
                 background: `radial-gradient(circle, ${C.purpleHi}33 0%, transparent 65%)`,
               }} />
 
-              {/* Monogram avatar */}
               <div style={{
                 width: mobile ? 84 : 116, height: mobile ? 84 : 116, flexShrink: 0,
                 borderRadius: '28%',
@@ -1789,9 +1659,6 @@ function FooterCol({ title, items }: { title: string; items: FooterItem[] }) {
   )
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// Layout primitives — Swiss 12-col + helpers
-// ════════════════════════════════════════════════════════════════════════════
 function Container({ children }: { children: React.ReactNode }) {
   return (
     <div className="kr-container" style={{
@@ -1896,7 +1763,6 @@ function PullQuote({ text, attribution }: { text: string; attribution: string })
   )
 }
 
-// Logo mark — the real Kyno brand image inside a rounded purple badge.
 function KairoMark({ size = 28, intense = false, centered = false }: {
   size?: number
   intense?: boolean
@@ -1932,15 +1798,11 @@ function KairoMark({ size = 28, intense = false, centered = false }: {
   )
 }
 
-// Utility: smooth-scroll to section
 function scrollToId(id: string) {
   const el = document.getElementById(id)
   if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// CTAs
-// ════════════════════════════════════════════════════════════════════════════
 const pillCta: React.CSSProperties = {
   display: 'inline-flex', alignItems: 'center', gap: 8,
   padding: '10px 18px', borderRadius: 100, border: 'none', cursor: 'pointer',
@@ -1967,9 +1829,6 @@ const ghostCta: React.CSSProperties = {
   transition: 'color .15s, border-color .15s',
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// Global styles — responsive collapse rules, brutal headlines class
-// ════════════════════════════════════════════════════════════════════════════
 function GlobalStyles() {
   return (
     <style>{`

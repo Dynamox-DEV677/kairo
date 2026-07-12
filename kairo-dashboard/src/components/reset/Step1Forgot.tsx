@@ -1,9 +1,3 @@
-/**
- * Step 1 — Forgot passcode.
- *
- * The user enters their email; we save it to the reset session and
- * send the first OTP, then advance to step 2.
- */
 import { useState } from 'react'
 import { Mail } from 'lucide-react'
 import ResetShell, { PrimaryButton, TextButton, KairoBadge } from './ResetShell'
@@ -64,7 +58,6 @@ export default function Step1Forgot({ initialEmail = '', onContinue, onBackToSig
         </>
       }
     >
-      {/* Email input */}
       <label
         style={{
           display: 'flex', alignItems: 'center', gap: 12,

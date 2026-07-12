@@ -1,14 +1,7 @@
-/**
- * Generation Context
- * ──────────────────
- * Tracks which pages are currently generating AI content.
- * Shows a subtle pulsing indicator on the sidebar item when a background
- * generation is running on a page the user isn't currently viewing.
- */
 import { createContext, useContext, useState, useCallback, type ReactNode } from 'react'
 
 interface GenerationState {
-  [pageId: string]: boolean  // true = currently generating
+  [pageId: string]: boolean
 }
 
 interface GenerationContextType {
@@ -43,7 +36,6 @@ export function useGeneration() {
   return useContext(GenerationContext)
 }
 
-/** Hook for individual pages to report their generation status */
 export function usePageGeneration(pageId: string) {
   const { generating, setGenerating } = useGeneration()
   return {

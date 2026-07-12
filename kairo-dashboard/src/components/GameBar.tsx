@@ -1,14 +1,3 @@
-/**
- * GameBar — the Duolingo-style habit widget on Kyno Home.
- *
- *   Level ring + XP progress to next level
- *   Today's 3 quests with progress
- *   Weekly league mini-board (top 5 + your rank) from /api/league
- *   Badges strip
- *
- * XPToast — floating "+XP" notifications, mounted once app-wide.
- * Both react live to the `kairo:xp` window event fired by lib/game.ts.
- */
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Flame, Trophy, CheckCircle2, Circle, Zap, Medal } from 'lucide-react'
@@ -45,16 +34,12 @@ export function GameBar() {
   const earned = badges(s).filter(b => b.earned)
 
   return (
-    // .kg-gamebar collapses to a single column on phones (index.css) — three
-    // side-by-side cards at 390px squeezed "0/100 XP" into a vertical strip.
     <div className="kg-gamebar" style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr 1fr', gap: 16, marginBottom: 16 }}>
-      {/* ── Level + streak ─────────────────────────────────────────── */}
       <div style={{ ...GLASS, padding: 18 }}>
         <div style={{ ...lbl, color: '#66D9FF', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
           <Zap size={12} /> Level
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-          {/* level ring */}
           <div style={{ position: 'relative', width: 66, height: 66, flexShrink: 0 }}>
             <svg viewBox="0 0 66 66" style={{ width: '100%', height: '100%', transform: 'rotate(-90deg)' }}>
               <circle cx="33" cy="33" r="28" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="6" />
@@ -64,9 +49,6 @@ export function GameBar() {
                 style={{ transition: 'stroke-dashoffset .6s ease' }}
               />
             </svg>
-            {/* top/left/width/height instead of inset:0 — the global mobile
-                rule that lifts full-page inset:0 overlays above the dock
-                (index.css) was collapsing this tiny ring's number to the top. */}
             <div style={{
               position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
               display: 'grid', placeItems: 'center',
@@ -97,7 +79,6 @@ export function GameBar() {
         )}
       </div>
 
-      {/* ── Daily quests ───────────────────────────────────────────── */}
       <div style={{ ...GLASS, padding: 18 }}>
         <div style={{ ...lbl, color: '#A5B4FC', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
           <CheckCircle2 size={12} /> Daily quests
@@ -132,7 +113,6 @@ export function GameBar() {
         })}
       </div>
 
-      {/* ── Weekly league ──────────────────────────────────────────── */}
       <div style={{ ...GLASS, padding: 18 }}>
         <div style={{ ...lbl, color: '#ffd180', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
           <Trophy size={12} /> Weekly league
@@ -173,7 +153,6 @@ export function GameBar() {
   )
 }
 
-// ── Floating "+XP" toasts — mount once (Dashboard) ─────────────────────
 interface XPToastItem { id: number; amount: number; reason: string; levelUp: boolean; level: number; streak: number }
 
 export function XPToast() {
@@ -184,8 +163,6 @@ export function XPToast() {
     const onXP = (e: Event) => {
       const d = (e as CustomEvent).detail || {}
       const id = n++
-      // Cap the stack at 4 so rapid-fire XP (e.g. flashcard reviews) doesn't
-      // pile up off-screen.
       setToasts(prev => [...prev.slice(-3), {
         id, amount: d.amount, reason: d.reason,
         levelUp: !!d.levelUp, level: d.level ?? 1, streak: d.streak ?? 0,
@@ -216,7 +193,6 @@ export function XPToast() {
               color: '#fff', fontFamily: "'Space Grotesk', system-ui, sans-serif",
               display: 'flex', alignItems: 'center', gap: 11, minWidth: 150,
             }}>
-            {/* one-shot light sheen across the pill */}
             <motion.div
               initial={{ x: '-130%' }} animate={{ x: '170%' }}
               transition={{ duration: 0.9, ease: 'easeOut' }}

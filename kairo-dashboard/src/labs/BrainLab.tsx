@@ -1,12 +1,3 @@
-/**
- * Brain Anatomy Lab — realistic anatomical brain (Sketchfab GLB).
- *
- * The model has only 3 named materials (Lobe = both cerebral hemispheres,
- * Cerebllum_1 + Cerebllum_2 = cerebellum halves). To get useful interactivity
- * we add position-based click volumes on top of the model for the four
- * cerebral lobes (frontal / parietal / temporal / occipital) and the brain
- * stem. Click anywhere → side info card explains what that region does.
- */
 import { Suspense, useMemo, useRef, useState } from 'react'
 import { useFrame, type ThreeEvent } from '@react-three/fiber'
 import { OrbitControls, useGLTF, ContactShadows, Html } from '@react-three/drei'
@@ -19,7 +10,6 @@ import { PartInfoCard, PartHoverChip, PartIdleHint, type PartCatalog } from './L
 const BRAIN_URL = 'https://cdn.jsdelivr.net/gh/Dynamox-DEV677/kairo@main/models-cdn/brain_realistic.glb'
 const TARGET_SIZE = 6.5
 
-// ─── Region catalog ────────────────────────────────────────────────────────
 const PARTS: PartCatalog = {
   frontal: {
     id: 'frontal', label: 'Frontal Lobe', color: '#f87171',
@@ -65,26 +55,18 @@ const PARTS: PartCatalog = {
   },
 }
 
-// Position-based regions, computed from the centered + scaled model.
-// y measured from model center (model spans roughly [-3.25, 3.25] on Y).
-// We use relative coords so the boxes scale with the model fit.
 type RegionBox = {
   id: string
-  // All values are FRACTIONS of the model's bounding-box on each axis.
-  // x in [-1..1] (right + / left -); y [-1..1] (up + / down -); z [-1..1] (front +)
   cx: number; cy: number; cz: number
-  rx: number; ry: number; rz: number    // half-extents as fractions
+  rx: number; ry: number; rz: number    
 }
 
 const REGIONS: RegionBox[] = [
-  // Cerebrum lobes — sit on top of the brain
   { id: 'frontal',    cx: 0.0,  cy:  0.35, cz:  0.45, rx: 0.50, ry: 0.35, rz: 0.30 },
   { id: 'parietal',   cx: 0.0,  cy:  0.55, cz: -0.10, rx: 0.50, ry: 0.30, rz: 0.30 },
   { id: 'temporal',   cx: 0.0,  cy: -0.05, cz:  0.05, rx: 0.55, ry: 0.30, rz: 0.45 },
   { id: 'occipital',  cx: 0.0,  cy:  0.20, cz: -0.55, rx: 0.45, ry: 0.30, rz: 0.25 },
-  // Cerebellum — back, slightly lower
   { id: 'cerebellum', cx: 0.0,  cy: -0.30, cz: -0.55, rx: 0.40, ry: 0.30, rz: 0.25 },
-  // Brain stem — sticks out from the bottom
   { id: 'brain_stem', cx: 0.0,  cy: -0.55, cz: -0.10, rx: 0.18, ry: 0.30, rz: 0.30 },
 ]
 
@@ -155,13 +137,11 @@ function Brain({ playing, hovered, selected, onHover, onSelect }: {
       if (obj.isMesh) {
         obj.castShadow = true
         obj.receiveShadow = true
-        // Slight rim glow so the surface reads in dim lighting
         if (obj.material && 'emissive' in obj.material) {
           obj.material.emissiveIntensity = Math.max(obj.material.emissiveIntensity || 0, 0.12)
         }
       }
     })
-    // Mesh-only bounds
     const meshBox = new THREE.Box3()
     let n = 0
     c.traverse((obj: any) => {
@@ -202,7 +182,6 @@ function Brain({ playing, hovered, selected, onHover, onSelect }: {
     <group ref={groupRef}>
       <primitive object={cloned} />
 
-      {/* Region click volumes — invisible but capture pointer events */}
       {REGIONS.map(r => {
         const isLit = hovered === r.id || selected === r.id
         return (
@@ -216,7 +195,6 @@ function Brain({ playing, hovered, selected, onHover, onSelect }: {
               <meshBasicMaterial transparent opacity={0} depthWrite={false} />
             </mesh>
 
-            {/* When lit, draw a subtle wireframe shell so the student sees which region they're on */}
             {isLit && (
               <mesh>
                 <boxGeometry args={[r.rx * halfExt.x * 2, r.ry * halfExt.y * 2, r.rz * halfExt.z * 2]} />

@@ -1,13 +1,3 @@
-/**
- * Notebook — pure localStorage store with optional server mirroring.
- *
- * The Kyno DB cleanup deleted the `notebooks` / `notes` tables. So this
- * file now treats localStorage as the single source of truth for every
- * note. Server POSTs are attempted as a fire-and-forget mirror, but their
- * failure never affects the local data.
- *
- * Storage key: `kairo:notebook:entries` — Entry[]   (most-recent first)
- */
 
 export type NoteKind = 'flashcards' | 'summary' | 'doubt' | 'concept_map' | 'note' | 'plan' | 'grade'
 
@@ -26,7 +16,6 @@ export interface NoteEntry {
 const KEY = 'kairo:notebook:entries'
 const MAX_ENTRIES = 500
 
-// ─── Pure storage helpers ───────────────────────────────────────────────────
 function readAll(): NoteEntry[] {
   if (typeof window === 'undefined') return []
   try {
@@ -41,14 +30,13 @@ function writeAll(arr: NoteEntry[]) {
   try {
     const trimmed = arr.slice(0, MAX_ENTRIES)
     localStorage.setItem(KEY, JSON.stringify(trimmed))
-  } catch { /* quota */ }
+  } catch {  }
 }
 
 function uid(): string {
   return 'nb-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8)
 }
 
-// ─── Public API ─────────────────────────────────────────────────────────────
 export function listNotebook(opts: { limit?: number; kind?: NoteKind | 'all'; search?: string } = {}): NoteEntry[] {
   let rows = readAll()
   if (opts.kind && opts.kind !== 'all') rows = rows.filter(r => r.kind === opts.kind)
@@ -85,12 +73,6 @@ export function updateNotebookEntry(id: string, patch: Partial<Pick<NoteEntry, '
   return arr[idx]
 }
 
-/**
- * Save a new entry to the notebook. ALWAYS succeeds locally. The optional
- * server-mirror request is fire-and-forget and never affects the return.
- *
- * Returns `{ id }` on success — same shape as before for backward compat.
- */
 export async function saveToNotebook(payload: {
   kind:    NoteKind
   title:   string
@@ -114,8 +96,6 @@ export async function saveToNotebook(payload: {
   arr.unshift(entry)
   writeAll(arr)
 
-  // Optional server mirror — fire-and-forget. We catch and swallow so a
-  // missing-table 500 never breaks the user-facing save.
   if (typeof window !== 'undefined' && localStorage.getItem('kairo_token')) {
     try {
       void fetch('/api/notebook', {
@@ -126,12 +106,11 @@ export async function saveToNotebook(payload: {
         },
         body: JSON.stringify(payload),
       }).catch(() => {})
-    } catch { /* never block */ }
+    } catch {  }
   }
   return { id: entry.id }
 }
 
-/** Total count — useful for the Notebook page header. */
 export function notebookCount(): number {
   return readAll().length
 }

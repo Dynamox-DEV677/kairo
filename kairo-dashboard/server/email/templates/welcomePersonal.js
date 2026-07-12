@@ -1,8 +1,3 @@
-/**
- * Welcome — sent after a personal (no-school) signup.
- *
- * Variables: { name, className, board }
- */
 import { THEME, appUrl } from '../theme.js'
 import { shell } from '../shell.js'
 import {

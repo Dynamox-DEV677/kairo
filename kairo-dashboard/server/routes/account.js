@@ -1,26 +1,14 @@
-/**
- * Account routes — profile changes that need server help.
- *
- *   POST /api/account/email-change/request  { new_email, name? }
- *        → emails a 6-digit code to the NEW address (proves ownership)
- *   POST /api/account/email-change/verify   { new_email, code, user_id? }
- *        → checks the code; when Supabase admin is configured and a
- *          user_id is supplied, updates the auth user's email too.
- *
- * Codes live in instance memory with a 10-minute TTL — fine for a
- * warm Vercel window; a cold start just means "request a new code".
- */
 import { Router } from 'express'
 import { sendPasscodeOtpEmail } from '../email/index.js'
 import { supabaseAdmin, SUPABASE_CONFIGURED } from '../services/supabase.js'
 
 const router = Router()
 
-const _codes = new Map()   // email(lower) -> { code, expires }
+const _codes = new Map()
 const TTL_MS = 10 * 60 * 1000
 
 function newCode() {
-  return String(Math.floor(100000 + Math.random() * 900000))   // 6 digits
+  return String(Math.floor(100000 + Math.random() * 900000))
 }
 
 router.post('/email-change/request', async (req, res) => {
@@ -54,9 +42,6 @@ router.post('/email-change/verify', async (req, res) => {
   if (entry.code !== code) return res.status(400).json({ error: 'Wrong code — check the 6 digits and try again.' })
   _codes.delete(email)
 
-  // Best effort: update the Supabase auth user's email (requires the
-  // service-role key). Local/anonymous profiles just get ok:true and
-  // the frontend updates its stored profile.
   let authUpdated = false
   if (SUPABASE_CONFIGURED && userId) {
     try {

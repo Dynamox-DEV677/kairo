@@ -1,31 +1,8 @@
-/**
- * NCERT Solver Cache — static pre-built answers for the most common
- * Class 9–12 NCERT concept questions. Ships in the JS bundle.
- *
- * The Solver checks this cache BEFORE hitting /api/ai/solver/text. Match is
- * keyword-based (token-ANY of token-ALL) — see lib/ncertCacheLookup.ts.
- *
- * Each entry is shape-compatible with the server's TextPlan response, so
- * downstream code (twin.recordDoubt, recordConcept, formula extraction) works
- * with zero modification.
- *
- * Adding entries: keep textExplanation under ~600 words to stay light in the
- * bundle. Aim for 2-3 keyword groups in `match` — one canonical, one or two
- * alt phrasings.
- */
 
 export interface NcertEntry {
-  /** Stable id (kebab-case). */
   id: string
-  /** Subject — used for the topic chip + Twin's concept graph. */
   subject: 'Physics' | 'Chemistry' | 'Biology' | 'Math'
-  /**
-   * Keyword groups. A question matches if AT LEAST ONE group is fully
-   * present in the normalised tokens (lowercase + plurals stripped). All
-   * keywords inside a group must be present.
-   */
   match: string[][]
-  /** TextPlan shape, identical to what /api/ai/solver/text returns. */
   topicKeyword:    string
   supports3D:      boolean
   labRoute:        string | null
@@ -36,10 +13,8 @@ export interface NcertEntry {
   videoQuery:      string
 }
 
-// ─────────────────────────── ENTRIES ───────────────────────────────────────
 export const NCERT_CACHE: NcertEntry[] = [
 
-  // ═══════════════════════════ PHYSICS ═══════════════════════════════════
   {
     id: 'newtons-first-law',
     subject: 'Physics',
@@ -494,7 +469,6 @@ KE and PE are just two flavours. Energy also lives as thermal, chemical, electri
     videoQuery: 'Kinetic and potential energy explained',
   },
 
-  // ═══════════════════════════ CHEMISTRY ═══════════════════════════════════
   {
     id: 'atomic-structure',
     subject: 'Chemistry',
@@ -710,7 +684,6 @@ A way to tell if something's an acid or base:
     videoQuery: 'Acids bases and pH scale explained',
   },
 
-  // ═══════════════════════════ BIOLOGY ═══════════════════════════════════
   {
     id: 'photosynthesis',
     subject: 'Biology',
@@ -1025,7 +998,6 @@ When a cell divides, DNA replicates **semi-conservatively** — the helix unzips
     videoQuery: 'DNA structure double helix explained',
   },
 
-  // ═══════════════════════════ MATH ═══════════════════════════════════
   {
     id: 'quadratic-equation',
     subject: 'Math',

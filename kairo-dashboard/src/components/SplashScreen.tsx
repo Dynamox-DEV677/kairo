@@ -1,41 +1,17 @@
-/**
- * SplashScreen — premium app boot animation.
- *
- * Phases (timed in ms from mount):
- *   0   ── Black canvas + radial-purple glow fades in (0 → 1, 600ms)
- *   200 ── Neural grid lines stroke-draw across the field (200 → 1000ms)
- *   500 ── Kyno logo scales 0.3 → 1.0 with elastic spring + bloom
- *   900 ── 18 particles burst outward from logo, fading at the edges
- *   1200── Logo gets a subtle breathing pulse + violet halo
- *   1300── "Kyno" wordmark types in below the logo (700ms)
- *   1700── "Your AI academic twin" subtitle fades up
- *   2200── Progress bar fills from 0 → 100% (final 600ms)
- *   2800── Entire splash fades out → dashboard revealed
- *
- * Total duration: ~3.0s.
- * Skippable: tap anywhere after 1s OR press Esc.
- * Gated:     session-scoped (sessionStorage 'kairo:splash:shown') so we
- *            don't re-play it on every nav.
- */
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 
 interface Props {
-  /** Called once the splash has fully dismissed. Parent should reveal the app then. */
   onComplete: () => void
-  /** Override for total duration (in ms). Default 3000. */
   duration?: number
 }
 
-// Ultramarine accent — deeper, more saturated royal blue. Sits between
-// the brand's electric primary (#4F7CFF) and the deep anchor (#2046C2),
-// so cards/buttons elsewhere stay harmonious.
 const C = {
   bg:        '#050505',
   text:      '#ffffff',
   purpleDeep:'#0B1530',
-  purple:    '#2A4FE0',  // ultramarine
+  purple:    '#2A4FE0',
   purpleLite:'#A5B4FC',
   purpleSoft:'#DBE7FF',
 }
@@ -86,7 +62,6 @@ export default function SplashScreen({ onComplete, duration = 3000 }: Props) {
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             overflow: 'hidden',
             cursor: canSkip ? 'pointer' : 'default',
-            // Anti-aliased crispness for the logo
             isolation: 'isolate',
           }}
         >
@@ -113,7 +88,6 @@ export default function SplashScreen({ onComplete, duration = 3000 }: Props) {
             }
           `}</style>
 
-          {/* ─── Layer 1: Radial purple aura ────────────────────────────────── */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -130,7 +104,6 @@ export default function SplashScreen({ onComplete, duration = 3000 }: Props) {
             }}
           />
 
-          {/* ─── Layer 2: Neural grid backdrop ──────────────────────────────── */}
           <svg
             width="100%" height="100%"
             viewBox="0 0 1200 800"
@@ -149,7 +122,6 @@ export default function SplashScreen({ onComplete, duration = 3000 }: Props) {
                 <stop offset="100%" stopColor="#4F7CFF" stopOpacity="0"/>
               </linearGradient>
             </defs>
-            {/* Horizontal lines */}
             {[80, 200, 340, 460, 580, 700].map((y, i) => (
               <motion.line
                 key={`h${y}`}
@@ -160,7 +132,6 @@ export default function SplashScreen({ onComplete, duration = 3000 }: Props) {
                 transition={{ duration: 1.4, delay: 0.2 + i * 0.08, ease: 'easeOut' }}
               />
             ))}
-            {/* Vertical lines */}
             {[100, 300, 500, 700, 900, 1100].map((x, i) => (
               <motion.line
                 key={`v${x}`}
@@ -173,16 +144,13 @@ export default function SplashScreen({ onComplete, duration = 3000 }: Props) {
             ))}
           </svg>
 
-          {/* ─── Layer 3: Hero block ────────────────────────────────────────── */}
           <div style={{
             position: 'relative', zIndex: 2,
             display: 'flex', flexDirection: 'column', alignItems: 'center',
             gap: 22, padding: '0 28px',
             textAlign: 'center', maxWidth: 560,
           }}>
-            {/* Logo plate */}
             <div style={{ position: 'relative', width: 180, height: 180 }}>
-              {/* Outer halo */}
               <motion.div
                 initial={{ opacity: 0, scale: 0.5 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -196,7 +164,6 @@ export default function SplashScreen({ onComplete, duration = 3000 }: Props) {
                 }}
               />
 
-              {/* Rotating conic ring under the logo */}
               <motion.div
                 initial={{ opacity: 0, scale: 0.4, rotate: -90 }}
                 animate={{ opacity: 1, scale: 1, rotate: 270 }}
@@ -212,7 +179,6 @@ export default function SplashScreen({ onComplete, duration = 3000 }: Props) {
                 }}
               />
 
-              {/* The logo itself */}
               <motion.div
                 initial={{ opacity: 0, scale: 0.3, y: 6 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -237,7 +203,6 @@ export default function SplashScreen({ onComplete, duration = 3000 }: Props) {
                 />
               </motion.div>
 
-              {/* Particle burst */}
               {Array.from({ length: 18 }).map((_, i) => {
                 const angle    = (i / 18) * Math.PI * 2
                 const distance = 130 + (i % 3) * 18
@@ -273,7 +238,6 @@ export default function SplashScreen({ onComplete, duration = 3000 }: Props) {
               })}
             </div>
 
-            {/* Wordmark + AI pill on one row */}
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -288,7 +252,6 @@ export default function SplashScreen({ onComplete, duration = 3000 }: Props) {
                 lineHeight: 1,
               }}
             >
-              {/* "Kyno" — gradient white→ultramarine for a metallic look */}
               <span style={{
                 background: 'linear-gradient(90deg, #FFFFFF 0%, #DBE7FF 40%, #A5B4FC 75%, #2A4FE0 100%)',
                 WebkitBackgroundClip: 'text', backgroundClip: 'text',
@@ -297,9 +260,6 @@ export default function SplashScreen({ onComplete, duration = 3000 }: Props) {
                 Kyno
               </span>
 
-              {/* White "AI" pill — small, sits on the wordmark baseline.
-                  Crisp white text on glass tells you this is an AI product
-                  the moment the splash paints, without shouting. */}
               <motion.span
                 initial={{ opacity: 0, scale: 0.85, y: 4 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -336,7 +296,6 @@ export default function SplashScreen({ onComplete, duration = 3000 }: Props) {
               />
             </motion.div>
 
-            {/* Subtitle — white for max legibility on the dark canvas */}
             <motion.div
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
@@ -353,7 +312,6 @@ export default function SplashScreen({ onComplete, duration = 3000 }: Props) {
               Your AI Academic Twin
             </motion.div>
 
-            {/* Progress bar */}
             <div style={{
               marginTop: 6,
               width: 'min(280px, 70vw)',
@@ -375,7 +333,6 @@ export default function SplashScreen({ onComplete, duration = 3000 }: Props) {
             </div>
           </div>
 
-          {/* Skip hint — appears at 1s */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: canSkip ? 0.55 : 0 }}

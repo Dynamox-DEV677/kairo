@@ -1,8 +1,3 @@
-/**
- * ParentDashboard — read-only view of the linked child's marks.
- * Parents can ONLY see: exam marks, subject-wise performance, progress.
- * Parents CANNOT see: homework, submissions, tasks, or edit anything.
- */
 import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -12,7 +7,6 @@ import {
 } from 'lucide-react'
 import type { AuthProfile } from './Login'
 
-// ─── API helper ───────────────────────────────────────────────────────────────
 function token() { return localStorage.getItem('kairo_token') || '' }
 async function api(path: string): Promise<any> {
   const res = await fetch(`/api${path}`, {
@@ -23,7 +17,6 @@ async function api(path: string): Promise<any> {
   return data
 }
 
-// ─── Types ────────────────────────────────────────────────────────────────────
 interface Mark {
   id: string
   subject: string
@@ -57,7 +50,6 @@ interface Student {
   class_name?: string
 }
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
 function grade(pct: number) {
   if (pct >= 90) return { label: 'A+', color: '#A5B4FC' }
   if (pct >= 75) return { label: 'A',  color: '#A5B4FC' }
@@ -71,7 +63,6 @@ function fmtDate(s: string) {
   return new Date(s).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
 }
 
-// ─── Mini bar chart ───────────────────────────────────────────────────────────
 function BarChart({ subjects }: { subjects: SubjectSummary[] }) {
   const max = Math.max(...subjects.map(s => s.percentage), 1)
   return (
@@ -115,7 +106,6 @@ function BarChart({ subjects }: { subjects: SubjectSummary[] }) {
   )
 }
 
-// ─── MAIN COMPONENT ───────────────────────────────────────────────────────────
 interface ParentDashboardProps {
   profile: AuthProfile
   onLogout?: () => void
@@ -136,8 +126,6 @@ export default function ParentDashboard({ profile, onLogout }: ParentDashboardPr
       .then(d => {
         setMarks(d.marks || [])
         setStudent(d.student || null)
-        // Guarantee the nested arrays exist so the render path can never throw
-        // on a partial/older API response (.length/.slice/.map downstream).
         setSummary(d.summary ? {
           ...d.summary,
           strong_subjects: Array.isArray(d.summary.strong_subjects) ? d.summary.strong_subjects : [],
@@ -161,7 +149,6 @@ export default function ParentDashboard({ profile, onLogout }: ParentDashboardPr
       minHeight: '100vh', background: '#050505',
       fontFamily: "'Inter', system-ui, sans-serif",
     }}>
-      {/* Top bar */}
       <div style={{
         background: '#0E1117', borderBottom: '1px solid #1f2532',
         padding: '0 24px', display: 'flex', alignItems: 'center',
@@ -203,7 +190,6 @@ export default function ParentDashboard({ profile, onLogout }: ParentDashboardPr
       </div>
 
       <div style={{ maxWidth: 860, margin: '0 auto', padding: '28px 20px' }}>
-        {/* Child card */}
         {student && (
           <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
             style={{ background: 'linear-gradient(135deg, rgba(79, 124, 255, 0.12), rgba(79, 124, 255, 0.08))',
@@ -227,7 +213,6 @@ export default function ParentDashboard({ profile, onLogout }: ParentDashboardPr
           </motion.div>
         )}
 
-        {/* Error */}
         {err && (
           <div style={{ background: 'rgba(79, 124, 255, 0.1)', border: '1px solid rgba(79, 124, 255, 0.25)',
             borderRadius: 10, padding: '12px 16px', marginBottom: 20, display: 'flex', gap: 10, color: '#66D9FF', fontSize: 13 }}>
@@ -251,7 +236,6 @@ export default function ParentDashboard({ profile, onLogout }: ParentDashboardPr
           </div>
         ) : (
           <>
-            {/* Summary cards */}
             {summary && (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(170px, 1fr))', gap: 12, marginBottom: 24 }}>
                 <SummaryCard icon={Target} label="Overall Average" value={`${summary.average_percentage}%`}
@@ -266,7 +250,6 @@ export default function ParentDashboard({ profile, onLogout }: ParentDashboardPr
               </div>
             )}
 
-            {/* Tabs */}
             <div style={{ display: 'flex', gap: 6, marginBottom: 20 }}>
               {(['overview', 'details'] as const).map(t => (
                 <button key={t} onClick={() => setTab(t)} style={{
@@ -286,7 +269,6 @@ export default function ParentDashboard({ profile, onLogout }: ParentDashboardPr
                 <motion.div key="overview"
                   initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
 
-                  {/* Performance bar chart */}
                   <div style={{ background: '#0E1117', border: '1px solid #1f2532', borderRadius: 14, padding: 20, marginBottom: 16 }}>
                     <div style={{ fontSize: 14, fontWeight: 700, color: '#fafafa', marginBottom: 16, display: 'flex', gap: 8 }}>
                       <BarChart3 size={16} color="#4F7CFF" /> Subject-wise Performance
@@ -294,7 +276,6 @@ export default function ParentDashboard({ profile, onLogout }: ParentDashboardPr
                     <BarChart subjects={subjects} />
                   </div>
 
-                  {/* Strong / Weak */}
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                     <div style={{ background: 'rgba(165, 180, 252, 0.06)', border: '1px solid rgba(165, 180, 252, 0.2)',
                       borderRadius: 12, padding: 16 }}>
@@ -328,7 +309,6 @@ export default function ParentDashboard({ profile, onLogout }: ParentDashboardPr
                 <motion.div key="details"
                   initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
 
-                  {/* Subject filter */}
                   <div style={{ display: 'flex', gap: 6, marginBottom: 14, flexWrap: 'wrap' }}>
                     <button onClick={() => setSortSubject('')} style={{
                       padding: '4px 10px', borderRadius: 6, fontSize: 12, cursor: 'pointer',
@@ -356,7 +336,6 @@ export default function ParentDashboard({ profile, onLogout }: ParentDashboardPr
                           transition={{ delay: i * 0.04 }}
                           style={{ background: '#0E1117', border: '1px solid #1f2532', borderRadius: 12, padding: '14px 16px',
                             display: 'flex', alignItems: 'center', gap: 14 }}>
-                          {/* Grade badge */}
                           <div style={{ width: 40, height: 40, borderRadius: 10, flexShrink: 0,
                             background: `${g.color}18`, border: `1px solid ${g.color}44`,
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -364,7 +343,6 @@ export default function ParentDashboard({ profile, onLogout }: ParentDashboardPr
                             {g.label}
                           </div>
 
-                          {/* Info */}
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <div style={{ fontSize: 14, fontWeight: 600, color: '#fafafa' }}>{m.exam_name}</div>
                             <div style={{ fontSize: 12, color: '#6B7280' }}>
@@ -379,7 +357,6 @@ export default function ParentDashboard({ profile, onLogout }: ParentDashboardPr
                             )}
                           </div>
 
-                          {/* Score */}
                           <div style={{ textAlign: 'right', flexShrink: 0 }}>
                             <div style={{ fontSize: 20, fontWeight: 800, color: g.color }}>
                               {m.marks_obtained}
@@ -397,7 +374,6 @@ export default function ParentDashboard({ profile, onLogout }: ParentDashboardPr
           </>
         )}
 
-        {/* Read-only notice */}
         <div style={{ marginTop: 32, textAlign: 'center', fontSize: 11, color: '#27272a' }}>
           🔒 Parent portal — read-only access to academic marks only
         </div>
@@ -406,7 +382,6 @@ export default function ParentDashboard({ profile, onLogout }: ParentDashboardPr
   )
 }
 
-// ─── Summary card ─────────────────────────────────────────────────────────────
 function SummaryCard({ icon: Icon, label, value, color, sub }: {
   icon: React.ElementType; label: string; value: number | string; color: string; sub?: string
 }) {

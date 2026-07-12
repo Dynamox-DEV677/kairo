@@ -1,15 +1,3 @@
-/**
- * Autonomous AI Teacher Assistant
- *
- * Teacher inputs a chapter/topic + grade + duration → AI returns ALL of:
- *   - Lesson plan
- *   - Homework set
- *   - Flashcards (Q/A pairs)
- *   - Quiz with answer key
- *   - Revision sheet (key formulas + summary)
- *
- * Each artifact is independently downloadable, copyable, savable to notebook.
- */
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -39,11 +27,11 @@ interface Flashcard { front: string; back: string }
 interface QuizItem  { q: string; options: string[]; answer: number; explain: string }
 
 interface Pack {
-  lesson_plan:    string   // markdown
-  homework:       string   // markdown
+  lesson_plan:    string   
+  homework:       string   
   flashcards:     Flashcard[]
   quiz:           QuizItem[]
-  revision_sheet: string   // markdown
+  revision_sheet: string   
   meta:           { subject: string; topic: string; grade: string; duration: number }
 }
 
@@ -75,7 +63,6 @@ export default function TeacherAssistant() {
     const ctx = `${board} Class ${grade} · ${subject} · ${duration} min lesson`
 
     try {
-      // Generate sequentially with progress feedback (smaller calls = lower failure risk)
       setProgress('Drafting lesson plan…')
       const lessonPlan = await chat({
         messages: [
@@ -162,7 +149,6 @@ Markdown structure:
         ],
       })
 
-      // Parse the JSON artifacts robustly
       const flashcards = parseJsonArray<Flashcard>(flashcardsRaw)
       const quiz       = parseJsonArray<QuizItem>(quizRaw)
 
@@ -228,7 +214,6 @@ Markdown structure:
 
   return (
     <div style={{ padding: '28px 36px', maxWidth: 1100, margin: '0 auto', height: '100%', overflowY: 'auto' }}>
-      {/* Header */}
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 22 }}>
         <div style={{
           width: 44, height: 44, borderRadius: 11,
@@ -246,7 +231,6 @@ Markdown structure:
         </div>
       </div>
 
-      {/* Setup form */}
       {!pack && (
         <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
           style={{ ...card, padding: 22, marginBottom: 14 }}>
@@ -316,10 +300,8 @@ Markdown structure:
         </motion.div>
       )}
 
-      {/* Pack — tabbed view */}
       {pack && (
         <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}>
-          {/* Header bar with reset */}
           <div style={{
             ...card, padding: '14px 18px', marginBottom: 12,
             display: 'flex', alignItems: 'center', gap: 12,
@@ -342,7 +324,6 @@ Markdown structure:
             </button>
           </div>
 
-          {/* Tab strip */}
           <div style={{
             display: 'flex', gap: 4, marginBottom: 12, background: '#0E1117',
             border: '1px solid #1f2532', borderRadius: 10, padding: 4, overflowX: 'auto',
@@ -366,9 +347,7 @@ Markdown structure:
             })}
           </div>
 
-          {/* Tab content */}
           <div style={{ ...card, padding: 22 }}>
-            {/* Toolbar */}
             <div style={{
               display: 'flex', justifyContent: 'flex-end', gap: 6, marginBottom: 14,
               paddingBottom: 12, borderBottom: '1px solid #1a1f2e',
@@ -400,7 +379,6 @@ Markdown structure:
               </button>
             </div>
 
-            {/* Render */}
             {activeTab === 'flashcards' ? (
               <FlashcardsView cards={pack.flashcards} />
             ) : activeTab === 'quiz' ? (
@@ -425,7 +403,6 @@ Markdown structure:
   )
 }
 
-// ─── Flashcards view ──────────────────────────────────────────────────────────
 function FlashcardsView({ cards }: { cards: Flashcard[] }) {
   if (cards.length === 0) return <p style={{ color: '#6B7280', fontSize: 13 }}>No flashcards generated.</p>
   return (
@@ -450,7 +427,6 @@ function FlashcardsView({ cards }: { cards: Flashcard[] }) {
   )
 }
 
-// ─── Quiz view ────────────────────────────────────────────────────────────────
 function QuizView({ items }: { items: QuizItem[] }) {
   const [showAnswers, setShowAnswers] = useState(false)
   if (items.length === 0) return <p style={{ color: '#6B7280', fontSize: 13 }}>No quiz items generated.</p>
@@ -507,7 +483,6 @@ function QuizView({ items }: { items: QuizItem[] }) {
   )
 }
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
 function parseJsonArray<T>(raw: string): T[] {
   const cleaned = raw
     .replace(/<\/?think(?:ing)?>[\s\S]*?<\/?think(?:ing)?>/gi, '')

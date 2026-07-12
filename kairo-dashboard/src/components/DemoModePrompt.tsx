@@ -1,38 +1,8 @@
-/**
- * DemoModePrompt — one-time first-visit nudge.
- *
- * Surfaces a non-blocking toast in the bottom-right that offers to seed
- * the dashboard with a realistic Class 10 CBSE student. Aimed at judges
- * / teachers / first-time visitors so they don't bounce off an empty
- * Kyno the moment they land.
- *
- * Shown when ALL of these are true:
- *   - The user has just landed on the Dashboard (post-login)
- *   - The Twin storage bucket is empty (no events yet)
- *   - The user hasn't previously dismissed or accepted the prompt
- *
- * Dismissals + acceptances both set `kairo:demo-prompt-shown` so the
- * toast never reappears for this device — even if the user later wipes
- * their Twin and re-lands on an empty dashboard. (We don't want to
- * pester returning users.)
- *
- * Honours `prefers-reduced-motion` and the existing dark theme.
- */
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Sparkles, X } from 'lucide-react'
 import { seedDemo, loadState } from '../lib/twin'
 
-/**
- * Per-user scoped flag. Earlier this was a single global key, which
- * meant that once a user accepted/dismissed the toast, signing in
- * with a *different* account would skip the prompt even though the
- * new account's twin was empty.
- *
- * We derive the suffix the same way twin.ts derives the storage
- * bucket — same FNV-1a hash, same `_local` fallback — so every new
- * account gets its own first-visit nudge.
- */
 function promptStorageKey(): string {
   if (typeof window === 'undefined') return 'kairo:demo-prompt-shown:_local'
   try {
@@ -46,14 +16,11 @@ function promptStorageKey(): string {
         return 'kairo:demo-prompt-shown:' + ((h >>> 0).toString(36)).padStart(7, '0')
       }
     }
-  } catch { /* ignore */ }
+  } catch {  }
   return 'kairo:demo-prompt-shown:_local'
 }
 
 interface Props {
-  /** Delay before the toast slides up, in ms. Default 1400ms — lets
-   *  the dashboard paint first so the prompt feels like a follow-up
-   *  rather than a blocker. */
   delayMs?: number
 }
 
@@ -63,19 +30,18 @@ export default function DemoModePrompt({ delayMs = 1400 }: Props) {
 
   useEffect(() => {
     if (typeof window === 'undefined') return
-    if (localStorage.getItem(promptStorageKey())) return     // already shown
+    if (localStorage.getItem(promptStorageKey())) return
     try {
-      // Only show on a truly empty twin
       const state = loadState()
       if (state.events.length > 0) return
-    } catch { /* ignore — show prompt as fallback */ }
+    } catch {  }
 
     const t = window.setTimeout(() => setOpen(true), delayMs)
     return () => window.clearTimeout(t)
   }, [delayMs])
 
   function dismiss() {
-    try { localStorage.setItem(promptStorageKey(), 'dismissed:' + Date.now()) } catch { /* ignore */ }
+    try { localStorage.setItem(promptStorageKey(), 'dismissed:' + Date.now()) } catch {  }
     setOpen(false)
   }
 
@@ -85,10 +51,6 @@ export default function DemoModePrompt({ delayMs = 1400 }: Props) {
     try {
       seedDemo()
       localStorage.setItem(promptStorageKey(), 'accepted:' + Date.now())
-      // Reload so every page in the app re-reads from the now-seeded twin.
-      // Routes that subscribe to `storage` events (Kyno) would still
-      // update without this, but Solver / Notebook / Formula Sheet read
-      // on mount only.
       window.location.reload()
     } catch (err) {
       console.warn('[DemoModePrompt] seed failed:', err)
@@ -121,7 +83,6 @@ export default function DemoModePrompt({ delayMs = 1400 }: Props) {
             boxShadow: '0 18px 48px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(79, 124, 255, 0.06)',
           }}
         >
-          {/* Close icon — top right */}
           <button
             onClick={dismiss}
             aria-label="Dismiss"

@@ -1,23 +1,3 @@
-/**
- * Kyno · Academic Twin REST API.
- *
- *   GET  /api/twin                      twin snapshot (current user)
- *   POST /api/twin/refresh              force recompute (twin + recs + obs)
- *   GET  /api/twin/dashboard            one-shot bundle for the KairoOS UI
- *
- *   GET  /api/twin/mastery              all per-topic mastery rows
- *   GET  /api/twin/retention            forgetting curves for the dashboard
- *
- *   GET  /api/twin/recommendations      open suggestions, ranked
- *   POST /api/twin/recommendations/:id/act       mark as acted
- *   POST /api/twin/recommendations/:id/dismiss   user dismissed
- *
- *   GET  /api/twin/observations         recent supportive insights
- *   POST /api/twin/observations/:id/ack mark as seen
- *
- *   GET  /api/twin/timeline             recent events for the timeline UI
- *   POST /api/twin/event                manual event ingestion
- */
 import { Router } from 'express'
 import { supabaseAdmin, requireSupabase } from '../services/supabase.js'
 import { requireSupabaseAuth }            from '../middleware/supabaseAuth.js'
@@ -34,7 +14,6 @@ const router = Router()
 router.use(requireSupabase)
 router.use(requireSupabaseAuth)
 
-// ── Helpers ─────────────────────────────────────────────────────────────────
 async function readOpenRecs(userId, limit = 10) {
   const res = await supabaseAdmin
     .from('twin_recommendations')
@@ -60,7 +39,6 @@ async function readRecentObs(userId, limit = 10) {
   return res.data || []
 }
 
-// ── GET /api/twin ───────────────────────────────────────────────────────────
 router.get('/', async (req, res) => {
   try {
     const twin = await getTwin(req.user.id)
@@ -70,7 +48,6 @@ router.get('/', async (req, res) => {
   }
 })
 
-// ── POST /api/twin/refresh ──────────────────────────────────────────────────
 router.post('/refresh', async (req, res) => {
   try {
     const twin = await refreshTwinAll(req.user.id)
@@ -80,8 +57,6 @@ router.post('/refresh', async (req, res) => {
   }
 })
 
-// ── GET /api/twin/dashboard ─────────────────────────────────────────────────
-// Bundles everything the KairoOS UI needs in one round-trip.
 router.get('/dashboard', async (req, res) => {
   try {
     const userId = req.user.id
@@ -119,7 +94,6 @@ router.get('/dashboard', async (req, res) => {
     const recentEvents  = eventsRes.data  || []
     const sessions      = sessionsRes.data || []
 
-    // Attach current retention to each mastery row (helps the heatmap)
     const masteryWithRet = mastery.map(m => ({
       ...m,
       retention_now: +retentionFor(m).toFixed(3),
@@ -147,7 +121,6 @@ router.get('/dashboard', async (req, res) => {
   }
 })
 
-// ── GET /api/twin/mastery ───────────────────────────────────────────────────
 router.get('/mastery', async (req, res) => {
   try {
     const r = await supabaseAdmin
@@ -162,8 +135,6 @@ router.get('/mastery', async (req, res) => {
   }
 })
 
-// ── GET /api/twin/retention ─────────────────────────────────────────────────
-// Returns a [days × topics] grid of predicted retention for the next 7 days.
 router.get('/retention', async (req, res) => {
   try {
     const r = await supabaseAdmin
@@ -195,7 +166,6 @@ router.get('/retention', async (req, res) => {
   }
 })
 
-// ── GET /api/twin/recommendations ───────────────────────────────────────────
 router.get('/recommendations', async (req, res) => {
   try {
     const open = await readOpenRecs(req.user.id, 12)
@@ -229,7 +199,6 @@ router.post('/recommendations/:id/dismiss', async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }) }
 })
 
-// ── GET /api/twin/observations ──────────────────────────────────────────────
 router.get('/observations', async (req, res) => {
   try {
     const obs = await readRecentObs(req.user.id, 10)
@@ -251,8 +220,6 @@ router.post('/observations/:id/ack', async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }) }
 })
 
-// ── GET /api/twin/timeline ──────────────────────────────────────────────────
-// Recent activity for the learning timeline visualization.
 router.get('/timeline', async (req, res) => {
   try {
     const { data = [] } = await supabaseAdmin
@@ -265,9 +232,6 @@ router.get('/timeline', async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }) }
 })
 
-// ── GET /api/twin/snapshot ──────────────────────────────────────────────────
-// Returns the latest cloud snapshot for the current user, or null if none.
-// Used by the client on first load to hydrate a fresh device.
 router.get('/snapshot', async (req, res) => {
   try {
     const { data, error } = await supabaseAdmin
@@ -287,7 +251,6 @@ router.get('/snapshot', async (req, res) => {
       },
     })
   } catch (e) {
-    // Missing table = setup not done. Treat as "no snapshot" so the UI degrades.
     if (/relation .* does not exist/i.test(e.message || '')) {
       console.warn('[twin/snapshot] table missing — run twin_snapshot_schema.sql')
       return res.json({ snapshot: null, setup_required: true })
@@ -296,16 +259,12 @@ router.get('/snapshot', async (req, res) => {
   }
 })
 
-// ── POST /api/twin/snapshot ─────────────────────────────────────────────────
-// Body: { blob, deviceLabel?, eventsCount? }
-// Upserts the current user's single rolling snapshot.
 router.post('/snapshot', async (req, res) => {
   try {
     const { blob, deviceLabel, eventsCount } = req.body || {}
     if (!blob || typeof blob !== 'object') {
       return res.status(400).json({ error: 'blob is required and must be an object' })
     }
-    // Reject huge payloads — 1.5 MB is way more than any real twin needs.
     const sizeBytes = JSON.stringify(blob).length
     if (sizeBytes > 1_500_000) {
       return res.status(413).json({ error: 'snapshot too large', size_bytes: sizeBytes })
@@ -336,10 +295,6 @@ router.post('/snapshot', async (req, res) => {
   }
 })
 
-// ── DELETE /api/twin/snapshot ───────────────────────────────────────────────
-// Deletes the cloud copy of the user's snapshot. Called by the client after
-// a successful pull so the data doesn't sit on the server. The next push
-// (5 s after activity on the device that just pulled) will re-create the row.
 router.delete('/snapshot', async (req, res) => {
   try {
     const { error } = await supabaseAdmin
@@ -350,15 +305,12 @@ router.delete('/snapshot', async (req, res) => {
     res.json({ ok: true, deleted_at: new Date().toISOString() })
   } catch (e) {
     if (/relation .* does not exist/i.test(e.message || '')) {
-      return res.json({ ok: true, deleted_at: new Date().toISOString() })  // no-op
+      return res.json({ ok: true, deleted_at: new Date().toISOString() })
     }
     res.status(500).json({ error: e.message })
   }
 })
 
-// ── POST /api/twin/event ────────────────────────────────────────────────────
-// Manual event ingestion — useful for the frontend to log lab opens,
-// concept views, etc. directly. Triggers an async refresh.
 router.post('/event', async (req, res) => {
   try {
     const {
@@ -366,7 +318,6 @@ router.post('/event', async (req, res) => {
       duration_ms, modality, payload,
     } = req.body || {}
 
-    // 1. Record the event
     const id = await recordEvent({
       userId:     req.user.id,
       schoolId:   req.user.school_id,
@@ -375,7 +326,6 @@ router.post('/event', async (req, res) => {
       durationMs: duration_ms, modality, payload,
     })
 
-    // 2. If the event carries a learning signal, update topic mastery
     if (topic && (typeof correct === 'boolean' || typeof score === 'number')) {
       await applyToMastery({
         userId:     req.user.id,
@@ -387,7 +337,6 @@ router.post('/event', async (req, res) => {
       })
     }
 
-    // 3. Background refresh — don't make the user wait on it
     refreshTwinAll(req.user.id).catch(() => {})
 
     res.status(201).json({ ok: true, id })

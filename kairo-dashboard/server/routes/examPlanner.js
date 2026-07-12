@@ -1,15 +1,3 @@
-/**
- * Exam Planner Routes
- *
- * POST /api/exam-planner/generate
- *   Body: { exam, examDate, hoursPerDay, weakAreas?, currentLevel? }
- *   exam ∈ { 'jee-main', 'jee-advanced', 'neet', 'cbse-10', 'cbse-12', 'icse-10', 'icse-12', 'custom' }
- *
- * Difference from /api/study-plan: this route knows the syllabus and
- * weighting of major Indian exams up front, so the user only has to pick
- * the exam — not list every subject + topic themselves. The AI is
- * primed with the syllabus block before being asked for a plan.
- */
 import { Router } from 'express'
 import { aiCall, parseJSON } from '../utils/ai.js'
 import { supabaseAdmin, SUPABASE_CONFIGURED } from '../services/supabase.js'
@@ -17,12 +5,7 @@ import groqPool from '../services/groqPool.js'
 
 const router = Router()
 
-// ── Groq-first AI helper ────────────────────────────────────────────────
-// Tries Groq's 70B model (free, fast) using a rotating key pool. Falls
-// back to aiCall (OpenRouter) if Groq has no live keys OR fails. This
-// avoids the 500 we saw when only GROQ_API_KEYS is set in Vercel env.
 async function aiCallSmart({ taskType, messages, maxTokens = 4000, temperature = 0.4 }) {
-  // 1) Try Groq first
   const key = groqPool.next()
   if (key) {
     try {
@@ -53,13 +36,9 @@ async function aiCallSmart({ taskType, messages, maxTokens = 4000, temperature =
       console.warn('[exam-planner] Groq failed, trying OpenRouter:', e.message)
     }
   }
-  // 2) Fall back to OpenRouter (aiCall)
   return aiCall({ taskType, messages, maxTokens, temperature })
 }
 
-// Helper — return 503 if Supabase isn't set up. Used by the persistence
-// endpoints; the AI-only /generate + /replan + /exams endpoints don't
-// need a DB so they still work without Supabase env vars.
 function requireDB(req, res, next) {
   if (!SUPABASE_CONFIGURED) {
     return res.status(503).json({
@@ -70,10 +49,6 @@ function requireDB(req, res, next) {
   next()
 }
 
-// ── Exam knowledge base ────────────────────────────────────────────────
-// Compact syllabi the AI gets injected into its prompt so it doesn't
-// have to recall from memory. Topic weights are rough percentages from
-// past papers — used to prioritize what to study first.
 const EXAMS = {
   'jee-main': {
     label: 'JEE Main',
@@ -146,15 +121,14 @@ const EXAMS = {
   'custom': null,
 }
 
-// ── POST /api/exam-planner/generate ────────────────────────────────────
 router.post('/generate', async (req, res) => {
   const {
     exam = 'jee-main',
-    examDate,                 // 'YYYY-MM-DD'
+    examDate,
     hoursPerDay = 4,
-    weakAreas = [],           // string[] — topics the student already knows are shaky
-    currentLevel = 'mid',     // 'beginner' | 'mid' | 'strong'
-    customSubjects = null,    // [{ name, weight, weakest:[] }] — only if exam === 'custom'
+    weakAreas = [],
+    currentLevel = 'mid',
+    customSubjects = null,
   } = req.body || {}
 
   if (!examDate) {
@@ -174,7 +148,6 @@ router.post('/generate', async (req, res) => {
 
   if (!examConfig) return res.status(400).json({ error: `Unknown exam: ${exam}` })
 
-  // Format the subjects block for the prompt
   const subjectsBlock = Object.entries(examConfig.subjects).map(([name, cfg]) =>
     `- ${name} (~${Math.round(cfg.weight * 100)}% of exam, common-weak topics: ${cfg.weakest.join(', ')})`
   ).join('\n')
@@ -255,12 +228,6 @@ Rules:
   }
 })
 
-// ── POST /api/exam-planner/replan ──────────────────────────────────────
-// Re-generates a plan with feedback from the student's last week.
-// Body: { previousPlan, mockScore (0-100), completionPercent (0-100),
-//         strugglingTopics: [], confidentTopics: [], hoursPerDay, examDate }
-// The AI gets the *previous* plan's structure as context and rebuilds it
-// using the user's actual progress + how the latest mock went.
 router.post('/replan', async (req, res) => {
   const {
     previousPlan,
@@ -337,8 +304,6 @@ Return ONLY valid JSON, no markdown.`
   }
 })
 
-// ── GET /api/exam-planner/exams ────────────────────────────────────────
-// Lightweight metadata endpoint for the picker UI.
 router.get('/exams', (req, res) => {
   res.json(Object.entries(EXAMS)
     .filter(([k]) => k !== 'custom')
@@ -351,11 +316,6 @@ router.get('/exams', (req, res) => {
     .concat([{ id: 'custom', label: 'Custom (define subjects yourself)', subjects: [], durationHrs: null }]))
 })
 
-// ── Persistence (Supabase) ─────────────────────────────────────────────
-// All DB endpoints below require Supabase to be configured.
-
-// POST /api/exam-planner/save  — store a freshly-generated plan
-// Body: { user_id, exam, exam_date, hours_per_day, plan_json }
 router.post('/save', requireDB, async (req, res) => {
   const { user_id, exam, exam_date, hours_per_day, plan_json } = req.body || {}
   if (!user_id || !exam || !exam_date || !plan_json) {
@@ -375,9 +335,6 @@ router.post('/save', requireDB, async (req, res) => {
   }
 })
 
-// GET /api/exam-planner/list?user_id=…
-// Returns [] (with a hint header) instead of 500 if the table doesn't
-// exist yet — keeps the UI usable before the schema SQL has been run.
 router.get('/list', requireDB, async (req, res) => {
   const { user_id } = req.query
   if (!user_id) return res.status(400).json({ error: 'user_id required' })
@@ -392,8 +349,6 @@ router.get('/list', requireDB, async (req, res) => {
     res.json(data || [])
   } catch (e) {
     const msg = e?.message || ''
-    // "relation … does not exist" → table not migrated yet. Don't 500;
-    // just return [] with a hint header so the UI silently handles it.
     if (msg.includes('does not exist') || msg.includes('schema cache')) {
       res.setHeader('x-exam-planner-hint', 'run server/db/exam_plans_schema.sql in Supabase')
       return res.json([])
@@ -403,7 +358,6 @@ router.get('/list', requireDB, async (req, res) => {
   }
 })
 
-// GET /api/exam-planner/:id — full plan with plan_json
 router.get('/:id', requireDB, async (req, res) => {
   try {
     const { data, error } = await supabaseAdmin
@@ -418,9 +372,6 @@ router.get('/:id', requireDB, async (req, res) => {
   }
 })
 
-// PATCH /api/exam-planner/:id/checkin
-// Body: { block_key: "1-Mon-0", done: true }
-// Toggles the completion_state JSON map.
 router.patch('/:id/checkin', requireDB, async (req, res) => {
   const { block_key, done } = req.body || {}
   if (!block_key) return res.status(400).json({ error: 'block_key required' })
@@ -447,8 +398,6 @@ router.patch('/:id/checkin', requireDB, async (req, res) => {
   }
 })
 
-// PATCH /api/exam-planner/:id/mock  — log a mock-test score
-// Body: { score: 0-100, note: "" }
 router.patch('/:id/mock', requireDB, async (req, res) => {
   const { score, note = '' } = req.body || {}
   if (typeof score !== 'number') return res.status(400).json({ error: 'score (number) required' })
@@ -474,7 +423,6 @@ router.patch('/:id/mock', requireDB, async (req, res) => {
   }
 })
 
-// PATCH /api/exam-planner/:id  — replace plan_json with a re-planned version
 router.patch('/:id', requireDB, async (req, res) => {
   const { plan_json, hours_per_day } = req.body || {}
   if (!plan_json) return res.status(400).json({ error: 'plan_json required' })
@@ -494,7 +442,6 @@ router.patch('/:id', requireDB, async (req, res) => {
   }
 })
 
-// DELETE /api/exam-planner/:id  — soft delete (set is_archived = true)
 router.delete('/:id', requireDB, async (req, res) => {
   try {
     const { error } = await supabaseAdmin

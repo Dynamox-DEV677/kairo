@@ -1,10 +1,3 @@
-/**
- * Essay Grader Routes
- *
- * POST /api/essay/grade      Submit essay → AI grades it
- * GET  /api/essay            List graded essays
- * GET  /api/essay/:id        Get a single graded essay
- */
 import { Router } from 'express'
 import { db } from '../db/index.js'
 import { aiCall, parseJSON } from '../utils/ai.js'

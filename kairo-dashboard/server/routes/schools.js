@@ -1,24 +1,3 @@
-/**
- * School Management Routes
- *
- * Public:
- *   POST  /api/schools/register              Register a new school
- *   GET   /api/schools/by-name/:name         Look up school by name (join flow)
- *   GET   /api/schools/:id                   Get school public info
- *
- * Admin only (requireSchoolAdmin):
- *   POST  /api/schools/:id/regenerate-passcode   Generate new passcode
- *   POST  /api/schools/:id/teachers              Add a teacher account
- *   POST  /api/schools/:id/approve/:userId        Approve a pending student
- *   POST  /api/schools/:id/suspend/:userId        Suspend a member
- *   POST  /api/schools/:id/reinstate/:userId      Reinstate a suspended member
- *   DELETE /api/schools/:id/members/:userId       Remove member from school
- *   POST  /api/schools/:id/upload-logo           Upload school logo
- *
- * Teacher/Admin:
- *   GET   /api/schools/:id/members           List all school members
- *   GET   /api/schools/:id/stats             School dashboard stats
- */
 import { Router }   from 'express'
 import bcrypt       from 'bcryptjs'
 import crypto       from 'crypto'
@@ -30,7 +9,6 @@ import { schoolCreatedEmail, approvedEmail }      from '../services/welcomeEmail
 const router = Router()
 router.use(requireSupabase)
 
-// ── Register School ────────────────────────────────────────────────────────────
 router.post('/register', async (req, res) => {
   const {
     school_name,
@@ -38,7 +16,6 @@ router.post('/register', async (req, res) => {
     school_logo_url,
     domain,
     require_approval = false,
-    // Optional: owner account to create alongside
     owner_email,
     owner_password,
     owner_name,
@@ -48,7 +25,6 @@ router.post('/register', async (req, res) => {
   if (!school_email) return res.status(400).json({ error: 'school_email is required.' })
 
   try {
-    // Check uniqueness
     const { data: existing } = await supabaseAdmin
       .from('schools')
       .select('id')
@@ -57,12 +33,9 @@ router.post('/register', async (req, res) => {
 
     if (existing) return res.status(409).json({ error: `School "${school_name}" is already registered.` })
 
-    // Generate plain passcode — admin can view it later
     const plainPasscode  = generatePasscode()
     const hashedPasscode = await bcrypt.hash(plainPasscode, 12)
 
-    // Insert with the full set of columns, but progressively strip them
-    // until the row lands. Survives any school-table column drift.
     const school = await tryInsertSchool(
       school_name.trim(),
       school_email.trim().toLowerCase(),
@@ -76,7 +49,6 @@ router.post('/register', async (req, res) => {
 
     let ownerAccount = null
 
-    // If owner credentials provided, create admin account immediately
     if (owner_email && owner_password && owner_name) {
       const { data: authData, error: authErr } = await supabaseAdmin.auth.admin.createUser({
         email:         owner_email.trim().toLowerCase(),
@@ -85,7 +57,6 @@ router.post('/register', async (req, res) => {
       })
 
       if (!authErr && authData?.user) {
-        // Defensive: try with status, fall back without it on schema mismatch.
         const ownerCols = {
           id:        authData.user.id,
           name:      owner_name.trim(),
@@ -110,7 +81,6 @@ router.post('/register', async (req, res) => {
           }
         }
 
-        // Set owner_id on school (silently no-op if column missing)
         await supabaseAdmin
           .from('schools')
           .update({ owner_id: authData.user.id })
@@ -121,9 +91,6 @@ router.post('/register', async (req, res) => {
       }
     }
 
-    // ── Sign the owner in SERVER-SIDE so the client never has to re-auth.
-    //    This avoids the race / config mismatches that caused
-    //    "Sign-in failed after school creation" on the wizard.
     let access_token  = null
     let refresh_token = null
     let expires_in    = 3600
@@ -147,7 +114,6 @@ router.post('/register', async (req, res) => {
 
     console.log(`[Schools] ✓ Registered: ${school_name} (${school.id})`)
 
-    // Welcome email — fire and forget
     if (owner_email && owner_name) {
       schoolCreatedEmail({
         to:         owner_email.trim(),
@@ -166,7 +132,6 @@ router.post('/register', async (req, res) => {
       passcode:       plainPasscode,
       warning:        'Save this passcode securely — it will never be shown again.',
       owner_account:  ownerAccount,
-      // Session tokens so the client can skip its own auth call:
       access_token,
       refresh_token,
       expires_in,
@@ -176,15 +141,11 @@ router.post('/register', async (req, res) => {
   }
 })
 
-// ── Preview school by join code (public — used on the Join School form) ──────
-// Returns enough info to show "You are joining XYZ" preview card BEFORE the
-// user has typed any account details. Validates passcode via bcrypt.compare.
 router.get('/preview/:code', async (req, res) => {
   const code = (req.params.code || '').trim()
   if (!code || code.length < 5) return res.status(400).json({ error: 'Invalid code' })
 
   try {
-    // Fast path: passcode_plain exact match (only works after migration)
     let data = null
     try {
       const r = await supabaseAdmin
@@ -193,9 +154,8 @@ router.get('/preview/:code', async (req, res) => {
         .eq('passcode_plain', code)
         .maybeSingle()
       if (!r.error) data = r.data
-    } catch { /* column may not exist on stale schema — fall through */ }
+    } catch {  }
 
-    // Slow path: bcrypt-compare against all schools (works on any schema)
     if (!data) {
       const { data: all } = await supabaseAdmin
         .from('schools')
@@ -212,7 +172,6 @@ router.get('/preview/:code', async (req, res) => {
 
     if (!data) return res.status(404).json({ error: 'No school matches this code. Double-check with your admin.' })
 
-    // Block joins to inactive schools — only relevant after migration adds status column.
     if (data.status === 'pending_payment' || data.status === 'inactive') {
       return res.status(403).json({ error: 'This school is not active yet. Ask the admin to complete payment.' })
     }
@@ -228,7 +187,6 @@ router.get('/preview/:code', async (req, res) => {
   }
 })
 
-// ── Get School by ID (public info) ────────────────────────────────────────────
 router.get('/:id', async (req, res) => {
   try {
     const { data, error } = await supabaseAdmin
@@ -244,7 +202,6 @@ router.get('/:id', async (req, res) => {
   }
 })
 
-// ── Look up school by name ─────────────────────────────────────────────────────
 router.get('/by-name/:name', async (req, res) => {
   try {
     const { data, error } = await supabaseAdmin
@@ -260,7 +217,6 @@ router.get('/by-name/:name', async (req, res) => {
   }
 })
 
-// ── List Members ───────────────────────────────────────────────────────────────
 router.get('/:id/members', requireSupabaseAuth, requireTeacherOrAdmin, async (req, res) => {
   const schoolId = req.params.id
   if (req.schoolId !== schoolId) return res.status(403).json({ error: 'Not your school.' })
@@ -288,7 +244,6 @@ router.get('/:id/members', requireSupabaseAuth, requireTeacherOrAdmin, async (re
   }
 })
 
-// ── Get Current Passcode (admin-only, for sharing with new joiners) ────────────
 router.get('/:id/passcode', requireSupabaseAuth, requireSchoolAdmin, async (req, res) => {
   const schoolId = req.params.id
   if (req.schoolId !== schoolId) return res.status(403).json({ error: 'Not your school.' })
@@ -313,7 +268,6 @@ router.get('/:id/passcode', requireSupabaseAuth, requireSchoolAdmin, async (req,
   }
 })
 
-// ── Regenerate Passcode ────────────────────────────────────────────────────────
 router.post('/:id/regenerate-passcode', requireSupabaseAuth, requireSchoolAdmin, async (req, res) => {
   const schoolId = req.params.id
   if (req.schoolId !== schoolId) return res.status(403).json({ error: 'Not your school.' })
@@ -341,8 +295,6 @@ router.post('/:id/regenerate-passcode', requireSupabaseAuth, requireSchoolAdmin,
   }
 })
 
-// ── Add Teacher ────────────────────────────────────────────────────────────────
-// Admin creates a teacher account (no passcode needed — admin-initiated)
 router.post('/:id/teachers', requireSupabaseAuth, requireSchoolAdmin, async (req, res) => {
   const schoolId = req.params.id
   if (req.schoolId !== schoolId) return res.status(403).json({ error: 'Not your school.' })
@@ -352,7 +304,6 @@ router.post('/:id/teachers', requireSupabaseAuth, requireSchoolAdmin, async (req
   if (!name)               return res.status(400).json({ error: 'name is required.' })
 
   try {
-    // Create Supabase auth user
     const { data: authData, error: authErr } = await supabaseAdmin.auth.admin.createUser({
       email:         email.trim().toLowerCase(),
       password,
@@ -368,7 +319,6 @@ router.post('/:id/teachers', requireSupabaseAuth, requireSchoolAdmin, async (req
 
     const authUser = authData.user
 
-    // Create teacher profile
     const { data: profile, error: profileErr } = await supabaseAdmin
       .from('users')
       .insert({
@@ -398,7 +348,6 @@ router.post('/:id/teachers', requireSupabaseAuth, requireSchoolAdmin, async (req
   }
 })
 
-// ── Approve Pending Student ────────────────────────────────────────────────────
 router.post('/:id/approve/:userId', requireSupabaseAuth, requireSchoolAdmin, async (req, res) => {
   const { id: schoolId, userId } = req.params
   if (req.schoolId !== schoolId) return res.status(403).json({ error: 'Not your school.' })
@@ -421,7 +370,6 @@ router.post('/:id/approve/:userId', requireSupabaseAuth, requireSchoolAdmin, asy
 
     if (error) throw new Error(error.message)
 
-    // Approval email — pull email from auth.users + school name
     try {
       const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(userId)
       const { data: school }   = await supabaseAdmin.from('schools').select('school_name').eq('id', schoolId).single()
@@ -433,7 +381,7 @@ router.post('/:id/approve/:userId', requireSupabaseAuth, requireSchoolAdmin, asy
           role:       target.role,
         }).catch(() => {})
       }
-    } catch { /* fire-and-forget */ }
+    } catch {  }
 
     res.json({ message: `${target.name} has been approved and can now access school features.` })
   } catch (e) {
@@ -441,7 +389,6 @@ router.post('/:id/approve/:userId', requireSupabaseAuth, requireSchoolAdmin, asy
   }
 })
 
-// ── Suspend Member ─────────────────────────────────────────────────────────────
 router.post('/:id/suspend/:userId', requireSupabaseAuth, requireSchoolAdmin, async (req, res) => {
   const { id: schoolId, userId } = req.params
   if (req.schoolId !== schoolId) return res.status(403).json({ error: 'Not your school.' })
@@ -475,7 +422,6 @@ router.post('/:id/suspend/:userId', requireSupabaseAuth, requireSchoolAdmin, asy
   }
 })
 
-// ── Reinstate Member ───────────────────────────────────────────────────────────
 router.post('/:id/reinstate/:userId', requireSupabaseAuth, requireSchoolAdmin, async (req, res) => {
   const { id: schoolId, userId } = req.params
   if (req.schoolId !== schoolId) return res.status(403).json({ error: 'Not your school.' })
@@ -504,7 +450,6 @@ router.post('/:id/reinstate/:userId', requireSupabaseAuth, requireSchoolAdmin, a
   }
 })
 
-// ── Remove Member ──────────────────────────────────────────────────────────────
 router.delete('/:id/members/:userId', requireSupabaseAuth, requireSchoolAdmin, async (req, res) => {
   const { id: schoolId, userId } = req.params
   if (req.schoolId !== schoolId) return res.status(403).json({ error: 'Not your school.' })
@@ -521,7 +466,6 @@ router.delete('/:id/members/:userId', requireSupabaseAuth, requireSchoolAdmin, a
     if (target.school_id !== schoolId)  return res.status(403).json({ error: 'User is not in your school.' })
     if (target.role === 'admin')        return res.status(403).json({ error: 'Cannot remove another admin.' })
 
-    // Detach from school (don't delete the auth account)
     const { error } = await supabaseAdmin
       .from('users')
       .update({ school_id: null, status: 'active' })
@@ -537,7 +481,6 @@ router.delete('/:id/members/:userId', requireSupabaseAuth, requireSchoolAdmin, a
   }
 })
 
-// ── Upload Logo ────────────────────────────────────────────────────────────────
 router.post('/:id/upload-logo', requireSupabaseAuth, requireSchoolAdmin, async (req, res) => {
   const schoolId = req.params.id
   if (req.schoolId !== schoolId) return res.status(403).json({ error: 'Not your school.' })
@@ -573,7 +516,6 @@ router.post('/:id/upload-logo', requireSupabaseAuth, requireSchoolAdmin, async (
   }
 })
 
-// ── School Stats ───────────────────────────────────────────────────────────────
 router.get('/:id/stats', requireSupabaseAuth, requireTeacherOrAdmin, async (req, res) => {
   const schoolId = req.params.id
   if (req.schoolId !== schoolId) return res.status(403).json({ error: 'Not your school.' })
@@ -615,7 +557,6 @@ router.get('/:id/stats', requireSupabaseAuth, requireTeacherOrAdmin, async (req,
   }
 })
 
-// ── Update School Settings ─────────────────────────────────────────────────────
 router.put('/:id', requireSupabaseAuth, requireSchoolAdmin, async (req, res) => {
   const schoolId = req.params.id
   if (req.schoolId !== schoolId) return res.status(403).json({ error: 'Not your school.' })
@@ -645,7 +586,6 @@ router.put('/:id', requireSupabaseAuth, requireSchoolAdmin, async (req, res) => 
   }
 })
 
-// ── Login Logs ─────────────────────────────────────────────────────────────────
 router.get('/:id/login-logs', requireSupabaseAuth, requireSchoolAdmin, async (req, res) => {
   const schoolId = req.params.id
   if (req.schoolId !== schoolId) return res.status(403).json({ error: 'Not your school.' })
@@ -676,24 +616,11 @@ router.get('/:id/login-logs', requireSupabaseAuth, requireSchoolAdmin, async (re
   }
 })
 
-// ── Helpers ────────────────────────────────────────────────────────────────────
 function generatePasscode() {
-  // Format: XXXXXX-XXXXXX-XXXXXX (uppercase hex, easy to read/share)
   const seg = () => crypto.randomBytes(3).toString('hex').toUpperCase()
   return `${seg()}-${seg()}-${seg()}`
 }
 
-/**
- * Insert a new schools row with progressive column stripping.
- *
- *   1. Full payload (passcode_plain, domain, require_approval, status, subscription_status)
- *   2. Drop subscription_status
- *   3. Drop status
- *   4. Drop require_approval + domain + passcode_plain
- *   5. Bare minimum (school_name, school_email, school_passcode, school_logo_url)
- *
- * Returns the inserted row, or null if every attempt fails. NEVER throws.
- */
 async function tryInsertSchool(name, email, hashed, plainPasscode, logoUrl, domain, requireApproval) {
   const attempts = [
     { school_name: name, school_email: email, school_passcode: hashed, passcode_plain: plainPasscode, school_logo_url: logoUrl || null, domain: domain || null, require_approval: requireApproval, status: 'pending_payment', subscription_status: 'pending_payment' },
@@ -709,7 +636,6 @@ async function tryInsertSchool(name, email, hashed, plainPasscode, logoUrl, doma
       .select('id, school_name, school_email, school_logo_url, created_at')
       .single()
     if (!error) {
-      // Best-effort patch the optional columns
       const patches = [
         { passcode_plain: plainPasscode }, { domain: domain || null },
         { require_approval: requireApproval }, { status: 'pending_payment' },

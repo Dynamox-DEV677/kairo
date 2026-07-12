@@ -1,28 +1,3 @@
-/**
- * ConfirmModal — premium replacement for `window.confirm()`.
- *
- * Use the imperative helper:
- *
- *   import { confirmDialog } from '../components/ConfirmModal'
- *
- *   const yes = await confirmDialog({
- *     title:    'Wipe your Twin?',
- *     body:     "Everything Kyno learned about you will be erased from this device.",
- *     confirmLabel: 'Yes, wipe',
- *     tone:     'danger',
- *   })
- *   if (yes) doIt()
- *
- * Or render <ConfirmModal> directly for fully-controlled cases.
- *
- * Features:
- *   - Glassmorphism backdrop with blur + radial glow
- *   - ESC to cancel, click backdrop to cancel
- *   - Two tones: 'danger' (red) or 'primary' (purple gradient)
- *   - Framer Motion enter/exit
- *   - Body-scroll lock while open
- *   - Auto-focuses the cancel button so an accidental Enter doesn't confirm
- */
 import { useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -37,32 +12,24 @@ export interface ConfirmOptions {
   icon?:         React.ReactNode
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// Imperative API — confirmDialog() returns a Promise<boolean>
-// ════════════════════════════════════════════════════════════════════════════
-
 let dialogRoot: HTMLDivElement | null = null
 
 export function confirmDialog(opts: ConfirmOptions): Promise<boolean> {
   return new Promise((resolve) => {
     if (typeof document === 'undefined') { resolve(false); return }
 
-    // Lazily create / re-use a single host node for all dialogs
     if (!dialogRoot) {
       dialogRoot = document.createElement('div')
       dialogRoot.id = 'kairo-confirm-root'
       document.body.appendChild(dialogRoot)
     }
 
-    // Dynamically import react-dom/client to render the dialog.
-    // This keeps the module purely React-friendly without a global root.
     import('react-dom/client').then(({ createRoot }) => {
       const node = document.createElement('div')
       dialogRoot!.appendChild(node)
       const root = createRoot(node)
 
       function cleanup(value: boolean) {
-        // Animate out then unmount
         root.render(<ConfirmModal {...opts} open={false} onClose={() => {}} onConfirm={() => {}} />)
         setTimeout(() => {
           root.unmount()
@@ -83,10 +50,6 @@ export function confirmDialog(opts: ConfirmOptions): Promise<boolean> {
   })
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// Controlled component
-// ════════════════════════════════════════════════════════════════════════════
-
 export interface ConfirmModalProps extends ConfirmOptions {
   open:      boolean
   onConfirm: () => void
@@ -106,7 +69,6 @@ export default function ConfirmModal({
 }: ConfirmModalProps) {
   const cancelRef = useRef<HTMLButtonElement>(null)
 
-  // ESC closes, focus cancel on open, lock body scroll
   useEffect(() => {
     if (!open) return
     const onKey = (e: KeyboardEvent) => {
@@ -138,7 +100,6 @@ export default function ConfirmModal({
     <AnimatePresence>
       {open && (
         <motion.div
-          // Backdrop
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
           transition={{ duration: 0.18 }}
           onClick={onClose}
@@ -152,7 +113,6 @@ export default function ConfirmModal({
           }}
         >
           <motion.div
-            // Dialog
             initial={{ opacity: 0, y: 14, scale: 0.96 }}
             animate={{ opacity: 1, y: 0,  scale: 1    }}
             exit   ={{ opacity: 0, y: 8,  scale: 0.97 }}
@@ -171,7 +131,6 @@ export default function ConfirmModal({
               boxShadow: `0 24px 80px ${glowColor}, 0 0 0 1px rgba(255,255,255,0.02) inset`,
             }}
           >
-            {/* Decorative glow */}
             <div style={{
               position: 'absolute', top: -40, right: -40,
               width: 160, height: 160, borderRadius: '50%',
@@ -179,7 +138,6 @@ export default function ConfirmModal({
               pointerEvents: 'none',
             }} />
 
-            {/* Close button */}
             <button
               onClick={onClose}
               aria-label="Close"
@@ -194,7 +152,6 @@ export default function ConfirmModal({
               <X size={14} />
             </button>
 
-            {/* Icon */}
             <div style={{
               width: 44, height: 44, borderRadius: 12,
               background: danger ? 'rgba(248,113,113,0.12)' : 'rgba(79, 124, 255, 0.12)',
@@ -207,7 +164,6 @@ export default function ConfirmModal({
               {icon ?? <DefaultIcon size={20} color={accentColor} />}
             </div>
 
-            {/* Title */}
             <h2 id="kairo-confirm-title" style={{
               margin: 0, fontSize: 18, fontWeight: 800,
               color: '#fafafa', letterSpacing: -0.3, lineHeight: 1.3,
@@ -215,7 +171,6 @@ export default function ConfirmModal({
               {title}
             </h2>
 
-            {/* Body */}
             {body && (
               <p style={{
                 margin: '8px 0 0', fontSize: 13.5, color: '#B1B5BA', lineHeight: 1.6,
@@ -224,7 +179,6 @@ export default function ConfirmModal({
               </p>
             )}
 
-            {/* Buttons */}
             <div style={{ display: 'flex', gap: 10, marginTop: 22, justifyContent: 'flex-end' }}>
               <button
                 ref={cancelRef}

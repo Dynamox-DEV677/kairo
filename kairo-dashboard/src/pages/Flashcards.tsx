@@ -1,15 +1,3 @@
-/**
- * Flashcards — premium revision deck experience.
- *
- * Layout:
- *   - Hero header with stats (total, today, mastery, due)
- *   - "Suggested decks" pulled from the user's actual weak topics (twin.getMistakes())
- *   - Quick-start chips from common board topics
- *   - Topic input + generate → opens a deck viewer with 3D flip cards
- *   - Review tab — Anki-style SRS over every saved card
- *
- * Strict monochrome palette: black + deep purple + white only.
- */
 import { useEffect, useMemo, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -25,9 +13,6 @@ import {
   type Flashcard as TwinCard,
 } from '../lib/twin'
 
-// ════════════════════════════════════════════════════════════════════════════
-// TOKENS — strict monochrome
-// ════════════════════════════════════════════════════════════════════════════
 const C = {
   bg:        '#050505',
   panel:     '#0E1117',
@@ -66,9 +51,6 @@ const QUICK_CHIPS = [
   'Indian Constitution',     'Trigonometry',
 ]
 
-// ════════════════════════════════════════════════════════════════════════════
-// MAIN PAGE
-// ════════════════════════════════════════════════════════════════════════════
 export default function Flashcards() {
   const [mode, setMode]       = useState<'generate' | 'review'>('generate')
   const [topic, setTopic]     = useState('')
@@ -84,7 +66,6 @@ export default function Flashcards() {
   useEffect(() => { reloadDeck() }, [])
   useEffect(() => { if (mode === 'review') reloadDeck() }, [mode])
 
-  // Stats — pulled from the twin
   const stats = useMemo(() => {
     const all = listFlashcards()
     const today = new Date(); today.setHours(0, 0, 0, 0)
@@ -94,7 +75,6 @@ export default function Flashcards() {
     return { total: all.length, today: todayCount, mastered, due }
   }, [deck])
 
-  // Suggested decks — derived from the twin's weak topics
   const suggestions = useMemo(() => {
     const mistakes = getMistakes()
     if (mistakes.length === 0) return []
@@ -127,13 +107,13 @@ export default function Flashcards() {
       const valid = (parsed || []).filter(c => c && typeof c.front === 'string' && typeof c.back === 'string')
       if (valid.length === 0) throw new Error('AI returned 0 valid cards. Try a more specific topic.')
       setCards(valid)
-      try { const { awardXP } = await import('../lib/game'); awardXP('flashcard_gen') } catch { /* non-fatal */ }
+      try { const { awardXP } = await import('../lib/game'); awardXP('flashcard_gen') } catch {  }
       try {
         for (const c of valid) {
           recordFlashcard({ front: c.front, back: c.back, topic: useTopic, source: 'auto-from-doubt' })
         }
         reloadDeck()
-      } catch { /* ignore */ }
+      } catch {  }
       saveToNotebook({
         kind: 'flashcards',
         title: `Flashcards · ${useTopic}`,
@@ -148,7 +128,6 @@ export default function Flashcards() {
 
   function prev() { setCurrent(c => Math.max(0, c - 1)); setFlipped(false) }
   function next() {
-    // Advancing past a flipped card counts as one review (XP).
     if (flipped) { import('../lib/game').then(g => g.awardXP('flashcard_rev')).catch(() => {}) }
     setCurrent(c => Math.min(cards.length - 1, c + 1)); setFlipped(false)
   }
@@ -170,15 +149,12 @@ export default function Flashcards() {
       `}</style>
 
       <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-        {/* ───── HERO ───── */}
         <Header mode={mode} setMode={setMode} stats={stats} />
 
         {mode === 'generate' ? (
           <>
-            {/* Stats row */}
             <StatsRow stats={stats} />
 
-            {/* Generator surface */}
             <div style={{
               marginTop: 20, padding: 22, borderRadius: 18,
               background: `linear-gradient(180deg, ${C.panel} 0%, ${C.bg} 100%)`,
@@ -228,7 +204,6 @@ export default function Flashcards() {
                   </motion.button>
                 </div>
 
-                {/* Quick chips */}
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                   <span style={{ fontSize: 10, color: C.textFaint, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.2, marginRight: 4, alignSelf: 'center' }}>Try:</span>
                   {QUICK_CHIPS.map(chip => (
@@ -250,7 +225,6 @@ export default function Flashcards() {
               </div>
             </div>
 
-            {/* Suggested decks (auto-built from weak topics) */}
             {suggestions.length > 0 && (
               <Section title="Built for you" subtitle="Decks Kyno recommends from your weakest topics" icon={<Target size={13} />}>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 12 }}>
@@ -272,7 +246,6 @@ export default function Flashcards() {
               </div>
             )}
 
-            {/* Generated cards viewer */}
             {!loading && cards.length > 0 && (
               <Section title="Your fresh deck" subtitle={`${cards.length} cards · ${topic}`} icon={<Sparkles size={13} />}>
                 <DeckViewer cards={cards} idx={current} flipped={flipped}
@@ -281,7 +254,6 @@ export default function Flashcards() {
               </Section>
             )}
 
-            {/* Recent decks (everything in the unified deck) */}
             {deck.length > 0 && (
               <Section title="Your library" subtitle={`${deck.length} card${deck.length === 1 ? '' : 's'} saved on this device`} icon={<Library size={13} />}>
                 <RecentDecks deck={deck} />
@@ -296,9 +268,6 @@ export default function Flashcards() {
   )
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// HEADER
-// ════════════════════════════════════════════════════════════════════════════
 function Header({ mode, setMode, stats }: { mode: 'generate' | 'review'; setMode: (m: 'generate' | 'review') => void; stats: { total: number } }) {
   return (
     <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
@@ -359,9 +328,6 @@ function ModeBtn({ active, onClick, children }: { active: boolean; onClick: () =
   )
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// STATS ROW
-// ════════════════════════════════════════════════════════════════════════════
 function StatsRow({ stats }: { stats: { total: number; today: number; mastered: number; due: number } }) {
   return (
     <div className="fc-stats-row" style={{ marginTop: 22, display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
@@ -401,9 +367,6 @@ function StatTile({ icon, label, value, accent }: { icon: React.ReactNode; label
   )
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// SECTION HEADER
-// ════════════════════════════════════════════════════════════════════════════
 function Section({ title, subtitle, icon, children }: { title: string; subtitle?: string; icon?: React.ReactNode; children: React.ReactNode }) {
   return (
     <div style={{ marginTop: 26 }}>
@@ -417,9 +380,6 @@ function Section({ title, subtitle, icon, children }: { title: string; subtitle?
   )
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// SUGGESTED DECK CARD
-// ════════════════════════════════════════════════════════════════════════════
 function SuggestedDeckCard({ title, subject, severity, count, onClick }: { title: string; subject: string; severity: number; count: number; onClick: () => void }) {
   const intensity = Math.min(1, severity)
   return (
@@ -466,9 +426,6 @@ function SuggestedDeckCard({ title, subject, severity, count, onClick }: { title
   )
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// DECK VIEWER  (with proper 3D flip)
-// ════════════════════════════════════════════════════════════════════════════
 function DeckViewer({ cards, idx, flipped, onFlip, onPrev, onNext }: {
   cards: Card[]; idx: number; flipped: boolean;
   onFlip: () => void; onPrev: () => void; onNext: () => void
@@ -499,9 +456,6 @@ function DeckViewer({ cards, idx, flipped, onFlip, onPrev, onNext }: {
   )
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// 3D FLIP CARD
-// ════════════════════════════════════════════════════════════════════════════
 function FlipCard({ front, back, flipped, onFlip }: { front: string; back: string; flipped: boolean; onFlip: () => void }) {
   return (
     <div style={{ perspective: 1400 }}>
@@ -543,7 +497,6 @@ function Face({ side, text, active }: { side: 'front' | 'back'; text: string; ac
       color: C.text,
       overflow: 'hidden',
     }}>
-      {/* corner orbs */}
       <div style={{
         position: 'absolute', top: -30, right: -30,
         width: 160, height: 160, borderRadius: '50%',
@@ -567,7 +520,6 @@ function Face({ side, text, active }: { side: 'front' | 'back'; text: string; ac
         color: C.text, lineHeight: 1.5, maxWidth: 640,
         fontFamily: '"Charter", "Iowan Old Style", Georgia, serif',
         position: 'relative',
-        // Long answers scroll inside the face instead of being hard-clipped.
         maxHeight: '100%', overflowY: 'auto', overflowWrap: 'anywhere',
       }}>
         {text}
@@ -583,9 +535,6 @@ function Face({ side, text, active }: { side: 'front' | 'back'; text: string; ac
   )
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// RECENT DECKS — group saved cards by topic
-// ════════════════════════════════════════════════════════════════════════════
 function RecentDecks({ deck }: { deck: TwinCard[] }) {
   const byTopic = useMemo(() => {
     const m = new Map<string, TwinCard[]>()
@@ -629,9 +578,6 @@ function RecentDecks({ deck }: { deck: TwinCard[] }) {
   )
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// REVIEW DECK — SRS-style review across every saved card
-// ════════════════════════════════════════════════════════════════════════════
 function ReviewDeck({ deck, onReload }: { deck: TwinCard[]; onReload: () => void }) {
   const [idx, setIdx]         = useState(0)
   const [flipped, setFlipped] = useState(false)
@@ -669,7 +615,6 @@ function ReviewDeck({ deck, onReload }: { deck: TwinCard[]; onReload: () => void
 
   return (
     <div style={{ marginTop: 18 }}>
-      {/* Progress strip */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 14 }}>
         <div style={{ fontSize: 11, color: C.textFaint, letterSpacing: 1.4, textTransform: 'uppercase', fontWeight: 700 }}>
           Card {idx + 1} / {deck.length}
@@ -736,9 +681,6 @@ const navBtn: React.CSSProperties = {
   cursor: 'pointer', transition: 'all 0.18s',
 }
 
-// ────────────────────────────────────────────────────────────────────────────
-// HELPERS
-// ────────────────────────────────────────────────────────────────────────────
 function titleCase(s: string): string {
   return s.replace(/\b\w/g, c => c.toUpperCase())
 }
@@ -754,5 +696,4 @@ function formatRelative(ts: number) {
   return new Date(ts).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })
 }
 
-// Suppress unused-import lint without exporting
 const _unused = [Plus]

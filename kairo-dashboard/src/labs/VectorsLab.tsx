@@ -1,7 +1,3 @@
-/**
- * Vectors Lab — two 3D vectors from origin.
- * Shows dot product, cross product (drawn as third arrow), and angle.
- */
 import { useMemo } from 'react'
 import { OrbitControls, Grid, Text } from '@react-three/drei'
 import * as THREE from 'three'
@@ -24,15 +20,12 @@ function VectorsSim({ params }: SimProps) {
   return (
     <LabScene cameraPos={[5, 4, 5]} cameraFov={55} tint="#0a0a18" particles={30} stars={false}>
       <Grid args={[20, 20]} cellSize={0.5} cellColor="#27272a" sectionSize={1} sectionColor="#4B5563" fadeDistance={20} infiniteGrid />
-      {/* Axes */}
       <Axis dir={new THREE.Vector3(1,0,0)} color="#ef4444" label="X" />
       <Axis dir={new THREE.Vector3(0,1,0)} color="#34d399" label="Y" />
       <Axis dir={new THREE.Vector3(0,0,1)} color="#3b82f6" label="Z" />
-      {/* Vectors */}
       <Arrow vec={a} color="#C7D2E8" label="A" />
       <Arrow vec={b} color="#A5B4FC" label="B" />
       {cross.length() > 0.05 && <Arrow vec={cross} color="#f472b6" label="A×B" />}
-      {/* Readout */}
       <Text position={[0, 4.5, 0]} fontSize={0.25} color="#fafafa" anchorX="center">
         {`A·B = ${dot.toFixed(2)}    |A×B| = ${cross.length().toFixed(2)}    θ = ${angle.toFixed(1)}°`}
       </Text>

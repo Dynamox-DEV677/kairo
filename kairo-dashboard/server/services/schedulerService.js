@@ -5,13 +5,11 @@ import { sendFeeReminder, retryFailed } from './emailService.js'
 let jobs = []
 
 export function startScheduler() {
-  // Daily at 08:00 IST
   const daily = cron.schedule('0 8 * * *', async () => {
     console.log('[Scheduler] Daily reminder run…')
     await runDailyReminders()
   }, { timezone: 'Asia/Kolkata' })
 
-  // Retry failed — every 6h
   const retry = cron.schedule('0 */6 * * *', async () => {
     console.log('[Scheduler] Retry failed emails…')
     await runRetries()
@@ -48,7 +46,6 @@ export async function runDailyReminders() {
 
       if (!trigger) continue
 
-      // Skip if already sent today for this trigger
       const startOfDay = today + 'T00:00:00.000Z'
       const alreadySent = await db.emailLogs.findOneAsync({
         fee_id: fee._id, trigger, status: 'sent', created_at: { $gt: startOfDay },

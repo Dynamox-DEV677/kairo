@@ -1,13 +1,3 @@
-/**
- * Step 2 — Verify the 6-digit OTP.
- *
- *  - 6 input cells (OtpInput component)
- *  - Live countdown "Resend in 30s"
- *  - Resend button (anti-spam — disabled while cooldown > 0)
- *  - Error state with shake animation
- *  - Loading state while we "verify"
- *  - Dev OTP hint chip when running locally
- */
 import { useEffect, useRef, useState } from 'react'
 import { RefreshCw } from 'lucide-react'
 import ResetShell, { PrimaryButton, TextButton, KairoBadge } from './ResetShell'
@@ -18,7 +8,6 @@ import {
 } from '../../lib/resetSession'
 
 interface Props {
-  /** OTP surfaced from step 1 in dev — shown as a paste-hint. */
   devOtp?:       string
   onBack:        () => void
   onContinue:    () => void
@@ -34,7 +23,6 @@ export default function Step2Verify({ devOtp, onBack, onContinue }: Props) {
   const [lastDevOtp, setLastDevOtp] = useState<string | undefined>(devOtp)
   const tickRef = useRef<number | null>(null)
 
-  // Cooldown ticker
   useEffect(() => {
     if (tickRef.current) clearInterval(tickRef.current)
     tickRef.current = window.setInterval(() => {
@@ -132,7 +120,6 @@ export default function Step2Verify({ devOtp, onBack, onContinue }: Props) {
         </div>
       )}
 
-      {/* Dev-only paste hint */}
       {lastDevOtp && (
         <button
           onClick={() => setCode(lastDevOtp)}

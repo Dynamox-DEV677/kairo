@@ -53,7 +53,6 @@ export default function ConceptTools() {
   )
 }
 
-// ── Concept Simplifier ────────────────────────────────────────────────────────
 function SimplifyTab() {
   const [concept, setConcept]   = useState('')
   const [subject, setSubject]   = useState('General')
@@ -149,7 +148,6 @@ function SimplifyTab() {
   )
 }
 
-// ── Mindmap ───────────────────────────────────────────────────────────────────
 function MindmapTab() {
   const [chapter, setChapter] = useState('')
   const [subject, setSubject] = useState('General')
@@ -252,7 +250,6 @@ function MindmapTab() {
   )
 }
 
-// ── Doubt History ─────────────────────────────────────────────────────────────
 function DoubtsTab() {
   const [doubts, setDoubts]   = useState<any[]>([])
   const [loading, setLoading] = useState(true)

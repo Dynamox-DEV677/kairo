@@ -29,7 +29,6 @@ export default function WritingTools() {
         <p style={{ fontSize: 13, color: '#6B7280', marginTop: 4 }}>AI-powered writing enhancement for exam success</p>
       </div>
 
-      {/* Tabs scroll sideways on phones — five columns at 390px broke labels mid-word */}
       <div style={{ display: 'flex', gap: 4, marginBottom: 24, background: '#0E1117', border: '1px solid #1f2532', borderRadius: 10, padding: 4, overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
         {TABS.map(t => (
           <button key={t.id} onClick={() => setTab(t.id)} style={{
@@ -58,7 +57,6 @@ export default function WritingTools() {
   )
 }
 
-// ── Shared Result Box ─────────────────────────────────────────────────────────
 function ResultBox({ title, text, color = '#66D9FF' }: { title: string; text: string; color?: string }) {
   const [copied, setCopied] = useState(false)
   return (
@@ -75,7 +73,6 @@ function ResultBox({ title, text, color = '#66D9FF' }: { title: string; text: st
   )
 }
 
-// ── Editor: live clarity scoring + AI critique ───────────────────────────────
 const WEAK_VERBS = new Set(['got', 'get', 'gets', 'made', 'make', 'makes', 'did', 'do', 'does', 'have', 'has', 'had', 'thing', 'things', 'stuff'])
 const HEDGE_WORDS = new Set(['very', 'really', 'quite', 'somewhat', 'pretty', 'just', 'rather', 'kind', 'sort', 'actually', 'basically', 'literally'])
 const PASSIVE_AUX = ['is being', 'was being', 'are being', 'were being', 'has been', 'have been', 'had been', 'will be', 'be ']
@@ -100,20 +97,17 @@ function analyze(text: string) {
   const words = wordsArr.length
   const avgSentence = sentences ? words / sentences : 0
 
-  // Flesch–Kincaid grade approximation: 0.39 × (W/S) + 11.8 × (Sy/W) − 15.59
   const syllables = wordsArr.reduce((acc, w) => acc + Math.max(1, (w.match(/[aeiouy]+/g) || []).length), 0)
   const gradeLevel = words && sentences
     ? Math.max(1, Math.min(20, +(0.39 * (words / sentences) + 11.8 * (syllables / words) - 15.59).toFixed(1)))
     : 0
 
-  // Long sentences (> 28 words)
   const longSentences: { text: string; words: number }[] = []
   for (const s of sentencesArr) {
     const wc = (s.match(/\b[a-z']+\b/gi) || []).length
     if (wc > 28) longSentences.push({ text: s.length > 100 ? s.slice(0, 100) + '…' : s, words: wc })
   }
 
-  // Passive count
   let passiveCount = 0
   const lower = ' ' + trimmed.toLowerCase() + ' '
   for (const p of PASSIVE_AUX) {
@@ -122,7 +116,6 @@ function analyze(text: string) {
     if (m) passiveCount += m.length
   }
 
-  // Weak verbs + hedge words
   const weakVerbs: string[] = []
   const hedges:    string[] = []
   for (const w of wordsArr) {
@@ -130,7 +123,6 @@ function analyze(text: string) {
     if (HEDGE_WORDS.has(w) && !hedges.includes(w))   hedges.push(w)
   }
 
-  // Repeated content words
   const stop = new Set(['the','a','an','and','or','but','of','to','in','on','at','for','with','from','by','as','is','are','was','were','be','been','being','it','this','that','these','those','i','you','we','they','he','she','his','her','their','my','our','your','its','if','so','not','no','do','does','did','have','has','had','can','will','would','could','should'])
   const counts: Record<string, number> = {}
   for (const w of wordsArr) if (!stop.has(w) && w.length > 3) counts[w] = (counts[w] || 0) + 1
@@ -140,7 +132,6 @@ function analyze(text: string) {
     .slice(0, 6)
     .map(([word, count]) => ({ word, count }))
 
-  // Composite clarity score
   const sentencePenalty = Math.min(40, longSentences.length * 8 + Math.max(0, (avgSentence - 22) * 1.5))
   const passivePenalty  = Math.min(25, passiveCount * 5)
   const weakPenalty     = Math.min(15, weakVerbs.length * 3 + hedges.length * 2)
@@ -156,7 +147,6 @@ function Editor() {
   const [loading, setLoading]   = useState(false)
   const [err, setErr]           = useState('')
 
-  // Persist between visits
   useEffect(() => {
     const saved = localStorage.getItem('kairo:writing:draft')
     if (saved) setText(saved)
@@ -203,10 +193,7 @@ Rules:
   const clarityLabel = stats.clarity >= 80 ? 'Crystal' : stats.clarity >= 60 ? 'Good' : stats.clarity >= 40 ? 'Cloudy' : 'Foggy'
 
   return (
-    // .mob-stack: the fixed 320px sidebar ate almost the whole phone screen,
-    // squeezing the editor toolbar text into a hairline vertical strip.
     <div className="mob-stack" style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 14 }}>
-      {/* LEFT — editor */}
       <div>
         <div style={{ ...card, padding: 0, overflow: 'hidden' }}>
           <div style={{
@@ -289,7 +276,6 @@ Rules:
         </AnimatePresence>
       </div>
 
-      {/* RIGHT — live stats panel */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12, position: 'sticky', top: 0, alignSelf: 'flex-start' }}>
         <div style={{ ...card, textAlign: 'center', padding: 18 }}>
           <div style={{ fontSize: 10, fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: 1.4 }}>Clarity score</div>
@@ -376,7 +362,6 @@ function IssueChip({ label, color }: { label: string; color: string }) {
   )
 }
 
-// ── Tone Improver ─────────────────────────────────────────────────────────────
 function ToneImprover() {
   const [text, setText]       = useState('')
   const [tone, setTone]       = useState('formal')
@@ -424,7 +409,6 @@ function ToneImprover() {
   )
 }
 
-// ── Expand Tool ───────────────────────────────────────────────────────────────
 function ExpandTool() {
   const [text, setText]         = useState('')
   const [subject, setSubject]   = useState('General')
@@ -470,7 +454,6 @@ function ExpandTool() {
   )
 }
 
-// ── Topper Tool ───────────────────────────────────────────────────────────────
 function TopperTool() {
   const [text, setText]         = useState('')
   const [subject, setSubject]   = useState('General')
@@ -515,7 +498,6 @@ function TopperTool() {
   )
 }
 
-// ── Plagiarism Tool ────────────────────────────────────────────────────────────
 function PlagiarismTool() {
   const [text, setText]       = useState('')
   const [loading, setLoading] = useState(false)

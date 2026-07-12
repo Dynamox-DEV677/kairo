@@ -1,24 +1,3 @@
-/**
- * /api/passcode/* — Kyno device passcode reset OTP flow.
- *
- *   POST /api/passcode/send-otp     { email }     → emails a 6-digit code
- *   POST /api/passcode/verify-otp   { email, code } → checks the code
- *
- * Storage strategy (changed: 2026-05-19):
- *   PRIMARY  : Supabase table `kairo_otps`. Survives Vercel cold starts and
- *              works across every serverless instance. Required for any
- *              production traffic above ~50 concurrent users.
- *   FALLBACK : In-memory Map. Used only if the table doesn't exist (i.e.
- *              the migration in db/kairo_otps_schema.sql hasn't been run)
- *              or Supabase is unreachable. Survives single-instance, dev,
- *              and the first deploy before the SQL has run.
- *
- * Anti-abuse:
- *   • 30 s cooldown between sends per email
- *   • Max 4 sends per email per 10-min rolling window
- *   • OTPs are stored as SHA-256 hashes (never plain)
- *   • 6 failed verifications → entry destroyed (forces a fresh send)
- */
 import { Router } from 'express'
 import crypto from 'crypto'
 import { sendPasscodeOtpEmail } from '../email/index.js'
@@ -26,23 +5,18 @@ import { supabaseAdmin } from '../services/supabase.js'
 
 const router = Router()
 
-// In-memory fallback. Used when Supabase is unreachable / table missing.
-//   email → { hash, expiresAt, lastSentAt, sendTimestamps[], attemptsLeft }
 const STORE = new Map()
 
-const OTP_TTL_MS         = 10 * 60 * 1000      // 10 minutes
-const RESEND_COOLDOWN_MS = 30 * 1000           // 30 s between sends
-const WINDOW_MS          = 10 * 60 * 1000      // 10-min anti-spam window
+const OTP_TTL_MS         = 10 * 60 * 1000
+const RESEND_COOLDOWN_MS = 30 * 1000
+const WINDOW_MS          = 10 * 60 * 1000
 const SENDS_PER_WINDOW   = 4
 const MAX_ATTEMPTS       = 6
 
-// ───────────────────────────── Helpers ─────────────────────────────────────
 function hashCode(code, email) {
-  // Per-email salt — even if the row leaks, hashes can't be replayed across users
   return crypto.createHash('sha256').update(`${email}::${code}`).digest('hex')
 }
 function genCode() {
-  // 6 digits, never starts with 0 (Apple-style readability)
   return String(crypto.randomInt(100000, 1_000_000))
 }
 function normEmail(s) {
@@ -52,9 +26,6 @@ function validEmail(s) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s)
 }
 
-// Did the error string tell us the table is missing? Then the deploy is
-// running ahead of the migration and we should silently fall back to the
-// in-memory Map.
 function isMissingTable(err) {
   const msg = String(err?.message || err || '')
   return /relation .* does not exist/i.test(msg)
@@ -62,17 +33,7 @@ function isMissingTable(err) {
        || /schema cache/i.test(msg)
 }
 
-// ─────────────────────── Storage abstraction ───────────────────────────────
-// All four methods return the same shape so the route code doesn't care
-// where the OTP actually lives.
-//
-//   read(email)   → { hash, expiresAt, lastSentAt, sendTimestamps[], attemptsLeft } | null
-//   write(email, row) → void
-//   bump(email, row)  → void  (updates attempts_left after wrong code)
-//   destroy(email)    → void
-
 async function readRow(email) {
-  // Try Supabase first.
   try {
     const { data, error } = await supabaseAdmin
       .from('kairo_otps')
@@ -80,8 +41,7 @@ async function readRow(email) {
       .eq('email', email)
       .maybeSingle()
     if (error) throw new Error(error.message)
-    if (!data) return STORE.get(email) || null   // also check memory in case of recent fall-back
-    // Purge if expired
+    if (!data) return STORE.get(email) || null
     if (new Date(data.expires_at).getTime() < Date.now()) {
       await destroyRow(email).catch(() => {})
       return null
@@ -95,7 +55,6 @@ async function readRow(email) {
     }
   } catch (e) {
     if (!isMissingTable(e)) console.warn('[passcode] supabase read failed, using memory fallback:', e.message)
-    // ── Memory fallback ──
     const row = STORE.get(email)
     if (!row) return null
     if (row.expiresAt < Date.now()) { STORE.delete(email); return null }
@@ -104,7 +63,7 @@ async function readRow(email) {
 }
 
 async function writeRow(email, row) {
-  STORE.set(email, row)                          // always write to memory too
+  STORE.set(email, row)
   try {
     const { error } = await supabaseAdmin
       .from('kairo_otps')
@@ -119,7 +78,6 @@ async function writeRow(email, row) {
     if (error) throw new Error(error.message)
   } catch (e) {
     if (!isMissingTable(e)) console.warn('[passcode] supabase upsert failed:', e.message)
-    // memory copy already written above — no further action needed
   }
 }
 
@@ -132,7 +90,6 @@ async function destroyRow(email) {
   }
 }
 
-// ── POST /send-otp ──────────────────────────────────────────────────────────
 router.post('/send-otp', async (req, res) => {
   const email = normEmail(req.body?.email)
   if (!validEmail(email)) {
@@ -142,10 +99,8 @@ router.post('/send-otp', async (req, res) => {
   const now = Date.now()
   const existing = (await readRow(email)) || { sendTimestamps: [] }
 
-  // Trim send-timestamps to the last 10 minutes
   existing.sendTimestamps = (existing.sendTimestamps || []).filter(t => t > now - WINDOW_MS)
 
-  // Per-email cooldown
   if (existing.lastSentAt && now - existing.lastSentAt < RESEND_COOLDOWN_MS) {
     const cooldown = Math.ceil((RESEND_COOLDOWN_MS - (now - existing.lastSentAt)) / 1000)
     return res.status(429).json({
@@ -156,7 +111,6 @@ router.post('/send-otp', async (req, res) => {
     })
   }
 
-  // 4-per-10-min cap
   if (existing.sendTimestamps.length >= SENDS_PER_WINDOW) {
     return res.status(429).json({
       error:  'Too many requests for this email. Wait a few minutes.',
@@ -165,7 +119,6 @@ router.post('/send-otp', async (req, res) => {
     })
   }
 
-  // Generate + store
   const code = genCode()
   const entry = {
     hash:           hashCode(code, email),
@@ -176,7 +129,6 @@ router.post('/send-otp', async (req, res) => {
   }
   await writeRow(email, entry)
 
-  // Fire the email — never block the response on it.
   try {
     await sendPasscodeOtpEmail({
       to:               email,
@@ -201,7 +153,6 @@ router.post('/send-otp', async (req, res) => {
   })
 })
 
-// ── POST /verify-otp ────────────────────────────────────────────────────────
 router.post('/verify-otp', async (req, res) => {
   const email = normEmail(req.body?.email)
   const code  = String(req.body?.code || '').trim()
@@ -233,12 +184,10 @@ router.post('/verify-otp', async (req, res) => {
     })
   }
 
-  // Success — burn the code immediately so it can't be re-used.
   await destroyRow(email)
   res.status(200).json({ ok: true })
 })
 
-// ── Health (handy for debugging in dev) ─────────────────────────────────────
 router.get('/health', async (_req, res) => {
   let dbRows = null
   try {
@@ -246,7 +195,7 @@ router.get('/health', async (_req, res) => {
       .from('kairo_otps')
       .select('email', { count: 'exact', head: true })
     dbRows = count
-  } catch { /* ignore */ }
+  } catch {  }
   res.json({ ok: true, memory_pending: STORE.size, db_pending: dbRows })
 })
 

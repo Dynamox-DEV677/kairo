@@ -1,24 +1,12 @@
-/**
- * Ops / Status API — public read endpoint that Claude Cowork (or any
- * monitoring tool) can poll to see Kyno's live state.
- *
- *   GET  /api/ops/status   → JSON snapshot of deploy + DB + errors + features
- *   POST /api/ops/error    → frontend reports unhandled errors here
- *   GET  /api/ops/health   → tiny liveness ping for uptime monitors
- */
 import { Router } from 'express'
 import { supabaseAdmin } from '../services/supabase.js'
 
 const router = Router()
 
-// In-memory rolling error log. Capped at 50 entries.
-// Cowork or the /ops page reads this; survives within one Vercel cold-start
-// window. Persistent error tracking would need a Supabase table — fine for v1.
 const ERROR_LOG = []
 const ERROR_LOG_MAX = 50
 
 const FEATURES = [
-  // Each feature: id, label, route, audience
   { id: 'solver',         label: "Kyno's Solver",         route: 'doubt',         audience: 'student' },
   { id: 'memory',         label: 'AI Memory Brain',        route: 'memory',        audience: 'student' },
   { id: 'labs',           label: 'Kyno Labs (3D sims)',   route: 'labs',          audience: 'student' },
@@ -56,7 +44,6 @@ const FEATURES = [
   { id: 'health',         label: 'School Health Monitor',  route: 'health',        audience: 'admin' },
 ]
 
-// ─── /api/ops/status ───────────────────────────────────────────────────────
 router.get('/status', async (_req, res) => {
   const snapshot = {
     project:        'kairo-dashboard',
@@ -87,7 +74,6 @@ router.get('/status', async (_req, res) => {
     },
   }
 
-  // DB stats — best-effort, never blocks the response
   try {
     const since24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
     const since7d  = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
@@ -128,31 +114,20 @@ router.get('/status', async (_req, res) => {
     snapshot.database.error = e.message
   }
 
-  // Cache 30s on edge so Cowork polling doesn't hammer Supabase
   res.set('Cache-Control', 'public, max-age=30, s-maxage=30')
   res.json(snapshot)
 })
 
-// ─── /api/ops/health — minimal uptime ping ─────────────────────────────────
 router.get('/health', (_req, res) => {
   res.json({ ok: true, ts: Date.now() })
 })
 
-// ─── /api/ops/diagnose — deeper "is anything actually broken?" check ───────
-// Jarvis (or any monitor) hits this to get a structured punch list. Probes:
-//   - Every GLB model URL (HEAD)
-//   - Solver text endpoint with a tiny canned question (POST + latency)
-//   - Solver images endpoint with the resulting queries (POST + latency)
-//   - DB reachable (count(users))
-//   - Each required env var present
-// Returns: { checks: [...], summary: 'N ok, M degraded, K failed' }
 router.get('/diagnose', async (_req, res) => {
   const start = Date.now()
   const checks = []
   const push = (name, status, details = '', latencyMs) =>
     checks.push({ name, status, details, latencyMs })
 
-  // ── Env checks ───────────────────────────────────────────────────────────
   const REQUIRED_ENV = [
     'SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY', 'OPENROUTER_API_KEY',
   ]
@@ -164,7 +139,6 @@ router.get('/diagnose', async (_req, res) => {
     }
   }
 
-  // ── GLB models reachable? ────────────────────────────────────────────────
   const GLBS = [
     'https://cdn.jsdelivr.net/gh/Dynamox-DEV677/kairo@main/models-cdn/beating-heart.glb',
     'https://cdn.jsdelivr.net/gh/Dynamox-DEV677/kairo@main/models-cdn/maple_tree.glb',
@@ -183,7 +157,6 @@ router.get('/diagnose', async (_req, res) => {
     }
   }))
 
-  // ── Solver text endpoint health ──────────────────────────────────────────
   let solverQueries = []
   const selfBase = `http://localhost:${process.env.PORT || 4000}`
   const isVercel  = !!process.env.VERCEL_URL
@@ -210,7 +183,6 @@ router.get('/diagnose', async (_req, res) => {
     push('Solver /text', 'failed', e.message)
   }
 
-  // ── Solver images endpoint (only if /text gave us queries) ──────────────
   if (solverQueries.length > 0) {
     try {
       const t = Date.now()
@@ -234,7 +206,6 @@ router.get('/diagnose', async (_req, res) => {
     push('Solver /images', 'skipped', 'no queries from /text — skipped probe')
   }
 
-  // ── Supabase reachability ────────────────────────────────────────────────
   try {
     const t = Date.now()
     const { count, error } = await supabaseAdmin.from('users').select('*', { count: 'exact', head: true })
@@ -244,7 +215,6 @@ router.get('/diagnose', async (_req, res) => {
     push('Supabase users count', 'failed', e.message)
   }
 
-  // ── Summary ─────────────────────────────────────────────────────────────
   const ok     = checks.filter(c => c.status === 'ok').length
   const degraded = checks.filter(c => c.status === 'degraded').length
   const failed = checks.filter(c => c.status === 'failed').length
@@ -258,7 +228,6 @@ router.get('/diagnose', async (_req, res) => {
   })
 })
 
-// ─── /api/ops/error — frontend reports unhandled errors ────────────────────
 router.post('/error', (req, res) => {
   const { message, stack, source, line, col, page, userAgent } = req.body || {}
   if (!message) return res.status(400).json({ error: 'message required' })
@@ -280,9 +249,7 @@ router.post('/error', (req, res) => {
   res.json({ ok: true, queueSize: ERROR_LOG.length })
 })
 
-// ─── helpers ───────────────────────────────────────────────────────────────
 function readDeployInfo() {
-  // Vercel sets these env vars on every deployment
   return {
     commit:        process.env.VERCEL_GIT_COMMIT_SHA || null,
     commitShort:   (process.env.VERCEL_GIT_COMMIT_SHA || '').slice(0, 7) || null,

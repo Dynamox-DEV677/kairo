@@ -1,26 +1,5 @@
-/**
- * Adaptive recommendation engine.
- *
- * Reads the twin snapshot + mastery rows and produces concrete, ranked
- * suggestions — "what should this student do in the next 30 minutes?"
- *
- * Output is written to `twin_recommendations` and surfaced in the dashboard.
- * Each recommendation has a priority (0..1) so the UI can show the top N
- * without re-sorting.
- *
- * Categories of recommendation:
- *   revise      a topic on the verge of being forgotten
- *   lab         a Kyno Lab matching the student's learning style + weak area
- *   flashcard   spaced-repetition practice for a weak topic
- *   quiz        check progress on a recently-improved topic
- *   break       take a break (high burnout risk)
- *   plan        review the daily study plan
- */
 import { supabaseAdmin } from '../supabase.js'
 
-// ── Lab catalogue (mirrors src/pages/KairoLabs.tsx) ──────────────────────────
-// Each lab is tagged with subject, topic keywords, and a primary modality so
-// we can recommend the right lab for a weak topic and a learning style.
 const LAB_CATALOG = [
   { id: 'gravity',    title: 'Gravity & Free Fall',  subject: 'Physics',   modality: 'visual',      topics: ['gravity', 'free fall', 'newton', 'motion'] },
   { id: 'pendulum',   title: 'Pendulum Motion',      subject: 'Physics',   modality: 'visual',      topics: ['pendulum', 'oscillation', 'shm', 'period'] },
@@ -50,7 +29,6 @@ function dominantStyle(twin) {
   return entries[0][0]
 }
 
-/** Pick the best lab for (topic, learning style). Returns null if no match. */
 function matchLab(topic, subject, preferredModality) {
   const t = (topic || '').toLowerCase()
   const candidates = LAB_CATALOG.filter(l => {
@@ -58,7 +36,6 @@ function matchLab(topic, subject, preferredModality) {
     return l.topics.some(k => t.includes(k) || k.includes(t))
   })
   if (!candidates.length) return null
-  // Prefer the lab matching the student's modality
   candidates.sort((a, b) => {
     const ma = a.modality === preferredModality ? 0 : 1
     const mb = b.modality === preferredModality ? 0 : 1
@@ -67,11 +44,6 @@ function matchLab(topic, subject, preferredModality) {
   return candidates[0]
 }
 
-/**
- * Build the recommendation list for one user.
- * Writes to twin_recommendations (replaces all open suggestions) and returns
- * the array.
- */
 export async function recomputeRecommendations(userId, { twin } = {}) {
   if (!userId) return []
   const t = twin || await readTwin(userId)
@@ -80,9 +52,8 @@ export async function recomputeRecommendations(userId, { twin } = {}) {
   const recs = []
   const style = dominantStyle(t)
 
-  // ── 1. Revisions for topics about to be forgotten ──────────────────────
   for (const f of (t.forgetting_soon || []).slice(0, 4)) {
-    const urgency = clamp01(1 - (f.hours_until_forget / 168))  // 1 week = 0
+    const urgency = clamp01(1 - (f.hours_until_forget / 168))
     const lab     = matchLab(f.topic, f.subject, style)
     recs.push({
       kind:     'revise',
@@ -94,7 +65,6 @@ export async function recomputeRecommendations(userId, { twin } = {}) {
     })
   }
 
-  // ── 2. Top weak topics — recommend a lab in matching modality ──────────
   for (const w of (t.weak_topics || []).slice(0, 3)) {
     const lab = matchLab(w.topic, w.subject, style)
     if (lab) {
@@ -118,7 +88,6 @@ export async function recomputeRecommendations(userId, { twin } = {}) {
     }
   }
 
-  // ── 3. Confidence-check quiz on a recently-improved topic ──────────────
   if (t.performance_trend > 0.15 && (t.strong_topics || []).length > 0) {
     const target = t.strong_topics[0]
     recs.push({
@@ -131,7 +100,6 @@ export async function recomputeRecommendations(userId, { twin } = {}) {
     })
   }
 
-  // ── 4. Break suggestion when burnout risk is high ──────────────────────
   if (t.burnout_risk > 0.55) {
     recs.push({
       kind:     'break',
@@ -141,7 +109,6 @@ export async function recomputeRecommendations(userId, { twin } = {}) {
     })
   }
 
-  // ── 5. Plan check if last session was > 12h ago ────────────────────────
   if (t.last_active_at) {
     const hoursAgo = (Date.now() - new Date(t.last_active_at).getTime()) / 3600_000
     if (hoursAgo > 14 && hoursAgo < 60) {
@@ -154,13 +121,10 @@ export async function recomputeRecommendations(userId, { twin } = {}) {
     }
   }
 
-  // Normalize priorities to 0..1
   recs.sort((a, b) => b.priority - a.priority)
   const top = recs.slice(0, 10)
 
-  // ── Persist (replace open recommendations) ────────────────────────────
   try {
-    // Soft-archive any still-open recs by marking them dismissed
     await supabaseAdmin
       .from('twin_recommendations')
       .update({ dismissed_at: new Date().toISOString() })
@@ -188,13 +152,8 @@ export async function recomputeRecommendations(userId, { twin } = {}) {
   return top
 }
 
-// ── Helpers (kept private) ──────────────────────────────────────────────────
 function clamp01(x) { return Math.max(0, Math.min(1, x)) }
 
-// Approximate current retention given hours_until_forget.
-// At forget threshold retention is 0.6 by definition; if hours_until_forget = 0
-// we report close to 0.6 still. The dashboard's actual graph uses mastery.js
-// retentionFor(); this is just a fallback for the recommendation reason text.
 function currentRetention(f) {
   const h = f.hours_until_forget ?? 0
   if (h <= 0) return 0.6

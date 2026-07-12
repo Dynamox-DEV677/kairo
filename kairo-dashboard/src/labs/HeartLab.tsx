@@ -1,30 +1,3 @@
-/**
- * Heart Lab — fully procedural anatomical heart, no GLB.
- *
- * Built from Three.js primitives so it's lightweight, always visible, and
- * each chamber is independently clickable + colorable. Replaces the old
- * GLB-based lab which loaded a model that was tiny and hard to read.
- *
- * Anatomy on screen (viewer's perspective, NOT patient's mirror — easier
- * for students to read):
- *
- *           ┌─ aorta ─┐    ┌─ pulm. artery ─┐
- *           ▼         │    │                ▼
- *      ┌── SVC ──┐  ┌──┴────┴──┐  ┌── pulm. veins ──┐
- *      │         │  │  ATRIA   │  │                 │
- *      └────┬────┘  ▼          ▼  └────┬────────────┘
- *           │     ┌──┐       ┌──┐      │
- *           └────►│RA│       │LA│◄─────┘
- *                 └─┬┘       └─┬┘
- *                ┌──┴──┐    ┌──┴──┐
- *                │ RV  │    │ LV  │
- *                └──┬──┘    └──┬──┘
- *                   ▼          ▼
- *                  (apex of the heart)
- *
- * Pulse animation: ventricles contract harder ("lub") then atria
- * contract ("dub") in sync with the BPM control.
- */
 import { useRef, useState } from 'react'
 import { useFrame, type ThreeEvent } from '@react-three/fiber'
 import { OrbitControls, Text, ContactShadows } from '@react-three/drei'
@@ -34,7 +7,6 @@ import LabShell from './LabShell'
 import LabScene from './LabScene'
 import { PartInfoCard, PartHoverChip, PartIdleHint, type PartCatalog } from './LabKit'
 
-// ─── Part catalog ──────────────────────────────────────────────────────────
 const PARTS: PartCatalog = {
   left_ventricle: {
     id: 'left_ventricle', label: 'Left Ventricle (LV)', color: '#dc2626',
@@ -138,7 +110,6 @@ function HeartSim({ params, playing }: SimProps) {
   )
 }
 
-// ─── The Heart ──────────────────────────────────────────────────────────────
 function Heart({ bpm, playing, hovered, selected, onHover, onSelect }: {
   bpm: number; playing: boolean
   hovered: string | null; selected: string | null
@@ -150,43 +121,35 @@ function Heart({ bpm, playing, hovered, selected, onHover, onSelect }: {
   const atrialRef    = useRef<THREE.Group>(null)
   const tRef = useRef(0)
 
-  // Two-phase lub-dub: ventricles squeeze first (the "lub"), then atria fill +
-  // squeeze ("dub"). Driven by phase 0..1 within each cardiac cycle.
   useFrame((_, dt) => {
     if (!playing) return
     tRef.current += dt
-    const period = 60 / bpm           // seconds per cycle
+    const period = 60 / bpm           
     const phase  = (tRef.current % period) / period
 
-    // Ventricles: deep contract during phase 0..0.20 (systole)
     let vScale = 1
     if (phase < 0.20) vScale = 1 - 0.13 * Math.sin((phase / 0.20) * Math.PI)
     if (ventricleRef.current) ventricleRef.current.scale.setScalar(vScale)
 
-    // Atria: smaller contraction during phase 0.30..0.45
     let aScale = 1
     if (phase > 0.30 && phase < 0.45) {
       aScale = 1 - 0.08 * Math.sin(((phase - 0.30) / 0.15) * Math.PI)
     }
     if (atrialRef.current) atrialRef.current.scale.setScalar(aScale)
 
-    // Whole heart gentle scale wobble
     if (root.current) {
       const pulse = 1 + 0.02 * Math.sin(phase * Math.PI * 2)
       root.current.scale.setScalar(pulse)
     }
   })
 
-  // Helper to apply hover/select emissive lift
   function lit(id: string) {
     return hovered === id || selected === id
   }
 
   return (
     <group ref={root} position={[0, 0.4, 0]}>
-      {/* ─── VENTRICLES — bottom half ──────────────────────────────────── */}
       <group ref={ventricleRef} position={[0, -0.6, 0]}>
-        {/* Left Ventricle (viewer's right) — biggest, thick-walled */}
         <ClickyMesh
           id="left_ventricle" onHover={onHover} onSelect={onSelect}
           position={[1.0, 0, 0]} rotation={[0, 0, -0.08]}>
@@ -198,7 +161,6 @@ function Heart({ bpm, playing, hovered, selected, onHover, onSelect }: {
             emissiveIntensity={lit('left_ventricle') ? 0.45 : 0.05}
           />
         </ClickyMesh>
-        {/* Apex bulge for LV — gives the heart its pointed bottom */}
         <ClickyMesh
           id="left_ventricle" onHover={onHover} onSelect={onSelect}
           position={[0.95, -1.05, 0.05]} scale={[0.62, 0.85, 0.62]} rotation={[0, 0, -0.4]}>
@@ -208,7 +170,6 @@ function Heart({ bpm, playing, hovered, selected, onHover, onSelect }: {
             emissiveIntensity={lit('left_ventricle') ? 0.45 : 0.06}/>
         </ClickyMesh>
 
-        {/* Right Ventricle (viewer's left) — slightly smaller, thinner walls */}
         <ClickyMesh
           id="right_ventricle" onHover={onHover} onSelect={onSelect}
           position={[-0.85, 0.0, 0.05]} scale={[0.95, 1, 0.92]}>
@@ -220,9 +181,7 @@ function Heart({ bpm, playing, hovered, selected, onHover, onSelect }: {
         </ClickyMesh>
       </group>
 
-      {/* ─── ATRIA — top half ──────────────────────────────────────────── */}
       <group ref={atrialRef} position={[0, 1.05, 0]}>
-        {/* Left Atrium (viewer's right) */}
         <ClickyMesh
           id="left_atrium" onHover={onHover} onSelect={onSelect}
           position={[0.85, 0, -0.05]} scale={[0.85, 0.7, 0.85]}>
@@ -233,7 +192,6 @@ function Heart({ bpm, playing, hovered, selected, onHover, onSelect }: {
             emissiveIntensity={lit('left_atrium') ? 0.45 : 0.05}/>
         </ClickyMesh>
 
-        {/* Right Atrium (viewer's left) */}
         <ClickyMesh
           id="right_atrium" onHover={onHover} onSelect={onSelect}
           position={[-0.85, 0, 0]} scale={[0.85, 0.7, 0.85]}>
@@ -244,26 +202,21 @@ function Heart({ bpm, playing, hovered, selected, onHover, onSelect }: {
             emissiveIntensity={lit('right_atrium') ? 0.45 : 0.05}/>
         </ClickyMesh>
 
-        {/* Septum line down the middle (visual cue separating L/R) */}
         <mesh position={[0, -0.05, 0.7]} scale={[0.04, 0.55, 0.05]}>
           <boxGeometry args={[1, 1, 1]} />
           <meshStandardMaterial color="#7f1d1d" />
         </mesh>
       </group>
 
-      {/* ─── AORTA — big curved tube from top of LV ───────────────────── */}
       <Aorta lit={lit('aorta')} onHover={onHover} onSelect={onSelect} />
 
-      {/* ─── PULMONARY ARTERY — from top of RV, arcs left ─────────────── */}
       <PulmonaryArtery lit={lit('pulmonary_artery')} onHover={onHover} onSelect={onSelect} />
 
-      {/* ─── VENA CAVA — vertical blue tube into right atrium ─────────── */}
       <VenaCava lit={lit('vena_cava')} onHover={onHover} onSelect={onSelect} />
     </group>
   )
 }
 
-// ─── Reusable clickable mesh ────────────────────────────────────────────────
 function ClickyMesh({
   id, onHover, onSelect, children, ...meshProps
 }: any) {
@@ -279,9 +232,7 @@ function ClickyMesh({
   )
 }
 
-// ─── Aorta — quadratic curve through TubeGeometry ──────────────────────────
 function Aorta({ lit, onHover, onSelect }: { lit: boolean; onHover: any; onSelect: any }) {
-  // Curve: start at top of LV, go up, arch to the right
   const curve = new THREE.CatmullRomCurve3([
     new THREE.Vector3(0.95, 1.8, 0.1),
     new THREE.Vector3(0.95, 2.6, 0.1),
@@ -304,7 +255,6 @@ function Aorta({ lit, onHover, onSelect }: { lit: boolean; onHover: any; onSelec
   )
 }
 
-// ─── Pulmonary artery — smaller arc to the LEFT ────────────────────────────
 function PulmonaryArtery({ lit, onHover, onSelect }: { lit: boolean; onHover: any; onSelect: any }) {
   const curve = new THREE.CatmullRomCurve3([
     new THREE.Vector3(-0.85, 1.8, 0.15),
@@ -326,7 +276,6 @@ function PulmonaryArtery({ lit, onHover, onSelect }: { lit: boolean; onHover: an
   )
 }
 
-// ─── Vena cava — superior + inferior cylinders into RA ─────────────────────
 function VenaCava({ lit, onHover, onSelect }: { lit: boolean; onHover: any; onSelect: any }) {
   const matProps = {
     color: '#60a5fa',
@@ -340,13 +289,11 @@ function VenaCava({ lit, onHover, onSelect }: { lit: boolean; onHover: any; onSe
 
   return (
     <group>
-      {/* Superior vena cava — goes UP from right atrium */}
       <mesh position={[-1.45, 2.2, -0.05]} rotation={[0, 0, -0.15]} castShadow receiveShadow
         onPointerOver={onOver} onPointerOut={onOut} onClick={onClick}>
         <cylinderGeometry args={[0.22, 0.22, 1.6, 24]} />
         <meshStandardMaterial {...matProps} />
       </mesh>
-      {/* Inferior vena cava — comes UP from below into right atrium */}
       <mesh position={[-1.05, -0.6, -0.05]} castShadow receiveShadow
         onPointerOver={onOver} onPointerOut={onOut} onClick={onClick}>
         <cylinderGeometry args={[0.20, 0.20, 1.1, 24]} />
@@ -356,7 +303,6 @@ function VenaCava({ lit, onHover, onSelect }: { lit: boolean; onHover: any; onSe
   )
 }
 
-// ─── Lab wrapper ───────────────────────────────────────────────────────────
 export default function HeartLab({ onBack }: { onBack?: () => void }) {
   return (
     <LabShell

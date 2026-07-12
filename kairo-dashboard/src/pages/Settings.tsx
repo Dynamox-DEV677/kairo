@@ -11,8 +11,6 @@ import { DecoratedAvatar, DECORATIONS, getDecor, setDecor } from '../components/
 const BOARDS = ['CBSE', 'ICSE', 'Maharashtra', 'Tamil Nadu', 'Karnataka', 'UP Board', 'Bihar Board']
 const CLASSES = ['6', '7', '8', '9', '10', '11', '12']
 
-// Corrupt/partial localStorage must not throw during render (no crash → no
-// white-screen). Falls back to an empty profile.
 function safeProfile(): any {
   try { return JSON.parse(localStorage.getItem('kairo_profile') || '{}') || {} }
   catch { return {} }
@@ -24,8 +22,6 @@ export default function Settings() {
   const [board, setBoard] = useState(stored.board || 'CBSE')
   const [cls, setCls] = useState(stored.cls || '10')
   const [role] = useState(stored.role || 'student')
-  // Profile picture persists through the storage adapter — SQLite on the
-  // laptop when running inside the Electron app, localStorage on the web.
   const [pic, setPic] = useState<string | null>(
     () => getRaw('kairo_profile_pic') ?? localStorage.getItem('kairo_profile_pic'),
   )
@@ -35,11 +31,9 @@ export default function Settings() {
   const [resetOpen, setResetOpen] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
 
-  // Avatar decoration (Discord-style ring/orbit around the pic)
   const [decor, setDecorSel] = useState(getDecor())
   function pickDecor(id: string) { setDecor(id); setDecorSel(id) }
 
-  // Email change — 6-digit code sent to the NEW address
   const [emailCur] = useState<string>(stored.email || '')
   const [newEmail, setNewEmail] = useState('')
   const [emailCode, setEmailCode] = useState('')
@@ -89,28 +83,22 @@ export default function Settings() {
     reader.onload = ev => {
       const url = ev.target?.result as string
       setPic(url)
-      // Adapter routes to SQLite (Electron) / localStorage (web).
       setRaw('kairo_profile_pic', url)
-      // Mirror to localStorage too — Sidebar/MobileShell read it directly.
-      try { localStorage.setItem('kairo_profile_pic', url) } catch { /* quota */ }
+      try { localStorage.setItem('kairo_profile_pic', url) } catch {  }
       console.log('[settings] profile pic saved via', activeBackend())
     }
     reader.readAsDataURL(file)
   }
 
   async function save() {
-    // Merge — replacing the object would drop id / tokens / school fields.
     const profile = { ...stored, name, board, cls, role }
     localStorage.setItem('kairo_profile', JSON.stringify(profile))
-    // Other mounted pages (Home greeting, sidebar) re-read on this event.
-    try { window.dispatchEvent(new CustomEvent('kairo:profile')) } catch { /* ssr */ }
-    // Also push the name to the Supabase users row: App.tsx re-reads that
-    // row on every refresh and would otherwise revert the name.
+    try { window.dispatchEvent(new CustomEvent('kairo:profile')) } catch {  }
     if (stored.id && !stored.localMode) {
       try {
         const { supabase } = await import('../lib/supabase')
         await supabase.from('users').update({ name }).eq('id', stored.id)
-      } catch { /* offline — local copy still saved */ }
+      } catch {  }
     }
     setSaved(true)
     setTimeout(() => setSaved(false), 2000)
@@ -170,7 +158,6 @@ export default function Settings() {
         <p style={{ fontSize: 13, color: '#6B7280', marginTop: 4 }}>Manage your profile and preferences</p>
       </div>
 
-      {/* Profile card */}
       <Section icon={<User size={14} />} title="Profile">
         <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handlePic} />
 
@@ -230,7 +217,6 @@ export default function Settings() {
         </motion.button>
       </Section>
 
-      {/* Email — change via 6-digit code sent to the new address */}
       <Section icon={<Mail size={14} />} title="Email">
         <p style={{ fontSize: 12.5, color: '#9CA3AF', marginBottom: 12, lineHeight: 1.5 }}>
           {emailCur
@@ -304,7 +290,6 @@ export default function Settings() {
         )}
       </Section>
 
-      {/* Avatar decoration — Discord-style rings & orbiters */}
       <Section icon={<Sparkles size={14} />} title="Avatar decoration">
         <p style={{ fontSize: 12.5, color: '#9CA3AF', marginBottom: 14, lineHeight: 1.5 }}>
           Pick a ring or orbiter that hangs around your profile picture everywhere in Kyno.
@@ -332,7 +317,6 @@ export default function Settings() {
         </div>
       </Section>
 
-      {/* Notifications */}
       <Section icon={<Bell size={14} />} title="Notifications">
         <ToggleRow
           label="Study reminders"
@@ -342,7 +326,6 @@ export default function Settings() {
         />
       </Section>
 
-      {/* Cross-device backup */}
       <Section icon={<FileJson size={14} />} title="Backup & sync">
         <div style={{
           display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14,
@@ -392,7 +375,6 @@ export default function Settings() {
         </button>
       </Section>
 
-      {/* Security */}
       <Section icon={<KeyRound size={14} />} title="Security">
         <p style={{ fontSize: 13, color: '#9CA3AF', marginBottom: 14, lineHeight: 1.6 }}>
           Your 6-digit Kyno passcode locks the app on this device. Forgot it? Reset it via email below.
@@ -412,8 +394,6 @@ export default function Settings() {
         </button>
       </Section>
 
-      {/* Demo data — appears above Privacy & Data because a presenter
-          will reach for these every time they open Settings. */}
       <Section icon={<Sparkles size={14} />} title="Demo & Data">
         <p style={{ fontSize: 13, color: '#9CA3AF', marginBottom: 14, lineHeight: 1.6 }}>
           Populate Kyno with realistic Class 10 CBSE activity so the dashboard, Flashcards,
@@ -452,7 +432,6 @@ export default function Settings() {
         </p>
       </Section>
 
-      {/* Privacy */}
       <Section icon={<Shield size={14} />} title="Privacy & Data">
         <p style={{ fontSize: 13, color: '#9CA3AF', marginBottom: 14, lineHeight: 1.6 }}>
           All your data is stored locally on your device. Nothing is sent to our servers. You can clear everything below.
@@ -470,7 +449,6 @@ export default function Settings() {
         </button>
       </Section>
 
-      {/* About */}
       <div style={{ padding: '20px 0', borderTop: '1px solid #1a1f2e', marginTop: 8 }}>
         <p style={{ fontSize: 11, color: '#27272a' }}>Kyno v1.0 · Built for Indian students · Powered by OpenRouter</p>
       </div>

@@ -1,15 +1,3 @@
-/**
- * Network Rules (Wi-Fi Restriction) Routes
- *
- * School admins configure CIDR IP ranges. When rules exist, students/teachers
- * must access from a matching network. Admins are always exempt.
- *
- * POST   /api/network-rules          Add a new IP rule (admin only)
- * GET    /api/network-rules          List all rules for your school (admin only)
- * PUT    /api/network-rules/:id      Update a rule (admin only)
- * DELETE /api/network-rules/:id      Delete a rule (admin only)
- * GET    /api/network-rules/check    Check if your current IP is allowed
- */
 import { Router } from 'express'
 import { supabaseAdmin, requireSupabase }     from '../services/supabase.js'
 import { requireSupabaseAuth }                from '../middleware/supabaseAuth.js'
@@ -19,8 +7,6 @@ const router = Router()
 router.use(requireSupabase)
 router.use(requireSupabaseAuth)
 
-// ── Check current IP ───────────────────────────────────────────────────────────
-// Must be defined BEFORE /:id routes to avoid "check" being treated as an ID
 router.get('/check', async (req, res) => {
   if (!req.schoolId) return res.status(400).json({ error: 'You are not part of a school.' })
 
@@ -44,7 +30,6 @@ router.get('/check', async (req, res) => {
       })
     }
 
-    // Admins always allowed
     if (req.user.role === 'admin') {
       return res.json({
         allowed:   true,
@@ -69,7 +54,6 @@ router.get('/check', async (req, res) => {
   }
 })
 
-// ── Add Rule ───────────────────────────────────────────────────────────────────
 router.post('/', requireSchoolAdmin, async (req, res) => {
   const { label, cidr, enabled = true } = req.body
 
@@ -77,7 +61,6 @@ router.post('/', requireSchoolAdmin, async (req, res) => {
   if (!cidr)  return res.status(400).json({ error: 'cidr is required (e.g. "192.168.1.0/24" or "203.0.113.5/32").' })
   if (!req.schoolId) return res.status(400).json({ error: 'You are not part of a school.' })
 
-  // Basic CIDR format validation
   if (!isValidCidr(cidr)) {
     return res.status(400).json({
       error: `Invalid CIDR format: "${cidr}". Expected format: "192.168.1.0/24" or "203.0.113.5/32".`,
@@ -106,7 +89,6 @@ router.post('/', requireSchoolAdmin, async (req, res) => {
   }
 })
 
-// ── List Rules ─────────────────────────────────────────────────────────────────
 router.get('/', requireSchoolAdmin, async (req, res) => {
   if (!req.schoolId) return res.status(400).json({ error: 'You are not part of a school.' })
 
@@ -138,7 +120,6 @@ router.get('/', requireSchoolAdmin, async (req, res) => {
   }
 })
 
-// ── Update Rule ────────────────────────────────────────────────────────────────
 router.put('/:id', requireSchoolAdmin, async (req, res) => {
   if (!req.schoolId) return res.status(400).json({ error: 'You are not part of a school.' })
 
@@ -178,7 +159,6 @@ router.put('/:id', requireSchoolAdmin, async (req, res) => {
   }
 })
 
-// ── Delete Rule ────────────────────────────────────────────────────────────────
 router.delete('/:id', requireSchoolAdmin, async (req, res) => {
   if (!req.schoolId) return res.status(400).json({ error: 'You are not part of a school.' })
 
@@ -206,9 +186,7 @@ router.delete('/:id', requireSchoolAdmin, async (req, res) => {
   }
 })
 
-// ── Helpers ────────────────────────────────────────────────────────────────────
 function isValidCidr(cidr) {
-  // Matches "a.b.c.d/n" where a-d are 0-255 and n is 0-32
   return /^(\d{1,3}\.){3}\d{1,3}(\/\d{1,2})?$/.test(cidr.trim())
 }
 

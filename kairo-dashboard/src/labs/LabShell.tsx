@@ -1,17 +1,3 @@
-/**
- * LabShell — generic wrapper around any Three.js simulation.
- *
- * Provides:
- *  - Mode toggle (3D / Text / Both)
- *  - Sim header with subject + topic
- *  - Right-side AI explanation panel that reacts to sim state
- *  - Loading/Reset/Save controls
- *
- * Each individual lab (GravityLab, PendulumLab, etc.) is a child component
- * that takes a "params" object (controlled by sliders here) and renders the
- * actual <Canvas>. The lab also contributes its own param controls + AI
- * prompt template via props.
- */
 import { useState, useRef, useEffect, ReactNode, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -23,8 +9,6 @@ import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
 
-/** Same normalizer the doubt-solver uses. Coerces non-standard math delimiters
- *  ([ ... ], \[ ... \], \( ... \)) into the $$...$$ / $...$ KaTeX expects. */
 function normalizeMath(text: string): string {
   return text
     .replace(/\\\[([\s\S]*?)\\\]/g, (_, m) => `\n$$${m}$$\n`)
@@ -35,7 +19,6 @@ function normalizeMath(text: string): string {
     })
 }
 
-/** Markdown components — match the doubt-solver styling so labs and chat look identical. */
 const MARKDOWN_COMPONENTS = {
   p:  ({ children }: any) => <p style={{ margin: '0 0 10px', lineHeight: 1.7 }}>{children}</p>,
   h1: ({ children }: any) => <h1 style={{ fontSize: 17, fontWeight: 800, color: '#fafafa', margin: '14px 0 8px' }}>{children}</h1>,
@@ -78,11 +61,11 @@ interface LabShellProps {
   title:       string
   subject:     string
   topic:       string
-  description: string                          // 1-2 sentence pitch
+  description: string
   Sim:         (props: { params: any; playing: boolean }) => ReactNode
   defaultParams: Record<string, any>
-  controls:    ParamControl[]                  // schema for the sidebar sliders
-  aiPrompt:    (params: any) => string         // builds the AI prompt from current params
+  controls:    ParamControl[]
+  aiPrompt:    (params: any) => string
   onBack?:     () => void
 }
 
@@ -99,7 +82,6 @@ export default function LabShell({
   const [savedNote, setSaved]   = useState(false)
   const debounceRef = useRef<number | null>(null)
 
-  // Debounced AI re-fetch on param change
   const refetchExplanation = useCallback(async () => {
     setAiBusy(true); setAiErr('')
     try {
@@ -183,7 +165,6 @@ Keep total length 180-280 words. Tone: friendly, specific, exam-aware.` },
 
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-      {/* Header */}
       <div style={{
         padding: '14px 24px', borderBottom: '1px solid #1a1f2e',
         display: 'flex', alignItems: 'center', gap: 14, flexShrink: 0, flexWrap: 'wrap',
@@ -209,7 +190,6 @@ Keep total length 180-280 words. Tone: friendly, specific, exam-aware.` },
           </h1>
         </div>
 
-        {/* Mode toggle */}
         <div style={{ display: 'flex', gap: 4, background: '#0E1117', border: '1px solid #1f2532', borderRadius: 9, padding: 3 }}>
           {([
             { id: '3d',   label: '3D',    Icon: Box },
@@ -234,26 +214,22 @@ Keep total length 180-280 words. Tone: friendly, specific, exam-aware.` },
         </div>
       </div>
 
-      {/* Body — split layout (stacks vertically on mobile via .lab-body) */}
       <div className="lab-body" style={{
         flex: 1, display: 'grid',
         gridTemplateColumns: showSim && showText ? '1fr 1fr' : '1fr',
         gap: 0, overflow: 'hidden',
       }}>
 
-        {/* 3D pane */}
         {showSim && (
           <div style={{ position: 'relative', overflow: 'hidden', background: '#000' }}>
             <Sim params={params} playing={playing} />
 
-            {/* Sim controls — bottom overlay */}
             <div style={{
               position: 'absolute', left: 0, right: 0, bottom: 0,
               padding: '12px 16px',
               background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 100%)',
               display: 'flex', flexDirection: 'column', gap: 8,
             }}>
-              {/* Param sliders */}
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
                 {controls.map(c => (
                   <div key={c.key} style={{ flex: '1 1 200px', minWidth: 200 }}>
@@ -300,7 +276,6 @@ Keep total length 180-280 words. Tone: friendly, specific, exam-aware.` },
                 ))}
               </div>
 
-              {/* Play/pause/reset */}
               <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
                 <button onClick={() => setPlaying(p => !p)} style={btn}>
                   {playing ? <Pause size={11} /> : <Play size={11} />}
@@ -314,7 +289,6 @@ Keep total length 180-280 words. Tone: friendly, specific, exam-aware.` },
           </div>
         )}
 
-        {/* AI explanation pane */}
         {showText && (
           <div style={{
             overflowY: 'auto', padding: '20px 24px',

@@ -23,11 +23,6 @@ interface NavItem {
   color?: string
 }
 
-// ── Role-isolated navigation ─────────────────────────────────────────────────
-// Each role sees ONLY their own tools — no cross-access.
-// Per user spec: removed AI Memory · My Progress · Analytics · Voice Tutor · Panic Mode.
-// Their functionality now lives inside Kyno / Kyno Solver respectively.
-// Colors are all variations of the brand purple — strict monochrome palette.
 const STUDENT_NAV: NavItem[] = [
   { label: 'Home',            icon: Sparkles,        to: 'home',             color: '#66D9FF' },
   { label: 'Kyno',        icon: Cpu,             to: 'kairo-os',         color: '#66D9FF' },
@@ -68,7 +63,6 @@ const TEACHER_NAV: NavItem[] = [
   { label: 'Announcements',   icon: Megaphone,       to: 'announcement',    color: '#f472b6' },
 ]
 
-// Admin = command center ONLY. No student learning tools.
 const ADMIN_NAV: NavItem[] = [
   { label: 'School Hub',      icon: Building2,   to: 'school',          color: '#4F7CFF' },
   { label: 'Announcements',   icon: Megaphone,   to: 'announcement',    color: '#f472b6' },
@@ -85,7 +79,6 @@ function navForRole(role?: string): { items: NavItem[]; label: string; icon: Rea
   return { items: STUDENT_NAV, label: 'My Tools', icon: GraduationCap }
 }
 
-
 interface Profile {
   name: string
   role: string
@@ -93,7 +86,6 @@ interface Profile {
   school_name?: string
   school_logo_url?: string
   plan?: string
-  // legacy local fields (still supported)
   cls?: string
   board?: string
   pic?: string
@@ -108,9 +100,6 @@ interface SidebarProps {
   onLogout?: () => void
 }
 
-/** How many nav items are visible by default before the "More" expander.
- *  Matches the new Apple-style mockup — first 8 items are the daily-driver
- *  set; the rest live one tap away. */
 const DEFAULT_VISIBLE = 8
 
 export default function Sidebar({ active, setActive, isDark, toggleTheme, profile, onLogout }: SidebarProps) {
@@ -120,7 +109,6 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
   const [profilePic, setProfilePic] = useState<string | null>(() =>
     profile?.avatar_url || profile?.pic || localStorage.getItem('kairo_profile_pic')
   )
-  // Bumps when Settings picks a new avatar decoration → avatar re-renders
   const [decorTick, setDecorTick] = useState(0)
   useEffect(() => {
     const onDecor = () => setDecorTick(t => t + 1)
@@ -128,30 +116,24 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
     return () => window.removeEventListener('kairo:decor', onDecor)
   }, [])
 
-  // Sidebar collapse state — expanded (240) or shrunk (72). Persisted per
-  // device so power users who like the icon-only mode keep it across sessions.
   const [expanded, setExpanded] = useState<boolean>(() => {
     try { return localStorage.getItem('kairo:sidebar:expanded') !== '0' }
     catch { return true }
   })
   useEffect(() => {
     try { localStorage.setItem('kairo:sidebar:expanded', expanded ? '1' : '0') }
-    catch { /* ignore */ }
+    catch {  }
   }, [expanded])
 
-  // "Show more" toggle for the nav list — first DEFAULT_VISIBLE items show
-  // by default; the rest animate in when expanded. Persisted so repeat
-  // visitors don't have to re-expand every page load.
   const [showAll, setShowAll] = useState<boolean>(() => {
     try { return localStorage.getItem('kairo:sidebar:showAll') === '1' }
     catch { return false }
   })
   useEffect(() => {
     try { localStorage.setItem('kairo:sidebar:showAll', showAll ? '1' : '0') }
-    catch { /* ignore */ }
+    catch {  }
   }, [showAll])
 
-  // Listen for recent-chats updates from ChatWindow
   useEffect(() => {
     const reload = () => setRecents(getRecentChats())
     window.addEventListener('kairo:recents-updated', reload)
@@ -167,8 +149,6 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
     window.dispatchEvent(new CustomEvent('kairo:load-chat', { detail: { id: 'new' } }))
   }
 
-  // ⌘K / Ctrl+K opens the "Ask anything" chat — the search chip advertises
-  // this shortcut, so wire it for real.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && (e.key === 'k' || e.key === 'K')) {
@@ -211,10 +191,6 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
       animate={{ width: expanded ? 216 : 72 }}
       transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
       style={{
-        // Float as an Apple-style curved rectangular panel. Margin lets it
-        // breathe away from every edge; the parent flex container fills
-        // the remaining space for the workspace. Removing borderRight makes
-        // it read as a panel rather than a column attached to the screen.
         flexShrink: 0,
         margin: '10px 0 10px 10px',
         height: 'calc(100% - 20px)',
@@ -233,7 +209,6 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
         overflow: 'hidden',
         transition: 'background 0.32s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.32s cubic-bezier(0.22, 1, 0.36, 1)',
       }}>
-      {/* Logo area + collapse toggle */}
       <div style={{ padding: '14px 12px', borderBottom: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.04)' : '#e4e4e7'}` }}>
         <div style={{
           display: 'flex',
@@ -242,8 +217,6 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
           gap: expanded ? 10 : 8,
           marginBottom: expanded ? 14 : 0,
           justifyContent: expanded ? 'flex-start' : 'center',
-          // Glass brand card — the 216px sidebar leaves ~110px for text,
-          // so logo + font sizes below are tuned to NEVER clip the brand.
           padding: expanded ? '8px 10px' : '10px 6px',
           borderRadius: 16,
           background: 'linear-gradient(150deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%)',
@@ -252,11 +225,10 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
           border: '1px solid rgba(102, 217, 255, 0.16)',
           boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06)',
         }}>
-          {/* Curved-square logo tile — same squircle look as the app icon */}
           <div style={{
             width: expanded ? 48 : 42, height: expanded ? 48 : 42,
             flexShrink: 0,
-            borderRadius: expanded ? 13 : 11,     // ~22% — iOS squircle ratio
+            borderRadius: expanded ? 13 : 11,
             background: 'linear-gradient(150deg, #0B0F1C 0%, #05060A 100%)',
             border: '1px solid rgba(102, 217, 255, 0.30)',
             display: 'grid', placeItems: 'center',
@@ -300,7 +272,6 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
               </motion.div>
             )}
           </AnimatePresence>
-          {/* Collapse / expand toggle — chevron-style icon that flips with state */}
           <button
             onClick={() => setExpanded(e => !e)}
             title={expanded ? 'Shrink sidebar' : 'Expand sidebar'}
@@ -329,7 +300,6 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
           </button>
         </div>
 
-        {/* Search shortcut — hidden when sidebar is collapsed (no room) */}
         <AnimatePresence initial={false}>
           {expanded && (
             <motion.button
@@ -377,15 +347,8 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
         </AnimatePresence>
       </div>
 
-      {/* Nav */}
       <nav style={{ flex: 1, overflowY: 'auto', padding: '10px 8px' }}>
 
-        {/* Role-filtered nav — admins see only admin tools, etc.
-            Layout:
-              · first DEFAULT_VISIBLE items are always shown
-              · the rest live behind a "Show more" toggle (showAll)
-              · each row collapses to icon-only when the sidebar is shrunk
-        */}
         {(() => {
           const { items, label, icon: SectionIcon } = navForRole(profile?.role)
           const visible = showAll ? items : items.slice(0, DEFAULT_VISIBLE)
@@ -393,7 +356,6 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
           const hasMore = items.length > DEFAULT_VISIBLE
           return (
             <>
-              {/* Section header — hidden when sidebar is shrunk (no horizontal room) */}
               <AnimatePresence initial={false}>
                 {expanded && (
                   <motion.div
@@ -415,7 +377,6 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
                 )}
               </AnimatePresence>
 
-              {/* Default-visible items — first DEFAULT_VISIBLE */}
               {visible.slice(0, DEFAULT_VISIBLE).map(item => (
                 <NavItemRow
                   key={item.to}
@@ -429,7 +390,6 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
                 />
               ))}
 
-              {/* Overflow items — staggered animation when showAll flips on */}
               <AnimatePresence initial={false}>
                 {showAll && items.slice(DEFAULT_VISIBLE).map((item, i) => (
                   <motion.div
@@ -456,7 +416,6 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
                 ))}
               </AnimatePresence>
 
-              {/* Show more / Show less toggle — only when there's overflow */}
               {hasMore && (
                 <button
                   onClick={() => setShowAll(s => !s)}
@@ -505,7 +464,6 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
 
         <div style={{ height: 8 }} />
 
-        {/* Recent Activity — hidden when sidebar is shrunk (no room for chat titles) */}
         {expanded && (
         <>
         <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
@@ -594,9 +552,7 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
         )}
       </nav>
 
-      {/* Bottom section */}
       <div style={{ padding: '8px', borderTop: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.04)' : '#e4e4e7'}` }}>
-        {/* Settings row — icon-only when sidebar is shrunk */}
         <div style={{ display: 'flex', gap: 4, marginBottom: 6 }}>
           <button
             title={expanded ? undefined : 'Settings'}
@@ -628,7 +584,6 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
           </button>
         </div>
 
-        {/* Hidden file input for profile pic */}
         <input
           ref={fileInputRef}
           type="file"
@@ -637,7 +592,6 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
           onChange={handleProfilePicChange}
         />
 
-        {/* User card — collapses to just the avatar when sidebar is shrunk */}
         <div style={{
           padding: expanded ? '10px 10px 4px' : '8px 0 4px',
           display: 'flex', alignItems: 'center',
@@ -650,7 +604,6 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
             title={expanded ? 'Click to set profile picture' : displayName}
             style={{ cursor: 'pointer', flexShrink: 0 }}
           >
-            {/* key={decorTick} re-reads the saved decoration when Settings changes it */}
             <DecoratedAvatar key={decorTick} pic={profilePic} name={displayName} size={30} rounded={10} />
           </div>
           {expanded && (
@@ -712,7 +665,6 @@ function NavItemRow({ item, isActive, isHovered, isGenerating = false, compact =
   isActive: boolean
   isHovered: boolean
   isGenerating?: boolean
-  /** When the sidebar is shrunk, render icon-only and centre. */
   compact?: boolean
   onHover: (v: string | null) => void
   onClick: () => void
@@ -732,8 +684,6 @@ function NavItemRow({ item, isActive, isHovered, isGenerating = false, compact =
         padding: compact ? '10px 0' : '10px 12px',
         borderRadius: 14, textDecoration: 'none',
         marginBottom: 4, cursor: 'pointer', border: 'none', fontFamily: 'inherit',
-        // Active = soft blue pill (matches the Apple "active pill" mockup spec).
-        // Hover = glass tint, not a solid panel.
         background: isActive
           ? 'linear-gradient(135deg, rgba(38, 58, 140, 0.32) 0%, rgba(38, 58, 140, 0.16) 100%)'
           : isHovered ? 'rgba(255, 255, 255, 0.04)' : 'transparent',
@@ -745,7 +695,6 @@ function NavItemRow({ item, isActive, isHovered, isGenerating = false, compact =
         transform: isHovered && !compact ? 'translateX(2px)' : 'translateX(0)',
       }}
     >
-      {/* Active indicator — softened shadow per the no-neon refinement */}
       {isActive && (
         <motion.div
           layoutId="active-indicator"
@@ -765,7 +714,6 @@ function NavItemRow({ item, isActive, isHovered, isGenerating = false, compact =
         flexShrink: 0, transition: 'background 0.22s cubic-bezier(0.22, 1, 0.36, 1)', position: 'relative',
       }}>
         <item.icon size={13} color={isActive ? '#A5B4FC' : '#6B7280'} />
-        {/* Background generation pulse indicator */}
         {isGenerating && (
           <motion.div
             animate={{ scale: [1, 1.5, 1], opacity: [0.9, 0.4, 0.9] }}

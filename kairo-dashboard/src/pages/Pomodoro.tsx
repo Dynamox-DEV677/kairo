@@ -52,7 +52,6 @@ export default function Pomodoro() {
   function onComplete() {
     if (mode === 'focus') setSessions(s => s + 1)
     setHistory(h => [{ task: task || mode, mode, completed: true, time: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) }, ...h].slice(0, 20))
-    // auto suggest break after focus
     if (mode === 'focus') {
       const nextMode = sessions > 0 && (sessions + 1) % 4 === 0 ? 'long' : 'short'
       setMode(nextMode)
@@ -81,9 +80,7 @@ export default function Pomodoro() {
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
-        {/* Timer */}
         <div style={{ background: '#0E1117', border: '1px solid #1f2532', borderRadius: 20, padding: 28, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          {/* Mode selector */}
           <div style={{ display: 'flex', gap: 4, marginBottom: 24, background: '#0E1117', border: '1px solid #1f2532', borderRadius: 9, padding: 3 }}>
             {(['focus', 'short', 'long'] as Mode[]).map(m => (
               <button key={m} onClick={() => switchMode(m)} style={{
@@ -100,7 +97,6 @@ export default function Pomodoro() {
             ))}
           </div>
 
-          {/* Circle timer */}
           <div style={{ position: 'relative', width: 200, height: 200, marginBottom: 20 }}>
             <svg width="200" height="200" style={{ position: 'absolute', top: 0, left: 0, transform: 'rotate(-90deg)' }}>
               <circle cx="100" cy="100" r={r} fill="none" stroke="#1f2532" strokeWidth="8" />
@@ -117,7 +113,6 @@ export default function Pomodoro() {
             </div>
           </div>
 
-          {/* Controls */}
           <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
             <button onClick={() => setRunning(r => !r)} style={{
               width: 56, height: 56, borderRadius: '50%', border: 'none', cursor: 'pointer',
@@ -132,7 +127,6 @@ export default function Pomodoro() {
             </button>
           </div>
 
-          {/* Task */}
           <div style={{ width: '100%' }}>
             <div style={{ fontSize: 11, color: '#6B7280', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 6 }}>Current Task</div>
             <input value={task} onChange={e => setTask(e.target.value)} placeholder="What are you working on?" style={{ background: '#0E1117', border: '1px solid #1f2532', borderRadius: 8, padding: '8px 12px', fontSize: 12, color: '#fafafa', fontFamily: 'inherit', outline: 'none', width: '100%' }} />
@@ -155,9 +149,7 @@ export default function Pomodoro() {
           </div>
         </div>
 
-        {/* Right panel */}
         <div>
-          {/* Tips */}
           <div style={{ background: '#0E1117', border: '1px solid #1f2532', borderRadius: 14, padding: 20, marginBottom: 14 }}>
             <div style={{ fontSize: 12, fontWeight: 700, color: mode === 'focus' ? '#66D9FF' : '#A5B4FC', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 }}>
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
@@ -181,7 +173,6 @@ export default function Pomodoro() {
             ].map((t, i) => <div key={i} style={{ fontSize: 12, color: '#B1B5BA', marginBottom: 6 }}>→ {t}</div>)}
           </div>
 
-          {/* Session history */}
           <div style={{ background: '#0E1117', border: '1px solid #1f2532', borderRadius: 14, padding: 20 }}>
             <div style={{ fontSize: 12, fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 }}>Session Log</div>
             {history.length === 0 && <div style={{ fontSize: 12, color: '#4B5563', textAlign: 'center', padding: '20px 0' }}>Start your first session!</div>}

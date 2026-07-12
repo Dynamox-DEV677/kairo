@@ -1,32 +1,3 @@
-/**
- * Database — NeDB (pure-JS, no native compilation, file-backed)
- *
- * Collections:
- *  credentials     — encrypted Gmail SMTP settings per school
- *  students        — student + parent contact records
- *  fees            — fee records per student
- *  emailLogs       — every email attempted (sent / failed / pending)
- *  config          — reminder schedule config per school
- *
- *  [v2 — SaaS Features]
- *  users           — registered users (teachers / admins)
- *  flashcards      — flashcard deck items with SRS state
- *  studyPlans      — generated study plans per student
- *  essays          — submitted essays + AI grading results
- *  timetable       — class schedule entries per school
- *  admissionLeads  — enquiry bot captured leads
- *  attendanceLogs  — daily attendance records per student
- *
- *  [v3 — Extended Features]
- *  quizSessions    — adaptive quiz sessions + results
- *  mindmaps        — chapter mindmaps
- *  doubts          — doubt history
- *  formulaSheets   — generated formula sheets
- *  announcements   — school announcements
- *  gradingSessions — bulk grading sessions
- *  gamification    — XP, levels, badges per user
- *  writingSessions — writing tool sessions
- */
 
 import Datastore from '@seald-io/nedb'
 import path from 'path'
@@ -34,11 +5,9 @@ import fs from 'fs'
 import { fileURLToPath } from 'url'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-// On Vercel, /tmp is the only writable directory (data is ephemeral per instance)
 const DATA_DIR  = process.env.DB_PATH
   || (process.env.VERCEL ? '/tmp/kairo-data' : path.join(__dirname, '../../data'))
 
-// Create the data directory if it doesn't exist (critical on Vercel /tmp)
 try {
   fs.mkdirSync(DATA_DIR, { recursive: true })
 } catch (e) {
@@ -53,14 +22,12 @@ function store(name) {
 }
 
 export const db = {
-  // ── v1 collections ─────────────────────────────────────────────────────────
   credentials:    store('credentials'),
   students:       store('students'),
   fees:           store('fees'),
   emailLogs:      store('email_logs'),
   config:         store('config'),
 
-  // ── v2 collections ─────────────────────────────────────────────────────────
   users:          store('users'),
   flashcards:     store('flashcards'),
   studyPlans:     store('study_plans'),
@@ -69,7 +36,6 @@ export const db = {
   admissionLeads: store('admission_leads'),
   attendance:     store('attendance'),
 
-  // ── v3 collections ─────────────────────────────────────────────────────────
   quizSessions:    store('quiz_sessions'),
   mindmaps:        store('mindmaps'),
   doubts:          store('doubts'),
@@ -80,9 +46,6 @@ export const db = {
   writingSessions: store('writing_sessions'),
 }
 
-// ── Indexes ───────────────────────────────────────────────────────────────────
-
-// v1
 db.credentials.ensureIndex({ fieldName: 'school_id', unique: true })
 db.students.ensureIndex({ fieldName: 'school_id' })
 db.fees.ensureIndex({ fieldName: 'student_id' })
@@ -90,7 +53,6 @@ db.fees.ensureIndex({ fieldName: 'school_id' })
 db.emailLogs.ensureIndex({ fieldName: 'school_id' })
 db.config.ensureIndex({ fieldName: 'school_id', unique: true })
 
-// v2
 db.users.ensureIndex({ fieldName: 'email', unique: true })
 db.users.ensureIndex({ fieldName: 'school_id' })
 db.flashcards.ensureIndex({ fieldName: 'school_id' })
@@ -102,7 +64,6 @@ db.admissionLeads.ensureIndex({ fieldName: 'school_id' })
 db.attendance.ensureIndex({ fieldName: 'school_id' })
 db.attendance.ensureIndex({ fieldName: 'student_id' })
 
-// v3
 db.quizSessions.ensureIndex({ fieldName: 'school_id' })
 db.mindmaps.ensureIndex({ fieldName: 'school_id' })
 db.doubts.ensureIndex({ fieldName: 'school_id' })

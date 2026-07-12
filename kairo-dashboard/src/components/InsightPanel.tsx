@@ -60,7 +60,7 @@ export default function InsightPanel({ hasContent, lastQuestion }: InsightPanelP
       try {
         const cleaned = r.replace(/```json|```/g, '').trim()
         setInsights(JSON.parse(cleaned))
-      } catch { /* keep null */ }
+      } catch {  }
     }).finally(() => setLoadingInsights(false))
   }, [lastQuestion])
 
@@ -95,7 +95,6 @@ export default function InsightPanel({ hasContent, lastQuestion }: InsightPanelP
         position: 'relative',
       }}
     >
-      {/* Collapse toggle */}
       <button
         onClick={() => setCollapsed(c => !c)}
         style={{
@@ -124,13 +123,11 @@ export default function InsightPanel({ hasContent, lastQuestion }: InsightPanelP
             transition={{ duration: 0.15 }}
             style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}
           >
-            {/* Header */}
             <div style={{ padding: '12px 14px 0', paddingRight: 40 }}>
               <h3 style={{ fontSize: 12, fontWeight: 700, color: '#fafafa', marginBottom: 12 }}>
                 Insight Panel
               </h3>
 
-              {/* Tabs */}
               <div style={{ display: 'flex', gap: 2, background: '#0E1117', borderRadius: 8, padding: 3, border: '1px solid #1f2532' }}>
                 {TABS.map(t => (
                   <button
@@ -153,7 +150,6 @@ export default function InsightPanel({ hasContent, lastQuestion }: InsightPanelP
               </div>
             </div>
 
-            {/* Content */}
             <div style={{ flex: 1, overflowY: 'auto', padding: '14px' }}>
               <AnimatePresence mode="wait">
                 {tab === 'summary' && (
@@ -326,7 +322,6 @@ export default function InsightPanel({ hasContent, lastQuestion }: InsightPanelP
                       </div>
                     ))}
 
-                    {/* Badges */}
                     <SmallCard style={{ marginTop: 6 }}>
                       <p style={{ fontSize: 11, fontWeight: 600, color: '#B1B5BA', marginBottom: 10 }}>Achievements</p>
                       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>

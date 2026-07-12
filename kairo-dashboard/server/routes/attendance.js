@@ -1,6 +1,3 @@
-/**
- * Attendance Routes (no auth — school_id from body/query)
- */
 import { Router } from 'express'
 import { db } from '../db/index.js'
 import { aiCall } from '../utils/ai.js'

@@ -1,10 +1,3 @@
-/**
- * /reset-password?token=... — landing page reached from the password-reset
- * email. POSTs the token + new password to /api/users/reset-password and
- * walks the user back to sign-in on success.
- *
- * No router — App.tsx detects the path and renders this directly.
- */
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Lock, Eye, EyeOff, CheckCircle2, AlertCircle, Loader2, ArrowRight } from 'lucide-react'
@@ -13,12 +6,10 @@ import { post } from '../lib/api'
 const FONT = "'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif"
 
 interface Props {
-  /** Called after a successful reset OR a "back to sign in" click. */
   onDone: () => void
 }
 
 export default function ResetPasswordPage({ onDone }: Props) {
-  // Pull the JWT token out of the URL
   const [token] = useState(() => {
     if (typeof window === 'undefined') return ''
     return new URLSearchParams(window.location.search).get('token') || ''
@@ -31,7 +22,6 @@ export default function ResetPasswordPage({ onDone }: Props) {
   const [err, setErr]                 = useState('')
   const [done, setDone]               = useState(false)
 
-  // If we land here without a token, surface the error immediately.
   useEffect(() => {
     if (!token) setErr('No reset token in the link. Open the email again and tap the button.')
   }, [token])
@@ -46,7 +36,6 @@ export default function ResetPasswordPage({ onDone }: Props) {
     try {
       await post('/users/reset-password', { token, password })
       setDone(true)
-      // Strip the token from the URL so refresh doesn't try again with a burned token.
       try { window.history.replaceState({}, '', '/') } catch {}
     } catch (e: any) {
       setErr(e.message || 'Could not reset your password. Try requesting a new link.')
@@ -65,7 +54,6 @@ export default function ResetPasswordPage({ onDone }: Props) {
       paddingTop: 'env(safe-area-inset-top)',
       paddingBottom: 'env(safe-area-inset-bottom)',
     }}>
-      {/* Ambient glow */}
       <div style={{
         position: 'fixed', top: '15%', left: '50%', transform: 'translateX(-50%)',
         width: 600, height: 600, borderRadius: '50%',
@@ -74,7 +62,6 @@ export default function ResetPasswordPage({ onDone }: Props) {
       }} />
 
       <div style={{ width: '100%', maxWidth: 460, padding: '28px 20px 48px' }}>
-        {/* Logo */}
         <div style={{ textAlign: 'center', marginBottom: 22 }}>
           <img src="/kairo_logo.png" alt="Kyno"
             style={{
@@ -88,7 +75,6 @@ export default function ResetPasswordPage({ onDone }: Props) {
           </p>
         </div>
 
-        {/* Card */}
         <div style={{
           background: '#0E1117', border: '1px solid #1f2532', borderRadius: 18,
           padding: 24, position: 'relative',

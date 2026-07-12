@@ -53,7 +53,6 @@ export default function TopBar({ title, onModelChange, profile, modelLocked, mod
 
   const isAdmin = profile?.role === 'admin'
 
-  // Fetch passcode for admins so they can share it with new joiners
   useEffect(() => {
     if (!isAdmin || !profile?.school_id) return
     fetch(`/api/schools/${profile.school_id}/passcode`, {
@@ -98,9 +97,6 @@ export default function TopBar({ title, onModelChange, profile, modelLocked, mod
 
   return (
     <div style={{
-      // Apple-style floating curved panel — one long rectangle holding the
-      // title (left) and the controls (right). 22 px radius, glass blur,
-      // subtle border, soft floating shadow.
       flexShrink: 0,
       margin: '10px 12px 0',
       borderRadius: 22,
@@ -117,10 +113,8 @@ export default function TopBar({ title, onModelChange, profile, modelLocked, mod
       zIndex: 200,
       position: 'relative',
     }}>
-      {/* Page title — for admins, show control-center identity instead */}
       {isAdmin ? (
         <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
-          {/* Admin shield + school logo */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
             <div style={{
               width: 28, height: 28, borderRadius: 7,
@@ -142,7 +136,6 @@ export default function TopBar({ title, onModelChange, profile, modelLocked, mod
             </div>
           </div>
 
-          {/* Passcode pill — click to copy */}
           {passcode && (
             <motion.button
               onClick={copyPasscode}
@@ -185,10 +178,8 @@ export default function TopBar({ title, onModelChange, profile, modelLocked, mod
         </div>
       )}
 
-      {/* Controls row */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
 
-        {/* Accuracy mode selector */}
         <div style={{ position: 'relative' }}>
           <motion.button
             whileHover={{ scale: 1.02 }}
@@ -246,12 +237,8 @@ export default function TopBar({ title, onModelChange, profile, modelLocked, mod
           </AnimatePresence>
         </div>
 
-        {/* Divider */}
         <div style={{ width: 1, height: 20, background: '#1f2532' }} />
 
-        {/* Model selector — locked when an active solver session is on screen
-            because the answer was generated against a specific model and
-            switching mid-thread would break the context. */}
         <div style={{ position: 'relative' }} title={modelLocked ? (modelLockReason || 'Model locked for this chat') : undefined}>
           <motion.button
             whileHover={{ scale: modelLocked ? 1 : 1.02 }}
@@ -338,10 +325,8 @@ export default function TopBar({ title, onModelChange, profile, modelLocked, mod
           </AnimatePresence>
         </div>
 
-        {/* Divider */}
         <div style={{ width: 1, height: 20, background: '#1f2532' }} />
 
-        {/* Streak — pill-shaped */}
         <div className="animate-streak" style={{
           display: 'flex', alignItems: 'center', gap: 6,
           padding: '6px 12px', borderRadius: 999,
@@ -356,7 +341,6 @@ export default function TopBar({ title, onModelChange, profile, modelLocked, mod
           <span style={{ fontSize: 11, color: '#6B7280' }}>day streak</span>
         </div>
 
-        {/* XP — pill-shaped */}
         <div style={{
           display: 'flex', alignItems: 'center', gap: 6,
           padding: '6px 12px', borderRadius: 999,
@@ -370,7 +354,6 @@ export default function TopBar({ title, onModelChange, profile, modelLocked, mod
           <span style={{ fontSize: 12, fontWeight: 700, color: '#C7D2E8' }}>450 XP</span>
         </div>
 
-        {/* Notification bell */}
         <div style={{ position: 'relative' }}>
           <motion.button
             whileHover={{ scale: 1.05 }}

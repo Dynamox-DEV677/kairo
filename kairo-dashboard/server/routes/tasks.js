@@ -1,17 +1,3 @@
-/**
- * Task / Homework System Routes
- *
- * Teachers/Admins manage tasks; Students submit and view results.
- *
- * POST   /api/tasks                              Create a task (teacher/admin)
- * GET    /api/tasks                              List tasks for your school
- * GET    /api/tasks/:id                          Get single task + submission status
- * PUT    /api/tasks/:id                          Update task (creator or admin)
- * DELETE /api/tasks/:id                          Delete task (creator or admin)
- * POST   /api/tasks/:id/submit                   Student submits work
- * GET    /api/tasks/:id/submissions              All submissions (teacher/admin)
- * PUT    /api/tasks/:id/submissions/:sid/grade   Grade a submission (teacher/admin)
- */
 import { Router } from 'express'
 import { supabaseAdmin, requireSupabase }             from '../services/supabase.js'
 import { requireSupabaseAuth }                         from '../middleware/supabaseAuth.js'
@@ -19,10 +5,9 @@ import { requireTeacherOrAdmin, checkNetworkRestriction } from '../middleware/sc
 
 const router = Router()
 router.use(requireSupabase)
-router.use(requireSupabaseAuth)         // all task routes require auth
-router.use(checkNetworkRestriction)     // enforce Wi-Fi policy
+router.use(requireSupabaseAuth)
+router.use(checkNetworkRestriction)
 
-// ── Create Task ────────────────────────────────────────────────────────────────
 router.post('/', requireTeacherOrAdmin, async (req, res) => {
   const {
     title,
@@ -63,7 +48,6 @@ router.post('/', requireTeacherOrAdmin, async (req, res) => {
   }
 })
 
-// ── List Tasks ─────────────────────────────────────────────────────────────────
 router.get('/', async (req, res) => {
   if (!req.schoolId) return res.status(400).json({ error: 'You are not part of a school.' })
 
@@ -80,7 +64,6 @@ router.get('/', async (req, res) => {
       .eq('school_id', req.schoolId)
       .order('created_at', { ascending: false })
 
-    // Students only see active tasks relevant to their class
     if (req.user.role === 'student') {
       query = query.eq('status', 'active')
       if (req.user.class_name) {
@@ -95,7 +78,6 @@ router.get('/', async (req, res) => {
     const { data, error } = await query
     if (error) throw new Error(error.message)
 
-    // For students: attach their submission status to each task
     if (req.user.role === 'student' && data.length > 0) {
       const taskIds = data.map(t => t.id)
       const { data: submissions } = await supabaseAdmin
@@ -115,7 +97,6 @@ router.get('/', async (req, res) => {
   }
 })
 
-// ── Get Single Task ────────────────────────────────────────────────────────────
 router.get('/:id', async (req, res) => {
   if (!req.schoolId) return res.status(400).json({ error: 'You are not part of a school.' })
 
@@ -132,7 +113,6 @@ router.get('/:id', async (req, res) => {
 
     if (error || !task) return res.status(404).json({ error: 'Task not found.' })
 
-    // Student: add own submission
     if (req.user.role === 'student') {
       const { data: submission } = await supabaseAdmin
         .from('task_submissions')
@@ -143,7 +123,6 @@ router.get('/:id', async (req, res) => {
       return res.json({ task, my_submission: submission || null })
     }
 
-    // Teacher/Admin: include submission count
     const { count: submissionCount } = await supabaseAdmin
       .from('task_submissions')
       .select('*', { count: 'exact', head: true })
@@ -155,7 +134,6 @@ router.get('/:id', async (req, res) => {
   }
 })
 
-// ── Update Task ────────────────────────────────────────────────────────────────
 router.put('/:id', requireTeacherOrAdmin, async (req, res) => {
   if (!req.schoolId) return res.status(400).json({ error: 'You are not part of a school.' })
 
@@ -194,7 +172,6 @@ router.put('/:id', requireTeacherOrAdmin, async (req, res) => {
   }
 })
 
-// ── Delete Task ────────────────────────────────────────────────────────────────
 router.delete('/:id', requireTeacherOrAdmin, async (req, res) => {
   if (!req.schoolId) return res.status(400).json({ error: 'You are not part of a school.' })
 
@@ -225,7 +202,6 @@ router.delete('/:id', requireTeacherOrAdmin, async (req, res) => {
   }
 })
 
-// ── Student: Submit Work ───────────────────────────────────────────────────────
 router.post('/:id/submit', async (req, res) => {
   if (req.user.role !== 'student') {
     return res.status(403).json({ error: 'Only students can submit tasks.' })
@@ -247,7 +223,6 @@ router.post('/:id/submit', async (req, res) => {
     if (task.status === 'closed') return res.status(400).json({ error: 'This task is closed — submissions are no longer accepted.' })
     if (task.status === 'draft')  return res.status(400).json({ error: 'This task is not yet published.' })
 
-    // Determine if late
     const isLate = task.due_date && new Date() > new Date(task.due_date)
     const status = isLate ? 'late' : 'submitted'
 
@@ -261,7 +236,6 @@ router.post('/:id/submit', async (req, res) => {
           file_url:     file_url || null,
           status,
           submitted_at: new Date().toISOString(),
-          // Reset grade on re-submission
           score:      null,
           feedback:   null,
           graded_at:  null,
@@ -284,12 +258,10 @@ router.post('/:id/submit', async (req, res) => {
   }
 })
 
-// ── Teacher: List Submissions ──────────────────────────────────────────────────
 router.get('/:id/submissions', requireTeacherOrAdmin, async (req, res) => {
   if (!req.schoolId) return res.status(400).json({ error: 'You are not part of a school.' })
 
   try {
-    // Verify task belongs to school
     const { data: task } = await supabaseAdmin
       .from('tasks')
       .select('id, school_id, title, max_score')
@@ -328,7 +300,6 @@ router.get('/:id/submissions', requireTeacherOrAdmin, async (req, res) => {
   }
 })
 
-// ── Teacher: Grade a Submission ────────────────────────────────────────────────
 router.put('/:id/submissions/:sid/grade', requireTeacherOrAdmin, async (req, res) => {
   if (!req.schoolId) return res.status(400).json({ error: 'You are not part of a school.' })
 
@@ -336,7 +307,6 @@ router.put('/:id/submissions/:sid/grade', requireTeacherOrAdmin, async (req, res
   if (score === undefined || score === null) return res.status(400).json({ error: 'score is required.' })
 
   try {
-    // Verify task + school
     const { data: task } = await supabaseAdmin
       .from('tasks')
       .select('id, school_id, max_score')

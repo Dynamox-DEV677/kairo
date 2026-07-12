@@ -1,12 +1,3 @@
-/**
- * Desktop Update Banner — branded, two-phase update notification.
- *
- * Phase 1 (downloading): Slim pill with animated progress bar + speed readout.
- * Phase 2 (ready):       Full card with "Restart" CTA.
- *
- * Both phases are fully in-app — no fallback to plain OS notifications.
- * In the web build (no Electron), renders nothing.
- */
 import { useEffect, useState, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Download, RotateCcw, X, ArrowDownToLine } from 'lucide-react'
@@ -126,11 +117,9 @@ export default function DesktopUpdateBanner() {
           boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.03) inset',
         }}
       >
-        {/* ─── Downloading phase ─────────────────────────────────────── */}
         {isDownloading && (
           <div style={{ padding: '14px 16px 10px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              {/* Animated download icon */}
               <motion.div
                 animate={{ y: [0, 3, 0] }}
                 transition={{ repeat: Infinity, duration: 1.4, ease: 'easeInOut' }}
@@ -170,7 +159,6 @@ export default function DesktopUpdateBanner() {
               </button>
             </div>
 
-            {/* Progress bar */}
             <div style={{
               marginTop: 10, height: 3, borderRadius: 2,
               background: 'rgba(255, 255, 255, 0.06)',
@@ -190,11 +178,9 @@ export default function DesktopUpdateBanner() {
           </div>
         )}
 
-        {/* ─── Ready phase ───────────────────────────────────────────── */}
         {isReady && (
           <div style={{ padding: '14px 16px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              {/* Success icon */}
               <div style={{
                 width: 36, height: 36, borderRadius: 10,
                 background: 'linear-gradient(135deg, #4F7CFF 0%, #2046C2 100%)',
@@ -217,7 +203,6 @@ export default function DesktopUpdateBanner() {
                 </div>
               </div>
 
-              {/* Restart button */}
               <button
                 onClick={onRestart}
                 disabled={busy}

@@ -1,13 +1,3 @@
-/**
- * Parent Mode API
- *
- * Student  → POST /api/parent/generate-code   Generate a parent access code
- * Student  → GET  /api/parent/my-code         View current active code
- * Public   → POST /api/parent/register        Register as a parent (email + access code)
- * Parent   → GET  /api/parent/profile         Parent profile + linked child info
- * Parent   → GET  /api/parent/marks           Linked child's marks (read-only)
- * Admin    → GET  /api/parent/links           All parent-student links in school
- */
 import { Router }  from 'express'
 import crypto      from 'crypto'
 import bcrypt      from 'bcryptjs'
@@ -18,19 +8,16 @@ import { parentLinkedEmail }                from '../services/welcomeEmail.js'
 const router = Router()
 router.use(requireSupabase)
 
-// ── Generate parent access code (student only) ─────────────────────────────
 router.post('/generate-code', requireSupabaseAuth, requireRole('student'), async (req, res) => {
   if (!req.schoolId) return res.status(400).json({ error: 'You must be in a school to generate a parent code.' })
 
   try {
-    // Expire any previous unused codes for this student
     await supabaseAdmin
       .from('parent_codes')
       .update({ used: true })
       .eq('student_id', req.user.id)
       .eq('used', false)
 
-    // Generate a new 8-char alphanumeric code (easy to read/type)
     const code = generateCode()
 
     const { data, error } = await supabaseAdmin
@@ -59,7 +46,6 @@ router.post('/generate-code', requireSupabaseAuth, requireRole('student'), async
   }
 })
 
-// ── Get current active code (student only) ─────────────────────────────────
 router.get('/my-code', requireSupabaseAuth, requireRole('student'), async (req, res) => {
   try {
     const { data, error } = await supabaseAdmin
@@ -84,7 +70,6 @@ router.get('/my-code', requireSupabaseAuth, requireRole('student'), async (req, 
   }
 })
 
-// ── Register as parent (public — no auth yet) ─────────────────────────────
 router.post('/register', async (req, res) => {
   const { name, email, password, access_code } = req.body
 
@@ -94,7 +79,6 @@ router.post('/register', async (req, res) => {
   if (!access_code) return res.status(400).json({ error: 'access_code is required. Ask your child to generate one.' })
 
   try {
-    // 1. Validate the access code
     const { data: codeRow, error: codeErr } = await supabaseAdmin
       .from('parent_codes')
       .select('id, student_id, school_id, used, expires_at')
@@ -108,7 +92,6 @@ router.post('/register', async (req, res) => {
       return res.status(410).json({ error: 'This access code has expired. Ask your child to generate a new one.' })
     }
 
-    // 2. Check if this email already exists as a parent linked to this child
     const { data: existing } = await supabaseAdmin
       .from('parent_links')
       .select('id, parent:users!parent_links_parent_id_fkey(id, name)')
@@ -120,7 +103,6 @@ router.post('/register', async (req, res) => {
       })
     }
 
-    // 3. Create Supabase auth user for the parent
     const { data: authData, error: authErr } = await supabaseAdmin.auth.admin.createUser({
       email:         email.trim().toLowerCase(),
       password,
@@ -136,7 +118,6 @@ router.post('/register', async (req, res) => {
 
     const authUser = authData.user
 
-    // 4. Create parent profile in users table
     const { data: parentProfile, error: profileErr } = await supabaseAdmin
       .from('users')
       .insert({
@@ -154,7 +135,6 @@ router.post('/register', async (req, res) => {
       throw new Error(profileErr.message)
     }
 
-    // 5. Create parent–student link
     const { error: linkErr } = await supabaseAdmin
       .from('parent_links')
       .insert({
@@ -168,19 +148,16 @@ router.post('/register', async (req, res) => {
       throw new Error(linkErr.message)
     }
 
-    // 6. Mark code as used
     await supabaseAdmin
       .from('parent_codes')
       .update({ used: true })
       .eq('id', codeRow.id)
 
-    // 7. Create a session for immediate login
     const { data: signInData } = await supabaseAdmin.auth.signInWithPassword({
       email: email.trim().toLowerCase(),
       password,
     })
 
-    // 8. Get student info for response
     const { data: student } = await supabaseAdmin
       .from('users')
       .select('id, name, class_name')
@@ -195,7 +172,6 @@ router.post('/register', async (req, res) => {
 
     console.log(`[Parent] ✓ Registered: ${name} → linked to student ${student?.name}`)
 
-    // Welcome email — fire and forget
     parentLinkedEmail({
       to:          email.trim().toLowerCase(),
       name:        name.trim(),
@@ -218,7 +194,6 @@ router.post('/register', async (req, res) => {
   }
 })
 
-// ── Parent profile + linked child (auth required) ─────────────────────────
 router.get('/profile', requireSupabaseAuth, requireRole('parent'), async (req, res) => {
   try {
     const { data: links, error } = await supabaseAdmin
@@ -243,7 +218,6 @@ router.get('/profile', requireSupabaseAuth, requireRole('parent'), async (req, r
   }
 })
 
-// ── Parent marks view (same as /marks/child but via this route) ────────────
 router.get('/marks', requireSupabaseAuth, requireRole('parent'), async (req, res) => {
   try {
     const { data: links } = await supabaseAdmin
@@ -277,7 +251,6 @@ router.get('/marks', requireSupabaseAuth, requireRole('parent'), async (req, res
   }
 })
 
-// ── Admin: list all parent links for school ────────────────────────────────
 router.get('/links', requireSupabaseAuth, requireRole('admin'), async (req, res) => {
   if (!req.schoolId) return res.status(400).json({ error: 'Not in a school.' })
 
@@ -300,9 +273,7 @@ router.get('/links', requireSupabaseAuth, requireRole('admin'), async (req, res)
   }
 })
 
-// ── Helpers ───────────────────────────────────────────────────────────────
 function generateCode() {
-  // 8-char uppercase alphanumeric, no ambiguous chars (0/O, 1/I/l)
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
   return Array.from({ length: 8 }, () => chars[Math.floor(Math.random() * chars.length)]).join('')
 }

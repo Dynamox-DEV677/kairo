@@ -1,7 +1,3 @@
-/**
- * AI Notebook — your second brain.
- * Auto-collected outputs (flashcards, summaries, doubts, plans) + manual notes.
- */
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -32,7 +28,6 @@ interface Note {
   updated_at: string
 }
 
-// Monochrome purple — kind colors are now 3 shades of purple instead of rainbow.
 const KIND_META: Record<Kind, { label: string; icon: any; color: string }> = {
   flashcards:  { label: 'Flashcards',  icon: BookMarked,    color: '#66D9FF' },
   summary:     { label: 'Summary',     icon: FileText,      color: '#A5B4FC' },
@@ -50,7 +45,6 @@ const inp: React.CSSProperties = {
   fontFamily: 'inherit', outline: 'none', width: '100%', boxSizing: 'border-box',
 }
 
-// Adapter: localStorage NoteEntry → desktop Note shape (with pinned flag in memory).
 function entryToNote(e: NoteEntry): Note {
   return {
     id:         e.id,
@@ -78,8 +72,6 @@ export default function Notebook() {
 
   const load = useCallback(async () => {
     setLoading(true); setErr('')
-    // localStorage-first: read every entry from the device store.
-    // The DB cleanup deleted the `notebooks` table so we never call /api/notebook here.
     const local = listNotebook({ limit: 200 })
     setNotes(local.map(entryToNote))
     setLoading(false)
@@ -103,7 +95,6 @@ export default function Notebook() {
   }, [notes, search, kindFilter])
 
   async function togglePin(n: Note) {
-    // Pin is a UI-only flag on local entries. We store it on the note object.
     setNotes(prev => prev.map(x => x.id === n.id ? { ...x, pinned: !x.pinned } : x))
   }
 
@@ -116,7 +107,6 @@ export default function Notebook() {
 
   return (
     <div className="nb-page" style={{ padding: '28px 36px', maxWidth: 1200, margin: '0 auto', height: '100%', overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
-      {/* Header — monochrome purple per strict palette rule */}
       <div className="nb-header" style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 20, flexShrink: 0 }}>
         <div style={{
           width: 44, height: 44, borderRadius: 11,
@@ -149,7 +139,6 @@ export default function Notebook() {
         </button>
       </div>
 
-      {/* Mobile-only floating Generate CTA — always visible above the dock */}
       <button
         className="nb-fab"
         onClick={() => setCreating(true)}
@@ -159,10 +148,7 @@ export default function Notebook() {
         <span>Generate</span>
       </button>
 
-      {/* Auto-collected from unified memory engine — doubts + concepts + formulas */}
       <AutoCollectedStrip onBuilt={(id) => {
-        // Reload the notebook list so the freshly-built note appears,
-        // then open it so the student immediately SEES it was built.
         const local = listNotebook({ limit: 200 })
         const fresh = local.map(entryToNote)
         setNotes(fresh)
@@ -170,7 +156,6 @@ export default function Notebook() {
         if (justMade) setSelected(justMade)
       }} />
 
-      {/* Search + filters */}
       <div className="nb-tools" style={{ display: 'flex', gap: 10, marginBottom: 14, flexShrink: 0 }}>
         <div style={{ position: 'relative', flex: 1 }}>
           <Search size={13} color="#6B7280" style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)' }} />
@@ -185,9 +170,7 @@ export default function Notebook() {
         </select>
       </div>
 
-      {/* Body — split view */}
       <div className={`nb-split${selected ? ' has-sel' : ''}`} style={{ display: 'grid', gridTemplateColumns: selected ? '1fr 1.3fr' : '1fr', gap: 12, flex: 1, minHeight: 0 }}>
-        {/* List */}
         <div className="nb-list" style={{ overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 6 }}>
           {err && <div style={{ padding: '10px 14px', background: 'rgba(102, 217, 255, 0.08)', border: '1px solid rgba(102, 217, 255, 0.25)', borderRadius: 8, fontSize: 12, color: '#66D9FF' }}>{err}</div>}
           {loading && notes.length === 0 && <div style={{ textAlign: 'center', padding: '40px 0', color: '#6B7280' }}>Loading…</div>}
@@ -239,7 +222,6 @@ export default function Notebook() {
           })}
         </div>
 
-        {/* Detail / editor */}
         <AnimatePresence mode="wait">
           {selected && (
             <motion.div key={selected.id} className="nb-detail"
@@ -263,7 +245,6 @@ export default function Notebook() {
         </AnimatePresence>
       </div>
 
-      {/* Create modal */}
       <AnimatePresence>
         {creating && (
           <CreateModal onClose={() => setCreating(false)} onCreated={() => { setCreating(false); load() }} />
@@ -273,21 +254,12 @@ export default function Notebook() {
   )
 }
 
-// ─── Auto-collected strip ──────────────────────────────────────────────────
-// Pulls live data from the unified memory engine (twin.ts):
-//   • Recent doubts the user asked the Solver
-//   • Concepts auto-discovered from quizzes/labs
-//   • Formulas collected during study
-//
-// Every chip is clickable: click → AI expands the chip data into a full
-// notebook entry (title, body, tags) using the existing /api/notes endpoint.
-// This is the "AI second brain auto-fills itself" piece from the spec.
 function AutoCollectedStrip({ onBuilt }: { onBuilt?: (id: string) => void }) {
   const [doubts, setDoubts]     = useState<Doubt[]>([])
   const [concepts, setConcepts] = useState<Concept[]>([])
   const [formulas, setFormulas] = useState<Formula[]>([])
   const [tab, setTab] = useState<'doubts' | 'concepts' | 'formulas'>('doubts')
-  const [working, setWorking] = useState<string | null>(null)   // id of chip being expanded
+  const [working, setWorking] = useState<string | null>(null)
   const [toast, setToast]     = useState<string | null>(null)
 
   function reload() {
@@ -304,21 +276,16 @@ function AutoCollectedStrip({ onBuilt }: { onBuilt?: (id: string) => void }) {
     return () => window.removeEventListener('storage', onStorage)
   }, [])
 
-  // Drop the toast after 2.6s
   useEffect(() => {
     if (!toast) return
     const t = setTimeout(() => setToast(null), 2600)
     return () => clearTimeout(t)
   }, [toast])
 
-  /** Turn a chip into a full notebook entry. Calls an AI to expand the raw
-   *  data into a clean structured note, then POSTs to /api/notes. Falls
-   *  back to a plain note if the AI call fails — the user always gets
-   *  SOMETHING in their notebook on click. */
   async function expandToNotebook(args: {
     kind:   Kind
     title:  string
-    raw:    string          // raw seed content (doubt question, concept name, formula)
+    raw:    string
     subject?: string | null
     tags?:  string[]
   }) {
@@ -327,8 +294,6 @@ function AutoCollectedStrip({ onBuilt }: { onBuilt?: (id: string) => void }) {
     setWorking(id)
     let body = args.raw
     try {
-      // Ask the chat helper for a clean structured note. Keep the prompt tight
-      // so it costs <1k tokens. If chat throws (no key etc.), we still save.
       const { chat } = await import('../lib/openrouter')
       const reply = await chat({
         messages: [
@@ -340,10 +305,9 @@ function AutoCollectedStrip({ onBuilt }: { onBuilt?: (id: string) => void }) {
         ],
       })
       if (reply && reply.length > 60) body = reply
-    } catch { /* keep raw */ }
+    } catch {  }
 
     try {
-      // localStorage-first save — never errors on missing server tables
       const saved = await saveToNotebook({
         kind:    args.kind,
         title:   args.title,
@@ -353,11 +317,8 @@ function AutoCollectedStrip({ onBuilt }: { onBuilt?: (id: string) => void }) {
         source:  'auto-from-memory',
       })
       setToast(`Saved to Notebook: ${args.title}`)
-      // Tell the parent to reload + open the new note so it actually
-      // shows up. Without this the note saved silently and the user
-      // thought "the notebook isn't being built".
       onBuilt?.(saved.id)
-      try { const { awardXP } = await import('../lib/game'); awardXP('note_built') } catch { /* non-fatal */ }
+      try { const { awardXP } = await import('../lib/game'); awardXP('note_built') } catch {  }
     } catch (e: any) {
       setToast(`Couldn't save — ${e?.message || 'try again'}`)
     } finally {
@@ -465,7 +426,6 @@ function AutoCollectedStrip({ onBuilt }: { onBuilt?: (id: string) => void }) {
         )}
       </div>
 
-      {/* Toast — click confirmation */}
       <AnimatePresence>
         {toast && (
           <motion.div
@@ -494,8 +454,6 @@ function chipBtn(busy: boolean): React.CSSProperties {
     background: busy ? 'rgba(102, 217, 255, 0.22)' : 'rgba(79, 124, 255, 0.08)',
     border: `1px solid ${busy ? 'rgba(102, 217, 255, 0.55)' : 'rgba(102, 217, 255, 0.32)'}`,
     fontSize: 11.5, color: '#e4e4e7', fontWeight: 500,
-    // Ellipsize instead of growing — a long formula chip must never be able
-    // to stretch the page wider than a phone screen.
     whiteSpace: 'nowrap',
     maxWidth: '100%',
     overflow: 'hidden',
@@ -519,7 +477,6 @@ function Tab({ active, label, onClick }: { active: boolean; label: string; onCli
   )
 }
 
-// ─── Note detail / editor ───────────────────────────────────────────────────
 function NoteDetail({ note, editing, onClose, onTogglePin, onDelete, onEdit, onSaved, onCancelEdit }: {
   note: Note; editing: boolean
   onClose: () => void; onTogglePin: () => void; onDelete: () => void
@@ -555,8 +512,6 @@ function NoteDetail({ note, editing, onClose, onTogglePin, onDelete, onEdit, onS
 
   return (
     <>
-      {/* flexWrap: on phones the action buttons drop below the title instead
-          of crushing it into "Doubt:…" */}
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 16, flexWrap: 'wrap' }}>
         <div style={{
           width: 36, height: 36, borderRadius: 9,
@@ -654,7 +609,6 @@ function NoteDetail({ note, editing, onClose, onTogglePin, onDelete, onEdit, onS
   )
 }
 
-// ─── Create modal ───────────────────────────────────────────────────────────
 function CreateModal({ onClose, onCreated }: { onClose: () => void; onCreated: () => void }) {
   const [kind, setKind]       = useState<Kind>('note')
   const [title, setTitle]     = useState('')
@@ -666,7 +620,6 @@ function CreateModal({ onClose, onCreated }: { onClose: () => void; onCreated: (
     if (!title.trim() || !content.trim()) return
     setSaving(true)
     try {
-      // localStorage-first — survives DB cleanup
       await saveToNotebook({ kind, title, content, subject: subject || null })
       onCreated()
     } catch (e: any) { alert(friendlyError(e)); setSaving(false) }

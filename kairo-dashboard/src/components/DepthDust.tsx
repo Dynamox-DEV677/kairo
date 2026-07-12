@@ -1,41 +1,23 @@
-/**
- * DepthDust — a fixed full-viewport canvas of slow-drifting particles
- * that persists across the ENTIRE landing scroll.
- *
- * Sits ABOVE the AtmosphereLayer (glow blobs + logo watermarks) but
- * BELOW every section's content. Gives the page the "continuous space"
- * feel — as you scroll from Hero → Problem → Labs → ..., the same dust
- * is always there, drifting at parallax-different speeds depending on
- * each particle's z-depth.
- *
- * Pure 2D canvas, no R3F — keeps the perf budget tiny (1 canvas, no
- * three.js overhead). 60 particles at ~120 ops/frame.
- *
- * Reactive inputs:
- *   - Mouse: cursor "blows" the dust away from itself (~80px radius)
- *   - Scroll: dust drifts down a bit faster, simulating camera ascent
- */
 import { useEffect, useRef } from 'react'
 
 interface Particle {
   x: number
   y: number
-  z:  number      // 0..1 — depth (0 = closest, 1 = farthest)
-  r:  number      // radius
-  vx: number      // base velocity
+  z:  number
+  r:  number
+  vx: number
   vy: number
-  hue: number     // 0..1 for color picking
-  glow: number    // 0..1 — twinkle phase
+  hue: number
+  glow: number
 }
 
 const COUNT = 80
-// Monochrome scale: white + 4 purple shades (light → deep). NO blue/cyan.
 const PALETTE = [
-  [255, 255, 255],  // white
-  [233, 213, 255],  // very light lavender
-  [196, 181, 253],  // light purple
-  [167, 139, 250],  // mid purple
-  [124,  58, 237],  // deep purple
+  [255, 255, 255],
+  [233, 213, 255],
+  [196, 181, 253],
+  [167, 139, 250],
+  [124,  58, 237],
 ]
 
 export default function DepthDust({
@@ -45,7 +27,7 @@ export default function DepthDust({
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const particlesRef = useRef<Particle[]>([])
   const mouseRef = useRef({ x: -9999, y: -9999, active: false })
-  const scrollVRef = useRef(0)              // smoothed vertical scroll velocity
+  const scrollVRef = useRef(0)
   const lastScrollYRef = useRef(0)
   const frameRef = useRef<number | undefined>(undefined)
 
@@ -55,7 +37,6 @@ export default function DepthDust({
     const ctx = canvas.getContext('2d', { alpha: true })
     if (!ctx) return
 
-    // ── Sizing ────────────────────────────────────────────────
     let w = window.innerWidth
     let h = window.innerHeight
     const dpr = Math.min(1.5, window.devicePixelRatio || 1)
@@ -71,10 +52,8 @@ export default function DepthDust({
     resize()
     window.addEventListener('resize', resize)
 
-    // ── Initial particle distribution ─────────────────────────
     particlesRef.current = Array.from({ length: COUNT }, () => spawnParticle(w, h))
 
-    // ── Mouse tracking ────────────────────────────────────────
     function onMouseMove(e: MouseEvent) {
       mouseRef.current.x = e.clientX
       mouseRef.current.y = e.clientY
@@ -84,25 +63,21 @@ export default function DepthDust({
     window.addEventListener('mousemove', onMouseMove, { passive: true })
     window.addEventListener('mouseleave', onMouseLeave)
 
-    // ── Scroll velocity (used to bias dust drift) ─────────────
     lastScrollYRef.current = window.scrollY
     function onScroll() {
       const cur = window.scrollY
       const dv  = cur - lastScrollYRef.current
       lastScrollYRef.current = cur
-      // Lerp toward latest dv to smooth out
       scrollVRef.current += (dv - scrollVRef.current) * 0.18
     }
     window.addEventListener('scroll', onScroll, { passive: true })
 
-    // ── Animation loop ────────────────────────────────────────
     let last = performance.now()
     function frame(now: number) {
-      const dt = Math.min(60, now - last) / 16.67    // normalised dt in 60fps units
+      const dt = Math.min(60, now - last) / 16.67
       last = now
 
       ctx!.clearRect(0, 0, w, h)
-      // Scroll velocity decay even when no scroll event fires
       scrollVRef.current *= 0.92
 
       const m = mouseRef.current
@@ -112,12 +87,10 @@ export default function DepthDust({
       for (let i = 0; i < parts.length; i++) {
         const p = parts[i]
 
-        // Base drift (parallax: close particles move slower than far)
         const depthSpeed = 0.6 + (1 - p.z) * 1.4
         p.x += p.vx * dt * depthSpeed
-        p.y += p.vy * dt * depthSpeed + sv * (0.05 + p.z * 0.18)   // scroll bias
+        p.y += p.vy * dt * depthSpeed + sv * (0.05 + p.z * 0.18)
 
-        // Mouse repel
         if (m.active) {
           const mdx = p.x - m.x
           const mdy = p.y - m.y
@@ -131,16 +104,13 @@ export default function DepthDust({
           }
         }
 
-        // Wrap-around so dust never disappears
         if (p.x < -10)        p.x = w + 10
         if (p.x > w + 10)     p.x = -10
         if (p.y < -10)        p.y = h + 10
         if (p.y > h + 10)     p.y = -10
 
-        // Twinkle
         p.glow = (p.glow + dt * 0.012 + p.r * 0.001) % 1
 
-        // Render
         const a = 0.25 + Math.sin(p.glow * Math.PI * 2) * 0.18
         const rgb = PALETTE[Math.floor(p.hue * PALETTE.length) % PALETTE.length]
         const radius = p.r * (1 + Math.sin(p.glow * Math.PI * 2) * 0.18)
@@ -181,7 +151,6 @@ export default function DepthDust({
   )
 }
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
 function spawnParticle(w: number, h: number): Particle {
   const z = Math.random()
   return {
@@ -190,7 +159,7 @@ function spawnParticle(w: number, h: number): Particle {
     z,
     r:  0.6 + (1 - z) * 1.2,
     vx: (Math.random() - 0.5) * 0.12,
-    vy: -0.04 - Math.random() * 0.12,        // gentle upward drift
+    vy: -0.04 - Math.random() * 0.12,
     hue: Math.random(),
     glow: Math.random(),
   }

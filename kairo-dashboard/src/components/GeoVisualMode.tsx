@@ -1,28 +1,3 @@
-/**
- * Geo Visual Mode — Kyno Solver's geography intelligence layout.
- *
- * Replaces the standard Solver result panel when:
- *    • the AI classifies the question as `geography`
- *    • the user has Map mode selected (auto-suggested by default)
- *
- * Layout (desktop):
- *
- *   ┌─────────────────────────┬──────────────────────────┐
- *   │  Interactive Leaflet    │  Cinematic image carousel│
- *   │  map (auto-zoomed)      │  + AI explanation panel  │
- *   │                         │  with structured sections │
- *   ├─────────────────────────┴──────────────────────────┤
- *   │  Mini concept graph (animated nodes + connectors) │
- *   └────────────────────────────────────────────────────┘
- *
- * Layout (mobile):
- *    Map → Images → Sections → Concept graph (collapsible drawer)
- *
- * All map tiles come from OpenStreetMap (free, no API key). Images come
- * from the existing Wikimedia-backed imageSlides array — same pipe the
- * standard Solver uses. The only new server hit is the Wikipedia
- * coordinates resolver (done already during /solver/text).
- */
 import { useEffect, useState, useMemo, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -37,9 +12,6 @@ import {
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 
-// ──────────────────────────────────────────────────────────────────────────
-// Types — mirror the SolverResponse shape KairoSolver passes in.
-// ──────────────────────────────────────────────────────────────────────────
 export interface GeographySection {
   heading: string
   body:    string
@@ -69,13 +41,9 @@ interface GeoVisualModeProps {
   imageSlides:     GeoImageSlide[]
   imagesBusy:      boolean
   relatedConcepts: string[]
-  /** Fires when the user clicks a related-concept chip — Solver re-runs the ask. */
   onAskRelated?:   (q: string) => void
 }
 
-// ──────────────────────────────────────────────────────────────────────────
-// Palette — matches the rest of Kyno's dark theme exactly.
-// ──────────────────────────────────────────────────────────────────────────
 const C = {
   bg:        '#050505',
   surface:   '#151922',
@@ -91,12 +59,8 @@ const C = {
 
 const FONT = "'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif"
 
-// ──────────────────────────────────────────────────────────────────────────
-// Default coordinates by `kind` — fallback when the Wikipedia resolver
-// couldn't return real coordinates (e.g. abstract climate concepts).
-// ──────────────────────────────────────────────────────────────────────────
 const FALLBACK_COORDS: Record<GeographyData['kind'], { lat: number; lng: number; zoom: number }> = {
-  region:    { lat: 20.0, lng:  78.0, zoom: 4 },   // India default
+  region:    { lat: 20.0, lng:  78.0, zoom: 4 },
   country:   { lat: 20.0, lng:  78.0, zoom: 5 },
   city:      { lat: 20.0, lng:  78.0, zoom: 10 },
   river:     { lat:  0.0, lng:  20.0, zoom: 4 },
@@ -108,9 +72,6 @@ const FALLBACK_COORDS: Record<GeographyData['kind'], { lat: number; lng: number;
   other:     { lat: 20.0, lng:  78.0, zoom: 4 },
 }
 
-// ──────────────────────────────────────────────────────────────────────────
-// Main component
-// ──────────────────────────────────────────────────────────────────────────
 export default function GeoVisualMode({
   topic,
   textExplanation,
@@ -120,11 +81,6 @@ export default function GeoVisualMode({
   relatedConcepts,
   onAskRelated,
 }: GeoVisualModeProps) {
-  // Client-side geocode fallback: when the backend couldn't resolve coords
-  // (Wikipedia articles for big natural features often carry no coordinate
-  // tag), ask Nominatim from the browser. Until/unless something resolves,
-  // we show the kind-default REGION but hide the labeled pin — the old
-  // behaviour drew "Amazon Rainforest" on a pin in the middle of India.
   const [resolved, setResolved] = useState<{ lat: number; lng: number } | null>(null)
   useEffect(() => {
     setResolved(null)
@@ -137,7 +93,7 @@ export default function GeoVisualMode({
         if (dead || !Array.isArray(arr) || !arr[0]?.lat) return
         setResolved({ lat: parseFloat(arr[0].lat), lng: parseFloat(arr[0].lon) })
       })
-      .catch(() => { /* offline — keep fallback view */ })
+      .catch(() => {  })
     return () => { dead = true }
   }, [geography.name, geography.lat, topic])
 
@@ -151,8 +107,6 @@ export default function GeoVisualMode({
       width: '100%',
       display: 'grid',
       gap: 14,
-      // Desktop: Map | Right-side stack (carousel + explanation). Concept
-      // graph stretches across both columns underneath.
       gridTemplateColumns: 'minmax(0, 1.2fr) minmax(0, 1.4fr)',
       gridTemplateAreas: `
         "map  right"
@@ -162,7 +116,6 @@ export default function GeoVisualMode({
     }}
       className="ks-geo-grid"
     >
-      {/* ── Left: Leaflet map ─────────────────────────────────────────── */}
       <div style={{ gridArea: 'map', minWidth: 0 }}>
         <MapPanel
           name={geography.name || topic}
@@ -175,7 +128,6 @@ export default function GeoVisualMode({
         />
       </div>
 
-      {/* ── Right: image carousel + structured explanation ────────────── */}
       <div style={{
         gridArea: 'right',
         display: 'flex', flexDirection: 'column', gap: 14, minWidth: 0,
@@ -188,7 +140,6 @@ export default function GeoVisualMode({
         />
       </div>
 
-      {/* ── Bottom: mini concept graph ────────────────────────────────── */}
       <div style={{ gridArea: 'graph', minWidth: 0 }}>
         <ConceptGraphPanel
           center={geography.name || topic}
@@ -197,7 +148,6 @@ export default function GeoVisualMode({
         />
       </div>
 
-      {/* Local styles — handle mobile stack + leaflet tile dark filter */}
       <style>{`
         /* Leaflet tiles are light by default; nudge them to match Kyno's dark theme. */
         .ks-geo-map .leaflet-tile-pane {
@@ -265,10 +215,6 @@ export default function GeoVisualMode({
   )
 }
 
-// ══════════════════════════════════════════════════════════════════════════
-// Map panel — Leaflet w/ OpenStreetMap tiles, dark-themed via CSS filter.
-// ══════════════════════════════════════════════════════════════════════════
-
 interface MapPanelProps {
   name: string
   kind: GeographyData['kind']
@@ -276,7 +222,6 @@ interface MapPanelProps {
   lng:  number
   zoom: number
   pageUrl: string | null
-  /** false = coords are a kind-default guess — hide the labeled pin. */
   located: boolean
 }
 function MapPanel({ name, kind, lat, lng, zoom, pageUrl, located }: MapPanelProps) {
@@ -297,7 +242,6 @@ function MapPanel({ name, kind, lat, lng, zoom, pageUrl, located }: MapPanelProp
         flexDirection: 'column',
       }}
     >
-      {/* Map header */}
       <div style={{
         padding: '12px 14px',
         borderBottom: `1px solid ${C.border}`,
@@ -342,7 +286,6 @@ function MapPanel({ name, kind, lat, lng, zoom, pageUrl, located }: MapPanelProp
         )}
       </div>
 
-      {/* The map itself */}
       <div style={{ flex: 1, minHeight: 280 }}>
         <MapContainer
           center={[lat, lng]}
@@ -358,9 +301,6 @@ function MapPanel({ name, kind, lat, lng, zoom, pageUrl, located }: MapPanelProp
           />
           <FlyToOnChange lat={lat} lng={lng} zoom={zoom} />
 
-          {/* Pulsing marker — only when the coords are REAL. Drawing the
-              labeled pin on the kind-default fallback centre put "Amazon
-              Rainforest" in the middle of India. */}
           {located && (
             <>
               <CircleMarker
@@ -381,10 +321,6 @@ function MapPanel({ name, kind, lat, lng, zoom, pageUrl, located }: MapPanelProp
   )
 }
 
-/**
- * Smoothly fly the map to new coordinates when they change. Without this the
- * map would snap-jump when the user asks a new geography question.
- */
 function FlyToOnChange({ lat, lng, zoom }: { lat: number; lng: number; zoom: number }) {
   const map = useMap()
   useEffect(() => {
@@ -393,10 +329,6 @@ function FlyToOnChange({ lat, lng, zoom }: { lat: number; lng: number; zoom: num
   return null
 }
 
-/**
- * Animated halo around the marker — re-paints a slowly-growing circle every
- * 1.6s for a subtle "this is alive" pulse. Pure SVG, no extra deps.
- */
 function PulseHalo({ lat, lng }: { lat: number; lng: number }) {
   const [pulse, setPulse] = useState(0)
   useEffect(() => {
@@ -420,15 +352,10 @@ function PulseHalo({ lat, lng }: { lat: number; lng: number }) {
   )
 }
 
-// ══════════════════════════════════════════════════════════════════════════
-// Image carousel — cinematic fade transitions, glass card frame.
-// ══════════════════════════════════════════════════════════════════════════
-
 function ImageCarousel({ slides, busy }: { slides: GeoImageSlide[]; busy: boolean }) {
   const [idx, setIdx] = useState(0)
   const timer = useRef<number | null>(null)
 
-  // Auto-advance every 4 s when more than one slide is available.
   useEffect(() => {
     if (slides.length < 2) return
     if (timer.current) window.clearInterval(timer.current)
@@ -440,7 +367,6 @@ function ImageCarousel({ slides, busy }: { slides: GeoImageSlide[]; busy: boolea
     }
   }, [slides.length])
 
-  // Snap back if the slide list shrinks under us (new question, fewer images).
   useEffect(() => {
     if (idx >= slides.length) setIdx(0)
   }, [slides.length, idx])
@@ -488,7 +414,6 @@ function ImageCarousel({ slides, busy }: { slides: GeoImageSlide[]; busy: boolea
         </AnimatePresence>
       )}
 
-      {/* Bottom caption ribbon */}
       {current && (
         <div style={{
           position: 'absolute', bottom: 0, left: 0, right: 0,
@@ -506,7 +431,6 @@ function ImageCarousel({ slides, busy }: { slides: GeoImageSlide[]; busy: boolea
         </div>
       )}
 
-      {/* Pagination dots */}
       {slides.length > 1 && (
         <div style={{
           position: 'absolute', top: 12, right: 12,
@@ -527,7 +451,6 @@ function ImageCarousel({ slides, busy }: { slides: GeoImageSlide[]; busy: boolea
         </div>
       )}
 
-      {/* Prev / Next arrows — desktop only */}
       {slides.length > 1 && (
         <>
           <CarouselArrow side="left"  onClick={() => setIdx(i => (i - 1 + slides.length) % slides.length)} />
@@ -576,15 +499,9 @@ function Skeleton({ label }: { label: string }) {
   )
 }
 
-// ══════════════════════════════════════════════════════════════════════════
-// Explanation panel — structured sections + general markdown
-// ══════════════════════════════════════════════════════════════════════════
-
 function ExplanationPanel({
   name, textExplanation, sections,
 }: { name: string; textExplanation: string; sections: GeographySection[] }) {
-  // Group sections side-by-side so the right column doesn't feel like an
-  // endless scroll. Each card is its own self-contained "fact" tile.
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }}
@@ -621,7 +538,6 @@ function ExplanationPanel({
         </div>
       </div>
 
-      {/* Structured sections grid — each as its own glass tile. */}
       {sections.length > 0 ? (
         <div style={{
           display: 'grid', gap: 8,
@@ -632,8 +548,6 @@ function ExplanationPanel({
           ))}
         </div>
       ) : (
-        // Fallback when the model didn't emit sections — render the raw
-        // markdown so the user still sees the full explanation.
         <div style={{
           fontFamily: FONT, fontSize: 13, color: C.textDim, lineHeight: 1.6,
           maxHeight: 380, overflowY: 'auto', paddingRight: 6,
@@ -674,20 +588,14 @@ function SectionCard({ heading, body, index }: { heading: string; body: string; 
   )
 }
 
-// ══════════════════════════════════════════════════════════════════════════
-// Mini concept graph — animated nodes + connectors at the bottom
-// ══════════════════════════════════════════════════════════════════════════
-
 function ConceptGraphPanel({
   center, related, onAskRelated,
 }: { center: string; related: string[]; onAskRelated?: (q: string) => void }) {
-  // Mobile: collapse to a drawer so it doesn't push the map off-screen.
   const [open, setOpen] = useState(true)
 
   const items = useMemo(() => related.slice(0, 6), [related])
   const count = items.length || 1
 
-  // Layout — centre node + items arranged in an arc above the centre.
   const W = 800
   const H = 180
   const cx = W / 2
@@ -706,7 +614,6 @@ function ConceptGraphPanel({
         overflow: 'hidden',
       }}
     >
-      {/* Header / collapser */}
       <button onClick={() => setOpen(o => !o)}
         style={{
           width: '100%', padding: '11px 14px',
@@ -763,7 +670,6 @@ function ConceptGraphPanel({
                   preserveAspectRatio="xMidYMid meet"
                   style={{ display: 'block' }}
                 >
-                  {/* Connectors — drawn first so nodes paint over them */}
                   {items.map((_, i) => {
                     const a = -Math.PI + (i + 0.5) / count * Math.PI
                     const tx = cx + Math.cos(a) * r
@@ -792,7 +698,6 @@ function ConceptGraphPanel({
                     </radialGradient>
                   </defs>
 
-                  {/* Centre node */}
                   <circle cx={cx} cy={cy} r={50} fill="url(#ks-geo-center)" />
                   <motion.circle
                     cx={cx} cy={cy} r={28}
@@ -813,7 +718,6 @@ function ConceptGraphPanel({
                     {center.length > 14 ? center.slice(0, 13) + '…' : center}
                   </text>
 
-                  {/* Satellites — clickable chips */}
                   {items.map((label, i) => {
                     const a = -Math.PI + (i + 0.5) / count * Math.PI
                     const tx = cx + Math.cos(a) * r

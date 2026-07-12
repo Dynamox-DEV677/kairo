@@ -54,7 +54,6 @@ export default function ChatWindow({ onNewMessage, onNavigate, model = DEFAULT_M
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, streamContent])
 
-  // Listen for "load this recent chat" events from the sidebar
   useEffect(() => {
     function onLoad(e: Event) {
       const id = (e as CustomEvent).detail?.id
@@ -74,7 +73,6 @@ export default function ChatWindow({ onNewMessage, onNavigate, model = DEFAULT_M
     return () => window.removeEventListener('kairo:load-chat', onLoad)
   }, [])
 
-  // Persist chat to recents whenever it changes (debounced on render)
   useEffect(() => {
     if (messages.length === 0) return
     const firstUser = messages.find(m => m.role === 'user')
@@ -109,14 +107,13 @@ export default function ChatWindow({ onNewMessage, onNavigate, model = DEFAULT_M
     const abortCtrl = new AbortController()
     abortRef.current = abortCtrl
 
-    // Pull memory context so the AI personalizes the answer (best-effort, non-blocking)
     let memoryContext = ''
     try {
       const r = await fetch('/api/memory/context', {
         headers: { Authorization: `Bearer ${localStorage.getItem('kairo_token') || ''}` },
       })
       if (r.ok) memoryContext = (await r.json()).context || ''
-    } catch { /* non-fatal */ }
+    } catch {  }
 
     try {
       await chat({
@@ -160,11 +157,9 @@ export default function ChatWindow({ onNewMessage, onNavigate, model = DEFAULT_M
   }
 
   async function handleChipAction(action: string, _content: string) {
-    // ── Flashcard chip: generate cards in DB + navigate ────────────────────────
     if (action === 'flashcards') {
       if (fcState === 'loading') return
 
-      // Derive topic from the last user message in the conversation
       const lastUserMsg = [...messages].reverse().find(m => m.role === 'user')
       const topic = lastUserMsg?.content?.slice(0, 150) || 'Key concepts from this response'
 
@@ -192,7 +187,6 @@ export default function ChatWindow({ onNewMessage, onNavigate, model = DEFAULT_M
       return
     }
 
-    // ── All other chips: send a follow-up chat message ─────────────────────────
     const prompts: Record<string, string> = {
       simpler:    'Explain that in even simpler terms for a Class 8 student.',
       notes:      'Summarise the above in concise bullet-point notes.',
@@ -212,10 +206,8 @@ export default function ChatWindow({ onNewMessage, onNavigate, model = DEFAULT_M
 
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
-      {/* Messages area */}
       <div className="cw-scroll" style={{ flex: 1, overflowY: 'auto', padding: '24px 28px' }}>
 
-        {/* Empty state */}
         <AnimatePresence>
           {isEmpty && (
             <motion.div
@@ -225,7 +217,6 @@ export default function ChatWindow({ onNewMessage, onNavigate, model = DEFAULT_M
               transition={{ duration: 0.4 }}
               style={{ textAlign: 'center', paddingTop: 60 }}
             >
-              {/* Orb */}
               <div className="animate-float" style={{ marginBottom: 24, display: 'inline-block' }}>
                 <div className="animate-pulse-orb" style={{
                   width: 70, height: 70, borderRadius: 20,
@@ -249,7 +240,6 @@ export default function ChatWindow({ onNewMessage, onNavigate, model = DEFAULT_M
                 Your AI tutor for CBSE · ICSE · State boards · Class 6–12
               </p>
 
-              {/* Suggestion chips */}
               <div style={{
                 display: 'flex', flexWrap: 'wrap', gap: 8,
                 justifyContent: 'center', maxWidth: 580, margin: '0 auto',
@@ -291,7 +281,6 @@ export default function ChatWindow({ onNewMessage, onNavigate, model = DEFAULT_M
           )}
         </AnimatePresence>
 
-        {/* Messages */}
         {messages.map((msg, i) => (
           <MessageBubble
             key={msg.id}
@@ -302,7 +291,6 @@ export default function ChatWindow({ onNewMessage, onNavigate, model = DEFAULT_M
           />
         ))}
 
-        {/* Streaming AI response */}
         {streaming && streamContent && (
           <MessageBubble
             message={{ role: 'assistant', content: streamContent, id: 'streaming' }}
@@ -312,7 +300,6 @@ export default function ChatWindow({ onNewMessage, onNavigate, model = DEFAULT_M
           />
         )}
 
-        {/* Thinking dots when no content yet */}
         {streaming && !streamContent && (
           <motion.div
             initial={{ opacity: 0, y: 8 }}
@@ -337,7 +324,6 @@ export default function ChatWindow({ onNewMessage, onNavigate, model = DEFAULT_M
         <div ref={bottomRef} />
       </div>
 
-      {/* Flashcard creation status toast */}
       <AnimatePresence>
         {fcState !== 'idle' && (
           <motion.div
@@ -376,7 +362,6 @@ export default function ChatWindow({ onNewMessage, onNavigate, model = DEFAULT_M
         )}
       </AnimatePresence>
 
-      {/* Input bar */}
       <div className="cw-input-bar" style={{
         padding: '14px 20px 18px',
         borderTop: '1px solid #1a1f2e',

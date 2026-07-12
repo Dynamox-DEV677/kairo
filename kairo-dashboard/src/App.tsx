@@ -16,36 +16,26 @@ import ResetPasswordPage from './pages/ResetPasswordPage'
 import StatusPage from './pages/StatusPage'
 import AboutPage from './pages/AboutPage'
 
-// "landing" = cinematic marketing page (default for new visitors)
-// "login"   = sign-in / sign-up flow
-// "app"     = logged-in dashboard
 type View = 'landing' | 'login' | 'app'
 
 export default function App() {
   const [profile, setProfile] = useState<AuthProfile | null>(null)
   const [checking, setChecking] = useState(true)
-  // Default view: web visitors land on the cinematic marketing page; users
-  // running inside the Electron desktop shell skip straight to sign-in
-  // (there's no point selling them on Kyno — they already downloaded it).
-  // window.kairoDesktop is exposed by kairo-electron/preload.js.
   const [view, setView] = useState<View>(() => {
     if (typeof window !== 'undefined' && (window as any).kairoDesktop?.isDesktop) {
       return 'login'
     }
     return 'landing'
   })
-  // Email-link landing: /reset-password?token=... — shown above everything else.
   const [resetMode, setResetMode] = useState(() => {
     if (typeof window === 'undefined') return false
     return window.location.pathname === '/reset-password'
       && !!new URLSearchParams(window.location.search).get('token')
   })
-  // Public status page at /status — no auth required, shown above app shell.
   const [statusMode, setStatusMode] = useState(() => {
     if (typeof window === 'undefined') return false
     return window.location.pathname === '/status'
   })
-  // Public About / founder page at /about.
   const [aboutMode, setAboutMode] = useState(() => {
     if (typeof window === 'undefined') return false
     return window.location.pathname === '/about'
@@ -53,15 +43,12 @@ export default function App() {
   const [sprintingIn, setSprintingIn] = useState(false)
   const [sprintHead, setSprintHead]   = useState<string | undefined>()
   const [sprintSub,  setSprintSub]    = useState<string | undefined>()
-  // Once-per-session splash gate. Stays mounted until onComplete fires
-  // so the boot animation plays before anything else renders.
   const [splashing,  setSplashing]    = useState(() => {
     if (typeof window === 'undefined') return false
     try { return sessionStorage.getItem('kairo:splash:shown') !== '1' }
     catch { return true }
   })
 
-  // Listen for auth-expired (refresh token died) — bounce to login screen
   useEffect(() => {
     const onExpired = () => {
       clearSession()
@@ -71,7 +58,6 @@ export default function App() {
     return () => window.removeEventListener('kairo:auth-expired', onExpired)
   }, [])
 
-  // Background refresh every 10 minutes so tokens never expire while you work
   useEffect(() => {
     if (!profile || profile.localMode) return
     refreshIfStale()
@@ -79,42 +65,30 @@ export default function App() {
     return () => clearInterval(id)
   }, [profile])
 
-  // Cross-device auto-pull: when a fresh login lands on a device that has no
-  // local Twin yet, pull the snapshot from the cloud and play the sprint
-  // animation so the moment feels intentional.
   useEffect(() => {
     if (!profile || profile.localMode) return
-    // Sync is on by default — twin data follows you across devices.
-    // Users can opt out from Settings if they prefer local-only.
     if (!getSyncEnabled()) return
 
-    // Skip if we've already auto-pulled in this session
     if (sessionStorage.getItem('kairo:sync:pulled') === '1') return
 
     let cancelled = false
     const startedAt = Date.now()
 
     ;(async () => {
-      // Show the overlay optimistically so the user sees activity immediately.
       setSprintHead('Welcome back — pulling your data')
       setSprintSub(`We\'ll have your study history on this device in a moment.`)
       setSprintingIn(true)
 
-      // Pause any auto-uploads during the pull so we don't race against
-      // the inbound data with a stale push from this fresh device.
       pauseSyncUntil(Date.now() + SPRINT_MIN_MS + 5_000)
 
       const r = await pullFromCloud()
 
-      // Hold the animation a minimum SPRINT_MIN_MS so it doesn't feel glitchy.
       const elapsed   = Date.now() - startedAt
       const remaining = Math.max(0, SPRINT_MIN_MS - elapsed)
       await new Promise(res => setTimeout(res, remaining))
       if (cancelled) return
 
       if (r.ok && r.restored) {
-        // Wipe the cloud copy now that the data has safely landed locally.
-        // Privacy-by-default: the server only holds your snapshot during transit.
         const wiped = await deleteCloudSnapshot()
         if (!wiped.ok) console.warn('[sync] could not wipe cloud snapshot:', wiped.reason)
 
@@ -125,7 +99,6 @@ export default function App() {
         )
         await new Promise(res => setTimeout(res, 1200))
       } else if (!r.ok && r.reason !== 'not-signed-in') {
-        // Soft-fail — just dismiss the overlay
         console.warn('[sync] auto-pull failed:', r.reason)
       }
 
@@ -133,8 +106,6 @@ export default function App() {
       sessionStorage.setItem('kairo:sync:pulled', '1')
       setSprintingIn(false)
 
-      // Allow uploads again — the next change on this device will create a
-      // fresh server-side snapshot for the next device hop.
       pauseSyncUntil(0)
     })()
 
@@ -142,13 +113,11 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profile])
 
-  // On mount — try to restore session from localStorage
   useEffect(() => {
     async function restoreSession() {
       const token   = localStorage.getItem('kairo_token')
       const cached  = localStorage.getItem('kairo_profile')
 
-      // Local Quick Start profile — no token, no backend call needed
       if (!token && cached) {
         try {
           const parsed = JSON.parse(cached)
@@ -160,21 +129,16 @@ export default function App() {
         } catch {}
       }
 
-      // Validate session via Supabase directly — no backend needed
       try {
         const { data: { session } } = await supabase.auth.getSession()
 
         if (session) {
-          // maybeSingle() — no 406 when the row doesn't exist (auth user
-          // without a public.users profile, e.g. legacy or partial-signup).
           let { data: userRow } = await supabase
             .from('users')
             .select('id, name, role, school_id, avatar_url')
             .eq('id', session.user.id)
             .maybeSingle()
 
-          // First-time OAuth (Google) accounts arrive with a session but no
-          // public.users row — provision one so the rest of the app works.
           if (!userRow) {
             const meta: any = session.user.user_metadata || {}
             const fallbackName = meta.full_name || meta.name
@@ -186,7 +150,7 @@ export default function App() {
               school_id:  null as any,
               avatar_url: meta.avatar_url || meta.picture || null,
             }
-            try { await supabase.from('users').insert(newRow) } catch { /* RLS may block */ }
+            try { await supabase.from('users').insert(newRow) } catch {  }
             userRow = newRow as any
           }
 
@@ -200,8 +164,6 @@ export default function App() {
             school = s
           }
 
-          // Keep locally-edited extras (board/cls from Settings) that the
-          // users table doesn't store — otherwise a refresh wipes them.
           let cachedExtras: any = {}
           try { cachedExtras = cached ? JSON.parse(cached) : {} } catch {}
 
@@ -249,27 +211,21 @@ export default function App() {
     setProfile(null)
   }
 
-  // The splash is rendered alongside every branch — it portals to body
-  // with z-index 99999 so it covers whatever the rest of the tree renders.
-  // Once it completes we drop the flag so subsequent re-renders skip it.
   const splash = splashing ? (
     <SplashScreen onComplete={() => {
-      try { sessionStorage.setItem('kairo:splash:shown', '1') } catch { /* ignore */ }
+      try { sessionStorage.setItem('kairo:splash:shown', '1') } catch {  }
       setSplashing(false)
     }} />
   ) : null
 
-  // Reset-password landing takes precedence over everything — even before
-  // session restore — because the user came here from an email link and
-  // shouldn't be bounced to the dashboard if they happen to have a session.
   if (resetMode) {
     return (
       <>
         <ResetPasswordPage
           onDone={() => {
-            try { window.history.replaceState({}, '', '/') } catch { /* ignore */ }
+            try { window.history.replaceState({}, '', '/') } catch {  }
             setResetMode(false)
-            setView('login')   // drop straight onto the sign-in screen
+            setView('login')
           }}
         />
         <TermsHost />
@@ -279,14 +235,12 @@ export default function App() {
     )
   }
 
-  // Public /status page — also stands above session restore so anyone can
-  // load it (incidents are when you can't sign in anyway).
   if (statusMode) {
     return (
       <>
         <StatusPage
           onExit={() => {
-            try { window.history.replaceState({}, '', '/') } catch { /* ignore */ }
+            try { window.history.replaceState({}, '', '/') } catch {  }
             setStatusMode(false)
           }}
         />
@@ -297,13 +251,12 @@ export default function App() {
     )
   }
 
-  // Public /about — founder bio / colophon page.
   if (aboutMode) {
     return (
       <>
         <AboutPage
           onExit={() => {
-            try { window.history.replaceState({}, '', '/') } catch { /* ignore */ }
+            try { window.history.replaceState({}, '', '/') } catch {  }
             setAboutMode(false)
           }}
         />

@@ -1,12 +1,3 @@
-/**
- * Writing Tools Routes
- *
- * POST /api/writing/improve      Tone Improver (formal/friendly/exam)
- * POST /api/writing/expand       Expand a short answer to full length
- * POST /api/writing/topper       Rewrite to topper-level quality
- * POST /api/writing/plagiarism   Basic plagiarism / similarity check
- * GET  /api/writing              List saved writing sessions
- */
 import { Router } from 'express'
 import { db } from '../db/index.js'
 import { aiCall } from '../utils/ai.js'
@@ -14,7 +5,6 @@ import { aiCall } from '../utils/ai.js'
 const router = Router()
 const sid = req => req.body?.school_id || req.query?.school_id || 'demo_school'
 
-// ── Tone Improver ──────────────────────────────────────────────────────────────
 router.post('/improve', async (req, res) => {
   const { text, tone = 'formal', subject = 'General', class: cls = '10', board = 'CBSE' } = req.body
   if (!text || text.length < 10) return res.status(400).json({ error: 'text required (min 10 chars).' })
@@ -53,7 +43,6 @@ Return ONLY the improved version. No explanations, no markdown.`
   }
 })
 
-// ── Expand Answer ──────────────────────────────────────────────────────────────
 router.post('/expand', async (req, res) => {
   const { text, subject = 'General', target_words = 200, class: cls = '10', board = 'CBSE' } = req.body
   if (!text || text.length < 10) return res.status(400).json({ error: 'text required.' })
@@ -83,7 +72,6 @@ Return ONLY the expanded answer. No headings, no markdown.`
   }
 })
 
-// ── Topper-level Rewrite ───────────────────────────────────────────────────────
 router.post('/topper', async (req, res) => {
   const { text, subject = 'General', class: cls = '10', board = 'CBSE' } = req.body
   if (!text || text.length < 20) return res.status(400).json({ error: 'text required (min 20 chars).' })
@@ -117,7 +105,6 @@ Return ONLY the rewritten answer. No preamble.`
   }
 })
 
-// ── Plagiarism Check (basic similarity) ───────────────────────────────────────
 router.post('/plagiarism', async (req, res) => {
   const { text } = req.body
   if (!text || text.length < 50) return res.status(400).json({ error: 'text required (min 50 chars).' })

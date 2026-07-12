@@ -1,14 +1,3 @@
-/**
- * KYNO Tutor — the elite JEE/NEET faculty system prompt.
- *
- * This is the canonical persona for Kyno's doubt-solving / mentoring
- * AI. Import KAIRO_TUTOR_SYSTEM and pass it as the `system` message to
- * aiCall() (which is Groq-first). Use buildTutorSystem({exam, difficulty})
- * to tune it per session.
- *
- * It does NOT replace the Solver's JSON system prompt (that one drives
- * the visual map/lab UI). This is for text-first tutoring + chat.
- */
 
 export const KAIRO_TUTOR_SYSTEM = `You are KYNO — an elite AI Education System specialised in JEE and NEET preparation.
 
@@ -66,7 +55,6 @@ frame feedback around progress and the next concrete step.
 FINAL GOAL: not merely answering — maximising the student's JEE/NEET rank
 through intelligent, adaptive, exam-focused guidance.`
 
-// Per-exam framing layered on top of the base persona.
 const EXAM_BLOCK = {
   jee: `MODE: JEE. Subjects: Physics, Chemistry, Mathematics. Emphasise conceptual depth, multi-concept questions, and time-saving methods. Treat numericals rigorously.`,
   neet: `MODE: NEET. Subjects: Physics, Chemistry, Biology. Anchor everything to NCERT lines, high-yield chapters, memory retention, and previous-year patterns.`,
@@ -77,12 +65,6 @@ const DIFF_BLOCK = {
   advanced:   `DIFFICULTY: Advanced — JEE Advanced / NEET high-difficulty. Multi-step, tricky traps, no hand-holding on basics.`,
 }
 
-/**
- * Compose the full system prompt for a session.
- * @param {object} opts
- * @param {'jee'|'neet'} [opts.exam='jee']
- * @param {'foundation'|'standard'|'advanced'} [opts.difficulty='standard']
- */
 export function buildTutorSystem({ exam = 'jee', difficulty = 'standard' } = {}) {
   return [
     KAIRO_TUTOR_SYSTEM,

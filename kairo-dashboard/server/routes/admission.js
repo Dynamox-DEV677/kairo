@@ -1,19 +1,3 @@
-/**
- * Admission Bot — Supabase-backed, school-scoped lead pipeline
- *
- * PUBLIC (no auth required — used by parent-facing chat widget):
- *   POST /api/admission/chat               AI chat with school-aware system prompt
- *   POST /api/admission/lead               Capture an admission enquiry
- *   GET  /api/admission/public-config/:id  Read a school's admission_config (limited fields)
- *
- * ADMIN ONLY (school-scoped):
- *   GET    /api/admission/config           Read full admission_config for my school
- *   PUT    /api/admission/config           Update admission_config
- *   GET    /api/admission/leads            List leads for my school
- *   PUT    /api/admission/leads/:id        Update lead status / notes
- *   DELETE /api/admission/leads/:id        Delete a lead
- *   GET    /api/admission/stats            Lead stats (counts by status)
- */
 import { Router } from 'express'
 import { supabaseAdmin, requireSupabase } from '../services/supabase.js'
 import { requireSupabaseAuth, requireRole } from '../middleware/supabaseAuth.js'
@@ -22,7 +6,6 @@ import { aiCall } from '../utils/ai.js'
 const router = Router()
 router.use(requireSupabase)
 
-// ── Build system prompt from school's admission_config ─────────────────────────
 function buildSystemPrompt(schoolName, cfg) {
   const c = cfg || {}
   return `You are an AI admission assistant for ${schoolName || 'this school'}.
@@ -47,11 +30,6 @@ Your role:
 - Never invent specific information not provided`
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// PUBLIC ENDPOINTS (no auth)
-// ─────────────────────────────────────────────────────────────────────────────
-
-// Public school config — only safe fields exposed to parents
 router.get('/public-config/:school_id', async (req, res) => {
   try {
     const { data, error } = await supabaseAdmin
@@ -72,7 +50,6 @@ router.get('/public-config/:school_id', async (req, res) => {
   }
 })
 
-// Public chat — uses the school's saved config
 router.post('/chat', async (req, res) => {
   const { message, school_id, conversation_history = [] } = req.body
   if (!message || !school_id) return res.status(400).json({ error: 'message and school_id are required.' })
@@ -106,7 +83,6 @@ router.post('/chat', async (req, res) => {
   }
 })
 
-// Public lead capture
 router.post('/lead', async (req, res) => {
   const { school_id, parent_name, child_name, grade, phone, email, message, source } = req.body
 
@@ -114,7 +90,6 @@ router.post('/lead', async (req, res) => {
   if (!phone && !email) return res.status(400).json({ error: 'phone or email is required.' })
 
   try {
-    // Verify school exists (avoid junk leads)
     const { data: school } = await supabaseAdmin
       .from('schools')
       .select('id')
@@ -150,12 +125,8 @@ router.post('/lead', async (req, res) => {
   }
 })
 
-// ─────────────────────────────────────────────────────────────────────────────
-// ADMIN ENDPOINTS (auth + admin role)
-// ─────────────────────────────────────────────────────────────────────────────
 router.use(requireSupabaseAuth)
 
-// Get my school's full admission config
 router.get('/config', requireRole('admin'), async (req, res) => {
   if (!req.schoolId) return res.status(400).json({ error: 'You are not in a school.' })
   try {
@@ -176,7 +147,6 @@ router.get('/config', requireRole('admin'), async (req, res) => {
   }
 })
 
-// Update my school's admission config
 router.put('/config', requireRole('admin'), async (req, res) => {
   if (!req.schoolId) return res.status(400).json({ error: 'You are not in a school.' })
 
@@ -204,7 +174,6 @@ router.put('/config', requireRole('admin'), async (req, res) => {
   }
 })
 
-// List leads for my school
 router.get('/leads', requireRole('admin'), async (req, res) => {
   if (!req.schoolId) return res.status(400).json({ error: 'You are not in a school.' })
 
@@ -227,7 +196,6 @@ router.get('/leads', requireRole('admin'), async (req, res) => {
   }
 })
 
-// Update lead
 router.put('/leads/:id', requireRole('admin'), async (req, res) => {
   const valid = ['new', 'contacted', 'admitted', 'rejected', 'not_interested']
   const u = { updated_at: new Date().toISOString() }
@@ -240,7 +208,6 @@ router.put('/leads/:id', requireRole('admin'), async (req, res) => {
   if (req.body.notes !== undefined) u.notes = req.body.notes
 
   try {
-    // Verify lead belongs to my school
     const { data: existing } = await supabaseAdmin
       .from('admission_leads')
       .select('school_id')
@@ -263,7 +230,6 @@ router.put('/leads/:id', requireRole('admin'), async (req, res) => {
   }
 })
 
-// Delete lead
 router.delete('/leads/:id', requireRole('admin'), async (req, res) => {
   try {
     const { data: existing } = await supabaseAdmin
@@ -288,7 +254,6 @@ router.delete('/leads/:id', requireRole('admin'), async (req, res) => {
   }
 })
 
-// Stats — counts by status
 router.get('/stats', requireRole('admin'), async (req, res) => {
   if (!req.schoolId) return res.status(400).json({ error: 'You are not in a school.' })
 

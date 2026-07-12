@@ -1,10 +1,3 @@
-/**
- * Adaptive Quiz Routes
- *
- * POST /api/quiz/start       Start a new adaptive quiz session
- * POST /api/quiz/answer      Submit answer → get next question
- * GET  /api/quiz/history     Get past quiz results
- */
 import { Router } from 'express'
 import { db } from '../db/index.js'
 import { aiCall, parseJSON } from '../utils/ai.js'
@@ -12,11 +5,10 @@ import { aiCall, parseJSON } from '../utils/ai.js'
 const router = Router()
 const sid = req => req.body?.school_id || req.query?.school_id || 'demo_school'
 
-// ── Start Quiz ─────────────────────────────────────────────────────────────────
 router.post('/start', async (req, res) => {
   const {
     subject, topic = '', class: cls = '10', board = 'CBSE',
-    difficulty = 'medium',   // easy | medium | hard
+    difficulty = 'medium',
     total_questions = 10,
   } = req.body
   if (!subject) return res.status(400).json({ error: 'subject is required.' })
@@ -62,14 +54,13 @@ Mix difficulties: 30% easy, 50% medium, 20% hard. Make questions exam-style. No 
       session_id: session._id || 'local',
       total: data.questions.length,
       first_question: data.questions[0],
-      questions: data.questions, // return all for frontend to manage
+      questions: data.questions,
     })
   } catch (e) {
     res.status(500).json({ error: e.message })
   }
 })
 
-// ── Submit Answer ──────────────────────────────────────────────────────────────
 router.post('/answer', async (req, res) => {
   const { session_id, question_index, answer, correct, score, total } = req.body
   if (session_id && session_id !== 'local') {
@@ -87,7 +78,6 @@ router.post('/answer', async (req, res) => {
   res.json({ recorded: true })
 })
 
-// ── Complete Quiz ──────────────────────────────────────────────────────────────
 router.post('/complete', async (req, res) => {
   const { session_id, score, total, answers, subject, topic } = req.body
 
@@ -101,7 +91,6 @@ router.post('/complete', async (req, res) => {
       }).catch(() => null)
     }
 
-    // Update gamification XP
     const xpEarned = Math.round(score * 10 + (percent >= 80 ? 50 : 0))
     await db.gamification?.updateAsync?.(
       { school_id: sid(req) },
@@ -115,7 +104,6 @@ router.post('/complete', async (req, res) => {
   }
 })
 
-// ── Quiz History ───────────────────────────────────────────────────────────────
 router.get('/history', async (req, res) => {
   try {
     const sessions = await db.quizSessions?.findAsync?.({

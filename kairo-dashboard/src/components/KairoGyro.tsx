@@ -1,28 +1,5 @@
-/**
- * KairoGyro — the signature Kyno loading animation.
- *
- * A 3D gyroscope: three rings spinning on differently-tilted axes at
- * different speeds around a glowing core, wrapped in a soft pulsing
- * halo. Matches the Kyno boot-intro aesthetic (ultramarine + cyan).
- *
- * LOGO-SWAPPABLE: the center is a `logo` slot. Today it defaults to a
- * glowing core dot; when the new Kyno logo lands, set DEFAULT_LOGO
- * below once and every loader in the app updates.
- *
- * (Not to be confused with components/KairoLoader.tsx — that's the old
- * K-assembly splash tied to the current logo, currently unused.)
- *
- * Usage:
- *   <KairoGyro />                              // 120px gyro, no text
- *   <KairoGyro label="Loading your Twin…" />   // with label
- *   <KairoGyro size={56} />                    // small inline
- *   <KairoGyro fullPage label="Booting…" />    // centered in parent
- *   <KairoGyro logo={<img src=... />} />       // future logo drop-in
- */
 import type { ReactNode } from 'react'
 
-// The Kyno mark (cursive K + graduation cap) — public/kairo-mark.svg.
-// Swap the src here once and every loader in the app updates.
 const DEFAULT_LOGO: ReactNode = (
   <img
     src="/kairo-mark.svg"
@@ -55,16 +32,12 @@ export default function KairoGyro({
         @keyframes kgFade { from { opacity: 0 } to { opacity: 1 } }
       `}</style>
 
-      {/* pulsing halo */}
       <div style={{
         position: 'absolute', inset: '-8%', borderRadius: '50%',
         border: '1px solid rgba(102,217,255,0.22)',
         animation: 'kgHalo 2.1s ease-in-out infinite',
       }} />
 
-      {/* Three gyro rings. Each ring spins flat (kgSpin) inside a parent
-          that holds a static 3D tilt — the tilt survives the rotation, so
-          together they read as a gyroscope precessing on 3 axes. */}
       <div style={{ position: 'absolute', inset: 0, transform: 'rotateX(62deg)', transformStyle: 'preserve-3d' }}>
         <div style={{
           position: 'absolute', inset: '6%', borderRadius: '50%',
@@ -90,7 +63,6 @@ export default function KairoGyro({
         }} />
       </div>
 
-      {/* core — logo slot (glowing dot until the new logo lands) */}
       <div style={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center' }}>
         {logo ?? (
           <div style={{

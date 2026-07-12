@@ -1,10 +1,3 @@
-/**
- * Focus Mode — distraction-free study session
- * - Big timer
- * - Optional study goal text
- * - Ambient gradient backdrop
- * - Tracks total focused minutes in localStorage
- */
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Play, Pause, RotateCcw, Target, Award, Volume2, VolumeX } from 'lucide-react'
@@ -35,7 +28,6 @@ export default function FocusMode() {
   const intervalRef = useRef<number | null>(null)
   const audioRef    = useRef<HTMLAudioElement | null>(null)
 
-  // Tick
   useEffect(() => {
     if (!running) return
     intervalRef.current = window.setInterval(() => {
@@ -43,7 +35,6 @@ export default function FocusMode() {
         if (r <= 1) {
           setRunning(false)
           setDone(true)
-          // Bank the minutes
           const finishedMin = Math.round(duration / 60)
           const next = totalMin + finishedMin
           localStorage.setItem(STORAGE, String(next))
@@ -59,7 +50,6 @@ export default function FocusMode() {
     return () => { if (intervalRef.current) window.clearInterval(intervalRef.current) }
   }, [running, duration, totalMin])
 
-  // Page-leave protection while running
   useEffect(() => {
     if (!running) return
     const handler = (e: BeforeUnloadEvent) => { e.preventDefault(); e.returnValue = '' }
@@ -83,7 +73,6 @@ export default function FocusMode() {
   }
 
   const progress = 1 - remaining / duration
-  // Donut math
   const R = 130
   const C = 2 * Math.PI * R
   const dash = C * progress
@@ -98,7 +87,6 @@ export default function FocusMode() {
       display: 'flex', flexDirection: 'column', alignItems: 'center',
       transition: 'background 0.4s ease', position: 'relative', overflow: 'hidden',
     }}>
-      {/* Ambient background blobs */}
       <AnimatePresence>
         {ambient && [0, 1, 2].map(i => (
           <motion.div key={i}
@@ -120,7 +108,6 @@ export default function FocusMode() {
         ))}
       </AnimatePresence>
 
-      {/* Header */}
       <div style={{ width: '100%', maxWidth: 720, display: 'flex', alignItems: 'center', gap: 14, marginBottom: 32, zIndex: 1 }}>
         <div style={{
           width: 40, height: 40, borderRadius: 10,
@@ -148,7 +135,6 @@ export default function FocusMode() {
         </button>
       </div>
 
-      {/* Timer donut */}
       <div style={{
         position: 'relative', width: 320, height: 320, marginBottom: 28, zIndex: 1,
       }}>
@@ -191,7 +177,6 @@ export default function FocusMode() {
         </div>
       </div>
 
-      {/* Controls */}
       <div style={{ display: 'flex', gap: 10, marginBottom: 32, zIndex: 1 }}>
         {!running ? (
           <motion.button
@@ -228,7 +213,6 @@ export default function FocusMode() {
         </button>
       </div>
 
-      {/* Presets */}
       <div style={{ display: 'flex', gap: 8, marginBottom: 28, zIndex: 1 }}>
         {PRESETS.map(p => (
           <button key={p.mins} onClick={() => pickPreset(p.mins)} style={{
@@ -241,7 +225,6 @@ export default function FocusMode() {
         ))}
       </div>
 
-      {/* Goal input */}
       <div style={{ width: '100%', maxWidth: 560, marginBottom: 24, zIndex: 1 }}>
         <label style={{
           fontSize: 11, fontWeight: 700, color: '#6B7280',
@@ -262,7 +245,6 @@ export default function FocusMode() {
         />
       </div>
 
-      {/* Lifetime stats */}
       <div style={{
         padding: '12px 18px', borderRadius: 10,
         background: 'rgba(165, 180, 252, 0.08)', border: '1px solid rgba(165, 180, 252, 0.25)',
@@ -275,7 +257,6 @@ export default function FocusMode() {
         </span>
       </div>
 
-      {/* Hidden audio element for completion chime (placeholder) */}
       <audio ref={audioRef} />
     </div>
   )

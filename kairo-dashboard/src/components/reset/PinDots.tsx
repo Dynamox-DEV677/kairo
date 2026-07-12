@@ -1,18 +1,10 @@
-/**
- * PinDots — 6 circular dots that fill in as the user types.
- * Pulse-bounces the most-recent dot for haptic-style feedback.
- */
 import { motion } from 'framer-motion'
 import { RC } from './shared'
 
 interface Props {
-  /** Number of digits already entered. */
   filled: number
-  /** Total dots (default 6). */
   length?: number
-  /** Show shake animation (e.g. on mismatch). */
   shake?: boolean
-  /** Larger size for the Create / Confirm screens. */
   large?: boolean
 }
 

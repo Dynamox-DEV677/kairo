@@ -1,24 +1,8 @@
-/**
- * Kyno — Terms & Conditions + Privacy Policy.
- *
- *   • <TermsHost />        — mount ONCE near the app root. Listens for
- *                            window events and portals the modal into <body>.
- *   • openTerms('terms' | 'privacy') — fire from anywhere in the tree to
- *                            open the sheet pre-focused on the right tab.
- *   • <TermsAcceptLine />   — tiny "By [action] you agree to..." line you
- *                            drop under every primary CTA (sign-in,
- *                            sign-up, create-school, etc.).
- *
- * Mobile-first. Strict monochrome purple palette to match the rest of the
- * Kyno UI. No external state library — a single window event keeps the
- * door open for callers in any subtree.
- */
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, FileText, Shield, ChevronDown } from 'lucide-react'
 
-// ── palette ──────────────────────────────────────────────────────────────────
 const C = {
   bg:        '#050505',
   panel:     '#0E1117',
@@ -35,20 +19,18 @@ const C = {
 }
 const FONT = "'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif"
 
-const EFFECTIVE_DATE = 'May 16, 2026'   // bump this whenever the text below changes
+const EFFECTIVE_DATE = 'May 16, 2026'
 const CONTACT_EMAIL  = 'kairoindustries.cor@gmail.com'
 const CONTACT_PHONE  = '877 800 4043'
 
 type Tab = 'terms' | 'privacy'
 const EV_OPEN = 'kairo:terms:open'
 
-// ─── Public API ──────────────────────────────────────────────────────────────
 export function openTerms(tab: Tab = 'terms') {
   if (typeof window === 'undefined') return
   window.dispatchEvent(new CustomEvent(EV_OPEN, { detail: { tab } }))
 }
 
-/** Tiny "By signing in, you agree to..." line — drop under every CTA. */
 export function TermsAcceptLine({ action = 'continuing' }: { action?: string }) {
   return (
     <p style={{
@@ -68,7 +50,6 @@ export function TermsAcceptLine({ action = 'continuing' }: { action?: string }) 
   )
 }
 
-/** Just the bare clickable text — for footers / inline use. */
 export function TermsInlineLink({ tab = 'terms', children }: { tab?: Tab; children: React.ReactNode }) {
   return (
     <button onClick={() => openTerms(tab)} style={{
@@ -79,7 +60,6 @@ export function TermsInlineLink({ tab = 'terms', children }: { tab?: Tab; childr
   )
 }
 
-// ─── Host — listens for openTerms() events and renders the modal ─────────────
 export function TermsHost() {
   const [open, setOpen] = useState(false)
   const [tab, setTab]   = useState<Tab>('terms')
@@ -94,7 +74,6 @@ export function TermsHost() {
     return () => window.removeEventListener(EV_OPEN, onOpen as EventListener)
   }, [])
 
-  // Lock body scroll while the sheet is open
   useEffect(() => {
     if (!open || typeof document === 'undefined') return
     const prev = document.body.style.overflow
@@ -102,7 +81,6 @@ export function TermsHost() {
     return () => { document.body.style.overflow = prev }
   }, [open])
 
-  // Escape to close
   useEffect(() => {
     if (!open) return
     const h = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false) }
@@ -121,7 +99,6 @@ export function TermsHost() {
   )
 }
 
-// ─── Sheet — full-screen overlay with two tabs ──────────────────────────────
 function TermsSheet({ tab, setTab, onClose }: {
   tab: Tab
   setTab: (t: Tab) => void
@@ -130,7 +107,6 @@ function TermsSheet({ tab, setTab, onClose }: {
   const scrollRef = useRef<HTMLDivElement>(null)
   const [shadow, setShadow] = useState(false)
 
-  // Reset scroll when switching tabs
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: 0, behavior: 'auto' })
     setShadow(false)
@@ -177,7 +153,6 @@ function TermsSheet({ tab, setTab, onClose }: {
         aria-modal="true"
         aria-labelledby="kairo-terms-title"
       >
-        {/* Header */}
         <div style={{
           flexShrink: 0,
           padding: '18px 18px 14px',
@@ -235,7 +210,6 @@ function TermsSheet({ tab, setTab, onClose }: {
             </button>
           </div>
 
-          {/* Tabs */}
           <div style={{
             display: 'flex', gap: 4, marginTop: 14,
             padding: 4, borderRadius: 11,
@@ -251,7 +225,6 @@ function TermsSheet({ tab, setTab, onClose }: {
           </div>
         </div>
 
-        {/* Body */}
         <div
           ref={scrollRef}
           onScroll={onScroll}
@@ -263,7 +236,6 @@ function TermsSheet({ tab, setTab, onClose }: {
         >
           {tab === 'terms' ? <TermsBody /> : <PrivacyBody />}
 
-          {/* Tail — quick "back to top" + contact strip */}
           <div style={{
             marginTop: 28, padding: '14px 16px', borderRadius: 12,
             background: 'rgba(102, 217, 255, 0.05)',
@@ -294,7 +266,6 @@ function TermsSheet({ tab, setTab, onClose }: {
           </div>
         </div>
 
-        {/* Footer CTA */}
         <div style={{
           flexShrink: 0,
           padding: '14px 18px',
@@ -342,7 +313,6 @@ function TabBtn({ active, onClick, children }: {
   )
 }
 
-// ─── Shared content primitives ───────────────────────────────────────────────
 function H({ children }: { children: React.ReactNode }) {
   return (
     <h3 style={{
@@ -365,7 +335,6 @@ function Em({ children }: { children: React.ReactNode }) {
   return <strong style={{ color: C.text, fontWeight: 700 }}>{children}</strong>
 }
 
-// ─── Terms body ──────────────────────────────────────────────────────────────
 function TermsBody() {
   return (
     <>
@@ -548,7 +517,6 @@ function TermsBody() {
   )
 }
 
-// ─── Privacy body ────────────────────────────────────────────────────────────
 function PrivacyBody() {
   return (
     <>
@@ -694,7 +662,6 @@ function PrivacyBody() {
   )
 }
 
-// ─── shared inline styles ────────────────────────────────────────────────────
 const lead: React.CSSProperties = {
   padding: '14px 16px',
   borderRadius: 12,

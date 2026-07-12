@@ -1,13 +1,3 @@
-/**
- * Knowledge Graph — your evolving learning timeline.
- *
- * Reads getStudyHistory() from the unified Twin memory engine and renders
- * a chronological feed of everything you've learned: doubts asked, quizzes
- * answered, labs opened, concepts discovered, formulas collected. Grouped
- * by day with subject chips + activity icons.
- *
- * Strict monochrome palette: black + deep purple + white only.
- */
 import { useEffect, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import {
@@ -60,7 +50,6 @@ export default function KnowledgeGraph() {
     [entries, kindFilter],
   )
 
-  // Group by day (yyyy-mm-dd local) for the timeline
   const groups = useMemo(() => {
     const m = new Map<string, HistoryEntry[]>()
     for (const e of filtered) {
@@ -72,7 +61,6 @@ export default function KnowledgeGraph() {
     return [...m.entries()].sort((a, b) => b[0].localeCompare(a[0]))
   }, [filtered])
 
-  // Subject mastery summary across all entries
   const subjectSummary = useMemo(() => {
     const m = new Map<string, number>()
     for (const e of entries) {
@@ -93,7 +81,6 @@ export default function KnowledgeGraph() {
     }}>
       <div style={{ maxWidth: 1000, margin: '0 auto' }}>
 
-        {/* Header */}
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 14, flexWrap: 'wrap' }}>
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
             <div style={{
@@ -128,7 +115,6 @@ export default function KnowledgeGraph() {
           </button>
         </div>
 
-        {/* Subject chips strip */}
         {subjectSummary.length > 0 && (
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 18 }}>
             {subjectSummary.map(([subj, n]) => (
@@ -144,7 +130,6 @@ export default function KnowledgeGraph() {
           </div>
         )}
 
-        {/* Kind filter */}
         <div style={{ display: 'flex', gap: 6, marginTop: 18, flexWrap: 'wrap' }}>
           <FilterChip active={kindFilter === 'all'} label={`All ${entries.length}`} onClick={() => setKindFilter('all')} />
           {(['doubt', 'event', 'concept', 'formula', 'flashcard'] as const).map(k => {
@@ -159,7 +144,6 @@ export default function KnowledgeGraph() {
           })}
         </div>
 
-        {/* Timeline */}
         <div style={{ marginTop: 26 }}>
           {groups.length === 0 && <EmptyState />}
           {groups.map(([day, items], gi) => (
@@ -225,7 +209,6 @@ function TimelineRow({ entry }: { entry: HistoryEntry }) {
   const Icon = meta.icon
   const time = new Date(entry.ts).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: false })
 
-  // Subtle hue tint by kind (all purple shades)
   const hue = entry.kind === 'doubt'   ? C.purple
             : entry.kind === 'concept' ? C.purpleSoft
             : entry.kind === 'formula' ? C.purpleHi

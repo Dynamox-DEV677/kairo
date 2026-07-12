@@ -1,8 +1,3 @@
-/**
- * Viewport / device hooks.
- * useIsMobile() — true under 768px wide.
- * useSafeAreaInsets() — for iOS notch / Android nav bar via env(safe-area-inset-*).
- */
 import { useState, useEffect } from 'react'
 
 const MOBILE_BREAKPOINT = 768

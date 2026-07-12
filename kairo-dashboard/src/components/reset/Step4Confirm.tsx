@@ -1,10 +1,3 @@
-/**
- * Step 4 — Confirm the new passcode.
- *
- *  - Re-enter the 6 digits
- *  - On match: write the new passcode + advance to step 5
- *  - On mismatch: shake animation + "Passcodes don't match" + auto-clear
- */
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import ResetShell, { PrimaryButton, TextButton, KairoBadge } from './ResetShell'
@@ -28,13 +21,13 @@ export default function Step4Confirm({ onBack, onContinue }: Props) {
   function handleDigit(d: string) {
     if (pin.length >= 6 || busy) return
     setPin(prev => (prev + d).slice(0, 6))
-    try { if ('vibrate' in navigator) (navigator as any).vibrate(8) } catch { /* ignore */ }
+    try { if ('vibrate' in navigator) (navigator as any).vibrate(8) } catch {  }
   }
   function handleBackspace() {
     if (busy) return
     setPin(prev => prev.slice(0, -1))
     setErr('')
-    try { if ('vibrate' in navigator) (navigator as any).vibrate(6) } catch { /* ignore */ }
+    try { if ('vibrate' in navigator) (navigator as any).vibrate(6) } catch {  }
   }
 
   async function attempt() {
@@ -47,16 +40,14 @@ export default function Step4Confirm({ onBack, onContinue }: Props) {
       window.setTimeout(() => setPin(''), 460)
       setTries(t => t + 1)
       setBusy(false)
-      try { if ('vibrate' in navigator) (navigator as any).vibrate([0, 50, 50, 50]) } catch { /* ignore */ }
+      try { if ('vibrate' in navigator) (navigator as any).vibrate([0, 50, 50, 50]) } catch {  }
       return
     }
-    // Match — commit + advance
     await commitNewPasscode(pin)
     setBusy(false)
     onContinue()
   }
 
-  // Auto-attempt when 6 digits entered
   useEffect(() => {
     if (pin.length === 6 && !busy) {
       const t = window.setTimeout(attempt, 280)

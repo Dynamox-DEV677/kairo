@@ -1,10 +1,3 @@
-/**
- * AI Revision Simulator — exam-pressure mode
- *
- * Pulls weak topics from /api/memory, generates a timed quiz that targets them,
- * tracks each answer back into ai_memory (correct → strong_topic, wrong → mistake),
- * and shows a results screen with what to revisit.
- */
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -17,7 +10,7 @@ import { getMistakes, track } from '../lib/twin'
 interface Question {
   q:        string
   options:  string[]
-  answer:   number   // index 0-3
+  answer:   number
   explain:  string
   topic:    string
   subject?: string
@@ -48,9 +41,6 @@ export default function RevisionSimulator() {
 
   const loadMemory = useCallback(async () => {
     try {
-      // PRIMARY: read directly from the unified twin memory engine —
-      // this is the new source of truth for weak topics. getMistakes()
-      // returns severity-ranked rows pulled from every quiz / lab / battle.
       const mistakes = getMistakes()
       if (mistakes.length > 0) {
         const items = mistakes.slice(0, 12).map(m => ({
@@ -58,13 +48,10 @@ export default function RevisionSimulator() {
           subject: m.subject,
         }))
         setWeakTopics(items)
-        // Auto-select the top 5 highest-severity topics
         setPicked(items.slice(0, 5).map(x => x.topic))
         setMemoryReady(true)
         return
       }
-      // FALLBACK: legacy backend /api/memory (deprecated, kept for users
-      // with v2 data who haven't fed the new twin engine yet)
       const r = await fetch('/api/memory', {
         headers: { Authorization: `Bearer ${localStorage.getItem('kairo_token') || ''}` },
       })
@@ -76,27 +63,24 @@ export default function RevisionSimulator() {
         setWeakTopics(items)
         setPicked(items.slice(0, 5).map((x: any) => x.topic))
       }
-    } catch { /* non-fatal */ }
+    } catch {  }
     finally { setMemoryReady(true) }
   }, [])
 
   useEffect(() => { loadMemory() }, [loadMemory])
 
-  // Per-question timer
   useEffect(() => {
     if (phase !== 'live') return
     setSecsLeft(diff.secs)
     intervalRef.current = window.setInterval(() => {
       setSecsLeft(s => {
         if (s <= 1) {
-          // Out of time: lock answer as null and advance
           if (intervalRef.current) window.clearInterval(intervalRef.current)
           setAnswers(prev => {
             const next = [...prev]
             if (next[idx] === undefined || next[idx] === null) next[idx] = null
             return next
           })
-          // Advance after a beat
           setTimeout(() => advance(null), 300)
           return 0
         }
@@ -110,12 +94,10 @@ export default function RevisionSimulator() {
   function advance(picked: number | null) {
     if (intervalRef.current) window.clearInterval(intervalRef.current)
     if (idx + 1 >= questions.length) {
-      // Track final answer
       const finalAnswers = [...answers]
       finalAnswers[idx] = picked ?? finalAnswers[idx] ?? null
       setAnswers(finalAnswers)
       setPhase('review')
-      // Track to memory in background
       trackResultsToMemory(questions, finalAnswers)
     } else {
       setIdx(i => i + 1)
@@ -141,7 +123,7 @@ export default function RevisionSimulator() {
             signal:  correct ? 0.5 : -0.5,
           }),
         })
-      } catch { /* best-effort */ }
+      } catch {  }
     }
   }
 
@@ -149,8 +131,6 @@ export default function RevisionSimulator() {
     const next = [...answers]
     next[idx] = i
     setAnswers(next)
-    // Feed unified memory engine — every answer becomes a twin event so
-    // Mistake Analysis / Concept Map / Kyno update in real time.
     try {
       const q = questions[idx]
       if (q) {
@@ -165,7 +145,7 @@ export default function RevisionSimulator() {
           modality: 'interactive',
         })
       }
-    } catch { /* ignore */ }
+    } catch {  }
     setTimeout(() => advance(i), 250)
   }
 
@@ -205,7 +185,6 @@ Return ONLY a JSON array, no other text:
     loadMemory()
   }
 
-  // ── Render ──────────────────────────────────────────────────────────────────
   if (phase === 'setup') return <SetupView
     diff={diff} setDiff={setDiff}
     weakTopics={weakTopics} memoryReady={memoryReady}
@@ -232,7 +211,6 @@ Return ONLY a JSON array, no other text:
   return null
 }
 
-// ─── Setup ──────────────────────────────────────────────────────────────────
 function SetupView({
   diff, setDiff, weakTopics, memoryReady, pickedTopics, setPicked, err, onStart,
 }: any) {
@@ -258,7 +236,6 @@ function SetupView({
         </div>
       </div>
 
-      {/* Difficulty */}
       <div style={{ ...card, padding: 18, marginBottom: 14 }}>
         <label style={{
           fontSize: 11, fontWeight: 700, color: '#9CA3AF',
@@ -288,7 +265,6 @@ function SetupView({
         </div>
       </div>
 
-      {/* Weak topics picker */}
       <div style={{ ...card, padding: 18, marginBottom: 14 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
           <Brain size={13} color="#A5B4FC" />
@@ -393,7 +369,6 @@ function SetupView({
   )
 }
 
-// ─── Loading ────────────────────────────────────────────────────────────────
 function LoadingView() {
   return (
     <div style={{
@@ -413,13 +388,11 @@ function LoadingView() {
   )
 }
 
-// ─── Live ───────────────────────────────────────────────────────────────────
 function LiveView({ q, idx, total, secsLeft, maxSecs, picked, onPick }: any) {
   const pct = (secsLeft / maxSecs) * 100
   const dangerColor = secsLeft < 10 ? '#66D9FF' : secsLeft < 20 ? '#A5B4FC' : '#A5B4FC'
   return (
     <div style={{ padding: '28px 36px', maxWidth: 760, margin: '0 auto', height: '100%', overflowY: 'auto' }}>
-      {/* Top bar: progress + timer */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 22 }}>
         <div style={{ flex: 1 }}>
           <div style={{ fontSize: 11, color: '#9CA3AF', marginBottom: 6, fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase' }}>
@@ -455,7 +428,6 @@ function LiveView({ q, idx, total, secsLeft, maxSecs, picked, onPick }: any) {
         </div>
       </div>
 
-      {/* Question */}
       <motion.div key={idx} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
         style={{ ...card, padding: 22, marginBottom: 14 }}>
         <div style={{ fontSize: 11, color: '#66D9FF', fontWeight: 700, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 1 }}>
@@ -469,7 +441,6 @@ function LiveView({ q, idx, total, secsLeft, maxSecs, picked, onPick }: any) {
         </div>
       </motion.div>
 
-      {/* Options */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         {q.options.map((opt: string, i: number) => {
           const isPicked = picked === i
@@ -503,7 +474,6 @@ function LiveView({ q, idx, total, secsLeft, maxSecs, picked, onPick }: any) {
   )
 }
 
-// ─── Results ────────────────────────────────────────────────────────────────
 function ResultsView({ questions, answers, onReset }: any) {
   const correct = answers.filter((a: any, i: number) => a === questions[i].answer).length
   const total = questions.length
@@ -513,7 +483,6 @@ function ResultsView({ questions, answers, onReset }: any) {
 
   return (
     <div style={{ padding: '28px 36px', maxWidth: 880, margin: '0 auto', height: '100%', overflowY: 'auto' }}>
-      {/* Top score card */}
       <div style={{ ...card, padding: 28, marginBottom: 22, position: 'relative', overflow: 'hidden' }}>
         <div style={{
           position: 'absolute', top: -40, right: -40, width: 200, height: 200,
@@ -552,7 +521,6 @@ function ResultsView({ questions, answers, onReset }: any) {
         </div>
       </div>
 
-      {/* Question review */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 22 }}>
         {questions.map((q: Question, i: number) => {
           const userAns = answers[i]
@@ -616,7 +584,6 @@ function ResultsView({ questions, answers, onReset }: any) {
         })}
       </div>
 
-      {/* Action buttons */}
       <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
         <motion.button whileHover={{ scale: 1.03 }} onClick={onReset}
           style={{

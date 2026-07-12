@@ -1,7 +1,3 @@
-/**
- * Exam Battle Mode — daily challenge + school leaderboard.
- * Async multiplayer (no realtime infra) with XP, streaks, and ranks.
- */
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -75,9 +71,6 @@ export default function BattleMode() {
   const aiTimerRef  = useRef<number | null>(null)
   const liveStartedAtRef = useRef<number>(0)
 
-  // Initial load — try server, fall back to localStorage if the battle
-  // tables don't exist or the route is unreachable. Either way the UI
-  // gets data, no error toast.
   const load = useCallback(async () => {
     try {
       const [d, s, l] = await Promise.all([
@@ -89,7 +82,6 @@ export default function BattleMode() {
       setErr('')
     } catch (e: any) {
       if (isMissingBackend(e)) {
-        // Silent fallback — load from device storage instead.
         setDaily(getDailyLocal())
         setStats(getStatsLocal() as any)
         const lb = getLeaderboardLocal()
@@ -102,7 +94,6 @@ export default function BattleMode() {
   }, [tab])
   useEffect(() => { load() }, [load])
 
-  // Timer + AI opponent schedule
   useEffect(() => {
     if (phase !== 'live') return
     setSecsLeft(20)
@@ -118,7 +109,6 @@ export default function BattleMode() {
       })
     }, 1000)
 
-    // Schedule AI answer when sparring
     if (mode === 'spar' && questions[idx]) {
       setAiThinking(true)
       const prof   = AI_PROFILES[aiLevel]
@@ -245,7 +235,6 @@ Tips: each tip is one specific actionable line (max 18 words) — reference the 
         tone:    parsed.tone === 'praise' || parsed.tone === 'tough' ? parsed.tone : 'neutral',
       })
     } catch {
-      // Fallback judge
       const tone: 'praise' | 'neutral' | 'tough' = playerCorrect > aiCorrect ? 'praise' : playerCorrect < aiCorrect ? 'tough' : 'neutral'
       setJudge({
         verdict: tone === 'praise' ? 'Clean win — you outpaced the AI on the questions that mattered.'
@@ -264,10 +253,6 @@ Tips: each tip is one specific actionable line (max 18 words) — reference the 
     const correct = finalAnswers.filter((a, i) => a === questions[i]?.answer).length
     const aiCorrect = aiAnswers.filter((a, i) => a !== null && a === questions[i]?.answer).length
 
-    // Feed the unified gamification economy so battles count toward the Home
-    // level ring, streak and weekly league (previously battle XP was isolated
-    // in battleLocal / the server and never reached game.ts). Matches the XP
-    // shown on the results screen: correct × per-correct, + a sparring-win bonus.
     const perCorrect = daily?.xp_per_correct || (mode === 'spar' ? 10 : 14)
     const battleXP = correct * perCorrect + (mode === 'spar' && correct > aiCorrect ? 20 : 0)
     awardXPAmount(battleXP, mode === 'spar' ? 'Battle — sparring win' : 'Battle — daily challenge')
@@ -287,7 +272,6 @@ Tips: each tip is one specific actionable line (max 18 words) — reference the 
         setErr('')
       } catch (e: any) {
         if (isMissingBackend(e)) {
-          // Save to device storage so streak / XP still persist
           submitLocal(payload as any)
         } else {
           setErr(e.message)
@@ -299,18 +283,14 @@ Tips: each tip is one specific actionable line (max 18 words) — reference the 
         load()
       }
     } else {
-      // Sparring: skip the leaderboard submit, but always ask the judge
       setPhase('results')
     }
 
-    // Judge always runs (both daily and spar)
     askJudge(correct, mode === 'spar' ? aiCorrect : 0, questions.length)
   }
 
   function pickAnswer(i: number) {
     const next = [...answers]; next[idx] = i; setAnswers(next)
-    // Feed unified memory engine — every battle answer flows into the twin
-    // so Mistake Analysis + Kyno see your battle performance too.
     try {
       const q = questions[idx]
       if (q && daily) {
@@ -326,7 +306,7 @@ Tips: each tip is one specific actionable line (max 18 words) — reference the 
           payload: { source: 'battle' },
         })
       }
-    } catch { /* ignore */ }
+    } catch {  }
     setTimeout(() => advance(i), 250)
   }
 
@@ -336,7 +316,6 @@ Tips: each tip is one specific actionable line (max 18 words) — reference the 
     setAiAnswers([]); setAiAnsweredAt([]); setJudge(null); setAiThinking(false)
   }
 
-  // ── LOADING ────────────────────────────────────────────────────────────
   if (phase === 'loading') {
     return (
       <div style={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
@@ -347,7 +326,6 @@ Tips: each tip is one specific actionable line (max 18 words) — reference the 
     )
   }
 
-  // ── LIVE ──────────────────────────────────────────────────────────────
   if (phase === 'live') {
     const q = questions[idx]
     if (!q) return null
@@ -456,7 +434,6 @@ Tips: each tip is one specific actionable line (max 18 words) — reference the 
     )
   }
 
-  // ── RESULTS ──────────────────────────────────────────────────────────
   if (phase === 'results') {
     const correct   = answers.filter((a, i) => a === questions[i]?.answer).length
     const aiCorrect = aiAnswers.filter((a, i) => a !== null && a === questions[i]?.answer).length
@@ -519,7 +496,6 @@ Tips: each tip is one specific actionable line (max 18 words) — reference the 
           {submitting && <p style={{ fontSize: 11, color: '#6B7280', marginTop: 14 }}>Saving to leaderboard…</p>}
         </motion.div>
 
-        {/* AI JUDGE VERDICT */}
         <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
           style={{
             ...card, padding: 20, marginBottom: 14,
@@ -579,10 +555,8 @@ Tips: each tip is one specific actionable line (max 18 words) — reference the 
     )
   }
 
-  // ── LOBBY ────────────────────────────────────────────────────────────
   return (
     <div style={{ padding: 'clamp(16px, 5vw, 28px) clamp(14px, 4vw, 36px)', maxWidth: 1100, margin: '0 auto', height: '100%', overflowY: 'auto' }}>
-      {/* Header */}
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 22 }}>
         <div style={{
           width: 44, height: 44, borderRadius: 11,
@@ -614,7 +588,6 @@ Tips: each tip is one specific actionable line (max 18 words) — reference the 
         </div>
       )}
 
-      {/* Personal stats row */}
       {stats && (
         <div className="bm-stats-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: 16 }}>
           <Tile icon={Zap}    label="Total XP"  value={stats.total_xp}             color="#A5B4FC" />
@@ -624,7 +597,6 @@ Tips: each tip is one specific actionable line (max 18 words) — reference the 
         </div>
       )}
 
-      {/* Daily challenge */}
       {daily && (
         <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
           style={{
@@ -662,7 +634,6 @@ Tips: each tip is one specific actionable line (max 18 words) — reference the 
         </motion.div>
       )}
 
-      {/* AI Sparring */}
       {daily && (
         <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
           style={{
@@ -730,11 +701,7 @@ Tips: each tip is one specific actionable line (max 18 words) — reference the 
         </motion.div>
       )}
 
-      {/* Leaderboard */}
       <div style={{ ...card, padding: 18 }}>
-        {/* minWidth: 0 lets the title actually shrink inside the flex row (the
-            flexbox default min-width:auto otherwise keeps its full nowrap
-            width, pushing it to overlap the range pills instead of truncating) */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14, flexWrap: 'wrap' }}>
           <Trophy size={15} color="#A5B4FC" />
           <h3 style={{ fontSize: 14, fontWeight: 700, color: '#fafafa', margin: 0, flex: 1, minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>School Leaderboard</h3>

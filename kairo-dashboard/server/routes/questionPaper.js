@@ -1,8 +1,3 @@
-/**
- * Question Paper Generator Routes
- *
- * POST /api/question-paper/generate    AI generates a full question paper with answer key
- */
 import { Router } from 'express'
 import { requireAuth } from '../middleware/auth.js'
 import { aiCall, parseJSON } from '../utils/ai.js'
@@ -18,7 +13,7 @@ router.post('/generate', async (req, res) => {
     chapters = [],
     total_marks = 80,
     duration_minutes = 180,
-    difficulty = 'mixed',    // easy | medium | hard | mixed
+    difficulty = 'mixed',
     include_answer_key = true,
     question_types = ['mcq', 'short', 'long', 'assertion_reason'],
   } = req.body

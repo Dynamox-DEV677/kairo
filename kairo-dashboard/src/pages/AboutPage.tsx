@@ -1,10 +1,3 @@
-/**
- * /about — the founder story.
- *
- * Editorial single-page about Darshan, the 9th-grader who started Kyno.
- * Same Swiss / editorial / brutalist visual language as the landing.
- * Strict monochrome BLACK · DEEP PURPLE · WHITE. Mobile-first.
- */
 import { useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { ArrowRight, ArrowLeft, Mail } from 'lucide-react'
@@ -39,9 +32,6 @@ interface Props {
 }
 
 export default function AboutPage({ onExit }: Props) {
-  // Unlock body scroll while About is mounted (dashboard's mobile CSS
-  // would otherwise lock body via .kairo-app class — but landing/about
-  // don't apply that class so this is mostly defensive).
   useEffect(() => {
     const root = document.documentElement
     const body = document.body
@@ -59,7 +49,6 @@ export default function AboutPage({ onExit }: Props) {
       <GrainOverlay />
       <PurpleHalo />
 
-      {/* Masthead */}
       <header style={{
         position: 'sticky', top: 0, zIndex: 50,
         backdropFilter: 'blur(18px)', WebkitBackdropFilter: 'blur(18px)',
@@ -86,7 +75,6 @@ export default function AboutPage({ onExit }: Props) {
       <main style={{ position: 'relative', zIndex: 2 }}>
         <Container>
 
-          {/* HERO ─────────────────────────────────────────────────────────── */}
           <section style={{ paddingTop: 80, paddingBottom: 64 }}>
             <SwissRow>
               <SwissCell span={3}>
@@ -135,7 +123,6 @@ export default function AboutPage({ onExit }: Props) {
             </SwissRow>
           </section>
 
-          {/* ESSAY ────────────────────────────────────────────────────────── */}
           <section style={{ padding: '64px 0' }}>
             <SwissRow>
               <SwissCell span={3}>
@@ -191,7 +178,6 @@ export default function AboutPage({ onExit }: Props) {
             </SwissRow>
           </section>
 
-          {/* THINGS DONE ──────────────────────────────────────────────────── */}
           <section style={{
             padding: '64px 0',
             borderTop: `1px solid ${C.lineHi}`,
@@ -243,7 +229,6 @@ export default function AboutPage({ onExit }: Props) {
             </SwissRow>
           </section>
 
-          {/* PRINCIPLES ───────────────────────────────────────────────────── */}
           <section style={{ padding: '80px 0' }}>
             <SwissRow>
               <SwissCell span={3}>
@@ -272,7 +257,6 @@ export default function AboutPage({ onExit }: Props) {
             </SwissRow>
           </section>
 
-          {/* CONTACT CTA ──────────────────────────────────────────────────── */}
           <section style={{
             padding: '100px 0 120px',
             borderTop: `1px solid ${C.line}`,
@@ -333,7 +317,6 @@ export default function AboutPage({ onExit }: Props) {
         </Container>
       </main>
 
-      {/* Footer rule */}
       <footer style={{
         borderTop: `1px solid ${C.line}`, padding: '24px 0 32px',
       }}>
@@ -364,7 +347,6 @@ export default function AboutPage({ onExit }: Props) {
   )
 }
 
-// ─── Layer overlays ──────────────────────────────────────────────────────
 function GrainOverlay() {
   return (
     <div aria-hidden style={{
@@ -387,7 +369,6 @@ function PurpleHalo() {
   )
 }
 
-// ─── Primitives ──────────────────────────────────────────────────────────
 function Container({ children }: { children: React.ReactNode }) {
   return (
     <div className="kr-container" style={{

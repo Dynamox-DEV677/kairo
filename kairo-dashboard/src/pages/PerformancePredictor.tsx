@@ -1,7 +1,3 @@
-/**
- * Future Performance Predictor — analyzes marks history + AI memory + battle scores
- * to predict subject-wise scores, surface risk areas, and project improvement.
- */
 import { useState, useEffect, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import {
@@ -15,8 +11,8 @@ import { chat } from '../lib/openrouter'
 
 interface SubjectPrediction {
   subject:    string
-  current:    number    // current avg %
-  predicted:  number    // projected % at exam
+  current:    number
+  predicted:  number
   trajectory: 'up' | 'down' | 'flat'
   confidence: 'low' | 'medium' | 'high'
   exams:      number
@@ -40,8 +36,6 @@ export default function PerformancePredictor() {
         api('/marks/my').catch(() => ({ marks: [] })),
         api('/battle/me').catch(() => null),
       ])
-      // /api/memory was deleted in the cleanup — derive `weak` topics
-      // from the twin's mastery rows directly.
       const memory = await (async () => {
         try {
           const { dumpState } = await import('../lib/twin')
@@ -54,7 +48,6 @@ export default function PerformancePredictor() {
         } catch { return { weak: [] as any[] } }
       })()
 
-      // Group marks by subject, sort chronologically
       const bySubject: Record<string, { obtained: number; max: number; date: string }[]> = {}
       const memWeakBySubject: Record<string, number> = {}
       for (const m of marks?.marks || []) {
@@ -70,14 +63,12 @@ export default function PerformancePredictor() {
         memWeakBySubject[s] = (memWeakBySubject[s] || 0) + 1
       }
 
-      // Predict per subject
       const preds: SubjectPrediction[] = []
       for (const [subject, exams] of Object.entries(bySubject)) {
         if (exams.length === 0) continue
         const pcts = exams.map(e => e.max > 0 ? (e.obtained / e.max) * 100 : 0)
         const current = pcts.reduce((s, x) => s + x, 0) / pcts.length
 
-        // Linear trajectory: compare last 3 vs first 3
         const recent = pcts.slice(-3).reduce((s, x) => s + x, 0) / Math.min(pcts.length, 3)
         const earlier = pcts.slice(0, 3).reduce((s, x) => s + x, 0) / Math.min(pcts.length, 3)
         const delta = recent - earlier
@@ -86,7 +77,6 @@ export default function PerformancePredictor() {
         if (delta > 5) trajectory = 'up'
         else if (delta < -5) trajectory = 'down'
 
-        // Project: weighted between current and recent, adjusted by weak topic count
         const weakPenalty = (memWeakBySubject[subject] || 0) * 1.5
         const trendBoost  = trajectory === 'up' ? 4 : trajectory === 'down' ? -3 : 0
         let predicted = recent + trendBoost - weakPenalty
@@ -105,7 +95,6 @@ export default function PerformancePredictor() {
         })
       }
 
-      // Sort by risk first (high first), then by lowest predicted
       preds.sort((a, b) => {
         const riskOrder = { high: 0, medium: 1, low: 2 }
         if (riskOrder[a.risk] !== riskOrder[b.risk]) return riskOrder[a.risk] - riskOrder[b.risk]
@@ -166,7 +155,6 @@ Keep it under 200 words. No fluff.` },
 
   return (
     <div style={{ padding: '28px 36px', maxWidth: 1100, margin: '0 auto', height: '100%', overflowY: 'auto' }}>
-      {/* Header */}
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 22 }}>
         <div style={{
           width: 44, height: 44, borderRadius: 11,
@@ -214,7 +202,6 @@ Keep it under 200 words. No fluff.` },
 
       {predictions && predictions.length > 0 && (
         <>
-          {/* Overall projection card */}
           <div style={{ ...card, padding: 26, marginBottom: 16, position: 'relative', overflow: 'hidden' }}>
             <div style={{
               position: 'absolute', top: -50, right: -50, width: 220, height: 220,
@@ -256,7 +243,6 @@ Keep it under 200 words. No fluff.` },
             </div>
           </div>
 
-          {/* AI Insight */}
           <div style={{ ...card, padding: 22, marginBottom: 16 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
               <Sparkles size={15} color="#A5B4FC" />
@@ -293,7 +279,6 @@ Keep it under 200 words. No fluff.` },
             )}
           </div>
 
-          {/* Per-subject predictions */}
           <div style={{ ...card, padding: 18 }}>
             <div style={{ fontSize: 13, fontWeight: 700, color: '#fafafa', marginBottom: 14 }}>
               Per-subject Projections
@@ -316,13 +301,11 @@ Keep it under 200 words. No fluff.` },
                           {p.exams} exam{p.exams === 1 ? '' : 's'} · confidence {p.confidence}
                         </span>
                       </div>
-                      {/* Bar */}
                       <div style={{ position: 'relative', height: 8, background: '#1a1f2e', borderRadius: 4, overflow: 'hidden' }}>
                         <motion.div
                           initial={{ width: 0 }} animate={{ width: `${p.predicted}%` }}
                           transition={{ duration: 0.7, ease: 'easeOut' }}
                           style={{ height: '100%', background: riskColor }} />
-                        {/* Current marker */}
                         <div style={{
                           position: 'absolute', top: -2, bottom: -2, left: `${p.current}%`,
                           width: 2, background: '#fafafa',

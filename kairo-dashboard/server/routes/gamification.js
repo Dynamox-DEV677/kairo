@@ -1,11 +1,3 @@
-/**
- * Gamification Routes
- *
- * GET  /api/gamification/profile    Get XP, level, badges
- * POST /api/gamification/xp         Add XP for an action
- * GET  /api/gamification/leaderboard School leaderboard
- * GET  /api/gamification/badges     All badges + earned status
- */
 import { Router } from 'express'
 import { db } from '../db/index.js'
 
@@ -51,7 +43,6 @@ function getLevel(xp) {
   return { ...current, next_level: nextLevel, progress_to_next: progress }
 }
 
-// ── Get Profile ────────────────────────────────────────────────────────────────
 router.get('/profile', async (req, res) => {
   const schoolId = sid(req)
   const { user_id = 'default' } = req.query
@@ -65,7 +56,6 @@ router.get('/profile', async (req, res) => {
 
     const levelInfo = getLevel(profile.xp || 0)
 
-    // Check badges
     const earnedBadges = ALL_BADGES.filter(b => {
       if (b.xp_needed && (profile.xp || 0) >= b.xp_needed) return true
       if (b.quizzes_needed && (profile.quizzes_completed || 0) >= b.quizzes_needed) return true
@@ -84,7 +74,6 @@ router.get('/profile', async (req, res) => {
   }
 })
 
-// ── Add XP ─────────────────────────────────────────────────────────────────────
 router.post('/xp', async (req, res) => {
   const { xp = 10, action = 'activity', user_id = 'default' } = req.body
   const schoolId = sid(req)
@@ -120,7 +109,6 @@ router.post('/xp', async (req, res) => {
   }
 })
 
-// ── Leaderboard ────────────────────────────────────────────────────────────────
 router.get('/leaderboard', async (req, res) => {
   const schoolId = sid(req)
   try {
@@ -135,7 +123,6 @@ router.get('/leaderboard', async (req, res) => {
   }
 })
 
-// ── Badges List ────────────────────────────────────────────────────────────────
 router.get('/badges', async (req, res) => {
   const { user_id = 'default' } = req.query
   const schoolId = sid(req)

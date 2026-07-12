@@ -1,7 +1,3 @@
-/**
- * PWA wiring — register service worker, listen for "Install app" prompt,
- * surface update banner when a new version ships.
- */
 import { registerSW } from 'virtual:pwa-register'
 
 let deferredInstallPrompt: any = null

@@ -1,15 +1,10 @@
-/**
- * AES-256-GCM encryption for Gmail App Passwords.
- * The ENCRYPTION_SECRET env var is the 32-byte (64-char hex) master key.
- * Each credential gets its own random IV → ciphertext is never reusable.
- */
 
 import crypto from 'crypto'
 
 const ALG = 'aes-256-gcm'
-const KEY_LEN = 32   // bytes
-const IV_LEN  = 16   // bytes (128-bit IV for GCM)
-const TAG_LEN = 16   // bytes (128-bit auth tag)
+const KEY_LEN = 32
+const IV_LEN  = 16
+const TAG_LEN = 16
 
 function getKey() {
   const secret = process.env.ENCRYPTION_SECRET
@@ -19,10 +14,6 @@ function getKey() {
   return Buffer.from(secret.slice(0, 64), 'hex')
 }
 
-/**
- * Encrypt a plaintext string.
- * @returns {{ enc: string, iv: string, authTag: string }}
- */
 export function encrypt(plaintext) {
   const key = getKey()
   const iv  = crypto.randomBytes(IV_LEN)
@@ -35,9 +26,6 @@ export function encrypt(plaintext) {
   }
 }
 
-/**
- * Decrypt a previously encrypted value.
- */
 export function decrypt({ enc, iv, authTag }) {
   const key = getKey()
   const decipher = crypto.createDecipheriv(ALG, key, Buffer.from(iv, 'hex'))
@@ -46,10 +34,6 @@ export function decrypt({ enc, iv, authTag }) {
   return dec.toString('utf8')
 }
 
-/**
- * Validate that a string looks like a Gmail App Password.
- * Format: 16 lowercase letters, optionally grouped with spaces (xxxx xxxx xxxx xxxx).
- */
 export function isAppPassword(raw) {
   const cleaned = raw.replace(/\s/g, '')
   return /^[a-z]{16}$/.test(cleaned)

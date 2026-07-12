@@ -1,10 +1,3 @@
-/**
- * OtpInput — 6 individual digit cells. Auto-focuses the next cell, accepts
- * full-string paste, and never lets non-digits in.
- *
- * Exposes one onChange with the joined string. When all 6 are filled,
- * `onComplete` fires.
- */
 import { useEffect, useRef } from 'react'
 import { RC, FONT } from './shared'
 
@@ -12,13 +5,9 @@ interface Props {
   value:        string
   onChange:     (next: string) => void
   onComplete?:  (final: string) => void
-  /** Show shake animation on error. */
   shake?:       boolean
-  /** Disable inputs while busy. */
   disabled?:    boolean
-  /** Number of cells (default 6). */
   length?:      number
-  /** Accent border colour for filled / focused cells. */
   accent?:      string
 }
 
@@ -27,7 +16,6 @@ export default function OtpInput({
 }: Props) {
   const refs = useRef<Array<HTMLInputElement | null>>([])
 
-  // Focus the first empty cell on mount
   useEffect(() => {
     const first = Math.min(value.length, length - 1)
     refs.current[first]?.focus()
@@ -35,10 +23,8 @@ export default function OtpInput({
 
   function handleInput(idx: number, raw: string) {
     if (disabled) return
-    // Filter non-digits + handle full paste in one cell
     const digits = raw.replace(/\D/g, '').slice(0, length - idx)
     if (digits.length === 0) {
-      // User cleared — just blank this cell
       const next = value.substring(0, idx) + value.substring(idx + 1)
       onChange(next)
       return
@@ -46,7 +32,6 @@ export default function OtpInput({
     const before = value.substring(0, idx)
     const next   = (before + digits).slice(0, length)
     onChange(next)
-    // Advance focus
     const focusIdx = Math.min(idx + digits.length, length - 1)
     refs.current[focusIdx]?.focus()
     if (next.length === length) onComplete?.(next)
@@ -57,11 +42,9 @@ export default function OtpInput({
     if (e.key === 'Backspace') {
       e.preventDefault()
       if (value[idx]) {
-        // Clear current cell
         const next = value.substring(0, idx) + value.substring(idx + 1)
         onChange(next)
       } else if (idx > 0) {
-        // Already empty — jump back and clear that one
         const next = value.substring(0, idx - 1) + value.substring(idx)
         onChange(next)
         refs.current[idx - 1]?.focus()

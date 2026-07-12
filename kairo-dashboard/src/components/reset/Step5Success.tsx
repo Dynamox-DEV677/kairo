@@ -1,11 +1,3 @@
-/**
- * Step 5 — Success.
- *
- * Animated check + halo + soft particle burst.
- *  "Passcode reset complete"
- *  "Kyno is ready."
- *  [ Continue to Kyno ]
- */
 import { useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Check } from 'lucide-react'
@@ -17,7 +9,6 @@ interface Props {
 }
 
 export default function Step5Success({ onContinue }: Props) {
-  // Auto-continue after 6 s as a safety net
   useEffect(() => {
     const t = window.setTimeout(onContinue, 6000)
     return () => clearTimeout(t)
@@ -41,7 +32,6 @@ export default function Step5Success({ onContinue }: Props) {
         marginTop: 10, marginBottom: 24,
         height: 220,
       }}>
-        {/* Particle ring — 12 sparks pulsing outward */}
         {Array.from({ length: 12 }).map((_, i) => {
           const angle = (i / 12) * Math.PI * 2
           const dist  = 90
@@ -63,7 +53,6 @@ export default function Step5Success({ onContinue }: Props) {
           )
         })}
 
-        {/* Halo */}
         <motion.div
           initial={{ scale: 0, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
@@ -80,7 +69,6 @@ export default function Step5Success({ onContinue }: Props) {
           }} />
         </motion.div>
 
-        {/* The check itself */}
         <motion.div
           initial={{ scale: 0, rotate: -45 }}
           animate={{ scale: 1, rotate: 0 }}
@@ -93,7 +81,6 @@ export default function Step5Success({ onContinue }: Props) {
             boxShadow: '0 24px 60px rgba(79, 124, 255, 0.03), inset 0 1px 0 rgba(255,255,255,0.25)',
           }}
         >
-          {/* Inner ring */}
           <div style={{
             position: 'absolute', inset: -6, borderRadius: '50%',
             border: '2px solid rgba(165, 180, 252, 0.50)',

@@ -1,10 +1,3 @@
-/**
- * Topic Architect — give a NEET/JEE topic, the AI plans EVERYTHING:
- * what to study, what to skip, must-know concepts, a concept map,
- * generated practice questions, and past-year-question insights.
- *
- * Backend: POST /api/topic-architect/plan
- */
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -91,7 +84,7 @@ export default function TopicArchitect() {
       const data = await r.json()
       if (data.error) throw new Error(data.error)
       setPlan(data)
-      try { awardXP('topic_plan') } catch { /* non-fatal */ }
+      try { awardXP('topic_plan') } catch {  }
     } catch (e: any) {
       setError(e.message || 'Failed to plan this topic')
     } finally { setLoading(false) }
@@ -99,7 +92,6 @@ export default function TopicArchitect() {
 
   return (
     <div style={{ padding: 24, maxWidth: 1100, margin: '0 auto', color: '#fafafa', height: '100%', overflowY: 'auto', boxSizing: 'border-box', width: '100%' }}>
-      {/* Header */}
       <div style={{ marginBottom: 24 }}>
         <div style={{ fontSize: 11, letterSpacing: 4, textTransform: 'uppercase', color: '#66D9FF', marginBottom: 8, fontWeight: 700 }}>
           Topic Architect
@@ -113,7 +105,6 @@ export default function TopicArchitect() {
         </p>
       </div>
 
-      {/* Input bar */}
       <div style={{ ...card, padding: 20, marginBottom: 24 }}>
         <label style={lbl}><Target size={11} style={{ verticalAlign: 'middle', marginRight: 4 }} />Topic</label>
         <input
@@ -170,7 +161,6 @@ export default function TopicArchitect() {
       <AnimatePresence>
         {plan && (
           <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.32 }}>
-            {/* Verdict band */}
             <div style={{ ...card, padding: 18, marginBottom: 16, borderColor: importColor(plan.examImportance) + '55' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
                 <span style={{
@@ -188,7 +178,6 @@ export default function TopicArchitect() {
               <div style={{ fontSize: 16, color: '#fafafa', marginTop: 12, lineHeight: 1.5 }}>{plan.oneLineVerdict}</div>
             </div>
 
-            {/* What to study / skip — two columns */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
               <div style={{ ...card, padding: 18 }}>
                 <h3 style={{ ...h3, color: '#66ff9a' }}><CheckCircle2 size={14} /> Study this</h3>
@@ -210,7 +199,6 @@ export default function TopicArchitect() {
               </div>
             </div>
 
-            {/* Must-know concept chips */}
             <div style={{ ...card, padding: 18, marginBottom: 16 }}>
               <h3 style={h3}><Brain size={14} /> Must-know concepts</h3>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
@@ -224,7 +212,6 @@ export default function TopicArchitect() {
               </div>
             </div>
 
-            {/* Concept map — node + link list (lightweight visual) */}
             <div style={{ ...card, padding: 18, marginBottom: 16 }}>
               <h3 style={h3}><MapIcon size={14} /> Concept map</h3>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
@@ -251,7 +238,6 @@ export default function TopicArchitect() {
               </div>
             </div>
 
-            {/* Practice questions — accordion */}
             <div style={{ ...card, padding: 18, marginBottom: 16 }}>
               <h3 style={h3}><HelpCircle size={14} /> Practice questions ({plan.practiceQuestions?.length || 0})</h3>
               {plan.practiceQuestions?.map((q, i) => (
@@ -280,7 +266,6 @@ export default function TopicArchitect() {
               ))}
             </div>
 
-            {/* PYQ insights + study order — two columns */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
               <div style={{ ...card, padding: 18 }}>
                 <h3 style={h3}><History size={14} /> Past-paper insights</h3>

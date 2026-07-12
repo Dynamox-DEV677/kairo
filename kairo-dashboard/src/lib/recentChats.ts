@@ -1,7 +1,3 @@
-/**
- * Recent chats — persists doubt-solver conversations to localStorage
- * so the sidebar shows real history that you can click to resume.
- */
 const KEY = 'kairo_recent_chats'
 const MAX = 15
 
@@ -13,9 +9,9 @@ export interface ChatMessage {
 
 export interface RecentChat {
   id: string
-  title: string         // first user message, truncated
+  title: string
   messages: ChatMessage[]
-  updated: number       // unix ms
+  updated: number
 }
 
 export function getRecentChats(): RecentChat[] {

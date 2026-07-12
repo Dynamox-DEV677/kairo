@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Sparkles, Copy, Check, Mail, ChevronDown, Search, User, X, Edit3 } from 'lucide-react'
 import { chat } from '../lib/openrouter'
 
-// ── API helper ──────────────────────────────────────────────────────────────
 function token() { return localStorage.getItem('kairo_token') || '' }
 async function apiFetch(path: string) {
   const res = await fetch(`/api${path}`, {
@@ -13,10 +12,8 @@ async function apiFetch(path: string) {
   return res.json()
 }
 
-// ── Types ───────────────────────────────────────────────────────────────────
 interface Student { id: string; name: string; class_name?: string; subject?: string }
 
-// ── Prompt config ───────────────────────────────────────────────────────────
 const SYSTEM = `You are Kyno, assisting Indian school teachers and admins.
 Write professional, polite parent messages suitable for WhatsApp, SMS or email (under 160 words).
 If bilingual requested, provide English version then Hindi version separated by a line.`
@@ -32,7 +29,6 @@ const TEMPLATES = [
   { label: '🤒 Health concern',   prompt: 'Student appeared unwell today and should see a doctor.' },
 ]
 
-// ── Student Name Picker ─────────────────────────────────────────────────────
 function NamePicker({
   value,
   onChange,
@@ -46,7 +42,6 @@ function NamePicker({
   const [query, setQuery]       = useState(value)
   const ref                     = useRef<HTMLDivElement>(null)
 
-  // Close on outside click
   useEffect(() => {
     function handler(e: MouseEvent) {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
@@ -157,7 +152,6 @@ function NamePicker({
   )
 }
 
-// ── Main component ──────────────────────────────────────────────────────────
 export default function ParentMessage() {
   const [studentName, setStudentName] = useState('')
   const [situation, setSituation]     = useState('')
@@ -169,10 +163,8 @@ export default function ParentMessage() {
   const [copied, setCopied]           = useState(false)
   const [editing, setEditing]         = useState(false)
 
-  // Students for name picker
   const [students, setStudents]       = useState<Student[]>([])
 
-  // Try to fetch school students (works when logged in with a school account)
   useEffect(() => {
     const raw = localStorage.getItem('kairo_profile')
     if (!raw) return
@@ -224,7 +216,6 @@ export default function ParentMessage() {
 
   return (
     <div style={{ padding: '28px 36px', maxWidth: 960, margin: '0 auto', height: '100%', overflowY: 'auto' }}>
-      {/* Header */}
       <div style={{ marginBottom: 24 }}>
         <h1 style={{ fontSize: 20, fontWeight: 700, color: '#fafafa', margin: 0 }}>Parent Message Writer</h1>
         <p style={{ fontSize: 13, color: '#6B7280', marginTop: 4 }}>
@@ -234,9 +225,7 @@ export default function ParentMessage() {
 
       <div style={{ display: 'grid', gridTemplateColumns: message ? '1fr 1fr' : '1fr', gap: 24 }}>
 
-        {/* ── LEFT PANEL: inputs ── */}
         <div>
-          {/* Quick templates */}
           <div style={{ marginBottom: 18 }}>
             <label style={{ fontSize: 11, fontWeight: 600, color: '#9CA3AF', display: 'block', marginBottom: 8,
               textTransform: 'uppercase', letterSpacing: 0.8 }}>Quick templates</label>
@@ -257,7 +246,6 @@ export default function ParentMessage() {
             </div>
           </div>
 
-          {/* Student name picker */}
           <div style={{ marginBottom: 14 }}>
             <label style={{ fontSize: 11, fontWeight: 600, color: '#9CA3AF', display: 'block', marginBottom: 6,
               textTransform: 'uppercase', letterSpacing: 0.8 }}>
@@ -271,7 +259,6 @@ export default function ParentMessage() {
             <NamePicker value={studentName} onChange={setStudentName} students={students} />
           </div>
 
-          {/* Situation */}
           <div style={{ marginBottom: 16 }}>
             <label style={{ fontSize: 11, fontWeight: 600, color: '#9CA3AF', display: 'block', marginBottom: 6,
               textTransform: 'uppercase', letterSpacing: 0.8 }}>Situation</label>
@@ -285,7 +272,6 @@ export default function ParentMessage() {
             />
           </div>
 
-          {/* Tone */}
           <div style={{ marginBottom: 16 }}>
             <label style={{ fontSize: 11, fontWeight: 600, color: '#9CA3AF', display: 'block', marginBottom: 8,
               textTransform: 'uppercase', letterSpacing: 0.8 }}>Tone</label>
@@ -305,7 +291,6 @@ export default function ParentMessage() {
             </div>
           </div>
 
-          {/* Bilingual */}
           <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20, cursor: 'pointer' }}>
             <input type="checkbox" checked={bilingual} onChange={e => setBilingual(e.target.checked)}
               style={{ accentColor: '#4F7CFF', width: 15, height: 15 }} />
@@ -334,7 +319,6 @@ export default function ParentMessage() {
           </motion.button>
         </div>
 
-        {/* ── RIGHT PANEL: generated message ── */}
         <AnimatePresence>
           {message && (
             <motion.div
@@ -342,7 +326,6 @@ export default function ParentMessage() {
               style={{ background: '#0E1117', border: '1px solid #1f2532', borderRadius: 14,
                 padding: 20, display: 'flex', flexDirection: 'column', gap: 0 }}>
 
-              {/* Title row */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
                 <span style={{ fontSize: 10, fontWeight: 700, color: '#4B5563', textTransform: 'uppercase', letterSpacing: 1 }}>
                   Generated message
@@ -359,7 +342,6 @@ export default function ParentMessage() {
                 </button>
               </div>
 
-              {/* Message — editable textarea OR readable pre-wrap */}
               {editing ? (
                 <textarea
                   value={message}
@@ -385,14 +367,11 @@ export default function ParentMessage() {
                 </div>
               )}
 
-              {/* Character count */}
               <div style={{ fontSize: 11, color: '#4B5563', marginTop: 8, marginBottom: 14 }}>
                 {message.length} characters · {message.split(/\s+/).filter(Boolean).length} words
               </div>
 
-              {/* Action buttons */}
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                {/* Copy */}
                 <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} onClick={copy}
                   style={{
                     display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 600,
@@ -405,7 +384,6 @@ export default function ParentMessage() {
                   {copied ? <><Check size={12} /> Copied!</> : <><Copy size={12} /> Copy</>}
                 </motion.button>
 
-                {/* Gmail */}
                 <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} onClick={openGmail}
                   style={{
                     display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 600,
@@ -415,7 +393,6 @@ export default function ParentMessage() {
                   <Mail size={12} /> Open in Gmail
                 </motion.button>
 
-                {/* Mail app */}
                 <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} onClick={openMailto}
                   style={{
                     display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 600,
@@ -425,7 +402,6 @@ export default function ParentMessage() {
                   <Mail size={12} /> Mail app
                 </motion.button>
 
-                {/* Regenerate */}
                 <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
                   onClick={generate} disabled={loading}
                   style={{

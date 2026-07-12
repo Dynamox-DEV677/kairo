@@ -1,10 +1,3 @@
-/**
- * Explain My Mistake — beyond "wrong answer", AI walks the student through
- * WHY they were wrong, what concept they misunderstood, and how to avoid it next time.
- *
- * Auto-tracks the topic to ai_memory as a weak_topic so it surfaces in future
- * Adaptive Path / Revision Sim suggestions.
- */
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -74,14 +67,13 @@ export default function ExplainMistake() {
     }
     setErr(''); setBusy(true); setResult(''); setSaved(false)
 
-    // Pull memory context (best-effort)
     let memCtx = ''
     try {
       const r = await fetch('/api/memory/context', {
         headers: { Authorization: `Bearer ${localStorage.getItem('kairo_token') || ''}` },
       })
       if (r.ok) memCtx = (await r.json()).context || ''
-    } catch { /* non-fatal */ }
+    } catch {  }
 
     const userMsg = `Subject: ${subject}
 
@@ -103,7 +95,6 @@ Now teach me how to never make this mistake again, following your structure exac
       })
       setResult(reply)
 
-      // Track to AI Memory as weak_topic (best-effort)
       try {
         await fetch('/api/memory/track', {
           method: 'POST',
@@ -119,7 +110,7 @@ Now teach me how to never make this mistake again, following your structure exac
             signal:  -0.5,
           }),
         })
-      } catch { /* memory is best-effort */ }
+      } catch {  }
     } catch (e: any) {
       setErr(e.message)
     } finally {
@@ -146,7 +137,6 @@ Now teach me how to never make this mistake again, following your structure exac
 
   return (
     <div style={{ padding: '28px 36px', maxWidth: 1000, margin: '0 auto', height: '100%', overflowY: 'auto' }}>
-      {/* Header */}
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 22 }}>
         <div style={{
           width: 44, height: 44, borderRadius: 11,
@@ -165,7 +155,6 @@ Now teach me how to never make this mistake again, following your structure exac
       </div>
 
       <div className="mob-stack" style={{ display: 'grid', gridTemplateColumns: result || busy ? '1fr 1.3fr' : '1fr', gap: 16 }}>
-        {/* Form */}
         <div style={{ ...card, padding: 22 }}>
           <div style={{ marginBottom: 14 }}>
             <label style={lbl}>Subject</label>
@@ -216,7 +205,6 @@ Now teach me how to never make this mistake again, following your structure exac
           </motion.button>
         </div>
 
-        {/* Result */}
         <AnimatePresence>
           {(busy || result) && (
             <motion.div initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }}

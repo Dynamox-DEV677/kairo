@@ -38,10 +38,7 @@ export default function AdaptiveQuiz() {
   }
 
   async function onComplete(score: number, answers: any[]) {
-    // Client XP: completes the "quiz_done" daily quest and moves the level
-    // ring / streak / league. Previously quiz_done XP was never awarded, so
-    // its daily quest could never be finished.
-    try { awardXP('quiz_done') } catch { /* ignore */ }
+    try { awardXP('quiz_done') } catch {  }
     try {
       const r = await post('/quiz/complete', { school_id: SCHOOL_ID, session_id: sessionId, score, total: questions.length, answers, subject: form.subject })
       setFinalResult({ score, total: questions.length, ...r })
@@ -188,8 +185,6 @@ function QuizScreen({ questions, onComplete }: any) {
     const correct = letter === q.correct
     if (correct) setScore(s => s + 1)
     setAnswers(a => [...a, { question_index: index, answer: letter, correct }])
-    // Feed the unified memory engine so Mistake Analysis + Concept Map +
-    // Kyno see this attempt. Fire-and-forget.
     try {
       track({
         type:    'quiz_answered',
@@ -200,7 +195,7 @@ function QuizScreen({ questions, onComplete }: any) {
         difficulty: ({ easy: 0.3, medium: 0.5, hard: 0.75 } as any)[(q as any).difficulty] ?? 0.5,
         modality: 'interactive',
       })
-    } catch { /* ignore */ }
+    } catch {  }
   }
 
   function next() {
@@ -213,7 +208,6 @@ function QuizScreen({ questions, onComplete }: any) {
     setRevealed(false)
   }
 
-  // Fix: compute correct answer at time of next call
   function handleNext() {
     const letter = selected?.charAt(0)
     const correct = letter === q.correct
@@ -247,7 +241,6 @@ function QuizScreen({ questions, onComplete }: any) {
 
   return (
     <div>
-      {/* Progress bar */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
         <span style={{ fontSize: 12, color: '#9CA3AF' }}>Question {index + 1} of {questions.length}</span>
         <span style={{ fontSize: 12, color: '#A5B4FC', fontWeight: 600 }}>Score: {score}/{index + (revealed ? 1 : 0)}</span>

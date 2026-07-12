@@ -1,14 +1,3 @@
-/**
- * Marks / Grades API
- *
- * Teacher  → POST /api/marks              Add marks for a student
- * Teacher  → PUT  /api/marks/:id          Update marks
- * Teacher  → DELETE /api/marks/:id        Delete a mark entry
- * Student  → GET  /api/marks/my           View own marks
- * Parent   → GET  /api/marks/child        View linked child's marks (read-only)
- * Teacher  → GET  /api/marks/student/:id  View one student's marks
- * Admin    → GET  /api/marks/school       All marks for the school (audit)
- */
 import { Router }  from 'express'
 import { supabaseAdmin, requireSupabase } from '../services/supabase.js'
 import { requireSupabaseAuth, requireRole } from '../middleware/supabaseAuth.js'
@@ -17,7 +6,6 @@ const router = Router()
 router.use(requireSupabase)
 router.use(requireSupabaseAuth)
 
-// ── GET /marks/my — student views their own marks ─────────────────────────
 router.get('/my', requireRole('student'), async (req, res) => {
   try {
     const { data, error } = await supabaseAdmin
@@ -37,10 +25,8 @@ router.get('/my', requireRole('student'), async (req, res) => {
   }
 })
 
-// ── GET /marks/child — parent views linked child's marks ──────────────────
 router.get('/child', requireRole('parent'), async (req, res) => {
   try {
-    // Get the linked student
     const { data: links, error: linkErr } = await supabaseAdmin
       .from('parent_links')
       .select('student_id, student:users!parent_links_student_id_fkey(id, name, class_name)')
@@ -75,7 +61,6 @@ router.get('/child', requireRole('parent'), async (req, res) => {
   }
 })
 
-// ── GET /marks/school — admin views all marks ─────────────────────────────
 router.get('/school', requireRole('admin'), async (req, res) => {
   if (!req.schoolId) return res.status(400).json({ error: 'Not in a school.' })
 
@@ -105,12 +90,10 @@ router.get('/school', requireRole('admin'), async (req, res) => {
   }
 })
 
-// ── GET /marks/student/:id — teacher/admin views a student's marks ─────────
 router.get('/student/:id', requireRole('teacher', 'admin'), async (req, res) => {
   if (!req.schoolId) return res.status(400).json({ error: 'Not in a school.' })
 
   try {
-    // Verify student is in same school
     const { data: student } = await supabaseAdmin
       .from('users')
       .select('id, name, class_name, school_id')
@@ -139,7 +122,6 @@ router.get('/student/:id', requireRole('teacher', 'admin'), async (req, res) => 
   }
 })
 
-// ── POST /marks — teacher adds marks for a student ─────────────────────────
 router.post('/', requireRole('teacher', 'admin'), async (req, res) => {
   const { student_id, subject, exam_name, marks_obtained, total_marks = 100, remarks } = req.body
 
@@ -157,7 +139,6 @@ router.post('/', requireRole('teacher', 'admin'), async (req, res) => {
   if (obtained > total)                   return res.status(400).json({ error: 'marks_obtained cannot exceed total_marks.' })
 
   try {
-    // Verify student is in same school
     const { data: student } = await supabaseAdmin
       .from('users')
       .select('id, name, school_id, role')
@@ -195,7 +176,6 @@ router.post('/', requireRole('teacher', 'admin'), async (req, res) => {
   }
 })
 
-// ── PUT /marks/:id — teacher updates a mark entry ─────────────────────────
 router.put('/:id', requireRole('teacher', 'admin'), async (req, res) => {
   if (!req.schoolId) return res.status(400).json({ error: 'Not in a school.' })
 
@@ -208,7 +188,6 @@ router.put('/:id', requireRole('teacher', 'admin'), async (req, res) => {
 
     if (!existing) return res.status(404).json({ error: 'Mark entry not found.' })
     if (existing.school_id !== req.schoolId) return res.status(403).json({ error: 'Not your school.' })
-    // Teachers can only edit their own entries; admins can edit any
     if (req.user.role === 'teacher' && existing.teacher_id !== req.user.id) {
       return res.status(403).json({ error: 'You can only edit your own mark entries.' })
     }
@@ -237,7 +216,6 @@ router.put('/:id', requireRole('teacher', 'admin'), async (req, res) => {
   }
 })
 
-// ── DELETE /marks/:id — teacher/admin deletes a mark entry ────────────────
 router.delete('/:id', requireRole('teacher', 'admin'), async (req, res) => {
   if (!req.schoolId) return res.status(400).json({ error: 'Not in a school.' })
 
@@ -268,11 +246,9 @@ router.delete('/:id', requireRole('teacher', 'admin'), async (req, res) => {
   }
 })
 
-// ── Helper: build summary from marks array ────────────────────────────────
 function buildSummary(marks) {
   if (!marks || marks.length === 0) return null
 
-  // Subject-wise breakdown
   const bySubject = {}
   for (const m of marks) {
     if (!bySubject[m.subject]) bySubject[m.subject] = { total_obtained: 0, total_max: 0, count: 0 }

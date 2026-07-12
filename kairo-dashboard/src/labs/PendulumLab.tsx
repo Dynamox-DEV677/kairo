@@ -1,8 +1,3 @@
-/**
- * Pendulum Lab — Newton's Cradle visual driven by single-pendulum physics.
- * The leftmost ball-frame swings on the pendulum equation; the rest of the
- * cradle is the still GLB model.
- */
 import { Suspense, useRef, useEffect, useMemo } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { OrbitControls, useGLTF, useAnimations, Html, Bounds } from '@react-three/drei'
@@ -10,7 +5,6 @@ import * as THREE from 'three'
 import LabShell from './LabShell'
 import LabScene from './LabScene'
 
-// jsDelivr CDN — keeps GLBs out of the Vercel build pipeline.
 const CRADLE_MODEL_URL = 'https://cdn.jsdelivr.net/gh/Dynamox-DEV677/kairo@main/models-cdn/newtons_cradle.glb'
 
 interface SimProps {
@@ -50,7 +44,6 @@ function Cradle({ length, gravity, damping, angle, playing }: any) {
   const groupRef = useRef<THREE.Group>(null)
   const stateRef = useRef({ theta: (angle * Math.PI) / 180, omega: 0 })
 
-  // Clone so multiple mounts don't share state
   const cloned = useMemo(() => {
     const c = scene.clone(true)
     c.traverse((o: any) => {
@@ -59,11 +52,8 @@ function Cradle({ length, gravity, damping, angle, playing }: any) {
     return c
   }, [scene])
 
-  // If the GLB ships with a built-in cradle animation, use it; otherwise drive
-  // the swing manually.
   const { actions } = useAnimations(animations, cloned)
 
-  // Reset physics whenever the user changes initial conditions
   useEffect(() => {
     stateRef.current = { theta: (angle * Math.PI) / 180, omega: 0 }
   }, [angle, length])
@@ -82,15 +72,11 @@ function Cradle({ length, gravity, damping, angle, playing }: any) {
     if (!playing || !groupRef.current) return
     const s = stateRef.current
     const step = Math.min(dt, 0.05)
-    // Pendulum eq: θ'' = −(g/L) sin θ − d·θ'
     const accel = -(gravity / length) * Math.sin(s.theta) - damping * s.omega
     s.omega += accel * step
     s.theta += s.omega * step
 
-    // Tilt the whole cradle on the swing axis. Real Newton's Cradle would
-    // animate individual end-balls, but without rigid-body physics this still
-    // reads as oscillation tied to your sliders.
-    groupRef.current.rotation.z = s.theta * 0.6   // damp the visual tilt so it doesn't flip
+    groupRef.current.rotation.z = s.theta * 0.6   
   })
 
   return (

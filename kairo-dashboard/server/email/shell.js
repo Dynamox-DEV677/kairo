@@ -1,26 +1,3 @@
-/**
- * Email document shell.
- *
- * Every template builds its `body` HTML and passes it through `shell()` to
- * get the final document — head, dark page background, outer table, hero,
- * inner card, footer, brand strip.
- *
- *   shell({
- *     title:       'You\'re in',           // <title> + fallback subject
- *     preheader:   'Welcome to Kyno.',     // inbox preview
- *     hero:        hero({ title, subtitle }),  // pre-built <tr>
- *     body:        '<!-- inner HTML -->',
- *     footerNote:  'Joined as student · Greenwood Public School',
- *     schoolName:  'Greenwood Public School',  // optional brand line
- *   })
- *
- * Why a <style> block AND inline styles?
- *   Inline styles are mandatory for compatibility. The <style> block adds
- *   ambient micro-animations (gradient shimmer on dividers, button glow
- *   pulse) for clients that DO support <style> — primarily Apple Mail and
- *   newer Gmail web. Clients that strip <style> still see the perfectly
- *   composed static email.
- */
 
 import { THEME } from './theme.js'
 import { footer, brandStrip, preheader } from './components.js'

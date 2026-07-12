@@ -1,14 +1,3 @@
-/**
- * AI Memory Brain — what Kyno remembers about you
- *
- * Shows:
- *  - Weak Areas (signal < -0.2)
- *  - Recently Improved (signal > 0.3 + multiple hits)
- *  - Strong Areas (signal > 0.3)
- *  - Recommended Revision (top 5 weakest by hits × |signal|)
- *
- * Student can forget individual entries or wipe everything.
- */
 import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -52,17 +41,13 @@ export default function MemoryBrain() {
 
   const load = useCallback(async () => {
     setLoading(true); setErr('')
-    // localStorage-first — read from twin instead of /api/memory.
-    // The DB cleanup deleted the `memory` table; the twin is now the
-    // canonical store for everything Kyno "remembers" about the user.
     try {
       const state    = dumpState()
       const mistakes = getMistakes()
 
-      // Map mastery rows + mistakes into the MemoryEntry shape this page expects.
       const all: MemoryEntry[] = []
       for (const m of state.mastery) {
-        const signal = (m.mastery - 0.5) * 2          // 0..1 → -1..+1
+        const signal = (m.mastery - 0.5) * 2
         all.push({
           id:        `mastery-${m.subject}-${m.topic}`,
           type:      signal < -0.2 ? 'weak_topic' : signal > 0.3 ? 'strong_topic' : 'note',
@@ -113,8 +98,6 @@ export default function MemoryBrain() {
   useEffect(() => { load() }, [load])
 
   async function forget(_id: string) {
-    // Forgetting a single derived entry is a no-op — the twin keeps the
-    // underlying event. Use "Wipe Twin" in KairoOS for full reset.
     alert('Use Kyno → Wipe Twin to clear individual entries.')
   }
 
@@ -124,7 +107,6 @@ export default function MemoryBrain() {
     await load()
   }
 
-  // Recommended revision — top 5 by (hits × |negative signal|)
   const recommended = (data?.weak || [])
     .map(m => ({ ...m, urgency: m.hits * Math.abs(m.signal) }))
     .sort((a, b) => b.urgency - a.urgency)
@@ -132,7 +114,6 @@ export default function MemoryBrain() {
 
   return (
     <div style={{ padding: '28px 36px', maxWidth: 1100, margin: '0 auto', height: '100%', overflowY: 'auto' }}>
-      {/* Header */}
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 24 }}>
         <div style={{
           width: 44, height: 44, borderRadius: 11,
@@ -173,7 +154,6 @@ export default function MemoryBrain() {
 
       {data && (
         <>
-          {/* Top stat row */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 22 }}>
             <Stat icon={Brain}          label="Memories"        value={data.total} color="#4F7CFF" />
             <Stat icon={AlertTriangle}  label="Weak Areas"      value={data.weak.length} color="#A5B4FC" />
@@ -181,7 +161,6 @@ export default function MemoryBrain() {
             <Stat icon={Award}          label="Strong Areas"    value={data.strong.length} color="#A5B4FC" />
           </div>
 
-          {/* Empty state */}
           {data.total === 0 && (
             <div style={{ ...card, padding: '60px 32px', textAlign: 'center' }}>
               <div style={{
@@ -201,7 +180,6 @@ export default function MemoryBrain() {
             </div>
           )}
 
-          {/* Recommended revision */}
           {recommended.length > 0 && (
             <Section title="Recommended Revision" subtitle="Topics with the most repeated struggles" icon={Target} accent="#A5B4FC">
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 10 }}>
@@ -212,17 +190,14 @@ export default function MemoryBrain() {
             </Section>
           )}
 
-          {/* Two-col: Weak / Strong */}
           {(data.weak.length > 0 || data.strong.length > 0) && (
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 22 }}>
-              {/* Weak */}
               <Section title="Weak Areas" subtitle="Practice these next" icon={AlertTriangle} accent="#A5B4FC" inline>
                 <EntryList
                   items={data.weak} accent="#A5B4FC" empty="No weak areas yet — well done."
                   onForget={forget} busy={busy}
                 />
               </Section>
-              {/* Strong */}
               <Section title="Strong Areas" subtitle="Topics you've mastered" icon={Award} accent="#A5B4FC" inline>
                 <EntryList
                   items={data.strong} accent="#A5B4FC" empty="Take more quizzes to build strengths."
@@ -232,14 +207,12 @@ export default function MemoryBrain() {
             </div>
           )}
 
-          {/* Recently Improved */}
           {data.improved.length > 0 && (
             <Section title="Recently Improved" subtitle="Topics where your signal turned positive" icon={TrendingUp} accent="#A5B4FC">
               <EntryList items={data.improved} accent="#A5B4FC" empty="Keep practicing to see improvements." onForget={forget} busy={busy} />
             </Section>
           )}
 
-          {/* Wipe-all bar */}
           {data.total > 0 && (
             <div style={{
               marginTop: 24, padding: '12px 16px', background: 'rgba(102, 217, 255, 0.05)',
@@ -270,7 +243,6 @@ export default function MemoryBrain() {
   )
 }
 
-// ─── Sub-components ──────────────────────────────────────────────────────────
 function Stat({ icon: Icon, label, value, color }: { icon: any; label: string; value: number; color: string }) {
   return (
     <div style={{ ...card, padding: 16 }}>
@@ -356,7 +328,7 @@ function EntryList({ items, accent, empty, onForget, busy }: {
 }
 
 function RecCard({ m }: { m: MemoryEntry & { urgency: number } }) {
-  const intensity = Math.min(1, m.urgency / 3)   // visual hint
+  const intensity = Math.min(1, m.urgency / 3)
   return (
     <motion.div whileHover={{ y: -2 }} style={{
       ...card, padding: 14,

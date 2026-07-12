@@ -1,21 +1,3 @@
-/**
- * Payment + Subscription backend for school activation.
- *
- *   POST /api/payments/create-session   Create a checkout session for a school
- *   POST /api/payments/webhook          Provider webhook (Razorpay/Stripe sig-verified)
- *   GET  /api/payments/status           Current school subscription state
- *
- * Provider abstraction:
- *   - If RAZORPAY_KEY_ID + RAZORPAY_KEY_SECRET are set → real Razorpay flow
- *   - Else → "demo mode" that auto-activates 3 seconds after session creation
- *     (lets us build/test the frontend without real keys)
- *
- * Subscription states stored on schools.subscription_status:
- *   pending_payment / trial / active / canceled / expired / inactive
- *
- * The webhook is the source of truth — we NEVER trust frontend "payment success"
- * callbacks. The frontend redirects after checkout; the webhook actually flips status.
- */
 import { Router } from 'express'
 import crypto from 'crypto'
 import { supabaseAdmin, requireSupabase } from '../services/supabase.js'
@@ -24,7 +6,6 @@ import { requireSupabaseAuth, requireRole } from '../middleware/supabaseAuth.js'
 const router = Router()
 router.use(requireSupabase)
 
-// ─── Plan definitions (server-side source of truth, never trust frontend price) ─
 const PLANS = {
   monthly: { code: 'monthly',  label: 'Monthly',  amount_inr: 199900,  interval_days: 30,  description: '₹1,999 / month' },
   yearly:  { code: 'yearly',   label: 'Yearly',   amount_inr: 1999900, interval_days: 365, description: '₹19,999 / year (save 17%)' },
@@ -40,7 +21,6 @@ if (DEMO_MODE) {
   console.warn('⚠️  Payments running in DEMO MODE — set RAZORPAY_KEY_ID + RAZORPAY_KEY_SECRET for live payments.')
 }
 
-// ─── Razorpay HTTP helper (no SDK dep — direct REST call) ─────────────────────
 async function razorpayCall(method, path, body) {
   const auth = Buffer.from(`${RAZORPAY_KEY_ID}:${RAZORPAY_KEY_SECRET}`).toString('base64')
   const res = await fetch(`https://api.razorpay.com/v1${path}`, {
@@ -56,9 +36,6 @@ async function razorpayCall(method, path, body) {
   return data
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// POST /create-session — create a checkout session for the caller's school
-// ════════════════════════════════════════════════════════════════════════════
 router.post('/create-session', requireSupabaseAuth, requireRole('admin'), async (req, res) => {
   const { plan = 'monthly' } = req.body || {}
   const planDef = PLANS[plan]
@@ -67,7 +44,6 @@ router.post('/create-session', requireSupabaseAuth, requireRole('admin'), async 
   if (!req.schoolId) return res.status(400).json({ error: 'You are not associated with a school.' })
 
   try {
-    // Pull school + verify ownership
     const { data: school, error: scErr } = await supabaseAdmin
       .from('schools')
       .select('id, school_name, school_email, owner_id, subscription_status')
@@ -75,12 +51,10 @@ router.post('/create-session', requireSupabaseAuth, requireRole('admin'), async 
       .single()
     if (scErr || !school) return res.status(404).json({ error: 'School not found.' })
 
-    // Already active? Don't create another session.
     if (school.subscription_status === 'active') {
       return res.status(409).json({ error: 'Subscription is already active.', status: 'active' })
     }
 
-    // ── Trial path — instant activation, no payment ──
     if (plan === 'trial') {
       const trialEnds = new Date(Date.now() + planDef.interval_days * 24 * 60 * 60 * 1000).toISOString()
       const { error: upErr } = await supabaseAdmin
@@ -96,10 +70,8 @@ router.post('/create-session', requireSupabaseAuth, requireRole('admin'), async 
       return res.json({ mode: 'trial', message: 'Trial activated.', trial_ends_at: trialEnds })
     }
 
-    // ── Demo mode — fake session, auto-activate via setTimeout ──
     if (DEMO_MODE) {
       const fakeSessionId = `demo_${crypto.randomBytes(8).toString('hex')}`
-      // In-process timer pretends webhook fires after 3s
       setTimeout(async () => {
         await activateSchool(school.id, plan, fakeSessionId, fakeSessionId).catch(e => console.error('[demo activation]', e))
       }, 3000)
@@ -112,8 +84,6 @@ router.post('/create-session', requireSupabaseAuth, requireRole('admin'), async 
       })
     }
 
-    // ── Real Razorpay path ──
-    // 1. Create or fetch a customer
     let customerId = null
     if (school.school_email) {
       try {
@@ -125,13 +95,10 @@ router.post('/create-session', requireSupabaseAuth, requireRole('admin'), async 
         })
         customerId = cust.id
       } catch (e) {
-        // Razorpay returns 400 "customer exists" if the email is taken — that's fine
         console.warn('[razorpay] customer create:', e.message)
       }
     }
 
-    // 2. Create an order (one-time payment) or subscription.
-    // For simplicity start with order; switch to subscriptions when recurring is needed.
     const order = await razorpayCall('POST', '/orders', {
       amount:   planDef.amount_inr,
       currency: 'INR',
@@ -143,7 +110,6 @@ router.post('/create-session', requireSupabaseAuth, requireRole('admin'), async 
       },
     })
 
-    // 3. Persist pending payment intent on the school
     await supabaseAdmin
       .from('schools')
       .update({
@@ -159,7 +125,7 @@ router.post('/create-session', requireSupabaseAuth, requireRole('admin'), async 
       order_id:       order.id,
       amount:         order.amount,
       currency:       order.currency,
-      key_id:         RAZORPAY_KEY_ID,        // safe — public key
+      key_id:         RAZORPAY_KEY_ID,
       customer_id:    customerId,
       plan:           planDef,
       school_name:    school.school_name,
@@ -171,13 +137,6 @@ router.post('/create-session', requireSupabaseAuth, requireRole('admin'), async 
   }
 })
 
-// ════════════════════════════════════════════════════════════════════════════
-// POST /webhook — provider sends payment events here
-// ════════════════════════════════════════════════════════════════════════════
-// IMPORTANT: this route must NOT use the JSON body parser before signature
-// verification, or the raw body needed for HMAC won't be available.
-// We re-read the raw body via Buffer.from(JSON.stringify(req.body)) which is
-// not ideal — production should mount express.raw() before this route.
 router.post('/webhook', async (req, res) => {
   if (DEMO_MODE) return res.json({ ok: true, mode: 'demo' })
 
@@ -186,7 +145,6 @@ router.post('/webhook', async (req, res) => {
     return res.status(401).json({ error: 'Missing signature or webhook secret not configured.' })
   }
 
-  // Verify HMAC SHA256
   const rawBody = JSON.stringify(req.body)
   const expected = crypto
     .createHmac('sha256', RAZORPAY_WEBHOOK_SECRET)
@@ -241,7 +199,6 @@ router.post('/webhook', async (req, res) => {
       }
 
       default:
-        // Unhandled event types are fine — Razorpay sends many we don't care about
         break
     }
 
@@ -252,9 +209,6 @@ router.post('/webhook', async (req, res) => {
   }
 })
 
-// ════════════════════════════════════════════════════════════════════════════
-// GET /status — current school's subscription status
-// ════════════════════════════════════════════════════════════════════════════
 router.get('/status', requireSupabaseAuth, async (req, res) => {
   if (!req.schoolId) return res.json({ status: 'inactive', reason: 'No school' })
 
@@ -273,7 +227,7 @@ router.get('/status', requireSupabaseAuth, async (req, res) => {
       school_name:         data.school_name,
       plan:                data.subscription_plan || null,
       status:              expired ? 'expired' : (data.subscription_status || 'inactive'),
-      school_status:       data.status,                 // 'active' | 'pending_payment' | 'inactive'
+      school_status:       data.status,
       trial_ends_at:       data.trial_ends_at,
       trial_active:        !!trialActive,
       available_plans:     Object.values(PLANS),
@@ -283,9 +237,6 @@ router.get('/status', requireSupabaseAuth, async (req, res) => {
   }
 })
 
-// ════════════════════════════════════════════════════════════════════════════
-// Helper — activate a school (used by webhook + demo timer)
-// ════════════════════════════════════════════════════════════════════════════
 async function activateSchool(schoolId, plan, paymentId, orderId) {
   const planDef = PLANS[plan] || PLANS.monthly
   const expiresAt = new Date(Date.now() + planDef.interval_days * 24 * 60 * 60 * 1000).toISOString()
@@ -297,7 +248,7 @@ async function activateSchool(schoolId, plan, paymentId, orderId) {
       subscription_status:     'active',
       status:                  'active',
       payment_subscription_id: orderId || paymentId,
-      trial_ends_at:           expiresAt,    // re-used as next-renewal-due
+      trial_ends_at:           expiresAt,
     })
     .eq('id', schoolId)
 

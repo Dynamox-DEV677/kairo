@@ -1,11 +1,3 @@
-/**
- * Email preview registry.
- *
- * Maps each template id → { label, sample, renderHtml, renderText }.
- *
- * Used by the dev preview route (server/routes/devEmailPreview.js) to render
- * any template in the browser. Also handy for tests and snapshot diffs.
- */
 
 import {
   renderWelcomeJoinHtml,      renderWelcomeJoinText,
@@ -101,19 +93,16 @@ export const PREVIEW = {
   },
 }
 
-/** List of available preview ids — useful for the index page. */
 export function listPreviews() {
   return Object.entries(PREVIEW).map(([id, p]) => ({ id, label: p.label }))
 }
 
-/** Render a specific preview id to HTML, applying an optional data overlay. */
 export function renderPreviewHtml(id, overrides = {}) {
   const p = PREVIEW[id]
   if (!p) return null
   return p.renderHtml({ ...p.sample, ...overrides })
 }
 
-/** Render a specific preview id to plain-text. */
 export function renderPreviewText(id, overrides = {}) {
   const p = PREVIEW[id]
   if (!p) return null

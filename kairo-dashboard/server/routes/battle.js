@@ -1,17 +1,3 @@
-/**
- * Exam Battle Mode — daily challenge + school leaderboard.
- *
- * Async "battle" model (avoids realtime infra costs):
- *   - Each day, students compete on the same scoring system.
- *   - Submit a battle score → leaderboard updates.
- *   - Server tracks streaks, XP, ranks per school.
- *
- * Routes:
- *   POST /api/battle/submit            Save a battle result
- *   GET  /api/battle/leaderboard       Top 50 scorers in my school (today / week / all-time)
- *   GET  /api/battle/me                My stats (XP, streak, rank, last 10 battles)
- *   GET  /api/battle/daily-challenge   The shared daily challenge seed/topic
- */
 import { Router } from 'express'
 import { supabaseAdmin, requireSupabase } from '../services/supabase.js'
 import { requireSupabaseAuth } from '../middleware/supabaseAuth.js'
@@ -20,13 +6,10 @@ const router = Router()
 router.use(requireSupabase)
 router.use(requireSupabaseAuth)
 
-// XP per correct answer scaled by difficulty
 const XP_PER_CORRECT = { easy: 8, medium: 14, hard: 22 }
 
-// Today's date as YYYY-MM-DD
 function today() { return new Date().toISOString().slice(0, 10) }
 
-// Daily challenge — deterministic topic rotation seeded by date
 const DAILY_TOPICS = [
   { subject: 'Mathematics', topic: 'Quadratic Equations',  difficulty: 'medium' },
   { subject: 'Physics',     topic: 'Newton\'s Laws',         difficulty: 'medium' },
@@ -40,7 +23,6 @@ const DAILY_TOPICS = [
   { subject: 'Chemistry',   topic: 'Acids & Bases',          difficulty: 'medium' },
 ]
 
-/** Detect "table missing" / schema-cache errors. */
 function isMissingTable(err) {
   const msg = String(err?.message || err || '').toLowerCase()
   return msg.includes('does not exist')
@@ -48,7 +30,6 @@ function isMissingTable(err) {
       || msg.includes('battle_scores')
 }
 
-// Submit a battle result
 router.post('/submit', async (req, res) => {
   const { score, total, difficulty = 'medium', topic, subject, daily = false } = req.body || {}
   if (typeof score !== 'number' || typeof total !== 'number' || total < 1) {
@@ -60,8 +41,6 @@ router.post('/submit', async (req, res) => {
 
   const xp = score * (XP_PER_CORRECT[difficulty] || 14)
 
-  // Personal users (no school) — record nothing server-side. The client
-  // already mirrors to localStorage via battleLocal.ts.
   if (!req.schoolId) {
     return res.json({ message: 'Saved locally (no school)', xp_gained: xp })
   }
@@ -95,10 +74,8 @@ router.post('/submit', async (req, res) => {
   }
 })
 
-// Leaderboard for my school. Personal users (no school) get an empty board
-// instead of a 400 — they can still play, just not compete with classmates.
 router.get('/leaderboard', async (req, res) => {
-  const range = req.query.range || 'week'   // today | week | all
+  const range = req.query.range || 'week'
   if (!req.schoolId) {
     return res.json({ range, leaders: [], you: null, personal: true })
   }
@@ -122,7 +99,6 @@ router.get('/leaderboard', async (req, res) => {
       throw new Error(error.message)
     }
 
-    // Aggregate per user
     const byUser = {}
     for (const r of rows || []) {
       if (!byUser[r.user_id]) byUser[r.user_id] = { user_id: r.user_id, xp: 0, battles: 0, score: 0, total: 0 }
@@ -135,7 +111,6 @@ router.get('/leaderboard', async (req, res) => {
     aggList.sort((a, b) => b.xp - a.xp)
     const top = aggList.slice(0, 50)
 
-    // Resolve user names + avatars in one query
     const userIds = top.map(r => r.user_id)
     let nameMap = {}
     if (userIds.length > 0) {
@@ -163,9 +138,7 @@ router.get('/leaderboard', async (req, res) => {
   }
 })
 
-// My stats
 router.get('/me', async (req, res) => {
-  // Empty payload — used when the user has no school OR the table is missing
   const empty = {
     total_xp:     0,
     battles:      0,
@@ -192,7 +165,6 @@ router.get('/me', async (req, res) => {
     const battles = rows.length
     const avgAcc  = battles > 0 ? rows.reduce((s, r) => s + r.accuracy, 0) / battles : 0
 
-    // Streak: count consecutive days with at least one battle, ending today/yesterday
     const days = new Set((rows || []).map(r => r.played_on))
     let streak = 0
     const cursor = new Date()
@@ -202,7 +174,6 @@ router.get('/me', async (req, res) => {
         streak++
         cursor.setDate(cursor.getDate() - 1)
       } else {
-        // Allow gap if today not played but yesterday was
         if (streak === 0) {
           cursor.setDate(cursor.getDate() - 1)
           const k2 = cursor.toISOString().slice(0, 10)
@@ -212,7 +183,6 @@ router.get('/me', async (req, res) => {
       }
     }
 
-    // Best score
     const best = rows.reduce((m, r) => (r.accuracy > (m?.accuracy || 0) ? r : m), null)
 
     res.json({
@@ -229,15 +199,12 @@ router.get('/me', async (req, res) => {
   }
 })
 
-// Today's challenge
 router.get('/daily-challenge', async (req, res) => {
-  // Pick deterministically by day-of-year so all students see the same challenge
   const start = new Date(new Date().getFullYear(), 0, 0)
   const diff = (Date.now() - start.getTime()) / (1000 * 60 * 60 * 24)
   const idx = Math.floor(diff) % DAILY_TOPICS.length
   const c = DAILY_TOPICS[idx]
 
-  // Has the user already played today?
   let alreadyPlayed = false
   try {
     const { data } = await supabaseAdmin
@@ -248,7 +215,7 @@ router.get('/daily-challenge', async (req, res) => {
       .eq('is_daily', true)
       .maybeSingle()
     alreadyPlayed = !!data
-  } catch { /* ignore */ }
+  } catch {  }
 
   res.json({
     date: today(),

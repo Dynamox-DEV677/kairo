@@ -1,8 +1,3 @@
-/**
- * Parent Linked — sent when a parent account is linked to a student.
- *
- * Variables: { name, studentName, schoolName }
- */
 import { THEME, appUrl } from '../theme.js'
 import { shell } from '../shell.js'
 import {

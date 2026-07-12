@@ -1,14 +1,3 @@
-/**
- * Notifications Routes (Supabase-backed, school-scoped)
- *
- * POST   /api/notifications         Send notification (teacher/admin only)
- * GET    /api/notifications         List active notifications for my school
- * GET    /api/notifications/all     All notifications incl. expired (teacher/admin)
- * DELETE /api/notifications/:id     Delete a notification (sender or admin only)
- *
- * Notifications auto-expire 12 hours after creation (enforced by DB + view).
- * The hourly cron job in src/jobs/cleanup.js hard-deletes expired rows.
- */
 import { Router }        from 'express'
 import { supabaseAdmin, requireSupabase } from '../services/supabase.js'
 import { requireSupabaseAuth, requireRole } from '../middleware/supabaseAuth.js'
@@ -17,7 +6,6 @@ const router = Router()
 router.use(requireSupabase)
 router.use(requireSupabaseAuth)
 
-// ── Send Notification (teacher / admin only) ───────────────────────────────────
 router.post('/', requireRole('teacher', 'admin'), async (req, res) => {
   const { message, target_role = 'all', expires_in_hours = 12 } = req.body
 
@@ -27,7 +15,7 @@ router.post('/', requireRole('teacher', 'admin'), async (req, res) => {
     return res.status(400).json({ error: 'target_role must be all, student, or teacher.' })
   }
 
-  const hours = Math.min(Math.max(Number(expires_in_hours) || 12, 1), 72) // clamp 1-72h
+  const hours = Math.min(Math.max(Number(expires_in_hours) || 12, 1), 72)
   const expiresAt = new Date(Date.now() + hours * 60 * 60 * 1000).toISOString()
 
   try {
@@ -54,13 +42,12 @@ router.post('/', requireRole('teacher', 'admin'), async (req, res) => {
   }
 })
 
-// ── List Active Notifications (my school, not expired, matching my role) ───────
 router.get('/', async (req, res) => {
   if (!req.schoolId) return res.status(400).json({ error: 'You are not in a school.' })
 
   try {
     const now = new Date().toISOString()
-    const userRole = req.user.role   // 'student' | 'teacher' | 'admin'
+    const userRole = req.user.role
 
     const { data, error } = await supabaseAdmin
       .from('notifications')
@@ -72,7 +59,6 @@ router.get('/', async (req, res) => {
 
     if (error) throw new Error(error.message)
 
-    // Annotate time remaining
     const enriched = data.map(n => ({
       ...n,
       expires_in_minutes: Math.max(
@@ -87,7 +73,6 @@ router.get('/', async (req, res) => {
   }
 })
 
-// ── List ALL Notifications (incl. expired) — teacher/admin only ───────────────
 router.get('/all', requireRole('teacher', 'admin'), async (req, res) => {
   if (!req.schoolId) return res.status(400).json({ error: 'You are not in a school.' })
 
@@ -113,10 +98,8 @@ router.get('/all', requireRole('teacher', 'admin'), async (req, res) => {
   }
 })
 
-// ── Delete Notification (sender or admin) ─────────────────────────────────────
 router.delete('/:id', async (req, res) => {
   try {
-    // Fetch first to check ownership
     const { data: existing, error: fetchErr } = await supabaseAdmin
       .from('notifications')
       .select('id, sender_id, school_id')
@@ -125,10 +108,8 @@ router.delete('/:id', async (req, res) => {
 
     if (fetchErr || !existing) return res.status(404).json({ error: 'Notification not found.' })
 
-    // Must belong to same school
     if (existing.school_id !== req.schoolId) return res.status(403).json({ error: 'Not your school.' })
 
-    // Must be sender OR admin
     const isOwner = existing.sender_id === req.user.id
     const isAdmin = req.user.role === 'admin'
     if (!isOwner && !isAdmin) return res.status(403).json({ error: 'Only the sender or admin can delete this.' })

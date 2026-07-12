@@ -1,18 +1,3 @@
-/**
- * AI Council — the "team of mentors studying you."
- *
- * POST /api/council/brief
- *   Body: a student-profile snapshot:
- *     { name, exam, examDates:[{name,date}], goal,
- *       weakTopics:[..], strongTopics:[..], streak, recentAccuracy }
- *   Returns the daily command-center brief:
- *     { greetingNote, todaysFocus:[{task,subject,why}], mentorNote,
- *       predictedScore, potentialScore, mainWeakness, motivation }
- *
- * One endpoint plays all six council roles (Mentor, Planner, Analyst,
- * Exam, Motivation, Memory) by synthesising the profile into a single
- * actionable brief — cheaper + faster than six separate calls, same feel.
- */
 import { Router } from 'express'
 import { aiCall, parseJSON } from '../utils/ai.js'
 
@@ -31,8 +16,6 @@ router.post('/brief', async (req, res) => {
     studyHours = 4,
   } = req.body || {}
 
-  // Nearest exam + days remaining (computed server-side, not by the AI,
-  // so the countdown is always exact).
   const today = new Date().toISOString().slice(0, 10)
   const withDays = (examDates || [])
     .filter(e => e && e.date)
@@ -76,17 +59,11 @@ Rules:
     const raw = await aiCall({
       taskType: 'study_plan',
       messages: [{ role: 'user', content: prompt }],
-      // The brief JSON is small (greeting, 3-4 focus items, a short mentor
-      // note, a few integers). 700 tokens fits it comfortably and roughly
-      // halves generation time on the 70B model, so the request completes
-      // well inside Vercel's 10s hobby ceiling instead of getting killed
-      // mid-flight (which surfaces to the client as "Failed to fetch").
       maxTokens: 700,
       temperature: 0.6,
     })
     const brief = parseJSON(raw)
     if (!brief) return res.status(502).json({ error: 'AI returned non-JSON', raw: raw?.slice(0, 600) })
-    // Attach the exact server-computed countdowns so the UI never drifts.
     brief.examDates = withDays
     brief.nextExam = nextExam
     brief.generatedAt = new Date().toISOString()

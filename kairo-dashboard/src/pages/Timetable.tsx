@@ -59,7 +59,6 @@ export default function Timetable() {
   )
 }
 
-// ── Grid View ─────────────────────────────────────────────────────────────────
 function GridTab() {
   const [slots, setSlots]       = useState<any[]>([])
   const [loading, setLoading]   = useState(true)
@@ -103,7 +102,6 @@ function GridTab() {
     await del(`/timetable/${id}`); load()
   }
 
-  // Build grid lookup: slot[day][period]
   const grid: Record<string, Record<number, any>> = {}
   DAYS.forEach(d => { grid[d] = {} })
   slots.forEach(s => { if (grid[s.day]) grid[s.day][s.period] = s })
@@ -112,7 +110,6 @@ function GridTab() {
 
   return (
     <div>
-      {/* Controls */}
       <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 18 }}>
         <div>
           <label style={label}>Class</label>
@@ -130,7 +127,6 @@ function GridTab() {
         </button>
       </div>
 
-      {/* Add form */}
       <AnimatePresence>
         {adding && (
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
@@ -191,7 +187,6 @@ function GridTab() {
         )}
       </AnimatePresence>
 
-      {/* Timetable grid */}
       {loading ? <Spinner /> : (
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 4 }}>
@@ -251,7 +246,6 @@ function GridTab() {
   )
 }
 
-// ── Clashes ───────────────────────────────────────────────────────────────────
 function ClashesTab() {
   const [data, setData]       = useState<any[]>([])
   const [loading, setLoading] = useState(true)
@@ -290,7 +284,6 @@ function ClashesTab() {
   )
 }
 
-// ── AI Generate ───────────────────────────────────────────────────────────────
 function GenerateTab() {
   const [cls, setCls]           = useState('10')
   const [subjects, setSubjects] = useState([

@@ -2,8 +2,6 @@ import nodemailer from 'nodemailer'
 import { db } from '../db/index.js'
 import { encrypt, decrypt, isAppPassword, cleanAppPassword } from '../config/crypto.js'
 
-// ─── Save & Verify ───────────────────────────────────────────────────────────
-
 export async function saveCredentials(schoolId, gmail, rawPassword) {
   const password = cleanAppPassword(rawPassword)
 

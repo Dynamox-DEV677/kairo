@@ -1,16 +1,11 @@
-// Kyno — AI chat client. Groq-only, ALWAYS proxied through the backend
-// (/api/ai/chat → rotating Groq key pool). The old direct-from-browser
-// OpenRouter path was slow and constantly 429-throttled; it's gone.
 
 const PROXY_URL = '/api/ai/chat'
 
-// Groq models exposed in the model picker. Both answer in ~1s.
 export const FREE_MODELS = [
   { id: 'llama-3.3-70b-versatile', name: 'Llama 3.3 70B',    provider: 'Groq', color: '#66D9FF', badge: 'Smart' },
   { id: 'llama-3.1-8b-instant',    name: 'Llama 8B Instant', provider: 'Groq', color: '#34d399', badge: 'Fast' },
 ]
 
-// Default model + fallback chain (order matters — first available wins)
 export const DEFAULT_MODEL = 'llama-3.3-70b-versatile'
 
 const FALLBACK_CHAIN = [
@@ -48,7 +43,6 @@ async function callModel(
     throw new Error(err?.error?.message || `HTTP ${res.status}`)
   }
 
-  // Non-streaming
   if (!onChunk) {
     const data = await res.json()
     const content = data.choices?.[0]?.message?.content || ''
@@ -56,7 +50,6 @@ async function callModel(
     return content
   }
 
-  // Streaming SSE
   const reader = res.body!.getReader()
   const decoder = new TextDecoder()
   let full = ''
@@ -71,7 +64,7 @@ async function callModel(
       try {
         const token = JSON.parse(data)?.choices?.[0]?.delta?.content || ''
         if (token) { full += token; onChunk(token, full) }
-      } catch { /* skip malformed SSE */ }
+      } catch {  }
     }
   }
 
@@ -79,9 +72,6 @@ async function callModel(
 }
 
 export async function chat({ model = DEFAULT_MODEL, messages, onChunk, signal }: ChatOptions): Promise<string> {
-  // The server proxy already falls back across the Groq pool internally
-  // (70B → 8B, rotating keys), so one call is enough. Walk the local chain
-  // once more only if the whole proxy call fails (cold pool, network blip).
   const chain = Array.from(new Set([model, ...FALLBACK_CHAIN]))
   let lastErr = ''
   for (const m of chain) {

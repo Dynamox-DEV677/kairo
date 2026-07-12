@@ -1,5 +1,3 @@
-/** Shared design tokens for the Reset Passcode flow.
- *  Strict palette: deep black + purple gradient + white. */
 export const RC = {
   bg:        '#050505',
   bgElev:    '#0E1117',
@@ -15,7 +13,7 @@ export const RC = {
   purple:    '#66D9FF',
   purpleHi:  '#4F7CFF',
   purpleDeep:'#2046C2',
-  danger:    '#66D9FF',   // strict palette — even errors stay purple
+  danger:    '#66D9FF',   
   good:      '#A5B4FC',
 }
 

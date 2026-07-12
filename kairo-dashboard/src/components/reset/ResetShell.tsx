@@ -1,40 +1,16 @@
-/**
- * ResetShell — the mobile-first surface every step shares.
- *
- *   ┌────────────────────────┐
- *   │ ◀ Back      step 2/5  │  ← header (safe-area aware)
- *   │                       │
- *   │   Kyno logo          │
- *   │                       │
- *   │   {children}          │  ← scroll-safe body
- *   │                       │
- *   ├────────────────────────┤
- *   │  [ Sticky CTA ]       │  ← bottom action
- *   └────────────────────────┘
- *
- *  - Dark background with animated purple aura
- *  - Glass top header
- *  - Safe-area insets on top + bottom
- *  - Slide+fade transitions between steps via AnimatePresence
- */
 import { ReactNode } from 'react'
 import { motion } from 'framer-motion'
 import { ArrowLeft } from 'lucide-react'
 import { RC, FONT } from './shared'
 
 interface Props {
-  stepIndex:    number          // 1-5
-  stepCount:    number          // 5
+  stepIndex:    number
+  stepCount:    number
   onBack?:      () => void
-  /** Replaces the default Kyno logo block. */
   logo?:        ReactNode
-  /** Big page title (large H1). */
   title:        string
-  /** Sub-line under the title. */
   subtitle?:    string
-  /** Page body. */
   children:     ReactNode
-  /** Sticky bottom CTA(s). */
   footer?:      ReactNode
 }
 
@@ -51,7 +27,6 @@ export default function ResetShell({
         overflow: 'hidden',
       }}
     >
-      {/* Ambient aura layer */}
       <div style={{
         position: 'absolute', inset: 0, pointerEvents: 'none',
         background: `
@@ -79,7 +54,6 @@ export default function ResetShell({
         .rs-shake { animation: rs-shake 0.55s ease both; }
       `}</style>
 
-      {/* Header */}
       <div
         style={{
           position: 'relative', zIndex: 2,
@@ -122,7 +96,6 @@ export default function ResetShell({
         <div style={{ width: 44, height: 44 }} />
       </div>
 
-      {/* Progress strip */}
       <div style={{
         position: 'relative', zIndex: 2, padding: '0 18px 14px',
         display: 'flex', gap: 6,
@@ -140,7 +113,6 @@ export default function ResetShell({
         ))}
       </div>
 
-      {/* Body */}
       <motion.div
         initial={{ opacity: 0, y: 14 }}
         animate={{ opacity: 1, y: 0 }}
@@ -182,7 +154,6 @@ export default function ResetShell({
         {children}
       </motion.div>
 
-      {/* Sticky footer */}
       {footer && (
         <div
           style={{
@@ -199,9 +170,6 @@ export default function ResetShell({
   )
 }
 
-// ─── Re-usable subcomponents ──────────────────────────────────────────────
-
-/** Premium full-width primary button. */
 export function PrimaryButton({ children, onClick, disabled, busy, type = 'button' }: {
   children: ReactNode
   onClick?: () => void
@@ -251,7 +219,6 @@ export function PrimaryButton({ children, onClick, disabled, busy, type = 'butto
   )
 }
 
-/** Quieter secondary text-button. */
 export function TextButton({ children, onClick, disabled }: {
   children: ReactNode
   onClick?: () => void
@@ -280,7 +247,6 @@ export function TextButton({ children, onClick, disabled }: {
   )
 }
 
-/** Compact Kyno wordmark badge — used as the default logo block. */
 export function KairoBadge() {
   return (
     <div style={{

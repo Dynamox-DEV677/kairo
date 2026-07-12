@@ -74,7 +74,6 @@ function ProfileTab({ profile, onAddXP }: any) {
   const level   = profile.level
   return (
     <div>
-      {/* Level Card */}
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
         style={{ ...card, background: 'linear-gradient(135deg,#1f2532,#0E1117)', borderColor: '#4F7CFF30', marginBottom: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
@@ -94,7 +93,6 @@ function ProfileTab({ profile, onAddXP }: any) {
         </div>
       </motion.div>
 
-      {/* Stats */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12, marginBottom: 16 }}>
         {[
           ['Quizzes', profile.quizzes_completed || 0, '#38bdf8'],
@@ -111,7 +109,6 @@ function ProfileTab({ profile, onAddXP }: any) {
         ))}
       </div>
 
-      {/* Quick XP actions */}
       <div style={card}>
         <div style={{ fontSize: 12, fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 12 }}>Earn XP Now</div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>

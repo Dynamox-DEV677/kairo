@@ -1,12 +1,3 @@
-/**
- * Analytics Routes
- *
- * GET  /api/analytics/weak-areas         Weak area detection from essays + quizzes
- * GET  /api/analytics/class-performance  Class-wide performance summary
- * POST /api/analytics/rank-predict       Predict board exam rank
- * GET  /api/analytics/study-today        Daily "What to study today" AI card
- * GET  /api/analytics/dashboard          Student performance dashboard summary
- */
 import { Router } from 'express'
 import { db } from '../db/index.js'
 import { aiCall, parseJSON } from '../utils/ai.js'
@@ -14,13 +5,11 @@ import { aiCall, parseJSON } from '../utils/ai.js'
 const router = Router()
 const sid = req => req.body?.school_id || req.query?.school_id || 'demo_school'
 
-// ── Weak Area Detection ────────────────────────────────────────────────────────
 router.get('/weak-areas', async (req, res) => {
   const { student_id } = req.query
   const schoolId = sid(req)
 
   try {
-    // Gather data from essays and quizzes
     const essayQ = { school_id: schoolId }
     if (student_id) essayQ.student_id = student_id
     const essays = await db.essays?.findAsync?.(essayQ) || []
@@ -33,7 +22,6 @@ router.get('/weak-areas', async (req, res) => {
     if (student_id) flashcardQ.student_id = student_id
     const flashcards = await db.flashcards?.findAsync?.(flashcardQ) || []
 
-    // Analyze subject performance
     const subjectScores = {}
 
     essays.forEach(e => {
@@ -49,7 +37,6 @@ router.get('/weak-areas', async (req, res) => {
       subjectScores[key].scores.push(q.percent)
     })
 
-    // Hard flashcards
     const hardCards = flashcards.filter(f => f.repetitions <= 1 || f.easiness < 2.0)
 
     const weakAreas = Object.entries(subjectScores)
@@ -75,7 +62,6 @@ router.get('/weak-areas', async (req, res) => {
   }
 })
 
-// ── Class Performance Dashboard ────────────────────────────────────────────────
 router.get('/class-performance', async (req, res) => {
   const schoolId = sid(req)
   const { class: cls } = req.query
@@ -88,7 +74,6 @@ router.get('/class-performance', async (req, res) => {
     const essays = await db.essays?.findAsync?.({ school_id: schoolId }) || []
     const quizzes = await db.quizSessions?.findAsync?.({ school_id: schoolId, status: 'completed' }) || []
 
-    // Group by student
     const studentMap = {}
     students.forEach(s => {
       studentMap[s._id] = { name: s.name, class: s.class, essay_scores: [], quiz_scores: [] }
@@ -138,10 +123,9 @@ router.get('/class-performance', async (req, res) => {
   }
 })
 
-// ── Rank Predictor ─────────────────────────────────────────────────────────────
 router.post('/rank-predict', async (req, res) => {
   const {
-    scores,          // [{ subject, score, max }]
+    scores,
     class: cls = '10', board = 'CBSE',
     exam_type = 'board',
   } = req.body
@@ -196,13 +180,11 @@ Return ONLY valid JSON:
   }
 })
 
-// ── Daily "What to Study Today" Card ──────────────────────────────────────────
 router.get('/study-today', async (req, res) => {
   const schoolId = sid(req)
   const { class: cls = '10', board = 'CBSE', exam_date } = req.query
 
   try {
-    // Get weak areas
     const essays = await db.essays?.findAsync?.({ school_id: schoolId }) || []
     const quizzes = await db.quizSessions?.findAsync?.({ school_id: schoolId, status: 'completed' }) || []
     const plans = await db.studyPlans?.findAsync?.({ school_id: schoolId }) || []
@@ -210,7 +192,6 @@ router.get('/study-today', async (req, res) => {
     const today = new Date().toISOString().slice(0, 10)
     const dayOfWeek = new Date().toLocaleDateString('en-IN', { weekday: 'long' })
 
-    // Find weak subjects
     const subjectScores = {}
     essays.forEach(e => {
       if (!e.subject) return
@@ -229,7 +210,6 @@ router.get('/study-today', async (req, res) => {
       .sort((a, b) => a.avg - b.avg)
       .slice(0, 3)
 
-    // Check today's tasks from active study plans
     const todayTasks = []
     for (const plan of plans.slice(0, 3)) {
       const week = plan.plan?.weeks?.find(w => w.days?.some(d => d.date === today))
@@ -260,8 +240,6 @@ Generate a personalized "Today's Study Card". Return ONLY valid JSON:
   "pomodoro_plan": "25 min study + 5 min break recommendation"
 }`
 
-    // AI is best-effort here — if free models are 429'd, fall back to a
-    // sensible default card rather than 500'ing the dashboard.
     let card
     try {
       const raw = await aiCall({
@@ -275,7 +253,6 @@ Generate a personalized "Today's Study Card". Return ONLY valid JSON:
       card = null
     }
 
-    // Default card derived from real data when AI is unavailable.
     if (!card || !card.greeting) {
       const focusSubject = weakSubjects[0]?.subject || todayTasks[0]?.subject || 'Maths'
       const todayTaskFirst = todayTasks[0]
@@ -303,7 +280,6 @@ Generate a personalized "Today's Study Card". Return ONLY valid JSON:
 
     res.json({ ...card, date: today, day: dayOfWeek, weak_subjects: weakSubjects, ai_available: !!card.greeting && card.motivation_quote !== 'Small consistent progress beats a single perfect day.' })
   } catch (e) {
-    // Last-resort guard — never 500 this endpoint.
     console.error('[study-today] hard fail:', e.message)
     res.json({
       greeting: 'Good morning!',

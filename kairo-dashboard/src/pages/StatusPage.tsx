@@ -1,11 +1,3 @@
-/**
- * /status — Kyno public status page.
- *
- * One page, no login. Polls /api/ops/status every 30 seconds. Shows the
- * absolute basics: are we up, how many users, how many schools, what's
- * broken right now. Designed for a quick glance — large numbers, big
- * green/yellow/red dots, no charts. Strict monochrome purple palette.
- */
 import { useEffect, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import {
@@ -16,7 +8,6 @@ import {
 
 const FONT = "'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif"
 
-// ── palette ──────────────────────────────────────────────────────────────
 const C = {
   bg:        '#050505',
   panel:     '#0E1117',
@@ -31,7 +22,6 @@ const C = {
   purpleHi:  '#4F7CFF',
   purpleSoft:'#A5B4FC',
   purpleLite:'#DBE7FF',
-  // semantic — all on the purple scale so the palette stays strict
   ok:    '#66D9FF',
   warn:  '#A5B4FC',
   bad:   '#2046C2',
@@ -59,7 +49,6 @@ interface StatusSnapshot {
 type Health = 'ok' | 'degraded' | 'down'
 
 interface Props {
-  /** Sends the user back to the landing page (or anywhere). */
   onExit?: () => void
 }
 
@@ -69,7 +58,6 @@ export default function StatusPage({ onExit }: Props) {
   const [err, setErr]         = useState('')
   const [reqAt, setReqAt]     = useState<number>(0)
 
-  // ─── poll ──────────────────────────────────────────────────────────────
   async function fetchOnce() {
     const t0 = Date.now()
     try {
@@ -88,11 +76,10 @@ export default function StatusPage({ onExit }: Props) {
 
   useEffect(() => {
     fetchOnce()
-    const id = setInterval(fetchOnce, 30_000)   // 30 s refresh
+    const id = setInterval(fetchOnce, 30_000)
     return () => clearInterval(id)
   }, [])
 
-  // ─── derive overall health + service-row statuses ──────────────────────
   const services = useMemo(() => {
     if (!snap) return []
     return [
@@ -125,8 +112,6 @@ export default function StatusPage({ onExit }: Props) {
         id:       'email',
         icon:     Mail,
         label:    'Email transport',
-        // We don't have a direct verify endpoint exposed; presence of admin
-        // service-role + the recent reset routes is a strong proxy.
         body:     snap.env.hasServiceRole
                     ? 'Gmail SMTP configured · OTP + reset emails active'
                     : 'Service role key missing — password resets will fail',
@@ -165,7 +150,6 @@ export default function StatusPage({ onExit }: Props) {
     }}>
       <div style={{ width: '100%', maxWidth: 720 }}>
 
-        {/* Brand + back */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 28 }}>
           <img src="/kairo_logo.png" alt="Kyno"
             style={{ width: 38, height: 38, borderRadius: 10, objectFit: 'contain',
@@ -185,7 +169,6 @@ export default function StatusPage({ onExit }: Props) {
           )}
         </div>
 
-        {/* Overall banner */}
         <motion.div
           layout
           initial={{ opacity: 0, y: 8 }}
@@ -230,7 +213,6 @@ export default function StatusPage({ onExit }: Props) {
           </button>
         </motion.div>
 
-        {/* Stat tiles */}
         {snap && (
           <div style={{
             display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
@@ -243,7 +225,6 @@ export default function StatusPage({ onExit }: Props) {
           </div>
         )}
 
-        {/* Service health rows */}
         <SectionTitle>Services</SectionTitle>
         <div style={{
           background: C.panel,
@@ -283,7 +264,6 @@ export default function StatusPage({ onExit }: Props) {
           )}
         </div>
 
-        {/* User breakdown */}
         {snap && snap.users.total != null && (
           <>
             <SectionTitle>Users by role</SectionTitle>
@@ -302,7 +282,6 @@ export default function StatusPage({ onExit }: Props) {
           </>
         )}
 
-        {/* Recent errors — only show the count, never the message bodies */}
         {snap && (
           <>
             <SectionTitle>Recent errors (24 h)</SectionTitle>
@@ -339,7 +318,6 @@ export default function StatusPage({ onExit }: Props) {
           </>
         )}
 
-        {/* Build / footer */}
         <div style={{
           padding: '12px 16px', borderRadius: 12,
           background: 'rgba(102, 217, 255, 0.04)',
@@ -379,7 +357,6 @@ export default function StatusPage({ onExit }: Props) {
   )
 }
 
-// ─── primitives ──────────────────────────────────────────────────────────
 function StatusDot({ health, size = 12, pulse = false }: { health: Health; size?: number; pulse?: boolean }) {
   const color = health === 'ok' ? C.ok : health === 'degraded' ? C.warn : C.bad
   return (
@@ -487,7 +464,6 @@ const navBtn: React.CSSProperties = {
   fontSize: 11.5, fontWeight: 600, cursor: 'pointer',
 }
 
-// ─── utilities ───────────────────────────────────────────────────────────
 function fmtUptime(s: number): string {
   if (!s || s < 0) return '—'
   const d = Math.floor(s / 86400)

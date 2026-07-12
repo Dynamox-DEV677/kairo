@@ -1,36 +1,3 @@
-/**
- * Kairo · SQLite driver (Electron main process).
- *
- * SQLITE PROTOCOL — PHASE II
- *
- * This is the only place better-sqlite3 is loaded. main.js exposes the driver
- * over IPC; preload.js wraps the IPC channels into a synchronous KV API that
- * the renderer accesses as `window.kairoDesktop.db`.
- *
- * SCHEMA
- *   At Phase II, we keep things deliberately boring: a single `kv` table
- *   that mirrors the localStorage contract (key → value, both strings).
- *
- *     CREATE TABLE kv (
- *       key   TEXT PRIMARY KEY,
- *       value TEXT NOT NULL,
- *       updated_at INTEGER NOT NULL  -- ms epoch, for future sync conflict resolution
- *     )
- *
- *   Phase III adds proper relational tables (events, mastery, doubts, …)
- *   alongside this kv table — never replacing it. Anything stored as a
- *   JSON blob through storage.setRaw() lives here forever.
- *
- * LOCATION
- *   The db file lives under Electron's app.getPath('userData'), which on
- *   Windows resolves to %APPDATA%\Kairo\kairo.db — survives app updates,
- *   is excluded from auto-update overwrites, lives across reinstalls.
- *
- * PERFORMANCE
- *   WAL mode + synchronous=NORMAL gives us crash-safety with sub-millisecond
- *   writes. We don't need full sync because Kairo's data is recoverable from
- *   cloud snapshots in the worst case.
- */
 const path     = require('path')
 const fs       = require('fs')
 const { app }  = require('electron')
@@ -38,12 +5,9 @@ const log      = require('electron-log')
 
 let _db = null
 
-/** Open the SQLite database on first call; reuse the connection thereafter. */
 function getDb() {
   if (_db) return _db
   try {
-    // Lazy-load so the app still boots even if the native module is missing
-    // (e.g. a botched install). The renderer will fall back to localStorage.
     const Database = require('better-sqlite3')
     const dir  = app.getPath('userData')
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
@@ -93,7 +57,6 @@ function getDb() {
   }
 }
 
-/** Prepared statements — cached for the lifetime of the process. */
 function stmts() {
   const db = getDb()
   if (!db) return null
@@ -107,10 +70,6 @@ function stmts() {
   }
   return stmts._cache
 }
-
-// ════════════════════════════════════════════════════════════════════════════
-// Public API — these match the storage.ts adapter contract.
-// ════════════════════════════════════════════════════════════════════════════
 
 function get(key) {
   try {
@@ -155,19 +114,6 @@ function listKeys() {
   }
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// SQLITE PROTOCOL — PHASE III · read-only query API
-// ════════════════════════════════════════════════════════════════════════════
-//
-// The renderer can run real SQL against the mirrored `events` table for new
-// pages that want indexed queries (Mistake Analysis at scale, Knowledge Graph
-// filtering, etc.). All other tables come later.
-//
-// Safety: only one statement per call, no write keywords. The renderer is
-// remote content (kairo-daily-edu.vercel.app), so we treat its queries as
-// untrusted — even though the user owns the data, we never execute statements
-// that could nuke the schema.
-
 const FORBIDDEN_RE = /\b(insert|update|delete|drop|alter|attach|detach|create|replace|pragma|vacuum)\b/i
 
 function query(sql, params) {
@@ -188,11 +134,6 @@ function query(sql, params) {
   }
 }
 
-/**
- * Write an event row into the relational mirror. Called by the renderer's
- * twin.ts whenever an event is tracked, so the mirror stays in sync with the
- * canonical kv blob. Failures are silent — the kv blob is still authoritative.
- */
 function insertEvent(userKey, ev) {
   try {
     const db = getDb()
@@ -220,7 +161,6 @@ function insertEvent(userKey, ev) {
   }
 }
 
-/** Diagnostic — number of rows in kv, useful for the /status page. */
 function size() {
   try {
     const db = getDb()
@@ -230,12 +170,6 @@ function size() {
   } catch { return 0 }
 }
 
-/**
- * Returns true when the SQLite backend is actually usable. The renderer's
- * storage adapter calls this via IPC before deciding to use SQLite vs.
- * localStorage. (We can't just rely on `window.kairoDesktop.db` existing —
- * the native module might fail to load.)
- */
 function ready() {
   return getDb() !== null
 }

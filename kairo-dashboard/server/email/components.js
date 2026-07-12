@@ -1,33 +1,8 @@
-/**
- * Kyno email components — small, composable HTML builders.
- *
- * Every function takes an options object and returns an HTML STRING that is
- * already inlined and email-safe. Compose them inside templates with simple
- * string concatenation:
- *
- *     const html = shell({
- *       hero: hero({ title: 'Welcome', subtitle: '…' }),
- *       body: [
- *         intro({ greeting: 'Hey Darshan', message: '…' }),
- *         infoCard({ kind: 'success', title: 'Account active', body: '…' }),
- *         button({ href: '…', label: 'Open Kyno' }),
- *       ].join(''),
- *     })
- *
- * Layout RULES the components follow so they survive every email client:
- *   - All layout is table-based (Outlook + Gmail mobile both kill flex/grid)
- *   - Styles are inline (most clients drop <style> in <head>)
- *   - Widths use px, never %, except table width="100%"
- *   - No external resources — fonts come from OS, logo is inline SVG
- */
 
 import { THEME } from './theme.js'
 
-// ─── 1. Logo — inline SVG with subtle SMIL animation ─────────────────────────
-// Animations work in Apple Mail / iOS / supported Gmail web; everything else
-// degrades to a beautiful static rendering. Never breaks layout.
 export function logo({ size = 64, glow = true } = {}) {
-  const id = `klg${Math.floor(Math.random() * 1e6).toString(36)}`     // unique gradient ids per render
+  const id = `klg${Math.floor(Math.random() * 1e6).toString(36)}`
   const orbitR = size * 0.34
   const dotR   = size * 0.04
   return `
@@ -70,9 +45,7 @@ export function logo({ size = 64, glow = true } = {}) {
   `
 }
 
-// ─── 2. Hero — gradient header strip with logo + headline ────────────────────
 export function hero({ title, subtitle, accent = 'logo' }) {
-  // `accent`: 'logo' renders the inline SVG mark, or pass any emoji like '🛡️'
   const mark = accent === 'logo'
     ? logo({ size: 64, glow: true })
     : `<div style="font-size:46px;line-height:1;margin-bottom:6px;">${accent}</div>`
@@ -102,7 +75,6 @@ export function hero({ title, subtitle, accent = 'logo' }) {
   `
 }
 
-// ─── 3. CTA Button — glowing pill ────────────────────────────────────────────
 export function button({ href, label, kind = 'primary' }) {
   const gradient = kind === 'danger'
     ? 'linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)'
@@ -133,7 +105,6 @@ export function button({ href, label, kind = 'primary' }) {
   `
 }
 
-// ─── 4. Intro paragraph — "Hey {name}, …" ────────────────────────────────────
 export function intro({ greeting, lead }) {
   return `
     <p style="margin:0 0 14px;font-family:${THEME.font.family};font-size:16.5px;color:${THEME.text.primary};line-height:1.55;font-weight:500;">
@@ -147,8 +118,6 @@ export function intro({ greeting, lead }) {
   `
 }
 
-// ─── 5. Info card — colored side-band callout ────────────────────────────────
-// kind: 'success' | 'warning' | 'info' | 'danger' | 'brand'
 export function infoCard({ kind = 'brand', title, body, icon }) {
   const colorMap = {
     success: { tint: 'rgba(52,211,153,0.06)',  border: 'rgba(52,211,153,0.32)',  ink: THEME.status.success, fallbackIcon: '✓' },
@@ -178,8 +147,6 @@ export function infoCard({ kind = 'brand', title, body, icon }) {
   `
 }
 
-// ─── 6. Data row — label / value pair in a glassy panel ──────────────────────
-// Use for sign-in details (device, time, IP, location).
 export function dataPanel({ rows = [], title }) {
   const rowsHtml = rows.map((r, i) => `
     <tr>
@@ -214,7 +181,6 @@ export function dataPanel({ rows = [], title }) {
   `
 }
 
-// ─── 7. Code block — show a passcode / one-time token prominently ────────────
 export function codeBlock({ value, hint }) {
   return `
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
@@ -235,7 +201,6 @@ export function codeBlock({ value, hint }) {
   `
 }
 
-// ─── 8. Gradient divider — animated glow where supported ─────────────────────
 export function divider() {
   return `
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
@@ -248,7 +213,6 @@ export function divider() {
   `
 }
 
-// ─── 9. Bullet list — branded markers ────────────────────────────────────────
 export function bulletList({ title, items = [], style = 'check' }) {
   const marker = style === 'check' ? '✓' : style === 'spark' ? '◆' : '•'
   const markerColor = style === 'check' ? THEME.status.success : THEME.brand.purpleLite
@@ -274,7 +238,6 @@ export function bulletList({ title, items = [], style = 'check' }) {
   `
 }
 
-// ─── 10. Footer — brand strip + legal ────────────────────────────────────────
 export function footer({ note, schoolName } = {}) {
   const tag = schoolName ? `· ${escapeHtml(schoolName)}` : ''
   return `
@@ -299,7 +262,6 @@ export function footer({ note, schoolName } = {}) {
   `
 }
 
-// ─── 11. Brand strip — sits below the card ───────────────────────────────────
 export function brandStrip() {
   return `
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
@@ -326,7 +288,6 @@ export function brandStrip() {
   `
 }
 
-// ─── 12. Preheader — hidden inbox preview text ───────────────────────────────
 export function preheader(text) {
   return `
     <span style="display:none;font-size:1px;color:#050505;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;mso-hide:all;">
@@ -335,7 +296,6 @@ export function preheader(text) {
   `
 }
 
-// ─── 13. Plain helpers ───────────────────────────────────────────────────────
 export function escapeHtml(s = '') {
   return String(s)
     .replace(/&/g, '&amp;')
@@ -345,7 +305,6 @@ export function escapeHtml(s = '') {
     .replace(/'/g, '&#39;')
 }
 
-/** Capitalize first letter — useful for "role" labels in templates. */
 export function cap(s = '') {
   return s.charAt(0).toUpperCase() + s.slice(1)
 }

@@ -11,7 +11,6 @@ router.get('/', async (req, res) => {
   if (student_id) q.student_id = student_id
   const fees = await db.fees.findAsync(q).sort({ due_date: 1 })
 
-  // Enrich with student name
   const enriched = await Promise.all(fees.map(async f => {
     const s = await db.students.findOneAsync({ _id: f.student_id })
     return { ...f, student_name: s?.name, class: s?.class, parent_email: s?.parent_email }
@@ -32,7 +31,6 @@ router.post('/', async (req, res) => {
   res.status(201).json({ id: doc._id, message: 'Fee created.' })
 })
 
-// Bulk: add same fee to ALL active students
 router.post('/bulk', async (req, res) => {
   const { school_id, amount, due_date, label } = req.body
   if (!school_id || !amount || !due_date)

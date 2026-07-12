@@ -1,13 +1,3 @@
-/**
- * Exam Planner — JEE/NEET/Boards-aware AI study plan
- *
- * Five features beyond the base generator:
- *  1. Memory hook    — fetch /api/memory weak topics + prefill
- *  2. Persistence    — Supabase via /api/exam-planner CRUD endpoints
- *  3. Daily check-ins — click a schedule block to mark done; persisted
- *  4. PDF export     — window.print() with a print stylesheet (below)
- *  5. Adaptive replan — log mock score, AI re-weights the remaining weeks
- */
 import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -17,7 +7,6 @@ import {
 import KairoGyro from '../components/KairoGyro'
 import { awardXP } from '../lib/game'
 
-// ── Types ────────────────────────────────────────────────────────────────
 interface ExamMeta { id: string; label: string; subjects: string[]; durationHrs: number | null }
 interface TopicPriority { subject: string; topic: string; weight: 'HIGH' | 'MED' | 'LOW'; reason: string }
 interface ScheduleBlock { time: string; subject: string; topic: string; type: 'concept'|'practice'|'PYQ'|'revision'|'mock'|'rest' }
@@ -36,7 +25,6 @@ interface SavedPlanRow {
   mock_scores: { date: string; score: number; note?: string }[];
 }
 
-// ── Helpers ──────────────────────────────────────────────────────────────
 function getUserId(): string | null {
   try {
     const raw = localStorage.getItem('kairo_profile')
@@ -44,12 +32,11 @@ function getUserId(): string | null {
       const p = JSON.parse(raw)
       return p?.id || p?.user_id || null
     }
-  } catch { /* ignore */ }
+  } catch {  }
   return null
 }
 function blockKey(week: number, day: string, idx: number) { return `${week}-${day}-${idx}` }
 
-// ── Styles ───────────────────────────────────────────────────────────────
 const card: React.CSSProperties = {
   background: 'rgba(255,255,255,0.03)',
   backdropFilter: 'blur(14px) saturate(140%)',
@@ -95,7 +82,6 @@ const blockTypeColor = (t: ScheduleBlock['type']): string => ({
   revision:'#9a4ad8', mock:'#ff4d6d', rest:'#5B616E',
 }[t] || '#A1A1AA')
 
-// ── Print stylesheet — only used on Ctrl+P / "Export PDF" click ──────────
 const PRINT_STYLE = `
 @media print {
   body { background: #fff !important; color: #000 !important; }
@@ -111,7 +97,6 @@ const PRINT_STYLE = `
 }`
 
 export default function ExamPlanner() {
-  // ── Form state ─────────────────────────────────────────────────────────
   const [exams, setExams]   = useState<ExamMeta[]>([])
   const [exam, setExam]     = useState<string>('jee-main')
   const [examDate, setExamDate] = useState<string>(() => {
@@ -124,7 +109,6 @@ export default function ExamPlanner() {
   const [loading, setLoading]         = useState(false)
   const [error, setError]             = useState<string | null>(null)
 
-  // ── Plan + persistence state ───────────────────────────────────────────
   const [plan, setPlan]                       = useState<ExamPlan | null>(null)
   const [planId, setPlanId]                   = useState<string | null>(null)
   const [completion, setCompletion]           = useState<Record<string, true>>({})
@@ -136,17 +120,12 @@ export default function ExamPlanner() {
 
   const userId = getUserId()
 
-  // ── On mount: exam catalog, weak-topics from memory, saved plans ───────
   useEffect(() => {
-    // Exam catalog
     fetch('/api/exam-planner/exams')
       .then(r => r.ok ? r.json() : [])
       .then(setExams)
       .catch(() => {})
 
-    // Try to prefill weak topics from Kyno memory if the user has a
-    // valid auth token. Memory route needs Bearer auth — skip silently
-    // (no console-noise) on 401 / missing token.
     const token = localStorage.getItem('kairo_token')
     if (token) {
       fetch('/api/memory/weak-topics', {
@@ -158,10 +137,9 @@ export default function ExamPlanner() {
             setWeakAreas(data.topics.slice(0, 8).join(', '))
           }
         })
-        .catch(() => {/* network error — silent */})
+        .catch(() => {})
     }
 
-    // Saved plans (will return [] silently if Supabase table isn't set up)
     if (userId) {
       fetch(`/api/exam-planner/list?user_id=${encodeURIComponent(userId)}`)
         .then(r => r.ok ? r.json() : [])
@@ -170,7 +148,6 @@ export default function ExamPlanner() {
     }
   }, [userId])
 
-  // ── Generate ───────────────────────────────────────────────────────────
   const generate = useCallback(async () => {
     setLoading(true); setError(null); setPlan(null); setPlanId(null); setCompletion({})
     try {
@@ -187,7 +164,7 @@ export default function ExamPlanner() {
       const data = await r.json()
       if (data.error) throw new Error(data.error)
       setPlan(data)
-      try { awardXP('exam_plan') } catch { /* non-fatal */ }
+      try { awardXP('exam_plan') } catch {  }
     } catch (e: any) {
       setError(e.message || 'Failed to generate plan')
     } finally {
@@ -195,7 +172,6 @@ export default function ExamPlanner() {
     }
   }, [exam, examDate, hoursPerDay, weakAreas, currentLevel])
 
-  // ── Save the current plan to Supabase ──────────────────────────────────
   const savePlan = useCallback(async () => {
     if (!plan || !userId) {
       setError(userId ? 'No plan to save' : 'Log in to save plans')
@@ -217,7 +193,6 @@ export default function ExamPlanner() {
     } catch (e: any) { setError(e.message) }
   }, [plan, userId, exam, examDate, hoursPerDay])
 
-  // ── Load a saved plan ──────────────────────────────────────────────────
   const loadPlan = useCallback(async (id: string) => {
     setLoading(true); setError(null)
     try {
@@ -233,33 +208,29 @@ export default function ExamPlanner() {
     finally { setLoading(false) }
   }, [])
 
-  // ── Toggle a check-in for a scheduled block ────────────────────────────
   const toggleCheckin = useCallback(async (week: number, day: string, idx: number) => {
     const key = blockKey(week, day, idx)
     const nextDone = !completion[key]
-    // Optimistic UI
     setCompletion(prev => {
       const c = { ...prev }
       if (nextDone) c[key] = true
       else delete c[key]
       return c
     })
-    if (!planId) return  // not saved yet — completion stays local
+    if (!planId) return
     try {
       await fetch(`/api/exam-planner/${planId}/checkin`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ block_key: key, done: nextDone }),
       })
-    } catch { /* swallow; UI already updated */ }
+    } catch {  }
   }, [completion, planId])
 
-  // ── Log a mock score → triggers an adaptive replan ─────────────────────
   const submitMock = useCallback(async () => {
     if (!plan) return
     setShowMockForm(false); setLoading(true); setError(null)
     try {
-      // 1. If we have a saved plan, log the mock score
       if (planId) {
         await fetch(`/api/exam-planner/${planId}/mock`, {
           method: 'PATCH',
@@ -267,7 +238,6 @@ export default function ExamPlanner() {
           body: JSON.stringify({ score: mockScore, note: mockNote }),
         })
       }
-      // 2. Re-plan using the score as feedback
       const completionPct = plan.weeklySchedule
         ? Math.round((Object.keys(completion).length /
             Math.max(1, plan.weeklySchedule.reduce((n, w) =>
@@ -286,7 +256,6 @@ export default function ExamPlanner() {
       if (!r.ok) throw new Error('Replan failed (' + r.status + ')')
       const newPlan = await r.json()
       setPlan(newPlan); setCompletion({})
-      // Persist the updated plan
       if (planId) {
         await fetch(`/api/exam-planner/${planId}`, {
           method: 'PATCH',
@@ -306,7 +275,6 @@ export default function ExamPlanner() {
     <div style={{ padding: 24, maxWidth: 1100, margin: '0 auto', color: '#fafafa', height: '100%', overflowY: 'auto', boxSizing: 'border-box', width: '100%' }}>
       <style>{PRINT_STYLE}</style>
 
-      {/* ── Header ───────────────────────────────────────────────── */}
       <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 28, flexWrap: 'wrap', gap: 12 }}>
         <div>
           <div style={{ fontSize: 11, letterSpacing: 4, textTransform: 'uppercase', color: '#66D9FF', marginBottom: 8, fontWeight: 700 }}>
@@ -326,7 +294,6 @@ export default function ExamPlanner() {
         )}
       </div>
 
-      {/* ── Saved plans list ─────────────────────────────────────── */}
       <AnimatePresence>
         {showSavedList && (
           <motion.div id="exam-planner-saved"
@@ -367,7 +334,6 @@ export default function ExamPlanner() {
         )}
       </AnimatePresence>
 
-      {/* ── Form card ────────────────────────────────────────────── */}
       <div id="exam-planner-form" style={{ ...card, padding: 24, marginBottom: 24 }}>
         <div className="mob-stack" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18 }}>
           <div>
@@ -438,7 +404,6 @@ export default function ExamPlanner() {
         <KairoGyro fullPage label="Building your exam plan" sub="priorities · schedule · milestones" />
       )}
 
-      {/* ── Plan output ─────────────────────────────────────────── */}
       <AnimatePresence>
         {plan && (
           <motion.div id="exam-planner-plan"
@@ -447,7 +412,6 @@ export default function ExamPlanner() {
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.32 }}
           >
-            {/* Action bar — save / print / mock-and-replan */}
             <div id="exam-planner-actions" style={{ display: 'flex', gap: 8, marginBottom: 14, flexWrap: 'wrap' }}>
               <button onClick={savePlan} style={btnGhost}>
                 <Save size={13} /> {planId ? 'Saved' : 'Save plan'}
@@ -460,7 +424,6 @@ export default function ExamPlanner() {
               </button>
             </div>
 
-            {/* Mock-score form (toggles open) */}
             <AnimatePresence>
               {showMockForm && (
                 <motion.div
@@ -498,13 +461,11 @@ export default function ExamPlanner() {
               )}
             </AnimatePresence>
 
-            {/* Summary band */}
             <div style={{ ...card, padding: 18, marginBottom: 16, borderColor: 'rgba(102,217,255,0.30)' }}>
               <div style={{ fontSize: 11, letterSpacing: 3, textTransform: 'uppercase', color: '#66D9FF', fontWeight: 700, marginBottom: 6 }}>Strategy</div>
               <div style={{ fontSize: 15, lineHeight: 1.5, color: '#fafafa' }}>{plan.summary}</div>
             </div>
 
-            {/* Topic priorities */}
             <div style={{ ...card, padding: 18, marginBottom: 16 }}>
               <h3 style={{ fontSize: 13, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: '#66D9FF', margin: '0 0 12px', display: 'flex', alignItems: 'center', gap: 8 }}>
                 <BookOpen size={14} /> Topic Priorities
@@ -523,7 +484,6 @@ export default function ExamPlanner() {
               </div>
             </div>
 
-            {/* Weekly schedule with click-to-check blocks */}
             <div style={{ ...card, padding: 18, marginBottom: 16 }}>
               <h3 style={{ fontSize: 13, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: '#66D9FF', margin: '0 0 12px', display: 'flex', alignItems: 'center', gap: 8 }}>
                 <Calendar size={14} /> Weekly schedule
@@ -577,7 +537,6 @@ export default function ExamPlanner() {
               ))}
             </div>
 
-            {/* Milestones + advice */}
             <div className="mob-stack" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
               <div style={{ ...card, padding: 18 }}>
                 <h3 style={{ fontSize: 13, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: '#66D9FF', margin: '0 0 12px', display: 'flex', alignItems: 'center', gap: 8 }}>

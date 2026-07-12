@@ -1,15 +1,3 @@
-/**
- * Instant Exam Panic Mode — emergency revision in one click.
- *
- * Student picks subject + days-until-exam → AI generates:
- *   - Top 5 must-know topics
- *   - 10 high-probability questions with answers
- *   - Formula sheet
- *   - Exam strategy (3 rules)
- *
- * Pulls weak topics from ai_memory so it weights them heavier.
- * Save-everything-to-Notebook button.
- */
 import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -28,10 +16,10 @@ const SUBJECTS = ['Mathematics', 'Physics', 'Chemistry', 'Biology', 'English', '
 const card: React.CSSProperties = { background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(14px) saturate(140%)', WebkitBackdropFilter: 'blur(14px) saturate(140%)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14 }
 
 interface PanicPack {
-  topics:    string         // markdown
-  questions: string         // markdown with answers
-  formulas:  string         // markdown
-  strategy:  string         // markdown
+  topics:    string         
+  questions: string         
+  formulas:  string         
+  strategy:  string         
   meta:      { subject: string; days: number; weak: string[] }
 }
 
@@ -69,7 +57,7 @@ export default function PanicMode() {
           .filter(Boolean)
         setWeak(weakForSubject)
       }
-    } catch { /* non-fatal */ }
+    } catch {  }
   }, [subject])
 
   useEffect(() => { loadWeak() }, [loadWeak])
@@ -83,7 +71,6 @@ export default function PanicMode() {
       : ''
 
     try {
-      // 4 sequential AI calls — smaller, more reliable than one mega-prompt
       setProg('Picking high-yield topics…')
       const topics = await chat({
         messages: [
@@ -207,7 +194,6 @@ Be direct. Indian exam context. Under 200 words total.` },
 
   return (
     <div style={{ padding: '28px 36px', maxWidth: 1100, margin: '0 auto', height: '100%', overflowY: 'auto' }}>
-      {/* Header — alarm-style */}
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 22 }}>
         <motion.div
           animate={{ scale: [1, 1.05, 1] }}
@@ -228,7 +214,6 @@ Be direct. Indian exam context. Under 200 words total.` },
         </div>
       </div>
 
-      {/* Setup form — only when no pack generated yet */}
       {!pack && (
         <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} style={{ ...card, padding: 22 }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 12, marginBottom: 16 }}>
@@ -306,10 +291,8 @@ Be direct. Indian exam context. Under 200 words total.` },
         </motion.div>
       )}
 
-      {/* Pack — tabbed view */}
       {pack && (
         <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}>
-          {/* Header bar */}
           <div style={{ ...card, padding: '14px 18px', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 12 }}>
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 14, fontWeight: 700, color: '#fafafa' }}>
@@ -328,7 +311,6 @@ Be direct. Indian exam context. Under 200 words total.` },
             </button>
           </div>
 
-          {/* Tabs */}
           <div style={{
             display: 'flex', gap: 4, marginBottom: 12, background: '#0E1117',
             border: '1px solid #1f2532', borderRadius: 10, padding: 4, overflowX: 'auto',
@@ -353,7 +335,6 @@ Be direct. Indian exam context. Under 200 words total.` },
             })}
           </div>
 
-          {/* Content */}
           <div style={{ ...card, padding: 24 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16, paddingBottom: 12, borderBottom: '1px solid #1a1f2e' }}>
               <div style={{ flex: 1, fontSize: 13, fontWeight: 700, color: '#fafafa' }}>

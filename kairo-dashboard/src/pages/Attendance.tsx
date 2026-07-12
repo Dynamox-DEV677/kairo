@@ -54,7 +54,6 @@ export default function Attendance() {
   )
 }
 
-// ── Mark Attendance ────────────────────────────────────────────────────────────
 function MarkTab() {
   const [students, setStudents]   = useState<any[]>([])
   const [attendance, setAttendance] = useState<Record<string, AttStatus>>({})
@@ -69,7 +68,6 @@ function MarkTab() {
       .then(s => {
         const arr = Array.isArray(s) ? s : []
         setStudents(arr)
-        // Default all to present
         const def: Record<string, AttStatus> = {}
         arr.forEach((st: any) => { def[st._id] = 'present' })
         setAttendance(def)
@@ -108,7 +106,6 @@ function MarkTab() {
 
   return (
     <div>
-      {/* Summary bar */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 10, marginBottom: 20 }}>
         {[
           { label: 'Present', count: counts.present, color: '#A5B4FC' },
@@ -123,7 +120,6 @@ function MarkTab() {
         ))}
       </div>
 
-      {/* Date picker + save */}
       <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 16 }}>
         <div>
           <label style={label}>Date</label>
@@ -137,14 +133,12 @@ function MarkTab() {
         }}>
           {saving ? 'Saving…' : saved ? '✓ Saved!' : 'Save Attendance'}
         </button>
-        {/* Quick set all */}
         <button onClick={() => setAttendance(a => { const n = { ...a }; Object.keys(n).forEach(k => { n[k] = 'present' }); return n })}
           style={{ marginTop: 20, padding: '9px 14px', borderRadius: 9, border: '1px solid #1f2532', background: 'transparent', color: '#6B7280', fontFamily: 'inherit', fontSize: 12, cursor: 'pointer' }}>
           All Present
         </button>
       </div>
 
-      {/* Student list */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
         {students.map(s => {
           const status = attendance[s._id] || 'present'
@@ -176,7 +170,6 @@ function MarkTab() {
   )
 }
 
-// ── At Risk ───────────────────────────────────────────────────────────────────
 function AtRiskTab() {
   const [data, setData]         = useState<any>(null)
   const [loading, setLoading]   = useState(true)
@@ -232,7 +225,6 @@ function AtRiskTab() {
                   <div style={{ fontSize: 10, color: '#9CA3AF' }}>{s.absent_days} absent / {s.total_days} days</div>
                 </div>
               </div>
-              {/* Progress bar */}
               <div style={{ height: 4, background: '#1f2532', borderRadius: 2, marginTop: 12, overflow: 'hidden' }}>
                 <motion.div
                   initial={{ width: 0 }} animate={{ width: `${pct}%` }}
@@ -247,7 +239,6 @@ function AtRiskTab() {
   )
 }
 
-// ── Student Stats ──────────────────────────────────────────────────────────────
 function StatsTab() {
   const [students, setStudents] = useState<any[]>([])
   const [selected, setSelected] = useState('')
@@ -283,7 +274,6 @@ function StatsTab() {
 
       {stats && !loadingStats && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-          {/* Summary cards */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 10, marginBottom: 20 }}>
             {[
               { label: 'Attendance',  value: `${pct}%`,        color: pctColor },
@@ -299,7 +289,6 @@ function StatsTab() {
             ))}
           </div>
 
-          {/* Progress ring visual */}
           <div style={{ ...card, padding: 20, display: 'flex', alignItems: 'center', gap: 24, marginBottom: 16 }}>
             <div style={{ position: 'relative', width: 80, height: 80, flexShrink: 0 }}>
               <svg width="80" height="80" viewBox="0 0 80 80">
@@ -321,7 +310,6 @@ function StatsTab() {
             </div>
           </div>
 
-          {/* Recent records */}
           {stats.records?.length > 0 && (
             <div style={card}>
               <div style={{ padding: '14px 18px', borderBottom: '1px solid #1a1f2e', fontSize: 11, fontWeight: 700, color: '#6B7280', textTransform: 'uppercase', letterSpacing: 1 }}>

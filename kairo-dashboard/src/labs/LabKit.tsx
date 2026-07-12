@@ -1,33 +1,3 @@
-/**
- * LabKit — the Kyno Labs Style System.
- *
- * One file = everything you need to ship a new GLB-backed interactive lab.
- *
- * THE WORKFLOW:
- *
- *   1. Find a great GLB (Sketchfab / Smithsonian 3D / Khronos samples / etc.)
- *   2. Drop it in /models-cdn/ and push (jsDelivr serves it free)
- *   3. Write a MaterialMap + PartCatalog for it
- *   4. Render <InteractiveGLBLab url=... map=... catalog=... />
- *   5. Done. You get: cinematic scene, hover glow, click info card,
- *      auto-rotate, mobile touch, ATP-style particles, animation hooks.
- *
- *  ┌────────────────────────────────────────────────────────────────────┐
- *  │                          LabShell (existing)                        │
- *  │  ┌──────────────────────────┐   ┌─────────────────────────────────┐ │
- *  │  │   InteractiveGLBLab      │   │   AI explanation panel          │ │
- *  │  │   ─────────────────      │   │   ───────────────────           │ │
- *  │  │   LabScene wrapper       │   │   reacts to params              │ │
- *  │  │   ↓                      │   │                                 │ │
- *  │  │   useInteractiveGLB hook │   │                                 │ │
- *  │  │   ↓ groups meshes by mat │   │                                 │ │
- *  │  │   <primitive object={…}> │   │                                 │ │
- *  │  │   hover/click handlers   │   │                                 │ │
- *  │  │   ↓                      │   │                                 │ │
- *  │  │   <PartInfoCard>         │   │                                 │ │
- *  │  └──────────────────────────┘   └─────────────────────────────────┘ │
- *  └────────────────────────────────────────────────────────────────────┘
- */
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { useFrame, type ThreeEvent } from '@react-three/fiber'
@@ -37,55 +7,32 @@ import { X, Sparkles } from 'lucide-react'
 import * as THREE from 'three'
 import LabScene from './LabScene'
 
-// ════════════════════════════════════════════════════════════════════════════
-// TYPES — the contract every lab fills in
-// ════════════════════════════════════════════════════════════════════════════
-
-/** One interactive part of the model (organelle, organ, part, etc.). */
 export interface LabPart {
   id:           string
   label:        string
-  color:        string             // highlight emissive + chip accent
-  function:     string             // 1 sentence, plain English
-  whyItMatters: string             // 1 sentence — why a student should care
-  analogy:      string             // exam-friendly mnemonic
-  related:      string[]           // 2-5 process names students will see in textbooks
+  color:        string
+  function:     string
+  whyItMatters: string
+  analogy:      string
+  related:      string[]
 }
 
-/** Material-name → part-id mapping. Material names come from the GLB exporter.
- *  Always include lower-case keys; we lower-case the lookup automatically. */
 export type MaterialMap = Record<string, string>
 
-/** Part-id → catalog entry. Keys are the SAME ids used in MaterialMap values. */
 export type PartCatalog = Record<string, LabPart>
 
-/** Optional per-part animation hook — called on every frame for meshes that
- *  belong to this part. Use it for pulse/rotate/glow effects. */
 export type PartAnimator = (meshes: THREE.Mesh[], elapsed: number, dt: number) => void
 
-// ════════════════════════════════════════════════════════════════════════════
-// useInteractiveGLB — the workhorse hook
-// ════════════════════════════════════════════════════════════════════════════
-/**
- * Loads a GLB, clones the scene, fits it to a target size, groups meshes by
- * the supplied material map, and manages hover/select state.
- *
- * Returns:
- *   - cloned: the THREE.Group ready to drop into the scene as <primitive>
- *   - meshesByPart: { [partId]: THREE.Mesh[] }   for animations or overrides
- *   - pickPartId(mesh): figure out which part a clicked mesh belongs to
- */
 export function useInteractiveGLB(
   url: string,
   materialMap: MaterialMap,
   targetSize: number = 5,
-  membraneId?: string,    // if set, this part renders as a translucent shell
+  membraneId?: string,
 ) {
   const { scene } = useGLTF(url)
   return useMemo(() => {
     const cloned = scene.clone(true)
 
-    // Walk and prep meshes: enable shadows, set base material state.
     cloned.traverse((o: any) => {
       if (o.isMesh) {
         o.castShadow = true
@@ -97,10 +44,8 @@ export function useInteractiveGLB(
             o.material.transparent = true
             const matKey = (o.material.name || '').toLowerCase()
             const partId = materialMap[matKey]
-            // Membrane / shell gets see-through baseline so we can see inside
             o.material.opacity = partId === membraneId ? 0.20 : 0.95
           }
-          // Bump base emissive so even un-hovered parts have a subtle bio-glow
           if (o.material.emissive && o.material.color) {
             o.material.emissive          = o.material.color.clone().multiplyScalar(0.25)
             o.material.emissiveIntensity = 0.3
@@ -109,8 +54,6 @@ export function useInteractiveGLB(
       }
     })
 
-    // Mesh-only bounds — never trust Box3.setFromObject() on rigged GLBs
-    // (skeletal empties + bones inflate the box, fit-factor → tiny model)
     const meshBox = new THREE.Box3()
     let meshCount = 0
     cloned.traverse((o: any) => {
@@ -125,14 +68,12 @@ export function useInteractiveGLB(
     const longest = Math.max(size.x, size.y, size.z) || 1
     cloned.scale.setScalar(targetSize / longest)
 
-    // Re-center on origin (mesh-only) after scaling
     const scaledBox = new THREE.Box3()
     cloned.traverse((o: any) => { if (o.isMesh && o.geometry) scaledBox.union(new THREE.Box3().setFromObject(o)) })
     const center = new THREE.Vector3()
     scaledBox.getCenter(center)
     cloned.position.sub(center)
 
-    // Group meshes by part id for fast highlight + animation access
     const meshesByPart: Record<string, THREE.Mesh[]> = {}
     cloned.traverse((o: any) => {
       if (o.isMesh && o.material) {
@@ -154,32 +95,21 @@ export function useInteractiveGLB(
   }, [scene, materialMap, targetSize, membraneId])
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// InteractiveGLBLab — the full lab in one component
-// ════════════════════════════════════════════════════════════════════════════
 interface InteractiveGLBLabProps {
   url:          string
   materialMap:  MaterialMap
   catalog:      PartCatalog
-  membraneId?:  string                       // which part is the "see-through shell"
+  membraneId?:  string
   cameraPos?:   [number, number, number]
   cameraFov?:   number
   tint?:        string
-  /** Idle hint shown top-left when nothing is hovered/selected. */
   hint?:        string
-  /** Particle count for the ambient cytoplasm/atmosphere drift. */
   particles?:   number
-  /** Show ambient backdrop stars (off for "inside a cell" / "inside a circuit"). */
   stars?:       boolean
-  /** Per-part animation hooks. Called every frame for that part's meshes. */
   animators?:   Record<string, PartAnimator>
-  /** Extra <Canvas> children injected after the model (e.g. ATP particles). */
   extraScene?:  ReactNode
-  /** Whether the scene auto-rotates when no part is hovered/selected. */
   autoRotate?:  boolean
-  /** Target world-units size for the GLB (longest axis). */
   targetSize?:  number
-  /** Whether the sim is currently playing (animations on/off). */
   playing?:     boolean
 }
 
@@ -233,7 +163,6 @@ export default function InteractiveGLBLab({
   )
 }
 
-// ─── The model wrapper, separated so the hook re-runs on cache hits ────────
 function InteractiveModel({
   url, materialMap, catalog, membraneId, targetSize,
   hovered, selected, onHover, onSelect,
@@ -242,7 +171,6 @@ function InteractiveModel({
   const { cloned, meshesByPart, pickPartId } = useInteractiveGLB(url, materialMap, targetSize, membraneId)
   const groupRef = useRef<THREE.Group>(null)
 
-  // Apply hover/selected emissive whenever they change
   useEffect(() => {
     Object.entries(meshesByPart).forEach(([partId, meshes]) => {
       const isHover    = partId === hovered
@@ -268,7 +196,6 @@ function InteractiveModel({
     })
   }, [hovered, selected, meshesByPart, membraneId, catalog])
 
-  // Whole-cell sway + per-part animators
   useFrame((state, dt) => {
     if (!playing || !groupRef.current) return
     const t = state.clock.elapsedTime
@@ -308,9 +235,6 @@ function InteractiveModel({
   )
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// Standard overlay components — reuse across every lab for identity
-// ════════════════════════════════════════════════════════════════════════════
 export function PartHoverChip({ hovered, selected, catalog }: { hovered: string | null; selected: string | null; catalog: PartCatalog }) {
   return <HoverChip hovered={hovered} selected={selected} catalog={catalog} />
 }
@@ -418,28 +342,22 @@ function Field({ label, body }: { label: string; body: string }) {
   )
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// STYLE TOKENS — the Kyno Labs design system, in one place
-// ════════════════════════════════════════════════════════════════════════════
 export const LAB_PALETTE = {
-  // Subject-tinted backgrounds
   biology:   '#1a1830',
   chemistry: '#1a0a18',
   physics:   '#0c1428',
   math:      '#0a0a18',
   space:     '#02041a',
-  // Part-color recommendations (use for catalog entry colors)
   nucleus:    '#66D9FF',
-  power:      '#dc2626',   // power-related parts (mitochondria, batteries, suns)
-  storage:    '#67e8f9',   // vacuoles, capacitors
-  shipping:   '#34d399',   // golgi, conveyors
-  digestion:  '#f472b6',   // lysosomes, stomachs
-  structure:  '#fde68a',   // cytoskeleton, bones, frames
-  signal:     '#C7D2E8',   // membranes, wires, nerve fibres
-  control:    '#cbd5e1',   // centrioles, controllers
-  energy:     '#86efac',   // vesicles, electrons
-  fluid:      '#22d3ee',   // blood, water, plasma
+  power:      '#dc2626',
+  storage:    '#67e8f9',
+  shipping:   '#34d399',
+  digestion:  '#f472b6',
+  structure:  '#fde68a',
+  signal:     '#C7D2E8',
+  control:    '#cbd5e1',
+  energy:     '#86efac',
+  fluid:      '#22d3ee',
 }
 
-// Re-exports for ergonomic imports elsewhere
 export { LabScene }

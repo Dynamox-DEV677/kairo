@@ -1,25 +1,3 @@
-/**
- * Kyno's Solver — adaptive AI visual learning engine.
- *
- *   ┌────────────────────────────┐ ┌────────────────────┐
- *   │                            │ │ ## What you're     │
- *   │   Cinematic slideshow      │ │     seeing         │
- *   │   (5 sequential edu        │ │ ...                │
- *   │    images, auto 3.5s,      │ │ ## How it works    │
- *   │    ←/→ keyboard nav,       │ │ Formulas:          │
- *   │    parallax + fade)        │ │   F = ma           │
- *   │                            │ │ Related: ...       │
- *   └────────────────────────────┘ │ [Open in Kyno Labs]│
- *   ┌─────────────────────────────────┐
- *   │  ask anything…              ▶   │
- *   └─────────────────────────────────┘
- *
- * Powered by /api/ai/solver — single call returns:
- *   - markdown text (right panel)
- *   - 5 sequential image slides from Wikimedia / Pexels / Unsplash (left)
- *   - lab route if the topic has an interactive Kyno Lab
- *   - related concept chips, formulas
- */
 import { useState, useRef, useEffect, useMemo } from 'react'
 import GeoVisualMode from '../components/GeoVisualMode'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -51,11 +29,6 @@ interface GeographySection {
   body:    string
 }
 
-/**
- * Geography enrichment — present only when questionType==='geography'.
- * Resolved server-side via Wikipedia coordinates so the Map Mode UI can
- * auto-zoom without paying for a geocoder.
- */
 export interface GeographyData {
   name:     string
   kind:     'region' | 'country' | 'city' | 'river' | 'mountain' | 'desert' | 'forest' | 'ocean' | 'continent' | 'other'
@@ -68,48 +41,33 @@ export interface GeographyData {
 
 interface TextPlan {
   questionType:    string
-  topicKeyword:    string | null  // clean noun for Wikipedia article lookup
+  topicKeyword:    string | null
   supports3D:      boolean
   labRoute:        string | null
   textExplanation: string
   formulas:        string[]
   relatedConcepts: string[]
   cached?:         boolean
-  imageQueries:    string[]   // backend now ships these so /images skips the LLM call
-  videoQuery?:     string     // search query for the explainer video
-  modelUsed?:      string     // 'wikipedia-fallback' when AI was unavailable
-  geography?:      GeographyData | null    // populated when questionType==='geography'
+  imageQueries:    string[]
+  videoQuery?:     string
+  modelUsed?:      string
+  geography?:      GeographyData | null
 }
 
 interface SolverResponse extends TextPlan {
   imageSlides:     ImageSlide[]
-  imagesBusy:      boolean       // true while images are still loading
+  imagesBusy:      boolean
   imagesCached:    boolean
   imagesError?:    string
   videoId:         string | null
-  videoBusy:       boolean       // true while video search is in flight
+  videoBusy:       boolean
 }
 
-/**
- * Solver result presentation modes.
- *
- *   auto    — let Kyno pick. For geography questions this picks Map;
- *             everything else falls through to the standard text/visual layout.
- *   text    — explanation only, no images / map / video.
- *   visual  — images + explanation (the original layout).
- *   map     — Leaflet map + image carousel + structured sections + concept graph.
- *   both    — wide split: text + visual + (map if geography).
- *
- * "3D" is shown in the picker but routes to Kyno Labs when the question
- * supports a lab; otherwise it falls back to 'visual'.
- */
 export type SolverViewMode = 'auto' | 'text' | 'visual' | 'map' | '3d' | 'both'
 
 interface KairoSolverProps {
   model?: string
   onNavigate?: (page: string) => void
-  /** Fired with true once a question is asked (locks model selector),
-   *  false when the user clears or starts a fresh question. */
   onActiveChange?: (active: boolean) => void
 }
 
@@ -127,23 +85,16 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
   const [topic, setTopic]               = useState('')
   const [resp, setResp]                 = useState<SolverResponse | null>(null)
   const [error, setError]               = useState('')
-  const [retryHint, setRetryHint]       = useState('')   // visible during 429 backoff
+  const [retryHint, setRetryHint]       = useState('')
   const [voiceOn, setVoiceOn]           = useState(false)
   const [voiceSupported, setVoiceSupported] = useState(false)
   const [examModal, setExamModal]       = useState(false)
-  // Result presentation mode. Auto-switches to 'map' when the response
-  // has a geography section; user can override with the segmented chips.
   const [viewMode, setViewMode]         = useState<SolverViewMode>('auto')
-  // True for the brief window after auto-switching — used to show a
-  // small "Auto-selected" badge so the user knows why the layout changed.
   const [autoSwitched, setAutoSwitched] = useState(false)
   const abortRef = useRef<AbortController | null>(null)
   const taRef = useRef<HTMLTextAreaElement>(null)
   const recogRef = useRef<any>(null)
 
-  // ── Web Speech API setup (browser-native, free) ─────────────────────────
-  // Replaces the deleted Voice Tutor page. Toggle the mic, speak your doubt,
-  // it transcribes into the input field. Auto-submits when you stop speaking.
   useEffect(() => {
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
     if (!SR) { setVoiceSupported(false); return }
@@ -160,7 +111,6 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
     }
     rec.onend = () => {
       setVoiceOn(false)
-      // Auto-submit if we captured something meaningful
       setTimeout(() => {
         setInput(prev => {
           if (prev.trim().length > 3) ask(prev)
@@ -200,23 +150,12 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
     setBusy(true)
     if (taRef.current) taRef.current.style.height = 'auto'
 
-    // Cancel any still-in-flight request from a previous question so its late
-    // image/video results can't clobber this new answer.
     abortRef.current?.abort()
     const ctrl = new AbortController()
     abortRef.current = ctrl
 
-    // Sequential pipeline that fits Vercel's 10s timeout:
-    //   1. /text  → LLM call only (~3-5s on gpt-oss-20b). Returns plan + queries.
-    //   2. /images → pure image search using THOSE queries (~2-3s, no LLM).
     const headers = { 'Content-Type': 'application/json' }
 
-    // Auto-retry the /text call up to 2 times on 429 with a short backoff.
-    // OpenRouter's free pool throttles in seconds-long bursts, so a single
-    // wait+retry almost always succeeds.
-    // OpenRouter's free pool throttles in seconds-long bursts but recovers
-    // fast. Retry up to 4 times with increasing backoff — total worst-case
-    // wait is ~20s but the AVERAGE retry succeeds in 5-7s.
     async function fetchTextWithRetry(attempt = 0): Promise<TextPlan> {
       const MAX_ATTEMPTS = 4
       const r = await fetch('/api/ai/solver/text', {
@@ -228,7 +167,6 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
       const errBody = await r.json().catch(() => ({}))
       const isRateLimit = r.status === 429 || errBody.rateLimited
       if (isRateLimit && attempt < MAX_ATTEMPTS) {
-        // 2.5s, 4.5s, 6.5s, 8.5s
         const waitMs = 2500 + attempt * 2000
         const remaining = MAX_ATTEMPTS - attempt
         setRetryHint(`Free AI is busy — retrying in ${(waitMs / 1000).toFixed(1)}s (${remaining} more ${remaining === 1 ? 'try' : 'tries'})`)
@@ -246,25 +184,15 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
     }
 
     try {
-      // ── Local NCERT cache check FIRST ────────────────────────────────
-      // For the top ~20 most-common Class 9-12 concept questions we ship a
-      // pre-built TextPlan in the bundle. A hit means zero server load —
-      // no LLM call, no Vercel function invocation, no Groq quota burn.
-      // Typical hit rate on board-exam season: 30-50% of all questions.
       const cacheHit = lookupNcert(question)
       const text: TextPlan = cacheHit
         ? cacheHit
         : await fetchTextWithRetry()
       setRetryHint('')
-      // Defensive: a cached/edge response could omit imageQueries. Never let
-      // `.length` throw and turn a good answer into an error.
       if (!Array.isArray(text.imageQueries)) text.imageQueries = []
 
-      // Casual small-talk ("what is the time?", "hi") gets a short note —
-      // no video, no storyboard, no lesson scaffolding.
       const isCasual = text.questionType === 'casual' || (!text.videoQuery && text.imageQueries.length === 0)
 
-      // Kick off the video search in parallel — it doesn't depend on images.
       const videoPromise = isCasual
         ? Promise.resolve({ videoId: null })
         : fetch('/api/ai/solver/video', {
@@ -278,7 +206,6 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
             .then(r => r.ok ? r.json() : { videoId: null })
             .catch(() => ({ videoId: null }))
 
-      // Paint text immediately, mark images + video as still loading
       setResp({
         ...text,
         imageSlides: [],
@@ -287,16 +214,9 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
         videoId:     null,
         videoBusy:   !isCasual,
       })
-      setBusy(false)   // unlock input — user can keep reading
+      setBusy(false)
 
-      // ── Persist to unified memory engine ──────────────────────────────
-      // Every successful answer flows into twin.doubts + emits a concept_viewed
-      // event + records concept + extracts formulas. Downstream pages
-      // (Notebook, Concept Map, Mistake Analysis, Formula Sheet) all read
-      // from these. Fire-and-forget — failures should never block the UI.
       try {
-        // Small-talk never enters the memory engine — "what is the time?"
-        // shouldn't show up as a study doubt or concept-graph node.
         if (isCasual) throw new Error('skip-memory')
         recordDoubt({
           question,
@@ -304,16 +224,12 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
           topic:   text.topicKeyword || undefined,
           source:  voiceOn ? 'voice' : 'solver',
         })
-        // Concept graph: index this topic + its related concepts
         if (text.topicKeyword) {
           recordConcept({
             name:    text.topicKeyword,
             related: text.relatedConcepts || [],
           })
         }
-        // Formula sheet auto-collection: every formula the AI returned
-        // gets stored. Parser is forgiving — accepts "F = m·a" or
-        // "Newton's 2nd Law: F = ma" or just "F = ma".
         for (const raw of (text.formulas || [])) {
           if (!raw || typeof raw !== 'string') continue
           const parts = raw.split(/[:—–]\s+/, 2)
@@ -322,22 +238,15 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
           if (expr.length < 2 || expr.length > 200) continue
           recordFormula({ name, expr, topic: text.topicKeyword || undefined, source: 'solver' })
         }
-      } catch { /* ignore */ }
+      } catch {  }
 
-      // When the video lands, merge it in (independent of images). Skip if
-      // this request was superseded/aborted so it can't clobber a newer answer.
       videoPromise.then((v: any) => {
         if (ctrl.signal.aborted) return
         setResp(prev => prev ? { ...prev, videoId: v?.videoId || null, videoBusy: false } : prev)
       })
 
-      // No queries? skip the second call entirely.
       if (text.imageQueries.length === 0) return
 
-      // Fetch images using the queries we already have — no LLM, fast.
-      // Pass the AI's clean topicKeyword (e.g. "Photosynthesis") for the
-      // Wikipedia article fallback so we don't misroute on the verbose
-      // question ("photosynthesis step by step" → "Climate change" article).
       const imgRes = await fetch('/api/ai/solver/images', {
         method: 'POST', headers,
         body: JSON.stringify({
@@ -384,9 +293,6 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
 
   const showResult = !!topic
 
-  // ── Auto-suggest Map mode when the response is a geography question ────
-  // Only fires when the user is in 'auto' mode — explicit overrides stick.
-  // Fires the autoSwitched flag briefly so the UI can render a small badge.
   useEffect(() => {
     if (resp?.questionType === 'geography' && viewMode === 'auto' && resp.geography) {
       setAutoSwitched(true)
@@ -395,27 +301,17 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
     }
   }, [resp?.questionType, resp?.geography, viewMode])
 
-  // Reset the mode back to 'auto' on every new question so old overrides
-  // don't carry across asks (e.g. picked 'text' for math → asked about
-  // Amazon → should still auto-route to Map).
   useEffect(() => {
     if (resp) return
     if (busy) setViewMode('auto')
   }, [busy, resp])
 
-  // Lock the model selector only while a request is in flight; unlock when it
-  // finishes (and on unmount). Previously onActiveChange fired true on the
-  // first ask and was never reset, leaving the picker disabled all session.
   useEffect(() => {
     onActiveChange?.(busy)
     return () => { onActiveChange?.(false) }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [busy])
 
-  // Compute the effective mode — what the renderer should actually show.
-  // 'auto' resolves to 'map' for geography and 'visual' for everything else.
-  // Casual small-talk ALWAYS renders as a plain text note — there's no
-  // video/storyboard to show, so visual mode would just be empty chrome.
   const effectiveMode: SolverViewMode = useMemo(() => {
     if (resp?.questionType === 'casual') return 'text'
     if (viewMode !== 'auto') return viewMode
@@ -430,14 +326,9 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
       flex: 1, height: '100%', display: 'flex', flexDirection: 'column',
       padding: '20px 24px 0', overflow: 'hidden', position: 'relative',
     }}>
-      {/* Ambient cinematic field — ultramarine→black drift behind everything.
-          Two layers: gradient (continuous breathing) + particle dots
-          (subtle twinkle). Both pointer-events: none so they never block UI. */}
       <div className="kr-ambient-field" aria-hidden />
       <div className="kr-particles"      aria-hidden />
 
-      {/* Stronger highlight glow only when result is up — the gradient
-          drift above is too subtle to anchor the eye on a busy panel. */}
       {showResult && (
         <div style={{
           position: 'absolute', top: '20%', left: '10%',
@@ -447,26 +338,22 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
         }} />
       )}
 
-      {/* HERO — empty state */}
       {!showResult && <Hero onPick={ask} />}
 
-      {/* RESULT — mode chips + content */}
       {showResult && (
         <div className="ks-result-wrap" style={{
           flex: 1, minHeight: 0, position: 'relative', zIndex: 1,
           display: 'flex', flexDirection: 'column', gap: 10, paddingBottom: 14,
           overflow: 'auto',
         }}>
-          {/* Mode segmented control */}
           <ModeChipBar
             mode={viewMode}
             setMode={setViewMode}
             hasGeography={!!resp?.geography}
-            supports3D={false}  /* Kyno Labs paused — no 3D routing for now */
+            supports3D={false}
             autoSwitched={autoSwitched}
           />
 
-          {/* Geography Map Mode — full replacement layout */}
           {isGeographyMap && resp && resp.geography ? (
             <GeoVisualMode
               topic={topic}
@@ -478,14 +365,12 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
               onAskRelated={(c) => ask(c)}
             />
           ) : (
-            // Default split-pane (stacks vertically on mobile via .ks-result)
             <div className="ks-result" style={{
               flex: 1, minHeight: 0, position: 'relative',
               display: 'grid',
               gridTemplateColumns: 'minmax(0, 1.4fr) minmax(0, 1fr)',
               gap: 14,
             }}>
-              {/* LEFT — video on top, slideshow strip below */}
               <LeftPanel
                 videoId={resp?.videoId ?? null}
                 videoBusy={resp?.videoBusy === true}
@@ -496,7 +381,6 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
                 imagesErr={resp?.imagesError}
               />
 
-              {/* RIGHT — explanation */}
               <ExplanationPanel
                 resp={resp}
                 busy={busy && !resp}
@@ -510,11 +394,6 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
         </div>
       )}
 
-      {/* INPUT — floating glass dock, fully pill-shaped at the edges.
-          Ultramarine focus ring when voice is on; deeper blur (28 px) and
-          more transparency than before to read as "really" floating.
-          .ks-composer gets extra bottom margin on phones (index.css) so it
-          clears the floating bottom-nav dock instead of hiding behind it. */}
       <div className="ks-composer" style={{
         background: 'linear-gradient(180deg, rgba(20, 24, 35, 0.65) 0%, rgba(11, 11, 15, 0.65) 100%)',
         border: `1px solid ${voiceOn ? 'rgba(102, 217, 255, 0.55)' : 'rgba(255, 255, 255, 0.06)'}`,
@@ -545,7 +424,6 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
             padding: '8px 6px', lineHeight: 1.5, maxHeight: 140,
           }}
         />
-        {/* Voice toggle — only shown if browser supports Web Speech */}
         {voiceSupported && !busy && (
           <button
             onClick={toggleVoice}
@@ -565,7 +443,6 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
             {voiceOn ? 'Listening' : 'Voice'}
           </button>
         )}
-        {/* Exam plan button — replaces the deleted Panic Mode page */}
         {!busy && (
           <button onClick={() => setExamModal(true)} title="Plan your exam"
             className="kr-tactile"
@@ -599,7 +476,6 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
         `}</style>
       </div>
 
-      {/* Exam planner modal — saves to localStorage so Kyno countdown works */}
       <AnimatePresence>
         {examModal && <ExamPlanModal onClose={() => setExamModal(false)} />}
       </AnimatePresence>
@@ -607,7 +483,6 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
   )
 }
 
-// ─── Exam plan modal (replaces deleted PanicMode page) ──────────────────────
 function ExamPlanModal({ onClose }: { onClose: () => void }) {
   const [subject, setSubject] = useState('')
   const [date, setDate]       = useState('')
@@ -717,9 +592,6 @@ function ExamInput({ value, onChange, placeholder, autoFocus, type }: { value: s
   )
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// HERO — empty state with suggestions
-// ════════════════════════════════════════════════════════════════════════════
 function Hero({ onPick }: { onPick: (q: string) => void }) {
   return (
     <div style={{
@@ -727,25 +599,18 @@ function Hero({ onPick }: { onPick: (q: string) => void }) {
       alignItems: 'center', justifyContent: 'center', gap: 24,
       position: 'relative',
     }}>
-      {/* Hero squircle — curved-square iOS-style app icon with ambient halo.
-          Two concentric layers (outer glow + glass tile) give the impression
-          of an AI presence rather than a flat icon. Same Apple "squircle"
-          radius family as the rest of the refinement layer. */}
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
         style={{ position: 'relative', width: 124, height: 124 }}
       >
-        {/* Soft outer halo — ultramarine core fading to cyan rim. Pulses
-            slowly so the orb reads as a living presence. */}
         <div className="animate-pulse-orb" style={{
           position: 'absolute', inset: -22,
           borderRadius: 40,
           background: 'radial-gradient(ellipse at center, rgba(38, 58, 140, 0.42) 0%, rgba(38, 58, 140, 0.22) 38%, rgba(102, 217, 255, 0.12) 62%, transparent 80%)',
           filter: 'blur(12px)',
         }} />
-        {/* Glass tile — ultramarine-tinted, cyan border highlight */}
         <div style={{
           position: 'absolute', inset: 0,
           borderRadius: 30,
@@ -755,7 +620,6 @@ function Hero({ onPick }: { onPick: (q: string) => void }) {
           WebkitBackdropFilter: 'blur(18px) saturate(170%)',
           boxShadow: '0 14px 48px rgba(38, 58, 140, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.08)',
         }} />
-        {/* Logo — inset so the tile breathes around it */}
         <div style={{
           position: 'absolute', inset: 22,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -822,9 +686,6 @@ function Hero({ onPick }: { onPick: (q: string) => void }) {
   )
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// LEFT PANEL — video player (top) + slideshow strip (bottom)
-// ════════════════════════════════════════════════════════════════════════════
 function LeftPanel({
   videoId, videoBusy,
   slides, imagesBusy, topic, questionType, imagesErr,
@@ -862,8 +723,6 @@ function VideoPlayer({ videoId, busy, topic }: {
       borderRadius: 18, overflow: 'hidden', position: 'relative',
       minHeight: 0, display: 'flex', flexDirection: 'column',
     }}>
-      {/* Topic strip ABOVE the player — the old floating chip sat on top
-          of the video and covered the title. */}
       <div style={{
         flexShrink: 0,
         padding: '8px 14px',
@@ -907,8 +766,6 @@ function VideoPlayer({ videoId, busy, topic }: {
       {videoId && (
         <>
           <iframe
-            // youtube-nocookie + modestbranding + rel=0 keeps branding minimal.
-            // autoplay=1 with mute=1 is allowed by all browsers' autoplay policies.
             src={`https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&mute=1&modestbranding=1&rel=0&controls=1&playsinline=1&iv_load_policy=3`}
             title="Lesson video"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -918,8 +775,6 @@ function VideoPlayer({ videoId, busy, topic }: {
               border: 'none', borderRadius: 0,
             }}
           />
-          {/* Subtle top-right Kyno overlay — visually reframes the player.
-              Does NOT cover playback controls or the video itself. */}
           <div style={{
             position: 'absolute', bottom: 8, right: 12, zIndex: 4,
             padding: '3px 8px', borderRadius: 5,
@@ -938,30 +793,23 @@ function VideoPlayer({ videoId, busy, topic }: {
   )
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// SLIDESHOW — bottom strip
-// ════════════════════════════════════════════════════════════════════════════
 function Slideshow({ slides, busy, topic, questionType, err, compact = false }: {
   slides: ImageSlide[]; busy: boolean; topic: string; questionType?: string; err?: string; compact?: boolean
 }) {
   const [idx, setIdx] = useState(0)
   const containerRef = useRef<HTMLDivElement>(null)
 
-  // Auto-cycle every 3.5s
   useEffect(() => {
     if (slides.length < 2) return
     const t = setInterval(() => setIdx(i => (i + 1) % slides.length), 3500)
     return () => clearInterval(t)
   }, [slides.length])
 
-  // Reset to first slide when slides change
   useEffect(() => { setIdx(0) }, [slides])
 
-  // Keyboard navigation
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if (slides.length < 2) return
-      // Don't hijack typing
       const target = e.target as HTMLElement
       if (target?.tagName === 'INPUT' || target?.tagName === 'TEXTAREA') return
       if (e.key === 'ArrowLeft')  setIdx(i => (i - 1 + slides.length) % slides.length)
@@ -982,7 +830,6 @@ function Slideshow({ slides, busy, topic, questionType, err, compact = false }: 
         minHeight: 0,
         boxShadow: '0 0 60px rgba(79, 124, 255, 0.01) inset',
       }}>
-      {/* Topic label */}
       <div style={{
         position: 'absolute', top: 14, left: 14, zIndex: 4,
         padding: '6px 12px', borderRadius: 7,
@@ -997,7 +844,6 @@ function Slideshow({ slides, busy, topic, questionType, err, compact = false }: 
         {topic}
       </div>
 
-      {/* Slide counter */}
       {slides.length > 0 && (
         <div style={{
           position: 'absolute', top: 14, right: 14, zIndex: 4,
@@ -1011,7 +857,6 @@ function Slideshow({ slides, busy, topic, questionType, err, compact = false }: 
         </div>
       )}
 
-      {/* Loading / error states */}
       {busy && slides.length === 0 && <SlideshowSkeleton />}
 
       {!busy && slides.length === 0 && !err && (
@@ -1032,7 +877,6 @@ function Slideshow({ slides, busy, topic, questionType, err, compact = false }: 
         </div>
       )}
 
-      {/* The image */}
       <AnimatePresence mode="wait">
         {current && (
           <motion.div
@@ -1050,9 +894,6 @@ function Slideshow({ slides, busy, topic, questionType, err, compact = false }: 
               style={{
                 maxWidth: '100%', maxHeight: '100%', objectFit: 'contain',
                 borderRadius: 8,
-                // Hide the browser's broken-image icon while AI slides are
-                // still rendering server-side (Pollinations can take ~30s
-                // on a cold prompt). One retry after 8s usually catches it.
                 background: 'rgba(255,255,255,0.02)',
               }}
               onError={(e) => {
@@ -1064,12 +905,10 @@ function Slideshow({ slides, busy, topic, questionType, err, compact = false }: 
                   img.style.opacity = '0.25'
                   setTimeout(() => { img.src = ''; img.src = src; img.style.opacity = '1' }, 8000)
                 } else {
-                  // Give up — hide the broken frame entirely.
                   img.style.display = 'none'
                 }
               }}
             />
-            {/* Caption overlay */}
             <div style={{
               position: 'absolute', bottom: 0, left: 0, right: 0,
               padding: '32px 18px 18px',
@@ -1092,7 +931,6 @@ function Slideshow({ slides, busy, topic, questionType, err, compact = false }: 
         )}
       </AnimatePresence>
 
-      {/* Pagination dots */}
       {slides.length > 1 && (
         <div style={{
           position: 'absolute', bottom: 14, left: 0, right: 0, zIndex: 4,
@@ -1112,7 +950,6 @@ function Slideshow({ slides, busy, topic, questionType, err, compact = false }: 
         </div>
       )}
 
-      {/* Prev / next arrows */}
       {slides.length > 1 && (
         <>
           <button onClick={() => setIdx(i => (i - 1 + slides.length) % slides.length)}
@@ -1154,7 +991,6 @@ function SlideshowSkeleton() {
       <div style={{ fontSize: 11, color: '#9CA3AF', maxWidth: 320, textAlign: 'center', lineHeight: 1.5 }}>
         Searching Wikimedia + educational image libraries · Generating storyboard · Writing explanation
       </div>
-      {/* Animated bar */}
       <div style={{ width: 200, height: 3, background: '#1f2532', borderRadius: 2, overflow: 'hidden', marginTop: 4 }}>
         <motion.div
           animate={{ x: ['-100%', '100%'] }}
@@ -1166,9 +1002,6 @@ function SlideshowSkeleton() {
   )
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// EXPLANATION PANEL — right
-// ════════════════════════════════════════════════════════════════════════════
 function ExplanationPanel({ resp, busy, error, retryHint, onOpenLab, onAskRelated }: {
   resp: SolverResponse | null
   busy: boolean
@@ -1207,7 +1040,6 @@ function ExplanationPanel({ resp, busy, error, retryHint, onOpenLab, onAskRelate
         )}
       </div>
 
-      {/* Body */}
       {busy && <ExplanationSkeleton retryHint={retryHint} />}
 
       {error && (
@@ -1242,7 +1074,6 @@ function ExplanationPanel({ resp, busy, error, retryHint, onOpenLab, onAskRelate
 
       {resp && (
         <>
-          {/* Markdown explanation */}
           <div style={{ fontSize: 13.5, color: '#e4e4e7', lineHeight: 1.75 }}>
             <ReactMarkdown
               remarkPlugins={[remarkGfm, remarkMath]}
@@ -1253,7 +1084,6 @@ function ExplanationPanel({ resp, busy, error, retryHint, onOpenLab, onAskRelate
             </ReactMarkdown>
           </div>
 
-          {/* Formulas (highlighted) */}
           {resp.formulas.length > 0 && (
             <div style={{
               padding: '12px 14px', borderRadius: 11,
@@ -1278,7 +1108,6 @@ function ExplanationPanel({ resp, busy, error, retryHint, onOpenLab, onAskRelate
             </div>
           )}
 
-          {/* Lab CTA — hidden while Kyno Labs is paused (restore: drop `false &&`) */}
           {false && resp.labRoute && (
             <motion.button
               whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}
@@ -1308,7 +1137,6 @@ function ExplanationPanel({ resp, busy, error, retryHint, onOpenLab, onAskRelate
             </motion.button>
           )}
 
-          {/* Related concepts */}
           {resp.relatedConcepts.length > 0 && (
             <div>
               <div style={{
@@ -1363,9 +1191,6 @@ function ExplanationSkeleton({ retryHint }: { retryHint?: string }) {
   )
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// Helpers
-// ════════════════════════════════════════════════════════════════════════════
 function iconForType(t?: string) {
   if (!t) return <Sparkles size={11} />
   if (t === 'physics' || t === 'math') return <Atom size={11} />
@@ -1394,7 +1219,6 @@ const MD_COMPONENTS = {
   blockquote: ({ children }: any) => <blockquote style={{ borderLeft: '3px solid #4F7CFF', paddingLeft: 12, margin: '8px 0', color: '#B1B5BA', fontStyle: 'italic' }}>{children}</blockquote>,
 }
 
-// ─── Styles ───────────────────────────────────────────────────────────────
 const btnSend: React.CSSProperties = {
   padding: '9px 18px', borderRadius: 999,
   background: 'linear-gradient(135deg, #66D9FF 0%, #4F7CFF 60%, #2046C2 100%)',
@@ -1422,17 +1246,6 @@ const arrowBtn: React.CSSProperties = {
   display: 'flex', alignItems: 'center', justifyContent: 'center',
 }
 
-// ══════════════════════════════════════════════════════════════════════════
-// ModeChipBar — Text / Visual / Map / 3D / Both segmented control
-// ══════════════════════════════════════════════════════════════════════════
-//
-// Shown above every result. The Map chip lights up only when the active
-// response includes a geography section (otherwise it's a no-op and we
-// dim it). 3D similarly only lights up when supports3D is true.
-//
-// When auto-suggest just kicked in, a small "Auto-selected" badge appears
-// next to the active chip for ~3 seconds so the user knows why the
-// layout changed.
 function ModeChipBar({
   mode, setMode, hasGeography, supports3D, autoSwitched,
 }: {
@@ -1495,7 +1308,6 @@ function ModeChipBar({
         })}
       </div>
 
-      {/* Auto-selected badge — fades out after ~3.6s */}
       <AnimatePresence>
         {autoSwitched && (
           <motion.div

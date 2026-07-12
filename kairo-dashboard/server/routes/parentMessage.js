@@ -1,8 +1,3 @@
-/**
- * Parent Message Generator Routes
- *
- * POST /api/parent-message/generate
- */
 import { Router } from 'express'
 import { requireAuth } from '../middleware/auth.js'
 import { aiCall, parseJSON } from '../utils/ai.js'
@@ -15,9 +10,9 @@ router.post('/generate', async (req, res) => {
     student_name,
     class: cls,
     subject,
-    message_type,      // performance | warning | appreciation | fee | attendance | general
-    tone = 'formal',   // formal | friendly | urgent
-    context,           // free-text details: "scored 45/100 in maths, weak in algebra"
+    message_type,
+    tone = 'formal',
+    context,
     parent_name,
     teacher_name,
     school_name = 'School',
@@ -67,14 +62,13 @@ Rules:
   }
 })
 
-// Generate multiple messages for bulk parent communication
 router.post('/bulk', async (req, res) => {
   const { students, message_type, context_template, tone = 'formal', school_name } = req.body
   if (!students?.length || !message_type || !context_template)
     return res.status(400).json({ error: 'students[], message_type, context_template required.' })
 
   const results = []
-  for (const s of students.slice(0, 20)) { // cap at 20
+  for (const s of students.slice(0, 20)) {
     try {
       const context = context_template.replace('{name}', s.name).replace('{class}', s.class || '')
       const prompt = `Write a brief ${tone} ${message_type} message to the parent of ${s.name} (Class ${s.class || ''}). Context: ${context}. School: ${school_name || 'School'}. Return JSON with "subject_line", "body", "whatsapp_version" only.`

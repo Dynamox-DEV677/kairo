@@ -1,32 +1,13 @@
-/**
- * School Auth Middleware
- *
- * requireSchoolAdmin        — must be 'admin' role within a school
- * requireTeacherOrAdmin     — must be 'teacher' or 'admin'
- * checkNetworkRestriction   — blocks request if school has IP rules and client IP is not whitelisted
- * getClientIp(req)          — extract real IP from headers (proxy-aware)
- * isIpInRange(ip, cidr)     — pure-JS IPv4 CIDR membership check
- *
- * Usage (order matters):
- *   router.post('/foo', requireSupabaseAuth, requireSchoolAdmin, handler)
- *   router.post('/bar', requireSupabaseAuth, checkNetworkRestriction, handler)
- */
 import { supabaseAdmin } from '../services/supabase.js'
 
-// ── IP Extraction ──────────────────────────────────────────────────────────────
-/**
- * Returns the real client IP address, checking standard proxy headers first.
- * Falls back to socket remote address.
- */
 export function getClientIp(req) {
   const forwarded = req.headers['x-forwarded-for']
   if (forwarded) {
-    // x-forwarded-for may contain multiple IPs: client, proxy1, proxy2, ...
     return forwarded.split(',')[0].trim()
   }
   return (
     req.headers['x-real-ip']          ||
-    req.headers['cf-connecting-ip']   ||  // Cloudflare
+    req.headers['cf-connecting-ip']   ||
     req.headers['fastly-client-ip']   ||
     req.connection?.remoteAddress      ||
     req.socket?.remoteAddress          ||
@@ -34,18 +15,10 @@ export function getClientIp(req) {
   )
 }
 
-// ── CIDR Matching ─────────────────────────────────────────────────────────────
-/**
- * Checks whether an IPv4 address falls within a CIDR range.
- * Handles both "192.168.1.0/24" notation and bare IPs ("203.0.113.5" treated as /32).
- * Returns false for IPv6 addresses (CIDR matching for IPv6 not yet supported).
- */
 export function isIpInRange(ip, cidr) {
   try {
-    // Strip IPv6-mapped-IPv4 prefix (e.g. ::ffff:192.168.1.1 → 192.168.1.1)
     const cleanIp = ip.replace(/^::ffff:/, '')
 
-    // Reject pure IPv6 (contains ':' after cleanup)
     if (cleanIp.includes(':')) return false
 
     const [range, bits] = cidr.split('/')
@@ -73,11 +46,6 @@ function ipv4ToInt(ip) {
   }, 0) >>> 0
 }
 
-// ── requireSchoolAdmin ────────────────────────────────────────────────────────
-/**
- * Requires the authenticated user to have role 'admin'.
- * Must be used AFTER requireSupabaseAuth.
- */
 export function requireSchoolAdmin(req, res, next) {
   if (!req.user) {
     return res.status(401).json({ error: 'Not authenticated.' })
@@ -93,11 +61,6 @@ export function requireSchoolAdmin(req, res, next) {
   next()
 }
 
-// ── requireTeacherOrAdmin ─────────────────────────────────────────────────────
-/**
- * Requires the authenticated user to have role 'teacher' or 'admin'.
- * Must be used AFTER requireSupabaseAuth.
- */
 export function requireTeacherOrAdmin(req, res, next) {
   if (!req.user) {
     return res.status(401).json({ error: 'Not authenticated.' })
@@ -113,19 +76,9 @@ export function requireTeacherOrAdmin(req, res, next) {
   next()
 }
 
-// ── checkNetworkRestriction ───────────────────────────────────────────────────
-/**
- * If the user's school has ANY enabled network rules, the client IP must
- * match at least one of them. If no rules exist the check passes (open access).
- *
- * Must be used AFTER requireSupabaseAuth so req.schoolId is available.
- * Admins bypass the restriction (they need access from anywhere to manage things).
- */
 export async function checkNetworkRestriction(req, res, next) {
-  // No school context → skip
   if (!req.schoolId) return next()
 
-  // Admins are always allowed regardless of IP rules
   if (req.user?.role === 'admin') return next()
 
   try {
@@ -137,10 +90,9 @@ export async function checkNetworkRestriction(req, res, next) {
 
     if (error) {
       console.error('[NetworkRestriction] DB error:', error.message)
-      return next()  // fail open — don't block on DB errors
+      return next()
     }
 
-    // No rules → open access
     if (!rules || rules.length === 0) return next()
 
     const clientIp = getClientIp(req)
@@ -157,6 +109,6 @@ export async function checkNetworkRestriction(req, res, next) {
     next()
   } catch (e) {
     console.error('[NetworkRestriction]', e.message)
-    next()  // fail open
+    next()
   }
 }

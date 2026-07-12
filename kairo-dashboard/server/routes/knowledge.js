@@ -1,16 +1,3 @@
-/**
- * Knowledge Graph Engine
- *
- * Persistent graph of concept relationships PER STUDENT, derived from:
- *   - ai_memory entries (topics + their signal)
- *   - AI-extracted relationships (prerequisite-of, related-to, builds-on)
- *
- * Routes:
- *   GET  /api/knowledge/graph        Full graph (nodes + edges) for current user
- *   POST /api/knowledge/extract      AI infers relationships from a topic + adds to graph
- *   POST /api/knowledge/relate       Manually add a single concept relation
- *   DELETE /api/knowledge/relation/:id   Remove a relation
- */
 import { Router } from 'express'
 import { supabaseAdmin, requireSupabase } from '../services/supabase.js'
 import { requireSupabaseAuth } from '../middleware/supabaseAuth.js'
@@ -21,7 +8,6 @@ router.use(requireSupabaseAuth)
 
 const VALID_KINDS = ['prerequisite_of', 'related_to', 'builds_on', 'contrasts_with', 'example_of']
 
-// Build the graph view: nodes from ai_memory + concept_relations entries; edges from concept_relations
 router.get('/graph', async (req, res) => {
   try {
     const [memRes, relRes] = await Promise.all([
@@ -39,7 +25,6 @@ router.get('/graph', async (req, res) => {
     if (memRes.error) throw new Error(memRes.error.message)
     if (relRes.error) throw new Error(relRes.error.message)
 
-    // Build node set: every distinct topic from memory or relations
     const nodes = {}
     function addNode(topic, source) {
       if (!topic) return
@@ -57,7 +42,6 @@ router.get('/graph', async (req, res) => {
         if (source?.subject && !nodes[key].subject) nodes[key].subject = source.subject
         if (source?.hits != null) nodes[key].hits = Math.max(nodes[key].hits, source.hits)
         if (source?.signal != null) {
-          // Average signal weighted by hits
           const totalHits = nodes[key].hits + (source.hits || 1)
           nodes[key].signal = ((nodes[key].signal * nodes[key].hits) + (source.signal * (source.hits || 1))) / Math.max(totalHits, 1)
         }
@@ -90,13 +74,11 @@ router.get('/graph', async (req, res) => {
   }
 })
 
-// AI extract — given a topic, AI proposes 3-6 concept relations and we save them
 router.post('/extract', async (req, res) => {
   const { topic, subject, relations } = req.body || {}
   if (!topic) return res.status(400).json({ error: 'topic is required' })
   if (!Array.isArray(relations)) return res.status(400).json({ error: 'relations array is required (call /api/ai/chat first to generate them)' })
 
-  // The frontend sends pre-parsed relations from an AI call to keep token cost low.
   try {
     const rows = relations
       .filter(r => r?.to_topic && VALID_KINDS.includes(r.kind))
@@ -113,7 +95,6 @@ router.post('/extract', async (req, res) => {
 
     if (rows.length === 0) return res.json({ message: 'No valid relations to add.', added: 0 })
 
-    // Upsert-like behavior: try insert; on conflict skip
     let added = 0
     for (const row of rows) {
       const { data: existing } = await supabaseAdmin
@@ -135,7 +116,6 @@ router.post('/extract', async (req, res) => {
   }
 })
 
-// Manual relate
 router.post('/relate', async (req, res) => {
   const { from_topic, to_topic, kind = 'related_to', subject, confidence = 1 } = req.body || {}
   if (!from_topic || !to_topic) return res.status(400).json({ error: 'from_topic and to_topic required' })
@@ -159,7 +139,6 @@ router.post('/relate', async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }) }
 })
 
-// Delete a relation
 router.delete('/relation/:id', async (req, res) => {
   try {
     const { data: existing } = await supabaseAdmin

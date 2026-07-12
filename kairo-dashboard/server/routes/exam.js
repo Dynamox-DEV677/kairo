@@ -1,9 +1,3 @@
-/**
- * Exam Predictor Routes
- *
- * POST /api/exam/predict      AI predicts high-probability exam topics + questions
- * POST /api/exam/mock         Generate a full mock test (MCQ + short + long)
- */
 import { Router } from 'express'
 import { requireAuth } from '../middleware/auth.js'
 import { aiCall, parseJSON } from '../utils/ai.js'
@@ -11,14 +5,13 @@ import { aiCall, parseJSON } from '../utils/ai.js'
 const router = Router()
 router.use(requireAuth)
 
-// ── Topic Probability Predictor ────────────────────────────────────────────────
 router.post('/predict', async (req, res) => {
   const {
     subject,
     class: cls = '10',
     board = 'CBSE',
-    chapters = [],       // optional: specific chapters to focus on
-    exam_type = 'board', // board | unit | half_yearly
+    chapters = [],
+    exam_type = 'board',
   } = req.body
 
   if (!subject) return res.status(400).json({ error: 'subject is required.' })
@@ -65,7 +58,6 @@ List at least 5 high, 5 medium, 3 low topics. Be specific and exam-focused. No m
   }
 })
 
-// ── Mock Test Generator ────────────────────────────────────────────────────────
 router.post('/mock', async (req, res) => {
   const {
     subject,

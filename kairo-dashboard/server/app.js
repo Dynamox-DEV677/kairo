@@ -2,19 +2,15 @@ import 'dotenv/config'
 import express from 'express'
 import { apiLimiter } from './middleware/rateLimit.js'
 
-// ── AI chat proxy (no auth — key stays server-side) ──────────────────────────
 import aiChatRoutes from './routes/aiChat.js'
 
-// ── Ops / status (public — Cowork & uptime monitors poll this) ───────────────
 import opsRoutes from './routes/ops.js'
 
-// ── v1 routes (fee reminder system) ───────────────────────────────────────────
 import credentialRoutes    from './routes/credentials.js'
 import studentRoutes       from './routes/students.js'
 import feeRoutes           from './routes/fees.js'
 import emailRoutes         from './routes/emails.js'
 
-// ── v2 routes (SaaS platform) ─────────────────────────────────────────────────
 import authRoutes          from './routes/auth.js'
 import flashcardRoutes     from './routes/flashcards.js'
 import studyPlanRoutes     from './routes/studyPlan.js'
@@ -32,7 +28,6 @@ import admissionRoutes     from './routes/admission.js'
 import attendanceRoutes    from './routes/attendance.js'
 import timetableRoutes     from './routes/timetable.js'
 
-// ── v3 routes (extended features) ─────────────────────────────────────────────
 import writingRoutes       from './routes/writing.js'
 import conceptRoutes       from './routes/concept.js'
 import formulaRoutes       from './routes/formula.js'
@@ -42,7 +37,6 @@ import announcementRoutes  from './routes/announcement.js'
 import gradingRoutes       from './routes/grading.js'
 import gamificationRoutes  from './routes/gamification.js'
 
-// ── v4 routes (Supabase multi-tenant SaaS) ────────────────────────────────────
 import schoolRoutes        from './routes/schools.js'
 import usersV2Routes       from './routes/usersV2.js'
 import passwordResetRoutes from './routes/passwordReset.js'
@@ -50,44 +44,29 @@ import passcodeRoutes      from './routes/passcode.js'
 import notesRoutes         from './routes/notes.js'
 import notificationsRoutes from './routes/notifications.js'
 
-// ── Dev / ops: email template preview (gated by env) ──────────────────────────
 import devEmailPreviewRoutes from './routes/devEmailPreview.js'
 
-// ── v5 routes (School Management Core) ────────────────────────────────────────
 import tasksRoutes         from './routes/tasks.js'
 import networkRulesRoutes  from './routes/networkRules.js'
 
-// ── v6 routes (Parent Mode + Marks) ──────────────────────────────────────────
 import marksRoutes         from './routes/marks.js'
 import parentRoutes        from './routes/parent.js'
 
-// ── v7 routes (AI Memory Brain) ──────────────────────────────────────────────
 import memoryRoutes        from './routes/memory.js'
 
-// ── v8 routes (School Health Monitor) ────────────────────────────────────────
 import schoolHealthRoutes  from './routes/schoolHealth.js'
 
-// ── v9 routes (AI Notebook / Second Brain) ───────────────────────────────────
 import notebookRoutes      from './routes/notebook.js'
 
-// ── v10 routes (Battle Mode — daily challenge + leaderboard) ─────────────────
 import battleRoutes        from './routes/battle.js'
 
-// ── v11 routes (Knowledge Graph Engine) ──────────────────────────────────────
 import knowledgeRoutes     from './routes/knowledge.js'
 
-// ── v12 routes (Payments + Subscriptions) ────────────────────────────────────
 import paymentRoutes       from './routes/payments.js'
 
-// ── Twin routes — used for cross-device sync (/api/twin/snapshot) ───────────
-// Most twin data lives in the browser (src/lib/twin.ts), but the GET/POST/DELETE
-// /api/twin/snapshot endpoints are needed so the user's twin can travel
-// between devices. Re-enabled — see kairo_signup_setup.sql + twin_snapshot_schema.sql.
 import twinRoutes          from './routes/twin.js'
 
-// ─── Validate env ─────────────────────────────────────────────────────────────
 if (!process.env.ENCRYPTION_SECRET || process.env.ENCRYPTION_SECRET.length < 32) {
-  // Use a fallback so the server doesn't crash — set ENCRYPTION_SECRET in prod for real security
   process.env.ENCRYPTION_SECRET = 'kairo-default-secret-key-change-in-production-please-set-env-var-now'
   console.warn('⚠️  ENCRYPTION_SECRET not set — using insecure default. Set it in Vercel env vars.')
 }
@@ -95,13 +74,11 @@ if (!process.env.OPENROUTER_API_KEY) {
   console.warn('⚠️   OPENROUTER_API_KEY not set — AI features will fail.')
 }
 
-// ─── App ──────────────────────────────────────────────────────────────────────
 const app = express()
 
 app.use(express.json({ limit: '10mb' }))
 app.use(apiLimiter)
 
-// CORS — allow localhost (dev) + *.vercel.app + custom ALLOWED_ORIGIN
 app.use((req, res, next) => {
   const origin = req.headers.origin || ''
   const isLocalhost = /^http:\/\/localhost(:\d+)?$/.test(origin)
@@ -119,9 +96,6 @@ app.use((req, res, next) => {
   next()
 })
 
-// ─── Routes ───────────────────────────────────────────────────────────────────
-
-// v1 — Fee reminder system
 app.use('/api/ai',             aiChatRoutes)
 app.use('/api/ops',            opsRoutes)
 app.use('/api/credentials',    credentialRoutes)
@@ -129,7 +103,6 @@ app.use('/api/students',       studentRoutes)
 app.use('/api/fees',           feeRoutes)
 app.use('/api/emails',         emailRoutes)
 
-// v2 — SaaS platform
 app.use('/api/auth',           authRoutes)
 app.use('/api/flashcards',     flashcardRoutes)
 app.use('/api/study-plan',     studyPlanRoutes)
@@ -147,7 +120,6 @@ app.use('/api/admission',      admissionRoutes)
 app.use('/api/attendance',     attendanceRoutes)
 app.use('/api/timetable',      timetableRoutes)
 
-// v3 — Extended features
 app.use('/api/writing',        writingRoutes)
 app.use('/api/concept',        conceptRoutes)
 app.use('/api/formula',        formulaRoutes)
@@ -157,48 +129,35 @@ app.use('/api/announcement',   announcementRoutes)
 app.use('/api/grading',        gradingRoutes)
 app.use('/api/gamification',   gamificationRoutes)
 
-// v4 — Supabase multi-tenant SaaS
 app.use('/api/schools',        schoolRoutes)
-app.use('/api/users',          passwordResetRoutes)    // forgot-password, reset-password (mounted first so /forgot-password resolves before any catch-alls)
+app.use('/api/users',          passwordResetRoutes)
 app.use('/api/users',          usersV2Routes)
-app.use('/api/passcode',       passcodeRoutes)         // 6-digit OTP for Kyno device passcode reset
+app.use('/api/passcode',       passcodeRoutes)
 app.use('/api/notes',          notesRoutes)
 app.use('/api/notifications',  notificationsRoutes)
 
-// Dev / ops — email previews (no auth, 404 in prod unless KAIRO_ALLOW_EMAIL_PREVIEW=1)
 app.use('/api/dev/emails',     devEmailPreviewRoutes)
 
-// v5 — School Management Core
 app.use('/api/tasks',          tasksRoutes)
 app.use('/api/network-rules',  networkRulesRoutes)
 
-// v6 — Parent Mode + Marks
 app.use('/api/marks',          marksRoutes)
 app.use('/api/parent',         parentRoutes)
 
-// v7 — AI Memory Brain
 app.use('/api/memory',         memoryRoutes)
 
-// v8 — School Health Monitor (admin)
 app.use('/api/school-health',  schoolHealthRoutes)
 
-// v9 — AI Notebook (Second Brain)
 app.use('/api/notebook',       notebookRoutes)
 
-// v10 — Battle Mode (daily challenge + leaderboard)
 app.use('/api/battle',         battleRoutes)
 
-// v11 — Knowledge Graph Engine
 app.use('/api/knowledge',      knowledgeRoutes)
 
-// v12 — Payments + subscription lifecycle
 app.use('/api/payments',       paymentRoutes)
 
-// Kyno · Twin — only the /api/twin/snapshot endpoints are used now
-// (GET/POST/DELETE) for cross-device sync.
 app.use('/api/twin',           twinRoutes)
 
-// ─── Health check ─────────────────────────────────────────────────────────────
 app.get('/health', (_req, res) => {
   res.json({
     status:    'ok',
@@ -217,7 +176,6 @@ app.get('/health', (_req, res) => {
   })
 })
 
-// ─── API reference ────────────────────────────────────────────────────────────
 app.get('/api', (_req, res) => {
   res.json({
     version: '3.0.0',
@@ -290,12 +248,10 @@ app.get('/api', (_req, res) => {
   })
 })
 
-// ─── 404 ──────────────────────────────────────────────────────────────────────
 app.use((_req, res) => {
   res.status(404).json({ error: 'Route not found. Visit /api for full endpoint list.' })
 })
 
-// ─── Global error handler ─────────────────────────────────────────────────────
 app.use((err, _req, res, _next) => {
   console.error('[Error]', err.message)
   res.status(500).json({ error: 'Internal server error.' })

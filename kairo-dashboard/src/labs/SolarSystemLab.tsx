@@ -1,8 +1,3 @@
-/**
- * Solar System Lab — photo-textured planets + moons + asteroid belt + comet.
- * Textures from threex.planets (MIT). All bodies clickable; sizes/orbits
- * stylised so the inner planets aren't invisible specks next to Jupiter.
- */
 import { useMemo, useRef, useState } from 'react'
 import { useFrame, type ThreeEvent } from '@react-three/fiber'
 import { OrbitControls, Stars, useTexture, useGLTF } from '@react-three/drei'
@@ -21,8 +16,8 @@ interface Body {
   texture: string
   radius: number
   orbit:  number
-  period: number          // orbit period (visual)
-  spin:   number          // axial rotation period (visual)
+  period: number          
+  spin:   number          
   hasRings?: boolean
   ringTexture?: string
   emissive?: boolean
@@ -140,7 +135,6 @@ const PARTS: PartCatalog = {
   },
 }
 
-// ─── Planet mesh ───────────────────────────────────────────────────────────
 function Planet({ body, isHover, isSelected, onHover, onSelect }: any) {
   const ref = useRef<THREE.Group>(null)
   const planetRef = useRef<THREE.Mesh>(null)
@@ -183,13 +177,11 @@ function Planet({ body, isHover, isSelected, onHover, onSelect }: any) {
           <meshBasicMaterial map={ringTex} side={THREE.DoubleSide} transparent opacity={0.85} />
         </mesh>
       )}
-      {/* Moons orbit the planet group */}
       {body.moons?.map((m: Body) => (
         <Planet key={m.id} body={m}
           isHover={isHover} isSelected={isSelected}
           onHover={onHover} onSelect={onSelect} />
       ))}
-      {/* ISS only orbits Earth */}
       {body.id === 'earth' && (
         <ISS onHover={onHover} onSelect={onSelect} />
       )}
@@ -197,14 +189,11 @@ function Planet({ body, isHover, isSelected, onHover, onSelect }: any) {
   )
 }
 
-// ─── ISS (International Space Station) ─────────────────────────────────────
 function ISS({ onHover, onSelect }: any) {
   const groupRef = useRef<THREE.Group>(null)
   const tRef = useRef(Math.random() * Math.PI * 2)
   const { scene } = useGLTF(ISS_MODEL_URL)
 
-  // Clone once, scale to a visible size in the solar-system scale,
-  // and bias emissive so it reads against Earth.
   const cloned = useMemo(() => {
     const c = scene.clone(true)
     c.traverse((obj: any) => {
@@ -213,7 +202,6 @@ function ISS({ onHover, onSelect }: any) {
         obj.receiveShadow = false
       }
     })
-    // Fit ISS to a small size so it reads as a satellite, not a co-planet
     const box = new THREE.Box3().setFromObject(c)
     const size = new THREE.Vector3()
     box.getSize(size)
@@ -222,9 +210,8 @@ function ISS({ onHover, onSelect }: any) {
     return c
   }, [scene])
 
-  // Orbit Earth at small radius — fast, since real ISS orbit is ~90 min
   const ORBIT_R = 0.55
-  const PERIOD  = 2.5  // seconds per orbit (visualised — way faster than real)
+  const PERIOD  = 2.5  
 
   useFrame((_, dt) => {
     if (!groupRef.current) return
@@ -232,7 +219,6 @@ function ISS({ onHover, onSelect }: any) {
     groupRef.current.position.x = Math.cos(tRef.current) * ORBIT_R
     groupRef.current.position.z = Math.sin(tRef.current) * ORBIT_R
     groupRef.current.position.y = Math.sin(tRef.current * 0.7) * 0.05
-    // Always orient tangent to the orbit, like the real ISS
     groupRef.current.rotation.y = -tRef.current + Math.PI / 2
   })
 
@@ -242,7 +228,6 @@ function ISS({ onHover, onSelect }: any) {
       onPointerOut={() => { onHover(null); document.body.style.cursor='default' }}
       onClick={(e: ThreeEvent<MouseEvent>) => { e.stopPropagation(); onSelect('iss') }}>
       <primitive object={cloned} />
-      {/* Tiny halo so the ISS is easy to spot at a glance */}
       <mesh>
         <sphereGeometry args={[0.08, 12, 12]} />
         <meshBasicMaterial color="#e2e8f0" transparent opacity={0.15} />
@@ -253,7 +238,6 @@ function ISS({ onHover, onSelect }: any) {
 
 useGLTF.preload(ISS_MODEL_URL)
 
-// ─── Sun ───────────────────────────────────────────────────────────────────
 function Sun({ onHover, onSelect, hovered, selected }: any) {
   const ref = useRef<THREE.Mesh>(null)
   const texture = useTexture(SUN.texture) as unknown as THREE.Texture
@@ -270,7 +254,6 @@ function Sun({ onHover, onSelect, hovered, selected }: any) {
         <sphereGeometry args={[SUN.radius, 48, 48]} />
         <meshBasicMaterial map={texture} />
       </mesh>
-      {/* Sun corona glow */}
       <mesh scale={1.15}>
         <sphereGeometry args={[SUN.radius, 32, 32]} />
         <meshBasicMaterial color="#C7D2E8" transparent opacity={0.18} side={THREE.BackSide} />
@@ -279,7 +262,6 @@ function Sun({ onHover, onSelect, hovered, selected }: any) {
   )
 }
 
-// ─── Asteroid belt ─────────────────────────────────────────────────────────
 function AsteroidBelt({ onHover, onSelect }: any) {
   const ref = useRef<THREE.InstancedMesh>(null)
   const N = 250
@@ -317,14 +299,12 @@ function AsteroidBelt({ onHover, onSelect }: any) {
   )
 }
 
-// ─── Comet ─────────────────────────────────────────────────────────────────
 function Comet({ onHover, onSelect }: any) {
   const headRef = useRef<THREE.Mesh>(null)
   const tailRef = useRef<THREE.Mesh>(null)
   const tRef = useRef(0)
-  // Elliptical orbit parameters
-  const a = 9    // semi-major
-  const b = 5    // semi-minor
+  const a = 9    
+  const b = 5    
   const period = 60
 
   useFrame((_, dt) => {
@@ -332,7 +312,6 @@ function Comet({ onHover, onSelect }: any) {
     const x = Math.cos(tRef.current) * a
     const z = Math.sin(tRef.current) * b
     if (headRef.current) headRef.current.position.set(x, 0.5, z)
-    // Tail always points away from the Sun (origin)
     if (tailRef.current) {
       const dir = new THREE.Vector3(x, 0.5, z).normalize()
       tailRef.current.position.set(x + dir.x * 0.6, 0.5 + dir.y * 0.6, z + dir.z * 0.6)
@@ -358,7 +337,6 @@ function Comet({ onHover, onSelect }: any) {
   )
 }
 
-// ─── Orbit ring ────────────────────────────────────────────────────────────
 function OrbitRing({ radius }: { radius: number }) {
   const points: THREE.Vector3[] = []
   const N = 96
@@ -375,7 +353,6 @@ function OrbitRing({ radius }: { radius: number }) {
   )
 }
 
-// ─── Sim ───────────────────────────────────────────────────────────────────
 function SolarSim({ playing }: { params: any; playing: boolean }) {
   const [hovered, setHovered]   = useState<string | null>(null)
   const [selected, setSelected] = useState<string | null>(null)
@@ -413,7 +390,6 @@ function SolarSim({ playing }: { params: any; playing: boolean }) {
   )
 }
 
-// Preload textures so the lab opens fast
 useTexture.preload(SUN.texture)
 BODIES.forEach(b => {
   useTexture.preload(b.texture)

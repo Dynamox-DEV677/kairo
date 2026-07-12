@@ -1,6 +1,3 @@
-/**
- * Molecule Lab — pick a molecule, view 3D structure with bond lines + atom labels.
- */
 import { useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { OrbitControls, Text } from '@react-three/drei'
@@ -8,9 +5,6 @@ import * as THREE from 'three'
 import LabShell from './LabShell'
 import LabScene from './LabScene'
 
-// drei's <Text> uses a bundled Roboto subset that doesn't always include
-// Unicode subscripts. Convert ₀-₉ to plain digits for in-scene labels so we
-// never see tofu boxes. Markdown text in the side panel uses real fonts.
 const SUBSCRIPT_MAP: Record<string, string> = {
   '₀': '0', '₁': '1', '₂': '2', '₃': '3', '₄': '4',
   '₅': '5', '₆': '6', '₇': '7', '₈': '8', '₉': '9',
@@ -24,15 +18,12 @@ interface Atom { sym: string; pos: [number, number, number]; color: string; radi
 interface Bond { a: number; b: number; order: 1 | 2 | 3 }
 interface Molecule { name: string; formula: string; atoms: Atom[]; bonds: Bond[] }
 
-// Standard CPK colors (close to industry standard)
 const C_H = '#f5f5f5', C_C = '#374151', C_O = '#ef4444', C_N = '#3b82f6'
 const C_S = '#C7D2E8', C_CL = '#22c55e', C_F = '#a3e635', C_BR = '#a16207', C_P = '#f97316'
 
-// Atomic radii
 const R_H = 0.28, R_C = 0.5, R_O = 0.48, R_N = 0.48, R_S = 0.6, R_X = 0.55
 
 const MOLECULES: Record<string, Molecule> = {
-  // ── Diatomic / Triatomic Gases ───────────────────────────────────────────
   hydrogen: { name: 'Hydrogen', formula: 'H₂', atoms: [
     { sym: 'H', pos: [-0.4, 0, 0], color: C_H, radius: R_H },
     { sym: 'H', pos: [ 0.4, 0, 0], color: C_H, radius: R_H },
@@ -83,7 +74,6 @@ const MOLECULES: Record<string, Molecule> = {
     { sym: 'H', pos: [-1.0, 0.45, 0],   color: C_H, radius: R_H },
   ], bonds: [{ a: 0, b: 1, order: 1 }, { a: 0, b: 2, order: 1 }] },
 
-  // ── Tetrahedral / Pyramidal ─────────────────────────────────────────────
   ammonia: { name: 'Ammonia', formula: 'NH₃', atoms: [
     { sym: 'N', pos: [0, 0, 0],            color: C_N, radius: R_N },
     { sym: 'H', pos: [0.95, -0.4, 0],      color: C_H, radius: R_H },
@@ -98,7 +88,6 @@ const MOLECULES: Record<string, Molecule> = {
     { sym: 'H', pos: [-0.95,  0.95, -0.95], color: C_H, radius: R_H },
   ], bonds: [{ a: 0, b: 1, order: 1 }, { a: 0, b: 2, order: 1 }, { a: 0, b: 3, order: 1 }, { a: 0, b: 4, order: 1 }] },
 
-  // ── Hydrocarbons ────────────────────────────────────────────────────────
   ethane: { name: 'Ethane', formula: 'C₂H₆', atoms: [
     { sym: 'C', pos: [-0.77, 0, 0],            color: C_C, radius: R_C },
     { sym: 'C', pos: [ 0.77, 0, 0],            color: C_C, radius: R_C },
@@ -151,7 +140,6 @@ const MOLECULES: Record<string, Molecule> = {
     return { name: 'Benzene', formula: 'C₆H₆', atoms, bonds }
   })(),
 
-  // ── Alcohols / Aldehydes / Acids ────────────────────────────────────────
   methanol: { name: 'Methanol', formula: 'CH₃OH', atoms: [
     { sym: 'C', pos: [0, 0, 0],         color: C_C, radius: R_C },
     { sym: 'O', pos: [1.4, 0, 0],       color: C_O, radius: R_O },
@@ -203,7 +191,6 @@ const MOLECULES: Record<string, Molecule> = {
     { a: 0, b: 5, order: 1 }, { a: 0, b: 6, order: 1 }, { a: 0, b: 7, order: 1 },
   ] },
 
-  // ── Acids / Bases (simplified) ──────────────────────────────────────────
   hydrogen_peroxide: { name: 'Hydrogen Peroxide', formula: 'H₂O₂', atoms: [
     { sym: 'O', pos: [-0.75, 0, 0],     color: C_O, radius: R_O },
     { sym: 'O', pos: [ 0.75, 0, 0],     color: C_O, radius: R_O },
@@ -245,7 +232,6 @@ const MOLECULES: Record<string, Molecule> = {
     { a: 0, b: 1, order: 1 }, { a: 0, b: 2, order: 1 }, { a: 0, b: 3, order: 1 }, { a: 0, b: 4, order: 1 },
   ] },
   glucose: { name: 'Glucose (simplified)', formula: 'C₆H₁₂O₆', atoms: (() => {
-    // Simplified hexagonal pyranose ring — actual chair conformation
     const atoms: Atom[] = []
     const r = 1.3
     for (let i = 0; i < 6; i++) {
@@ -258,11 +244,10 @@ const MOLECULES: Record<string, Molecule> = {
         radius: isOx ? R_O : R_C,
       })
     }
-    // -OH groups + H's on each carbon (skipping the ring O)
     const positions: [number, number, number][] = [
-      [ 1.8,  1.1,  0.0], [ 0.7,  1.1,  1.4],  // C1 -OH up, C2 -OH outward
-      [-0.7,  1.1,  1.4], [-1.8,  1.1,  0.0],  // C3 -OH, C4 -OH
-      [-0.4, -1.4,  0.4],                       // C5 -CH2OH (further out)
+      [ 1.8,  1.1,  0.0], [ 0.7,  1.1,  1.4],  
+      [-0.7,  1.1,  1.4], [-1.8,  1.1,  0.0],  
+      [-0.4, -1.4,  0.4],                       
     ]
     for (const p of positions) atoms.push({ sym: 'O', pos: p, color: C_O, radius: R_O })
     for (const p of positions) {

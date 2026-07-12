@@ -1,21 +1,3 @@
-/**
- * Compatibility shim — preserves the old `welcomeEmail.js` import surface
- * while delegating to the new modular email system in `server/email/`.
- *
- * Old API → New API mapping:
- *   joinedSchoolEmail({ to, name, role, schoolName, requireApproval })
- *     → sendWelcomeJoinEmail({ ... })
- *   schoolCreatedEmail({ to, name, schoolName, joinCode, plan, trial })
- *     → sendSchoolCreatedEmail({ ... })
- *   approvedEmail({ to, name, schoolName, role })
- *     → sendAccountApprovedEmail({ ... })
- *   parentLinkedEmail({ to, name, studentName, schoolName })
- *     → sendParentLinkedEmail({ ... })
- *
- * For NEW code, import directly from `../email/index.js` so you get access
- * to the full set of senders (sign-in security, password reset, personal
- * welcome, etc.).
- */
 
 import {
   sendWelcomeJoinEmail,

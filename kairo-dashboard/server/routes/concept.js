@@ -1,11 +1,3 @@
-/**
- * Concept Tools Routes
- *
- * POST /api/concept/simplify    Simplify a concept to a given level
- * POST /api/concept/mindmap     Generate a text mindmap for a chapter
- * POST /api/concept/doubt       Save + answer a doubt
- * GET  /api/concept/doubts      Get doubt history
- */
 import { Router } from 'express'
 import { db } from '../db/index.js'
 import { aiCall } from '../utils/ai.js'
@@ -13,7 +5,6 @@ import { aiCall } from '../utils/ai.js'
 const router = Router()
 const sid = req => req.body?.school_id || req.query?.school_id || 'demo_school'
 
-// ── Concept Simplifier ─────────────────────────────────────────────────────────
 router.post('/simplify', async (req, res) => {
   const {
     concept, subject = 'General', level = 'class8',
@@ -52,7 +43,6 @@ Keep it under 150 words. No markdown headers.`
   }
 })
 
-// ── Mindmap Generator ──────────────────────────────────────────────────────────
 router.post('/mindmap', async (req, res) => {
   const { chapter, subject = 'General', class: cls = '10', board = 'CBSE' } = req.body
   if (!chapter) return res.status(400).json({ error: 'chapter is required.' })
@@ -115,7 +105,6 @@ Create at least 4 main topics, each with 2-4 subtopics. No markdown.`
   }
 })
 
-// ── Save + Answer Doubt ────────────────────────────────────────────────────────
 router.post('/doubt', async (req, res) => {
   const { question, subject = 'General', class: cls = '10', board = 'CBSE' } = req.body
   if (!question) return res.status(400).json({ error: 'question is required.' })
@@ -152,7 +141,6 @@ Keep it educational and encouraging.`
   }
 })
 
-// ── Get Doubt History ──────────────────────────────────────────────────────────
 router.get('/doubts', async (req, res) => {
   const { subject, search } = req.query
   const q = { school_id: sid(req) }

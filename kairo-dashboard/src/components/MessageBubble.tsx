@@ -6,14 +6,10 @@ import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
 import ActionChips from './ActionChips'
 
-/** Normalize AI math output so KaTeX always sees $...$ / $$...$$ */
 function normalizeMath(text: string): string {
   return text
-    // \[...\]  →  $$...$$  (display)
     .replace(/\\\[([\s\S]*?)\\\]/g, (_,m) => `\n$$${m}$$\n`)
-    // \(...\)  →  $...$    (inline)
     .replace(/\\\(([\s\S]*?)\\\)/g, (_,m) => `$${m}$`)
-    // bare [ ... ] lines that look like display math (start with [ and end with ])
     .replace(/^\[\s*([\s\S]*?)\s*\]$/gm, (_,m) => {
       if (m.includes('\\') || /[_^{}]/.test(m)) return `$$${m}$$`
       return _
@@ -49,7 +45,6 @@ export default function MessageBubble({ message, isLast, isStreaming, onChipActi
         marginBottom: 24,
       }}
     >
-      {/* Avatar */}
       <div style={{
         width: 30, height: 30, borderRadius: 8, flexShrink: 0,
         background: isUser ? 'linear-gradient(135deg, #374151, #1f2937)' : '#000',
@@ -64,9 +59,7 @@ export default function MessageBubble({ message, isLast, isStreaming, onChipActi
         }
       </div>
 
-      {/* Bubble content */}
       <div style={{ maxWidth: '72%', minWidth: 60 }}>
-        {/* Role label */}
         <div style={{
           fontSize: 10, fontWeight: 700, color: '#4B5563',
           textTransform: 'uppercase', letterSpacing: 0.8,
@@ -76,7 +69,6 @@ export default function MessageBubble({ message, isLast, isStreaming, onChipActi
           {isUser ? 'You' : 'Kyno AI'}
         </div>
 
-        {/* Bubble */}
         <div style={{
           padding: isUser ? '11px 16px' : '14px 18px',
           borderRadius: isUser ? '16px 4px 16px 16px' : '4px 16px 16px 16px',
@@ -137,7 +129,6 @@ export default function MessageBubble({ message, isLast, isStreaming, onChipActi
           )}
         </div>
 
-        {/* Action chips — only on completed AI messages */}
         {!isUser && !isStreaming && message.content && (
           <ActionChips
             onSimpler={() => onChipAction('simpler', message.content)}

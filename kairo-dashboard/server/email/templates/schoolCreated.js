@@ -1,8 +1,3 @@
-/**
- * School Created — sent to the founding admin when their school goes live.
- *
- * Variables: { name, schoolName, joinCode, plan?, trial? }
- */
 import { THEME, appUrl } from '../theme.js'
 import { shell } from '../shell.js'
 import {

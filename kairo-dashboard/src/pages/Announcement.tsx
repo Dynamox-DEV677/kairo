@@ -50,7 +50,6 @@ export default function Announcement() {
 
   return (
     <div style={{ display: 'flex', height: '100%', overflow: 'hidden' }}>
-      {/* Sidebar */}
       <div style={{ width: 270, borderRight: '1px solid #1a1f2e', display: 'flex', flexDirection: 'column', overflow: 'hidden', background: '#0E1117' }}>
         <div style={{ padding: '16px 12px', borderBottom: '1px solid #1a1f2e' }}>
           <div style={{ fontSize: 13, fontWeight: 700, color: '#fafafa', marginBottom: 10 }}>Announcements</div>
@@ -114,7 +113,6 @@ export default function Announcement() {
         </div>
       </div>
 
-      {/* Content */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '24px 28px' }}>
         {!selected ? (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#4B5563' }}>
@@ -147,7 +145,6 @@ function AnnouncementViewer({ a }: { a: any }) {
         <span style={{ fontSize: 11, color: '#6B7280' }}>{a.audience} · {a.tone}</span>
       </div>
 
-      {/* Full Announcement */}
       <div style={{ background: '#0E1117', border: '1px solid #1f2532', borderRadius: 14, padding: 20, marginBottom: 14 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
           <div style={{ fontSize: 15, fontWeight: 700, color: '#fafafa', flex: 1 }}>{a.title}</div>
@@ -167,7 +164,6 @@ function AnnouncementViewer({ a }: { a: any }) {
       </div>
 
       <div className="mob-stack" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-        {/* WhatsApp version */}
         {a.whatsapp_message && (
           <div style={{ background: '#0E1117', border: '1px solid #1f2532', borderRadius: 14, padding: 16 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
@@ -179,7 +175,6 @@ function AnnouncementViewer({ a }: { a: any }) {
             <div style={{ fontSize: 12, color: '#B1B5BA', lineHeight: 1.8 }}>{a.whatsapp_message}</div>
           </div>
         )}
-        {/* SMS version */}
         {a.sms_version && (
           <div style={{ background: '#0E1117', border: '1px solid #1f2532', borderRadius: 14, padding: 16 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>

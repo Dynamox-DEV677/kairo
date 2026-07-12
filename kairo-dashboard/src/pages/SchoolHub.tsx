@@ -1,12 +1,3 @@
-/**
- * SchoolHub — full school management UI
- *
- * Admin  → Overview · Pending · Members · Tasks · Network Rules · Login Logs · Settings
- * Teacher → My Tasks · Create Task · Notifications
- * Student → My Tasks · Feed
- *
- * First person to register at a school is automatically the admin (enforced server-side).
- */
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -21,11 +12,9 @@ import {
 } from 'lucide-react'
 import type { AuthProfile } from './Login'
 
-// ─── API helper (auto-refreshes expired Supabase JWTs) ────────────────────────
 import { api as apiClient } from '../lib/api'
 const api = apiClient
 
-// ─── Types ────────────────────────────────────────────────────────────────────
 interface Member {
   id: string; name: string; role: 'student' | 'teacher' | 'admin'
   status: 'active' | 'pending' | 'suspended'
@@ -73,7 +62,6 @@ interface MarkSummary {
   subjects: Array<{ subject: string; percentage: number; total_obtained: number; total_max: number; count: number }>
 }
 
-// ─── SHARED COMPONENTS ────────────────────────────────────────────────────────
 
 function Spinner() {
   return (
@@ -302,7 +290,6 @@ function fmtDateShort(s: string) {
   return new Date(s).toLocaleString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })
 }
 
-// ─── NO SCHOOL VIEW ───────────────────────────────────────────────────────────
 function NoSchoolView() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
@@ -316,7 +303,6 @@ function NoSchoolView() {
   )
 }
 
-// ─── SCHOOL HEADER ────────────────────────────────────────────────────────────
 function SchoolHeader({ profile }: { profile: AuthProfile }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 4 }}>
@@ -339,12 +325,10 @@ function SchoolHeader({ profile }: { profile: AuthProfile }) {
   )
 }
 
-// ─── ADMIN HUB ────────────────────────────────────────────────────────────────
 function AdminHub({ profile, schoolId }: { profile: AuthProfile; schoolId: string }) {
   const [tab, setTab] = useState('overview')
   const [pendingCount, setPendingCount] = useState(0)
 
-  // Count pending students for badge
   useEffect(() => {
     api(`/schools/${schoolId}/members?status=pending`)
       .then(d => setPendingCount(d.members?.length ?? 0))
@@ -387,7 +371,6 @@ function AdminHub({ profile, schoolId }: { profile: AuthProfile; schoolId: strin
   )
 }
 
-// AI Announcement Generator ───────────────────────────────────────────────────
 function AdminAIAnnounce({ schoolId: _ }: { schoolId: string }) {
   const [topic, setTopic]         = useState('')
   const [tone, setTone]           = useState<'friendly' | 'formal' | 'urgent'>('friendly')
@@ -437,7 +420,6 @@ function AdminAIAnnounce({ schoolId: _ }: { schoolId: string }) {
 
   return (
     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-      {/* Generate */}
       <div style={{ background: '#0f0f12', border: '1px solid #1f2532', borderRadius: 12, padding: 18 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
           <Sparkles size={15} color="#A5B4FC" />
@@ -485,7 +467,6 @@ function AdminAIAnnounce({ schoolId: _ }: { schoolId: string }) {
         </button>
       </div>
 
-      {/* Preview + Send */}
       <div style={{ background: '#0f0f12', border: '1px solid #1f2532', borderRadius: 12, padding: 18 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
           <Send size={14} color="#A5B4FC" />
@@ -559,7 +540,6 @@ function AdminAIAnnounce({ schoolId: _ }: { schoolId: string }) {
   )
 }
 
-// Overview ────────────────────────────────────────────────────────────────────
 function AdminOverview({ schoolId }: { schoolId: string }) {
   const [stats, setStats] = useState<Stats | null>(null)
   const [loading, setLoading] = useState(true)
@@ -591,7 +571,6 @@ function AdminOverview({ schoolId }: { schoolId: string }) {
   )
 }
 
-// School Health Monitor ───────────────────────────────────────────────────────
 function AdminHealthMonitor() {
   const [data, setData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
@@ -600,8 +579,6 @@ function AdminHealthMonitor() {
   const load = useCallback(async () => {
     setLoading(true); setErr('')
     try {
-      // Normalize the shape so a partial/older API response can never throw
-      // on a deep access during render (alerts/engagement/classPerformance/…).
       const d: any = await api('/school-health')
       setData(d && typeof d === 'object' ? {
         ...d,
@@ -632,7 +609,6 @@ function AdminHealthMonitor() {
 
   return (
     <div>
-      {/* Big health score card */}
       <div style={{
         background: '#0E1117', border: '1px solid #1f2532', borderRadius: 14,
         padding: 26, marginBottom: 16, position: 'relative', overflow: 'hidden',
@@ -680,7 +656,6 @@ function AdminHealthMonitor() {
         </div>
       </div>
 
-      {/* Alerts */}
       {data.alerts.length > 0 && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
           {data.alerts.map((a: any, i: number) => {
@@ -706,7 +681,6 @@ function AdminHealthMonitor() {
         </div>
       )}
 
-      {/* Engagement */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: 16 }}>
         {[
           { l: 'Marks (7d)',     v: data.engagement.last7.marks,  t: data.engagement.trend.marks  },
@@ -732,7 +706,6 @@ function AdminHealthMonitor() {
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
-        {/* Class performance */}
         <div style={{ background: '#0E1117', border: '1px solid #1f2532', borderRadius: 12, padding: 16 }}>
           <div style={{ fontSize: 13, fontWeight: 700, color: '#fafafa', marginBottom: 12 }}>Class Performance</div>
           {data.classPerformance.length === 0 && <div style={{ fontSize: 12, color: '#6B7280', fontStyle: 'italic' }}>No marks logged yet.</div>}
@@ -756,7 +729,6 @@ function AdminHealthMonitor() {
           ))}
         </div>
 
-        {/* Teacher load */}
         <div style={{ background: '#0E1117', border: '1px solid #1f2532', borderRadius: 12, padding: 16 }}>
           <div style={{ fontSize: 13, fontWeight: 700, color: '#fafafa', marginBottom: 12 }}>Teacher Load (30d)</div>
           {data.teacherLoad.length === 0 && <div style={{ fontSize: 12, color: '#6B7280', fontStyle: 'italic' }}>No tasks created yet.</div>}
@@ -778,7 +750,6 @@ function AdminHealthMonitor() {
         </div>
       </div>
 
-      {/* Lead funnel */}
       {(data.leadFunnel.new + data.leadFunnel.contacted + data.leadFunnel.admitted) > 0 && (
         <div style={{
           background: '#0E1117', border: '1px solid #1f2532', borderRadius: 12,
@@ -809,7 +780,6 @@ function AdminHealthMonitor() {
   )
 }
 
-// Pending ─────────────────────────────────────────────────────────────────────
 function AdminPending({ schoolId, onApprove }: { schoolId: string; onApprove: () => void }) {
   const [members, setMembers] = useState<Member[]>([])
   const [loading, setLoading] = useState(true)
@@ -891,7 +861,6 @@ function AdminPending({ schoolId, onApprove }: { schoolId: string; onApprove: ()
   )
 }
 
-// Members ─────────────────────────────────────────────────────────────────────
 function AdminMembers({ schoolId, selfId }: { schoolId: string; selfId: string }) {
   const [members, setMembers] = useState<Member[]>([])
   const [loading, setLoading] = useState(true)
@@ -989,7 +958,6 @@ function AdminMembers({ schoolId, selfId }: { schoolId: string; selfId: string }
   )
 }
 
-// Tasks ───────────────────────────────────────────────────────────────────────
 function AdminTasks({ schoolId: _schoolId }: { schoolId: string }) {
   const [tasks, setTasks]   = useState<Task[]>([])
   const [loading, setLoading] = useState(true)
@@ -1035,7 +1003,6 @@ function AdminTasks({ schoolId: _schoolId }: { schoolId: string }) {
   )
 }
 
-// Network Rules ───────────────────────────────────────────────────────────────
 function AdminNetwork({ schoolId: _schoolId }: { schoolId: string }) {
   const [rules, setRules]     = useState<NetworkRule[]>([])
   const [yourIp, setYourIp]   = useState('')
@@ -1175,7 +1142,6 @@ function AdminNetwork({ schoolId: _schoolId }: { schoolId: string }) {
   )
 }
 
-// Login Logs ──────────────────────────────────────────────────────────────────
 function AdminLogs({ schoolId }: { schoolId: string }) {
   const [logs, setLogs]       = useState<LoginLog[]>([])
   const [loading, setLoading] = useState(true)
@@ -1263,7 +1229,6 @@ function AdminLogs({ schoolId }: { schoolId: string }) {
   )
 }
 
-// Settings ────────────────────────────────────────────────────────────────────
 function AdminSettings({ schoolId, profile }: { schoolId: string; profile: AuthProfile }) {
   const [school, setSchool]       = useState<SchoolInfo | null>(null)
   const [loading, setLoading]     = useState(true)
@@ -1271,17 +1236,14 @@ function AdminSettings({ schoolId, profile }: { schoolId: string; profile: AuthP
   const [success, setSuccess]     = useState('')
   const [busy, setBusy]           = useState(false)
 
-  // School settings form
   const [schoolName, setSchoolName] = useState('')
   const [schoolEmail, setSchoolEmail] = useState('')
   const [domain, setDomain]         = useState('')
   const [reqApproval, setReqApproval] = useState(false)
 
-  // Passcode modal
   const [newPasscode, setNewPasscode] = useState('')
   const [passkeyModal, setPasskeyModal] = useState(false)
 
-  // Add Teacher modal
   const [teacherModal, setTeacherModal] = useState(false)
   const [tName, setTName]   = useState('')
   const [tEmail, setTEmail] = useState('')
@@ -1353,7 +1315,6 @@ function AdminSettings({ schoolId, profile }: { schoolId: string; profile: AuthP
       {err     && <ErrBanner    msg={err}     onDismiss={() => setErr('')} />}
       {success && <SuccessBanner msg={success} onDismiss={() => setSuccess('')} />}
 
-      {/* School Info */}
       <Card style={{ marginBottom: 16 }}>
         <div style={{ fontSize: 14, fontWeight: 700, color: '#fafafa', marginBottom: 16, display: 'flex', gap: 8 }}>
           <Building2 size={16} color="#4F7CFF" /> School Information
@@ -1362,7 +1323,6 @@ function AdminSettings({ schoolId, profile }: { schoolId: string; profile: AuthP
         <Input label="School Email" value={schoolEmail} onChange={setSchoolEmail} type="email" required />
         <Input label="Domain (optional)" value={domain} onChange={setDomain} placeholder="e.g. schoolname.edu.in" />
 
-        {/* Require approval toggle */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16,
           padding: '12px 14px', background: '#0E1117', borderRadius: 8, border: '1px solid #1f2532' }}>
           <div style={{ flex: 1 }}>
@@ -1381,7 +1341,6 @@ function AdminSettings({ schoolId, profile }: { schoolId: string; profile: AuthP
         </Btn>
       </Card>
 
-      {/* Danger Zone */}
       <Card style={{ marginBottom: 16 }}>
         <div style={{ fontSize: 14, fontWeight: 700, color: '#fafafa', marginBottom: 4, display: 'flex', gap: 8 }}>
           <Key size={16} color="#A5B4FC" /> School Passcode
@@ -1394,7 +1353,6 @@ function AdminSettings({ schoolId, profile }: { schoolId: string; profile: AuthP
         </Btn>
       </Card>
 
-      {/* Add Teacher */}
       <Card>
         <div style={{ fontSize: 14, fontWeight: 700, color: '#fafafa', marginBottom: 4, display: 'flex', gap: 8 }}>
           <UserPlus size={16} color="#A5B4FC" /> Add Teacher Account
@@ -1407,7 +1365,6 @@ function AdminSettings({ schoolId, profile }: { schoolId: string; profile: AuthP
         </Btn>
       </Card>
 
-      {/* Passcode reveal modal */}
       <Modal open={passkeyModal} onClose={() => setPasskeyModal(false)} title="New School Passcode" width={420}>
         <div style={{ textAlign: 'center', padding: '8px 0 16px' }}>
           <Key size={32} color="#A5B4FC" style={{ marginBottom: 12 }} />
@@ -1425,7 +1382,6 @@ function AdminSettings({ schoolId, profile }: { schoolId: string; profile: AuthP
         </Btn>
       </Modal>
 
-      {/* Add Teacher modal */}
       <Modal open={teacherModal} onClose={() => setTeacherModal(false)} title="Add Teacher Account">
         <Input label="Full Name"  value={tName}    onChange={setTName}    required />
         <Input label="Email"      value={tEmail}   onChange={setTEmail}   type="email" required />
@@ -1442,7 +1398,6 @@ function AdminSettings({ schoolId, profile }: { schoolId: string; profile: AuthP
   )
 }
 
-// ─── TEACHER HUB ─────────────────────────────────────────────────────────────
 function TeacherHub({ profile, schoolId }: { profile: AuthProfile; schoolId: string }) {
   const [tab, setTab] = useState('tasks')
 
@@ -1570,7 +1525,6 @@ function CreateTask({ schoolId: _schoolId, onCreated }: { schoolId: string; onCr
   )
 }
 
-// ─── STUDENT HUB ─────────────────────────────────────────────────────────────
 function StudentHub({ profile, schoolId }: { profile: AuthProfile; schoolId: string }) {
   const [tab, setTab] = useState('tasks')
 
@@ -1717,7 +1671,6 @@ function StudentTasks({ profile }: { profile: AuthProfile }) {
         )
       }
 
-      {/* Submit Modal */}
       <Modal open={!!submitModal} onClose={() => setSubmitModal(null)} title={`Submit: ${submitModal?.title}`}>
         {submitModal && (
           <>
@@ -1752,7 +1705,6 @@ function StudentTasks({ profile }: { profile: AuthProfile }) {
   )
 }
 
-// ─── SHARED NOTIFICATION PANEL ────────────────────────────────────────────────
 function NotifPanel({ schoolId, profile, canSend }: { schoolId: string; profile: AuthProfile; canSend: boolean }) {
   const [notifs, setNotifs]   = useState<Notif[]>([])
   const [loading, setLoading] = useState(true)
@@ -1870,7 +1822,6 @@ function NotifPanel({ schoolId, profile, canSend }: { schoolId: string; profile:
   )
 }
 
-// ─── MARKS HELPERS & COMPONENTS ──────────────────────────────────────────────
 
 function gradeInfo(pct: number) {
   if (pct >= 90) return { label: 'A+', color: '#A5B4FC' }
@@ -1881,7 +1832,6 @@ function gradeInfo(pct: number) {
   return { label: 'F', color: '#66D9FF' }
 }
 
-// Teacher marks tab: add marks + view school marks
 function TeacherMarks({ schoolId, profile }: { schoolId: string; profile: AuthProfile }) {
   const [students, setStudents] = useState<Member[]>([])
   const [marks, setMarks]       = useState<Mark[]>([])
@@ -1891,7 +1841,6 @@ function TeacherMarks({ schoolId, profile }: { schoolId: string; profile: AuthPr
   const [tab, setTab]           = useState<'add' | 'list'>('add')
   const [busy, setBusy]         = useState(false)
 
-  // Form state
   const [studentId, setStudentId]   = useState('')
   const [subject, setSubject]       = useState('')
   const [examName, setExamName]     = useState('')
@@ -1900,7 +1849,6 @@ function TeacherMarks({ schoolId, profile }: { schoolId: string; profile: AuthPr
   const [remarks, setRemarks]       = useState('')
 
   useEffect(() => {
-    // Load students + existing marks for this teacher
     Promise.all([
       api(`/schools/${schoolId}/members?role=student`),
       api('/marks/school'),
@@ -2041,7 +1989,6 @@ function TeacherMarks({ schoolId, profile }: { schoolId: string; profile: AuthPr
   )
 }
 
-// Student marks tab: view own marks + generate parent code
 function StudentMarks({ profile, schoolId }: { profile: AuthProfile; schoolId: string }) {
   const [marks, setMarks]       = useState<Mark[]>([])
   const [summary, setSummary]   = useState<MarkSummary | null>(null)
@@ -2095,7 +2042,6 @@ function StudentMarks({ profile, schoolId }: { profile: AuthProfile; schoolId: s
     <div>
       {err && <ErrBanner msg={err} onDismiss={() => setErr('')} />}
 
-      {/* Parent access code section */}
       <Card style={{ marginBottom: 16 }}>
         <div style={{ fontSize: 14, fontWeight: 700, color: '#fafafa', marginBottom: 4, display: 'flex', gap: 8 }}>
           <QrCode size={16} color="#66D9FF" /> Parent Access Code
@@ -2129,7 +2075,6 @@ function StudentMarks({ profile, schoolId }: { profile: AuthProfile; schoolId: s
         )}
       </Card>
 
-      {/* Marks */}
       {marks.length === 0 ? (
         <EmptyState icon={BarChart3} title="No marks yet" sub="Your teacher will enter marks here after each exam." />
       ) : (
@@ -2185,7 +2130,6 @@ function StudentMarks({ profile, schoolId }: { profile: AuthProfile; schoolId: s
   )
 }
 
-// Admin marks audit tab
 function AdminMarksAudit({ schoolId }: { schoolId: string }) {
   const [marks, setMarks]   = useState<Mark[]>([])
   const [loading, setLoading] = useState(true)
@@ -2211,7 +2155,6 @@ function AdminMarksAudit({ schoolId }: { schoolId: string }) {
 
   return (
     <div>
-      {/* Parent links summary */}
       <Card style={{ marginBottom: 16 }}>
         <div style={{ fontSize: 14, fontWeight: 700, color: '#fafafa', marginBottom: 10, display: 'flex', gap: 8 }}>
           <Users size={16} color="#4F7CFF" /> Parent Links ({links.length})
@@ -2236,7 +2179,6 @@ function AdminMarksAudit({ schoolId }: { schoolId: string }) {
         }
       </Card>
 
-      {/* Marks audit */}
       <div style={{ fontSize: 14, fontWeight: 700, color: '#fafafa', marginBottom: 10 }}>
         All Mark Records ({marks.length})
       </div>
@@ -2278,7 +2220,6 @@ function AdminMarksAudit({ schoolId }: { schoolId: string }) {
   )
 }
 
-// ─── DEFAULT EXPORT ───────────────────────────────────────────────────────────
 interface SchoolHubProps {
   profile: AuthProfile
 }

@@ -1,33 +1,16 @@
-/**
- * Recompute the Academic Twin snapshot for one user.
- *
- * Reads:
- *   - twin_events (last 60 days)
- *   - knowledge_mastery (current state)
- *
- * Writes:
- *   - academic_twins (one row per user)
- *
- * Algorithms here are deliberately simple + interpretable. Each signal can be
- * inspected, explained to the student ("you're tagged 'visual' because 64%
- * of your activity is in Kyno Labs and concept maps"), and tuned by hand.
- * We can swap in a real ML model later without changing the API surface.
- */
 import { supabaseAdmin } from '../supabase.js'
 import { retentionFor } from './mastery.js'
 
 const LOOKBACK_DAYS = 60
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
 function clamp01(x)    { return Math.max(0, Math.min(1, x)) }
 function safeDiv(a, b) { return b === 0 ? 0 : a / b }
 function avg(arr)      { return arr.length === 0 ? 0 : arr.reduce((a, b) => a + b, 0) / arr.length }
 
-/** Linear regression slope of (i, y_i). Used for performance trend. */
 function slope(ys) {
   if (ys.length < 2) return 0
   const n  = ys.length
-  const sx = (n - 1) * n / 2              // 0 + 1 + … + (n-1)
+  const sx = (n - 1) * n / 2
   const sy = ys.reduce((a, b) => a + b, 0)
   const sxy = ys.reduce((acc, y, i) => acc + i * y, 0)
   const sxx = ys.reduce((acc, _, i) => acc + i * i, 0)
@@ -36,9 +19,6 @@ function slope(ys) {
   return (n * sxy - sx * sy) / denom
 }
 
-// ── Learning style ──────────────────────────────────────────────────────────
-// Aggregate events by modality. Each event contributes weight = log(1+duration_sec/60).
-// We normalise to proportions summing to ~1.
 function computeLearningStyle(events) {
   const buckets = { visual: 0, text: 0, interactive: 0, repetition: 0 }
   for (const e of events) {
@@ -56,15 +36,9 @@ function computeLearningStyle(events) {
   }
 }
 
-// ── Pace ─────────────────────────────────────────────────────────────────────
-// 'fast'         high event volume + steady performance
-// 'slow'         low event volume per topic
-// 'inconsistent' high variance in daily activity
-// 'steady'       default
 function computePace(events) {
   if (events.length < 5) return 'steady'
 
-  // Bucket events per day for the last 14 days
   const now    = Date.now()
   const dayMs  = 24 * 3600 * 1000
   const counts = new Array(14).fill(0)
@@ -82,10 +56,8 @@ function computePace(events) {
   return 'steady'
 }
 
-// ── Focus pattern ────────────────────────────────────────────────────────────
 function computeFocusPattern(events, sessions) {
-  // Best hour: hour-of-day with highest average score
-  const hourScore = {}      // hour -> [scores]
+  const hourScore = {}
   for (const e of events) {
     if (e.score == null) continue
     const h = new Date(e.created_at).getHours()
@@ -94,16 +66,14 @@ function computeFocusPattern(events, sessions) {
   }
   let bestHour = null, bestAvg = -1
   for (const [h, scores] of Object.entries(hourScore)) {
-    if (scores.length < 3) continue       // need a meaningful sample
+    if (scores.length < 3) continue
     const a = avg(scores)
     if (a > bestAvg) { bestAvg = a; bestHour = Number(h) }
   }
 
-  // Avg session minutes
   const validSessions = (sessions || []).filter(s => s.duration_min != null)
   const avgMin = validSessions.length ? avg(validSessions.map(s => s.duration_min)) : null
 
-  // Dropoff after: average duration before focus_score < 0.4
   const lowFocus = validSessions.filter(s => s.focus_score != null && s.focus_score < 0.4)
   const dropoff  = lowFocus.length ? avg(lowFocus.map(s => s.duration_min)) : null
 
@@ -114,23 +84,19 @@ function computeFocusPattern(events, sessions) {
   }
 }
 
-// ── Retention score ──────────────────────────────────────────────────────────
-// Average current retention across all known topics, weighted by mastery.
 function computeRetention(masteryRows) {
   if (!masteryRows.length) return 0.5
   let num = 0, denom = 0
   const now = new Date()
   for (const m of masteryRows) {
     const r = retentionFor(m, now)
-    const w = 0.2 + 0.8 * m.mastery          // mastered topics count more
+    const w = 0.2 + 0.8 * m.mastery
     num   += r * w
     denom += w
   }
   return clamp01(safeDiv(num, denom))
 }
 
-// ── Consistency ──────────────────────────────────────────────────────────────
-// Fraction of last 14 days with any activity.
 function computeConsistency(events) {
   if (!events.length) return 0
   const now = Date.now()
@@ -143,9 +109,6 @@ function computeConsistency(events) {
   return days.size / 14
 }
 
-// ── Burnout risk ─────────────────────────────────────────────────────────────
-// High when recent session volume is way above baseline AND performance trend
-// is flat or negative.
 function computeBurnoutRisk(sessions, perfTrend) {
   const last7  = sessions.filter(s => Date.now() - new Date(s.started_at).getTime() < 7  * 86_400_000)
   const last30 = sessions.filter(s => Date.now() - new Date(s.started_at).getTime() < 30 * 86_400_000)
@@ -156,12 +119,9 @@ function computeBurnoutRisk(sessions, perfTrend) {
 
   const overload = recentMin > baseMin * 1.4 ? (recentMin / baseMin - 1) : 0
   const stagnation = perfTrend < 0 ? -perfTrend : 0
-  // 0..1
   return clamp01(0.6 * overload + 0.4 * stagnation)
 }
 
-// ── Performance trend ────────────────────────────────────────────────────────
-// Linear-regression slope of scored events over time, normalised to ~[-1, 1].
 function computePerformanceTrend(events) {
   const scored = events
     .filter(e => typeof e.score === 'number')
@@ -169,16 +129,13 @@ function computePerformanceTrend(events) {
     .map(e => e.score)
   if (scored.length < 4) return 0
   const s = slope(scored)
-  // Scores are 0..100. A slope of 1 means +1 point per event — that's strong.
   return clamp01(s / 3) * (s >= 0 ? 1 : -1)
 }
 
-// ── Confidence ───────────────────────────────────────────────────────────────
-// Blend of mastery breadth + recent accuracy.
 function computeConfidence(masteryRows, events) {
   if (!masteryRows.length && !events.length) return 0.5
   const masteredTopics = masteryRows.filter(m => m.mastery >= 0.7).length
-  const masteryFactor  = clamp01(masteredTopics / 10)      // 10 mastered topics → max
+  const masteryFactor  = clamp01(masteredTopics / 10)
   const recentCorrect  = events.filter(e => typeof e.correct === 'boolean')
   const accFactor      = recentCorrect.length
     ? recentCorrect.filter(e => e.correct).length / recentCorrect.length
@@ -186,7 +143,6 @@ function computeConfidence(masteryRows, events) {
   return clamp01(0.45 * masteryFactor + 0.55 * accFactor)
 }
 
-// ── Weak / strong / forgetting soon topics ──────────────────────────────────
 function topTopics(masteryRows, { weak = true, max = 6 }) {
   const sorted = [...masteryRows].sort((a, b) =>
     weak ? a.mastery - b.mastery : b.mastery - a.mastery
@@ -217,7 +173,6 @@ function forgettingSoon(masteryRows, max = 6) {
     }))
 }
 
-// ── Streak ──────────────────────────────────────────────────────────────────
 function computeStreak(events) {
   if (!events.length) return 0
   const dayMs = 86_400_000
@@ -230,26 +185,16 @@ function computeStreak(events) {
   for (let i = 0; i < 365; i++) {
     const target = today.getTime() - i * dayMs
     if (days.has(target)) streak++
-    else if (i > 0) break              // tolerate "no activity yet today"
+    else if (i > 0) break
   }
   return streak
 }
 
-// ── Master compute ──────────────────────────────────────────────────────────
-/**
- * Recompute the twin for one user. Returns the new snapshot (and writes it).
- * Safe to call as often as you like — typical run is < 100ms.
- */
 export async function recomputeTwin(userId) {
   if (!userId) return null
 
   const since = new Date(Date.now() - LOOKBACK_DAYS * 86_400_000).toISOString()
 
-  // 1. Pull recent events.
-  //    NB: Supabase returns `data: null` on error (e.g. table doesn't exist).
-  //    `data: X = []` destructuring ONLY defaults when X is undefined, so we
-  //    fall back manually below — that way we degrade to an empty twin
-  //    instead of throwing "events is not iterable".
   const eventsRes = await supabaseAdmin
     .from('twin_events')
     .select('event_type, subject, topic, score, correct, duration_ms, modality, created_at')
@@ -262,7 +207,6 @@ export async function recomputeTwin(userId) {
     console.warn(`[twin/compute] twin_events read failed (${eventsRes.error.code}): ${eventsRes.error.message}`)
   }
 
-  // 2. Current mastery state
   const masteryRes = await supabaseAdmin
     .from('knowledge_mastery')
     .select('*')
@@ -272,7 +216,6 @@ export async function recomputeTwin(userId) {
     console.warn(`[twin/compute] knowledge_mastery read failed (${masteryRes.error.code}): ${masteryRes.error.message}`)
   }
 
-  // 3. Recent sessions (for focus + burnout)
   const sessionsRes = await supabaseAdmin
     .from('study_sessions')
     .select('started_at, duration_min, focus_score')
@@ -283,8 +226,6 @@ export async function recomputeTwin(userId) {
     console.warn(`[twin/compute] study_sessions read failed (${sessionsRes.error.code}): ${sessionsRes.error.message}`)
   }
 
-  // If ALL three failed AND they're missing-table errors, the schema hasn't
-  // been applied yet — surface a clear error to the caller.
   const missingTable = (e) => e && (e.code === '42P01' || /relation .* does not exist/.test(e.message || ''))
   if (missingTable(eventsRes.error) && missingTable(masteryRes.error) && missingTable(sessionsRes.error)) {
     const err = new Error('Kyno schema not installed. Run kairo-dashboard/server/db/twin_schema.sql in your Supabase SQL editor.')
@@ -292,7 +233,6 @@ export async function recomputeTwin(userId) {
     throw err
   }
 
-  // 4. Compute each dimension
   const style       = computeLearningStyle(events)
   const pace        = computePace(events)
   const focus       = computeFocusPattern(events, sessions)
@@ -306,8 +246,6 @@ export async function recomputeTwin(userId) {
   const forgetSoon  = forgettingSoon(masteryRows, 8)
   const streak      = computeStreak(events)
 
-  // 5. Predicted exam score — weighted average of last 20 scored events,
-  //    nudged by performance_trend.
   const recentScored = events
     .filter(e => typeof e.score === 'number')
     .slice(0, 20)
@@ -320,7 +258,6 @@ export async function recomputeTwin(userId) {
     : predExam >= 90 ? 'A+' : predExam >= 80 ? 'A' : predExam >= 70 ? 'B+'
     : predExam >= 60 ? 'B'  : predExam >= 50 ? 'C' : predExam >= 40 ? 'D' : 'F'
 
-  // 6. Persist
   const snapshot = {
     user_id: userId,
     style_visual:        style.visual,
@@ -355,9 +292,6 @@ export async function recomputeTwin(userId) {
   return snapshot
 }
 
-/**
- * Read the current snapshot. If missing, build a fresh one.
- */
 export async function getTwin(userId) {
   if (!userId) return null
   const { data } = await supabaseAdmin

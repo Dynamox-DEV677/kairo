@@ -1,7 +1,3 @@
-/**
- * Circuits Lab — battery, resistor, bulb in series.
- * Animated dots show "current" flowing. Bulb brightness scales with I = V/R.
- */
 import { useRef, useMemo } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
@@ -35,14 +31,13 @@ function CircuitsSim({ params, playing }: SimProps) {
 }
 
 const PATH_POINTS = (() => {
-  // Rectangular loop, anti-clockwise from bottom-left
   const w = 5, h = 3
   const pts = []
   const N = 100
-  for (let i = 0; i < N / 4; i++) pts.push([-w + (2 * w * i) / (N / 4), -h, 0])         // bottom
-  for (let i = 0; i < N / 4; i++) pts.push([w, -h + (2 * h * i) / (N / 4), 0])           // right
-  for (let i = 0; i < N / 4; i++) pts.push([w - (2 * w * i) / (N / 4), h, 0])            // top
-  for (let i = 0; i < N / 4; i++) pts.push([-w, h - (2 * h * i) / (N / 4), 0])           // left
+  for (let i = 0; i < N / 4; i++) pts.push([-w + (2 * w * i) / (N / 4), -h, 0])         
+  for (let i = 0; i < N / 4; i++) pts.push([w, -h + (2 * h * i) / (N / 4), 0])           
+  for (let i = 0; i < N / 4; i++) pts.push([w - (2 * w * i) / (N / 4), h, 0])            
+  for (let i = 0; i < N / 4; i++) pts.push([-w, h - (2 * h * i) / (N / 4), 0])           
   return pts as [number, number, number][]
 })()
 
@@ -106,10 +101,8 @@ function CurrentDots({ voltage, resistance, playing }: any) {
   const I = voltage / resistance
   const N = 36
 
-  // Bigger dots + glow halo when current is higher
   const dotScale  = Math.min(1.4, 0.7 + I * 0.08)
   const haloScale = dotScale * 2.2
-  // Hue shifts cool (blue) → warm (yellow) as current rises
   const dotColor  = new THREE.Color().lerpColors(
     new THREE.Color('#22d3ee'), new THREE.Color('#C7D2E8'),
     Math.min(1, I / 8)
@@ -117,7 +110,6 @@ function CurrentDots({ voltage, resistance, playing }: any) {
 
   useFrame((_, dt) => {
     if (!ref.current || !playing) return
-    // Current speed proportional to I — faster current at high voltage / low R
     offsetRef.current += dt * Math.min(1.2, I * 0.06)
     if (offsetRef.current > 1) offsetRef.current %= 1
     const tmp = new THREE.Object3D()
@@ -125,12 +117,10 @@ function CurrentDots({ voltage, resistance, playing }: any) {
       const t = (i / N + offsetRef.current) % 1
       const idx = Math.floor(t * PATH_POINTS.length)
       const p = PATH_POINTS[idx]
-      // Main dot
       tmp.position.set(p[0], p[1], p[2] + 0.06)
       tmp.scale.setScalar(dotScale)
       tmp.updateMatrix()
       ref.current.setMatrixAt(i, tmp.matrix)
-      // Halo at same position, larger + transparent
       if (haloRef.current) {
         tmp.scale.setScalar(haloScale)
         tmp.updateMatrix()
@@ -143,7 +133,6 @@ function CurrentDots({ voltage, resistance, playing }: any) {
 
   return (
     <>
-      {/* Outer glow halo — additive blending, larger */}
       <instancedMesh ref={haloRef} args={[undefined, undefined, N]}>
         <sphereGeometry args={[0.06, 8, 8]} />
         <meshBasicMaterial
@@ -153,7 +142,6 @@ function CurrentDots({ voltage, resistance, playing }: any) {
           blending={THREE.AdditiveBlending}
         />
       </instancedMesh>
-      {/* Core electron dot — bright, emissive */}
       <instancedMesh ref={ref} args={[undefined, undefined, N]}>
         <sphereGeometry args={[0.06, 10, 10]} />
         <meshStandardMaterial

@@ -1,18 +1,3 @@
-/**
- * ResetPasscode — the full mobile-first Kyno passcode reset flow.
- *
- *   step 1  forgot   email entry
- *   step 2  verify   6-digit OTP
- *   step 3  create   new 6-digit PIN + strength meter
- *   step 4  confirm  re-enter PIN + shake on mismatch
- *   step 5  success  animated check
- *
- * State persists across refresh in localStorage via src/lib/resetSession.ts
- * so a half-completed reset survives an accidental tab close.
- *
- * Mounted as a full-screen overlay (position: fixed) — there's no host
- * page layout to negotiate. Background is its own scene.
- */
 import { useEffect, useState } from 'react'
 import { AnimatePresence } from 'framer-motion'
 
@@ -28,33 +13,23 @@ import {
 } from '../lib/resetSession'
 
 interface Props {
-  /** Called when the user backs out of step 1 or completes the flow. */
   onClose:        () => void
-  /** Called when user taps "Back to sign in" on step 1 (separate from cancel). */
   onBackToSignIn?: () => void
-  /** Pre-fill the email field (e.g. from a sign-in screen). */
   initialEmail?:  string
 }
 
 export default function ResetPasscode({ onClose, onBackToSignIn, initialEmail }: Props) {
-  // Restore from localStorage so a refresh mid-flow lands you where you were.
   const [step, setStepLocal] = useState<Step>(() => {
     const s = getStep()
-    // If the session is in 'verify' but the OTP was never verified AND we
-    // have no email on file, fall back to 'forgot'. If user is in 'create'
-    // / 'confirm' but never verified, reset too.
     if (s === 'verify' && !getEmail()) return 'forgot'
     if ((s === 'create' || s === 'confirm') && !isVerified()) return 'forgot'
     return s
   })
 
-  // Dev-OTP surfacing — survives the trip from step 1 → step 2.
   const [devOtp, setDevOtp] = useState<string | undefined>(undefined)
 
-  // Persist every step change
   useEffect(() => { saveStep(step) }, [step])
 
-  // Lock body scroll while the overlay is visible
   useEffect(() => {
     const prev = document.body.style.overflow
     document.body.style.overflow = 'hidden'

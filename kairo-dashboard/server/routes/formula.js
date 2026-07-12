@@ -1,10 +1,3 @@
-/**
- * Formula Sheet Routes
- *
- * POST /api/formula/generate    Generate formula sheet for a subject/chapter
- * GET  /api/formula             List saved formula sheets
- * DELETE /api/formula/:id
- */
 import { Router } from 'express'
 import { db } from '../db/index.js'
 import { aiCall, parseJSON } from '../utils/ai.js'

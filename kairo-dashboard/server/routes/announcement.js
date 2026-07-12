@@ -1,10 +1,3 @@
-/**
- * School Announcement Generator Routes
- *
- * POST /api/announcement/generate    AI generates announcement
- * GET  /api/announcement             List saved announcements
- * DELETE /api/announcement/:id
- */
 import { Router } from 'express'
 import { db } from '../db/index.js'
 import { aiCall } from '../utils/ai.js'
@@ -14,9 +7,9 @@ const sid = req => req.body?.school_id || req.query?.school_id || 'demo_school'
 
 router.post('/generate', async (req, res) => {
   const {
-    type = 'general',    // general | exam | holiday | event | fee | result | emergency
-    topic, audience = 'all',  // all | students | parents | teachers
-    tone = 'formal',     // formal | friendly | urgent
+    type = 'general',
+    topic, audience = 'all',
+    tone = 'formal',
     details = '',
     school_name = 'Our School',
     include_whatsapp = true,

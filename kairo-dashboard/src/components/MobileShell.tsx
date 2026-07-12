@@ -1,12 +1,3 @@
-/**
- * Mobile shell — bottom nav, slide-in drawer, slim top bar.
- * Replaces the desktop sidebar/top-bar pair under 768px.
- *
- * - BottomNav: 4 role-aware tabs + "More" → opens drawer
- * - MobileDrawer: full-height slide-in, lists every feature with grouping
- * - MobileTopBar: hamburger + page title + admin passcode pill (admins only)
- * - SafeAreaSpacer: handles iOS notch + Android nav bar via env(safe-area-inset-*)
- */
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -27,7 +18,6 @@ interface NavItem {
   icon: React.ElementType
 }
 
-// ─── Item lists (role-aware, ordered by use frequency) ──────────────────────
 const STUDENT_BOTTOM: NavItem[] = [
   { to: 'kairo-os',  label: 'Kyno',    icon: Brain },
   { to: 'doubt',     label: 'Solve',    icon: MessageCircle },
@@ -50,11 +40,9 @@ const ADMIN_BOTTOM: NavItem[] = [
 ]
 
 const PARENT_BOTTOM: NavItem[] = [
-  // Parent uses standalone ParentDashboard, not this shell
   { to: 'doubt', label: 'Home', icon: MessageCircle },
 ]
 
-// Drawer groupings (full feature list — deprecated pages removed)
 const DRAWER_STUDENT = [
   {
     title: 'Core',
@@ -180,13 +168,9 @@ interface MobileShellProps {
   onLogout?:   () => void
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// Main mobile shell — wraps top bar + drawer + bottom nav
-// ════════════════════════════════════════════════════════════════════════════
 export default function MobileShell(props: MobileShellProps) {
   const [drawerOpen, setDrawerOpen] = useState(false)
 
-  // Close drawer on escape
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setDrawerOpen(false) }
     window.addEventListener('keydown', onKey)
@@ -206,9 +190,6 @@ export default function MobileShell(props: MobileShellProps) {
   )
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// Top bar — slim, hamburger + title + admin passcode pill
-// ════════════════════════════════════════════════════════════════════════════
 function MobileTopBar({
   pageTitle, isDark, profile, onOpenDrawer,
 }: MobileShellProps & { onOpenDrawer: () => void }) {
@@ -231,7 +212,6 @@ function MobileTopBar({
       position: 'sticky', top: 0, zIndex: 90,
       height: 'calc(52px + env(safe-area-inset-top))',
       paddingTop: 'env(safe-area-inset-top)',
-      // iOS-style frosted bar — light blur; heavy blur stalls weak GPUs
       background: 'rgba(10, 13, 20, 0.9)',
       backdropFilter: 'blur(10px)',
       WebkitBackdropFilter: 'blur(10px)',
@@ -267,7 +247,6 @@ function MobileTopBar({
         )}
       </div>
 
-      {/* Admin passcode chip — only on mobile if there's room */}
       {isAdmin && passcode && (
         <button onClick={() => {
           navigator.clipboard.writeText(passcode); setCopied(true)
@@ -289,17 +268,11 @@ function MobileTopBar({
   )
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// Floating glass dock — premium 4-tab + More overflow nav
-// ════════════════════════════════════════════════════════════════════════════
 function BottomNav({
   active, setActive, profile, onOpenMore,
 }: MobileShellProps & { onOpenMore: () => void }) {
   const items = getBottomNav(profile?.role)
 
-  // Hide the dock while a text field is focused so it never covers the
-  // composer / send button (and frees space for the keyboard). It slides back
-  // up the moment focus leaves the field.
   const [hidden, setHidden] = useState(false)
   useEffect(() => {
     const isField = (el: any) => {
@@ -312,7 +285,6 @@ function BottomNav({
       return false
     }
     const onIn  = (e: FocusEvent) => { if (isField(e.target)) setHidden(true) }
-    // Delay the re-check so moving between two fields doesn't flash the dock.
     const onOut = () => { setTimeout(() => { if (!isField(document.activeElement)) setHidden(false) }, 60) }
     document.addEventListener('focusin', onIn)
     document.addEventListener('focusout', onOut)
@@ -322,7 +294,6 @@ function BottomNav({
     }
   }, [])
 
-  // Parent gets no bottom nav (uses standalone dashboard)
   if (profile?.role === 'parent') return null
 
   return (
@@ -332,7 +303,6 @@ function BottomNav({
       paddingLeft: 12, paddingRight: 12,
       display: 'flex', justifyContent: 'center',
       pointerEvents: 'none',
-      // Slide down out of the way while typing; slide back on blur.
       transform: hidden ? 'translateY(160%)' : 'translateY(0)',
       opacity: hidden ? 0 : 1,
       transition: 'transform 0.28s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease',
@@ -407,9 +377,6 @@ function BottomNav({
   )
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// Drawer — slides in from left, full feature list grouped
-// ════════════════════════════════════════════════════════════════════════════
 function MobileDrawer({
   active, setActive, isDark, toggleTheme, profile, onLogout, onClose,
 }: MobileShellProps & { onClose: () => void }) {
@@ -423,7 +390,6 @@ function MobileDrawer({
 
   return (
     <>
-      {/* Backdrop */}
       <motion.div
         initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
         onClick={onClose}
@@ -432,7 +398,6 @@ function MobileDrawer({
           background: 'rgba(0,0,0,0.6)',
         }} />
 
-      {/* Drawer */}
       <motion.aside
         initial={{ x: '-100%' }}
         animate={{ x: 0 }}
@@ -441,8 +406,6 @@ function MobileDrawer({
         style={{
           position: 'fixed', top: 0, left: 0, bottom: 0, zIndex: 101,
           width: 'min(82vw, 320px)',
-          // Near-opaque panel, NO backdrop blur: a 26px blur over the whole
-          // page froze weak GPUs (30s+ input lag on integrated graphics).
           background: 'linear-gradient(160deg, rgba(12,16,26,0.985) 0%, rgba(6,8,13,0.99) 100%)',
           borderRight: '1px solid rgba(102,217,255,0.14)',
           paddingTop: 'env(safe-area-inset-top)',
@@ -450,7 +413,6 @@ function MobileDrawer({
           display: 'flex', flexDirection: 'column',
           boxShadow: '4px 0 40px rgba(0,0,0,0.6)',
         }}>
-        {/* Header — squircle brand tile + Kyno wordmark (desktop-match) */}
         <div style={{
           margin: '14px 14px 8px',
           padding: '12px 14px',
@@ -492,7 +454,6 @@ function MobileDrawer({
           </button>
         </div>
 
-        {/* Items — iOS Settings-style grouped cards */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '6px 14px 12px', WebkitOverflowScrolling: 'touch' }}>
           {groups.map(group => (
             <div key={group.title} style={{ marginBottom: 16 }}>
@@ -501,7 +462,6 @@ function MobileDrawer({
                 textTransform: 'uppercase', letterSpacing: 1.6,
                 padding: '4px 12px 6px',
               }}>{group.title}</div>
-              {/* Rounded glass card holding the group's rows */}
               <div style={{
                 borderRadius: 14, overflow: 'hidden',
                 background: 'rgba(255,255,255,0.035)',
@@ -525,7 +485,6 @@ function MobileDrawer({
                         WebkitTapHighlightColor: 'transparent',
                         minHeight: 46,
                       }}>
-                      {/* iOS-style icon tile */}
                       <span style={{
                         width: 28, height: 28, borderRadius: 8, flexShrink: 0,
                         display: 'grid', placeItems: 'center',
@@ -547,7 +506,6 @@ function MobileDrawer({
           ))}
         </div>
 
-        {/* Footer — settings, theme, profile, logout */}
         <div style={{
           borderTop: `1px solid ${isDark ? '#1a1f2e' : '#e4e4e7'}`,
           padding: '10px 14px',
@@ -564,7 +522,6 @@ function MobileDrawer({
               }}>
               <Settings size={14} /> Settings
             </button>
-            {/* Theme toggle removed — Kyno is dark-only. */}
           </div>
 
           <div style={{

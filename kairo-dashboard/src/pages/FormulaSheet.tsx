@@ -1,8 +1,3 @@
-/**
- * Formula Sheet — auto-pulls every formula collected from Solver answers
- * (via twin.listFormulas()), plus AI-generated chapter sheets from the
- * legacy /formula endpoint. Strict monochrome palette.
- */
 import { useState, useEffect, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -15,7 +10,6 @@ import MathExpr from '../components/MathExpr'
 
 const SCHOOL_ID = 'demo_school'
 
-// ─── Strict monochrome palette ──────────────────────────────────────────────
 const C = {
   bg:        '#050505',
   panel:     '#0E1117',
@@ -52,12 +46,10 @@ type Tab = 'collected' | 'sheets'
 export default function FormulaSheet() {
   const [tab, setTab] = useState<Tab>('collected')
 
-  // Auto-collected formulas (from solver answers)
   const [collected, setCollected] = useState<TwinFormula[]>([])
   function reloadCollected() { setCollected(listFormulas()) }
   useEffect(() => { reloadCollected() }, [])
 
-  // Backend formula sheets
   const [sheets, setSheets]     = useState<any[]>([])
   const [loading, setLoading]   = useState(true)
   const [generating, setGen]    = useState(false)
@@ -101,7 +93,6 @@ export default function FormulaSheet() {
       padding: '24px 32px 60px',
     }}>
       <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-        {/* Header */}
         <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', marginBottom: 22 }}>
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
             <div style={{
@@ -173,7 +164,6 @@ function TabBtn({ active, onClick, children }: { active: boolean; onClick: () =>
   )
 }
 
-// ─── COLLECTED FORMULAS — pulled from twin ─────────────────────────────────
 function CollectedFormulas({ formulas, onReload }: { formulas: TwinFormula[]; onReload: () => void }) {
   const bySubject = useMemo(() => {
     const m = new Map<string, TwinFormula[]>()
@@ -264,9 +254,6 @@ function TwinFormulaCard({ f }: { f: TwinFormula }) {
         </button>
       </div>
       <div style={{
-        // Rendered math block — calm panel, centred, the KaTeX glyphs
-        // do the heavy lifting visually. No mono font; KaTeX brings its
-        // own serif typeface tuned for equations.
         fontSize: 17, color: C.text,
         padding: '14px 14px',
         borderRadius: 10,
@@ -287,7 +274,6 @@ function TwinFormulaCard({ f }: { f: TwinFormula }) {
   )
 }
 
-// ─── AI CHAPTER SHEETS ─────────────────────────────────────────────────────
 function SheetsView({ sheets, loading, selected, setSelected, showForm, setShowForm, form, setForm, generating, generate, remove, err }: any) {
   return (
     <div className="fs-split" style={{ display: 'grid', gridTemplateColumns: '280px 1fr', gap: 14 }}>
@@ -368,7 +354,6 @@ function SheetsView({ sheets, loading, selected, setSelected, showForm, setShowF
         </div>
       </div>
 
-      {/* Sheet body */}
       <div style={{
         background: C.panel, border: `1px solid ${C.border}`, borderRadius: 14,
         padding: 22, minHeight: 480, overflowY: 'auto',

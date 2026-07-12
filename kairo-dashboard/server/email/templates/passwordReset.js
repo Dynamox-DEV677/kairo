@@ -1,11 +1,3 @@
-/**
- * Password Reset — secure one-time reset link.
- *
- * Variables: { name, resetUrl, expiresInMinutes, ip, userAgent }
- *
- *   resetUrl — fully-built URL that includes the one-time token as a query
- *              param, e.g. `${appUrl()}/reset-password?token=xxx`
- */
 import { THEME, formatTimestamp } from '../theme.js'
 import { shell } from '../shell.js'
 import {

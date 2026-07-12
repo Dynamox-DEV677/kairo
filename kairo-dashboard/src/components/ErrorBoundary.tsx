@@ -1,15 +1,3 @@
-/**
- * ErrorBoundary — stops one crashing page from white-screening the whole app.
- *
- * React unmounts the entire tree on an uncaught render error. Before this,
- * Kyno had no boundary anywhere (main.tsx only *reports* errors via
- * window.onerror), so a single bad `.map` on undefined or a corrupt
- * JSON.parse took down the entire SPA with a blank screen and no recovery.
- *
- * Wrapping the routed page area in this boundary converts that into a calm,
- * recoverable fallback while the sidebar / bottom-nav (rendered outside the
- * boundary) stay alive so the user can navigate away.
- */
 import { Component, type ReactNode } from 'react'
 
 interface Props { children: ReactNode }
@@ -23,7 +11,6 @@ export default class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: any, info: any) {
-    // Best-effort report to the ops dashboard — never let the reporter throw.
     try {
       fetch('/api/ops/error', {
         method: 'POST',
@@ -36,16 +23,14 @@ export default class ErrorBoundary extends Component<Props, State> {
           userAgent: navigator.userAgent.slice(0, 200),
         }),
       }).catch(() => {})
-    } catch { /* ignore */ }
+    } catch {  }
   }
 
   private goHome = () => {
-    // Switch to Home first (Dashboard exposes setActive globally), then clear
-    // the error so we don't just re-render the same crashing page.
     try {
       const setActive = (window as any).__kairoSetActive
       if (typeof setActive === 'function') setActive('home')
-    } catch { /* ignore */ }
+    } catch {  }
     this.setState({ hasError: false, message: undefined })
   }
 

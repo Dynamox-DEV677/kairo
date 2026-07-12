@@ -1,12 +1,3 @@
-/**
- * KairoOSMobile — true mobile-native home screen.
- *
- * NOT a squeezed-down dashboard. Designed for one-handed thumb scroll
- * with a vertical flow: hero greeting → Pulse big stat → quick actions
- * → recommendations carousel → vitals row → revise-soon list.
- *
- * Inspired by Arc Search / Linear / Perplexity Mobile / Nothing OS.
- */
 import { useMemo, useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -20,9 +11,6 @@ import {
   type DashboardSnapshot, type Twin, type MasteryRow,
 } from '../lib/twin'
 
-// ────────────────────────────────────────────────────────────────────────────
-// PALETTE
-// ────────────────────────────────────────────────────────────────────────────
 const C = {
   bg:        '#050505',
   panel:     '#0E1117',
@@ -39,8 +27,6 @@ const C = {
   purpleSoft:'#DBE7FF',
 }
 
-// Glassmorphism card surface — translucent panel + backdrop blur. One
-// token so the whole mobile OS reads as a single glass system.
 const GLASS: React.CSSProperties = {
   background: 'linear-gradient(150deg, rgba(255,255,255,0.055) 0%, rgba(255,255,255,0.018) 100%)',
   backdropFilter: 'blur(16px) saturate(150%)',
@@ -100,19 +86,12 @@ export default function KairoOSMobile({ onNavigate, onOpenBackup }: Props) {
         @keyframes km-pulse { 0%,100% { transform: scale(1) } 50% { transform: scale(1.04) } }
       `}</style>
 
-      {/*
-        Consistent vertical rhythm: a single flex column with a 18 px gap
-        between every section. Each section owns ONLY its horizontal padding
-        (sections that host horizontal carousels stay full-width). This kills
-        the random 24/20/18 px padding mix that was leaving big visual holes.
-      */}
       <div style={{
         display: 'flex', flexDirection: 'column', gap: 18,
         paddingTop: 18,
         paddingBottom: 'calc(128px + env(safe-area-inset-bottom))',
       }}>
 
-        {/* ───── Greeting hero ───── */}
         <section style={{ padding: '0 18px' }}>
           <div style={{ fontSize: 11, fontWeight: 700, color: C.purpleLite, letterSpacing: 2, textTransform: 'uppercase', marginBottom: 4 }}>
             {greeting}
@@ -130,12 +109,10 @@ export default function KairoOSMobile({ onNavigate, onOpenBackup }: Props) {
           </p>
         </section>
 
-        {/* ───── Pulse hero card ───── */}
         <section style={{ padding: '0 18px' }}>
           <PulseHero pct={pct} label={label} twin={twin} pulsing={pulsing} onRecompute={recompute} />
         </section>
 
-        {/* ───── Quick actions strip ───── */}
         <section>
           <SectionLabel>Quick actions</SectionLabel>
           <div className="h-scroll" style={{ padding: '0 18px' }}>
@@ -147,7 +124,6 @@ export default function KairoOSMobile({ onNavigate, onOpenBackup }: Props) {
           </div>
         </section>
 
-        {/* ───── Recommendation (only the top one as a hero) ───── */}
         {snap.recommendations[0] && (
           <section style={{ padding: '0 18px' }}>
             <SectionLabel inline>Recommended now</SectionLabel>
@@ -155,7 +131,6 @@ export default function KairoOSMobile({ onNavigate, onOpenBackup }: Props) {
           </section>
         )}
 
-        {/* ───── Vitals row (chip carousel) ───── */}
         <section>
           <SectionLabel>Vitals today</SectionLabel>
           <div className="h-scroll" style={{ padding: '0 18px' }}>
@@ -167,7 +142,6 @@ export default function KairoOSMobile({ onNavigate, onOpenBackup }: Props) {
           </div>
         </section>
 
-        {/* ───── Trajectory tile ───── */}
         <section style={{ padding: '0 18px' }}>
           <SectionLabel inline>Trajectory</SectionLabel>
           <TrajectoryCard
@@ -179,7 +153,6 @@ export default function KairoOSMobile({ onNavigate, onOpenBackup }: Props) {
           />
         </section>
 
-        {/* ───── Revise soon list ───── */}
         {twin.forgettingSoon.length > 0 && (
           <section style={{ padding: '0 18px' }}>
             <SectionLabel inline>Revise soon</SectionLabel>
@@ -191,7 +164,6 @@ export default function KairoOSMobile({ onNavigate, onOpenBackup }: Props) {
           </section>
         )}
 
-        {/* ───── Weak topics chips ───── */}
         {mastery.length > 0 && (
           <section style={{ padding: '0 18px' }}>
             <SectionLabel inline>Weak spots</SectionLabel>
@@ -207,9 +179,6 @@ export default function KairoOSMobile({ onNavigate, onOpenBackup }: Props) {
   )
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// PULSE HERO
-// ════════════════════════════════════════════════════════════════════════════
 function PulseHero({ pct, label, twin, pulsing, onRecompute }: {
   pct: number; label: string; twin: Twin; pulsing: boolean; onRecompute: () => void
 }) {
@@ -230,7 +199,6 @@ function PulseHero({ pct, label, twin, pulsing, onRecompute }: {
         overflow: 'hidden',
       }}
     >
-      {/* Backdrop orb */}
       <div style={{
         position: 'absolute', top: '-30%', left: '50%', transform: 'translateX(-50%)',
         width: 280, height: 280, borderRadius: '50%',
@@ -239,7 +207,6 @@ function PulseHero({ pct, label, twin, pulsing, onRecompute }: {
         pointerEvents: 'none',
       }} />
 
-      {/* Stacks vertically on phones: ring on top, label/copy beneath. */}
       <div style={{
         position: 'relative', display: 'flex', flexDirection: 'column',
         alignItems: 'center', textAlign: 'center', gap: 14,
@@ -326,9 +293,6 @@ function MiniMetric({ label, value, unit }: { label: string; value: any; unit?: 
   )
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// SECTION HELPERS
-// ════════════════════════════════════════════════════════════════════════════
 function SectionLabel({ children, inline = false }: { children: React.ReactNode; inline?: boolean }) {
   return (
     <div style={{
@@ -342,9 +306,6 @@ function SectionLabel({ children, inline = false }: { children: React.ReactNode;
   )
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// QUICK ACTION (horizontal-scroll chip)
-// ════════════════════════════════════════════════════════════════════════════
 function QuickAction({ label, icon: Icon, onClick, accent }: { label: string; icon: any; onClick: () => void; accent: string }) {
   return (
     <motion.button
@@ -376,9 +337,6 @@ function QuickAction({ label, icon: Icon, onClick, accent }: { label: string; ic
   )
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// TOP RECOMMENDATION
-// ════════════════════════════════════════════════════════════════════════════
 function TopRecommendation({ rec, onClick }: { rec: any; onClick: () => void }) {
   const Icon = rec.kind === 'revise' ? Repeat
     : rec.kind === 'lab' ? Beaker
@@ -424,9 +382,6 @@ function TopRecommendation({ rec, onClick }: { rec: any; onClick: () => void }) 
   )
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// VITAL CHIP (horizontal-scroll metric)
-// ════════════════════════════════════════════════════════════════════════════
 function VitalChip({ title, pct, unit = '%', tone, icon: Icon }: { title: string; pct: number; unit?: string; tone: 'good' | 'warn' | 'danger' | 'neutral'; icon: any }) {
   const accent = tone === 'good' ? C.purpleLite : tone === 'warn' ? C.purple : tone === 'danger' ? C.purpleHi : C.purpleSoft
   return (
@@ -449,9 +404,6 @@ function VitalChip({ title, pct, unit = '%', tone, icon: Icon }: { title: string
   )
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// TRAJECTORY
-// ════════════════════════════════════════════════════════════════════════════
 function TrajectoryCard({ trend, predicted, band, mastered, tracked }: {
   trend: number; predicted: number | null; band: string | null; mastered: number; tracked: number
 }) {
@@ -499,9 +451,6 @@ function TrajectoryCard({ trend, predicted, band, mastered, tracked }: {
   )
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// REVISE ROW + TOPIC CHIP
-// ════════════════════════════════════════════════════════════════════════════
 function ReviseRow({ topic, subject, hours, onClick }: { topic: string; subject: string; hours: number; onClick: () => void }) {
   const urgent = hours < 24
   return (
@@ -557,9 +506,6 @@ function TopicChip({ row, onClick }: { row: MasteryRow & { retentionNow?: number
   )
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// EMPTY STATE
-// ════════════════════════════════════════════════════════════════════════════
 function EmptyState({ onSeed }: { onSeed?: () => void }) {
   return (
     <div style={{
@@ -593,7 +539,6 @@ function EmptyState({ onSeed }: { onSeed?: () => void }) {
             color: '#fff', fontFamily: 'inherit', fontSize: 14, fontWeight: 700,
             letterSpacing: 0.2, cursor: 'pointer',
             boxShadow: '0 6px 18px rgba(79, 124, 255, 0.18)',
-            // Bigger tap target than desktop — finger-friendly
             minHeight: 44,
           }}
         >

@@ -1,11 +1,3 @@
-/**
- * Kyno Onboarding — four modes: Sign In · Personal · Join School · Create School
- *
- *   Sign In        : email + password → supabase.auth.signInWithPassword
- *   Personal       : 1-step → POST /api/users/register-personal (no school)
- *   Join School    : 4-step wizard → POST /api/users/register OR /api/parent/register
- *   Create School  : 3-step wizard → POST /api/schools/register → checkout
- */
 import { useState, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -51,17 +43,8 @@ const PLANS = [
   { id: 'trial',   label: 'Free Trial', price: '₹0',    per: '14 days', popular: false },
 ]
 
-// ─── Top-level component ────────────────────────────────────────────────────
-// Drifting brand wordmarks for the background.
-// Time-based (not scroll-based) since Login doesn't scroll. Same monochrome
-// purple palette + giant DISPLAY-style typography as the landing's
-// GlobalScrollLayer, but it loops on a timer so it works on every device.
 function AmbientWordmarks() {
   const display = "'Inter Tight', 'Inter', 'Neue Haas Grotesk Display', 'Helvetica Neue', system-ui, sans-serif"
-  // Plain CSS keyframes — Framer Motion's `animate={{ x: [...] }}` keyframe
-  // arrays were silently refusing to start in this layout (likely a conflict
-  // with the centering wrapper). CSS animation is bulletproof and works on
-  // every device including mobile Safari.
   return (
     <>
       <style>{`
@@ -118,13 +101,9 @@ export default function Login({ onLogin }: LoginProps) {
   const transition = { type: 'spring' as const, stiffness: 250, damping: 30 }
 
   return (
-    // Owns its own scroll context — global `body { overflow:hidden }` on mobile
-    // (which exists to keep the bottom nav fixed in the rest of the app) means
-    // this page would otherwise be unscrollable. The `100dvh` keeps the layout
-    // stable when mobile browser chrome shows/hides.
     <div style={{
       height: '100dvh',
-      minHeight: '100vh',                          // fallback for older browsers
+      minHeight: '100vh',
       background: '#050505',
       fontFamily: "'Inter', system-ui, sans-serif",
       display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
@@ -133,18 +112,10 @@ export default function Login({ onLogin }: LoginProps) {
       paddingTop: 'env(safe-area-inset-top)',
       paddingBottom: 'env(safe-area-inset-bottom)',
       position: 'relative',
-      overflowX: 'hidden',           // contain the drifting wordmarks
+      overflowX: 'hidden',
     }}>
-      {/* Drifting background wordmarks — same brand language as the landing's
-          GlobalScrollLayer, but TIME-based (Login doesn't scroll, so no
-          scrollYProgress to bind to). Two counter-drifting bands give the
-          background that "the page is breathing" feel on both desktop and
-          mobile. pointerEvents: none so they never intercept taps. */}
       <AmbientWordmarks />
 
-      {/* Ambient glow — absolute (not fixed) so the root's overflowX:hidden
-          actually clips it; capped to the viewport so it never forces a
-          horizontal scrollbar on phones (<600px). */}
       <div style={{
         position: 'absolute', top: '15%', left: '50%', transform: 'translateX(-50%)',
         width: 'min(600px, 100vw)', height: 'min(600px, 100vw)', borderRadius: '50%',
@@ -154,7 +125,6 @@ export default function Login({ onLogin }: LoginProps) {
       }} />
 
       <div style={{ width: '100%', maxWidth: 480, padding: '28px 20px 48px', display: 'flex', flexDirection: 'column', position: 'relative', zIndex: 2 }}>
-        {/* Logo */}
         <div style={{ textAlign: 'center', marginBottom: 22, flexShrink: 0 }}>
           <img src="/kyno-logo.png" alt="Kyno"
             style={{
@@ -168,8 +138,6 @@ export default function Login({ onLogin }: LoginProps) {
           </p>
         </div>
 
-        {/* Wizard surface — let it size to its content (was `flex: 1` which
-            collapsed the children behind a fixed viewport height). */}
         <div style={{
           background: '#0E1117', border: '1px solid #1f2532', borderRadius: 18,
           padding: 24,
@@ -213,16 +181,10 @@ export default function Login({ onLogin }: LoginProps) {
   )
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// Choose mode landing
-// ════════════════════════════════════════════════════════════════════════════
 function ChooseMode({ setMode }: { setMode: (m: Mode) => void }) {
   const [gBusy, setGBusy] = useState(false)
   const [gErr, setGErr] = useState('')
 
-  // Google OAuth via Supabase — redirects to Google, then back here where
-  // App.tsx's restoreSession picks up the session (and auto-provisions a
-  // users row for first-time Google accounts).
   async function googleSignIn() {
     setGErr('')
     setGBusy(true)
@@ -232,7 +194,6 @@ function ChooseMode({ setMode }: { setMode: (m: Mode) => void }) {
         options: { redirectTo: window.location.origin },
       })
       if (error) throw new Error(error.message)
-      // Browser is navigating to Google now — leave the spinner on.
     } catch (e: any) {
       setGErr(e?.message || 'Google sign-in failed — try again.')
       setGBusy(false)
@@ -244,7 +205,6 @@ function ChooseMode({ setMode }: { setMode: (m: Mode) => void }) {
       <h2 style={{ fontSize: 20, fontWeight: 700, color: '#fafafa', margin: 0, marginBottom: 6 }}>Welcome to Kyno</h2>
       <p style={{ fontSize: 13, color: '#9CA3AF', marginBottom: 18 }}>Continue your AI learning journey.</p>
 
-      {/* Sign in with Google */}
       <motion.button
         onClick={googleSignIn}
         disabled={gBusy}
@@ -272,7 +232,6 @@ function ChooseMode({ setMode }: { setMode: (m: Mode) => void }) {
         <p style={{ fontSize: 12, color: '#f87171', margin: '10px 2px 0' }}>{gErr}</p>
       )}
 
-      {/* or divider */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '18px 0' }}>
         <div style={{ flex: 1, height: 1, background: '#1f2532' }} />
         <span style={{ fontSize: 11, color: '#6B7280', fontWeight: 600, letterSpacing: 1 }}>OR</span>
@@ -318,9 +277,6 @@ function ChoiceCard({ onClick, icon: Icon, title, desc, highlight = false }: any
   )
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// Sign In
-// ════════════════════════════════════════════════════════════════════════════
 function SignIn({ onLogin, onBack }: any) {
   const [email, setEmail]       = useState('')
   const [password, setPassword] = useState('')
@@ -336,8 +292,6 @@ function SignIn({ onLogin, onBack }: any) {
     }
     setBusy(true); setErr('')
     try {
-      // Use our own Gmail-SMTP-backed endpoint — Supabase's default SMTP is
-      // unreliable and 500s on free projects. Always returns 200 (anti-enum).
       await post('/users/forgot-password', { email: email.trim().toLowerCase() })
       setResetSent(true)
     } catch (e: any) {
@@ -357,14 +311,10 @@ function SignIn({ onLogin, onBack }: any) {
       })
       if (error) throw new Error(error.message)
 
-      // maybeSingle() avoids the 406 you get when .single() finds zero rows.
-      // Some legacy auth users don't have a public.users profile — handle that.
       let { data: userRow } = await supabase
         .from('users').select('id, name, role, school_id, avatar_url')
         .eq('id', data.user.id).maybeSingle()
 
-      // Auto-provision a minimal profile when the auth user has no public row.
-      // Personal-mode default: role=student, no school, status=active.
       if (!userRow) {
         const fallbackName = (data.user.user_metadata as any)?.name
           || data.user.email?.split('@')[0]
@@ -376,7 +326,7 @@ function SignIn({ onLogin, onBack }: any) {
             role:      'student',
             school_id: null,
           })
-        } catch { /* RLS may block — server will still pick up via /users/profile */ }
+        } catch {  }
         userRow = { id: data.user.id, name: fallbackName, role: 'student', school_id: null, avatar_url: null } as any
       }
 
@@ -461,9 +411,6 @@ function SignIn({ onLogin, onBack }: any) {
   )
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// Personal Sign Up — single screen, no school required
-// ════════════════════════════════════════════════════════════════════════════
 const BOARDS = ['CBSE', 'ICSE', 'State', 'IB', 'Other'] as const
 
 function PersonalSignup({ onLogin, onBack }: any) {
@@ -476,18 +423,13 @@ function PersonalSignup({ onLogin, onBack }: any) {
   const [avatar, setAvatar]     = useState<string | null>(null)
   const [busy, setBusy]         = useState(false)
   const [err, setErr]           = useState('')
-  const [exists, setExists]     = useState(false)   // shows recovery options
-  const [resetSent, setResetSent] = useState(false) // reset-email confirmation
-  // Personal signup used to silently force role='student', which meant any
-  // teacher signing up without a school code ended up with a student sidebar
-  // and zero access to teacher tools. Default to student because that's the
-  // common case; teachers tap the Teacher chip.
+  const [exists, setExists]     = useState(false)
+  const [resetSent, setResetSent] = useState(false)
   const [role, setRole] = useState<'student' | 'teacher'>('student')
 
   async function sendPasswordReset() {
     setBusy(true); setErr('')
     try {
-      // Our own Gmail-SMTP endpoint (Supabase's default SMTP 500s on free projects).
       await post('/users/forgot-password', { email: email.trim().toLowerCase() })
       setResetSent(true)
     } catch (e: any) {
@@ -531,9 +473,6 @@ function PersonalSignup({ onLogin, onBack }: any) {
       const profile: AuthProfile = {
         id:            data.user?.id,
         name:          data.user?.name,
-        // Trust the role the server actually persisted — falls back to the
-        // form's selection so the new account lands on the right sidebar
-        // even if the server returns a partial row.
         role:          data.user?.role || role,
         avatar_url:    data.user?.avatar_url,
         cls:           data.user?.class_name,
@@ -547,8 +486,6 @@ function PersonalSignup({ onLogin, onBack }: any) {
       onLogin(profile)
     } catch (e: any) {
       const msg = (e.message || 'Something went wrong.').toLowerCase()
-      // 409 — account already exists. Silently try to SIGN IN with the
-      // same email + password. Same person, same creds → just log them in.
       if (msg.includes('already exists') || msg.includes('409')) {
         try {
           const { data: signed, error: signErr } = await supabase.auth.signInWithPassword({
@@ -557,7 +494,6 @@ function PersonalSignup({ onLogin, onBack }: any) {
           })
           if (signErr || !signed?.session) throw signErr || new Error('no session')
 
-          // Success — fetch the profile row and continue as a normal login.
           const { data: userRow } = await supabase
             .from('users').select('id, name, role, school_id, avatar_url, class_name, board')
             .eq('id', signed.user!.id).maybeSingle()
@@ -565,8 +501,6 @@ function PersonalSignup({ onLogin, onBack }: any) {
           const profile: AuthProfile = {
             id:            signed.user!.id,
             name:          (userRow as any)?.name || name.trim(),
-            // Preserve whatever role the DB already has — never silently
-            // downgrade an existing teacher to a student.
             role:          (userRow as any)?.role || role,
             avatar_url:    (userRow as any)?.avatar_url,
             cls:           (userRow as any)?.class_name,
@@ -580,7 +514,6 @@ function PersonalSignup({ onLogin, onBack }: any) {
           onLogin(profile)
           return
         } catch {
-          // Sign-in failed (wrong password). Show the "go to sign in" CTA.
           setErr('This email is already registered. Use the same password you signed up with, or tap "Sign In" below.')
           setExists(true)
           setBusy(false)
@@ -610,9 +543,6 @@ function PersonalSignup({ onLogin, onBack }: any) {
           </button>
         </div>
       </Field>
-      {/* Role picker — Student or Teacher. Defaults to Student. Without this
-          every personal signup got silently registered as a student, which
-          broke teachers signing up without a school code. */}
       <Field label="I am a..." icon={Users}>
         <div style={{ display: 'flex', gap: 8 }}>
           {([
@@ -716,9 +646,6 @@ function PersonalSignup({ onLogin, onBack }: any) {
   )
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// Join School — 4-step wizard
-// ════════════════════════════════════════════════════════════════════════════
 function JoinSchool({ onLogin, onBack }: any) {
   const [step, setStep] = useState(1)
   const [code, setCode] = useState('')
@@ -728,8 +655,7 @@ function JoinSchool({ onLogin, onBack }: any) {
   const [password, setPassword] = useState('')
   const [show, setShow] = useState(false)
   const [role, setRole] = useState<'student' | 'teacher' | 'parent' | null>(null)
-  const [avatar, setAvatar] = useState<string | null>(null)   // base64 data URL
-  // Parent extras
+  const [avatar, setAvatar] = useState<string | null>(null)
   const [studentName, setStudentName] = useState('')
   const [parentCode, setParentCode] = useState('')
   const [busy, setBusy] = useState(false)
@@ -762,7 +688,6 @@ function JoinSchool({ onLogin, onBack }: any) {
     setBusy(true); setErr('')
     try {
       if (role === 'parent') {
-        // Parent: validate parent code (NOT the school join code)
         if (!parentCode.trim() || !studentName.trim()) {
           throw new Error('Enter the student\'s name and your access code.')
         }
@@ -783,7 +708,6 @@ function JoinSchool({ onLogin, onBack }: any) {
         localStorage.setItem('kairo_profile', JSON.stringify(profile))
         onLogin(profile)
       } else {
-        // Student / Teacher: standard register flow
         const data = await post('/users/register', {
           name: name.trim(), role, email: email.trim(), password,
           school_name: school.school_name, school_passcode: code.trim().toUpperCase(),
@@ -803,7 +727,6 @@ function JoinSchool({ onLogin, onBack }: any) {
     } catch (e: any) { setErr(e.message); setBusy(false) }
   }
 
-  // Step 1 — code entry
   if (step === 1) return (
     <Wizard back={onBack} step={1} of={4} title="Join School" subtitle="Enter the code your school gave you.">
       <Field label="School Join Code" icon={Key}>
@@ -817,14 +740,12 @@ function JoinSchool({ onLogin, onBack }: any) {
     </Wizard>
   )
 
-  // Step 2 — school preview + account
   if (step === 2) return (
     <Wizard
       back={() => setStep(1)} step={2} of={4}
       title="Account Setup" subtitle={`You're joining ${school.school_name}.`}>
       <SchoolPreview school={school} />
 
-      {/* Avatar picker — circular, click to upload, x to remove */}
       <AvatarPicker avatar={avatar} onPick={handleAvatar} fallback={name} />
 
       <Field label="Full Name" icon={User}>
@@ -855,7 +776,6 @@ function JoinSchool({ onLogin, onBack }: any) {
     </Wizard>
   )
 
-  // Step 3 — pick role
   if (step === 3) return (
     <Wizard
       back={() => setStep(2)} step={3} of={4}
@@ -920,7 +840,6 @@ function JoinSchool({ onLogin, onBack }: any) {
     </Wizard>
   )
 
-  // Step 4 — parent linking
   return (
     <Wizard
       back={() => setStep(3)} step={4} of={4}
@@ -941,9 +860,6 @@ function JoinSchool({ onLogin, onBack }: any) {
   )
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// Create School — 2-step wizard (payment removed; monetisation deferred)
-// ════════════════════════════════════════════════════════════════════════════
 function CreateSchool({ onLogin, onBack }: any) {
   const [step, setStep]           = useState(1)
   const [schoolName, setSchoolName] = useState('')
@@ -958,10 +874,6 @@ function CreateSchool({ onLogin, onBack }: any) {
   async function createSchool() {
     setBusy(true); setErr('')
     try {
-      // 1. Create the school + admin account. The server signs the admin
-      //    in SERVER-SIDE and returns the session tokens directly, so we
-      //    don't need a separate supabase.auth.signInWithPassword call
-      //    (which was 400-ing because of a race / auth-config mismatch).
       const data = await post('/schools/register', {
         school_name:    schoolName.trim(),
         school_email:   email.trim().toLowerCase(),
@@ -973,8 +885,6 @@ function CreateSchool({ onLogin, onBack }: any) {
       let access_token  = data.access_token  || null
       let refresh_token = data.refresh_token || null
 
-      // 2. Fallback: if the server didn't return tokens (older deploy or
-      //    sign-in failed server-side), try the legacy client-side sign-in.
       if (!access_token || !refresh_token) {
         try {
           const { data: signed } = await supabase.auth.signInWithPassword({
@@ -990,9 +900,6 @@ function CreateSchool({ onLogin, onBack }: any) {
         }
       }
 
-      // 3. Still no tokens? Walk the user to the sign-in screen with a
-      //    friendly note — their school IS created, they just need to
-      //    sign in manually. Better UX than a red error box.
       if (!access_token || !refresh_token) {
         setErr(`School created. Sign in with ${email} to access your dashboard.`)
         setBusy(false)
@@ -1068,7 +975,6 @@ function CreateSchool({ onLogin, onBack }: any) {
     </Wizard>
   )
 
-  // Step 3 — passcode reveal (was step 4 before payment was removed)
   return (
     <Wizard back={null} step={null} title="School Created" subtitle="Save your join code somewhere safe.">
       <div style={{
@@ -1109,9 +1015,6 @@ function CreateSchool({ onLogin, onBack }: any) {
   )
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// Shared sub-components
-// ════════════════════════════════════════════════════════════════════════════
 function Wizard({ back, step, of, title, subtitle, children }: any) {
   return (
     <div>
@@ -1249,7 +1152,6 @@ function AvatarPicker({ avatar, onPick, fallback }: {
         {avatar
           ? <img src={avatar} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           : initial}
-        {/* Camera badge */}
         <div style={{
           position: 'absolute', bottom: 0, right: 0,
           width: 26, height: 26, borderRadius: '50%',

@@ -1,10 +1,3 @@
-/**
- * Saturn V Lab — the rocket that took humans to the Moon.
- *
- * The Sketchfab GLB has only one material (so no material-name routing),
- * so we lay invisible click-boxes over each stage along the rocket's Y axis.
- * Click a stage → side info card explains what it did.
- */
 import { Suspense, useMemo, useRef, useState } from 'react'
 import { useFrame, type ThreeEvent } from '@react-three/fiber'
 import { OrbitControls, useGLTF, ContactShadows, Html } from '@react-three/drei'
@@ -17,7 +10,6 @@ import { PartInfoCard, PartHoverChip, PartIdleHint, type PartCatalog } from './L
 const SATURN_V_URL = 'https://cdn.jsdelivr.net/gh/Dynamox-DEV677/kairo@main/models-cdn/saturn_v.glb'
 const TARGET_SIZE = 8.5
 
-// ─── Stage catalog ──────────────────────────────────────────────────────────
 const PARTS: PartCatalog = {
   f1_engines: {
     id: 'f1_engines', label: 'F-1 Engines (×5)', color: '#f97316',
@@ -63,9 +55,6 @@ const PARTS: PartCatalog = {
   },
 }
 
-// Stages laid out by *normalised* height (0 = bottom, 1 = top of the model).
-// The GLB is fit to TARGET_SIZE on the Y axis after centering, so these ranges
-// translate directly into world-space click-boxes.
 type StageBox = { id: string; from: number; to: number }
 const STAGES: StageBox[] = [
   { id: 'f1_engines', from: 0.00, to: 0.06 },
@@ -138,9 +127,6 @@ function Rocket({ playing, hovered, selected, onHover, onSelect }: {
   const { scene } = useGLTF(SATURN_V_URL)
   const groupRef = useRef<THREE.Group>(null)
 
-  // Clone, auto-orient (longest axis → Y), fit to TARGET_SIZE, center on origin.
-  // This GLB has its long axis on Z (Sketchfab Maya/FBX export quirk) — without
-  // this rotation the rocket renders lying on its side pointing at the camera.
   const { cloned, height, halfX } = useMemo(() => {
     const c = scene.clone(true)
     c.traverse((obj: any) => {
@@ -150,7 +136,6 @@ function Rocket({ playing, hovered, selected, onHover, onSelect }: {
       }
     })
 
-    // 1. Measure mesh-only bounds in source orientation.
     const meshBox = new THREE.Box3()
     let meshes = 0
     c.traverse((obj: any) => {
@@ -163,16 +148,12 @@ function Rocket({ playing, hovered, selected, onHover, onSelect }: {
     const srcSize = new THREE.Vector3()
     sourceBox.getSize(srcSize)
 
-    // 2. Detect longest axis. If it's not Y, rotate so it becomes Y (up).
-    //    Z-longest is common in Maya/FBX exports → rotate -90° around X.
-    //    X-longest is rare but possible → rotate -90° around Z.
     if (srcSize.z > srcSize.y && srcSize.z > srcSize.x) {
-      c.rotateX(-Math.PI / 2)        // +Z → +Y (stand up)
+      c.rotateX(-Math.PI / 2)        
     } else if (srcSize.x > srcSize.y && srcSize.x > srcSize.z) {
-      c.rotateZ(Math.PI / 2)         // +X → +Y
+      c.rotateZ(Math.PI / 2)         
     }
 
-    // 3. Re-measure after rotation, then fit + center.
     c.updateMatrixWorld(true)
     const rotatedBox = new THREE.Box3()
     c.traverse((obj: any) => {
@@ -184,7 +165,6 @@ function Rocket({ playing, hovered, selected, onHover, onSelect }: {
     const factor = TARGET_SIZE / longest
     c.scale.setScalar(factor)
 
-    // 4. Recompute, center on origin.
     c.updateMatrixWorld(true)
     const scaledBox = new THREE.Box3()
     c.traverse((obj: any) => {
@@ -199,22 +179,18 @@ function Rocket({ playing, hovered, selected, onHover, onSelect }: {
     return { cloned: c, height: finalSize.y, halfX: Math.max(finalSize.x, finalSize.z) / 2 }
   }, [scene])
 
-  // Gentle idle wobble when not auto-rotating
   useFrame((state) => {
     if (!groupRef.current || !playing) return
     groupRef.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.15) * 0.05
   })
 
-  // Position the click-boxes along the rocket's Y axis using the STAGES table.
-  // The rocket is centered on origin, so its Y range is [-height/2 .. +height/2].
   const yBottom = -height / 2
-  const boxRadius = halfX * 1.8     // wider than the rocket so clicks always land
+  const boxRadius = halfX * 1.8     
 
   return (
     <group ref={groupRef}>
       <primitive object={cloned} />
 
-      {/* Per-stage clickable invisible boxes */}
       {STAGES.map(stage => {
         const yLo = yBottom + stage.from * height
         const yHi = yBottom + stage.to * height
@@ -224,7 +200,6 @@ function Rocket({ playing, hovered, selected, onHover, onSelect }: {
 
         return (
           <group key={stage.id} position={[0, yMid, 0]}>
-            {/* Invisible hit volume — captures pointer events */}
             <mesh
               onPointerOver={(e: ThreeEvent<PointerEvent>) => { e.stopPropagation(); onHover(stage.id); document.body.style.cursor='pointer' }}
               onPointerOut={() => { onHover(null); document.body.style.cursor='default' }}
@@ -233,7 +208,6 @@ function Rocket({ playing, hovered, selected, onHover, onSelect }: {
               <meshBasicMaterial transparent opacity={0} depthWrite={false} />
             </mesh>
 
-            {/* Glow ring that appears when this stage is hovered or selected */}
             {isLit && (
               <mesh rotation={[Math.PI / 2, 0, 0]}>
                 <torusGeometry args={[halfX * 1.25, 0.04, 8, 48]} />

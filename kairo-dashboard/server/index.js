@@ -1,4 +1,3 @@
-// Local development server — NOT used by Vercel (see api/index.js)
 import app from './app.js'
 import { startScheduler }  from './services/schedulerService.js'
 import { startCleanupJob } from './jobs/cleanup.js'

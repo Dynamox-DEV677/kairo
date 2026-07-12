@@ -1,19 +1,3 @@
-/**
- * Concept Map — auto-built from the unified Kyno memory engine.
- *
- * Reads `getConceptGraph()` from twin.ts which discovers nodes from:
- *   1. Every topic the user has touched in any event (auto-discovery)
- *   2. Explicit concepts recorded via recordConcept()
- *
- * Edges are auto-discovered too: any two topics studied within the same
- * 30-minute window get linked. Plus any explicit relations.
- *
- * The result is a real neural-graph of "what this student has learned and
- * how their concepts connect" — built entirely from localStorage, evolving
- * every time they use Kyno. Drag any node to rearrange. Zoom + pan.
- *
- * Strict palette: black + deep purple + white only.
- */
 import { useEffect, useState, useRef, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import {
@@ -27,31 +11,15 @@ import {
   type ConceptNode, type ConceptEdge,
 } from '../lib/twin'
 
-// ──────────────────────────────────────────────────────────────────────────
-// Illustrated view — premium dark monochrome with hexagonal nodes.
-//
-// The Concept Map can render in two modes:
-//   • 'illustrated' (default): infographic-style hexagonal nodes on a
-//     dark diamond-pattern background. Thin white outlines, line-art
-//     icons flanking each node, all-caps uppercase titles. Reads like
-//     a premium business diagram.
-//   • 'pro': the original force-graph view — every concept + auto-discovered
-//     edges, drag-to-rearrange. Power tool, still here.
-//
-// Mode preference is persisted to localStorage so it sticks across sessions.
-// ──────────────────────────────────────────────────────────────────────────
 type ViewMode = 'illustrated' | 'pro'
 
-// Monochrome palette — strict black/white/gray. The whole point of this
-// view is restraint: every element competes for attention only with the
-// concept text itself, never with colour.
 const MONO = {
-  bg:          '#08090C',       // near-black canvas
-  bgPattern:   '#14151B',       // pattern accent (diamonds + dot grid)
-  ink:         '#FFFFFF',       // node outline + headline text
-  inkDim:      '#9CA3AF',       // body text
-  inkFaint:    '#4B5563',       // hairline strokes
-  accent:      '#FFFFFF',       // selected / hover treatment
+  bg:          '#08090C',
+  bgPattern:   '#14151B',
+  ink:         '#FFFFFF',
+  inkDim:      '#9CA3AF',
+  inkFaint:    '#4B5563',
+  accent:      '#FFFFFF',
 }
 const HEADLINE_FONT = "'Inter Tight', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif"
 
@@ -80,26 +48,19 @@ export default function ConceptMap() {
   const [hover, setHover] = useState<string | null>(null)
   const [dragId, setDragId] = useState<string | null>(null)
   const svgRef = useRef<SVGSVGElement>(null)
-  // Pan + zoom for the Pro graph: content is wrapped in a <g transform> so it
-  // can be pinch-zoomed / dragged / +- buttoned on mobile. k=scale, x/y=pan.
   const [view, setView] = useState({ k: 1, x: 0, y: 0 })
-  // View mode — illustrated (default) or pro. Persisted per device.
   const [mode, setMode] = useState<ViewMode>(() => {
     try { return (localStorage.getItem('kairo:conceptmap:view') as ViewMode) || 'illustrated' }
     catch { return 'illustrated' }
   })
-  // The concept currently shown as the centre of the illustrated map.
-  // Defaults to the most-visited concept; user can click any satellite
-  // to recentre the map there.
   const [centerId, setCenterId] = useState<string | null>(null)
   useEffect(() => {
-    try { localStorage.setItem('kairo:conceptmap:view', mode) } catch { /* ignore */ }
+    try { localStorage.setItem('kairo:conceptmap:view', mode) } catch {  }
   }, [mode])
 
   function reload() {
     const g = getConceptGraph()
     setGraph(g)
-    // Place nodes in clusters by subject — radial layout, deterministic per-id
     const bySubject = new Map<string, ConceptNode[]>()
     for (const n of g.nodes) {
       if (!bySubject.has(n.subject)) bySubject.set(n.subject, [])
@@ -136,13 +97,11 @@ export default function ConceptMap() {
     return () => window.removeEventListener('storage', onStorage)
   }, [])
 
-  // ── Pan / zoom / drag ────────────────────────────────────────────────
   const dragOffsetRef = useRef({ ox: 0, oy: 0 })
   const ptrs = useRef<Map<number, { x: number; y: number }>>(new Map())
   const pinchRef = useRef<{ dist: number; k: number; x: number; y: number; mx: number; my: number } | null>(null)
   const panRef = useRef<{ x: number; y: number; vx: number; vy: number } | null>(null)
 
-  // client px → viewBox coords (accounts for preserveAspectRatio letterboxing)
   function toViewBox(cx: number, cy: number) {
     const svg = svgRef.current
     const m = svg?.getScreenCTM()
@@ -151,23 +110,21 @@ export default function ConceptMap() {
     const p = pt.matrixTransform(m.inverse())
     return { x: p.x, y: p.y }
   }
-  // undo the current pan/zoom → content coords
   const toContent = (vbx: number, vby: number) => ({ x: (vbx - view.x) / view.k, y: (vby - view.y) / view.k })
 
   const clampK = (k: number) => Math.max(0.5, Math.min(4, k))
   function zoomBy(factor: number) {
     setView(v => {
       const k = clampK(v.k * factor)
-      const cx = 550, cy = 310  // viewBox centre — zoom toward the middle
+      const cx = 550, cy = 310
       return { k, x: cx - (cx - v.x) * (k / v.k), y: cy - (cy - v.y) * (k / v.k) }
     })
   }
   const resetView = () => setView({ k: 1, x: 0, y: 0 })
 
-  // Node drag — in content space so the node tracks the finger under any zoom.
   function startDrag(e: React.PointerEvent, id: string) {
-    e.preventDefault(); e.stopPropagation()   // don't also begin a background pan
-    try { (e.target as Element).setPointerCapture(e.pointerId) } catch { /* ignore */ }
+    e.preventDefault(); e.stopPropagation()
+    try { (e.target as Element).setPointerCapture(e.pointerId) } catch {  }
     setDragId(id)
     const vb = toViewBox(e.clientX, e.clientY)
     const c = toContent(vb.x, vb.y)
@@ -175,7 +132,6 @@ export default function ConceptMap() {
     dragOffsetRef.current = { ox: p.x - c.x, oy: p.y - c.y }
   }
 
-  // Background gestures: 1 finger = pan, 2 fingers = pinch-zoom.
   function onSurfaceDown(e: React.PointerEvent) {
     ptrs.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
     if (ptrs.current.size === 2) {
@@ -191,7 +147,6 @@ export default function ConceptMap() {
   function onMove(e: React.PointerEvent) {
     if (ptrs.current.has(e.pointerId)) ptrs.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
 
-    // Pinch — keep the two-finger midpoint fixed on screen.
     if (pinchRef.current && ptrs.current.size >= 2) {
       const [a, b] = [...ptrs.current.values()]
       const pr = pinchRef.current
@@ -199,7 +154,6 @@ export default function ConceptMap() {
       setView({ k, x: pr.mx - (pr.mx - pr.x) * (k / pr.k), y: pr.my - (pr.my - pr.y) * (k / pr.k) })
       return
     }
-    // Node drag
     if (dragId) {
       const vb = toViewBox(e.clientX, e.clientY)
       const c = toContent(vb.x, vb.y)
@@ -210,7 +164,6 @@ export default function ConceptMap() {
       })
       return
     }
-    // Single-finger pan
     if (panRef.current) {
       const rect = svgRef.current?.getBoundingClientRect()
       const sx = rect ? 1100 / rect.width : 1
@@ -226,7 +179,6 @@ export default function ConceptMap() {
     if (ptrs.current.size === 0) { panRef.current = null; setDragId(null) }
   }
 
-  // Stats
   const subjectStats = useMemo(() => {
     const m = new Map<string, number>()
     for (const n of graph.nodes) m.set(n.subject, (m.get(n.subject) || 0) + 1)
@@ -253,7 +205,6 @@ export default function ConceptMap() {
           setMode={setMode}
         />
 
-        {/* Subject stats strip */}
         {subjectStats.length > 0 && (
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 18 }}>
             {subjectStats.map(([subj, n]) => (
@@ -269,7 +220,6 @@ export default function ConceptMap() {
           </div>
         )}
 
-        {/* The map itself — illustrated or pro */}
         <div className="cm-graph-box" style={{
           marginTop: 22, position: 'relative',
           background: mode === 'illustrated' ? MONO.bg : C.panel,
@@ -295,7 +245,7 @@ export default function ConceptMap() {
               preserveAspectRatio="xMidYMid meet"
               style={{
                 display: 'block', cursor: dragId ? 'grabbing' : (panRef.current ? 'grabbing' : 'grab'),
-                touchAction: 'none',   // we handle pinch/pan ourselves
+                touchAction: 'none',
                 minHeight: 'clamp(420px, 70vh, 640px)',
               }}>
               <defs>
@@ -309,10 +259,8 @@ export default function ConceptMap() {
                 </linearGradient>
               </defs>
 
-              {/* Pan/zoom transform — everything inside moves & scales together */}
               <g transform={`translate(${view.x} ${view.y}) scale(${view.k})`}>
 
-              {/* Edges */}
               {graph.edges.map((e, i) => {
                 const a = positions.get(e.from)
                 const b = positions.get(e.to)
@@ -326,7 +274,6 @@ export default function ConceptMap() {
                 )
               })}
 
-              {/* Nodes */}
               {graph.nodes.map(n => {
                 const p = positions.get(n.id)
                 if (!p) return null
@@ -342,15 +289,12 @@ export default function ConceptMap() {
                      onMouseEnter={() => setHover(n.id)}
                      onMouseLeave={() => setHover(null)}
                      style={{ cursor: 'grab' }}>
-                    {/* Halo */}
                     <circle cx={p.x} cy={p.y} r={r * 2.3} fill="url(#nodeGlow)" opacity={isHover ? 1 : 0.6} />
-                    {/* Node */}
                     <circle cx={p.x} cy={p.y} r={r}
                       fill={fill}
                       stroke="#ffffff"
                       strokeWidth={isHover ? 1.4 : 0.6}
                       strokeOpacity={isHover ? 0.85 : 0.35} />
-                    {/* Label */}
                     <text x={p.x} y={p.y + r + 14}
                       textAnchor="middle"
                       fontSize="11" fontWeight="600"
@@ -366,8 +310,6 @@ export default function ConceptMap() {
             </svg>
           )}
 
-          {/* Zoom controls — Pro view. Pinch to zoom / drag to pan on touch;
-              these buttons work anywhere (finger-friendly on mobile). */}
           {graph.nodes.length > 0 && mode === 'pro' && (
             <div style={{
               position: 'absolute', top: 12, right: 12,
@@ -398,7 +340,6 @@ export default function ConceptMap() {
             </div>
           )}
 
-          {/* Legend — Pro view only (mastery is meaningless in the illustrated layout) */}
           {graph.nodes.length > 0 && mode === 'pro' && (
             <div style={{
               position: 'absolute', bottom: 12, left: 12,
@@ -413,8 +354,6 @@ export default function ConceptMap() {
             </div>
           )}
 
-          {/* Tip — Pro view only. Top-left so it clears the zoom buttons
-              (top-right) and the mastery legend (bottom-left). */}
           {mode === 'pro' && (
             <div style={{
               position: 'absolute', top: 14, left: 14, maxWidth: 190,
@@ -426,7 +365,6 @@ export default function ConceptMap() {
           )}
         </div>
 
-        {/* Add concept manually card */}
         <AddConceptCard onSaved={reload} />
       </div>
     </div>
@@ -466,7 +404,6 @@ function Header({ onRefresh, nodeCount, edgeCount, mode, setMode }: {
       </div>
 
       <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-        {/* View-mode segmented control — Illustrated ↔ Pro */}
         <div style={{
           display: 'inline-flex', padding: 3,
           background: C.panel, border: `1px solid ${C.border}`, borderRadius: 10,
@@ -530,9 +467,6 @@ function LegendDot({ color, label }: { color: string; label: string }) {
 }
 
 function Empty() {
-  // Jump the user to the page that would populate this map most
-  // quickly. The Dashboard exposes a global `__kairoSetActive(route)`
-  // so we don't need to wire React Router just for one button.
   const go = (route: string) => () => {
     const setActive = (window as unknown as { __kairoSetActive?: (r: string) => void }).__kairoSetActive
     if (typeof setActive === 'function') setActive(route)
@@ -575,7 +509,6 @@ function Empty() {
   )
 }
 
-// Shared empty-state CTA styles — kept inline so the file stays self-contained.
 const emptyCtaPrimary: React.CSSProperties = {
   display: 'inline-flex', alignItems: 'center', gap: 6,
   padding: '11px 18px', borderRadius: 10, border: 'none', cursor: 'pointer',
@@ -656,22 +589,9 @@ function Input({ value, onChange, placeholder }: { value: string; onChange: (v: 
   )
 }
 
-// ══════════════════════════════════════════════════════════════════════════
-// ILLUSTRATED CONCEPT MAP — Premium dark hexagonal infographic
-// ══════════════════════════════════════════════════════════════════════════
-// Centre concept sits in a chamfered-hexagon node. Up to 6 satellites
-// arrange around it in a flat 3×2 grid (top row, middle row, bottom row),
-// each with a line-art icon flanking it on the outside edge and a thin
-// hairline connecting it to the centre.
-//
-// Strict monochrome palette: black canvas with subtle diamond-pattern
-// background, white node outlines, uppercase Inter Tight headlines,
-// gray body text. Every element earns its space.
-
 const VIEWBOX_W = 1100
 const VIEWBOX_H = 600
 
-/** Tiny deterministic pseudo-random keyed off a string. Same name → same number. */
 function hash01(s: string, salt = 0): number {
   let h = 0x811c9dc5 ^ salt
   for (let i = 0; i < s.length; i++) {
@@ -686,7 +606,6 @@ interface IllustratedMapProps {
   setCenterId: (id: string | null) => void
 }
 
-/** Map a subject string to a line-art icon component for the satellite flank. */
 function iconForSubject(subject?: string): React.ElementType {
   const s = (subject || '').toLowerCase()
   if (s.includes('math'))     return Calculator
@@ -701,7 +620,6 @@ function iconForSubject(subject?: string): React.ElementType {
 }
 
 function IllustratedMap({ graph, centerId, setCenterId }: IllustratedMapProps) {
-  // ── Pick centre + satellites ────────────────────────────────────────────
   const { center, satellites } = useMemo(() => {
     if (graph.nodes.length === 0) return { center: null, satellites: [] }
     let center: ConceptNode | undefined =
@@ -734,18 +652,15 @@ function IllustratedMap({ graph, centerId, setCenterId }: IllustratedMapProps) {
 
   if (!center) return null
 
-  // ── Layout — 6 satellites in a 3×2 grid around the centre ──────────────
-  // Format: { x, y, iconSide } — iconSide tells the node which edge to flank
-  // its icon on so it always points OUTWARD from the centre.
   const cx = VIEWBOX_W / 2
   const cy = VIEWBOX_H / 2
   const POSITIONS: { x: number; y: number; iconSide: 'left' | 'right' }[] = [
-    { x: 245, y: 130, iconSide: 'left'  },  // top-left
-    { x: 855, y: 130, iconSide: 'right' },  // top-right
-    { x: 175, y: 300, iconSide: 'left'  },  // middle-left
-    { x: 925, y: 300, iconSide: 'right' },  // middle-right
-    { x: 245, y: 470, iconSide: 'left'  },  // bottom-left
-    { x: 855, y: 470, iconSide: 'right' },  // bottom-right
+    { x: 245, y: 130, iconSide: 'left'  },
+    { x: 855, y: 130, iconSide: 'right' },
+    { x: 175, y: 300, iconSide: 'left'  },
+    { x: 925, y: 300, iconSide: 'right' },
+    { x: 245, y: 470, iconSide: 'left'  },
+    { x: 855, y: 470, iconSide: 'right' },
   ]
 
   return (
@@ -753,7 +668,6 @@ function IllustratedMap({ graph, centerId, setCenterId }: IllustratedMapProps) {
       position: 'relative',
       width: '100%',
       minHeight: 'clamp(420px, 70vh, 640px)',
-      // Diamond-pattern background — created with CSS gradients.
       backgroundColor: MONO.bg,
       backgroundImage: `
         linear-gradient(135deg, ${MONO.bgPattern} 25%, transparent 25%),
@@ -772,7 +686,6 @@ function IllustratedMap({ graph, centerId, setCenterId }: IllustratedMapProps) {
         preserveAspectRatio="xMidYMid meet"
         style={{ display: 'block', minHeight: 'clamp(420px, 70vh, 640px)' }}
       >
-        {/* ── Connecting hairlines — centre → each satellite ─────────────── */}
         {satellites.map((sat, i) => {
           const p = POSITIONS[i]
           return (
@@ -787,7 +700,6 @@ function IllustratedMap({ graph, centerId, setCenterId }: IllustratedMapProps) {
           )
         })}
 
-        {/* ── Centre hexagon ────────────────────────────────────────────── */}
         <HexNode
           x={cx} y={cy}
           width={260} height={170}
@@ -798,7 +710,6 @@ function IllustratedMap({ graph, centerId, setCenterId }: IllustratedMapProps) {
           onClick={() => setCenterId(null)}
         />
 
-        {/* ── Satellite hexagons ─────────────────────────────────────────── */}
         {satellites.map((sat, i) => {
           const p = POSITIONS[i]
           const Icon = iconForSubject(sat.subject)
@@ -817,7 +728,6 @@ function IllustratedMap({ graph, centerId, setCenterId }: IllustratedMapProps) {
         })}
       </svg>
 
-      {/* Hint badge — bottom-left, neutral on dark */}
       <div style={{
         position: 'absolute', bottom: 14, left: 16,
         fontFamily: HEADLINE_FONT, fontSize: 10, fontWeight: 700,
@@ -834,14 +744,11 @@ function IllustratedMap({ graph, centerId, setCenterId }: IllustratedMapProps) {
   )
 }
 
-// ──────────────────────────────────────────────────────────────────────────
-// Hexagon node — chamfered rectangle with uppercase title + body text
-// ──────────────────────────────────────────────────────────────────────────
 interface HexNodeProps {
   x: number; y: number
   width: number; height: number
   title: string
-  titleSecond?: string      // optional second line for the centre node ("MAP")
+  titleSecond?: string
   subtitle: string
   isCenter?: boolean
   icon?: React.ElementType
@@ -851,13 +758,10 @@ interface HexNodeProps {
 function HexNode({
   x, y, width, height, title, titleSecond, subtitle, isCenter, icon: Icon, iconSide, onClick,
 }: HexNodeProps) {
-  // Chamfered-rectangle path. chamfer = how deep the corner cut goes.
-  // Centre node gets a bigger chamfer so it reads as more distinct.
   const chamfer = isCenter ? 22 : 16
   const w2 = width / 2
   const h2 = height / 2
   const c  = chamfer
-  // Octagonal path centred on (0, 0).
   const path = [
     `M ${-w2 + c} ${-h2}`,
     `L ${ w2 - c} ${-h2}`,
@@ -870,8 +774,6 @@ function HexNode({
     `Z`,
   ].join(' ')
 
-  // Icon position — outside the chamfered edge it sits on, vertically centred.
-  // Sized so a 28px-stroke icon fits comfortably.
   const iconSize = 28
   const iconOffset = w2 + 32
 
@@ -881,7 +783,6 @@ function HexNode({
       style={{ cursor: onClick ? 'pointer' : 'default' }}
       onClick={onClick}
     >
-      {/* Outline — thin white. No fill (so the diamond bg shows through subtly). */}
       <path
         d={path}
         fill="rgba(8, 9, 12, 0.85)"
@@ -890,7 +791,6 @@ function HexNode({
         strokeLinejoin="miter"
       />
 
-      {/* Title — uppercase, bold, tracked */}
       {isCenter ? (
         <>
           <text textAnchor="middle" y={-10}
@@ -914,7 +814,6 @@ function HexNode({
         </>
       ) : (
         <>
-          {/* Two-line title — break long concept names */}
           <TwoLineUppercase
             text={clipText(title, 36)}
             y={-12}
@@ -930,7 +829,6 @@ function HexNode({
         </>
       )}
 
-      {/* Icon — line-art, sits outside the chamfered edge */}
       {Icon && iconSide && (
         <foreignObject
           x={iconSide === 'right' ? iconOffset - iconSize / 2 : -iconOffset - iconSize / 2}
@@ -938,7 +836,6 @@ function HexNode({
           width={iconSize}
           height={iconSize}
         >
-          {/* Lucide renders as <svg>; embed it via the foreignObject. */}
           <div
             xmlns="http://www.w3.org/1999/xhtml"
             style={{
@@ -958,15 +855,9 @@ function clipText(s: string, n: number) {
   return s.length > n ? s.slice(0, n - 1) + '…' : s
 }
 
-/**
- * Render `text` as a single line if it's short, or split mid-word into two
- * uppercase lines so long concept names don't overflow the hexagon. Used by
- * satellite titles only — the centre's title is always pre-set to fit.
- */
 function TwoLineUppercase({ text, y, fontSize, fontWeight }: {
   text: string; y: number; fontSize: number; fontWeight: number
 }) {
-  // Break point — first space past the midpoint of the string.
   const t = text.trim()
   if (t.length <= 14) {
     return (
@@ -978,7 +869,6 @@ function TwoLineUppercase({ text, y, fontSize, fontWeight }: {
       </text>
     )
   }
-  // Find a split — closest space to midpoint, else hard-break.
   const mid = Math.floor(t.length / 2)
   let breakIdx = -1
   for (let off = 0; off < t.length; off++) {

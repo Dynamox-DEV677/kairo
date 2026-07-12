@@ -1,13 +1,3 @@
-/**
- * AvatarDecor — Discord-style profile-picture decorations.
- *
- * A decoration is a ring / orbit effect drawn AROUND the avatar. The
- * chosen decor id persists via the storage adapter ('kairo:decor') so
- * it follows the student across the app (Sidebar, drawer, Settings).
- *
- *   <DecoratedAvatar pic={url} name="D" size={44} />          // reads saved decor
- *   <DecoratedAvatar ... decor="racer" />                      // explicit (previews)
- */
 import type { ReactNode } from 'react'
 import { getRaw, setRaw } from '../lib/storage'
 
@@ -26,11 +16,10 @@ export function getDecor(): string {
   try { return getRaw('kairo:decor') || 'none' } catch { return 'none' }
 }
 export function setDecor(id: string) {
-  try { setRaw('kairo:decor', id) } catch { /* quota */ }
-  try { window.dispatchEvent(new CustomEvent('kairo:decor', { detail: id })) } catch { /* ssr */ }
+  try { setRaw('kairo:decor', id) } catch {  }
+  try { window.dispatchEvent(new CustomEvent('kairo:decor', { detail: id })) } catch {  }
 }
 
-// One <style> injected once for all decoration keyframes.
 const DECOR_CSS = `
 @keyframes kdSpin   { to { transform: rotate(360deg) } }
 @keyframes kdPulse  { 0%,100% { opacity: .55; transform: scale(1) } 50% { opacity: 1; transform: scale(1.06) } }
@@ -43,11 +32,11 @@ export function DecoratedAvatar({
   pic?: string | null
   name?: string
   size?: number
-  decor?: string          // omit → use the saved one
+  decor?: string
   rounded?: number
 }) {
   const d = decor ?? getDecor()
-  const pad = Math.max(4, size * 0.14)          // space the ring needs
+  const pad = Math.max(4, size * 0.14)
   const box = size + pad * 2
 
   const core: ReactNode = (
@@ -67,7 +56,6 @@ export function DecoratedAvatar({
     <div style={{ position: 'relative', width: box, height: box, display: 'grid', placeItems: 'center', flexShrink: 0 }}>
       <style>{DECOR_CSS}</style>
 
-      {/* ── ring layers per decoration ─────────────────────────────── */}
       {d === 'neon' && (
         <div style={{
           position: 'absolute', inset: 0, borderRadius: rounded + pad,
@@ -109,7 +97,6 @@ export function DecoratedAvatar({
         </>
       )}
 
-      {/* orbiting decorations — a rotating carrier with an emoji on top */}
       {(d === 'racer' || d === 'orbit') && (
         <>
           <div style={{

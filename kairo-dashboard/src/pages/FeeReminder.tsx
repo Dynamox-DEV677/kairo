@@ -28,7 +28,6 @@ export default function FeeReminder() {
         <p style={{ fontSize: 13, color: '#6B7280', marginTop: 4 }}>Automated Gmail reminders · AI-generated content · Smart scheduling</p>
       </div>
 
-      {/* Tabs */}
       <div style={{ display: 'flex', gap: 4, marginBottom: 24, background: '#0E1117', border: '1px solid #1f2532', borderRadius: 10, padding: 4 }}>
         {TABS.map(t => (
           <button key={t.id} onClick={() => setTab(t.id)} style={{
@@ -57,7 +56,6 @@ export default function FeeReminder() {
   )
 }
 
-// ── Stats ─────────────────────────────────────────────────────────────────────
 function StatsTab() {
   const [data, setData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
@@ -95,7 +93,6 @@ function StatsTab() {
   )
 }
 
-// ── Students ──────────────────────────────────────────────────────────────────
 function StudentsTab() {
   const [students, setStudents] = useState<any[]>([])
   const [loading, setLoading]   = useState(true)
@@ -187,7 +184,6 @@ function StudentsTab() {
   )
 }
 
-// ── Fees ──────────────────────────────────────────────────────────────────────
 function FeesTab() {
   const [fees, setFees]     = useState<any[]>([])
   const [loading, setLoading] = useState(true)
@@ -296,7 +292,6 @@ function FeesTab() {
   )
 }
 
-// ── Send ──────────────────────────────────────────────────────────────────────
 function SendTab() {
   const [mode, setMode]           = useState<'ai' | 'manual'>('ai')
   const [tone, setTone]           = useState('friendly')
@@ -350,7 +345,6 @@ function SendTab() {
           <p style={{ fontSize: 12, color: '#9CA3AF', margin: 0 }}>📧 Sends a reminder to all students with <strong style={{ color: '#A5B4FC' }}>pending fees</strong>. Set up Gmail in the Setup tab first.</p>
         </div>
 
-        {/* Sender name */}
         <div style={{ marginBottom: 16 }}>
           <label style={label}>Your Name (shown in Gmail "From")</label>
           <input
@@ -361,7 +355,6 @@ function SendTab() {
           />
         </div>
 
-        {/* Mode toggle */}
         <div style={{ marginBottom: 16 }}>
           <label style={label}>Message Mode</label>
           <div style={{ display: 'flex', gap: 6 }}>
@@ -378,7 +371,6 @@ function SendTab() {
           </div>
         </div>
 
-        {/* AI mode — just tone picker */}
         {mode === 'ai' && (
           <div style={{ marginBottom: 16 }}>
             <label style={label}>Tone</label>
@@ -390,7 +382,6 @@ function SendTab() {
           </div>
         )}
 
-        {/* Manual mode — textarea + polish button */}
         {mode === 'manual' && (
           <div style={{ marginBottom: 16 }}>
             <label style={label}>Your Message</label>
@@ -469,7 +460,6 @@ function SendTab() {
   )
 }
 
-// ── Setup ─────────────────────────────────────────────────────────────────────
 function SetupTab() {
   const [creds, setCreds] = useState({ gmail: '', app_password: '' })
   const [saving, setSaving] = useState(false)
@@ -542,7 +532,6 @@ function SetupTab() {
   )
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
 function StatusBadge({ status }: { status: string }) {
   const colors: any = { pending: '#A5B4FC', paid: '#A5B4FC', waived: '#66D9FF', failed: '#66D9FF', sent: '#A5B4FC' }
   return (

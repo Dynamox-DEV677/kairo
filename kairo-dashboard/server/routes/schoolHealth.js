@@ -1,15 +1,3 @@
-/**
- * School Health Monitor — admin-only analytics aggregating signals across the school.
- *
- * GET /api/school-health         Full health snapshot for my school
- *
- * Detects:
- *   - Weak-performing classes (low avg marks)
- *   - Overloaded teachers (most tasks assigned)
- *   - Inactive students (no recent submissions/marks)
- *   - Engagement drops (notifications, marks, submissions over 7d)
- *   - Pending approval backlog
- */
 import { Router } from 'express'
 import { supabaseAdmin, requireSupabase } from '../services/supabase.js'
 import { requireSupabaseAuth, requireRole } from '../middleware/supabaseAuth.js'
@@ -71,8 +59,6 @@ router.get('/', async (req, res) => {
     const studentIds = new Set(students.map(s => s.id))
     const teacherIds = new Set(teachers.map(t => t.id))
 
-    // ── Class performance ────────────────────────────────────────────
-    // Average % per class_name
     const byClass = {}
     for (const m of marks) {
       const stu = students.find(s => s.id === m.student_id)
@@ -90,7 +76,6 @@ router.get('/', async (req, res) => {
 
     const weakClasses = classPerformance.filter(c => c.avg_pct < 60 && c.exam_count >= 3)
 
-    // ── Teacher load ──────────────────────────────────────────────────
     const teacherTaskCount = {}
     for (const t of tasks) {
       if (teacherIds.has(t.created_by)) {
@@ -105,7 +90,6 @@ router.get('/', async (req, res) => {
 
     const overloadedTeachers = teacherLoad.filter(t => t.tasks >= 8)
 
-    // ── Inactive students — no submission OR no mark in last 14 days ─
     const recentActiveStudents = new Set()
     for (const s of submissions) {
       if (studentIds.has(s.student_id) && (Date.now() - new Date(s.submitted_at).getTime()) < 14 * DAY) {
@@ -119,7 +103,6 @@ router.get('/', async (req, res) => {
     }
     const inactiveStudents = students.filter(s => !recentActiveStudents.has(s.id))
 
-    // ── Engagement (last 7 days vs prior 7 days) ─────────────────────
     const now = Date.now()
     const inLast7 = (iso) => now - new Date(iso).getTime() < 7 * DAY
     const inPrior7 = (iso) => {
@@ -140,7 +123,6 @@ router.get('/', async (req, res) => {
     }
     const trend = (curr, prev) => prev === 0 ? (curr > 0 ? 100 : 0) : Math.round(((curr - prev) / prev) * 100)
 
-    // ── Admission leads pipeline ─────────────────────────────────────
     const leadFunnel = {
       new:       leads.filter(l => l.status === 'new').length,
       contacted: leads.filter(l => l.status === 'contacted').length,
@@ -148,7 +130,6 @@ router.get('/', async (req, res) => {
       rejected:  leads.filter(l => l.status === 'rejected').length,
     }
 
-    // ── Overall health score (0-100) ─────────────────────────────────
     let score = 100
     score -= weakClasses.length * 6
     score -= inactiveStudents.length > 0 ? Math.min(20, Math.round(inactiveStudents.length / Math.max(students.length, 1) * 100 * 0.3)) : 0
@@ -156,7 +137,6 @@ router.get('/', async (req, res) => {
     score -= pending.length > 5 ? 5 : 0
     score = Math.max(0, Math.min(100, score))
 
-    // Build alerts
     const alerts = []
     if (weakClasses.length > 0) {
       alerts.push({

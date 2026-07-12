@@ -1,7 +1,3 @@
-/**
- * Kyno Labs — interactive 3D learning simulations.
- * Lists available labs; clicking one opens the simulation full-bleed.
- */
 import { useState, useEffect, lazy, Suspense, useRef } from 'react'
 import { motion, AnimatePresence, useMotionValue, useTransform, useSpring } from 'framer-motion'
 import {
@@ -10,8 +6,6 @@ import {
 } from 'lucide-react'
 import { awardXP } from '../lib/game'
 
-// Lazy-load each R3F lab — only fetched when student opens it.
-// This keeps the main bundle small.
 const GravityLab    = lazy(() => import('../labs/GravityLab'))
 const PendulumLab   = lazy(() => import('../labs/PendulumLab'))
 const ProjectileLab = lazy(() => import('../labs/ProjectileLab'))
@@ -40,7 +34,6 @@ interface Lab {
 }
 
 const LABS: Lab[] = [
-  // ─── Physics ────────────────────────────────────────────────────────────
   {
     id: 'gravity', title: 'Gravity & Free Fall', topic: 'Newton\'s Laws',
     subject: 'Physics', icon: Activity, ready: true, Component: GravityLab,
@@ -62,7 +55,6 @@ const LABS: Lab[] = [
     desc: 'Tune voltage and resistance. Watch current flow and the bulb glow.',
   },
 
-  // ─── Chemistry ──────────────────────────────────────────────────────────
   {
     id: 'atom', title: 'Atomic Structure', topic: 'Bohr Model',
     subject: 'Chemistry', icon: Atom, ready: true, Component: AtomLab,
@@ -79,7 +71,6 @@ const LABS: Lab[] = [
     desc: 'Combustion of methane. Atoms physically rearrange — nothing disappears.',
   },
 
-  // ─── Biology ────────────────────────────────────────────────────────────
   {
     id: 'heart', title: 'Human Heart', topic: 'Circulation',
     subject: 'Biology', icon: Heart, ready: true, Component: HeartLab,
@@ -91,7 +82,6 @@ const LABS: Lab[] = [
     desc: 'Animal cell with hover-labeled organelles. See nucleus, mitochondria, ER, golgi.',
   },
 
-  // ─── Math ───────────────────────────────────────────────────────────────
   {
     id: 'vectors', title: 'Vectors in 3D', topic: 'Dot & Cross Product',
     subject: 'Math', icon: Sparkles, ready: true, Component: VectorsLab,
@@ -103,7 +93,6 @@ const LABS: Lab[] = [
     desc: '5 preset functions plotted as 3D surfaces. Color-coded by height.',
   },
 
-  // ─── Biology — new ───────────────────────────────────────────────────────
   {
     id: 'dna', title: 'DNA Double Helix', topic: 'Genetics',
     subject: 'Biology', icon: Dna, ready: true, Component: DnaLab,
@@ -115,7 +104,6 @@ const LABS: Lab[] = [
     desc: 'Real anatomical 3D brain. Click frontal, parietal, temporal, occipital lobes, cerebellum, or brain stem.',
   },
 
-  // ─── Space ──────────────────────────────────────────────────────────────
   {
     id: 'solar', title: 'Solar System', topic: 'Astronomy',
     subject: 'Space', icon: Globe, ready: true, Component: SolarSystemLab,
@@ -128,13 +116,12 @@ const LABS: Lab[] = [
   },
 ]
 
-// Strict monochrome palette — every subject is a shade of purple
 const SUBJECT_COLORS: Record<string, string> = {
-  Physics:   '#A5B4FC',   // light lavender
-  Chemistry: '#66D9FF',   // mid purple
-  Biology:   '#4F7CFF',   // deep purple
-  Math:      '#2046C2',   // dark violet
-  Space:     '#8b5cf6',   // royal purple
+  Physics:   '#A5B4FC',
+  Chemistry: '#66D9FF',
+  Biology:   '#4F7CFF',
+  Math:      '#2046C2',
+  Space:     '#8b5cf6',
 }
 const SUBJECT_TAGS: Record<string, string> = {
   Physics: 'force · motion · light',
@@ -148,7 +135,6 @@ export default function KairoLabs() {
   const [activeLab, setActive] = useState<Lab | null>(null)
   const [filter, setFilter]    = useState<'all' | 'Physics' | 'Chemistry' | 'Biology' | 'Math' | 'Space'>('all')
 
-  // Listen for "open this lab" events from Kyno's Solver
   useEffect(() => {
     function onOpen(e: Event) {
       const id = (e as CustomEvent).detail?.id
@@ -160,17 +146,13 @@ export default function KairoLabs() {
     return () => window.removeEventListener('kairo:open-lab', onOpen)
   }, [])
 
-  // Award "lab_open" XP once each time a (ready) lab is opened — this was
-  // never awarded before, so its daily quest could never complete. Keyed on
-  // the lab id so re-opening a different lab counts again.
   useEffect(() => {
     if (activeLab && activeLab.ready) {
-      try { awardXP('lab_open') } catch { /* ignore */ }
+      try { awardXP('lab_open') } catch {  }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeLab?.id])
 
-  // Active lab — full-bleed
   if (activeLab && activeLab.ready && activeLab.Component) {
     const C = activeLab.Component
     return (
@@ -188,13 +170,10 @@ export default function KairoLabs() {
   const visible = filter === 'all' ? LABS : LABS.filter(l => l.subject === filter)
   const readyCount = LABS.filter(l => l.ready).length
 
-  // Pick a "featured" lab — newest ready entry
   const featured = visible.find(l => l.ready) || LABS.find(l => l.ready)!
 
   return (
     <div style={{
-      // clamp() keeps desktop spacing but collapses on phones; bottom
-      // padding clears the mobile tab bar.
       padding: 'clamp(16px, 3vw, 28px) clamp(14px, 4vw, 36px) 110px', maxWidth: 1240, margin: '0 auto',
       height: '100%', overflowY: 'auto', WebkitOverflowScrolling: 'touch',
       background: `
@@ -203,7 +182,6 @@ export default function KairoLabs() {
     }}>
       <style>{`@keyframes kl-glow { 0%,100% { opacity: 0.45 } 50% { opacity: 0.95 } }`}</style>
 
-      {/* Immersive header */}
       <div style={{ position: 'relative', marginBottom: 26 }}>
         <div style={{
           position: 'absolute', top: -20, left: 30,
@@ -236,12 +214,10 @@ export default function KairoLabs() {
         </div>
       </div>
 
-      {/* Featured lab — bigger panel */}
       {featured && (
         <FeaturedLab lab={featured} onOpen={() => setActive(featured)} />
       )}
 
-      {/* Subject filter */}
       <div style={{ display: 'flex', gap: 6, marginBottom: 18, flexWrap: 'wrap' }}>
         {([
           { id: 'all',       label: 'All',       color: '#B1B5BA' },
@@ -267,8 +243,6 @@ export default function KairoLabs() {
         })}
       </div>
 
-      {/* Lab grid — larger cards w/ 3D tilt.
-          min(320px, 100%) stops cards overflowing on narrow phones. */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(320px, 100%), 1fr))', gap: 18, perspective: 1200 }}>
         <AnimatePresence>
           {visible.map((lab, i) => (
@@ -277,7 +251,6 @@ export default function KairoLabs() {
         </AnimatePresence>
       </div>
 
-      {/* Footer note */}
       <div style={{
         marginTop: 28, padding: '14px 18px', borderRadius: 12,
         background: 'rgba(79, 124, 255, 0.05)', border: '1px solid rgba(79, 124, 255, 0.18)',
@@ -293,18 +266,15 @@ export default function KairoLabs() {
   )
 }
 
-// ─── 3D-tilt lab card ────────────────────────────────────────────────────────
 function LabCard({ lab, delay, onOpen }: { lab: Lab; delay: number; onOpen: () => void }) {
   const Icon = lab.icon
   const color = SUBJECT_COLORS[lab.subject] || '#66D9FF'
   const ref = useRef<HTMLButtonElement>(null)
 
-  // Tilt motion values
   const mx = useMotionValue(0)
   const my = useMotionValue(0)
   const rx = useSpring(useTransform(my, [-120, 120], [9, -9]), { stiffness: 200, damping: 24 })
   const ry = useSpring(useTransform(mx, [-160, 160], [-12, 12]), { stiffness: 200, damping: 24 })
-  // Spotlight position (% across card)
   const spotX = useTransform(mx, [-160, 160], ['0%', '100%'])
   const spotY = useTransform(my, [-120, 120], ['0%', '100%'])
 
@@ -342,7 +312,6 @@ function LabCard({ lab, delay, onOpen }: { lab: Lab; delay: number; onOpen: () =
         color: 'inherit',
       }}
     >
-      {/* Spotlight that follows the cursor */}
       {lab.ready && (
         <motion.div style={{
           position: 'absolute', inset: 0,
@@ -353,7 +322,6 @@ function LabCard({ lab, delay, onOpen }: { lab: Lab; delay: number; onOpen: () =
         }} />
       )}
 
-      {/* Static ambient glow */}
       {lab.ready && (
         <div style={{
           position: 'absolute', top: -40, right: -40,
@@ -417,7 +385,6 @@ function LabCard({ lab, delay, onOpen }: { lab: Lab; delay: number; onOpen: () =
   )
 }
 
-// ─── Featured lab — bigger immersive showcase ────────────────────────────────
 function FeaturedLab({ lab, onOpen }: { lab: Lab; onOpen: () => void }) {
   const Icon = lab.icon
   const color = SUBJECT_COLORS[lab.subject] || '#66D9FF'
@@ -454,7 +421,6 @@ function FeaturedLab({ lab, onOpen }: { lab: Lab; onOpen: () => void }) {
         color: 'inherit',
       }}
     >
-      {/* Backdrop orbs */}
       <div style={{
         position: 'absolute', top: '-30%', right: '-10%',
         width: 380, height: 380, borderRadius: '50%',

@@ -1,9 +1,3 @@
-/**
- * Ops Dashboard — Jarvis-style live status of Kyno.
- *
- * Polls /api/ops/status every 30s. Same JSON Claude Cowork (or any
- * monitoring tool) can fetch directly. Public — no auth.
- */
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import {
@@ -64,7 +58,6 @@ export default function Ops() {
 
   return (
     <div style={{ padding: '24px 28px', maxWidth: 1200, margin: '0 auto', height: '100%', overflowY: 'auto' }}>
-      {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 22 }}>
         <div style={{
           width: 46, height: 46, borderRadius: 12,
@@ -104,7 +97,6 @@ export default function Ops() {
 
       {data && (
         <>
-          {/* Top stats grid */}
           <div style={{
             display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
             gap: 12, marginBottom: 20,
@@ -117,13 +109,11 @@ export default function Ops() {
             <StatCard icon={Layers}   label="Features"               value={data.features.total} accent="#A5B4FC" />
           </div>
 
-          {/* Deploy + DB status */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 20 }}>
             <DeployCard deploy={data.deploy} />
             <DatabaseCard db={data.database} env={data.env} />
           </div>
 
-          {/* Users by role */}
           <Section title="Users by role" icon={Users}>
             <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap' }}>
               <RolePill label="Students" count={data.users.students} color="#A5B4FC" />
@@ -133,7 +123,6 @@ export default function Ops() {
             </div>
           </Section>
 
-          {/* Errors */}
           <Section title={`Recent errors (${data.errors.totalLogged} total)`} icon={AlertTriangle} accent="#66D9FF">
             {data.errors.recent.length === 0 ? (
               <p style={{ fontSize: 12, color: '#6B7280', margin: 0 }}>No errors logged 🎉</p>
@@ -155,7 +144,6 @@ export default function Ops() {
             )}
           </Section>
 
-          {/* Features */}
           <Section title={`Features (${data.features.total})`} icon={Layers}>
             <div style={{ display: 'flex', gap: 14, marginBottom: 12, flexWrap: 'wrap' }}>
               {Object.entries(data.features.byAudience).map(([aud, n]) => (
@@ -189,7 +177,6 @@ export default function Ops() {
   )
 }
 
-// ─── Sub-components ────────────────────────────────────────────────────────
 function StatCard({ icon: Icon, label, value, sub, accent }: any) {
   return (
     <motion.div

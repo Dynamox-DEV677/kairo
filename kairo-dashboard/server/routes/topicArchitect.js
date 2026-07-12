@@ -1,29 +1,8 @@
-/**
- * Topic Architect — "give a topic, the AI plans everything."
- *
- * POST /api/topic-architect/plan
- *   Body: { topic, exam?, depth? }
- *   exam ∈ 'neet' | 'jee' | 'boards' | 'general'   (default 'neet')
- *
- * The AI behaves like a whole prep organisation for ONE topic:
- *   • exam weight + how important it is
- *   • what to STUDY (and why)
- *   • what to SKIP / de-prioritise (and why)
- *   • must-know core concepts
- *   • a concept map (nodes + links) for the visual learners
- *   • generated practice questions (MCQ / numerical / assertion)
- *   • past-year-question (PYQ) insights — how it's been asked before
- *   • a recommended study order + time estimate
- *
- * Used by the dedicated Topic Architect page, and reusable by the
- * AI Notebook and Battle Mode (same endpoint, same shape).
- */
 import { Router } from 'express'
 import { aiCall, parseJSON } from '../utils/ai.js'
 
 const router = Router()
 
-// Per-exam framing so the AI tunes difficulty + format correctly.
 const EXAM_CONTEXT = {
   neet: 'NEET (Indian medical entrance) — NCERT-rooted, single-correct MCQs, heavy Biology weight, no negative-marking surprises beyond standard -1.',
   jee:  'JEE Main/Advanced (Indian engineering entrance) — conceptual + numerical, single & multi-correct, assertion-reason, high rigour in Physics/Maths.',
@@ -92,7 +71,7 @@ Rules:
 
   try {
     const raw = await aiCall({
-      taskType: 'study_plan',   // routes to a 'reason'-class model
+      taskType: 'study_plan',
       messages: [{ role: 'user', content: prompt }],
       maxTokens: 4000,
       temperature: 0.5,
@@ -110,9 +89,6 @@ Rules:
   }
 })
 
-// POST /api/topic-architect/questions
-// Lighter endpoint — JUST generate exam questions on a topic. Used by
-// Battle Mode's "pick a topic" flow and the Solver's question-gen mode.
 router.post('/questions', async (req, res) => {
   const { topic, exam = 'neet', count = 5, difficulty = 'mixed' } = req.body || {}
   if (!topic || !topic.trim()) return res.status(400).json({ error: 'topic is required.' })

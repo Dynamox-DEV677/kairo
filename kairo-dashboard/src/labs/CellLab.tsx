@@ -1,17 +1,3 @@
-/**
- * Cell Lab — Animal Cell, built on the LabKit pattern.
- *
- * This is the REFERENCE lab — the shortest possible code for a new lab
- * once LabKit handles the heavy lifting:
- *   - Model URL              (jsDelivr GLB)
- *   - MaterialMap            (GLB material name → part id)
- *   - PartCatalog            (part id → display + educational copy)
- *   - Optional animators     (per-part frame hooks)
- *
- * Total domain code in this file: ~150 lines for 10 organelles.
- * Adding a new biology/chemistry/physics lab now takes 30 minutes of
- * copywriting, not 3 hours of scene wiring.
- */
 import { useRef, useMemo } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
@@ -20,8 +6,6 @@ import InteractiveGLBLab, { LAB_PALETTE, type MaterialMap, type PartCatalog, typ
 
 const MODEL_URL = 'https://cdn.jsdelivr.net/gh/Dynamox-DEV677/kairo@main/models-cdn/animal_cell.glb'
 
-// Material names in the GLB → our internal part ids.
-// Asset has two typos ("Recticulum", "Vacoule") — we map both to the right id.
 const MATERIAL_MAP: MaterialMap = {
   'nucleus_shell':              'nucleus',
   'mitochondria_material':      'mitochondria',
@@ -111,7 +95,6 @@ const CATALOG: PartCatalog = {
   },
 }
 
-// Per-part animation hooks: gentle pulse on nucleus, slow rotation on ER ribbon.
 const ANIMATORS: Record<string, PartAnimator> = {
   nucleus: (meshes, t) => {
     const pulse = 1 + Math.sin(t * 1.3) * 0.022
@@ -122,7 +105,6 @@ const ANIMATORS: Record<string, PartAnimator> = {
   },
 }
 
-// ─── Sim ──────────────────────────────────────────────────────────────────
 function CellSim({ playing }: { params: any; playing: boolean }) {
   return (
     <InteractiveGLBLab
@@ -144,7 +126,6 @@ function CellSim({ playing }: { params: any; playing: boolean }) {
   )
 }
 
-// Optional flair: ATP particles orbit the cell (lab-specific, lives here)
 function AtpParticles() {
   const N = 24
   const ref = useRef<THREE.InstancedMesh>(null)
@@ -184,7 +165,6 @@ function AtpParticles() {
   )
 }
 
-// ─── Page ────────────────────────────────────────────────────────────────
 export default function CellLab({ onBack }: { onBack?: () => void }) {
   return (
     <LabShell

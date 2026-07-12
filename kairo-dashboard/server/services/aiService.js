@@ -1,11 +1,3 @@
-/**
- * AI Service
- * ──────────
- * Generates dynamic, non-robotic fee reminder email content
- * via the shared Groq-backed aiCall helper.
- *
- * Falls back to a clean template if AI is unavailable.
- */
 
 import { aiCall } from '../utils/ai.js'
 
@@ -15,11 +7,6 @@ const TONE_INSTRUCTIONS = {
   urgent:   'Write with a sense of urgency while remaining respectful. Make the consequences clear.',
 }
 
-/**
- * Generate email subject + body using AI.
- * @param {{ studentName, parentEmail, className, feeAmount, dueDate, status, trigger, tone }} context
- * @returns {{ subject: string, body: string }}
- */
 export async function generateEmailContent(context) {
   const { studentName, className, feeAmount, dueDate, trigger, tone = 'friendly' } = context
   const toneGuide = TONE_INSTRUCTIONS[tone] || TONE_INSTRUCTIONS.friendly
@@ -70,8 +57,6 @@ Rules:
     return fallbackTemplate(context)
   }
 }
-
-// ─── Fallback Template ────────────────────────────────────────────────────────
 
 function fallbackTemplate({ studentName, className, feeAmount, dueDate, trigger, tone }) {
   const isOverdue = trigger === 'after_due'

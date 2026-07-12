@@ -1,19 +1,3 @@
-/**
- * Gravity Lab — Tree, apple, gravity. Student plays with G, mass, drag.
- *
- * R3F scene:
- *   - Ground plane with grid
- *   - Tree (trunk cylinder + foliage sphere)
- *   - Apple (sphere) starts on a branch and falls when playing
- *   - Vertical white guide line showing fall distance
- *   - HUD overlay (top-left) showing live velocity + fall time
- *
- * Bound to LabShell sliders:
- *   gravity     — 0 to 25 m/s² (Earth = 9.8, Moon = 1.62)
- *   mass        — 0.1 to 5 kg  (informational; doesn't affect motion)
- *   air_drag    — 0 (vacuum) to 1 (heavy resistance)
- *   start_height — 4 to 14 m
- */
 import { Suspense, useState, useRef, useEffect, useMemo } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { OrbitControls, Grid, useGLTF, Html, Line } from '@react-three/drei'
@@ -21,23 +5,17 @@ import LabShell from './LabShell'
 import LabScene from './LabScene'
 import * as THREE from 'three'
 
-// jsDelivr CDN — keeps GLBs out of the Vercel build pipeline.
 const TREE_MODEL_URL  = 'https://cdn.jsdelivr.net/gh/Dynamox-DEV677/kairo@main/models-cdn/maple_tree.glb'
 const APPLE_MODEL_URL = 'https://cdn.jsdelivr.net/gh/Dynamox-DEV677/kairo@main/models-cdn/red_apple.glb'
 const TREE_HEIGHT = 6
-const APPLE_BRANCH_Y_OFFSET = 0.5  // apple sits slightly inside the foliage
+const APPLE_BRANCH_Y_OFFSET = 0.5  
 
-/** Clone a GLB scene and uniformly scale it so its longest VISIBLE axis
- *  equals targetSize. Bounds are computed from meshes only — rigged models
- *  often have invisible bones/empties that inflate Box3.setFromObject() and
- *  produce a fit-factor tiny enough to make the model a speck. */
 function useFittedClone(url: string, targetSize: number) {
   const { scene } = useGLTF(url)
   return useMemo(() => {
     const cloned = scene.clone(true)
     cloned.traverse((o: any) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true } })
 
-    // Mesh-only bounds
     const meshBox = new THREE.Box3()
     let meshCount = 0
     cloned.traverse((o: any) => {
@@ -53,7 +31,6 @@ function useFittedClone(url: string, targetSize: number) {
     const factor = targetSize / longest
     cloned.scale.setScalar(factor)
 
-    // Re-center on origin using mesh-only bounds again, post-scale.
     const scaledBox = new THREE.Box3()
     cloned.traverse((o: any) => {
       if (o.isMesh && o.geometry) scaledBox.union(new THREE.Box3().setFromObject(o))
@@ -78,7 +55,6 @@ interface SimProps {
 function GravitySim({ params, playing }: SimProps) {
   return (
     <LabScene cameraPos={[10, 6, 10]} cameraFov={50} tint="#1a1a2e" particles={60}>
-      {/* Ground */}
       <Ground />
 
       <Suspense fallback={<LoaderChip />}>
@@ -91,10 +67,8 @@ function GravitySim({ params, playing }: SimProps) {
         />
       </Suspense>
 
-      {/* Drop guide with metre markers */}
       <DropGuide startHeight={params.start_height} />
 
-      {/* Camera controls — touch/mouse */}
       <OrbitControls
         enablePan={false}
         minDistance={6}
@@ -106,7 +80,6 @@ function GravitySim({ params, playing }: SimProps) {
   )
 }
 
-// ─── Sub-components ────────────────────────────────────────────────────────
 function Ground() {
   return (
     <>
@@ -141,10 +114,7 @@ function LoaderChip() {
 }
 
 function Tree({ treeHeight }: { treeHeight: number }) {
-  // Fit the maple GLB so its longest axis matches the chosen tree height,
-  // then ground it (base at y=0).
   const { cloned, fittedSize } = useFittedClone(TREE_MODEL_URL, treeHeight)
-  // useFittedClone centered the model on origin → lift it so its base sits on the ground
   cloned.position.y += fittedSize.y / 2
 
   return (
@@ -158,16 +128,14 @@ function FallingApple({ gravity, airDrag, startHeight, playing }: {
   gravity: number; airDrag: number; startHeight: number; playing: boolean
 }) {
   const meshRef  = useRef<THREE.Group>(null)
-  const velRef   = useRef<THREE.Group>(null)   // velocity arrow group
-  const gravRef  = useRef<THREE.Group>(null)   // gravity force arrow group (always points down)
+  const velRef   = useRef<THREE.Group>(null)   
+  const gravRef  = useRef<THREE.Group>(null)   
   const stateRef = useRef({ y: startHeight, v: 0, time: 0 })
 
-  // Motion-trail state: keep the last N (y) positions as little ghosts.
   const TRAIL_LEN = 10
   const trailRefs = useRef<Array<THREE.Mesh | null>>(Array(TRAIL_LEN).fill(null))
   const trailHist = useRef<number[]>(Array(TRAIL_LEN).fill(startHeight))
 
-  // Reset when params change
   useEffect(() => {
     stateRef.current = { y: startHeight, v: 0, time: 0 }
     trailHist.current = Array(TRAIL_LEN).fill(startHeight)
@@ -198,13 +166,11 @@ function FallingApple({ gravity, airDrag, startHeight, playing }: {
       meshRef.current.rotation.x += s.v * dt * 0.3
     }
 
-    // Shift trail history every other frame for a smoother look
     trailHist.current.unshift(s.y)
     trailHist.current.pop()
     trailRefs.current.forEach((m, i) => {
       if (m) {
         m.position.y = trailHist.current[i] ?? s.y
-        // Fade out — older positions are smaller + more transparent
         const t = 1 - i / TRAIL_LEN
         m.scale.setScalar(0.35 + t * 0.65)
         const mat = m.material as THREE.MeshBasicMaterial
@@ -212,29 +178,22 @@ function FallingApple({ gravity, airDrag, startHeight, playing }: {
       }
     })
 
-    // Velocity arrow: length proportional to v, points downward (the apple
-    // is falling), capped at a sensible visual scale.
     if (velRef.current) {
       const vLen = Math.min(Math.abs(s.v) * 0.08, 1.4)
       velRef.current.scale.y = vLen
       velRef.current.position.y = s.y - 0.25 - vLen / 2
       velRef.current.visible = vLen > 0.05
     }
-    // Gravity arrow: constant length (it's not changing in this sim),
-    // sits to the right of the apple, always pointing down.
     if (gravRef.current) {
       gravRef.current.position.y = s.y
-      // Hide when on the ground
       gravRef.current.visible = s.y > 0.4
     }
   })
 
-  // Real apple GLB, scaled so it's roughly fist-sized in scene units.
   const { cloned } = useFittedClone(APPLE_MODEL_URL, 0.55)
 
   return (
     <group position={[-3, 0, 0]}>
-      {/* Motion-trail ghosts — small spheres at past positions */}
       {Array.from({ length: TRAIL_LEN }).map((_, i) => (
         <mesh key={i} ref={el => { trailRefs.current[i] = el }} position={[0, startHeight, 0]}>
           <sphereGeometry args={[0.18, 12, 12]} />
@@ -242,12 +201,10 @@ function FallingApple({ gravity, airDrag, startHeight, playing }: {
         </mesh>
       ))}
 
-      {/* The apple itself */}
       <group ref={meshRef} position={[0, startHeight, 0]}>
         <primitive object={cloned} />
       </group>
 
-      {/* Velocity arrow — magnitude follows v, points down */}
       <group ref={velRef} position={[0, startHeight, 0]}>
         <mesh position={[0, 0, 0]}>
           <cylinderGeometry args={[0.05, 0.05, 1, 12]} />
@@ -266,7 +223,6 @@ function FallingApple({ gravity, airDrag, startHeight, playing }: {
         </Html>
       </group>
 
-      {/* Gravity arrow — constant, to the right of the apple */}
       <group ref={gravRef} position={[0.7, startHeight, 0]}>
         <mesh>
           <cylinderGeometry args={[0.04, 0.04, 0.9, 12]} />
@@ -291,12 +247,10 @@ function FallingApple({ gravity, airDrag, startHeight, playing }: {
 function DropGuide({ startHeight }: { startHeight: number }) {
   return (
     <group position={[-3, 0, 0]}>
-      {/* Vertical thin line */}
       <mesh position={[0, startHeight / 2, 0]}>
         <cylinderGeometry args={[0.005, 0.005, startHeight, 6]} />
         <meshBasicMaterial color="#ffffff" transparent opacity={0.15} />
       </mesh>
-      {/* Markers every 1m */}
       {Array.from({ length: Math.floor(startHeight) + 1 }).map((_, i) => (
         <mesh key={i} position={[0.15, i, 0]}>
           <boxGeometry args={[0.15, 0.02, 0.02]} />
@@ -307,7 +261,6 @@ function DropGuide({ startHeight }: { startHeight: number }) {
   )
 }
 
-// ─── Live HUD overlay (computed outside R3F since it'd remount the canvas) ──
 function LiveHUD({ params, playing }: SimProps) {
   const [readout, setReadout] = useState({ v: 0, y: params.start_height, t: 0 })
   const stateRef = useRef({ y: params.start_height, v: 0, t: 0 })
@@ -331,7 +284,6 @@ function LiveHUD({ params, playing }: SimProps) {
           s.t += dt
           if (s.y < 0.25) s.y = 0.25
         } else {
-          // hit the ground — pause readout
         }
       }
       setReadout({ v: stateRef.current.v, y: stateRef.current.y, t: stateRef.current.t })
@@ -366,7 +318,6 @@ function LiveHUD({ params, playing }: SimProps) {
   )
 }
 
-// ─── Wrapped Sim with the HUD ──────────────────────────────────────────────
 function GravitySimWrapped(props: SimProps) {
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%' }}>
@@ -376,8 +327,6 @@ function GravitySimWrapped(props: SimProps) {
   )
 }
 
-// ─── Top-level page ────────────────────────────────────────────────────────
-// Kick off downloads early so the lab opens fast.
 useGLTF.preload(TREE_MODEL_URL)
 useGLTF.preload(APPLE_MODEL_URL)
 

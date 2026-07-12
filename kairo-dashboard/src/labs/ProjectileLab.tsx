@@ -1,7 +1,3 @@
-/**
- * Projectile Lab — fire a cannonball at any angle/velocity.
- * Traces parabolic path with a glowing trail.
- */
 import { useRef, useEffect, useMemo } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { OrbitControls, Grid } from '@react-three/drei'
@@ -72,21 +68,17 @@ function Projectile({ angle, velocity, gravity, playing }: any) {
       s.y += s.vy * step
       s.t += step
       if (s.y < 0.4 && s.t > 0.1) {
-        // hit ground — pause for a moment then reset
         if (s.t < 60) {
-          s.t = 100   // marker for "landed"
+          s.t = 100   
         }
       }
       if (ballRef.current) ballRef.current.position.set(s.x, Math.max(s.y, 0.4), 0)
-      // trail
       s.points.push(s.x, Math.max(s.y, 0.4), 0)
       if (s.points.length > 600) s.points.splice(0, 3)
       if (trailGeom) trailGeom.setAttribute('position', new THREE.Float32BufferAttribute(s.points, 3))
     } else if (s.t === 100) {
-      // landed — wait then reset
       s.t = 100.5 + step
     } else if (s.t > 102) {
-      // reset
       const a = (angle * Math.PI) / 180
       stateRef.current = {
         x: -10, y: 0.4,

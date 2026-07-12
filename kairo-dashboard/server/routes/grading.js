@@ -1,10 +1,3 @@
-/**
- * Bulk Grading Routes
- *
- * POST /api/grading/bulk       Grade multiple student essays at once
- * POST /api/grading/feedback   Generate AI feedback for a student
- * GET  /api/grading/results    List bulk grading sessions
- */
 import { Router } from 'express'
 import { db } from '../db/index.js'
 import { aiCall, parseJSON } from '../utils/ai.js'
@@ -14,10 +7,9 @@ const sid = req => req.body?.school_id || req.query?.school_id || 'demo_school'
 
 const sleep = ms => new Promise(r => setTimeout(r, ms))
 
-// ── Bulk Grade ─────────────────────────────────────────────────────────────────
 router.post('/bulk', async (req, res) => {
   const {
-    assignments,    // [{ student_name, student_id, content }]
+    assignments,
     subject, question, max_marks = 10,
     class: cls = '10', board = 'CBSE',
     rubric = '',
@@ -28,7 +20,7 @@ router.post('/bulk', async (req, res) => {
 
   try {
     const results = []
-    for (const assignment of assignments.slice(0, 30)) { // cap at 30
+    for (const assignment of assignments.slice(0, 30)) {
       if (!assignment.content || assignment.content.length < 10) {
         results.push({ student_name: assignment.student_name, student_id: assignment.student_id, error: 'Empty submission' })
         continue
@@ -91,10 +83,9 @@ Return ONLY valid JSON:
   }
 })
 
-// ── Generate AI Feedback ───────────────────────────────────────────────────────
 router.post('/feedback', async (req, res) => {
   const {
-    student_name, subject, scores,  // [{ topic, score, max }]
+    student_name, subject, scores,
     class: cls = '10', board = 'CBSE',
   } = req.body
   if (!scores?.length) return res.status(400).json({ error: 'scores[] required.' })
@@ -125,7 +116,6 @@ Be warm and encouraging. No JSON needed — just the feedback text.`
   }
 })
 
-// ── List Grading Sessions ──────────────────────────────────────────────────────
 router.get('/results', async (req, res) => {
   try {
     const sessions = await db.gradingSessions?.findAsync?.({ school_id: sid(req) }) || []

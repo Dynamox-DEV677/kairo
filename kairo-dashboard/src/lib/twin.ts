@@ -1,36 +1,4 @@
-/**
- * Kyno — Academic Twin engine, fully client-side.
- *
- * DESIGN
- *   Every student's learning model lives in their own browser, not in our
- *   database. This is the Netflix-downloads model: the catalog (schools /
- *   users / school data) is on the server, the personal behavioural data
- *   (events, mastery, observations) lives on the device.
- *
- *   Benefits:
- *     - Zero per-user storage cost.
- *     - Privacy: nothing about how the student studies ever leaves the device.
- *     - Speed: every compute runs in <5 ms — no network round-trip.
- *     - Infinite scale: each device owns its own state.
- *
- *   Trade-offs we accept:
- *     - Data is per-device. Login on phone + laptop = two separate twins.
- *       (Optional sync can be bolted on later as an opt-in.)
- *     - Clearing browser data wipes the twin. Expected and acceptable.
- *     - Limited to ~5 MB localStorage — we cap events at 800 and prune > 90 d.
- *
- * STORAGE LAYOUT
- *   localStorage key: `kairo:twin:<userKey>`
- *   userKey defaults to '_local' if no user is signed in. When a user logs in
- *   we derive the key from their Supabase id (no need to expose the actual id
- *   on disk — but no real harm if we do).
- *
- *   Schema version is recorded in state.version so we can migrate later.
- */
 
-// ════════════════════════════════════════════════════════════════════════════
-// TYPES
-// ════════════════════════════════════════════════════════════════════════════
 
 export type EventType =
   | 'quiz_answered' | 'quiz_completed'
@@ -46,11 +14,11 @@ export type EventType =
 export type Modality = 'visual' | 'text' | 'interactive' | 'repetition'
 
 export interface TwinEvent {
-  ts:         number               // Date.now()
+  ts:         number
   type:       EventType
   subject?:   string
-  topic?:     string               // already-normalised lowercase
-  score?:     number               // 0..100
+  topic?:     string
+  score?:     number
   correct?:   boolean
   durationMs?: number
   modality?:  Modality
@@ -60,13 +28,13 @@ export interface TwinEvent {
 export interface MasteryRow {
   subject:         string
   topic:           string
-  mastery:         number          // 0..1
+  mastery:         number
   attempts:        number
   correct:         number
   lastStudiedAt:   number
   lastCorrectAt:   number | null
-  forgetAt:        number          // ms ts when retention drops below threshold
-  strength:        number          // Ebbinghaus "S"
+  forgetAt:        number
+  strength:        number
   difficultyPref:  number
 }
 
@@ -104,7 +72,7 @@ export interface Observation {
   title:       string
   body:        string
   topic?:      string
-  importance:  number              // 0..1
+  importance:  number
   createdAt:   number
   expiresAt:   number
 }
@@ -115,38 +83,37 @@ export interface Recommendation {
   target?:    string
   subject?:   string
   reason:     string
-  priority:   number               // 0..1
+  priority:   number
   metadata?:  Record<string, any>
   createdAt:  number
 }
 
-// ─── Domain records — every other Kyno system reads/writes here ──────────────
 export interface Doubt {
   id:        string
   ts:        number
   question:  string
-  answer?:   string       // full markdown answer if available
-  topic?:    string       // normalised
+  answer?:   string
+  topic?:    string
   subject?:  string
   source:    'solver' | 'manual' | 'voice'
 }
 
 export interface Concept {
   id:        string
-  name:      string                // normalised, lowercase
+  name:      string
   subject?:  string
-  related:   string[]              // ids of related concepts
-  encounteredAt: number            // first seen
-  reinforcedAt:  number            // last revisit
+  related:   string[]
+  encounteredAt: number
+  reinforcedAt:  number
   visits:    number
-  mastery:   number                // 0..1 — derived from related quiz/lab events
+  mastery:   number
 }
 
 export interface Formula {
   id:        string
   ts:        number
-  name:      string                // "Newton's 2nd Law"
-  expr:      string                // "F = m·a"
+  name:      string
+  expr:      string
   subject?:  string
   topic?:    string
   source:    'solver' | 'manual' | 'lab'
@@ -160,48 +127,32 @@ export interface Flashcard {
   subject?:  string
   topic?:    string
   reviews:   number
-  ease:      number                // SRS ease factor (default 2.5)
-  dueAt:     number                // next review time
+  ease:      number
+  dueAt:     number
   source:    'manual' | 'auto-from-doubt' | 'auto-from-mistake'
 }
 
 export interface TwinState {
-  version:        3                 // bumped from 2 — added domain arrays
+  version:        3
   userKey:        string
   events:         TwinEvent[]
   mastery:        MasteryRow[]
   twin:           Twin | null
   observations:   Observation[]
   recommendations: Recommendation[]
-  // ─── Unified domain memory ─────────────────────────────────────────────
-  doubts:         Doubt[]           // every question asked to Solver
-  concepts:       Concept[]         // concept graph nodes
-  formulas:       Formula[]         // collected formulas
-  flashcards:     Flashcard[]       // SRS deck
+  doubts:         Doubt[]
+  concepts:       Concept[]
+  formulas:       Formula[]
+  flashcards:     Flashcard[]
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// STORAGE ADAPTER
-// ════════════════════════════════════════════════════════════════════════════
-//
-// All persistent reads/writes go through the storage adapter so SQLite
-// (Electron) or OPFS (browser) can drop in without touching this file.
-// See src/lib/storage.ts for the backend-detection logic.
-//
-// Note: auth-token reads (`kairo_token`) intentionally still hit localStorage
-// directly. That key is shared with api.ts, ChatWindow, MobileShell etc. —
-// migrating it requires a separate sweep across those files.
 import * as storage from './storage'
 
-// ════════════════════════════════════════════════════════════════════════════
-// CONSTANTS
-// ════════════════════════════════════════════════════════════════════════════
-
 const STORAGE_PREFIX = 'kairo:twin:'
-const MAX_EVENTS     = 800           // hard cap; oldest get pruned
+const MAX_EVENTS     = 800
 const EVENT_TTL_MS   = 90 * 86_400_000
-const ALPHA          = 0.28          // mastery EMA smoothing
-const FORGET_LO      = 0.6           // retention threshold for forget_at
+const ALPHA          = 0.28
+const FORGET_LO      = 0.6
 const OBS_TTL_HOURS  = 72
 
 const MODALITY_BY_DEFAULT: Partial<Record<EventType, Modality>> = {
@@ -215,20 +166,14 @@ const MODALITY_BY_DEFAULT: Partial<Record<EventType, Modality>> = {
   concept_viewed:   'visual',
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// STORAGE
-// ════════════════════════════════════════════════════════════════════════════
-
 function getUserKey(): string {
-  // Derive a stable per-user key without leaking the raw Supabase id.
-  // Falls back to a shared '_local' key for unauthenticated dev sessions.
   try {
     const tok = localStorage.getItem('kairo_token')
     if (tok) {
       const payload = JSON.parse(atob(tok.split('.')[1]))
       if (payload?.sub) return shortHash(String(payload.sub))
     }
-  } catch { /* ignore */ }
+  } catch {  }
   return '_local'
 }
 
@@ -258,8 +203,6 @@ export function loadState(): TwinState {
     const raw = storage.getRaw(storageKey())
     if (!raw) return emptyState()
     const parsed = JSON.parse(raw) as any
-    // Migration: bump v2 (twin-only) → v3 (twin + domain arrays).
-    // We KEEP v2 events/mastery/twin so users don't lose their model.
     if (parsed.version === 2) {
       return {
         ...emptyState(),
@@ -271,7 +214,6 @@ export function loadState(): TwinState {
       }
     }
     if (parsed.version !== 3) return emptyState()
-    // Defensive: ensure all domain arrays exist on every load
     return {
       ...emptyState(),
       ...parsed,
@@ -288,40 +230,26 @@ export function loadState(): TwinState {
 function saveState(state: TwinState) {
   if (typeof window === 'undefined') return
   try {
-    // Soft-prune events: keep last MAX_EVENTS, drop anything older than EVENT_TTL_MS
     const now = Date.now()
     state.events = state.events
       .filter(e => now - e.ts < EVENT_TTL_MS)
       .slice(-MAX_EVENTS)
     storage.setRaw(storageKey(), JSON.stringify(state))
-    // Fire-and-forget debounced cloud sync. Defined later in this file; safe
-    // because hoisting means the function exists by the time saveState runs.
-    try { scheduleSyncToCloud?.() } catch { /* ignore */ }
+    try { scheduleSyncToCloud?.() } catch {  }
   } catch (e) {
-    // Quota exceeded — last-ditch attempt: keep only the most recent 200 events
     try {
       state.events = state.events.slice(-200)
       storage.setRaw(storageKey(), JSON.stringify(state))
-      try { scheduleSyncToCloud?.() } catch { /* ignore */ }
-    } catch { /* give up silently — user is offline-only and storage-full */ }
+      try { scheduleSyncToCloud?.() } catch {  }
+    } catch {  }
   }
 }
 
-/** Erase everything for the current user. UI's "Wipe my Twin" button. */
 export function clearTwin() {
   if (typeof window === 'undefined') return
   storage.removeRaw(storageKey())
 }
 
-/**
- * Reset to fresh state — wipes EVERY Kyno-owned localStorage key, not
- * just the current twin bucket. Used by the Settings "Reset to fresh
- * state" button so a demo run can return to a clean slate without
- * logging out and back in.
- *
- * Preserves auth (`kairo_token`) and user-visible terms acceptance so
- * the user doesn't get bounced back to the login screen.
- */
 export function resetAllData() {
   if (typeof window === 'undefined') return
   const PRESERVE = new Set([
@@ -332,28 +260,20 @@ export function resetAllData() {
   const toRemove: string[] = []
   for (const k of storage.listKeys()) {
     if (!k) continue
-    // Anything in our namespace OR the per-feature legacy keys
     if (
       (k.startsWith('kairo:') || k.startsWith('kairo_')) &&
       !PRESERVE.has(k)
     ) toRemove.push(k)
   }
   for (const k of toRemove) storage.removeRaw(k)
-  // Notify any listeners (Kyno subscribes to `storage` events)
   try {
     window.dispatchEvent(new StorageEvent('storage', { key: storageKey() }))
-  } catch { /* ignore */ }
+  } catch {  }
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// BACKUP & RESTORE — export to a JSON blob so the student can move their
-// Twin between devices without any server involvement.
-// ════════════════════════════════════════════════════════════════════════════
-
-/** Wrapper shape that lets us version the export format independently of TwinState. */
 export interface TwinBackup {
   schema:     'kairo-twin-backup-v1'
-  exportedAt: string                 // ISO timestamp
+  exportedAt: string
   userKey:    string
   stats:      {
     events:     number
@@ -366,7 +286,6 @@ export interface TwinBackup {
   data:       TwinState
 }
 
-/** Snapshot the current twin to a pretty-printed JSON string. */
 export function exportTwin(): string {
   const state = loadState()
   const payload: TwinBackup = {
@@ -386,7 +305,6 @@ export function exportTwin(): string {
   return JSON.stringify(payload, null, 2)
 }
 
-/** Suggested filename for the export. */
 export function exportFilename(): string {
   const now = new Date()
   const pad = (n: number) => String(n).padStart(2, '0')
@@ -402,17 +320,6 @@ export interface ImportResult {
   mode?:  ImportMode
 }
 
-/**
- * Load a previously-exported JSON blob into the current device's localStorage.
- *
- * - replace: wipe whatever is here and use the imported state verbatim.
- *            The imported userKey is replaced with the current device's
- *            userKey so the data binds to the logged-in account here.
- * - merge:   keep existing data and add the imported events / doubts /
- *            concepts / formulas / flashcards on top, de-duped.
- *            Mastery rows are kept from the LOCAL device (mastery is a
- *            derived signal — re-computed on next refresh).
- */
 export function importTwin(jsonText: string, mode: ImportMode = 'replace'): ImportResult {
   let parsed: any
   try { parsed = JSON.parse(jsonText) } catch { return { ok: false, reason: 'invalid-json' } }
@@ -429,7 +336,7 @@ export function importTwin(jsonText: string, mode: ImportMode = 'replace'): Impo
     const next: TwinState = {
       ...emptyState(),
       ...incoming,
-      userKey:    localKey,                          // bind to local account
+      userKey:    localKey,
       doubts:     incoming.doubts     ?? [],
       concepts:   incoming.concepts   ?? [],
       formulas:   incoming.formulas   ?? [],
@@ -437,7 +344,6 @@ export function importTwin(jsonText: string, mode: ImportMode = 'replace'): Impo
     }
     saveState(next)
   } else {
-    // Merge — combine arrays, de-dupe by id (or ts+type for events)
     const current = loadState()
     const next: TwinState = {
       ...current,
@@ -477,52 +383,33 @@ function dedupeBy<T>(arr: T[], keyFn: (x: T) => string): T[] {
   return out
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// CLOUD SYNC — auto-mirror the twin to /api/twin/snapshot so it follows the
-// student across devices.
-//
-//   - The cloud is a MIRROR, not the source of truth. Local storage stays
-//     authoritative on each device. We just push/pull the rolling snapshot.
-//   - Upload is debounced (5s after last change) so we batch chatty events.
-//   - Pull happens once on app boot if local is empty and a cloud snapshot
-//     exists. Subsequent edits then push back up.
-// ════════════════════════════════════════════════════════════════════════════
-
 const SYNC_DEBOUNCE_MS = 5_000
 let   syncTimer: number | null = null
 let   syncEnabled: boolean      = true
-let   syncPausedUntil: number   = 0     // epoch ms; scheduled pushes before this are no-ops
+let   syncPausedUntil: number   = 0
 let   onSyncEvent: ((kind: 'pulling' | 'pulled' | 'pushed' | 'idle' | 'error', detail?: any) => void) | null = null
 
-/** Skip the next debounced push until `untilEpochMs`. Used right after a pull
- *  so the device that just received data doesn't immediately re-upload the
- *  exact same payload (or worse, an empty state if hydration is mid-flight). */
 export function pauseSyncUntil(untilEpochMs: number) {
   syncPausedUntil = Math.max(syncPausedUntil, untilEpochMs)
 }
 
-/** Subscribe to sync lifecycle events (one observer at a time — the App shell). */
 export function onSync(handler: typeof onSyncEvent) {
   onSyncEvent = handler
 }
 
 function emitSync(kind: 'pulling' | 'pulled' | 'pushed' | 'idle' | 'error', detail?: any) {
-  try { onSyncEvent?.(kind, detail) } catch { /* ignore observer errors */ }
+  try { onSyncEvent?.(kind, detail) } catch {  }
 }
 
-/** Manually pause / resume sync. The UI keeps a toggle in Settings. */
 export function setSyncEnabled(on: boolean) {
   syncEnabled = on
-  try { storage.setRaw('kairo:sync:enabled', on ? '1' : '0') } catch { /* ignore */ }
+  try { storage.setRaw('kairo:sync:enabled', on ? '1' : '0') } catch {  }
   if (on) scheduleSyncToCloud()
 }
 export function getSyncEnabled(): boolean {
   if (typeof window === 'undefined') return false
   try {
     const raw = storage.getRaw('kairo:sync:enabled')
-    // Default ON — cross-device sync works out of the box. The cloud
-    // snapshot is ephemeral (wiped right after a pull) so privacy impact
-    // is minimal. Users can still opt out from Settings.
     if (raw === null) return true
     return raw === '1'
   } catch { return false }
@@ -540,21 +427,18 @@ function deviceLabel(): string {
   return `${m} · ${new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}`
 }
 
-/** Schedule a debounced upload to the cloud. Safe to call on every save. */
 export function scheduleSyncToCloud() {
   if (typeof window === 'undefined') return
   if (!syncEnabled) return
   if (syncTimer) window.clearTimeout(syncTimer)
   syncTimer = window.setTimeout(() => {
-    if (Date.now() < syncPausedUntil) return    // honor the post-pull pause
+    if (Date.now() < syncPausedUntil) return
     syncToCloudNow().catch(() => {})
   }, SYNC_DEBOUNCE_MS)
 }
 
-/** Force an immediate upload. Used on logout / manual "sync now". */
 export async function syncToCloudNow(): Promise<{ ok: boolean; reason?: string }> {
   if (typeof window === 'undefined') return { ok: false, reason: 'no-window' }
-  // We only sync when the user is signed in (api.ts attaches the bearer).
   const token = localStorage.getItem('kairo_token')
   if (!token) return { ok: false, reason: 'not-signed-in' }
   try {
@@ -574,14 +458,6 @@ export async function syncToCloudNow(): Promise<{ ok: boolean; reason?: string }
   }
 }
 
-/**
- * Wipe the cloud copy of the snapshot.
- *
- * Called right after a successful pull on a new device — once the data has
- * landed in this device's localStorage, the cloud copy serves no purpose
- * and is deleted so it doesn't linger on the server. The next debounced
- * push (5 s after activity here) re-creates a fresh row.
- */
 export async function deleteCloudSnapshot(): Promise<{ ok: boolean; reason?: string }> {
   if (typeof window === 'undefined') return { ok: false, reason: 'no-window' }
   const token = localStorage.getItem('kairo_token')
@@ -592,19 +468,10 @@ export async function deleteCloudSnapshot(): Promise<{ ok: boolean; reason?: str
     return { ok: true }
   } catch (e: any) {
     const reason = String(e?.message || e || 'unknown')
-    // Soft-fail — cloud might not have a row yet, that's fine
     return { ok: false, reason }
   }
 }
 
-/**
- * Pull the latest snapshot from the cloud and hydrate localStorage.
- * Used on app boot when local is empty (first time on this device).
- *
- * Returns { ok, restored: boolean, stats? }. `restored: false` means
- * either no snapshot exists yet OR the local state was already populated
- * and we deliberately didn't clobber it.
- */
 export async function pullFromCloud(opts: { force?: boolean } = {}): Promise<{
   ok:        boolean
   restored:  boolean
@@ -615,7 +482,6 @@ export async function pullFromCloud(opts: { force?: boolean } = {}): Promise<{
   const token = localStorage.getItem('kairo_token')
   if (!token) return { ok: false, restored: false, reason: 'not-signed-in' }
 
-  // Don't pull if local already has data, unless force is set.
   if (!opts.force) {
     const current = loadState()
     if (current.events.length > 0 || current.flashcards.length > 0 || current.doubts.length > 0) {
@@ -662,14 +528,9 @@ export async function pullFromCloud(opts: { force?: boolean } = {}): Promise<{
   }
 }
 
-// Initialise enabled flag from localStorage at module load.
 if (typeof window !== 'undefined') {
   syncEnabled = getSyncEnabled()
 }
-
-// ════════════════════════════════════════════════════════════════════════════
-// HELPERS
-// ════════════════════════════════════════════════════════════════════════════
 
 export function normalizeTopic(s: string | undefined | null): string | undefined {
   if (!s) return undefined
@@ -679,28 +540,21 @@ export function normalizeTopic(s: string | undefined | null): string | undefined
 function clamp01(x: number)    { return Math.max(0, Math.min(1, x)) }
 function avg(arr: number[])    { return arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0 }
 function shortHash(s: string): string {
-  // 32-bit FNV-1a, base36 — short, stable, no crypto needed.
   let h = 0x811c9dc5
   for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 0x01000193)
   return ((h >>> 0).toString(36)).padStart(7, '0')
 }
 function uid()                  { return Math.random().toString(36).slice(2, 10) }
 
-/** Hours until retention drops below FORGET_LO given strength S. */
 function forgetHours(strength: number): number {
-  return Math.max(1, strength * 24 * 0.511)         // -S * ln(0.6) ≈ S * 0.511
+  return Math.max(1, strength * 24 * 0.511)
 }
 
-/** Current retention 0..1 for a mastery row. */
 export function retentionFor(row: MasteryRow, atMs = Date.now()): number {
   if (!row.lastStudiedAt || !row.strength) return 0
   const hours = (atMs - row.lastStudiedAt) / 3600_000
   return Math.max(0, Math.exp(-hours / Math.max(0.5, row.strength)))
 }
-
-// ════════════════════════════════════════════════════════════════════════════
-// EVENT INGESTION
-// ════════════════════════════════════════════════════════════════════════════
 
 interface TrackArgs {
   type:       EventType
@@ -711,19 +565,9 @@ interface TrackArgs {
   durationMs?: number
   modality?:  Modality
   payload?:   Record<string, any>
-  difficulty?: number              // 0..1 (used for mastery update)
+  difficulty?: number
 }
 
-/**
- * The single public entry point. Drop this into any code path where the
- * student does something Kyno should "see".
- *
- *   track({ type: 'lab_opened',  subject: 'Biology', topic: 'cell' })
- *   track({ type: 'quiz_answered', subject: 'Math', topic: 'vectors', correct: true, score: 90, difficulty: 0.7 })
- *
- * Returns the updated TwinState. UI components can use the returned snapshot
- * to refresh in-memory state without a re-load from disk.
- */
 export function track(args: TrackArgs): TwinState {
   const state = loadState()
 
@@ -741,7 +585,6 @@ export function track(args: TrackArgs): TwinState {
 
   state.events.push(event)
 
-  // If the event carries a learning signal, update topic mastery.
   if (event.topic && (typeof event.correct === 'boolean' || typeof event.score === 'number')) {
     applyToMastery(state, {
       subject:    event.subject || 'General',
@@ -752,32 +595,13 @@ export function track(args: TrackArgs): TwinState {
     })
   }
 
-  // SQLITE PROTOCOL — PHASE III · mirror this event into the relational
-  // `events` table so new SQL-backed pages can query indexed history. Fire
-  // and forget — the kv blob is still authoritative if SQLite isn't around.
   storage.mirrorEvent(getUserKey(), event)
 
-  // Recompute eagerly — it's cheap.
   recompute(state)
   saveState(state)
   return state
 }
 
-/**
- * Seed a small set of realistic backdated events so a fresh account
- * has something to look at on Kyno. Used by both the desktop and
- * mobile empty-state "Try with demo data" buttons.
- *
- * Why here instead of in each page component?
- *   - twin.ts owns the storage key derivation; reading/writing localStorage
- *     directly from page code is brittle (the desktop version had a parallel
- *     copy of the FNV-1a hash inline — easy to drift out of sync).
- *   - mobile EmptyState had no button at all, so users on phones were
- *     stuck on a blank dashboard after signing in to a fresh account.
- *
- * Idempotent: safe to call multiple times — each call appends another
- * batch of events, which still reads as "lots of activity".
- */
 export function seedDemo(): TwinState {
   const demo: Array<TrackArgs & { _daysAgo?: number }> = [
     { type: 'lab_opened',       subject: 'Biology',   topic: 'cell',                                                _daysAgo: 9 },
@@ -800,25 +624,17 @@ export function seedDemo(): TwinState {
   for (const d of demo) {
     const { _daysAgo, ...args } = d
     state = track(args as TrackArgs)
-    // Backdate the just-pushed event. We use storageKey() (the same
-    // function track() uses) so the read + write here can't drift to
-    // a different bucket. Previous page-level copies inlined the hash
-    // and silently lost the backdate when the hash drifted.
     if (_daysAgo && state) {
       const lastEv = state.events[state.events.length - 1]
       if (lastEv) {
         lastEv.ts = Date.now() - _daysAgo * 86_400_000
         try {
           storage.setRaw(storageKey(), JSON.stringify(state))
-        } catch { /* quota / private mode — ignore */ }
+        } catch {  }
       }
     }
   }
-  // ── Flashcards (~30 across subjects, CBSE Class 10 flavour) ─────────
-  // recordFlashcard saves into state.flashcards. Mix of subjects + topics
-  // so the Flashcards page reads as a real student's deck.
   const flashcards: Array<{ front: string; back: string; subject: string; topic: string }> = [
-    // Math
     { front: 'Quadratic formula',                      back: 'x = (-b ± √(b² - 4ac)) / 2a',                                 subject: 'Math', topic: 'quadratic equations' },
     { front: 'Discriminant condition for real roots',  back: 'b² - 4ac ≥ 0',                                                 subject: 'Math', topic: 'quadratic equations' },
     { front: 'sin²θ + cos²θ',                          back: '= 1',                                                          subject: 'Math', topic: 'trigonometry' },
@@ -827,7 +643,6 @@ export function seedDemo(): TwinState {
     { front: 'Sum of first n natural numbers',         back: 'n(n+1)/2',                                                     subject: 'Math', topic: 'arithmetic progressions' },
     { front: 'nth term of an AP',                      back: 'a + (n-1)d',                                                   subject: 'Math', topic: 'arithmetic progressions' },
     { front: 'Probability of an event',                back: 'No. of favourable outcomes / Total outcomes',                  subject: 'Math', topic: 'probability' },
-    // Physics
     { front: 'Newton’s second law',                    back: 'F = ma',                                                       subject: 'Physics', topic: 'newton laws' },
     { front: 'Ohm’s law',                              back: 'V = IR',                                                       subject: 'Physics', topic: 'electricity' },
     { front: 'Power formula (electricity)',            back: 'P = VI = I²R = V²/R',                                          subject: 'Physics', topic: 'electricity' },
@@ -836,37 +651,31 @@ export function seedDemo(): TwinState {
     { front: 'Lens formula',                           back: '1/v - 1/u = 1/f',                                              subject: 'Physics', topic: 'light' },
     { front: 'Kinetic energy',                         back: 'KE = ½ m v²',                                                  subject: 'Physics', topic: 'energy' },
     { front: 'Work-energy theorem',                    back: 'W_net = ΔKE',                                                  subject: 'Physics', topic: 'energy' },
-    // Chemistry
     { front: 'Atomic number',                          back: 'Number of protons in the nucleus',                             subject: 'Chemistry', topic: 'periodic table' },
     { front: 'Group → property trend',                 back: 'Metallic character increases down a group',                    subject: 'Chemistry', topic: 'periodic table' },
     { front: 'pH of pure water at 25°C',               back: '7 (neutral)',                                                  subject: 'Chemistry', topic: 'acids and bases' },
     { front: 'Allotropes of carbon',                   back: 'Diamond, graphite, fullerene, graphene',                       subject: 'Chemistry', topic: 'carbon and its compounds' },
     { front: 'Functional group: –COOH',                back: 'Carboxylic acid',                                              subject: 'Chemistry', topic: 'carbon and its compounds' },
     { front: 'Saponification',                         back: 'Ester + NaOH → soap + alcohol',                                subject: 'Chemistry', topic: 'carbon and its compounds' },
-    // Biology
     { front: 'Powerhouse of the cell',                 back: 'Mitochondria',                                                 subject: 'Biology', topic: 'cell' },
     { front: 'Photosynthesis equation',                back: '6CO₂ + 6H₂O → C₆H₁₂O₆ + 6O₂  (in light, chlorophyll)',         subject: 'Biology', topic: 'life processes' },
     { front: 'Respiration in muscles during exercise', back: 'Anaerobic — glucose → lactic acid + 2 ATP',                    subject: 'Biology', topic: 'life processes' },
     { front: 'DNA full form',                          back: 'Deoxyribonucleic acid',                                        subject: 'Biology', topic: 'dna' },
     { front: 'Chambers of the human heart',            back: '4 — 2 atria + 2 ventricles',                                   subject: 'Biology', topic: 'heart' },
-    // English / Social
     { front: 'Simile vs metaphor',                     back: 'Simile uses "like/as"; metaphor states A is B directly.',      subject: 'English', topic: 'figures of speech' },
     { front: 'Year of Indian independence',            back: '1947',                                                         subject: 'History', topic: 'nationalism in india' },
     { front: 'Author of the Indian Constitution',      back: 'Dr. B. R. Ambedkar (chairman, drafting committee)',            subject: 'Civics', topic: 'indian constitution' },
   ]
   for (const f of flashcards) {
-    try { recordFlashcard({ ...f, source: 'manual' }) } catch { /* ignore */ }
+    try { recordFlashcard({ ...f, source: 'manual' }) } catch {  }
   }
 
-  // ── Mistakes (2-3 logged — feeds Mistake Analysis) ──────────────────
   try {
     recordMistake({ subject: 'Math',    topic: 'vectors',            detail: 'Mixed up dot product and cross product directions.',                difficulty: 0.7 })
     recordMistake({ subject: 'Physics', topic: 'light',              detail: 'Used 1/u + 1/v = 1/f instead of the lens formula 1/v - 1/u = 1/f.', difficulty: 0.6 })
     recordMistake({ subject: 'Chemistry', topic: 'periodic table',   detail: 'Confused groups and periods on a question about reactivity trends.', difficulty: 0.5 })
-  } catch { /* ignore */ }
+  } catch {  }
 
-  // ── Concepts (~12 nodes with cross-subject links — feeds Concept
-  //    Map + Knowledge Graph) ──────────────────────────────────────────
   try {
     recordConcept({ name: 'newton laws',          subject: 'Physics',   related: ['energy', 'kinematics'] })
     recordConcept({ name: 'energy',               subject: 'Physics',   related: ['newton laws', 'work'] })
@@ -880,28 +689,21 @@ export function seedDemo(): TwinState {
     recordConcept({ name: 'carbon and its compounds', subject: 'Chemistry', related: ['functional groups', 'allotropes'] })
     recordConcept({ name: 'life processes',       subject: 'Biology',   related: ['photosynthesis', 'respiration'] })
     recordConcept({ name: 'dna',                  subject: 'Biology',   related: ['cell', 'heredity'] })
-  } catch { /* ignore */ }
+  } catch {  }
 
-  // ── A few formulas pinned (feeds Formula Sheet's "collected" tab) ──
   try {
     recordFormula({ name: 'Newton’s 2nd law', expr: '$F = ma$',                                 subject: 'Physics',   topic: 'newton laws',           source: 'manual' })
     recordFormula({ name: 'Ohm’s law',        expr: '$V = IR$',                                 subject: 'Physics',   topic: 'electricity',           source: 'manual' })
     recordFormula({ name: 'Lens formula',     expr: '$\\frac{1}{v} - \\frac{1}{u} = \\frac{1}{f}$', subject: 'Physics', topic: 'light',                source: 'manual' })
     recordFormula({ name: 'Quadratic roots',  expr: '$x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}$',  subject: 'Math',    topic: 'quadratic equations',  source: 'manual' })
     recordFormula({ name: 'Photosynthesis',   expr: '$6CO_2 + 6H_2O \\rightarrow C_6H_{12}O_6 + 6O_2$', subject: 'Biology', topic: 'photosynthesis',   source: 'manual' })
-  } catch { /* ignore */ }
+  } catch {  }
 
-  // Final recompute against the backdated timeline so the dashboard
-  // reads as days of activity rather than a 14-event spike at t=now.
   state = loadState()
   recompute(state)
   saveState(state)
   return state
 }
-
-// ════════════════════════════════════════════════════════════════════════════
-// MASTERY UPDATE (Ebbinghaus + EMA)
-// ════════════════════════════════════════════════════════════════════════════
 
 function applyToMastery(state: TwinState, args: {
   subject: string; topic: string; correct?: boolean; score?: number; difficulty: number
@@ -910,7 +712,6 @@ function applyToMastery(state: TwinState, args: {
   const idx = state.mastery.findIndex(m => m.subject === args.subject && m.topic === args.topic)
   const existing = idx >= 0 ? state.mastery[idx] : null
 
-  // Correctness signal 0..1
   let signal: number | null
   if (typeof args.correct === 'boolean') signal = args.correct ? 1 : 0
   else if (typeof args.score === 'number') signal = clamp01(args.score / 100)
@@ -943,10 +744,6 @@ function applyToMastery(state: TwinState, args: {
   if (idx >= 0) state.mastery[idx] = row
   else          state.mastery.push(row)
 }
-
-// ════════════════════════════════════════════════════════════════════════════
-// COMPUTE — derive the twin from raw events + mastery
-// ════════════════════════════════════════════════════════════════════════════
 
 function slope(ys: number[]): number {
   if (ys.length < 2) return 0
@@ -1006,7 +803,6 @@ function computeFocus(events: TwinEvent[]) {
     if (a > bestAvg) { bestAvg = a; bestHour = Number(h) }
   }
 
-  // Crude session inference: contiguous events with gaps < 10 min
   const sorted = [...events].sort((a, b) => a.ts - b.ts)
   const sessionLengths: number[] = []
   let sessionStart = sorted[0]?.ts ?? 0
@@ -1124,13 +920,6 @@ function forgettingSoon(mastery: MasteryRow[], max = 8): ForgetTopic[] {
     }))
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// OBSERVATIONS — rule-based supportive insights
-// ════════════════════════════════════════════════════════════════════════════
-
-// Pick "a" or "an" based on the first sound of the next word.
-// Naive but covers every word we actually use ('interactive' → 'an',
-// 'visual' / 'text' / 'repetition' → 'a').
 function aOrAn(word: string) {
   return /^[aeiouAEIOU]/.test(word) ? 'an' : 'a'
 }
@@ -1234,10 +1023,6 @@ function buildObservations(twin: Twin, mastery: MasteryRow[], events: TwinEvent[
 
   return out
 }
-
-// ════════════════════════════════════════════════════════════════════════════
-// RECOMMENDATIONS
-// ════════════════════════════════════════════════════════════════════════════
 
 const LAB_CATALOG: Array<{ id: string; title: string; subject: string; modality: Modality; topics: string[] }> = [
   { id: 'gravity',    title: 'Gravity & Free Fall',  subject: 'Physics',   modality: 'visual',      topics: ['gravity', 'free fall', 'newton', 'motion'] },
@@ -1356,14 +1141,6 @@ function buildRecommendations(twin: Twin): Omit<Recommendation, 'id' | 'createdA
   return out.slice(0, 10)
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// MASTER COMPUTE
-// ════════════════════════════════════════════════════════════════════════════
-
-/**
- * Recompute the twin in place. Mutates state.twin / observations / recommendations.
- * Called after every event AND when the dashboard opens.
- */
 export function recompute(state: TwinState) {
   const now    = Date.now()
   const since  = now - 60 * 86_400_000
@@ -1413,16 +1190,6 @@ export function recompute(state: TwinState) {
     forgettingSoon:     forgetSoon,
   }
 
-  // Observations — REPLACE every recompute.
-  //
-  // We used to merge stillFresh (within 72h TTL) with newly-computed obs and
-  // dedup by title — but mutually exclusive obs (e.g. "Scores are dipping"
-  // vs "Your scores are trending up") have DIFFERENT titles, so the cache
-  // would surface both simultaneously after a trend flip. Always rebuilding
-  // from current state guarantees the dashboard reflects what's true NOW.
-  //
-  // Milestone obs (e.g. "7-day streak") still get regenerated next time the
-  // condition holds — and they're tone-supportive so re-seeing them is fine.
   const ttlMs = OBS_TTL_HOURS * 3600_000
   state.observations = buildObservations(state.twin, state.mastery, events).map(o => ({
     ...o,
@@ -1431,17 +1198,12 @@ export function recompute(state: TwinState) {
     expiresAt: now + ttlMs,
   })).slice(0, 16)
 
-  // Recommendations — replace each time (recompute is cheap and they expire fast)
   state.recommendations = buildRecommendations(state.twin).map(r => ({
     ...r,
     id:        uid(),
     createdAt: now,
   }))
 }
-
-// ════════════════════════════════════════════════════════════════════════════
-// PUBLIC READ API — used by the dashboard
-// ════════════════════════════════════════════════════════════════════════════
 
 export interface DashboardSnapshot {
   twin:            Twin | null
@@ -1454,7 +1216,6 @@ export interface DashboardSnapshot {
 
 export function getDashboard(): DashboardSnapshot {
   const state = loadState()
-  // Always recompute on read to catch any stale rows + auto-expire observations.
   recompute(state)
   saveState(state)
 
@@ -1468,19 +1229,16 @@ export function getDashboard(): DashboardSnapshot {
   }
 }
 
-/** Force a fresh compute (e.g. "Recompute Twin" button). */
 export function refresh(): DashboardSnapshot {
   return getDashboard()
 }
 
-/** Dismiss a recommendation (just removes it from local state). */
 export function dismissRecommendation(id: string) {
   const state = loadState()
   state.recommendations = state.recommendations.filter(r => r.id !== id)
   saveState(state)
 }
 
-/** "Mark done" — same as dismiss, but we record an act-on-recommendation event. */
 export function actOnRecommendation(id: string) {
   const state = loadState()
   const rec   = state.recommendations.find(r => r.id === id)
@@ -1497,31 +1255,12 @@ export function actOnRecommendation(id: string) {
   saveState(state)
 }
 
-/** Quick global track function — call from any page on any interaction. */
 export const kairoTrack = track
 
-// For dev / inspector tools — expose the raw state so the user can see exactly
-// what's in their device. Privacy by visibility.
 export function dumpState(): TwinState {
   return loadState()
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// UNIFIED MEMORY API — every other Kyno system reads/writes through here
-// ════════════════════════════════════════════════════════════════════════════
-//
-// The Twin's `events` array captures behavioural signal (correctness, timing,
-// modality). These domain APIs sit on top for the human-readable surface:
-//   - recordDoubt:     question + answer text from Solver
-//   - recordMistake:   typed mistake with context (auto-feeds Mistake Analysis)
-//   - recordConcept:   conceptual node + edges (auto-feeds Concept Map)
-//   - recordFormula:   collected equation (auto-feeds Formula Sheet)
-//   - recordFlashcard: SRS card (auto-feeds Flashcards page)
-//
-// Each `record*` ALSO calls track() internally so the Twin's existing model
-// (mastery, retention, style) keeps evolving without duplicate code.
-
-// ── DOUBTS (Solver history) ─────────────────────────────────────────────────
 export function recordDoubt(args: {
   question:  string
   answer?:   string
@@ -1540,15 +1279,14 @@ export function recordDoubt(args: {
     source:    args.source || 'solver',
   }
   state.doubts.unshift(doubt)
-  state.doubts = state.doubts.slice(0, 200)     // cap at 200 most-recent
+  state.doubts = state.doubts.slice(0, 200)
   saveState(state)
 
-  // Also feed the twin
   track({
     type: 'concept_viewed',
     subject: args.subject,
     topic:   args.topic,
-    modality: args.source === 'voice' ? 'repetition' : 'text',   // 'repetition' = audio-like in Twin model
+    modality: args.source === 'voice' ? 'repetition' : 'text',
     payload: { doubtId: doubt.id, question: args.question.slice(0, 120) },
   })
   return doubt
@@ -1558,20 +1296,18 @@ export function listDoubts(limit = 50): Doubt[] {
   return loadState().doubts.slice(0, limit)
 }
 
-// ── MISTAKES (subset of events where correct=false) ─────────────────────────
 export interface MistakeRow {
   topic:      string
   subject:    string
-  count:      number             // total wrong attempts on this topic
+  count:      number
   lastAt:     number
-  recentScores: number[]         // for context
-  severity:   number             // 0..1 — higher = more attention needed
-  events:     TwinEvent[]        // full underlying wrong-answer events
+  recentScores: number[]
+  severity:   number
+  events:     TwinEvent[]
 }
 
 export function getMistakes(): MistakeRow[] {
   const state = loadState()
-  // Group wrong events by topic.
   const byTopic = new Map<string, TwinEvent[]>()
   for (const e of state.events) {
     const isWrong = e.correct === false || (typeof e.score === 'number' && e.score < 40)
@@ -1589,7 +1325,6 @@ export function getMistakes(): MistakeRow[] {
       .sort((a, b) => b.ts - a.ts)
       .slice(0, 5)
       .map(e => e.score!)
-    // Severity grows with count + recency; decays with recent right answers
     const mastery = state.mastery.find(m => m.subject === subject && m.topic === topic)
     const baseMastery = mastery?.mastery ?? 0.3
     const severity = Math.max(0, Math.min(1, (evs.length / 8) * (1 - baseMastery)))
@@ -1598,7 +1333,6 @@ export function getMistakes(): MistakeRow[] {
   return rows.sort((a, b) => b.severity - a.severity)
 }
 
-/** Record an explicit mistake. Used by Mistake Analysis "Add manually". */
 export function recordMistake(args: {
   topic:    string
   subject?: string
@@ -1616,7 +1350,6 @@ export function recordMistake(args: {
   })
 }
 
-// ── CONCEPTS (graph nodes auto-built from history) ──────────────────────────
 export function recordConcept(args: {
   name:      string
   subject?:  string
@@ -1650,14 +1383,10 @@ export function recordConcept(args: {
   return concept
 }
 
-/** Build a concept graph from BOTH explicit concepts AND twin events.
- *  Every topic that appears in events becomes a node; topics in the same
- *  subject+session are linked. Returns nodes + edges ready for visualization. */
 export function getConceptGraph(): { nodes: ConceptNode[]; edges: ConceptEdge[] } {
   const state = loadState()
   const nodes = new Map<string, ConceptNode>()
 
-  // Seed nodes from explicit concepts
   for (const c of state.concepts) {
     nodes.set(c.id, {
       id:       c.id,
@@ -1668,7 +1397,6 @@ export function getConceptGraph(): { nodes: ConceptNode[]; edges: ConceptEdge[] 
       lastSeen: c.reinforcedAt,
     })
   }
-  // Add nodes from events (auto-discovery)
   for (const e of state.events) {
     if (!e.topic) continue
     const id = 'c-' + e.topic.replace(/\s+/g, '-')
@@ -1687,7 +1415,6 @@ export function getConceptGraph(): { nodes: ConceptNode[]; edges: ConceptEdge[] 
     }
   }
 
-  // Edges: topics that co-occur within the same 30-min window get linked
   const edges = new Set<string>()
   const eventsByTime = [...state.events].filter(e => e.topic).sort((a, b) => a.ts - b.ts)
   for (let i = 0; i < eventsByTime.length; i++) {
@@ -1701,7 +1428,6 @@ export function getConceptGraph(): { nodes: ConceptNode[]; edges: ConceptEdge[] 
       edges.add(edge)
     }
   }
-  // Add explicit related edges
   for (const c of state.concepts) {
     for (const r of c.related) {
       const edge = c.id < r ? `${c.id}|${r}` : `${r}|${c.id}`
@@ -1728,7 +1454,6 @@ export interface ConceptNode {
 }
 export interface ConceptEdge { from: string; to: string }
 
-// ── FORMULAS ────────────────────────────────────────────────────────────────
 export function recordFormula(args: { name: string; expr: string; subject?: string; topic?: string; source?: Formula['source'] }): Formula {
   const state = loadState()
   const f: Formula = {
@@ -1748,7 +1473,6 @@ export function listFormulas(subject?: string): Formula[] {
   return subject ? all.filter(f => f.subject === subject) : all
 }
 
-// ── FLASHCARDS ──────────────────────────────────────────────────────────────
 export function recordFlashcard(args: { front: string; back: string; subject?: string; topic?: string; source?: Flashcard['source'] }): Flashcard {
   const state = loadState()
   const c: Flashcard = {
@@ -1767,7 +1491,6 @@ export function recordFlashcard(args: { front: string; back: string; subject?: s
 export function listFlashcards(): Flashcard[]   { return loadState().flashcards }
 export function listConcepts():  Concept[]      { return loadState().concepts  }
 
-// ── STUDY HISTORY (unified timeline for Knowledge Graph etc.) ──────────────
 export interface HistoryEntry {
   ts:       number
   kind:     'event' | 'doubt' | 'concept' | 'formula' | 'flashcard'

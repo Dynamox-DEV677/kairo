@@ -5,10 +5,8 @@ import {
   Settings, BarChart3, Trash2, ExternalLink, Save, Sparkles,
 } from 'lucide-react'
 
-// ── Auth-aware fetch (auto-refreshes expired Supabase JWTs) ──────────────────
 import { api, friendlyError } from '../lib/api'
 
-// Public fetch (no auth) — for the chat preview
 async function publicApi(path: string, opts: RequestInit = {}): Promise<any> {
   const res = await fetch(`/api${path}`, {
     ...opts,
@@ -70,7 +68,6 @@ const labelStyle: React.CSSProperties = {
   fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.8,
 }
 
-// ─── Top-level component ───────────────────────────────────────────────────────
 export default function AdmissionBot() {
   const [tab, setTab] = useState('chat')
   const [ctx, setCtx] = useState<SchoolCtx | null>(null)
@@ -135,7 +132,6 @@ export default function AdmissionBot() {
         </div>
       )}
 
-      {/* Tab bar */}
       <div style={{ display: 'flex', gap: 4, marginBottom: 22, background: '#0E1117', border: '1px solid #1f2532', borderRadius: 10, padding: 4, width: 'fit-content' }}>
         {TABS.map(t => (
           <button key={t.id} onClick={() => setTab(t.id)} style={{
@@ -163,7 +159,6 @@ export default function AdmissionBot() {
   )
 }
 
-// ─── Chat ───────────────────────────────────────────────────────────────────
 interface Msg { role: 'user' | 'assistant'; content: string }
 
 function ChatTab({ ctx }: { ctx: SchoolCtx }) {
@@ -231,7 +226,6 @@ function ChatTab({ ctx }: { ctx: SchoolCtx }) {
 
   return (
     <div className="mob-stack" style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 20, minHeight: 540 }}>
-      {/* Chat window */}
       <div style={{ ...card, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         <div style={{ padding: '14px 18px', borderBottom: '1px solid #1a1f2e', display: 'flex', alignItems: 'center', gap: 10 }}>
           <div style={{ width: 36, height: 36, borderRadius: 10, background: 'linear-gradient(135deg,#4F7CFF,#4F7CFF)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
@@ -302,7 +296,6 @@ function ChatTab({ ctx }: { ctx: SchoolCtx }) {
         </div>
       </div>
 
-      {/* Right panel */}
       <div>
         <AnimatePresence>
           {showLead && !leadSaved && (
@@ -356,7 +349,6 @@ function ChatTab({ ctx }: { ctx: SchoolCtx }) {
   )
 }
 
-// ─── Leads ─────────────────────────────────────────────────────────────────
 function LeadsTab() {
   const [leads, setLeads]     = useState<Lead[]>([])
   const [loading, setLoading] = useState(true)
@@ -462,7 +454,6 @@ function LeadsTab() {
   )
 }
 
-// ─── Stats ──────────────────────────────────────────────────────────────────
 function StatsTab() {
   const [stats, setStats] = useState<any>(null)
   const [loading, setLoading] = useState(true)
@@ -505,7 +496,6 @@ function StatsTab() {
   )
 }
 
-// ─── Settings ──────────────────────────────────────────────────────────────
 function SettingsTab({ ctx, onSaved }: { ctx: SchoolCtx; onSaved: () => void }) {
   const [cfg, setCfg]       = useState<AdmissionConfig>(ctx.config || {})
   const [saving, setSaving] = useState(false)

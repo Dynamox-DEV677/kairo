@@ -1,14 +1,3 @@
-/**
- * League — the full XP leaderboard page.
- *
- * Three windows over the same league_scores data:
- *   Week     → the current weekly race (one row per user)
- *   Month    → sum of this month's weekly rows
- *   All-time → lifetime sum of every weekly row
- *
- * All XP now flows here: chat, flashcards, quizzes, labs, notes AND battles
- * (via game.ts awardXP / awardXPAmount → syncLeague).
- */
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Trophy, Flame, Crown, Medal, Calendar, Infinity as InfinityIcon, Loader2 } from 'lucide-react'
@@ -28,15 +17,13 @@ const TABS: { id: Range; label: string; icon: any }[] = [
   { id: 'all',   label: 'All-Time',   icon: InfinityIcon },
 ]
 
-const RANK_COLOR = ['#FFD700', '#C0C7D0', '#CD7F32']  // gold / silver / bronze
+const RANK_COLOR = ['#FFD700', '#C0C7D0', '#CD7F32']
 
 export default function League() {
   const [range, setRange]   = useState<Range>('week')
   const [board, setBoard]   = useState<LeagueBoard | null>(null)
   const [loading, setLoading] = useState(true)
 
-  // Local fallback totals so the "you" card always shows a number even when
-  // the server board is empty/offline (data is local-first anyway).
   const g = loadGame()
   const localXp = range === 'week' ? g.weekXP : g.totalXP
 
@@ -56,7 +43,6 @@ export default function League() {
 
   return (
     <div style={{ padding: 'clamp(16px, 5vw, 28px) clamp(14px, 4vw, 32px)', maxWidth: 720, margin: '0 auto', height: '100%', overflowY: 'auto', color: C.text }}>
-      {/* Header */}
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 20 }}>
         <div style={{ width: 46, height: 46, borderRadius: 13, background: `linear-gradient(135deg, ${C.gold}, #FF7A3C)`, display: 'grid', placeItems: 'center', flexShrink: 0 }}>
           <Trophy size={22} color="#1a1a1a" />
@@ -70,7 +56,6 @@ export default function League() {
         </div>
       </div>
 
-      {/* Tabs */}
       <div style={{ display: 'flex', gap: 6, background: C.panel, border: `1px solid ${C.border}`, borderRadius: 12, padding: 4, marginBottom: 18 }}>
         {TABS.map(t => {
           const active = range === t.id
@@ -89,7 +74,6 @@ export default function League() {
         })}
       </div>
 
-      {/* Your standing */}
       <div style={{
         display: 'flex', alignItems: 'center', gap: 16, marginBottom: 18,
         background: `linear-gradient(135deg, rgba(79,124,255,0.14), rgba(102,217,255,0.06))`,
@@ -109,7 +93,6 @@ export default function League() {
         </div>
       </div>
 
-      {/* Board */}
       {loading ? (
         <div style={{ display: 'flex', justifyContent: 'center', padding: 48 }}>
           <Loader2 size={22} color={C.accent} style={{ animation: 'spin 0.8s linear infinite' }} />
@@ -136,7 +119,6 @@ export default function League() {
                   background: r.you ? 'rgba(102,217,255,0.12)' : C.panel,
                   border: `1px solid ${r.you ? 'rgba(102,217,255,0.4)' : C.border}`,
                 }}>
-                {/* rank */}
                 <div style={{ width: 30, flexShrink: 0, textAlign: 'center' }}>
                   {i < 3
                     ? <div style={{ display: 'inline-grid', placeItems: 'center', width: 26, height: 26, borderRadius: '50%', background: `${RANK_COLOR[i]}22` }}>
@@ -144,11 +126,9 @@ export default function League() {
                       </div>
                     : <span style={{ fontSize: 14, fontWeight: 800, color: C.faint }}>{i + 1}</span>}
                 </div>
-                {/* name */}
                 <div style={{ flex: 1, minWidth: 0, fontSize: 14, fontWeight: r.you ? 800 : 600, color: r.you ? C.accent : C.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {r.name}{r.you && <span style={{ fontSize: 10.5, color: C.accent, marginLeft: 7, fontWeight: 700 }}>YOU</span>}
                 </div>
-                {/* xp */}
                 <div style={{ fontSize: 14, fontWeight: 800, color: r.you ? C.accent : C.dim, flexShrink: 0 }}>
                   {r.xp.toLocaleString()} <span style={{ fontSize: 10.5, color: C.faint, fontWeight: 600 }}>XP</span>
                 </div>
@@ -156,7 +136,6 @@ export default function League() {
             ))}
           </AnimatePresence>
 
-          {/* Your row, if you're outside the visible top 20 */}
           {youRank > rows.length && (
             <div style={{
               display: 'flex', alignItems: 'center', gap: 12, marginTop: 4,

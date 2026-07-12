@@ -1,18 +1,3 @@
-/**
- * LabScene — premium <Canvas> wrapper with cinematic defaults.
- *
- * Replaces raw <Canvas> in each lab to give the whole set a consistent
- * "science-museum exhibit" feel:
- *   · three-point studio lighting (key + fill + rim)
- *   · soft volumetric fog
- *   · drifting ambient particles
- *   · ACESFilmic tone mapping + sRGB output
- *   · graceful default camera + DPR clamp
- *
- * Each lab passes its own children — typically a model + sim physics + an
- * OrbitControls. The scene defaults can be overridden via the `tint`,
- * `cameraPos`, `fogColor`, `particles` props.
- */
 import { useMemo, useRef, useState, useEffect } from 'react'
 import type { ReactNode } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
@@ -23,19 +8,13 @@ interface LabSceneProps {
   children:   ReactNode
   cameraPos?: [number, number, number]
   cameraFov?: number
-  /** Background gradient anchor colour. The corner glow fades toward black. */
   tint?:      string
-  /** Optional fog colour for distance fade (subtle, atmospheric). */
   fogColor?:  string
   fogNear?:   number
   fogFar?:    number
-  /** Drifting ambient particles count. 0 disables. */
   particles?: number
-  /** Cinematic distance stars on/off. */
   stars?:     boolean
-  /** Override default shadow settings. */
   shadows?:   boolean
-  /** Extra raw props passed to Canvas (for advanced use). */
   className?: string
 }
 
@@ -52,9 +31,6 @@ export default function LabScene({
   shadows   = true,
   className,
 }: LabSceneProps) {
-  // Pause the WebGL render loop when the canvas is off-screen (e.g. the user
-  // navigated away — the Labs page stays mounted but hidden). Stops the
-  // GPU/battery drain of a 3D scene rendering behind display:none.
   const wrapRef = useRef<HTMLDivElement>(null)
   const [visible, setVisible] = useState(true)
   useEffect(() => {
@@ -87,10 +63,8 @@ export default function LabScene({
       }}
       className={className}
     >
-      {/* Volumetric-ish fog — gives every scene a sense of atmosphere */}
       <fog attach="fog" args={[fogColor, fogNear, fogFar]} />
 
-      {/* Three-point studio lighting */}
       <ambientLight intensity={0.45} />
       <directionalLight
         position={[8, 12, 6]} intensity={1.4} color="#fde68a"
@@ -104,12 +78,10 @@ export default function LabScene({
       <directionalLight position={[-7, 4, -5]} intensity={0.7} color="#A5B4FC" />
       <pointLight position={[3, -3, 4]} intensity={0.4} color="#ec4899" />
 
-      {/* Cinematic backdrop stars */}
       {stars && (
         <Stars radius={80} depth={40} count={1200} factor={3} saturation={0} fade speed={0.25} />
       )}
 
-      {/* Subtle drifting particles for depth */}
       {particles > 0 && <AmbientParticles count={particles} />}
 
       {children}
@@ -118,12 +90,9 @@ export default function LabScene({
   )
 }
 
-/** Slow-drifting points scattered in a sphere around the scene origin. Creates
- *  the sense of motion + depth without overwhelming the actual subject. */
 function AmbientParticles({ count }: { count: number }) {
   const pointsRef = useRef<THREE.Points>(null)
 
-  // Generate positions once
   const { positions, sizes } = useMemo(() => {
     const positions = new Float32Array(count * 3)
     const sizes     = new Float32Array(count)
@@ -139,15 +108,12 @@ function AmbientParticles({ count }: { count: number }) {
     return { positions, sizes }
   }, [count])
 
-  // Slow drift along Y so the scene feels alive even when paused
   useFrame((_, dt) => {
     if (!pointsRef.current) return
     pointsRef.current.rotation.y += dt * 0.015
     pointsRef.current.rotation.x = Math.sin(performance.now() * 0.0001) * 0.08
   })
 
-  // Build BufferGeometry imperatively to dodge the typed-elements <bufferAttribute>
-  // surface, which got stricter in @react-three/fiber 9.x.
   const geometry = useMemo(() => {
     const g = new THREE.BufferGeometry()
     g.setAttribute('position', new THREE.BufferAttribute(positions, 3))

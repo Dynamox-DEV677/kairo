@@ -1,15 +1,3 @@
-/**
- * Kyno Home — the AI Student Operating System command center.
- *
- * The screen a student sees on login: a time-aware greeting, exam
- * countdowns, an AI-generated daily mission + mentor note, a weakness
- * radar, a score prediction (current → potential), and a streak +
- * motivation meter. Driven by a localStorage student profile and the
- * /api/council/brief endpoint (the "AI Council").
- *
- * Deep features (Knowledge Graph, Memory Brain, Mistake Analysis) live
- * on their own pages — this home links into them.
- */
 import { useState, useEffect, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import {
@@ -19,7 +7,6 @@ import {
 import KairoGyro from '../components/KairoGyro'
 import { GameBar } from '../components/GameBar'
 
-// ── Profile (localStorage) ─────────────────────────────────────────────
 interface ExamDate { name: string; date: string }
 interface Profile {
   name: string
@@ -38,8 +25,6 @@ function loadProfile(): Profile {
     const raw = localStorage.getItem(PROFILE_KEY)
     if (raw) {
       const saved = { ...defaultProfile(), ...JSON.parse(raw) }
-      // The account name (kairo_profile, edited in Settings) always wins —
-      // the copy cached in this store goes stale when the name changes.
       try {
         const p = JSON.parse(localStorage.getItem('kairo_profile') || '{}')
         if (p.name) saved.name = p.name
@@ -52,7 +37,6 @@ function loadProfile(): Profile {
 function defaultProfile(): Profile {
   const d = new Date(); d.setDate(d.getDate() + 128)
   const n = new Date(); n.setDate(n.getDate() + 245)
-  // Try to reuse the logged-in name from kairo_profile
   let name = 'Student'
   try { const p = JSON.parse(localStorage.getItem('kairo_profile') || '{}'); name = p.name || p.full_name || 'Student' } catch {}
   return {
@@ -85,7 +69,6 @@ interface Brief {
   nextExam: (ExamDate & { days: number }) | null
 }
 
-// ── Styles ──────────────────────────────────────────────────────────────
 const card: React.CSSProperties = {
   background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(14px) saturate(140%)',
   WebkitBackdropFilter: 'blur(14px) saturate(140%)', border: '1px solid rgba(255,255,255,0.06)',
@@ -127,8 +110,6 @@ export default function KairoHome({ onNavigate }: Props) {
   const fetchBrief = useCallback(async () => {
     setLoading(true); setError(null)
 
-    // One request attempt, guarded by a client-side timeout so a hung
-    // connection can't leave the button stuck on "Thinking…" forever.
     const attempt = async () => {
       const ctrl = new AbortController()
       const timer = setTimeout(() => ctrl.abort(), 30000)
@@ -149,23 +130,16 @@ export default function KairoHome({ onNavigate }: Props) {
       try {
         data = await attempt()
       } catch {
-        // The brief runs an LLM that can be slow on a cold start; a warm
-        // second try almost always lands. Retry once before surfacing.
         data = await attempt()
       }
       setBrief(data)
     } catch {
-      // Keep it calm — the rest of the page (streak, quests, league, exam
-      // tracker) is all local data and works regardless of this call.
       setError("Couldn't reach your AI council just now. Tap “Refresh brief” to try again — everything else still works.")
     } finally { setLoading(false) }
   }, [profile])
 
-  // Auto-load the brief once on mount
   useEffect(() => { fetchBrief() /* eslint-disable-next-line */ }, [])
 
-  // Home stays mounted while the user is in Settings — re-read the profile
-  // when Settings saves a new name so the greeting updates immediately.
   useEffect(() => {
     const onProfile = () => setProfile(loadProfile())
     window.addEventListener('kairo:profile', onProfile)
@@ -184,7 +158,6 @@ export default function KairoHome({ onNavigate }: Props) {
 
   return (
     <div style={{ padding: 24, maxWidth: 1150, margin: '0 auto', color: '#fafafa', height: '100%', overflowY: 'auto', boxSizing: 'border-box', width: '100%' }}>
-      {/* ── Greeting header ─────────────────────────────────────────── */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 22, flexWrap: 'wrap', gap: 12 }}>
         <div>
           <h1 style={{ fontSize: 34, fontWeight: 900, margin: 0, letterSpacing: -0.5 }}>
@@ -211,21 +184,16 @@ export default function KairoHome({ onNavigate }: Props) {
         </div>
       )}
 
-      {/* ── Profile editor (collapsible) ────────────────────────────── */}
       {editing && (
         <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} style={{ ...card, padding: 18, marginBottom: 18, overflow: 'hidden' }}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))', gap: 14 }}>
             <div><div style={lbl}>Name</div><input style={inp} value={profile.name} onChange={e => {
               saveProfile({ ...profile, name: e.target.value })
-              // Write through to the account profile so Settings / the rest
-              // of the app show the same name (loadProfile prefers it).
               try {
                 const p = JSON.parse(localStorage.getItem('kairo_profile') || '{}')
                 localStorage.setItem('kairo_profile', JSON.stringify({ ...p, name: e.target.value }))
               } catch {}
             }} onBlur={async e => {
-              // Sync to the Supabase users row once, when done typing —
-              // App.tsx re-reads it on refresh and would revert otherwise.
               try {
                 const p = JSON.parse(localStorage.getItem('kairo_profile') || '{}')
                 if (p.id && !p.localMode) {
@@ -258,19 +226,15 @@ export default function KairoHome({ onNavigate }: Props) {
         </motion.div>
       )}
 
-      {/* ── Game bar: level · daily quests · weekly league ──────────── */}
       <GameBar />
 
-      {/* ── Council thinking — gyro while the first brief loads ─────── */}
       {loading && !brief && (
         <div style={{ padding: '28px 0 8px' }}>
           <KairoGyro fullPage label="Your council is thinking" sub="mentor · planner · analyst · exam · motivation · memory" />
         </div>
       )}
 
-      {/* ── Top row: exam countdown + prediction + motivation ───────── */}
       <div className="kg-gamebar" style={{ display: 'grid', gridTemplateColumns: '1.1fr 1.1fr 0.8fr', gap: 16, marginBottom: 16 }}>
-        {/* Exam countdowns */}
         <div style={{ ...card, padding: 18 }}>
           <div style={{ ...lbl, color: '#66D9FF', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}><Calendar size={12} /> Exam tracker</div>
           {(brief?.examDates || profile.examDates.map(e => ({ ...e, days: Math.max(0, Math.round((+new Date(e.date) - Date.now()) / 86400000)) }))).map((e, i) => (
@@ -281,7 +245,6 @@ export default function KairoHome({ onNavigate }: Props) {
           ))}
         </div>
 
-        {/* AI Prediction */}
         <div style={{ ...card, padding: 18 }}>
           <div style={{ ...lbl, color: '#66D9FF', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}><TrendingUp size={12} /> AI prediction</div>
           {brief ? (
@@ -292,7 +255,6 @@ export default function KairoHome({ onNavigate }: Props) {
                 <span style={{ fontSize: 36, fontWeight: 900, color: '#66ff9a' }}>{brief.potentialScore}</span>
                 <span style={{ fontSize: 12, color: '#9CA3AF', marginLeft: 4 }}>/ {brief.scoreScale}</span>
               </div>
-              {/* progress bar current vs potential */}
               <div style={{ height: 8, background: '#0E1117', borderRadius: 4, marginTop: 12, overflow: 'hidden', position: 'relative' }}>
                 <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${Math.min(100, brief.predictedScore / +brief.scoreScale * 100)}%`, background: '#4F7CFF' }} />
                 <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${Math.min(100, brief.potentialScore / +brief.scoreScale * 100)}%`, background: 'rgba(102,255,154,0.25)', zIndex: -0 }} />
@@ -304,7 +266,6 @@ export default function KairoHome({ onNavigate }: Props) {
           ) : <div style={{ color: '#5B616E', fontSize: 13 }}>—</div>}
         </div>
 
-        {/* Motivation + streak */}
         <div style={{ ...card, padding: 18, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
           <div>
             <div style={{ ...lbl, color: '#ffb44a', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}><Gauge size={12} /> Motivation</div>
@@ -318,7 +279,6 @@ export default function KairoHome({ onNavigate }: Props) {
         </div>
       </div>
 
-      {/* ── Today's mission + mentor note ───────────────────────────── */}
       <div className="kg-gamebar" style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 16, marginBottom: 16 }}>
         <div style={{ ...card, padding: 18, borderColor: 'rgba(102,217,255,0.25)' }}>
           <div style={{ ...lbl, color: '#66D9FF', marginBottom: 14, display: 'flex', alignItems: 'center', gap: 6 }}><Target size={12} /> Today's focus</div>
@@ -338,7 +298,6 @@ export default function KairoHome({ onNavigate }: Props) {
         </div>
       </div>
 
-      {/* ── Weakness radar ──────────────────────────────────────────── */}
       <div style={{ ...card, padding: 18, marginBottom: 16 }}>
         <div style={{ ...lbl, color: '#ff8aa0', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}><AlertTriangle size={12} /> Weakness radar</div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
@@ -356,7 +315,6 @@ export default function KairoHome({ onNavigate }: Props) {
         </div>
       </div>
 
-      {/* ── Deep-dive links into the rest of the council ────────────── */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(180px,1fr))', gap: 12 }}>
         {[
           { v: 'topic-architect', icon: Target,  title: 'Topic Architect', sub: 'Plan any topic end-to-end' },

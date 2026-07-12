@@ -1,13 +1,3 @@
-/**
- * Keypad — large-tap numeric pad for PIN entry.
- *
- *   1 2 3
- *   4 5 6
- *   7 8 9
- *     0 ⌫
- *
- * Every key 72×72, ample gap, soft purple ripple on press.
- */
 import { motion } from 'framer-motion'
 import { Delete } from 'lucide-react'
 import { RC, FONT } from './shared'
@@ -15,7 +5,6 @@ import { RC, FONT } from './shared'
 interface Props {
   onDigit:    (d: string) => void
   onBackspace: () => void
-  /** Disable while busy / loading. */
   disabled?:   boolean
 }
 

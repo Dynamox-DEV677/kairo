@@ -1,7 +1,3 @@
-/**
- * Atom Lab — Bohr model with adjustable proton/neutron/electron count.
- * Element name updates from a small periodic-table lookup.
- */
 import { useRef, useMemo } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
@@ -22,7 +18,6 @@ const ELEMENTS: Record<number, { sym: string; name: string }> = {
   17: { sym: 'Cl', name: 'Chlorine' }, 18: { sym: 'Ar', name: 'Argon' },
 }
 
-// Bohr shell capacities: 2, 8, 18, 32...
 function distributeElectrons(total: number) {
   const shells: number[] = []
   let remaining = total
@@ -44,13 +39,12 @@ interface SimProps {
 }
 
 function AtomSim({ params, playing }: SimProps) {
-  const electronCount = params.protons   // neutral atom
+  const electronCount = params.protons   
   const shells = useMemo(() => distributeElectrons(electronCount), [electronCount])
   const elem = ELEMENTS[params.protons] || { sym: '?', name: 'Unknown' }
 
   return (
     <LabScene cameraPos={[0, 1, 9]} cameraFov={55} tint="#1a1a2e" particles={50}>
-      {/* Pink nucleus glow — punches through the LabScene's neutral lighting */}
       <pointLight position={[0, 0, 0]} intensity={2.5} color="#ec4899" distance={6} />
       <Nucleus protons={params.protons} neutrons={params.neutrons} />
       {shells.map((count, i) => (
@@ -72,7 +66,6 @@ function Nucleus({ protons, neutrons }: { protons: number; neutrons: number }) {
   const positions = useMemo(() => {
     const arr: [number, number, number][] = []
     for (let i = 0; i < total; i++) {
-      // fibonacci sphere
       const phi = Math.acos(1 - 2 * (i + 0.5) / total)
       const theta = Math.PI * (1 + Math.sqrt(5)) * i
       const r = 0.4
@@ -92,7 +85,6 @@ function Nucleus({ protons, neutrons }: { protons: number; neutrons: number }) {
           />
         </mesh>
       ))}
-      {/* Outer glow */}
       <mesh>
         <sphereGeometry args={[0.7, 16, 16]} />
         <meshBasicMaterial color="#ec4899" transparent opacity={0.08} />
@@ -111,7 +103,6 @@ function Shell({ radius, electrons, shellIdx, playing }: any) {
   })
   return (
     <group ref={ref}>
-      {/* Orbit ring */}
       <mesh rotation={[Math.PI / 2, 0, 0]}>
         <torusGeometry args={[radius, 0.005, 4, 64]} />
         <meshBasicMaterial color="#4B5563" transparent opacity={0.5} />

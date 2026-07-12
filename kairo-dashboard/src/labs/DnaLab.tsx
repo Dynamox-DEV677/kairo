@@ -1,7 +1,3 @@
-/**
- * DNA Lab — procedural double helix with clickable base pairs.
- * No GLB needed; the geometry is generated from the helix parametric form.
- */
 import { useMemo, useState } from 'react'
 import { useFrame, type ThreeEvent } from '@react-three/fiber'
 import { OrbitControls, ContactShadows } from '@react-three/drei'
@@ -49,7 +45,6 @@ const PARTS: PartCatalog = {
   },
 }
 
-// Standard base-pair sequence — repeating motif, 12 pairs
 const SEQUENCE = ['A', 'T', 'G', 'C', 'A', 'T', 'G', 'C', 'A', 'T', 'G', 'C']
 const BASE_ID: Record<string, string> = { A: 'adenine', T: 'thymine', G: 'guanine', C: 'cytosine' }
 const BASE_COMPLEMENT: Record<string, string> = { A: 'T', T: 'A', G: 'C', C: 'G' }
@@ -63,7 +58,6 @@ function DnaSim({ playing }: { params: any; playing: boolean }) {
   const turns       = 1.6
   const pairs       = SEQUENCE.length
 
-  // Backbone curve — two intertwined sin/cos strands
   const strandPoints = useMemo(() => {
     const N = 200
     const a: THREE.Vector3[] = []
@@ -85,7 +79,6 @@ function DnaSim({ playing }: { params: any; playing: boolean }) {
     <div style={{ position: 'relative', width: '100%', height: '100%' }}>
       <LabScene cameraPos={[5, 0, 8]} cameraFov={50} tint={LAB_PALETTE.biology} particles={70} stars={false}>
         <group rotation={[0, 0, 0]}>
-          {/* Two backbones */}
           <mesh
             geometry={strandAGeom}
             onPointerOver={(e: ThreeEvent<PointerEvent>) => { e.stopPropagation(); setHovered('backbone'); document.body.style.cursor='pointer' }}
@@ -105,7 +98,6 @@ function DnaSim({ playing }: { params: any; playing: boolean }) {
               roughness={0.4} metalness={0.1} />
           </mesh>
 
-          {/* Base pairs — rungs of the ladder */}
           {SEQUENCE.map((base, i) => {
             const t = i / (pairs - 1)
             const angle = t * Math.PI * 2 * turns
@@ -128,7 +120,6 @@ function DnaSim({ playing }: { params: any; playing: boolean }) {
 
             return (
               <group key={i}>
-                {/* Base half 1 */}
                 <mesh position={[(x1 + midX) / 2, y, (z1 + midZ) / 2]} rotation={[0, -rungAng, Math.PI/2]}
                   onPointerOver={(e: ThreeEvent<PointerEvent>) => { e.stopPropagation(); setHovered(baseId); document.body.style.cursor='pointer' }}
                   onPointerOut={() => { setHovered(null); document.body.style.cursor='default' }}
@@ -139,7 +130,6 @@ function DnaSim({ playing }: { params: any; playing: boolean }) {
                     emissiveIntensity={baseHover ? 1.6 : 0.5}
                     roughness={0.4} />
                 </mesh>
-                {/* Base half 2 (complement) */}
                 <mesh position={[(midX + x2) / 2, y, (midZ + z2) / 2]} rotation={[0, -rungAng, Math.PI/2]}
                   onPointerOver={(e: ThreeEvent<PointerEvent>) => { e.stopPropagation(); setHovered(compId); document.body.style.cursor='pointer' }}
                   onPointerOut={() => { setHovered(null); document.body.style.cursor='default' }}
@@ -154,7 +144,6 @@ function DnaSim({ playing }: { params: any; playing: boolean }) {
             )
           })}
 
-          {/* Slow rotation for "alive" feel */}
           <RotateGroup playing={playing} />
         </group>
 
@@ -176,8 +165,7 @@ function DnaSim({ playing }: { params: any; playing: boolean }) {
 function RotateGroup({ playing }: { playing: boolean }) {
   useFrame((state) => {
     if (!playing) return
-    // The whole helix gently sways - the group's parent is the orbit controls auto-rotate
-    state.scene.rotation.y += 0   // placeholder so we keep useFrame for future
+    state.scene.rotation.y += 0   
   })
   return null
 }

@@ -1,24 +1,7 @@
-/**
- * Kyno Game Engine — the Duolingo-style habit loop.
- *
- *   XP        every study action earns XP (awardXP)
- *   Levels    quadratic curve — early levels fast, later ones earned
- *   Quests    3 daily quests, rotating deterministically by date
- *   Streak    a day counts when you earn ANY xp that day
- *   Badges    computed achievements
- *   League    weekly leaderboard — XP syncs to /api/league (Supabase)
- *
- * Storage goes through lib/storage (SQLite in Electron, localStorage on
- * web). Server sync is fire-and-forget — the game never blocks on it.
- *
- * UI listens via  window.addEventListener('kairo:xp', e => ...)  which
- * fires on every award with { amount, reason, total, level, levelUp }.
- */
 import { getRaw, setRaw } from './storage'
 
 const KEY = 'kairo:game:v1'
 
-// ── XP amounts per action ──────────────────────────────────────────────
 export const XP_ACTIONS: Record<string, { xp: number; label: string }> = {
   chat_answer:    { xp: 10, label: 'Asked Kyno' },
   flashcard_gen:  { xp: 10, label: 'Generated flashcards' },
@@ -30,7 +13,6 @@ export const XP_ACTIONS: Record<string, { xp: number; label: string }> = {
   note_built:     { xp: 8,  label: 'Built a note' },
 }
 
-// ── Daily quest pool (3 picked per day, deterministic) ────────────────
 interface QuestDef { id: string; label: string; action: string; target: number; bonus: number }
 const QUEST_POOL: QuestDef[] = [
   { id: 'ask3',    label: 'Ask Kyno 3 questions',   action: 'chat_answer',   target: 3,  bonus: 30 },
@@ -45,14 +27,14 @@ const QUEST_POOL: QuestDef[] = [
 interface GameState {
   totalXP: number
   todayXP: number
-  todayKey: string                    // YYYY-MM-DD the daily counters belong to
+  todayKey: string
   weekXP: number
-  weekKey: string                     // ISO week key for league
+  weekKey: string
   streak: number
-  lastActive: string                  // YYYY-MM-DD of last XP earn
+  lastActive: string
   actionsToday: Record<string, number>
-  questsDone: string[]                // quest ids completed today
-  lifetime: Record<string, number>    // total per action — powers badges
+  questsDone: string[]
+  lifetime: Record<string, number>
 }
 
 function fresh(): GameState {
@@ -62,9 +44,6 @@ function fresh(): GameState {
   }
 }
 
-// Local YYYY-MM-DD — NOT toISOString(), which is UTC and rolls the "day" at
-// 05:30 in IST (UTC+5:30), resetting streaks/quests mid-morning. Using the
-// device's local date makes the day boundary local midnight everywhere.
 function localYMD(d: Date = new Date()): string {
   const y = d.getFullYear()
   const m = String(d.getMonth() + 1).padStart(2, '0')
@@ -74,10 +53,9 @@ function localYMD(d: Date = new Date()): string {
 function today() { return localYMD() }
 function weekKey() {
   const d = new Date()
-  // Monday-based week key: YYYY-MM-DD of the local Monday
   const day = (d.getDay() + 6) % 7
   const monday = new Date(d); monday.setDate(d.getDate() - day)
-  return localYMD(monday)          // week identified by its Monday (local)
+  return localYMD(monday)
 }
 
 export function loadGame(): GameState {
@@ -88,20 +66,17 @@ export function loadGame(): GameState {
       rollover(s)
       return s
     }
-  } catch { /* corrupted — start fresh */ }
+  } catch {  }
   return fresh()
 }
 
 function save(s: GameState) {
-  try { setRaw(KEY, JSON.stringify(s)) } catch { /* quota */ }
+  try { setRaw(KEY, JSON.stringify(s)) } catch {  }
 }
 
-// Reset daily/weekly counters when the date rolls.
 function rollover(s: GameState) {
   const t = today()
   if (s.todayKey !== t) {
-    // streak bookkeeping: yesterday active → streak continues on next earn;
-    // gap of 2+ days → streak broken.
     const y = new Date(); y.setDate(y.getDate() - 1)
     const yest = localYMD(y)
     if (s.lastActive !== yest && s.lastActive !== t) s.streak = 0
@@ -114,14 +89,12 @@ function rollover(s: GameState) {
   if (s.weekKey !== w) { s.weekKey = w; s.weekXP = 0 }
 }
 
-// ── Levels: cumulative cost grows 100, 200, 300… per level ────────────
 export function levelFromXP(xp: number): { level: number; into: number; need: number } {
   let level = 1, need = 100, rest = xp
   while (rest >= need) { rest -= need; level++; need = level * 100 }
   return { level, into: rest, need }
 }
 
-// ── Today's 3 quests (deterministic by date) ──────────────────────────
 export function questsForToday(): QuestDef[] {
   const seedStr = today()
   let h = 0
@@ -135,7 +108,6 @@ export function questsForToday(): QuestDef[] {
   return picked
 }
 
-// ── Badges (computed) ─────────────────────────────────────────────────
 export interface Badge { id: string; label: string; desc: string; earned: boolean }
 export function badges(s: GameState): Badge[] {
   const life = s.lifetime
@@ -150,7 +122,6 @@ export function badges(s: GameState): Badge[] {
   ]
 }
 
-// ── The core: award XP ────────────────────────────────────────────────
 export function awardXP(action: keyof typeof XP_ACTIONS) {
   const def = XP_ACTIONS[action]
   if (!def) return
@@ -160,18 +131,15 @@ export function awardXP(action: keyof typeof XP_ACTIONS) {
   const before = levelFromXP(s.totalXP).level
   let gained = def.xp
 
-  // counters
   s.actionsToday[action] = (s.actionsToday[action] || 0) + 1
   s.lifetime[action] = (s.lifetime[action] || 0) + 1
 
-  // streak — first XP of the day extends it
   const t = today()
   if (s.lastActive !== t) {
     s.streak = s.streak + 1
     s.lastActive = t
   }
 
-  // quest completion check → bonus XP
   for (const q of questsForToday()) {
     if (s.questsDone.includes(q.id)) continue
     if (q.action === action && (s.actionsToday[action] || 0) >= q.target) {
@@ -186,23 +154,15 @@ export function awardXP(action: keyof typeof XP_ACTIONS) {
   const after = levelFromXP(s.totalXP)
   save(s)
 
-  // Notify UI (toast + bars)
   try {
     window.dispatchEvent(new CustomEvent('kairo:xp', {
       detail: { amount: gained, reason: def.label, total: s.totalXP, level: after.level, levelUp: after.level > before, streak: s.streak },
     }))
-  } catch { /* SSR */ }
+  } catch {  }
 
-  // League sync — fire-and-forget
   syncLeague(s)
 }
 
-/**
- * Award a specific XP amount for actions whose XP is computed elsewhere
- * (Battle Mode = score × per-correct, adaptive quiz, etc.). Flows into the
- * same level / streak / weekly-league economy and fires the same `kairo:xp`
- * toast as awardXP, so a battle win now moves the Home level ring and league.
- */
 export function awardXPAmount(amount: number, label: string) {
   const gained = Math.round(amount)
   if (!gained || gained <= 0) return
@@ -211,7 +171,6 @@ export function awardXPAmount(amount: number, label: string) {
 
   const before = levelFromXP(s.totalXP).level
 
-  // streak — first XP of the day extends it
   const t = today()
   if (s.lastActive !== t) {
     s.streak = s.streak + 1
@@ -228,25 +187,23 @@ export function awardXPAmount(amount: number, label: string) {
     window.dispatchEvent(new CustomEvent('kairo:xp', {
       detail: { amount: gained, reason: label, total: s.totalXP, level: after.level, levelUp: after.level > before, streak: s.streak },
     }))
-  } catch { /* SSR */ }
+  } catch {  }
 
   syncLeague(s)
 }
 
-// ── Weekly league sync ────────────────────────────────────────────────
 function userIdentity(): { id: string; name: string } {
   let id = '', name = 'Student'
   try {
     const p = JSON.parse(localStorage.getItem('kairo_profile') || '{}')
     id = p.id || p.user_id || ''
     name = p.name || p.full_name || 'Student'
-  } catch { /* ignore */ }
+  } catch {  }
   if (!id) {
-    // stable anonymous device id
     id = getRaw('kairo:device-id') || ''
     if (!id) {
       id = 'dev-' + Math.random().toString(36).slice(2, 10)
-      try { setRaw('kairo:device-id', id) } catch { /* ignore */ }
+      try { setRaw('kairo:device-id', id) } catch {  }
     }
   }
   return { id, name }
@@ -254,14 +211,13 @@ function userIdentity(): { id: string; name: string } {
 
 let _syncTimer: any = null
 function syncLeague(s: GameState) {
-  // debounce — batch rapid awards into one POST
   clearTimeout(_syncTimer)
   _syncTimer = setTimeout(() => {
     const { id, name } = userIdentity()
     fetch('/api/league/xp', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ user_id: id, name, week: s.weekKey, xp: s.weekXP }),
-    }).catch(() => { /* offline / not configured — fine */ })
+    }).catch(() => {  })
   }, 1500)
 }
 
@@ -274,7 +230,6 @@ export async function fetchLeaderboard(): Promise<{ rank: number; rows: { name: 
   } catch { return null }
 }
 
-// Local YYYY-MM for the month leaderboard window.
 export function monthKey(): string {
   const d = new Date()
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
@@ -288,7 +243,6 @@ export interface LeagueBoard {
   offline?: boolean
 }
 
-/** Range-aware league fetch for the full League page (week | month | all). */
 export async function fetchLeagueBoard(range: 'week' | 'month' | 'all' = 'week'): Promise<LeagueBoard | null> {
   try {
     const { id } = userIdentity()

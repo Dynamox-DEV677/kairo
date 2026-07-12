@@ -8,7 +8,6 @@ router.get('/', async (req, res) => {
   if (!school_id) return res.status(400).json({ error: 'school_id is required.' })
   const students = await db.students.findAsync({ school_id, active: true }).sort({ name: 1 })
 
-  // Enrich with pending fee counts
   const enriched = await Promise.all(students.map(async s => {
     const fees = await db.fees.findAsync({ student_id: s._id, status: 'pending' })
     return { ...s, pending_fees: fees.length, pending_amount: fees.reduce((a, f) => a + f.amount, 0) }

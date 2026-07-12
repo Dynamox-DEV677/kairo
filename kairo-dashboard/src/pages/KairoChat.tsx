@@ -1,19 +1,3 @@
-/**
- * Kyno Chat — the AI companion conversation.
- *
- * A normal ChatGPT-style multi-turn chat: you talk, Kyno answers in a
- * bubble. Media is OPT-IN — each study answer gets small chips under it
- * (▶ video thumbnail, 🖼 image thumbs). Click a chip and the video/image
- * expands inline. Casual small-talk gets a plain note with no chips.
- *
- * Reuses the Solver's endpoints:
- *   POST /api/ai/solver/text    → answer + imageQueries + videoQuery
- *   POST /api/ai/solver/images  → storyboard slides (async, attaches late)
- *   POST /api/ai/solver/video   → one YouTube lesson id (async)
- *
- * The classic full-visual Solver still exists — the Dashboard offers a
- * Chat ↔ Classic toggle on the same sidebar entry.
- */
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Send, Loader2, Play, Image as ImageIcon, X, Sparkles } from 'lucide-react'
@@ -34,19 +18,14 @@ interface Turn {
   text:     string
   casual?:  boolean
   topic?:   string
-  // media (kairo turns only — attaches asynchronously)
   videoId?: string | null
   slides?:  Slide[]
   mediaBusy?: boolean
-  // artifact the AI created for this turn (flashcards / note / concept)
   done?:    DoneAction | null
-  // UI expansion state
   showVideo?: boolean
-  lightbox?:  number | null   // index into slides
+  lightbox?:  number | null
 }
 
-// Execute an AI-requested artifact creation in the student's tools.
-// Returns a chip descriptor for the bubble, or null if nothing was made.
 function performAction(a: any): DoneAction | null {
   try {
     if (a.tool === 'flashcards' && a.cards?.length) {
@@ -65,12 +44,12 @@ function performAction(a: any): DoneAction | null {
       recordConcept({ name: a.topic, related: a.related?.length ? a.related : undefined })
       return { label: `Added “${a.topic}” to your Concept Map`, view: 'concept-map' }
     }
-  } catch { /* never break the chat over an artifact */ }
+  } catch {  }
   return null
 }
 
 function openView(view: string) {
-  try { (window as any).__kairoSetActive?.(view) } catch { /* not mounted */ }
+  try { (window as any).__kairoSetActive?.(view) } catch {  }
 }
 
 const C = {
@@ -96,7 +75,6 @@ export default function KairoChat() {
   const scrollRef = useRef<HTMLDivElement>(null)
   const isMobile = useIsMobile()
 
-  // Auto-scroll to the newest message.
   useEffect(() => {
     const el = scrollRef.current
     if (el) el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' })
@@ -116,9 +94,6 @@ export default function KairoChat() {
 
     const headers = { 'Content-Type': 'application/json' }
     try {
-      // Conversation memory + who the student is + their mistake profile ride
-      // along with every message — this is what makes Kyno a coach, not a
-      // one-shot answer machine.
       const history = turns.slice(-8).map(t => ({
         role: t.role === 'user' ? 'user' : 'kairo',
         text: (t.text || '').slice(0, 500),
@@ -127,19 +102,17 @@ export default function KairoChat() {
       try {
         const p = JSON.parse(localStorage.getItem('kairo_profile') || '{}')
         student = { name: p.name, cls: p.cls, board: p.board }
-      } catch { /* fresh device */ }
+      } catch {  }
       let mistakes: any[] = []
       try {
         mistakes = getMistakes().slice(0, 10).map(m => ({ topic: m.topic, count: m.count, severity: m.severity }))
-      } catch { /* no twin data yet */ }
+      } catch {  }
 
       const r = await fetch('/api/ai/solver/text', {
         method: 'POST', headers,
         body: JSON.stringify({ question: q, history, student, mistakes }),
       })
       if (!r.ok) {
-        // Prefer the server's own message ("question too long", rate-limit
-        // hints, …) over a generic busy line.
         const j = await r.json().catch(() => null)
         throw new Error(j?.error || 'Kyno is busy right now (' + r.status + ') — try again in a few seconds.')
       }
@@ -149,22 +122,18 @@ export default function KairoChat() {
       const casual = isQuiz || text.questionType === 'casual' ||
         (!text.videoQuery && (!text.imageQueries || text.imageQueries.length === 0))
 
-      // The AI graded the student's previous quiz answer — feed the result
-      // into the twin so Mistake Analysis sees it.
       if (text.quizCheck) {
         try {
           if (text.quizCheck.correct) awardXP('chat_answer')
           else if (text.quizCheck.topic) recordMistake({ topic: text.quizCheck.topic, detail: 'quiz in Kyno chat' })
-        } catch { /* non-fatal */ }
+        } catch {  }
       }
 
-      // The AI created an artifact (flashcards / note / concept) — do it for
-      // real, then auto-open the tool so the student sees it.
       let done: DoneAction | null = null
       if (text.action) {
         done = performAction(text.action)
         if (done) {
-          try { window.dispatchEvent(new StorageEvent('storage', { key: 'kairo:twin:chat' })) } catch { /* older browsers */ }
+          try { window.dispatchEvent(new StorageEvent('storage', { key: 'kairo:twin:chat' })) } catch {  }
           const view = done.view
           setTimeout(() => openView(view), 1200)
         }
@@ -185,15 +154,13 @@ export default function KairoChat() {
       setTurns(prev => [...prev, kairoTurn])
       setBusy(false)
 
-      // Memory engine + XP — study turns only (quiz has its own XP path).
       if (!casual) {
         try {
           recordDoubt({ question: q, answer: kairoTurn.text, topic: text.topicKeyword || undefined, source: 'chat' })
-        } catch { /* non-fatal */ }
-        try { awardXP('chat_answer') } catch { /* non-fatal */ }
+        } catch {  }
+        try { awardXP('chat_answer') } catch {  }
       }
 
-      // Media attaches late as chips — the chat never blocks on it.
       if (!casual) {
         const vidP = fetch('/api/ai/solver/video', {
           method: 'POST', headers,
@@ -231,10 +198,8 @@ export default function KairoChat() {
       backgroundImage: `radial-gradient(at 15% 0%, rgba(79,124,255,0.10) 0%, transparent 38%),
                         radial-gradient(at 85% 100%, rgba(32,70,194,0.10) 0%, transparent 42%)`,
     }}>
-      {/* ── Thread ─────────────────────────────────────────────────── */}
       <div ref={scrollRef} style={{
         flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch',
-        // Mobile: tight gutters + room at the top for the mode-toggle pill.
         padding: isMobile ? '50px 12px 10px' : '26px clamp(14px, 6vw, 90px) 20px',
         display: 'flex', flexDirection: 'column', gap: isMobile ? 13 : 18,
       }}>
@@ -252,7 +217,6 @@ export default function KairoChat() {
               alignItems: 'flex-start',
             }}
           >
-            {/* Avatar */}
             {t.role === 'kairo' && !isMobile ? (
               <div style={{
                 width: 34, height: 34, borderRadius: 10, flexShrink: 0, marginTop: 2,
@@ -264,7 +228,6 @@ export default function KairoChat() {
               </div>
             ) : null}
 
-            {/* Bubble */}
             <div style={{
               maxWidth: isMobile ? '90%' : 'min(680px, 86%)',
               padding: isMobile ? '10px 13px' : '12px 16px',
@@ -286,7 +249,6 @@ export default function KairoChat() {
                 </div>
               ) : t.text}
 
-              {/* ── Created-artifact chip (flashcards / note / concept) ── */}
               {t.role === 'kairo' && t.done && (
                 <button
                   onClick={() => openView(t.done!.view)}
@@ -302,7 +264,6 @@ export default function KairoChat() {
                 </button>
               )}
 
-              {/* ── Media chips (kairo study turns) ─────────────────── */}
               {t.role === 'kairo' && !t.casual && (
                 <MediaStrip turn={t} onPatch={patchTurn} />
               )}
@@ -310,7 +271,6 @@ export default function KairoChat() {
           </motion.div>
         ))}
 
-        {/* typing indicator */}
         {busy && (
           <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
             {!isMobile && (
@@ -335,9 +295,6 @@ export default function KairoChat() {
         )}
       </div>
 
-      {/* ── Composer ───────────────────────────────────────────────── */}
-      {/* Mobile bottom padding clears the floating bottom-nav dock (~96px +
-          safe-area) so the input sits above it instead of hiding behind it. */}
       <div style={{
         padding: isMobile
           ? '8px 10px calc(100px + env(safe-area-inset-bottom, 0px))'
@@ -360,7 +317,6 @@ export default function KairoChat() {
             rows={1}
             style={{
               flex: 1, resize: 'none', background: 'transparent', border: 'none',
-              // 16px on mobile — anything smaller makes iOS zoom the page on focus.
               outline: 'none', color: C.text, fontSize: isMobile ? 16 : 14.5, fontFamily: 'inherit',
               lineHeight: 1.5, maxHeight: isMobile ? 100 : 130, padding: '6px 0',
             }}
@@ -387,7 +343,6 @@ export default function KairoChat() {
             {busy ? <Loader2 size={17} className="animate-spin" /> : <Send size={17} />}
           </button>
         </div>
-        {/* Footer tagline is desktop-only — the mobile shell already brands the page */}
         {!isMobile && (
           <div style={{ textAlign: 'center', marginTop: 8, fontSize: 10, color: '#5B616E', letterSpacing: 1.5, textTransform: 'uppercase' }}>
             Kyno · your study companion
@@ -395,7 +350,6 @@ export default function KairoChat() {
         )}
       </div>
 
-      {/* markdown styling scoped to chat bubbles */}
       <style>{`
         .kc-md p { margin: 0 0 8px; }
         .kc-md p:last-child { margin-bottom: 0; }
@@ -412,7 +366,6 @@ export default function KairoChat() {
   )
 }
 
-// ── Media strip: chips → inline expansion ───────────────────────────────
 function MediaStrip({ turn, onPatch }: { turn: Turn; onPatch: (id: number, p: Partial<Turn>) => void }) {
   const hasVideo = !!turn.videoId
   const slides = turn.slides || []
@@ -428,7 +381,6 @@ function MediaStrip({ turn, onPatch }: { turn: Turn; onPatch: (id: number, p: Pa
 
   return (
     <div style={{ marginTop: 12, borderTop: '1px solid rgba(255,255,255,0.07)', paddingTop: 10 }}>
-      {/* chips row */}
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
         {hasVideo && (
           <button
@@ -486,7 +438,6 @@ function MediaStrip({ turn, onPatch }: { turn: Turn; onPatch: (id: number, p: Pa
         )}
       </div>
 
-      {/* inline video expansion */}
       <AnimatePresence>
         {turn.showVideo && turn.videoId && (
           <motion.div
@@ -511,7 +462,6 @@ function MediaStrip({ turn, onPatch }: { turn: Turn; onPatch: (id: number, p: Pa
         )}
       </AnimatePresence>
 
-      {/* image lightbox */}
       <AnimatePresence>
         {turn.lightbox != null && slides[turn.lightbox] && (
           <motion.div
@@ -533,7 +483,6 @@ function MediaStrip({ turn, onPatch }: { turn: Turn; onPatch: (id: number, p: Pa
             <div style={{ color: '#fafafa', fontSize: 13, textAlign: 'center', maxWidth: 640 }}>
               {slides[turn.lightbox].caption}
             </div>
-            {/* prev / next */}
             <div style={{ display: 'flex', gap: 8 }} onClick={e => e.stopPropagation()}>
               {slides.map((_, i) => (
                 <button key={i}
@@ -561,7 +510,6 @@ function MediaStrip({ turn, onPatch }: { turn: Turn; onPatch: (id: number, p: Pa
   )
 }
 
-// ── First-open hero ──────────────────────────────────────────────────────
 function EmptyHero({ isMobile = false }: { isMobile?: boolean }) {
   const suggestions = [
     'Quiz me on my weak topics',
@@ -599,8 +547,6 @@ function EmptyHero({ isMobile = false }: { isMobile?: boolean }) {
         {suggestions.map(s => (
           <button key={s}
             onClick={() => {
-              // Prefill via a custom event the composer listens to? Simpler:
-              // dispatch an input event by focusing… keep it dead simple:
               const ta = document.querySelector('textarea')
               if (ta) {
                 const setter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value')?.set

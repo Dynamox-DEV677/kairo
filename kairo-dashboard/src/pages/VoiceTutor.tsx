@@ -1,10 +1,3 @@
-/**
- * Live Voice Tutor — speak to Kyno, hear it back.
- * Uses browser Web Speech API (free, no server cost):
- *   - SpeechRecognition  → transcribes student voice
- *   - speechSynthesis    → speaks AI response
- * Falls back to text-only if APIs unavailable (iOS Safari quirks).
- */
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -28,7 +21,6 @@ End with one quick question to keep the dialog flowing.`
 
 const card: React.CSSProperties = { background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(14px) saturate(140%)', WebkitBackdropFilter: 'blur(14px) saturate(140%)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14 }
 
-// Browser API detection
 const SpeechRecognitionCtor: any =
   (typeof window !== 'undefined' && ((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition)) || null
 const speechSynthAvailable = typeof window !== 'undefined' && 'speechSynthesis' in window
@@ -54,14 +46,12 @@ export default function VoiceTutor() {
   const bottomRef   = useRef<HTMLDivElement>(null)
   const utterRef    = useRef<SpeechSynthesisUtterance | null>(null)
 
-  // Load available TTS voices (some browsers populate async)
   useEffect(() => {
     if (!speechSynthAvailable) return
     const loadVoices = () => {
       const list = speechSynthesis.getVoices()
       setVoices(list)
       if (!selectedVoice && list.length > 0) {
-        // Prefer English voices
         const enVoice = list.find(v => v.lang.startsWith('en'))
         setSelectedVoice(enVoice?.name || list[0].name)
       }
@@ -72,10 +62,8 @@ export default function VoiceTutor() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // Auto-scroll
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [turns, interim, thinking])
 
-  // Cleanup on unmount
   useEffect(() => () => {
     stopAll()
     if (utterRef.current) speechSynthesis.cancel()
@@ -106,11 +94,9 @@ export default function VoiceTutor() {
       return
     }
 
-    // Stop any existing TTS
     if (speaking) speechSynthesis.cancel()
 
     try {
-      // Audio level visualization
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
       streamRef.current = stream
       const ctx = new (window.AudioContext || (window as any).webkitAudioContext)()
@@ -179,14 +165,13 @@ export default function VoiceTutor() {
     setTurns(prev => [...prev, userTurn])
     setThinking(true); setErr('')
 
-    // Pull memory context (best-effort)
     let memoryContext = ''
     try {
       const r = await fetch('/api/memory/context', {
         headers: { Authorization: `Bearer ${localStorage.getItem('kairo_token') || ''}` },
       })
       if (r.ok) memoryContext = (await r.json()).context || ''
-    } catch { /* non-fatal */ }
+    } catch {  }
 
     try {
       const reply = await chat({
@@ -200,7 +185,6 @@ export default function VoiceTutor() {
       const aiTurn: Turn = { role: 'assistant', text: reply.trim(), id: (Date.now() + 1).toString() }
       setTurns(prev => [...prev, aiTurn])
 
-      // Speak the response
       if (!muted) speak(aiTurn.text)
     } catch (e: any) {
       setErr(e.message)
@@ -211,7 +195,7 @@ export default function VoiceTutor() {
 
   function speak(text: string) {
     if (!speechSynthAvailable) return
-    speechSynthesis.cancel()  // stop anything else
+    speechSynthesis.cancel()
     const u = new SpeechSynthesisUtterance(text)
     const voice = voices.find(v => v.name === selectedVoice)
     if (voice) u.voice = voice
@@ -259,7 +243,6 @@ export default function VoiceTutor() {
 
   return (
     <div style={{ padding: '28px 36px', maxWidth: 880, margin: '0 auto', height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-      {/* Header */}
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 18, flexShrink: 0 }}>
         <div style={{
           width: 44, height: 44, borderRadius: 11,
@@ -297,7 +280,6 @@ export default function VoiceTutor() {
         </button>
       </div>
 
-      {/* Capability warnings */}
       {(!SpeechRecognitionCtor || !speechSynthAvailable) && (
         <div style={{
           marginBottom: 14, padding: '10px 14px', borderRadius: 8, flexShrink: 0,
@@ -313,7 +295,6 @@ export default function VoiceTutor() {
         </div>
       )}
 
-      {/* Settings panel */}
       <AnimatePresence>
         {showSettings && (
           <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
@@ -346,7 +327,6 @@ export default function VoiceTutor() {
         </div>
       )}
 
-      {/* Conversation */}
       <div style={{ ...card, flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
         <div style={{ flex: 1, overflowY: 'auto', padding: 18 }}>
           {turns.length === 0 && !interim && !thinking && (
@@ -398,7 +378,6 @@ export default function VoiceTutor() {
             </motion.div>
           ))}
 
-          {/* Interim transcript while listening */}
           {interim && (
             <div style={{
               display: 'flex', flexDirection: 'row-reverse', gap: 10, alignItems: 'flex-start', marginBottom: 14,
@@ -420,7 +399,6 @@ export default function VoiceTutor() {
             </div>
           )}
 
-          {/* Thinking */}
           {thinking && (
             <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 14 }}>
               <div style={{
@@ -445,7 +423,6 @@ export default function VoiceTutor() {
           <div ref={bottomRef} />
         </div>
 
-        {/* Mic button + visualizer */}
         <div style={{
           padding: '16px 18px', borderTop: '1px solid #1a1f2e',
           display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0,
@@ -474,7 +451,6 @@ export default function VoiceTutor() {
                 ? <MicOff size={22} />
                 : <Mic size={22} />}
 
-            {/* Concentric pulse rings while listening */}
             {listening && (
               <>
                 <motion.div animate={{ scale: [1, 1.7, 1.7], opacity: [0.4, 0, 0] }}
@@ -535,7 +511,6 @@ export default function VoiceTutor() {
         </div>
       </div>
 
-      {/* Footer actions */}
       <div style={{
         display: 'flex', gap: 10, marginTop: 12, justifyContent: 'flex-end', flexShrink: 0,
       }}>

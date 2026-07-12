@@ -1,13 +1,3 @@
-/**
- * Nodemailer transport — singleton, lazy-built, env-driven.
- *
- * Env vars (set in Vercel and `.env`):
- *   KAIRO_EMAIL              the platform Gmail address
- *   KAIRO_EMAIL_APP_PASSWORD 16-char Gmail App Password (spaces stripped)
- *
- * If either is missing the transport silently returns null and sends are
- * skipped (logged) so authentication routes never break in dev/CI.
- */
 
 import nodemailer from 'nodemailer'
 
@@ -17,7 +7,6 @@ const FROM_NAME   = process.env.KAIRO_EMAIL_FROM_NAME || 'Kyno · Accelerate You
 
 let _transporter = null
 
-/** Returns the transporter, or null if env vars are missing. */
 export function getTransporter() {
   if (_transporter) return _transporter
   if (!FROM_EMAIL || !APP_PWD) return null
@@ -32,13 +21,6 @@ export function getFromAddress() {
   return FROM_EMAIL ? `"${FROM_NAME}" <${FROM_EMAIL}>` : null
 }
 
-/**
- * Send one email. Fire-and-forget: never throws, logs failures, returns
- * the nodemailer info object on success or null on failure / no-config.
- *
- * Always pass a plain-text `text` fallback alongside the HTML — many spam
- * filters down-rank HTML-only messages.
- */
 export async function send({ to, subject, html, text, replyTo }) {
   const t = getTransporter()
   if (!t) {

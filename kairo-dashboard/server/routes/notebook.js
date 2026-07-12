@@ -1,14 +1,3 @@
-/**
- * AI Notebook (Second Brain)
- * Auto-saves AI outputs into a searchable, organized notebook.
- *
- * GET    /api/notebook            List my notes (filter by kind/subject/q)
- * POST   /api/notebook            Save a new note
- * GET    /api/notebook/:id        Get one note
- * PUT    /api/notebook/:id        Update title/content/tags
- * DELETE /api/notebook/:id        Delete
- * GET    /api/notebook/stats      Counts per kind/subject
- */
 import { Router } from 'express'
 import { supabaseAdmin, requireSupabase } from '../services/supabase.js'
 import { requireSupabaseAuth } from '../middleware/supabaseAuth.js'
@@ -19,7 +8,6 @@ router.use(requireSupabaseAuth)
 
 const KINDS = ['flashcards', 'summary', 'doubt', 'concept_map', 'note', 'plan', 'grade']
 
-// List
 router.get('/', async (req, res) => {
   const { kind, subject, q, limit = 50 } = req.query
   try {
@@ -43,7 +31,6 @@ router.get('/', async (req, res) => {
   }
 })
 
-// Save
 router.post('/', async (req, res) => {
   const { kind, subject, title, content, tags, source } = req.body || {}
   if (!kind || !KINDS.includes(kind)) return res.status(400).json({ error: `kind must be one of: ${KINDS.join(', ')}` })
@@ -72,7 +59,6 @@ router.post('/', async (req, res) => {
   }
 })
 
-// Read one
 router.get('/:id', async (req, res) => {
   try {
     const { data, error } = await supabaseAdmin
@@ -86,7 +72,6 @@ router.get('/:id', async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }) }
 })
 
-// Update
 router.put('/:id', async (req, res) => {
   const { title, content, tags, subject, pinned } = req.body || {}
   const u = { updated_at: new Date().toISOString() }
@@ -97,7 +82,6 @@ router.put('/:id', async (req, res) => {
   if (pinned   !== undefined) u.pinned  = !!pinned
 
   try {
-    // Verify ownership
     const { data: existing } = await supabaseAdmin
       .from('notebooks').select('user_id').eq('id', req.params.id).single()
     if (!existing || existing.user_id !== req.user.id) return res.status(403).json({ error: 'Not your note.' })
@@ -109,7 +93,6 @@ router.put('/:id', async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }) }
 })
 
-// Delete
 router.delete('/:id', async (req, res) => {
   try {
     const { data: existing } = await supabaseAdmin
@@ -123,7 +106,6 @@ router.delete('/:id', async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }) }
 })
 
-// Stats
 router.get('/meta/stats', async (req, res) => {
   try {
     const { data, error } = await supabaseAdmin

@@ -1,16 +1,3 @@
-/**
- * Smart Timetable / Study Plan — AI-optimized
- *
- * Pulls:
- *  - Weak topics auto-loaded from /api/memory (so AI weights them heavier)
- *  - Per-subject exam dates (user adds them)
- *  - Daily study hours + days available
- *
- * Outputs:
- *  - Visual weekly grid (subjects × days color-coded)
- *  - Day-by-day markdown plan
- *  - Re-optimize button to regenerate as memory updates
- */
 import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -50,9 +37,9 @@ const lbl: React.CSSProperties = {
 interface ExamDate { subject: string; date: string }
 
 interface ScheduleBlock {
-  day: string         // "Mon"
-  start: string       // "16:00"
-  end: string         // "17:30"
+  day: string
+  start: string
+  end: string
   subject: string
   topic?: string
   type?: 'study' | 'revision' | 'practice' | 'rest'
@@ -104,7 +91,6 @@ export default function StudyPlan() {
   const [busy, setBusy]       = useState(false)
   const [err, setErr]         = useState('')
 
-  // Auto-pull weak topics from AI memory
   const loadMemory = useCallback(async () => {
     setLoadingMemory(true)
     try {
@@ -116,14 +102,13 @@ export default function StudyPlan() {
         const weakItems = (d.weak || []).slice(0, 12)
         setWeakTopics(weakItems.map((m: any) => m.topic || m.content).filter(Boolean))
         setMemoryCount(d.total || 0)
-        // Auto-populate subjects from memory if user hasn't picked any
         if (subjects.length === 0) {
           const memSubjects = new Set<string>()
           for (const m of weakItems) if (m.subject && SUBJECTS.includes(m.subject)) memSubjects.add(m.subject)
           if (memSubjects.size > 0) setSubjects([...memSubjects])
         }
       }
-    } catch { /* non-fatal */ }
+    } catch {  }
     finally { setLoadingMemory(false) }
   }, [subjects.length])
 
@@ -165,19 +150,16 @@ Generate the JSON schedule and markdown plan as instructed.`
         ],
       })
 
-      // Extract JSON block
       const jsonMatch = reply.match(/```(?:json)?\s*(\[[\s\S]*?\])\s*```/)
       let blocks: ScheduleBlock[] = []
       if (jsonMatch) {
-        try { blocks = JSON.parse(jsonMatch[1]) } catch { /* ignore */ }
+        try { blocks = JSON.parse(jsonMatch[1]) } catch {  }
       }
       if (blocks.length === 0) {
-        // Fallback — try greedy match
         const greedy = reply.match(/\[\s*\{[\s\S]*?\}\s*\]/)
-        if (greedy) try { blocks = JSON.parse(greedy[0]) } catch { /* ignore */ }
+        if (greedy) try { blocks = JSON.parse(greedy[0]) } catch {  }
       }
 
-      // Strip the JSON block from the markdown
       const markdown = reply.replace(/```(?:json)?\s*\[[\s\S]*?\]\s*```/, '').trim()
       setPlan({ markdown, blocks })
     } catch (e: any) { setErr(e.message) }
@@ -186,7 +168,6 @@ Generate the JSON schedule and markdown plan as instructed.`
 
   return (
     <div style={{ padding: '28px 36px', maxWidth: 1100, margin: '0 auto', height: '100%', overflowY: 'auto' }}>
-      {/* Header */}
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 22 }}>
         <div style={{
           width: 44, height: 44, borderRadius: 11,
@@ -204,7 +185,6 @@ Generate the JSON schedule and markdown plan as instructed.`
         </div>
       </div>
 
-      {/* Memory pulse banner */}
       {!loadingMemory && (
         <div style={{
           display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px',
@@ -229,10 +209,8 @@ Generate the JSON schedule and markdown plan as instructed.`
         </div>
       )}
 
-      {/* Setup form */}
       {!plan && (
         <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} style={{ ...card, padding: 22 }}>
-          {/* Row 1: board / class / hours */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14, marginBottom: 18 }}>
             <div>
               <label style={lbl}>Board</label>
@@ -253,7 +231,6 @@ Generate the JSON schedule and markdown plan as instructed.`
             </div>
           </div>
 
-          {/* Subjects */}
           <div style={{ marginBottom: 18 }}>
             <label style={lbl}>Subjects ({subjects.length} selected)</label>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
@@ -272,7 +249,6 @@ Generate the JSON schedule and markdown plan as instructed.`
             </div>
           </div>
 
-          {/* Exam dates */}
           <div style={{ marginBottom: 18 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
               <label style={lbl}>Exam dates (optional — sharpens AI priorities)</label>
@@ -303,7 +279,6 @@ Generate the JSON schedule and markdown plan as instructed.`
             </AnimatePresence>
           </div>
 
-          {/* Weak topics chip row */}
           {weakTopics.length > 0 && (
             <div style={{ marginBottom: 18 }}>
               <label style={lbl}>Auto-detected weak topics</label>
@@ -343,10 +318,8 @@ Generate the JSON schedule and markdown plan as instructed.`
         </motion.div>
       )}
 
-      {/* Results */}
       {plan && (
         <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}>
-          {/* Visual weekly grid */}
           {plan.blocks.length > 0 && (
             <div style={{ ...card, padding: 18, marginBottom: 16 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
@@ -360,7 +333,6 @@ Generate the JSON schedule and markdown plan as instructed.`
             </div>
           )}
 
-          {/* Markdown plan */}
           <div style={{ ...card, padding: 22 }}>
             <div className="prose-ai" style={{
               fontSize: 13.5, color: '#e4e4e7', lineHeight: 1.7,
@@ -392,9 +364,7 @@ Generate the JSON schedule and markdown plan as instructed.`
   )
 }
 
-// ─── Weekly grid visualization ────────────────────────────────────────────────
 function WeekGrid({ blocks }: { blocks: ScheduleBlock[] }) {
-  // Group by day
   const byDay: Record<string, ScheduleBlock[]> = {}
   for (const d of DAYS) byDay[d] = []
   for (const b of blocks) {
@@ -404,7 +374,6 @@ function WeekGrid({ blocks }: { blocks: ScheduleBlock[] }) {
   for (const d of DAYS) byDay[d].sort((a, b) => a.start.localeCompare(b.start))
 
   return (
-    // .week-grid: phones get 7 real 150px columns that scroll sideways
     <div className="week-grid" style={{
       display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 8,
     }}>

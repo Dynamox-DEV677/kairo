@@ -1,13 +1,3 @@
-/**
- * Mistake Analysis — auto-populated from the unified Kyno memory engine.
- *
- * Every wrong answer or low-score event the user has produced anywhere in
- * Kyno (quiz, battle, revision sim, adaptive quiz, solver) flows into the
- * Twin's event log. This page reads `getMistakes()` from twin.ts which groups
- * them by topic, computes severity, and surfaces a ranked list of weak areas.
- *
- * Strict monochrome palette: black + deep purple + white only.
- */
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Activity, AlertTriangle, Sparkles, Repeat, Plus, X, Loader2 } from 'lucide-react'
@@ -36,8 +26,6 @@ const C = {
 const GRAD_PILL = 'linear-gradient(135deg, #4F7CFF 0%, #2046C2 100%)'
 const FONT = "'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif"
 
-// The AI sometimes emits LaTeX with \( \) or \[ \] delimiters, but remark-math
-// only understands $...$ / $$...$$ — normalise so the math actually renders.
 function normalizeMath(md: string): string {
   return md
     .replace(/\\\[([\s\S]+?)\\\]/g, (_m, e) => `$$${e}$$`)
@@ -47,7 +35,6 @@ function normalizeMath(md: string): string {
 export default function MistakeAnalysis() {
   const [rows, setRows] = useState<MistakeRow[]>([])
   const [adding, setAdding] = useState(false)
-  // Single AI-result modal — shared by both Revise + Explain actions
   const [aiModal, setAiModal] = useState<{ title: string; body: string; loading: boolean } | null>(null)
 
   async function openAiAction(kind: 'revise' | 'explain', row: MistakeRow) {
@@ -292,7 +279,6 @@ function MistakeCard({ row, delay, onRevise, onExplain }: {
   )
 }
 
-// ─── AI result modal — shared for Revise + Explain ─────────────────────────
 function AiResultModal({ title, body, loading, onClose }: {
   title: string; body: string; loading: boolean; onClose: () => void
 }) {

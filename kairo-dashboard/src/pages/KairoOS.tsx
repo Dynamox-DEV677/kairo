@@ -1,10 +1,3 @@
-/**
- * Kyno — the AI Academic Twin dashboard.
- *
- * Reads everything from localStorage via src/lib/twin.ts. No network calls.
- * Each student's data lives entirely on their own device (Netflix-downloads
- * model). Wipes cleanly via the "Wipe my Twin" action.
- */
 import { useEffect, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -28,9 +21,6 @@ import KairoGyro from '../components/KairoGyro'
 import { useIsMobile } from '../lib/useIsMobile'
 import KairoOSMobile from './KairoOSMobile'
 
-// ════════════════════════════════════════════════════════════════════════════
-// TOKENS
-// ════════════════════════════════════════════════════════════════════════════
 const C = {
   bg:        '#050505',
   panel:     '#0E1117',
@@ -53,13 +43,7 @@ const GRAD = {
   text:   'linear-gradient(90deg, #A5B4FC 0%, #A5B4FC 50%, #A5B4FC 100%)',
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// CINEMATIC INTRO — plays once per session when Kyno opens.
-// Letter-by-letter wordmark reveal in Space Grotesk, spinning boot ring,
-// gradient shine sweep, boot-log tagline, progress line. Click to skip.
-// ════════════════════════════════════════════════════════════════════════════
 function KairoOSIntro({ onDone }: { onDone: () => void }) {
-  // Auto-dismiss when the sequence completes; any click skips instantly.
   useEffect(() => {
     const t = setTimeout(onDone, 3500)
     return () => clearTimeout(t)
@@ -90,14 +74,12 @@ function KairoOSIntro({ onDone }: { onDone: () => void }) {
         @keyframes kosGlow    { 0%,100% { opacity: .5 } 50% { opacity: 1 } }
       `}</style>
 
-      {/* Ambient ultramarine glow */}
       <div style={{
         position: 'absolute', width: 620, height: 620, borderRadius: '50%',
         background: 'radial-gradient(circle, rgba(79,124,255,0.16) 0%, transparent 62%)',
         animation: 'kosGlow 2.4s ease-in-out infinite',
       }} />
 
-      {/* Boot ring — soft pulse + spinning arc */}
       <div style={{ position: 'relative', width: 148, height: 148, marginBottom: 38 }}>
         <div style={{
           position: 'absolute', inset: 0, borderRadius: '50%',
@@ -121,7 +103,6 @@ function KairoOSIntro({ onDone }: { onDone: () => void }) {
         </div>
       </div>
 
-      {/* Wordmark — staggered letter reveal + shine sweep */}
       <div style={{ position: 'relative', overflow: 'hidden', padding: '0 12px' }}>
         <div style={{ display: 'flex', gap: 2 }}>
           {letters.map((ch, i) => (
@@ -138,7 +119,6 @@ function KairoOSIntro({ onDone }: { onDone: () => void }) {
             }}>{ch}</span>
           ))}
         </div>
-        {/* shine sweep across the assembled wordmark */}
         <div style={{
           position: 'absolute', top: 0, bottom: 0, width: '34%',
           background: 'linear-gradient(90deg, transparent, rgba(102,217,255,0.32), transparent)',
@@ -147,7 +127,6 @@ function KairoOSIntro({ onDone }: { onDone: () => void }) {
         }} />
       </div>
 
-      {/* Tagline + boot log */}
       <div style={{
         marginTop: 22, fontSize: 'clamp(9px, 3vw, 12px)', fontWeight: 700, letterSpacing: 4,
         textTransform: 'uppercase', color: '#66D9FF',
@@ -166,7 +145,6 @@ function KairoOSIntro({ onDone }: { onDone: () => void }) {
         memory · vitals · mastery · predictions
       </div>
 
-      {/* Progress line */}
       <div style={{ position: 'absolute', bottom: 46, width: 220, height: 2, background: 'rgba(255,255,255,0.08)', borderRadius: 2, overflow: 'hidden' }}>
         <div style={{
           height: '100%', borderRadius: 2,
@@ -186,13 +164,6 @@ function KairoOSIntro({ onDone }: { onDone: () => void }) {
   )
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// MAIN PAGE
-// ════════════════════════════════════════════════════════════════════════════
-
-// ────────────────────────────────────────────────────────────────────────────
-// DETAIL DRAWER — every tile on this dashboard opens one
-// ────────────────────────────────────────────────────────────────────────────
 type DetailKind =
   | { type: 'retention' }
   | { type: 'consistency' }
@@ -211,31 +182,25 @@ type DetailKind =
 export default function KairoOS() {
   const isMobile = useIsMobile(768)
   const [snap, setSnap] = useState<DashboardSnapshot | null>(null)
-  const [pulse, setPulse] = useState(false)   // brief visual flash on recompute
+  const [pulse, setPulse] = useState(false)
   const [detail, setDetail] = useState<DetailKind | null>(null)
   const [backupOpen, setBackupOpen] = useState(false)
 
-  // Cinematic intro — shows once per session (sessionStorage flag).
   const [showIntro, setShowIntro] = useState<boolean>(() => {
     try { return sessionStorage.getItem('kairo-os:intro-seen') !== '1' } catch { return true }
   })
   const dismissIntro = () => {
-    try { sessionStorage.setItem('kairo-os:intro-seen', '1') } catch { /* private mode */ }
+    try { sessionStorage.setItem('kairo-os:intro-seen', '1') } catch {  }
     setShowIntro(false)
   }
-  // Rendered into document.body via portal — prepend to every return branch.
   const intro = showIntro ? <KairoOSIntro onDone={dismissIntro} /> : null
 
   function reload() {
     setSnap(getDashboard())
   }
 
-  // ⚠️ ALL hooks must run before any conditional early-return (React rule).
-  // Keep the desktop dashboard's useEffect here even when the mobile fork
-  // takes over rendering — the snap state is shared by both branches.
   useEffect(() => {
     reload()
-    // Re-read whenever another tab updates localStorage (multi-tab safety)
     const onStorage = (e: StorageEvent) => {
       if (e.key && e.key.startsWith('kairo:twin:')) reload()
     }
@@ -243,9 +208,6 @@ export default function KairoOS() {
     return () => window.removeEventListener('storage', onStorage)
   }, [])
 
-  // ── Mobile fork: render the native phone-first layout instead of the
-  // desktop grid. The dashboard data still lives in localStorage so this
-  // is just a different view of the same twin.
   if (isMobile) {
     return (
       <>
@@ -267,7 +229,6 @@ export default function KairoOS() {
 
   function onRefresh() {
     setSnap(refresh())
-    // Brief flash so the user knows the button did something even when data is unchanged
     setPulse(true)
     setTimeout(() => setPulse(false), 700)
   }
@@ -293,10 +254,6 @@ export default function KairoOS() {
     reload()
   }
   function onSeed() {
-    // Uses the canonical seed in lib/twin.ts (single source of truth
-    // for storage key derivation + backdating). The previous inline
-    // version duplicated the FNV-1a hash and silently failed when the
-    // two copies drifted out of sync.
     seedDemo()
     reload()
   }
@@ -310,10 +267,6 @@ export default function KairoOS() {
   return (
     <>
     {intro}
-    {/* The Dashboard wraps every page in a `position:absolute; inset:0; flex`
-        container — pages must own their own scroll. Without `overflow-y:auto`
-        here, content past the viewport is clipped and the user can't reach
-        recommendations / timeline / footer. */}
     <div className="kr-page" style={{
       width: '100%',
       height: '100%',
@@ -431,12 +384,8 @@ export default function KairoOS() {
   )
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// HEADER
-// ════════════════════════════════════════════════════════════════════════════
 function Header({ twin, onRefresh, onWipe, pulse, onBackup }: { twin: Twin; onRefresh: () => void; onWipe: () => void; pulse: boolean; onBackup: () => void }) {
   return (
-    // Glass header band — the "front line" of Kyno.
     <div className="kr-header" style={{
       display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14, flexWrap: 'wrap',
       padding: '18px 20px', borderRadius: 22,
@@ -512,9 +461,6 @@ function chipBtn(): React.CSSProperties {
   }
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// TWIN VOICE
-// ════════════════════════════════════════════════════════════════════════════
 function TwinVoice({ obs }: { obs: Observation }) {
   const toneColor = obs.tone === 'caution' ? C.amber : obs.tone === 'neutral' ? C.blue : C.purple
   return (
@@ -549,9 +495,6 @@ function TwinVoice({ obs }: { obs: Observation }) {
   )
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// PULSE
-// ════════════════════════════════════════════════════════════════════════════
 function PulseCard({ twin, openDetail }: { twin: Twin; openDetail: (k: DetailKind) => void }) {
   const score = twin.retentionScore * 0.30
               + twin.consistencyScore * 0.25
@@ -649,9 +592,6 @@ function SubMetric({ label, value, unit, onClick }: { label: string; value: numb
   )
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// STYLE
-// ════════════════════════════════════════════════════════════════════════════
 function StyleCard({ twin, openDetail }: { twin: Twin; openDetail: (k: DetailKind) => void }) {
   const segments: Array<{ id: Modality; label: string; value: number; icon: any; color: string }> = [
     { id: 'visual',      label: 'Visual',      value: twin.styleVisual,      icon: Eye,               color: C.purple },
@@ -711,9 +651,6 @@ function StyleCard({ twin, openDetail }: { twin: Twin; openDetail: (k: DetailKin
   )
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// PERFORMANCE
-// ════════════════════════════════════════════════════════════════════════════
 function PerformanceCard({ twin, mastery, openDetail }: { twin: Twin; mastery: (MasteryRow & { retentionNow: number })[]; openDetail: (k: DetailKind) => void }) {
   const trendUp = twin.performanceTrend > 0.05
   const trendDn = twin.performanceTrend < -0.05
@@ -787,9 +724,6 @@ function BigStat({ label, value, unit, color, icon, subtitle, onClick }: any) {
   )
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// HEATMAP
-// ════════════════════════════════════════════════════════════════════════════
 function HeatmapCard({ mastery, openDetail }: { mastery: (MasteryRow & { retentionNow: number })[]; openDetail: (k: DetailKind) => void }) {
   const bySubject = useMemo(() => {
     const m = new Map<string, MasteryRow[]>()
@@ -869,9 +803,6 @@ function masteryColor(m: number, alpha: number) {
   return alpha === 1 ? '#A5B4FC' : `rgba(165, 180, 252, ${alpha})`
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// RETENTION
-// ════════════════════════════════════════════════════════════════════════════
 function RetentionCard({ mastery, forgetting, openDetail }: { mastery: (MasteryRow & { retentionNow: number })[]; forgetting: Twin['forgettingSoon']; openDetail: (k: DetailKind) => void }) {
   const top = useMemo(() => [...mastery].sort((a, b) => b.mastery - a.mastery).slice(0, 10), [mastery])
 
@@ -968,9 +899,6 @@ function RetentionCard({ mastery, forgetting, openDetail }: { mastery: (MasteryR
   )
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// VITALS
-// ════════════════════════════════════════════════════════════════════════════
 function VitalsTile({ title, value, color, hint, onClick }: { title: string; value: number; color: string; hint: string; onClick?: () => void }) {
   const pct = Math.max(0, Math.min(100, Math.round(value * 100)))
   return (
@@ -1006,14 +934,7 @@ function VitalsTile({ title, value, color, hint, onClick }: { title: string; val
   )
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// RECOMMENDATIONS
-// ════════════════════════════════════════════════════════════════════════════
 function RecommendationsCard({ recs, onAct, onDismiss }: { recs: Recommendation[]; onAct: (id: string) => void; onDismiss: (id: string) => void }) {
-  // Keep a single render path so AnimatePresence stays mounted across the
-  // last-rec → empty-state transition. Previously the component swapped
-  // returns when recs.length hit 0 mid-exit-animation, which orphaned the
-  // exit-animating item and collapsed the entire card to 0 visual height.
   const isEmpty = recs.length === 0
   return (
     <Card>
@@ -1031,10 +952,6 @@ function RecommendationsCard({ recs, onAct, onDismiss }: { recs: Recommendation[
             text="No suggestions right now — you're doing great. Recompute after your next session."
           />
         ) : (
-          // Plain map — no layout animations, no popLayout. The card was
-          // flickering / "blinking" because every re-render of the parent
-          // (poll, scroll, anything) triggered Framer's layout animator
-          // on every rec item simultaneously. Static items now.
           recs.map(r => (
             <div key={r.id} className="kr-rec-item"
               style={{
@@ -1107,9 +1024,6 @@ function RecIcon({ kind }: { kind: string }) {
   return <I size={15} color={recKindColor(kind)} />
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// OBSERVATIONS
-// ════════════════════════════════════════════════════════════════════════════
 function ObservationsCard({ obs }: { obs: Observation[] }) {
   if (obs.length === 0) {
     return (
@@ -1138,9 +1052,6 @@ function ObservationsCard({ obs }: { obs: Observation[] }) {
   )
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// TIMELINE
-// ════════════════════════════════════════════════════════════════════════════
 function TimelineCard({ events }: { events: TwinEvent[] }) {
   if (events.length === 0) {
     return (
@@ -1199,9 +1110,6 @@ function eventColor(t: string) {
 
 function labelFor(t: string) { return t.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) }
 
-// ════════════════════════════════════════════════════════════════════════════
-// PRIVACY FOOTER
-// ════════════════════════════════════════════════════════════════════════════
 function PrivacyFooter({ onWipe, eventCount }: { onWipe: () => void; eventCount: number }) {
   return (
     <div style={{
@@ -1225,9 +1133,6 @@ function PrivacyFooter({ onWipe, eventCount }: { onWipe: () => void; eventCount:
   )
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// DETAIL DRAWER — interactive drill-down for every tile
-// ════════════════════════════════════════════════════════════════════════════
 function DetailDrawer({ kind, twin, mastery, onClose }: {
   kind:    DetailKind
   twin:    Twin
@@ -1238,15 +1143,12 @@ function DetailDrawer({ kind, twin, mastery, onClose }: {
   const events  = state.events
   const content = useMemo(() => renderDetail(kind, twin, mastery, events), [kind, twin, mastery, events])
 
-  // Close on ESC
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [onClose])
 
-  // Portal to body so we escape any transform/filter stacking context
-  // the dashboard layout (which has its own header at zIndex 200) might create.
   return createPortal(
     <>
       <motion.div
@@ -1309,7 +1211,6 @@ function DetailDrawer({ kind, twin, mastery, onClose }: {
         </div>
 
         <div style={{ flex: 1, overflowY: 'auto', padding: '18px 24px 28px' }}>
-          {/* Big value */}
           <div style={{
             display: 'flex', alignItems: 'baseline', gap: 10,
             padding: '18px 18px',
@@ -1325,12 +1226,10 @@ function DetailDrawer({ kind, twin, mastery, onClose }: {
             )}
           </div>
 
-          {/* Explanation */}
           <DrawerSection title="What this means">
             <p style={{ margin: 0, fontSize: 13.5, color: C.textDim, lineHeight: 1.65 }}>{content.explanation}</p>
           </DrawerSection>
 
-          {/* Breakdown rows */}
           {content.rows.length > 0 && (
             <DrawerSection title={content.rowsTitle || 'Recent contributions'}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -1389,7 +1288,6 @@ function DrawerSection({ title, children }: { title: string; children: React.Rea
   )
 }
 
-// ── DETAIL CONTENT BUILDER ───────────────────────────────────────────────────
 interface DetailContent {
   icon:        any
   accent:      string
@@ -1798,9 +1696,6 @@ function buildDayActivityRows(events: TwinEvent[], days: number) {
   return rows
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// PRIMITIVES
-// ════════════════════════════════════════════════════════════════════════════
 function Card({ children }: { children: React.ReactNode }) {
   return (
     <motion.div className="kr-card" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} style={{
@@ -1886,13 +1781,6 @@ function EmptyState({ onRefresh, onSeed }: { onRefresh: () => void; onSeed: () =
   )
 }
 
-// (Demo seed logic now lives in lib/twin.ts as the exported `seedDemo()`
-// — single source of truth for the storage key + backdating maths,
-// shared by both desktop and mobile empty states.)
-
-// ════════════════════════════════════════════════════════════════════════════
-// HELPERS
-// ════════════════════════════════════════════════════════════════════════════
 function formatRelative(ms: number | null) {
   if (!ms) return '—'
   const diff = Date.now() - ms

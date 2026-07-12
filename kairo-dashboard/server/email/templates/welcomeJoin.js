@@ -1,8 +1,3 @@
-/**
- * Welcome — sent after a user signs up + joins a school.
- *
- * Variables: { name, role, schoolName, requireApproval }
- */
 import { THEME, appUrl } from '../theme.js'
 import { shell } from '../shell.js'
 import {
