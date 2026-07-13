@@ -19,7 +19,8 @@
 
 -- ── 1. Event stream ─────────────────────────────────────────────────────────
 -- Every interaction lands here. Keeps Kairo's intelligence grounded in real
--- behavior, not vibes. Append-only; we keep ~90 days then archive.
+-- behavior, not vibes. Append-only; pruned to the last ~15 days (the derived
+-- knowledge_mastery + academic_twins state persists, so intelligence is kept).
 CREATE TABLE IF NOT EXISTS twin_events (
   id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id       UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,

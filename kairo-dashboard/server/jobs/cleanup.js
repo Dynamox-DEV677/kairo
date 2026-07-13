@@ -45,9 +45,34 @@ async function deleteOldLoginLogs() {
   }
 }
 
+async function pruneTwinData() {
+  const day = 24 * 60 * 60 * 1000
+  const jobs = [
+    ['twin_events', 'created_at', new Date(Date.now() - 15 * day).toISOString()],
+    ['study_sessions', 'started_at', new Date(Date.now() - 120 * day).toISOString()],
+  ]
+  for (const [table, col, cutoff] of jobs) {
+    try {
+      const { data, error } = await supabaseAdmin.from(table).delete().lt(col, cutoff).select('id')
+      if (data?.length) console.log(`[Cleanup] 🗑  Deleted ${data.length} old ${table} row(s)`)
+      if (error && !/does not exist/i.test(error.message)) console.error(`[Cleanup] ${table}:`, error.message)
+    } catch (e) {
+      if (!e.message?.includes('does not exist')) console.error(`[Cleanup] ${table}:`, e.message)
+    }
+  }
+  try {
+    const now = new Date().toISOString()
+    const { data } = await supabaseAdmin.from('twin_observations').delete().not('expires_at', 'is', null).lt('expires_at', now).select('id')
+    if (data?.length) console.log(`[Cleanup] 🗑  Deleted ${data.length} expired observation(s)`)
+  } catch (e) {
+    if (!e.message?.includes('does not exist')) console.error('[Cleanup] twin_observations:', e.message)
+  }
+}
+
 async function runAllCleanup() {
   await deleteExpiredNotifications()
   await deleteOldLoginLogs()
+  await pruneTwinData()
 }
 
 export function startCleanupJob() {
@@ -63,5 +88,5 @@ export function startCleanupJob() {
     runAllCleanup()
   })
 
-  console.log('[Cleanup] ✓ Hourly cleanup job scheduled (notifications + login_logs)')
+  console.log('[Cleanup] ✓ Hourly cleanup scheduled (notifications, login_logs, twin_events, sessions, observations)')
 }

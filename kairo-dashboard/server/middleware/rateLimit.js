@@ -19,3 +19,13 @@ export const emailLimiter = rateLimit({
   max: 5,
   message: { error: 'Email send rate limit hit. Max 5 sends per minute.' },
 })
+
+export const aiLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => req.user?.id || req.ip,
+  validate: false,
+  message: { error: 'Too many AI requests right now — wait a few seconds and try again.' },
+})

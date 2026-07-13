@@ -1,6 +1,6 @@
 import 'dotenv/config'
 import express from 'express'
-import { apiLimiter } from './middleware/rateLimit.js'
+import { apiLimiter, aiLimiter } from './middleware/rateLimit.js'
 
 import aiChatRoutes from './routes/aiChat.js'
 
@@ -95,6 +95,13 @@ app.use((req, res, next) => {
   if (req.method === 'OPTIONS') return res.sendStatus(204)
   next()
 })
+
+app.use([
+  '/api/ai', '/api/council', '/api/quiz', '/api/notebook', '/api/essay',
+  '/api/grading', '/api/exam', '/api/writing', '/api/concept', '/api/knowledge',
+  '/api/topic-architect', '/api/exam-planner', '/api/study-plan', '/api/lesson-plan',
+  '/api/question-paper', '/api/formula', '/api/parent-message', '/api/admission',
+], aiLimiter)
 
 app.use('/api/ai',             aiChatRoutes)
 app.use('/api/ops',            opsRoutes)

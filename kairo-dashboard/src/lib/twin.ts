@@ -383,7 +383,7 @@ function dedupeBy<T>(arr: T[], keyFn: (x: T) => string): T[] {
   return out
 }
 
-const SYNC_DEBOUNCE_MS = 5_000
+const SYNC_DEBOUNCE_MS = 45_000
 let   syncTimer: number | null = null
 let   syncEnabled: boolean      = true
 let   syncPausedUntil: number   = 0
@@ -427,8 +427,22 @@ function deviceLabel(): string {
   return `${m} · ${new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}`
 }
 
+let flushBound = false
+function bindSyncFlush() {
+  if (flushBound || typeof window === 'undefined') return
+  flushBound = true
+  const flush = () => {
+    if (!syncEnabled || syncTimer == null) return
+    window.clearTimeout(syncTimer); syncTimer = null
+    if (Date.now() >= syncPausedUntil) syncToCloudNow().catch(() => {})
+  }
+  window.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flush() })
+  window.addEventListener('pagehide', flush)
+}
+
 export function scheduleSyncToCloud() {
   if (typeof window === 'undefined') return
+  bindSyncFlush()
   if (!syncEnabled) return
   if (syncTimer) window.clearTimeout(syncTimer)
   syncTimer = window.setTimeout(() => {
