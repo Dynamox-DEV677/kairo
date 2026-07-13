@@ -5,6 +5,7 @@ import { apiLimiter, aiLimiter } from './middleware/rateLimit.js'
 import aiChatRoutes from './routes/aiChat.js'
 
 import opsRoutes from './routes/ops.js'
+import cronRoutes from './routes/cron.js'
 
 import credentialRoutes    from './routes/credentials.js'
 import studentRoutes       from './routes/students.js'
@@ -105,6 +106,7 @@ app.use([
 
 app.use('/api/ai',             aiChatRoutes)
 app.use('/api/ops',            opsRoutes)
+app.use('/api/cron',           cronRoutes)
 app.use('/api/credentials',    credentialRoutes)
 app.use('/api/students',       studentRoutes)
 app.use('/api/fees',           feeRoutes)

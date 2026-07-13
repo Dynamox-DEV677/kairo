@@ -8,6 +8,9 @@
   "functions": {
     "api/index.js": { "maxDuration": 30 }
   },
+  "crons": [
+    { "path": "/api/cron/cleanup", "schedule": "0 3 * * *" }
+  ],
   "headers": [
     {
       "source": "/index.html",

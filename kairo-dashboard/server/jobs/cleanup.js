@@ -69,7 +69,7 @@ async function pruneTwinData() {
   }
 }
 
-async function runAllCleanup() {
+export async function runAllCleanup() {
   await deleteExpiredNotifications()
   await deleteOldLoginLogs()
   await pruneTwinData()
