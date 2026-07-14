@@ -208,8 +208,9 @@ export default function App() {
     if (!profile) { if (onboard !== 'checking') setOnboard('checking'); return }
     if (checking || sprintingIn || onboard !== 'checking') return
     try {
-      if (isOnboarded()) { setOnboard('done'); return }
-      if (sessionStorage.getItem('kairo:onboard:skip') === '1') { setOnboard('skipped'); return }
+      const id = profile.id || ''
+      if (localStorage.getItem('kairo:onboarded:' + id) === '1' || isOnboarded()) { setOnboard('done'); return }
+      if (localStorage.getItem('kairo:onboard:skip:' + id) === '1') { setOnboard('skipped'); return }
     } catch {  }
     setOnboard('open')
   }, [profile, checking, sprintingIn, onboard])
@@ -322,8 +323,8 @@ export default function App() {
       {onboard === 'open' && (
         <Onboarding
           profile={profile}
-          onDone={() => setOnboard('done')}
-          onSkip={() => { try { sessionStorage.setItem('kairo:onboard:skip', '1') } catch {  }; setOnboard('skipped') }}
+          onDone={() => { try { localStorage.setItem('kairo:onboarded:' + (profile.id || ''), '1') } catch {  }; setOnboard('done') }}
+          onSkip={() => { try { localStorage.setItem('kairo:onboard:skip:' + (profile.id || ''), '1') } catch {  }; setOnboard('skipped') }}
         />
       )}
       {onboard === 'skipped' && (

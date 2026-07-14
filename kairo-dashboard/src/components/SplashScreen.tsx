@@ -7,41 +7,25 @@ interface Props {
   duration?: number
 }
 
-const C = {
-  bg:        '#050505',
-  text:      '#ffffff',
-  purpleDeep:'#0B1530',
-  purple:    '#2A4FE0',
-  purpleLite:'#A5B4FC',
-  purpleSoft:'#DBE7FF',
-}
-
-export default function SplashScreen({ onComplete, duration = 3000 }: Props) {
-  const [visible, setVisible]   = useState(true)
-  const [canSkip, setCanSkip]   = useState(false)
+export default function SplashScreen({ onComplete, duration = 2600 }: Props) {
+  const [visible, setVisible] = useState(true)
+  const [canSkip, setCanSkip] = useState(false)
 
   useEffect(() => {
-    const skipT = window.setTimeout(() => setCanSkip(true), 900)
+    const skipT = window.setTimeout(() => setCanSkip(true), 700)
     const exitT = window.setTimeout(() => setVisible(false), duration - 200)
     const doneT = window.setTimeout(() => onComplete(), duration)
-
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && canSkip) {
-        setVisible(false)
-        window.setTimeout(() => onComplete(), 250)
-      }
+      if (e.key === 'Escape' && canSkip) { setVisible(false); window.setTimeout(() => onComplete(), 250) }
     }
     window.addEventListener('keydown', onKey)
-
     return () => {
-      window.clearTimeout(skipT)
-      window.clearTimeout(exitT)
-      window.clearTimeout(doneT)
+      window.clearTimeout(skipT); window.clearTimeout(exitT); window.clearTimeout(doneT)
       window.removeEventListener('keydown', onKey)
     }
   }, [duration, onComplete, canSkip])
 
-  function handleClick() {
+  const handleClick = () => {
     if (!canSkip) return
     setVisible(false)
     window.setTimeout(() => onComplete(), 250)
@@ -54,329 +38,91 @@ export default function SplashScreen({ onComplete, duration = 3000 }: Props) {
           key="splash"
           onClick={handleClick}
           initial={{ opacity: 1 }}
-          exit={{ opacity: 0, scale: 1.04 }}
-          transition={{ duration: 0.55, ease: [0.6, 0.0, 0.2, 1] }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.5, ease: 'easeInOut' }}
           style={{
             position: 'fixed', inset: 0, zIndex: 99999,
-            background: C.bg, color: C.text,
+            background: '#050505', color: '#fff',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            overflow: 'hidden',
-            cursor: canSkip ? 'pointer' : 'default',
-            isolation: 'isolate',
+            overflow: 'hidden', cursor: canSkip ? 'pointer' : 'default',
           }}
         >
           <style>{`
-            @keyframes splash-breath {
-              0%, 100% { transform: scale(1) }
-              50%      { transform: scale(1.04) }
-            }
-            @keyframes splash-halo {
-              0%, 100% { opacity: 0.55 }
-              50%      { opacity: 1 }
-            }
-            @keyframes splash-grid-fade {
-              0%   { opacity: 0 }
-              60%  { opacity: 0.55 }
-              100% { opacity: 0.18 }
-            }
-            @keyframes splash-glow-pan {
-              0%   { transform: translate3d(-12%, -8%, 0) }
-              100% { transform: translate3d(12%, 8%, 0) }
-            }
-            @keyframes splash-caret {
-              50% { opacity: 0 }
-            }
+            @keyframes kb-breath { 0%,100% { transform: scale(1) } 50% { transform: scale(1.045) } }
+            @keyframes kb-glow   { 0%,100% { opacity: .5 } 50% { opacity: .9 } }
           `}</style>
 
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, ease: 'easeOut' }}
-            style={{
-              position: 'absolute', inset: '-20%',
-              background: `
-                radial-gradient(at 30% 30%, rgba(42, 79, 224, 0.40) 0%, transparent 50%),
-                radial-gradient(at 70% 70%, rgba(165, 180, 252, 0.18) 0%, transparent 55%)
-              `,
-              animation: 'splash-glow-pan 8s ease-in-out infinite alternate',
-              willChange: 'transform',
-              pointerEvents: 'none',
-            }}
-          />
-
-          <svg
-            width="100%" height="100%"
-            viewBox="0 0 1200 800"
-            preserveAspectRatio="xMidYMid slice"
-            style={{
-              position: 'absolute', inset: 0,
-              animation: 'splash-grid-fade 2.2s 0.2s ease-out forwards',
-              opacity: 0,
-              pointerEvents: 'none',
-            }}
-          >
-            <defs>
-              <linearGradient id="splash-line" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%"  stopColor="#4F7CFF" stopOpacity="0"/>
-                <stop offset="50%" stopColor="#A5B4FC" stopOpacity="0.45"/>
-                <stop offset="100%" stopColor="#4F7CFF" stopOpacity="0"/>
-              </linearGradient>
-            </defs>
-            {[80, 200, 340, 460, 580, 700].map((y, i) => (
-              <motion.line
-                key={`h${y}`}
-                x1={0} y1={y} x2={1200} y2={y}
-                stroke="url(#splash-line)" strokeWidth={1}
-                initial={{ pathLength: 0 }}
-                animate={{ pathLength: 1 }}
-                transition={{ duration: 1.4, delay: 0.2 + i * 0.08, ease: 'easeOut' }}
-              />
-            ))}
-            {[100, 300, 500, 700, 900, 1100].map((x, i) => (
-              <motion.line
-                key={`v${x}`}
-                x1={x} y1={0} x2={x} y2={800}
-                stroke="url(#splash-line)" strokeWidth={1}
-                initial={{ pathLength: 0 }}
-                animate={{ pathLength: 1 }}
-                transition={{ duration: 1.4, delay: 0.3 + i * 0.08, ease: 'easeOut' }}
-              />
-            ))}
-          </svg>
-
-          <div aria-hidden style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 1 }}>
-            {Array.from({ length: 14 }).map((_, i) => {
-              const left = (i * 37) % 100
-              const top  = (i * 53 + 11) % 100
-              const dur  = 6 + (i % 5)
-              const size = 2 + (i % 3)
-              const col  = i % 2 ? '#66D9FF' : '#A5B4FC'
-              return (
-                <motion.div key={`amb${i}`}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: [0, 0.5, 0], y: [0, -18, 0] }}
-                  transition={{ delay: 0.6 + (i % 7) * 0.2, duration: dur, repeat: Infinity, ease: 'easeInOut' }}
-                  style={{ position: 'absolute', left: `${left}%`, top: `${top}%`, width: size, height: size, borderRadius: '50%', background: col, boxShadow: `0 0 8px ${col}` }}
-                />
-              )
-            })}
-          </div>
-
           <div style={{
-            position: 'relative', zIndex: 2,
-            display: 'flex', flexDirection: 'column', alignItems: 'center',
-            gap: 22, padding: '0 28px',
-            textAlign: 'center', maxWidth: 560,
-          }}>
-            <div style={{ position: 'relative', width: 180, height: 180 }}>
-              <motion.div
-                initial={{ opacity: 0, scale: 0.5 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.5, duration: 0.9, ease: 'easeOut' }}
-                style={{
-                  position: 'absolute', inset: -50,
-                  background: 'radial-gradient(closest-side, rgba(42, 79, 224, 0.38), transparent 70%)',
-                  filter: 'blur(28px)',
-                  animation: 'splash-halo 3.4s 1.2s ease-in-out infinite',
-                  pointerEvents: 'none',
-                }}
-              />
+            position: 'absolute', top: '34%', left: '50%', width: 520, height: 520,
+            transform: 'translate(-50%, -50%)', borderRadius: '50%',
+            background: 'radial-gradient(circle, rgba(79,124,255,0.28), transparent 68%)',
+            filter: 'blur(24px)', animation: 'kb-glow 3.6s ease-in-out infinite', pointerEvents: 'none',
+          }} />
 
-              <svg viewBox="0 0 180 180" width={180} height={180}
-                style={{ position: 'absolute', inset: 0, overflow: 'visible', pointerEvents: 'none' }}>
-                <defs>
-                  <linearGradient id="splash-ring" x1="0" y1="0" x2="1" y2="1">
-                    <stop offset="0%" stopColor="#66D9FF" />
-                    <stop offset="55%" stopColor="#4F7CFF" />
-                    <stop offset="100%" stopColor="#8B5CFF" />
-                  </linearGradient>
-                </defs>
-                <motion.circle
-                  cx="90" cy="90" r="84" fill="none"
-                  stroke="url(#splash-ring)" strokeWidth="2.5" strokeLinecap="round"
-                  transform="rotate(-90 90 90)"
-                  initial={{ pathLength: 0, opacity: 0 }}
-                  animate={{ pathLength: 1, opacity: 1 }}
-                  transition={{ delay: 0.4, duration: 1.3, ease: [0.4, 0, 0.2, 1] }}
-                  style={{ filter: 'drop-shadow(0 0 6px rgba(102, 217, 255, 0.6))' }}
-                />
-                <motion.circle
-                  cx="90" cy="90" r="64" fill="none"
-                  stroke="rgba(165,180,252,0.4)" strokeWidth="1" strokeDasharray="2 10" strokeLinecap="round"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1, rotate: -360 }}
-                  transition={{ opacity: { delay: 1.2, duration: 0.6 }, rotate: { delay: 1.2, duration: 9, repeat: Infinity, ease: 'linear' } }}
-                  style={{ transformOrigin: '90px 90px' }}
-                />
-              </svg>
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1, rotate: 360 }}
-                transition={{ opacity: { delay: 1.5, duration: 0.4 }, rotate: { delay: 1.5, duration: 3.4, repeat: Infinity, ease: 'linear' } }}
-                style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}
-              >
-                <div style={{
-                  position: 'absolute', top: 2, left: '50%', width: 9, height: 9, marginLeft: -4.5,
-                  borderRadius: '50%', background: '#66D9FF',
-                  boxShadow: '0 0 14px 3px rgba(102, 217, 255, 0.9)',
-                }} />
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0, scale: 0.3, y: 6 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                transition={{ delay: 0.5, duration: 0.9, type: 'spring', stiffness: 280, damping: 22 }}
-                style={{
-                  position: 'absolute', inset: 0,
-                  display: 'grid', placeItems: 'center',
-                  animation: 'splash-breath 4s 1.6s ease-in-out infinite',
-                }}
-              >
-                <div style={{ position: 'relative', width: 134, height: 134 }}>
-                  <img
-                    src="/kairo_logo.png"
-                    alt="Kyno"
-                    width={134} height={134}
-                    decoding="async" loading="eager"
-                    draggable={false}
-                    style={{
-                      width: 134, height: 134, objectFit: 'contain',
-                      filter: 'drop-shadow(0 0 22px rgba(102, 217, 255, 0.55)) drop-shadow(0 10px 26px rgba(79, 124, 255, 0.45))',
-                      userSelect: 'none', WebkitUserDrag: 'none',
-                    }}
-                  />
-                  <div style={{
-                    position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none',
-                    WebkitMaskImage: 'url(/kairo_logo.png)', WebkitMaskSize: 'contain',
-                    WebkitMaskRepeat: 'no-repeat', WebkitMaskPosition: 'center',
-                    maskImage: 'url(/kairo_logo.png)', maskSize: 'contain',
-                    maskRepeat: 'no-repeat', maskPosition: 'center',
-                  }}>
-                    <motion.div
-                      initial={{ x: '-150%' }}
-                      animate={{ x: '175%' }}
-                      transition={{ delay: 1.5, duration: 1.15, ease: 'easeInOut' }}
-                      style={{
-                        position: 'absolute', top: -24, bottom: -24, width: '55%',
-                        transform: 'skewX(-15deg)',
-                        background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.55), transparent)',
-                      }}
-                    />
-                  </div>
-                </div>
-              </motion.div>
-
-            </div>
+          <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 26 }}>
+            <motion.img
+              src="/kairo_logo.png" alt="Kyno" width={128} height={128}
+              decoding="async" loading="eager" draggable={false}
+              initial={{ opacity: 0, scale: 0.8, y: 8 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{ duration: 0.8, ease: [0.2, 0.8, 0.2, 1] }}
+              style={{
+                width: 128, height: 128, objectFit: 'contain',
+                filter: 'drop-shadow(0 0 26px rgba(102,217,255,0.5)) drop-shadow(0 10px 30px rgba(79,124,255,0.4))',
+                animation: 'kb-breath 4s 0.9s ease-in-out infinite',
+                userSelect: 'none', WebkitUserDrag: 'none',
+              }}
+            />
 
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 1.3, duration: 0.7, ease: [0.2, 0.8, 0.2, 1] }}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 12,
-                fontFamily: '"Inter", "SF Pro Display", system-ui, sans-serif',
-                fontSize: 'clamp(34px, 8vw, 44px)',
-                fontWeight: 800,
-                letterSpacing: -1.4,
-                color: C.text,
-                lineHeight: 1,
-              }}
+              transition={{ delay: 0.35, duration: 0.6, ease: [0.2, 0.8, 0.2, 1] }}
+              style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}
             >
-              <span style={{
-                background: 'linear-gradient(90deg, #FFFFFF 0%, #DBE7FF 40%, #A5B4FC 75%, #2A4FE0 100%)',
-                WebkitBackgroundClip: 'text', backgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
+              <div style={{
+                fontFamily: "'Inter', 'SF Pro Display', system-ui, sans-serif",
+                fontSize: 'clamp(38px, 9vw, 48px)', fontWeight: 800, letterSpacing: -1.5, lineHeight: 1,
+                background: 'linear-gradient(90deg, #ffffff 0%, #DBE7FF 45%, #8FB0FF 100%)',
+                WebkitBackgroundClip: 'text', backgroundClip: 'text', WebkitTextFillColor: 'transparent',
               }}>
                 Kyno
-              </span>
-
-              <motion.span
-                initial={{ opacity: 0, scale: 0.85, y: 4 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                transition={{ delay: 1.55, duration: 0.45, ease: [0.2, 0.8, 0.2, 1] }}
-                style={{
-                  fontSize: 'clamp(10px, 2.1vw, 12px)',
-                  fontWeight: 700,
-                  letterSpacing: 1.6,
-                  color: '#ffffff',
-                  padding: '4px 9px',
-                  borderRadius: 999,
-                  background: 'rgba(255, 255, 255, 0.10)',
-                  border: '1px solid rgba(255, 255, 255, 0.28)',
-                  boxShadow: '0 0 18px rgba(42, 79, 224, 0.03)',
-                  backdropFilter: 'blur(10px)',
-                  WebkitBackdropFilter: 'blur(10px)',
-                  textTransform: 'uppercase',
-                  alignSelf: 'center',
-                }}
-              >
-                AI
-              </motion.span>
-
-              <motion.span
-                initial={{ opacity: 0 }}
-                animate={{ opacity: [1, 0, 1, 0, 1, 0] }}
-                transition={{ delay: 1.4, duration: 1.2 }}
-                style={{
-                  display: 'inline-block', width: 4, height: 'clamp(28px, 6.5vw, 36px)',
-                  marginLeft: 2, alignSelf: 'center',
-                  background: '#ffffff', borderRadius: 1,
-                  boxShadow: '0 0 12px rgba(255, 255, 255, 0.85)',
-                }}
-              />
+              </div>
+              <div style={{
+                fontFamily: "'Inter', system-ui, sans-serif",
+                fontSize: 12, fontWeight: 700, letterSpacing: 3.5, textTransform: 'uppercase',
+                color: 'rgba(255,255,255,0.55)',
+              }}>
+                Your AI Academic Twin
+              </div>
             </motion.div>
 
             <motion.div
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 1.7, duration: 0.7, ease: 'easeOut' }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5, duration: 0.5 }}
               style={{
-                fontFamily: '"Inter", "SF Pro Display", system-ui, sans-serif',
-                fontSize: 'clamp(11px, 2.6vw, 13px)',
-                fontWeight: 700,
-                letterSpacing: 3.2,
-                textTransform: 'uppercase',
-                color: 'rgba(255, 255, 255, 0.92)',
+                marginTop: 6, width: 'min(220px, 60vw)', height: 3,
+                borderRadius: 999, background: 'rgba(255,255,255,0.1)', overflow: 'hidden',
               }}
             >
-              Your AI Academic Twin
-            </motion.div>
-
-            <div style={{
-              marginTop: 6,
-              width: 'min(280px, 70vw)',
-              height: 2,
-              background: 'rgba(102, 217, 255, 0.12)',
-              borderRadius: 999, overflow: 'hidden',
-              position: 'relative',
-            }}>
               <motion.div
                 initial={{ width: '0%' }}
                 animate={{ width: '100%' }}
-                transition={{ delay: 0.4, duration: (duration - 600) / 1000, ease: 'easeInOut' }}
-                style={{
-                  height: '100%',
-                  background: 'linear-gradient(90deg, #DBE7FF, #A5B4FC, #4F7CFF)',
-                  boxShadow: '0 0 12px rgba(165, 180, 252, 0.08)',
-                }}
+                transition={{ delay: 0.4, duration: (duration - 700) / 1000, ease: 'easeInOut' }}
+                style={{ height: '100%', background: 'linear-gradient(90deg, #66D9FF, #4F7CFF)' }}
               />
-            </div>
+            </motion.div>
           </div>
 
           <motion.div
             initial={{ opacity: 0 }}
-            animate={{ opacity: canSkip ? 0.55 : 0 }}
-            transition={{ duration: 0.4 }}
+            animate={{ opacity: canSkip ? 0.5 : 0 }}
+            transition={{ duration: 0.3 }}
             style={{
-              position: 'absolute',
-              bottom: 'calc(28px + env(safe-area-inset-bottom))',
-              left: 0, right: 0,
-              textAlign: 'center',
-              fontSize: 11, fontWeight: 600,
-              letterSpacing: 1.6, textTransform: 'uppercase',
-              color: 'rgba(255, 255, 255, 0.70)',
-              fontFamily: '"Inter", "SF Pro Display", system-ui, sans-serif',
-              pointerEvents: 'none',
+              position: 'absolute', bottom: 'calc(30px + env(safe-area-inset-bottom))', left: 0, right: 0,
+              textAlign: 'center', fontSize: 11, fontWeight: 600, letterSpacing: 1.5, textTransform: 'uppercase',
+              color: 'rgba(255,255,255,0.6)', fontFamily: "'Inter', system-ui, sans-serif", pointerEvents: 'none',
             }}
           >
             Tap to skip

@@ -532,7 +532,7 @@ export async function pullFromCloud(opts: { force?: boolean } = {}): Promise<{
 
   if (!opts.force) {
     const current = loadState()
-    if (current.events.length > 0 || current.flashcards.length > 0 || current.doubts.length > 0) {
+    if (current.events.length > 0 || current.flashcards.length > 0 || current.doubts.length > 0 || current.profile) {
       return { ok: true, restored: false, reason: 'local-not-empty' }
     }
   }
@@ -549,10 +549,12 @@ export async function pullFromCloud(opts: { force?: boolean } = {}): Promise<{
 
     const incoming = snap.blob as TwinState
     const localKey = getUserKey()
+    const localProfile = loadState().profile
     const next: TwinState = {
       ...emptyState(),
       ...incoming,
       userKey:    localKey,
+      profile:    incoming.profile ?? localProfile ?? null,
       doubts:     incoming.doubts     ?? [],
       concepts:   incoming.concepts   ?? [],
       formulas:   incoming.formulas   ?? [],
