@@ -3,9 +3,12 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
   BookOpen, Search, Plus, Pin, PinOff, Trash2, Edit3, X, Save, RefreshCw,
   BookMarked, FileText, MessageCircle, Network, StickyNote, Calendar, CheckCircle2,
+  Sparkles, Eye,
 } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import remarkMath from 'remark-math'
+import rehypeKatex from 'rehype-katex'
 import { api, friendlyError } from '../lib/api'
 import {
   listNotebook, deleteNotebookEntry, updateNotebookEntry,
@@ -43,6 +46,13 @@ const inp: React.CSSProperties = {
   background: '#0E1117', border: '1px solid #1f2532', borderRadius: 8,
   padding: '9px 12px', fontSize: 13, color: '#fafafa',
   fontFamily: 'inherit', outline: 'none', width: '100%', boxSizing: 'border-box',
+}
+
+// Normalise LaTeX delimiters so KaTeX renders them: \[..\] -> $$..$$, \(..\) -> $..$.
+function normalizeMath(md: string): string {
+  return (md || '')
+    .replace(/\\\[([\s\S]+?)\\\]/g, (_m, e) => `$$${e}$$`)
+    .replace(/\\\(([\s\S]+?)\\\)/g, (_m, e) => `$${e}$`)
 }
 
 function entryToNote(e: NoteEntry): Note {
@@ -107,6 +117,11 @@ export default function Notebook() {
 
   return (
     <div className="nb-page" style={{ padding: '28px 36px', maxWidth: 1200, margin: '0 auto', height: '100%', overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
+      <style>{`
+        .nb-math .katex { color: #fafafa; }
+        .nb-math .katex-display { overflow-x: auto; overflow-y: hidden; margin: 10px 0; padding: 2px 0; }
+        .nb-math p { overflow-wrap: anywhere; }
+      `}</style>
       <div className="nb-header" style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 20, flexShrink: 0 }}>
         <div style={{
           width: 44, height: 44, borderRadius: 11,
@@ -299,7 +314,7 @@ function AutoCollectedStrip({ onBuilt }: { onBuilt?: (id: string) => void }) {
         messages: [
           {
             role: 'system',
-            content: 'You are Kyno, a study notebook author. Given a topic or doubt, write a clean, exam-ready markdown note for an Indian high-school student. Structure: short summary, key points (3-5 bullets), worked example or formula if relevant, common mistake. Keep total length under 200 words. Output only markdown, no preamble.',
+            content: 'You are Kyno, a study notebook author. Given a topic or doubt, write a clean, exam-ready markdown note for an Indian high-school student. Structure: short summary, key points (3-5 bullets), worked example or formula if relevant, common mistake. Wrap EVERY equation, formula, variable and math symbol in KaTeX delimiters — inline math as $...$ and standalone equations as $$...$$. Keep total length under 200 words. Output only markdown, no preamble.',
           },
           { role: 'user', content: args.raw },
         ],
@@ -600,8 +615,8 @@ function NoteDetail({ note, editing, onClose, onTogglePin, onDelete, onEdit, onS
               ))}
             </div>
           )}
-          <div className="prose-ai" style={{ fontSize: 13.5, color: '#e4e4e7', lineHeight: 1.65 }}>
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>{note.content}</ReactMarkdown>
+          <div className="prose-ai nb-math" style={{ fontSize: 13.5, color: '#e4e4e7', lineHeight: 1.65 }}>
+            <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>{normalizeMath(note.content)}</ReactMarkdown>
           </div>
         </>
       )}
@@ -615,6 +630,26 @@ function CreateModal({ onClose, onCreated }: { onClose: () => void; onCreated: (
   const [content, setContent] = useState('')
   const [subject, setSubject] = useState('')
   const [saving, setSaving]   = useState(false)
+  const [formatting, setFormatting] = useState(false)
+  const [preview, setPreview] = useState(false)
+
+  // Paste anything (even messy math) and let Kyno rewrite it into clean
+  // markdown with proper $…$ equations, then show it rendered.
+  async function formatWithAI() {
+    if (!content.trim() || formatting) return
+    setFormatting(true)
+    try {
+      const { chat } = await import('../lib/openrouter')
+      const reply = await chat({
+        messages: [
+          { role: 'system', content: "You tidy a student's pasted study note into clean markdown. Keep ALL the original content and meaning — do not add, remove or answer anything. Only fix the formatting: sensible headings and bullet points, and wrap EVERY equation, formula, variable and math symbol in KaTeX delimiters — inline math as $...$ and standalone equations as $$...$$. Output only the cleaned markdown, no preamble." },
+          { role: 'user', content },
+        ],
+      })
+      if (reply && reply.trim().length > 20) { setContent(reply.trim()); setPreview(true) }
+    } catch {  }
+    finally { setFormatting(false) }
+  }
 
   async function save() {
     if (!title.trim() || !content.trim()) return
@@ -644,9 +679,41 @@ function CreateModal({ onClose, onCreated }: { onClose: () => void; onCreated: (
           placeholder="Title" style={{ ...inp, marginBottom: 10 }} />
         <input value={subject} onChange={e => setSubject(e.target.value)}
           placeholder="Subject (optional)" style={{ ...inp, marginBottom: 10 }} />
-        <textarea value={content} onChange={e => setContent(e.target.value)} rows={10}
-          placeholder="Content (supports markdown)…"
-          style={{ ...inp, resize: 'vertical', lineHeight: 1.6 }} />
+        <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+          <button type="button" onClick={formatWithAI} disabled={formatting || !content.trim()} style={{
+            padding: '6px 11px', borderRadius: 7, border: '1px solid rgba(102, 217, 255, 0.32)',
+            background: formatting ? 'rgba(102, 217, 255, 0.22)' : 'rgba(79, 124, 255, 0.08)',
+            color: '#A5B4FC', fontFamily: 'inherit', fontSize: 11.5, fontWeight: 600,
+            cursor: formatting || !content.trim() ? 'not-allowed' : 'pointer',
+            display: 'flex', alignItems: 'center', gap: 6,
+          }}>
+            <Sparkles size={12} />{formatting ? 'Formatting…' : 'Format math with AI'}
+          </button>
+          <button type="button" onClick={() => setPreview(p => !p)} disabled={!content.trim()} style={{
+            padding: '6px 11px', borderRadius: 7, border: '1px solid #1f2532',
+            background: '#151922', color: preview ? '#A5B4FC' : '#9CA3AF',
+            fontFamily: 'inherit', fontSize: 11.5, fontWeight: 600,
+            cursor: !content.trim() ? 'not-allowed' : 'pointer',
+            display: 'flex', alignItems: 'center', gap: 6, marginLeft: 'auto',
+          }}>
+            <Eye size={12} />{preview ? 'Edit' : 'Preview'}
+          </button>
+        </div>
+        {preview ? (
+          <div className="prose-ai nb-math" style={{
+            fontSize: 13.5, color: '#e4e4e7', lineHeight: 1.65,
+            minHeight: 160, maxHeight: 320, overflowY: 'auto',
+            background: '#0E1117', border: '1px solid #1f2532', borderRadius: 8, padding: '10px 12px',
+          }}>
+            {content.trim()
+              ? <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>{normalizeMath(content)}</ReactMarkdown>
+              : <span style={{ color: '#6B7280' }}>Nothing to preview yet.</span>}
+          </div>
+        ) : (
+          <textarea value={content} onChange={e => setContent(e.target.value)} rows={10}
+            placeholder="Paste or type content — supports markdown & $math$…"
+            style={{ ...inp, resize: 'vertical', lineHeight: 1.6 }} />
+        )}
         <div style={{ display: 'flex', gap: 8, marginTop: 14, justifyContent: 'flex-end' }}>
           <button onClick={onClose} style={{
             padding: '8px 14px', borderRadius: 7, border: '1px solid #1f2532',
