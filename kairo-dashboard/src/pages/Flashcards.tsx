@@ -12,6 +12,10 @@ import {
   recordFlashcard, listFlashcards, getMistakes,
   type Flashcard as TwinCard,
 } from '../lib/twin'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
+import remarkMath from 'remark-math'
+import rehypeKatex from 'rehype-katex'
 
 const C = {
   bg:        '#050505',
@@ -42,6 +46,7 @@ interface Card { front: string; back: string }
 const SYSTEM = `You are Kyno, an expert tutor for Indian school students.
 When given a chapter or topic, generate exactly 10 flashcards in this JSON format:
 [{"front": "Question or term", "back": "Concise but complete answer or definition"}]
+Wrap any equation, formula or symbol in KaTeX delimiters (inline $...$, block $$...$$), and escape LaTeX backslashes so the JSON stays valid.
 Return ONLY the JSON array, no other text. Make cards exam-realistic.`
 
 const QUICK_CHIPS = [
@@ -456,6 +461,13 @@ function DeckViewer({ cards, idx, flipped, onFlip, onPrev, onNext }: {
   )
 }
 
+// Normalise LaTeX delimiters so KaTeX renders them: \[..\] -> $$..$$, \(..\) -> $..$.
+function normalizeMath(s: string): string {
+  return (s || '')
+    .replace(/\\\[([\s\S]+?)\\\]/g, (_m, e) => `$$${e}$$`)
+    .replace(/\\\(([\s\S]+?)\\\)/g, (_m, e) => `$${e}$`)
+}
+
 function FlipCard({ front, back, flipped, onFlip }: { front: string; back: string; flipped: boolean; onFlip: () => void }) {
   return (
     <div style={{ perspective: 1400 }}>
@@ -515,15 +527,22 @@ function Face({ side, text, active }: { side: 'front' | 'back'; text: string; ac
       }}>
         {side === 'front' ? 'Question' : 'Answer'}
       </div>
-      <p style={{
+      <div className="fc-math" style={{
         margin: 0, fontSize: 19, fontWeight: 600,
         color: C.text, lineHeight: 1.5, maxWidth: 640,
         fontFamily: '"Charter", "Iowan Old Style", Georgia, serif',
         position: 'relative',
         maxHeight: '100%', overflowY: 'auto', overflowWrap: 'anywhere',
       }}>
-        {text}
-      </p>
+        <style>{`
+          .fc-math p { margin: 0; }
+          .fc-math .katex { color: inherit; font-size: 1.1em; }
+          .fc-math .katex-display { margin: 6px 0; overflow-x: auto; overflow-y: hidden; }
+        `}</style>
+        <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>
+          {normalizeMath(text)}
+        </ReactMarkdown>
+      </div>
       <div style={{
         position: 'absolute', bottom: 14, right: 20,
         fontSize: 10, color: C.textFaint, letterSpacing: 1.4, textTransform: 'uppercase', fontWeight: 700,
