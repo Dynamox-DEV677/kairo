@@ -184,6 +184,7 @@ export default function App() {
             access_token:    session.access_token,
             refresh_token:   session.refresh_token,
           }
+          scopeLocalToUser(freshProfile.id)
           localStorage.setItem('kairo_profile', JSON.stringify(freshProfile))
           setProfile(freshProfile)
         } else if (cached) {
@@ -216,6 +217,7 @@ export default function App() {
   }, [profile, checking, sprintingIn, onboard])
 
   function handleLogin(p: AuthProfile) {
+    scopeLocalToUser(p.id)
     setOnboard('checking')
     setProfile(p)
   }
@@ -323,7 +325,7 @@ export default function App() {
       {onboard === 'open' && (
         <Onboarding
           profile={profile}
-          onDone={() => { try { localStorage.setItem('kairo:onboarded:' + (profile.id || ''), '1') } catch {  }; setOnboard('done') }}
+          onDone={() => { try { localStorage.setItem('kairo:onboarded:' + (profile.id || ''), '1'); window.dispatchEvent(new Event('kairo:profile')) } catch {  }; setOnboard('done') }}
           onSkip={() => { try { localStorage.setItem('kairo:onboard:skip:' + (profile.id || ''), '1') } catch {  }; setOnboard('skipped') }}
         />
       )}
@@ -362,5 +364,19 @@ function clearSession() {
   localStorage.removeItem('kairo_token')
   localStorage.removeItem('kairo_refresh')
   localStorage.removeItem('kairo_profile')
+}
+
+function scopeLocalToUser(uid?: string | null) {
+  if (!uid || typeof window === 'undefined') return
+  try {
+    const last = localStorage.getItem('kairo:last_uid')
+    if (last !== uid) {
+      const keep = new Set(['kairo_token', 'kairo_profile', 'kairo_refresh'])
+      Object.keys(localStorage).forEach(k => {
+        if (/^kairo[:_]/.test(k) && !keep.has(k)) localStorage.removeItem(k)
+      })
+    }
+    localStorage.setItem('kairo:last_uid', uid)
+  } catch {  }
 }
 

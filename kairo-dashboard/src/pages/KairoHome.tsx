@@ -6,6 +6,7 @@ import {
 } from 'lucide-react'
 import KairoGyro from '../components/KairoGyro'
 import { GameBar } from '../components/GameBar'
+import { getProfile } from '../lib/twin'
 
 interface ExamDate { name: string; date: string }
 interface Profile {
@@ -35,23 +36,21 @@ function loadProfile(): Profile {
   return defaultProfile()
 }
 function defaultProfile(): Profile {
-  const d = new Date(); d.setDate(d.getDate() + 128)
-  const n = new Date(); n.setDate(n.getDate() + 245)
-  let name = 'Student'
+  let name = 'Student', goal = '', weak: string[] = [], strong: string[] = [], exam: 'jee' | 'neet' = 'jee'
   try { const p = JSON.parse(localStorage.getItem('kairo_profile') || '{}'); name = p.name || p.full_name || 'Student' } catch {}
+  try {
+    const kp = getProfile()
+    if (kp) {
+      name = kp.nickname || kp.name || name
+      goal = kp.goal || ''
+      weak = kp.weak || []
+      strong = kp.strong || []
+      if (/neet/i.test(kp.goal || '')) exam = 'neet'
+    }
+  } catch {}
   return {
-    name,
-    exam: 'jee',
-    examDates: [
-      { name: 'JEE Main', date: d.toISOString().slice(0, 10) },
-      { name: 'NEET', date: n.toISOString().slice(0, 10) },
-    ],
-    goal: 'Master Rotational Motion',
-    weakTopics: ['Rotational Motion', 'Organic Reactions', 'Thermodynamics'],
-    strongTopics: ['Kinematics', 'Cell Biology'],
-    streak: 1,
-    studyHours: 4,
-    recentAccuracy: 62,
+    name, exam, examDates: [], goal, weakTopics: weak, strongTopics: strong,
+    streak: 0, studyHours: 0, recentAccuracy: null,
   }
 }
 
@@ -220,6 +219,7 @@ export default function KairoHome({ onNavigate }: Props) {
                   <input style={{ ...inp, flex: 1 }} type="date" value={ex.date} onChange={e => { const a = [...profile.examDates]; a[i] = { ...a[i], date: e.target.value }; saveProfile({ ...profile, examDates: a }) }} />
                 </div>
               ))}
+              <button onClick={() => saveProfile({ ...profile, examDates: [...profile.examDates, { name: 'My exam', date: '' }] })} style={{ ...ghostBtn, marginTop: 4 }}>+ Add exam</button>
             </div>
           </div>
           <button onClick={() => { setEditing(false); fetchBrief() }} style={{ ...primaryBtn, marginTop: 12 }}>Save & re-brief</button>
@@ -237,12 +237,22 @@ export default function KairoHome({ onNavigate }: Props) {
       <div className="kg-gamebar" style={{ display: 'grid', gridTemplateColumns: '1.1fr 1.1fr 0.8fr', gap: 16, marginBottom: 16 }}>
         <div style={{ ...card, padding: 18 }}>
           <div style={{ ...lbl, color: '#66D9FF', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}><Calendar size={12} /> Exam tracker</div>
-          {(brief?.examDates || profile.examDates.map(e => ({ ...e, days: Math.max(0, Math.round((+new Date(e.date) - Date.now()) / 86400000)) }))).map((e, i) => (
-            <div key={i} style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 10 }}>
-              <span style={{ fontSize: 14, color: '#fafafa', fontWeight: 600 }}>{e.name}</span>
-              <span><b style={{ fontSize: 24, fontWeight: 900, color: e.days < 30 ? '#ff4d6d' : '#66D9FF' }}>{e.days}</b> <span style={{ fontSize: 11, color: '#9CA3AF' }}>days</span></span>
-            </div>
-          ))}
+          {(() => {
+            const list = brief?.examDates || profile.examDates
+              .filter(e => e.date)
+              .map(e => ({ ...e, days: Math.max(0, Math.round((+new Date(e.date) - Date.now()) / 86400000)) }))
+            if (!list.length) return (
+              <button onClick={() => setEditing(true)} style={{ ...ghostBtn, width: '100%', justifyContent: 'center' }}>
+                <Calendar size={13} /> Add your exam date
+              </button>
+            )
+            return list.map((e, i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 10 }}>
+                <span style={{ fontSize: 14, color: '#fafafa', fontWeight: 600 }}>{e.name}</span>
+                <span><b style={{ fontSize: 24, fontWeight: 900, color: e.days < 30 ? '#ff4d6d' : '#66D9FF' }}>{e.days}</b> <span style={{ fontSize: 11, color: '#9CA3AF' }}>days</span></span>
+              </div>
+            ))
+          })()}
         </div>
 
         <div style={{ ...card, padding: 18 }}>
