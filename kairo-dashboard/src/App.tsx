@@ -6,7 +6,8 @@ import Landing from './pages/Landing'
 import { GenerationProvider } from './lib/generationContext'
 import { supabase } from './lib/supabase'
 import { refreshIfStale } from './lib/api'
-import { pullFromCloud, syncToCloudNow, deleteCloudSnapshot, pauseSyncUntil, getSyncEnabled } from './lib/twin'
+import { pullFromCloud, syncToCloudNow, deleteCloudSnapshot, pauseSyncUntil, getSyncEnabled, isOnboarded } from './lib/twin'
+import Onboarding from './pages/Onboarding'
 import SprintOverlay, { SPRINT_MIN_MS } from './components/SprintOverlay'
 import SplashScreen from './components/SplashScreen'
 import { TermsHost } from './components/Terms'
@@ -40,6 +41,7 @@ export default function App() {
     if (typeof window === 'undefined') return false
     return window.location.pathname === '/about'
   })
+  const [onboard, setOnboard] = useState<'checking' | 'open' | 'skipped' | 'done'>('checking')
   const [sprintingIn, setSprintingIn] = useState(false)
   const [sprintHead, setSprintHead]   = useState<string | undefined>()
   const [sprintSub,  setSprintSub]    = useState<string | undefined>()
@@ -202,7 +204,18 @@ export default function App() {
     restoreSession()
   }, [])
 
+  useEffect(() => {
+    if (!profile) { if (onboard !== 'checking') setOnboard('checking'); return }
+    if (checking || sprintingIn || onboard !== 'checking') return
+    try {
+      if (isOnboarded()) { setOnboard('done'); return }
+      if (sessionStorage.getItem('kairo:onboard:skip') === '1') { setOnboard('skipped'); return }
+    } catch {  }
+    setOnboard('open')
+  }, [profile, checking, sprintingIn, onboard])
+
   function handleLogin(p: AuthProfile) {
+    setOnboard('checking')
     setProfile(p)
   }
 
@@ -306,6 +319,31 @@ export default function App() {
   return (
     <GenerationProvider>
       <Dashboard profile={profile} onLogout={handleLogout} />
+      {onboard === 'open' && (
+        <Onboarding
+          profile={profile}
+          onDone={() => setOnboard('done')}
+          onSkip={() => { try { sessionStorage.setItem('kairo:onboard:skip', '1') } catch {  }; setOnboard('skipped') }}
+        />
+      )}
+      {onboard === 'skipped' && (
+        <button
+          onClick={() => setOnboard('open')}
+          style={{
+            position: 'fixed', left: '50%', transform: 'translateX(-50%)',
+            bottom: 'calc(84px + env(safe-area-inset-bottom))', zIndex: 95,
+            display: 'flex', alignItems: 'center', gap: 8,
+            padding: '11px 18px', borderRadius: 999, cursor: 'pointer',
+            background: 'rgba(13,16,25,0.92)', color: '#fff',
+            border: '1px solid rgba(102,217,255,0.4)',
+            boxShadow: '0 10px 30px rgba(0,0,0,0.5), 0 0 20px rgba(79,124,255,0.25)',
+            fontFamily: "'Inter', system-ui, sans-serif", fontSize: 13, fontWeight: 700,
+            backdropFilter: 'blur(10px)',
+          }}
+        >
+          ✨ Finish setting up Kyno →
+        </button>
+      )}
       <SprintOverlay
         open={sprintingIn}
         banner="Welcome back"

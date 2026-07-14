@@ -132,9 +132,28 @@ export interface Flashcard {
   source:    'manual' | 'auto-from-doubt' | 'auto-from-mistake'
 }
 
+export interface KynoProfile {
+  name?:        string
+  nickname?:    string
+  mode?:        'personal' | 'school'
+  school?:      string
+  cls?:         string
+  section?:     string
+  board?:       string
+  studyStyles?: string[]
+  bestTime?:    string
+  goal?:        string
+  strong?:      string[]
+  weak?:        string[]
+  hobbies?:     string[]
+  dailyHours?:  string
+  onboardedAt?: number
+}
+
 export interface TwinState {
   version:        3
   userKey:        string
+  profile:        KynoProfile | null
   events:         TwinEvent[]
   mastery:        MasteryRow[]
   twin:           Twin | null
@@ -185,6 +204,7 @@ function emptyState(): TwinState {
   return {
     version:         3,
     userKey:         getUserKey(),
+    profile:         null,
     events:          [],
     mastery:         [],
     twin:            null,
@@ -243,6 +263,20 @@ function saveState(state: TwinState) {
       try { scheduleSyncToCloud?.() } catch {  }
     } catch {  }
   }
+}
+
+export function getProfile(): KynoProfile | null {
+  return loadState().profile ?? null
+}
+
+export function isOnboarded(): boolean {
+  return !!getProfile()?.onboardedAt
+}
+
+export function saveProfile(p: KynoProfile): void {
+  const st = loadState()
+  st.profile = { ...(st.profile || {}), ...p, onboardedAt: p.onboardedAt ?? Date.now() }
+  saveState(st)
 }
 
 export function clearTwin() {
