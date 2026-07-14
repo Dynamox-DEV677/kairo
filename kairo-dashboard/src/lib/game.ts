@@ -1,6 +1,8 @@
 import { getRaw, setRaw } from './storage'
+import { addNotification } from './notifications'
 
 const KEY = 'kairo:game:v1'
+const STREAK_MILESTONES = [3, 7, 14, 30, 50, 100, 200, 365]
 
 export const XP_ACTIONS: Record<string, { xp: number; label: string }> = {
   chat_answer:    { xp: 10, label: 'Asked Kyno' },
@@ -138,6 +140,7 @@ export function awardXP(action: keyof typeof XP_ACTIONS) {
   if (s.lastActive !== t) {
     s.streak = s.streak + 1
     s.lastActive = t
+    if (STREAK_MILESTONES.includes(s.streak)) addNotification(`${s.streak}-day streak! Keep it going.`, '🔥')
   }
 
   for (const q of questsForToday()) {
@@ -145,6 +148,7 @@ export function awardXP(action: keyof typeof XP_ACTIONS) {
     if (q.action === action && (s.actionsToday[action] || 0) >= q.target) {
       s.questsDone.push(q.id)
       gained += q.bonus
+      addNotification(`Quest complete: ${q.label} (+${q.bonus} XP)`, '🎯')
     }
   }
 
@@ -152,6 +156,7 @@ export function awardXP(action: keyof typeof XP_ACTIONS) {
   s.todayXP += gained
   s.weekXP  += gained
   const after = levelFromXP(s.totalXP)
+  if (after.level > before) addNotification(`You reached Level ${after.level}!`, '⭐')
   save(s)
 
   try {
@@ -175,12 +180,14 @@ export function awardXPAmount(amount: number, label: string) {
   if (s.lastActive !== t) {
     s.streak = s.streak + 1
     s.lastActive = t
+    if (STREAK_MILESTONES.includes(s.streak)) addNotification(`${s.streak}-day streak! Keep it going.`, '🔥')
   }
 
   s.totalXP += gained
   s.todayXP += gained
   s.weekXP  += gained
   const after = levelFromXP(s.totalXP)
+  if (after.level > before) addNotification(`You reached Level ${after.level}!`, '⭐')
   save(s)
 
   try {

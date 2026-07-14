@@ -5,6 +5,8 @@ import {
   Gauge, BrainCircuit, Rabbit, Check, Users,
   Key, Copy, Building2, Shield, RefreshCw,
 } from 'lucide-react'
+import { loadGame } from '../lib/game'
+import { listNotifications, markAllRead, timeAgo, type KynoNotification } from '../lib/notifications'
 
 const MODELS = [
   { id: 'openai/gpt-oss-20b:free',                            name: 'GPT OSS 20B',          provider: 'OpenAI', users: 3241, color: '#34d399', badge: 'Default' },
@@ -50,8 +52,18 @@ export default function TopBar({ title, onModelChange, profile, modelLocked, mod
   const [passcode, setPasscode] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
   const [regenerating, setRegenerating] = useState(false)
+  const [game, setGame] = useState(() => loadGame())
+  const [notifs, setNotifs] = useState<KynoNotification[]>(() => listNotifications())
 
   const isAdmin = profile?.role === 'admin'
+
+  useEffect(() => {
+    const onXP = () => setGame(loadGame())
+    const onNotif = () => setNotifs(listNotifications())
+    window.addEventListener('kairo:xp', onXP)
+    window.addEventListener('kairo:notif', onNotif)
+    return () => { window.removeEventListener('kairo:xp', onXP); window.removeEventListener('kairo:notif', onNotif) }
+  }, [])
 
   useEffect(() => {
     if (!isAdmin || !profile?.school_id) return
@@ -337,7 +349,7 @@ export default function TopBar({ title, onModelChange, profile, modelLocked, mod
           transition: 'transform 0.22s cubic-bezier(0.22, 1, 0.36, 1)',
         }}>
           <Flame size={13} color="#4F7CFF" />
-          <span style={{ fontSize: 12, fontWeight: 700, color: '#4F7CFF' }}>5</span>
+          <span style={{ fontSize: 12, fontWeight: 700, color: '#4F7CFF' }}>{game.streak}</span>
           <span style={{ fontSize: 11, color: '#6B7280' }}>day streak</span>
         </div>
 
@@ -351,14 +363,14 @@ export default function TopBar({ title, onModelChange, profile, modelLocked, mod
           transition: 'transform 0.22s cubic-bezier(0.22, 1, 0.36, 1)',
         }}>
           <Star size={12} color="#C7D2E8" />
-          <span style={{ fontSize: 12, fontWeight: 700, color: '#C7D2E8' }}>450 XP</span>
+          <span style={{ fontSize: 12, fontWeight: 700, color: '#C7D2E8' }}>{fmt(game.totalXP)} XP</span>
         </div>
 
         <div style={{ position: 'relative' }}>
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            onClick={() => { setNotifOpen(o => !o); setModelOpen(false); setModeOpen(false) }}
+            onClick={() => { const willOpen = !notifOpen; setNotifOpen(willOpen); setModelOpen(false); setModeOpen(false); if (willOpen) { markAllRead(); setNotifs(listNotifications()) } }}
             style={{
               width: 34, height: 34, borderRadius: 8,
               background: '#151922', border: '1px solid #1f2532',
@@ -367,11 +379,13 @@ export default function TopBar({ title, onModelChange, profile, modelLocked, mod
             }}
           >
             <Bell size={14} color="#9CA3AF" />
-            <span style={{
-              position: 'absolute', top: 7, right: 7,
-              width: 6, height: 6, borderRadius: '50%',
-              background: '#4F7CFF', boxShadow: '0 0 6px #4F7CFF',
-            }} />
+            {notifs.some(n => !n.read) && (
+              <span style={{
+                position: 'absolute', top: 7, right: 7,
+                width: 6, height: 6, borderRadius: '50%',
+                background: '#4F7CFF', boxShadow: '0 0 6px #4F7CFF',
+              }} />
+            )}
           </motion.button>
 
           <AnimatePresence>
@@ -384,31 +398,27 @@ export default function TopBar({ title, onModelChange, profile, modelLocked, mod
                 style={{
                   position: 'absolute', top: '100%', right: 0, marginTop: 6,
                   background: '#0E1117', border: '1px solid #1f2532', borderRadius: 12,
-                  width: 280, zIndex: 300, overflow: 'hidden',
+                  width: 300, zIndex: 300, overflow: 'hidden',
                   boxShadow: '0 20px 50px rgba(0,0,0,0.7)',
                 }}
               >
-                <div style={{ padding: '12px 14px 8px', borderBottom: '1px solid #1a1f2e', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ padding: '12px 14px 8px', borderBottom: '1px solid #1a1f2e' }}>
                   <p style={{ fontSize: 12, fontWeight: 700, color: '#fafafa' }}>Notifications</p>
-                  <span style={{ fontSize: 10, background: '#4F7CFF', color: '#fff', padding: '1px 6px', borderRadius: 4 }}>3 new</span>
                 </div>
-                {[
-                  { text: 'New flashcards ready: Chapter 5 Physics', time: '2m ago', icon: '📚', color: '#34d399' },
-                  { text: 'Your essay was graded: 8.5/10', time: '1h ago', icon: '📝', color: '#f472b6' },
-                  { text: 'Study streak milestone: 5 days!', time: '3h ago', icon: '🔥', color: '#4F7CFF' },
-                ].map((n, i) => (
-                  <div key={i} style={{
-                    padding: '10px 14px', borderBottom: i < 2 ? '1px solid #1a1f2e' : 'none',
-                    display: 'flex', gap: 10, cursor: 'pointer',
-                    transition: 'background 0.1s',
-                  }}
-                    onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.background = '#151922' }}
-                    onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = 'none' }}
-                  >
+                {notifs.length === 0 ? (
+                  <div style={{ padding: '26px 14px', textAlign: 'center', color: '#5B616E', fontSize: 12.5 }}>
+                    You're all caught up ✨
+                    <div style={{ fontSize: 11, marginTop: 4, color: '#4B5563' }}>Earn XP and hit streaks — updates show here.</div>
+                  </div>
+                ) : notifs.slice(0, 12).map((n, i) => (
+                  <div key={n.id} style={{
+                    padding: '10px 14px', borderBottom: i < Math.min(notifs.length, 12) - 1 ? '1px solid #1a1f2e' : 'none',
+                    display: 'flex', gap: 10,
+                  }}>
                     <span style={{ fontSize: 18 }}>{n.icon}</span>
                     <div>
                       <p style={{ fontSize: 12, color: '#d4d4d8', lineHeight: 1.5 }}>{n.text}</p>
-                      <p style={{ fontSize: 10, color: '#4B5563', marginTop: 2 }}>{n.time}</p>
+                      <p style={{ fontSize: 10, color: '#4B5563', marginTop: 2 }}>{timeAgo(n.ts)}</p>
                     </div>
                   </div>
                 ))}
