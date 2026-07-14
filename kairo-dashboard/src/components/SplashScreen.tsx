@@ -144,6 +144,24 @@ export default function SplashScreen({ onComplete, duration = 3000 }: Props) {
             ))}
           </svg>
 
+          <div aria-hidden style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 1 }}>
+            {Array.from({ length: 14 }).map((_, i) => {
+              const left = (i * 37) % 100
+              const top  = (i * 53 + 11) % 100
+              const dur  = 6 + (i % 5)
+              const size = 2 + (i % 3)
+              const col  = i % 2 ? '#66D9FF' : '#A5B4FC'
+              return (
+                <motion.div key={`amb${i}`}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: [0, 0.5, 0], y: [0, -18, 0] }}
+                  transition={{ delay: 0.6 + (i % 7) * 0.2, duration: dur, repeat: Infinity, ease: 'easeInOut' }}
+                  style={{ position: 'absolute', left: `${left}%`, top: `${top}%`, width: size, height: size, borderRadius: '50%', background: col, boxShadow: `0 0 8px ${col}` }}
+                />
+              )
+            })}
+          </div>
+
           <div style={{
             position: 'relative', zIndex: 2,
             display: 'flex', flexDirection: 'column', alignItems: 'center',
@@ -181,6 +199,14 @@ export default function SplashScreen({ onComplete, duration = 3000 }: Props) {
                   animate={{ pathLength: 1, opacity: 1 }}
                   transition={{ delay: 0.4, duration: 1.3, ease: [0.4, 0, 0.2, 1] }}
                   style={{ filter: 'drop-shadow(0 0 6px rgba(102, 217, 255, 0.6))' }}
+                />
+                <motion.circle
+                  cx="90" cy="90" r="64" fill="none"
+                  stroke="rgba(165,180,252,0.4)" strokeWidth="1" strokeDasharray="2 10" strokeLinecap="round"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1, rotate: -360 }}
+                  transition={{ opacity: { delay: 1.2, duration: 0.6 }, rotate: { delay: 1.2, duration: 9, repeat: Infinity, ease: 'linear' } }}
+                  style={{ transformOrigin: '90px 90px' }}
                 />
               </svg>
               <motion.div
