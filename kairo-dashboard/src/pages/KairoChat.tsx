@@ -5,8 +5,9 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
-import { recordDoubt, recordMistake, recordFlashcard, recordConcept, getMistakes } from '../lib/twin'
+import { recordDoubt, recordMistake, recordFlashcard, recordConcept, getMistakes, getStudentMemory } from '../lib/twin'
 import { saveToNotebook } from '../lib/notebook'
+import { getRecentChats, saveRecentChat, makeTitle } from '../lib/recentChats'
 import { awardXP } from '../lib/game'
 import { useIsMobile } from '../hooks/useViewport'
 
@@ -68,17 +69,97 @@ const GLASS: React.CSSProperties = {
 
 let _id = 1
 
+// The active conversation is persisted here so Kyno remembers your last chat
+// when you come back. Wiped automatically on account switch (App scopeLocalToUser).
+const CHAT_KEY = 'kairo:chat:last'
+const CHAT_ID_KEY = 'kairo:chat:lastid'
+
+function newChatId() {
+  return 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6)
+}
+function turnsToMessages(turns: Turn[]): { role: 'user' | 'assistant'; content: string; id: string }[] {
+  return turns
+    .filter(t => (t.text || '').trim())
+    .map(t => ({ role: t.role === 'user' ? 'user' : 'assistant', content: t.text, id: String(t.id) }))
+}
+
 export default function KairoChat() {
-  const [turns, setTurns] = useState<Turn[]>([])
+  const [turns, setTurns] = useState<Turn[]>(() => {
+    try {
+      const raw = typeof localStorage !== 'undefined' ? localStorage.getItem(CHAT_KEY) : null
+      const arr = raw ? JSON.parse(raw) : []
+      if (Array.isArray(arr) && arr.length) {
+        _id = Math.max(_id, ...arr.map((t: any) => Number(t?.id) || 0)) + 1
+        return arr as Turn[]
+      }
+    } catch {  }
+    return []
+  })
   const [input, setInput] = useState('')
   const [busy, setBusy] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
   const isMobile = useIsMobile()
+  const chatIdRef = useRef<string>('')
+  if (!chatIdRef.current) {
+    try { chatIdRef.current = localStorage.getItem(CHAT_ID_KEY) || newChatId() }
+    catch { chatIdRef.current = newChatId() }
+  }
 
   useEffect(() => {
     const el = scrollRef.current
     if (el) el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' })
   }, [turns.length, busy])
+
+  // Persist the live conversation (so it's still here on return) and mirror it
+  // into the Recent-chats list the Sidebar shows.
+  useEffect(() => {
+    try {
+      if (turns.length) {
+        const slim = turns.slice(-40).map(t => ({ ...t, mediaBusy: false, lightbox: null }))
+        localStorage.setItem(CHAT_KEY, JSON.stringify(slim))
+        localStorage.setItem(CHAT_ID_KEY, chatIdRef.current)
+        const messages = turnsToMessages(turns)
+        if (messages.length) {
+          const firstUser = turns.find(t => t.role === 'user')
+          saveRecentChat({
+            id: chatIdRef.current,
+            title: makeTitle(firstUser?.text || messages[0].content || 'New chat'),
+            messages,
+            updated: Date.now(),
+          })
+        }
+      } else {
+        localStorage.removeItem(CHAT_KEY)
+      }
+    } catch {  }
+  }, [turns])
+
+  // The Sidebar "New chat" button and Recent list drive us via this event.
+  useEffect(() => {
+    const onLoad = (e: Event) => {
+      const id = (e as CustomEvent).detail?.id
+      if (!id) return
+      if (id === 'new') {
+        chatIdRef.current = newChatId()
+        try { localStorage.setItem(CHAT_ID_KEY, chatIdRef.current) } catch {  }
+        setTurns([])
+        setInput('')
+        return
+      }
+      const chat = getRecentChats().find(c => c.id === id)
+      if (!chat) return
+      const restored: Turn[] = chat.messages.map(m => ({
+        id: _id++,
+        role: m.role === 'user' ? 'user' : 'kairo',
+        text: m.content,
+      }))
+      chatIdRef.current = chat.id
+      setTurns(restored)
+      setInput('')
+    }
+    window.addEventListener('kairo:load-chat', onLoad)
+    return () => window.removeEventListener('kairo:load-chat', onLoad)
+  }, [])
 
   const patchTurn = useCallback((id: number, patch: Partial<Turn>) => {
     setTurns(prev => prev.map(t => (t.id === id ? { ...t, ...patch } : t)))
@@ -99,10 +180,7 @@ export default function KairoChat() {
         text: (t.text || '').slice(0, 500),
       }))
       let student: any = null
-      try {
-        const p = JSON.parse(localStorage.getItem('kairo_profile') || '{}')
-        student = { name: p.name, cls: p.cls, board: p.board }
-      } catch {  }
+      try { student = getStudentMemory() } catch {  }
       let mistakes: any[] = []
       try {
         mistakes = getMistakes().slice(0, 10).map(m => ({ topic: m.topic, count: m.count, severity: m.severity }))

@@ -688,12 +688,28 @@ async function wikiResolveCoords(query) {
 
 function composeQuestion(question, history, student, mistakes) {
   const parts = []
-  if (student && (student.name || student.cls)) {
+  if (student && typeof student === 'object') {
+    const clip = (v, n = 40) => String(v).slice(0, n)
+    const list = (a, n = 8) => Array.isArray(a) ? a.filter(Boolean).map(x => clip(x, 40)).slice(0, n).join(', ') : ''
+    const lines = []
     const bits = []
-    if (student.name)  bits.push(`name: ${String(student.name).slice(0, 40)}`)
-    if (student.cls)   bits.push(`class ${String(student.cls).slice(0, 12)}`)
-    if (student.board) bits.push(String(student.board).slice(0, 24))
-    parts.push(`Student profile — ${bits.join(', ')}.`)
+    const nm = student.nickname || student.name
+    if (nm)            bits.push(`name: ${clip(nm)}`)
+    if (student.cls)   bits.push(`class ${clip(student.cls, 12)}`)
+    if (student.board) bits.push(clip(student.board, 24))
+    if (student.goal)  bits.push(`goal: ${clip(student.goal, 60)}`)
+    if (bits.length) lines.push(`Student profile — ${bits.join(', ')}.`)
+    const strong = list(student.strong || student.strongSubjects)
+    if (strong) lines.push(`Strong subjects: ${strong}.`)
+    const weak = list(student.weak || student.weakSubjects)
+    if (weak) lines.push(`Weak subjects (go deeper here): ${weak}.`)
+    const styles = list(student.studyStyles)
+    if (styles) lines.push(`Learns best by: ${styles}${student.bestTime ? ` (best focus: ${clip(student.bestTime, 20)})` : ''}.`)
+    const hobbies = list(student.hobbies)
+    if (hobbies) lines.push(`Interests (use these for relatable examples): ${hobbies}.`)
+    const recent = list(student.recentTopics, 10)
+    if (recent) lines.push(`Recently studied: ${recent}.`)
+    if (lines.length) parts.push(lines.join('\n'))
   }
   if (Array.isArray(mistakes) && mistakes.length) {
     const rows = mistakes.slice(0, 10)

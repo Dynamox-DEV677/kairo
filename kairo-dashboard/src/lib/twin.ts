@@ -279,6 +279,54 @@ export function saveProfile(p: KynoProfile): void {
   saveState(st)
 }
 
+/**
+ * Everything Kyno should "remember" about the student, in one object:
+ * their onboarding profile + a live summary drawn from the twin
+ * (topics they've studied recently, topics their mastery is weakest in).
+ * Sent with every chat/solver request so the AI stays personal across sessions.
+ */
+export function getStudentMemory(): Record<string, unknown> {
+  const st = loadState()
+  const p = st.profile || {}
+  let name: string | undefined = p.nickname || p.name
+  if (!name && typeof localStorage !== 'undefined') {
+    try {
+      const kp = JSON.parse(localStorage.getItem('kairo_profile') || '{}')
+      name = kp.nickname || kp.name || kp.full_name
+    } catch {  }
+  }
+  const recentTopics = Array.from(new Set(
+    (st.events || [])
+      .filter(e => e && e.topic)
+      .slice(-40)
+      .map(e => e.topic as string),
+  )).slice(-12)
+  const weakTopics = (st.mastery || [])
+    .filter(m => m && typeof m.mastery === 'number' && m.mastery < 0.5)
+    .sort((a, b) => a.mastery - b.mastery)
+    .slice(0, 8)
+    .map(m => m.topic)
+    .filter(Boolean)
+  return {
+    name,
+    nickname:    p.nickname,
+    cls:         p.cls,
+    section:     p.section,
+    board:       p.board,
+    mode:        p.mode,
+    school:      p.school,
+    studyStyles: p.studyStyles,
+    bestTime:    p.bestTime,
+    goal:        p.goal,
+    strong:      p.strong,
+    weak:        p.weak,
+    hobbies:     p.hobbies,
+    dailyHours:  p.dailyHours,
+    recentTopics,
+    weakTopics,
+  }
+}
+
 export function clearTwin() {
   if (typeof window === 'undefined') return
   storage.removeRaw(storageKey())

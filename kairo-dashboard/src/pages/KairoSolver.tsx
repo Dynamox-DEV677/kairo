@@ -12,7 +12,7 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
-import { recordDoubt, recordFormula, recordConcept } from '../lib/twin'
+import { recordDoubt, recordFormula, recordConcept, getStudentMemory, getMistakes } from '../lib/twin'
 import { lookupNcert } from '../lib/ncertCacheLookup'
 
 interface ImageSlide {
@@ -158,9 +158,13 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
 
     async function fetchTextWithRetry(attempt = 0): Promise<TextPlan> {
       const MAX_ATTEMPTS = 4
+      let student: any = null
+      try { student = getStudentMemory() } catch {  }
+      let mistakes: any[] = []
+      try { mistakes = getMistakes().slice(0, 10).map(m => ({ topic: m.topic, count: m.count, severity: m.severity })) } catch {  }
       const r = await fetch('/api/ai/solver/text', {
         method: 'POST', headers,
-        body: JSON.stringify({ question }),
+        body: JSON.stringify({ question, student, mistakes }),
         signal: ctrl.signal,
       })
       if (r.ok) return r.json()
