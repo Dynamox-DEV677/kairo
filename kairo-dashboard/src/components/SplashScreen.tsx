@@ -164,20 +164,37 @@ export default function SplashScreen({ onComplete, duration = 3000 }: Props) {
                 }}
               />
 
+              <svg viewBox="0 0 180 180" width={180} height={180}
+                style={{ position: 'absolute', inset: 0, overflow: 'visible', pointerEvents: 'none' }}>
+                <defs>
+                  <linearGradient id="splash-ring" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stopColor="#66D9FF" />
+                    <stop offset="55%" stopColor="#4F7CFF" />
+                    <stop offset="100%" stopColor="#8B5CFF" />
+                  </linearGradient>
+                </defs>
+                <motion.circle
+                  cx="90" cy="90" r="84" fill="none"
+                  stroke="url(#splash-ring)" strokeWidth="2.5" strokeLinecap="round"
+                  transform="rotate(-90 90 90)"
+                  initial={{ pathLength: 0, opacity: 0 }}
+                  animate={{ pathLength: 1, opacity: 1 }}
+                  transition={{ delay: 0.4, duration: 1.3, ease: [0.4, 0, 0.2, 1] }}
+                  style={{ filter: 'drop-shadow(0 0 6px rgba(102, 217, 255, 0.6))' }}
+                />
+              </svg>
               <motion.div
-                initial={{ opacity: 0, scale: 0.4, rotate: -90 }}
-                animate={{ opacity: 1, scale: 1, rotate: 270 }}
-                transition={{ delay: 0.5, duration: 1.6, ease: [0.2, 0.8, 0.2, 1] }}
-                style={{
-                  position: 'absolute', inset: 0, borderRadius: '50%',
-                  background: `conic-gradient(from 0deg at 50% 50%,
-                    transparent 0%, rgba(165, 180, 252, 0.35) 35%,
-                    transparent 65%, rgba(79, 124, 255, 0.32) 95%, transparent 100%)`,
-                  WebkitMask: 'radial-gradient(circle, transparent 60%, black 62%, black 100%)',
-                  mask:        'radial-gradient(circle, transparent 60%, black 62%, black 100%)',
-                  pointerEvents: 'none',
-                }}
-              />
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1, rotate: 360 }}
+                transition={{ opacity: { delay: 1.5, duration: 0.4 }, rotate: { delay: 1.5, duration: 3.4, repeat: Infinity, ease: 'linear' } }}
+                style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}
+              >
+                <div style={{
+                  position: 'absolute', top: 2, left: '50%', width: 9, height: 9, marginLeft: -4.5,
+                  borderRadius: '50%', background: '#66D9FF',
+                  boxShadow: '0 0 14px 3px rgba(102, 217, 255, 0.9)',
+                }} />
+              </motion.div>
 
               <motion.div
                 initial={{ opacity: 0, scale: 0.3, y: 6 }}
@@ -189,53 +206,40 @@ export default function SplashScreen({ onComplete, duration = 3000 }: Props) {
                   animation: 'splash-breath 4s 1.6s ease-in-out infinite',
                 }}
               >
-                <img
-                  src="/kairo_logo.png"
-                  alt="Kyno"
-                  width={120} height={120}
-                  decoding="async" loading="eager"
-                  draggable={false}
-                  style={{
-                    width: 120, height: 120, objectFit: 'contain',
-                    filter: 'drop-shadow(0 12px 36px rgba(42, 79, 224, 0.03))',
-                    userSelect: 'none', WebkitUserDrag: 'none',
-                  }}
-                />
-              </motion.div>
-
-              {Array.from({ length: 18 }).map((_, i) => {
-                const angle    = (i / 18) * Math.PI * 2
-                const distance = 130 + (i % 3) * 18
-                const tx = Math.cos(angle) * distance
-                const ty = Math.sin(angle) * distance
-                const colors = [C.purpleSoft, C.purpleLite, C.purple]
-                return (
-                  <motion.div
-                    key={`p${i}`}
-                    initial={{ opacity: 0, x: 0, y: 0, scale: 0 }}
-                    animate={{
-                      opacity: [0, 1, 1, 0],
-                      x:       [0, tx],
-                      y:       [0, ty],
-                      scale:   [0, 1.2, 0.8],
-                    }}
-                    transition={{
-                      duration: 1.5,
-                      delay: 0.9 + (i % 6) * 0.04,
-                      ease: 'easeOut',
-                      times: [0, 0.2, 0.7, 1],
-                    }}
+                <div style={{ position: 'relative', width: 134, height: 134 }}>
+                  <img
+                    src="/kairo_logo.png"
+                    alt="Kyno"
+                    width={134} height={134}
+                    decoding="async" loading="eager"
+                    draggable={false}
                     style={{
-                      position: 'absolute', top: '50%', left: '50%',
-                      width: 6, height: 6, marginLeft: -3, marginTop: -3,
-                      borderRadius: '50%',
-                      background: colors[i % 3],
-                      boxShadow: `0 0 12px ${colors[i % 3]}`,
-                      pointerEvents: 'none',
+                      width: 134, height: 134, objectFit: 'contain',
+                      filter: 'drop-shadow(0 0 22px rgba(102, 217, 255, 0.55)) drop-shadow(0 10px 26px rgba(79, 124, 255, 0.45))',
+                      userSelect: 'none', WebkitUserDrag: 'none',
                     }}
                   />
-                )
-              })}
+                  <div style={{
+                    position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none',
+                    WebkitMaskImage: 'url(/kairo_logo.png)', WebkitMaskSize: 'contain',
+                    WebkitMaskRepeat: 'no-repeat', WebkitMaskPosition: 'center',
+                    maskImage: 'url(/kairo_logo.png)', maskSize: 'contain',
+                    maskRepeat: 'no-repeat', maskPosition: 'center',
+                  }}>
+                    <motion.div
+                      initial={{ x: '-150%' }}
+                      animate={{ x: '175%' }}
+                      transition={{ delay: 1.5, duration: 1.15, ease: 'easeInOut' }}
+                      style={{
+                        position: 'absolute', top: -24, bottom: -24, width: '55%',
+                        transform: 'skewX(-15deg)',
+                        background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.55), transparent)',
+                      }}
+                    />
+                  </div>
+                </div>
+              </motion.div>
+
             </div>
 
             <motion.div
