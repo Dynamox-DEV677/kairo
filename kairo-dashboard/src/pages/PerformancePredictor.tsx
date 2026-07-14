@@ -6,6 +6,8 @@ import {
 } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import remarkMath from 'remark-math'
+import rehypeKatex from 'rehype-katex'
 import { api } from '../lib/api'
 import { chat } from '../lib/openrouter'
 
@@ -269,7 +271,7 @@ Keep it under 200 words. No fluff.` },
                   background: '#0E1117', border: '1px solid #1f2532',
                   borderRadius: 10, padding: 16, fontSize: 13, color: '#e4e4e7', lineHeight: 1.65,
                 }}>
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>{insight}</ReactMarkdown>
+                <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>{insight}</ReactMarkdown>
               </motion.div>
             )}
             {!insight && !insightBusy && (

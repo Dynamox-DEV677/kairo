@@ -6,6 +6,8 @@ import {
 } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import remarkMath from 'remark-math'
+import rehypeKatex from 'rehype-katex'
 import { chat } from '../lib/openrouter'
 import { saveToNotebook } from '../lib/notebook'
 
@@ -385,7 +387,7 @@ Markdown structure:
               <QuizView items={pack.quiz} />
             ) : (
               <div className="prose-ai" style={{ fontSize: 13.5, color: '#e4e4e7', lineHeight: 1.7 }}>
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>
                   {activeTab === 'lesson_plan'    ? pack.lesson_plan
                    : activeTab === 'homework'      ? pack.homework
                    : pack.revision_sheet}

@@ -11,6 +11,8 @@ import {
 } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import remarkMath from 'remark-math'
+import rehypeKatex from 'rehype-katex'
 
 export interface GeographySection {
   heading: string
@@ -552,7 +554,7 @@ function ExplanationPanel({
           fontFamily: FONT, fontSize: 13, color: C.textDim, lineHeight: 1.6,
           maxHeight: 380, overflowY: 'auto', paddingRight: 6,
         }}>
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+          <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>
             {textExplanation}
           </ReactMarkdown>
         </div>

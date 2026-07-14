@@ -3,6 +3,8 @@ import { motion } from 'framer-motion'
 import { Sparkles } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import remarkMath from 'remark-math'
+import rehypeKatex from 'rehype-katex'
 import { chat } from '../lib/openrouter'
 
 const SYSTEM = `You are Kyno, an expert AI teaching assistant for Indian school students (CBSE/ICSE/state boards).
@@ -158,7 +160,7 @@ export default function EssayGrader() {
                 <span style={{ fontSize: 13, color: '#6B7280' }}>Grading…</span>
               </div>
             ) : (
-              <div className="prose-ai"><ReactMarkdown remarkPlugins={[remarkGfm]}>{feedback}</ReactMarkdown></div>
+              <div className="prose-ai"><ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>{feedback}</ReactMarkdown></div>
             )}
           </motion.div>
         )}

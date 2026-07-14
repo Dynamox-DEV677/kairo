@@ -2,6 +2,10 @@ import { useState, useEffect, type JSX } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Lightbulb, GitBranch, HelpCircle, Search, Trash2 } from 'lucide-react'
 import { post, get, del } from '../lib/api'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
+import remarkMath from 'remark-math'
+import rehypeKatex from 'rehype-katex'
 
 const SCHOOL_ID = 'demo_school'
 
@@ -129,7 +133,9 @@ function SimplifyTab() {
             <div style={{ fontSize: 12, fontWeight: 700, color: '#A5B4FC', marginBottom: 10, textTransform: 'uppercase', letterSpacing: 0.8 }}>
               Explanation
             </div>
-            <div style={{ fontSize: 14, color: '#e4e4e7', lineHeight: 1.9, whiteSpace: 'pre-wrap' }}>{result.explanation}</div>
+            <div className="prose-ai" style={{ fontSize: 14, color: '#e4e4e7', lineHeight: 1.9 }}>
+              <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>{result.explanation}</ReactMarkdown>
+            </div>
             {concept && (
               <div style={{ marginTop: 12, padding: '8px 12px', background: '#0E1117', borderRadius: 8, fontSize: 11, color: '#9CA3AF' }}>
                 💡 Tip: Try asking the same concept at a different level for deeper understanding.

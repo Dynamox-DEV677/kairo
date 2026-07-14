@@ -6,6 +6,13 @@ import {
 } from 'lucide-react'
 import { chat } from '../lib/openrouter'
 import { getMistakes, track } from '../lib/twin'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
+import remarkMath from 'remark-math'
+import rehypeKatex from 'rehype-katex'
+
+// Render short question / option strings with inline math ($...$), no block margins.
+const MD_INLINE = { p: ({ children }: any) => <span>{children}</span> }
 
 interface Question {
   q:        string
@@ -435,9 +442,8 @@ function LiveView({ q, idx, total, secsLeft, maxSecs, picked, onPick }: any) {
         </div>
         <div style={{
           fontSize: 16, color: '#fafafa', fontWeight: 600, lineHeight: 1.6,
-          whiteSpace: 'pre-wrap',
         }}>
-          {q.q}
+          <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]} components={MD_INLINE}>{q.q}</ReactMarkdown>
         </div>
       </motion.div>
 
@@ -465,7 +471,7 @@ function LiveView({ q, idx, total, secsLeft, maxSecs, picked, onPick }: any) {
               }}>
                 {String.fromCharCode(65 + i)}
               </div>
-              <span style={{ flex: 1, fontSize: 14, color: '#e4e4e7' }}>{opt}</span>
+              <span style={{ flex: 1, fontSize: 14, color: '#e4e4e7' }}><ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]} components={MD_INLINE}>{opt}</ReactMarkdown></span>
             </motion.button>
           )
         })}
@@ -543,7 +549,7 @@ function ResultsView({ questions, answers, onReset }: any) {
                     Q{i + 1} · {q.topic}
                   </div>
                   <div style={{ fontSize: 13, color: '#fafafa', fontWeight: 600, lineHeight: 1.5 }}>
-                    {q.q}
+                    <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]} components={MD_INLINE}>{q.q}</ReactMarkdown>
                   </div>
                 </div>
               </div>
@@ -566,7 +572,7 @@ function ResultsView({ questions, answers, onReset }: any) {
                       display: 'flex', alignItems: 'center', gap: 8,
                     }}>
                       <span style={{ fontWeight: 700, fontSize: 10 }}>{String.fromCharCode(65 + j)}</span>
-                      <span>{opt}</span>
+                      <span><ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]} components={MD_INLINE}>{opt}</ReactMarkdown></span>
                     </div>
                   )
                 })}
@@ -577,7 +583,7 @@ function ResultsView({ questions, answers, onReset }: any) {
                 padding: '8px 10px', background: '#0E1117',
                 border: '1px solid #1a1f2e', borderRadius: 7,
               }}>
-                <strong style={{ color: '#A5B4FC' }}>Why:</strong> {q.explain}
+                <strong style={{ color: '#A5B4FC' }}>Why:</strong> <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]} components={MD_INLINE}>{q.explain}</ReactMarkdown>
               </div>
             </div>
           )

@@ -3,6 +3,8 @@ import { motion } from 'framer-motion'
 import { Sparkles, Printer, RotateCcw } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import remarkMath from 'remark-math'
+import rehypeKatex from 'rehype-katex'
 import { chat } from '../lib/openrouter'
 
 const SYSTEM = `You are an expert question paper setter for Indian school board exams.
@@ -170,7 +172,7 @@ export default function QuestionPaper() {
           </div>
           <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 4px 40px rgba(0,0,0,0.4)', padding: '48px 56px' }}>
             <div id="qp-render" className="qp-paper">
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>{paper}</ReactMarkdown>
+              <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>{paper}</ReactMarkdown>
             </div>
           </div>
         </motion.div>
