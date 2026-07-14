@@ -23,10 +23,14 @@ export default function App() {
   const [profile, setProfile] = useState<AuthProfile | null>(null)
   const [checking, setChecking] = useState(true)
   const [view, setView] = useState<View>(() => {
-    if (typeof window !== 'undefined' && (window as any).kairoDesktop?.isDesktop) {
-      return 'login'
-    }
-    return 'landing'
+    if (typeof window === 'undefined') return 'landing'
+    const w = window as any
+    const isApp = !!w.kairoDesktop?.isDesktop
+      || !!w.matchMedia?.('(display-mode: standalone)')?.matches
+      || !!w.matchMedia?.('(display-mode: fullscreen)')?.matches
+      || w.navigator?.standalone === true
+      || (typeof document !== 'undefined' && document.referrer.startsWith('android-app://'))
+    return isApp ? 'login' : 'landing'
   })
   const [resetMode, setResetMode] = useState(() => {
     if (typeof window === 'undefined') return false
