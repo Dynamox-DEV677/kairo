@@ -446,7 +446,7 @@ Tips: each tip is one specific actionable line (max 18 words) — reference the 
     const prof      = AI_PROFILES[aiLevel]
     const RivalIcon = prof.icon
     return (
-      <div style={{ padding: 'clamp(16px, 5vw, 28px) clamp(14px, 4vw, 36px)', maxWidth: 720, margin: '0 auto', height: '100%', overflowY: 'auto' }}>
+      <div style={{ padding: 'clamp(16px, 5vw, 28px) clamp(14px, 4vw, 36px) calc(104px + env(safe-area-inset-bottom))', maxWidth: 720, margin: '0 auto', height: '100%', overflowY: 'auto' }}>
         <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
           style={{ ...card, padding: 32, textAlign: 'center', marginBottom: 18 }}>
           {isSpar ? (
@@ -531,11 +531,14 @@ Tips: each tip is one specific actionable line (max 18 words) — reference the 
               {judge.tips.length > 0 && (
                 <div style={{ marginTop: 14, paddingTop: 14, borderTop: '1px solid rgba(165, 180, 252, 0.18)' }}>
                   <div style={{ fontSize: 10, fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: 1.4, marginBottom: 8 }}>What to do next</div>
-                  <ul style={{ margin: 0, paddingLeft: 18, display: 'flex', flexDirection: 'column', gap: 5 }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                     {judge.tips.map((t, i) => (
-                      <li key={i} style={{ fontSize: 13, color: '#d4d4d8', lineHeight: 1.55 }}>{t}</li>
+                      <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                        <span style={{ marginTop: 7, width: 5, height: 5, borderRadius: '50%', background: '#A5B4FC', flexShrink: 0 }} />
+                        <span style={{ fontSize: 13, color: '#d4d4d8', lineHeight: 1.55 }}>{t}</span>
+                      </div>
                     ))}
-                  </ul>
+                  </div>
                 </div>
               )}
             </>
@@ -556,7 +559,7 @@ Tips: each tip is one specific actionable line (max 18 words) — reference the 
   }
 
   return (
-    <div style={{ padding: 'clamp(16px, 5vw, 28px) clamp(14px, 4vw, 36px)', maxWidth: 1100, margin: '0 auto', height: '100%', overflowY: 'auto' }}>
+    <div style={{ padding: 'clamp(16px, 5vw, 28px) clamp(14px, 4vw, 36px) calc(104px + env(safe-area-inset-bottom))', maxWidth: 1100, margin: '0 auto', height: '100%', overflowY: 'auto' }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 22 }}>
         <div style={{
           width: 44, height: 44, borderRadius: 11,
