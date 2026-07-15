@@ -340,7 +340,7 @@ Your output MUST be a single valid JSON object (no markdown fences, no commentar
   "videoQuery":     <ONE short search query for an educational explainer video, e.g. "photosynthesis 3D animation for students" or "French Revolution causes documentary". Aim for content-creator style queries that find well-produced 5-10 minute lessons. Required>,
   "formulas":       [<key formulas as plain LaTeX strings, e.g. "F = ma" — empty array if N/A>],
   "relatedConcepts":[<3-5 related topics or follow-up questions, short strings>],
-  "textExplanation": <markdown string — concise but complete. Use ## sub-headings ("What you're seeing", "How it works", "Why it matters", "Real-world example"). Aim for 200-400 words.>,
+  "textExplanation": <markdown string — a genuinely excellent, tutor-quality explanation (see EXPLANATION QUALITY below). Use ## sub-headings to structure it. Match length to the question: a simple factual question gets a tight answer; a real concept gets a thorough one (roughly 250-700 words). Never pad, never truncate mid-idea.>,
   "geography":      <null OR — only when questionType is "geography" — an object describing the location for the Map Mode UI:
                      {
                        "name":  <human-readable location name, e.g. "Amazon Rainforest", "Japan", "Nile River">,
@@ -360,6 +360,14 @@ Your output MUST be a single valid JSON object (no markdown fences, no commentar
                      Asking ABOUT a topic is NOT an action — never set action for ordinary questions. When action is set, textExplanation should be a short confirmation of what you created (2-4 sentences) — the artifact content itself lives inside action.>,
   "quizCheck":      <null, OR — ONLY when the student's new message is an ANSWER to a quiz question you asked in the previous turn — { "correct": boolean, "topic": <short topic of that question> }>
 }
+
+EXPLANATION QUALITY — for real study questions, write like the best tutor a student has ever had (a brilliant, patient teacher — not a dry textbook). Casual messages stay short as noted above.
+- Lead with the direct answer or the core intuition in the first line; never bury the point.
+- For anything mathematical or multi-step, show the reasoning step by step with the numbers worked out — and get it correct; double-check the arithmetic and logic.
+- Include a concrete worked example with real numbers, plus an analogy a teenager actually relates to.
+- Name the common mistake or misconception on this topic and correct it.
+- End with the single key takeaway (or a quick check-for-understanding question).
+- Be warm, clear and encouraging: plain language, short sentences, define any jargon, and pitch it at the student's class level.
 
 CONVERSATION MEMORY: the user message may include a "Conversation so far" section and a "Student profile" line. Use them — resolve pronouns ("explain that again", "make flashcards on this") against the previous turns, keep continuity, and address the student by name occasionally when natural. Answer ONLY the student's new message; the rest is context.
 
@@ -389,10 +397,16 @@ Otherwise labRoute=null.
 
 CRITICAL: Output ONLY the JSON. Do not wrap in code fences. Do not say "Here is the JSON". Do not add any prose before or after.`
 
-const GROQ_MODELS = [
-  'llama-3.3-70b-versatile',
-  'llama-3.1-8b-instant',
+// Ordered by intelligence. The solver PREFERS the smartest model that succeeds and
+// only falls back to a faster/smaller one if the smart ones fail or time out — so
+// answers read like a top-tier assistant, not whichever model won a speed race.
+const SOLVER_SMART_MODELS = [
+  'openai/gpt-oss-120b',      // strongest reasoning on Groq — ChatGPT-like depth
+  'llama-3.3-70b-versatile',  // strong, reliable, native JSON mode
 ]
+const SOLVER_FAST_MODEL = 'llama-3.1-8b-instant'  // last-resort fast safety net
+// Union kept for the status probe / back-compat helpers.
+const GROQ_MODELS = [...SOLVER_SMART_MODELS, SOLVER_FAST_MODEL]
 
 async function callGroqOne(model, question, apiKey, timeout = 7000) {
   const key = apiKey || groqPool.next()
@@ -403,6 +417,18 @@ async function callGroqOne(model, question, apiKey, timeout = 7000) {
   const ctrl = new AbortController()
   const timer = setTimeout(() => ctrl.abort(), timeout)
   try {
+    const payload = {
+      model,
+      messages: [
+        { role: 'system', content: SOLVER_SYSTEM },
+        { role: 'user',   content: question },
+      ],
+      temperature: 0.3,
+      max_tokens:  3000,
+      response_format: { type: 'json_object' },
+    }
+    // gpt-oss reasoning models take an explicit effort knob; llama models reject it.
+    if (model.includes('gpt-oss')) payload.reasoning_effort = 'medium'
     const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       signal: ctrl.signal,
@@ -410,16 +436,7 @@ async function callGroqOne(model, question, apiKey, timeout = 7000) {
         'Authorization': `Bearer ${key}`,
         'Content-Type':  'application/json',
       },
-      body: JSON.stringify({
-        model,
-        messages: [
-          { role: 'system', content: SOLVER_SYSTEM },
-          { role: 'user',   content: question },
-        ],
-        temperature: 0.3,
-        max_tokens:  2000,
-        response_format: { type: 'json_object' },
-      }),
+      body: JSON.stringify(payload),
     })
     if (!resp.ok) {
       if (resp.status === 429 || resp.status >= 500) {
@@ -505,16 +522,26 @@ async function getSolverPlan(question) {
   if (groqStatus.live === 0) {
     throw new Error('No live Groq keys — set GROQ_API_KEYS in env (pool: ' + groqStatus.hint + ')')
   }
-  const tasks = GROQ_MODELS.map(m => callGroqOne(m, question, null, 7000))
-  console.log(`[solver] racing ${GROQ_MODELS.length} Groq models (pool: ${groqStatus.hint})`)
+  // Fire the smart models AND a fast safety net together (so the fallback stays warm),
+  // but PREFER the smartest model that succeeds — never just take whoever's fastest.
+  const smartTasks = SOLVER_SMART_MODELS.map(m => callGroqOne(m, question, null, 7000))
+  const fastTask   = callGroqOne(SOLVER_FAST_MODEL, question, null, 6000)
+  ;[...smartTasks, fastTask].forEach(t => t.catch(() => {}))  // avoid unhandled rejections
+  console.log(`[solver] smart-first: ${SOLVER_SMART_MODELS.join(' → ')} → ${SOLVER_FAST_MODEL} (pool: ${groqStatus.hint})`)
 
-  let winner
-  try {
-    winner = await Promise.any(tasks)
-  } catch (aggregate) {
-    const errs = aggregate.errors?.map(e => e.message).join(' · ') || 'unknown'
-    console.error('[solver] all models failed:', errs)
+  let winner = null
+  const errs = []
+  for (const t of smartTasks) {
+    try { winner = await t; break }
+    catch (e) { errs.push(e.message) }
+  }
+  if (!winner) {
+    try { winner = await fastTask }
+    catch (e) { errs.push(e.message) }
+  }
 
+  if (!winner) {
+    console.error('[solver] all models failed:', errs.join(' · '))
     try {
       const wikiPlan = await synthesizePlanFromWikipedia(question)
       if (wikiPlan) {
@@ -526,13 +553,13 @@ async function getSolverPlan(question) {
       console.warn('[solver] wikipedia fallback also failed:', e.message)
     }
 
-    const all429 = aggregate.errors?.every(e => /HTTP 429/.test(e.message || ''))
+    const all429 = errs.length > 0 && errs.every(m => /HTTP 429/.test(m || ''))
     if (all429) {
       const err = new Error('Free AI is busy and Wikipedia is unreachable. Try again in a minute.')
       err.statusCode = 429
       throw err
     }
-    throw new Error('All AI models failed: ' + errs.slice(0, 300))
+    throw new Error('All AI models failed: ' + errs.join(' · ').slice(0, 300))
   }
 
   const { plan, model } = winner
