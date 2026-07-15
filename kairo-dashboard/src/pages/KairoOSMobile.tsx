@@ -74,7 +74,8 @@ export default function KairoOSMobile({ onNavigate, onOpenBackup }: Props) {
 
   return (
     <div style={{
-      width: '100%', height: '100%', overflowY: 'auto',
+      width: '100%', maxWidth: '100%', height: '100%',
+      overflowY: 'auto', overflowX: 'hidden',
       WebkitOverflowScrolling: 'touch',
       background: C.bg,
       backgroundImage:
