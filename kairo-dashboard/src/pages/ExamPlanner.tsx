@@ -54,11 +54,11 @@ const lbl: React.CSSProperties = {
   fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.8,
 }
 const btnPrimary: React.CSSProperties = {
-  background: 'linear-gradient(135deg, #4F7CFF 0%, #66D9FF 100%)',
+  background: 'linear-gradient(135deg, #7C6BF6 0%, #A5B4FC 100%)',
   color: '#fff', border: 'none', borderRadius: 10,
   padding: '11px 22px', fontSize: 13, fontWeight: 700, letterSpacing: 0.5,
   cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 8,
-  boxShadow: '0 6px 24px rgba(79,124,255,0.32)',
+  boxShadow: '0 6px 24px rgba(124,107,246,0.32)',
 }
 const btnGhost: React.CSSProperties = {
   background: 'transparent', color: '#A1A1AA',
@@ -78,7 +78,7 @@ const weightChip = (w: TopicPriority['weight']): React.CSSProperties => ({
                        :                 'rgba(255,255,255,0.10)'),
 })
 const blockTypeColor = (t: ScheduleBlock['type']): string => ({
-  concept:'#66D9FF', practice:'#A5B4FC', PYQ:'#ffb44a',
+  concept:'#A5B4FC', practice:'#A5B4FC', PYQ:'#ffb44a',
   revision:'#9a4ad8', mock:'#ff4d6d', rest:'#5B616E',
 }[t] || '#A1A1AA')
 
@@ -277,7 +277,7 @@ export default function ExamPlanner() {
 
       <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 28, flexWrap: 'wrap', gap: 12 }}>
         <div>
-          <div style={{ fontSize: 11, letterSpacing: 4, textTransform: 'uppercase', color: '#66D9FF', marginBottom: 8, fontWeight: 700 }}>
+          <div style={{ fontSize: 11, letterSpacing: 4, textTransform: 'uppercase', color: '#A5B4FC', marginBottom: 8, fontWeight: 700 }}>
             Exam Planner
           </div>
           <h1 style={{ fontSize: 32, fontWeight: 900, margin: 0, letterSpacing: -0.5 }}>
@@ -302,7 +302,7 @@ export default function ExamPlanner() {
             exit={{ opacity: 0, height: 0 }}
             style={{ ...card, padding: 16, marginBottom: 16, overflow: 'hidden' }}
           >
-            <h3 style={{ fontSize: 12, letterSpacing: 3, textTransform: 'uppercase', color: '#66D9FF', margin: '0 0 12px' }}>
+            <h3 style={{ fontSize: 12, letterSpacing: 3, textTransform: 'uppercase', color: '#A5B4FC', margin: '0 0 12px' }}>
               Your saved plans
             </h3>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 8 }}>
@@ -314,7 +314,7 @@ export default function ExamPlanner() {
                     onClick={() => loadPlan(p.id)}
                     style={{
                       ...card, padding: 12, textAlign: 'left', cursor: 'pointer',
-                      borderColor: planId === p.id ? 'rgba(102,217,255,0.55)' : undefined,
+                      borderColor: planId === p.id ? 'rgba(165,180,252,0.55)' : undefined,
                     }}
                   >
                     <div style={{ fontSize: 13, fontWeight: 700, color: '#fafafa', marginBottom: 4 }}>
@@ -323,7 +323,7 @@ export default function ExamPlanner() {
                     <div style={{ fontSize: 11, color: '#9CA3AF' }}>
                       Exam: {p.exam_date} · {p.hours_per_day}h/day
                     </div>
-                    <div style={{ fontSize: 10, color: '#66D9FF', marginTop: 6, letterSpacing: 1 }}>
+                    <div style={{ fontSize: 10, color: '#A5B4FC', marginTop: 6, letterSpacing: 1 }}>
                       ✓ {done} blocks {lastMock ? `· last mock ${lastMock.score}%` : ''}
                     </div>
                   </button>
@@ -351,7 +351,7 @@ export default function ExamPlanner() {
             <label style={lbl}><Clock size={11} style={{ verticalAlign: 'middle', marginRight: 4 }} />Hours per day · {hoursPerDay}h</label>
             <input type="range" min={1} max={12} step={0.5}
               value={hoursPerDay} onChange={e => setHoursPerDay(parseFloat(e.target.value))}
-              style={{ width: '100%', accentColor: '#66D9FF' }}
+              style={{ width: '100%', accentColor: '#A5B4FC' }}
             />
           </div>
           <div>
@@ -361,9 +361,9 @@ export default function ExamPlanner() {
                 <button key={L} onClick={() => setCurrentLevel(L)}
                   style={{
                     flex: 1, padding: '9px 0', fontSize: 12, fontWeight: 700,
-                    background: currentLevel === L ? 'rgba(102,217,255,0.18)' : '#0E1117',
-                    color: currentLevel === L ? '#66D9FF' : '#A1A1AA',
-                    border: '1px solid ' + (currentLevel === L ? 'rgba(102,217,255,0.55)' : '#1f2532'),
+                    background: currentLevel === L ? 'rgba(165,180,252,0.18)' : '#0E1117',
+                    color: currentLevel === L ? '#A5B4FC' : '#A1A1AA',
+                    border: '1px solid ' + (currentLevel === L ? 'rgba(165,180,252,0.55)' : '#1f2532'),
                     borderRadius: 8, cursor: 'pointer', textTransform: 'capitalize', letterSpacing: 0.5,
                   }}
                 >{L}</button>
@@ -374,7 +374,7 @@ export default function ExamPlanner() {
             <label style={lbl}>
               <AlertTriangle size={11} style={{ verticalAlign: 'middle', marginRight: 4 }} />
               Weak topics
-              <span style={{ color: '#66D9FF', textTransform: 'none', marginLeft: 6, fontSize: 10 }}>
+              <span style={{ color: '#A5B4FC', textTransform: 'none', marginLeft: 6, fontSize: 10 }}>
                 <Brain size={10} style={{ verticalAlign: 'middle' }} /> auto-filled from your memory
               </span>
             </label>
@@ -385,7 +385,7 @@ export default function ExamPlanner() {
 
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 22 }}>
           <div style={{ fontSize: 12, color: '#9CA3AF' }}>
-            <b style={{ color: '#66D9FF' }}>{daysLeft}</b> days until your exam · {hoursPerDay}h × {daysLeft} = <b style={{ color: '#fafafa' }}>{(hoursPerDay * daysLeft).toFixed(0)}h</b> total prep
+            <b style={{ color: '#A5B4FC' }}>{daysLeft}</b> days until your exam · {hoursPerDay}h × {daysLeft} = <b style={{ color: '#fafafa' }}>{(hoursPerDay * daysLeft).toFixed(0)}h</b> total prep
           </div>
           <button onClick={generate} disabled={loading} style={btnPrimary}>
             {loading ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
@@ -432,7 +432,7 @@ export default function ExamPlanner() {
                   exit={{ opacity: 0, height: 0 }}
                   style={{ ...card, padding: 16, marginBottom: 14, overflow: 'hidden' }}
                 >
-                  <h3 style={{ fontSize: 12, letterSpacing: 3, textTransform: 'uppercase', color: '#66D9FF', margin: '0 0 10px' }}>
+                  <h3 style={{ fontSize: 12, letterSpacing: 3, textTransform: 'uppercase', color: '#A5B4FC', margin: '0 0 10px' }}>
                     How did your mock test go?
                   </h3>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
@@ -440,7 +440,7 @@ export default function ExamPlanner() {
                       <label style={lbl}>Score % · {mockScore}</label>
                       <input type="range" min={0} max={100} step={1}
                         value={mockScore} onChange={e => setMockScore(parseInt(e.target.value))}
-                        style={{ width: '100%', accentColor: '#66D9FF' }}
+                        style={{ width: '100%', accentColor: '#A5B4FC' }}
                       />
                     </div>
                     <div>
@@ -461,13 +461,13 @@ export default function ExamPlanner() {
               )}
             </AnimatePresence>
 
-            <div style={{ ...card, padding: 18, marginBottom: 16, borderColor: 'rgba(102,217,255,0.30)' }}>
-              <div style={{ fontSize: 11, letterSpacing: 3, textTransform: 'uppercase', color: '#66D9FF', fontWeight: 700, marginBottom: 6 }}>Strategy</div>
+            <div style={{ ...card, padding: 18, marginBottom: 16, borderColor: 'rgba(165,180,252,0.30)' }}>
+              <div style={{ fontSize: 11, letterSpacing: 3, textTransform: 'uppercase', color: '#A5B4FC', fontWeight: 700, marginBottom: 6 }}>Strategy</div>
               <div style={{ fontSize: 15, lineHeight: 1.5, color: '#fafafa' }}>{plan.summary}</div>
             </div>
 
             <div style={{ ...card, padding: 18, marginBottom: 16 }}>
-              <h3 style={{ fontSize: 13, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: '#66D9FF', margin: '0 0 12px', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <h3 style={{ fontSize: 13, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: '#A5B4FC', margin: '0 0 12px', display: 'flex', alignItems: 'center', gap: 8 }}>
                 <BookOpen size={14} /> Topic Priorities
               </h3>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 10 }}>
@@ -477,7 +477,7 @@ export default function ExamPlanner() {
                       <div style={{ fontSize: 13, fontWeight: 700, color: '#fafafa' }}>{t.topic}</div>
                       <div style={weightChip(t.weight)}>{t.weight}</div>
                     </div>
-                    <div style={{ fontSize: 11, color: '#66D9FF', marginBottom: 4 }}>{t.subject}</div>
+                    <div style={{ fontSize: 11, color: '#A5B4FC', marginBottom: 4 }}>{t.subject}</div>
                     <div style={{ fontSize: 12, color: '#9CA3AF', lineHeight: 1.4 }}>{t.reason}</div>
                   </div>
                 ))}
@@ -485,7 +485,7 @@ export default function ExamPlanner() {
             </div>
 
             <div style={{ ...card, padding: 18, marginBottom: 16 }}>
-              <h3 style={{ fontSize: 13, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: '#66D9FF', margin: '0 0 12px', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <h3 style={{ fontSize: 13, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: '#A5B4FC', margin: '0 0 12px', display: 'flex', alignItems: 'center', gap: 8 }}>
                 <Calendar size={14} /> Weekly schedule
                 <span style={{ fontSize: 10, color: '#A1A1AA', fontWeight: 500, letterSpacing: 1, marginLeft: 6 }}>
                   · click a block to mark done
@@ -494,7 +494,7 @@ export default function ExamPlanner() {
               {plan.weeklySchedule?.map(wk => (
                 <div key={wk.week} style={{ marginBottom: 18 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
-                    <div style={{ fontSize: 11, fontWeight: 800, padding: '3px 10px', borderRadius: 999, background: 'rgba(79,124,255,0.22)', color: '#A5B4FC', letterSpacing: 1 }}>
+                    <div style={{ fontSize: 11, fontWeight: 800, padding: '3px 10px', borderRadius: 999, background: 'rgba(124,107,246,0.22)', color: '#A5B4FC', letterSpacing: 1 }}>
                       WEEK {wk.week}
                     </div>
                     <div style={{ fontSize: 13, color: '#fafafa', fontWeight: 600 }}>{wk.focus}</div>
@@ -502,7 +502,7 @@ export default function ExamPlanner() {
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 8 }}>
                     {wk.days?.map(day => (
                       <div key={day.day} style={{ background: 'rgba(255,255,255,0.02)', borderRadius: 10, padding: 10, border: '1px solid rgba(255,255,255,0.05)' }}>
-                        <div style={{ fontSize: 10, letterSpacing: 2, color: '#66D9FF', fontWeight: 700, marginBottom: 6 }}>{day.day}</div>
+                        <div style={{ fontSize: 10, letterSpacing: 2, color: '#A5B4FC', fontWeight: 700, marginBottom: 6 }}>{day.day}</div>
                         {day.blocks?.map((b, i) => {
                           const key = blockKey(wk.week, day.day, i)
                           const done = !!completion[key]
@@ -520,7 +520,7 @@ export default function ExamPlanner() {
                               }}
                             >
                               <div style={{ fontSize: 10, color: '#9CA3AF' }}>
-                                {done && <Check size={9} style={{ marginRight: 3, color: '#66D9FF' }} />}
+                                {done && <Check size={9} style={{ marginRight: 3, color: '#A5B4FC' }} />}
                                 {b.time}
                               </div>
                               <div style={{ fontSize: 11, fontWeight: 600, color: '#fafafa', lineHeight: 1.3 }}>{b.topic}</div>
@@ -539,7 +539,7 @@ export default function ExamPlanner() {
 
             <div className="mob-stack" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
               <div style={{ ...card, padding: 18 }}>
-                <h3 style={{ fontSize: 13, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: '#66D9FF', margin: '0 0 12px', display: 'flex', alignItems: 'center', gap: 8 }}>
+                <h3 style={{ fontSize: 13, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: '#A5B4FC', margin: '0 0 12px', display: 'flex', alignItems: 'center', gap: 8 }}>
                   <Trophy size={14} /> Milestones
                 </h3>
                 {plan.milestones?.map((m, i) => (
@@ -555,7 +555,7 @@ export default function ExamPlanner() {
                 ))}
               </div>
               <div style={{ ...card, padding: 18 }}>
-                <h3 style={{ fontSize: 13, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: '#66D9FF', margin: '0 0 12px', display: 'flex', alignItems: 'center', gap: 8 }}>
+                <h3 style={{ fontSize: 13, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: '#A5B4FC', margin: '0 0 12px', display: 'flex', alignItems: 'center', gap: 8 }}>
                   <ChevronRight size={14} /> Answer strategy
                 </h3>
                 <div style={{ fontSize: 13, lineHeight: 1.55, color: '#fafafa', marginBottom: 12 }}>{plan.answerStrategy}</div>

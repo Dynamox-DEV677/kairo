@@ -18,7 +18,7 @@ const TABS = [
 const card  = { background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(14px) saturate(140%)', WebkitBackdropFilter: 'blur(14px) saturate(140%)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14, padding: 20 } as React.CSSProperties
 const inp   = { background: '#0E1117', border: '1px solid #1f2532', borderRadius: 8, padding: '9px 12px', fontSize: 13, color: '#fafafa', fontFamily: 'inherit', outline: 'none', width: '100%' } as React.CSSProperties
 const lbl   = { fontSize: 11, color: '#9CA3AF', display: 'block', marginBottom: 5, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.8 } as React.CSSProperties
-const btn   = (active = true, color?: string) => ({ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', borderRadius: 9, border: 'none', background: active ? (color || 'linear-gradient(135deg,#4F7CFF,#4F7CFF)') : '#1a1f2e', color: active ? '#fff' : '#6B7280', fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: active ? 'pointer' : 'not-allowed' } as React.CSSProperties)
+const btn   = (active = true, color?: string) => ({ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', borderRadius: 9, border: 'none', background: active ? (color || 'linear-gradient(135deg,#7C6BF6,#7C6BF6)') : '#1a1f2e', color: active ? '#fff' : '#6B7280', fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: active ? 'pointer' : 'not-allowed' } as React.CSSProperties)
 
 const SUBJECTS = ['General','Physics','Chemistry','Biology','Mathematics','History','Geography','English','Hindi','Economics']
 
@@ -39,7 +39,7 @@ export default function ConceptTools() {
             padding: '7px 8px', borderRadius: 7, border: 'none', fontFamily: 'inherit',
             fontSize: 12, fontWeight: tab === t.id ? 600 : 400, cursor: 'pointer',
             background: tab === t.id ? '#1f2532' : 'transparent',
-            color: tab === t.id ? '#66D9FF' : '#6B7280', transition: 'all 0.15s',
+            color: tab === t.id ? '#A5B4FC' : '#6B7280', transition: 'all 0.15s',
           }}>
             <t.icon size={12} /> {t.label}
           </button>
@@ -99,9 +99,9 @@ function SimplifyTab() {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6 }}>
               {[['class5','Class 5'],['class8','Class 8'],['class12','Class 12']].map(([v, l]) => (
                 <button key={v} onClick={() => setLevel(v)} style={{
-                  padding: '7px', borderRadius: 7, border: `1px solid ${level === v ? '#4F7CFF' : '#1f2532'}`,
-                  background: level === v ? '#4F7CFF10' : 'transparent',
-                  color: level === v ? '#66D9FF' : '#9CA3AF', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+                  padding: '7px', borderRadius: 7, border: `1px solid ${level === v ? '#7C6BF6' : '#1f2532'}`,
+                  background: level === v ? '#7C6BF610' : 'transparent',
+                  color: level === v ? '#A5B4FC' : '#9CA3AF', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
                 }}>{l}</button>
               ))}
             </div>
@@ -110,7 +110,7 @@ function SimplifyTab() {
             <label style={lbl}>Concept</label>
             <input style={inp} value={concept} onChange={e => setConcept(e.target.value)} placeholder="e.g. Photosynthesis, Newton's Second Law…" />
           </div>
-          {err && <p style={{ color: '#66D9FF', fontSize: 12, marginBottom: 8 }}>{err}</p>}
+          {err && <p style={{ color: '#A5B4FC', fontSize: 12, marginBottom: 8 }}>{err}</p>}
           <button onClick={simplify} disabled={loading} style={{ ...btn(!loading), width: '100%', justifyContent: 'center' }}>
             <Lightbulb size={13} /> {loading ? 'Simplifying…' : 'Simplify'}
           </button>
@@ -120,7 +120,7 @@ function SimplifyTab() {
             <input style={{ ...inp, marginBottom: 8 }} value={question} onChange={e => setQuestion(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && askDoubt()}
               placeholder="What is the difference between…?" />
-            <button onClick={askDoubt} disabled={loading || !question.trim()} style={{ ...btn(!loading && !!question.trim(), 'linear-gradient(135deg,#66D9FF,#0284c7)'), width: '100%', justifyContent: 'center' }}>
+            <button onClick={askDoubt} disabled={loading || !question.trim()} style={{ ...btn(!loading && !!question.trim(), 'linear-gradient(135deg,#A5B4FC,#0284c7)'), width: '100%', justifyContent: 'center' }}>
               <HelpCircle size={13} /> Ask Doubt
             </button>
           </div>
@@ -170,7 +170,7 @@ function MindmapTab() {
   }
 
   function renderNode(node: any, depth = 0): JSX.Element {
-    const colors = ['#66D9FF','#A5B4FC','#A5B4FC','#A5B4FC','#38bdf8','#A5B4FC']
+    const colors = ['#A5B4FC','#A5B4FC','#A5B4FC','#A5B4FC','#8FA0FA','#A5B4FC']
     const color = colors[depth % colors.length]
     return (
       <div key={node.id} style={{ marginLeft: depth * 20 }}>
@@ -205,7 +205,7 @@ function MindmapTab() {
             <GitBranch size={13} /> {loading ? 'Generating…' : 'Create Mindmap'}
           </button>
         </div>
-        {err && <p style={{ color: '#66D9FF', fontSize: 12, marginTop: 10, marginBottom: 0 }}>{err}</p>}
+        {err && <p style={{ color: '#A5B4FC', fontSize: 12, marginTop: 10, marginBottom: 0 }}>{err}</p>}
       </div>
 
       {loading && <div style={{ textAlign: 'center', padding: 40, color: '#6B7280' }}>Generating mindmap…</div>}
@@ -225,7 +225,7 @@ function MindmapTab() {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
               {mindmap.key_formulas?.length > 0 && (
                 <div style={card}>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: '#66D9FF', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>Key Formulas</div>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: '#A5B4FC', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>Key Formulas</div>
                   {mindmap.key_formulas.map((f: string, i: number) => (
                     <div key={i} style={{ fontSize: 12, color: '#e4e4e7', padding: '4px 0', borderBottom: '1px solid #1f2532' }}>{f}</div>
                   ))}

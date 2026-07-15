@@ -57,9 +57,9 @@ const C = {
   bg:     '#050505',
   text:   '#fafafa',
   dim:    '#9CA3AF',
-  cyan:   '#66D9FF',
-  ultra:  '#4F7CFF',
-  border: 'rgba(102,217,255,0.16)',
+  cyan:   '#A5B4FC',
+  ultra:  '#7C6BF6',
+  border: 'rgba(165,180,252,0.16)',
 }
 const GLASS: React.CSSProperties = {
   background: 'linear-gradient(150deg, rgba(255,255,255,0.055) 0%, rgba(255,255,255,0.018) 100%)',
@@ -273,8 +273,8 @@ export default function KairoChat() {
     <div style={{
       width: '100%', height: '100%', display: 'flex', flexDirection: 'column',
       background: C.bg, position: 'relative',
-      backgroundImage: `radial-gradient(at 15% 0%, rgba(79,124,255,0.10) 0%, transparent 38%),
-                        radial-gradient(at 85% 100%, rgba(32,70,194,0.10) 0%, transparent 42%)`,
+      backgroundImage: `radial-gradient(at 15% 0%, rgba(124,107,246,0.10) 0%, transparent 38%),
+                        radial-gradient(at 85% 100%, rgba(74,47,168,0.10) 0%, transparent 42%)`,
     }}>
       <div ref={scrollRef} style={{
         flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch',
@@ -298,9 +298,9 @@ export default function KairoChat() {
             {t.role === 'kairo' && !isMobile ? (
               <div style={{
                 width: 34, height: 34, borderRadius: 10, flexShrink: 0, marginTop: 2,
-                background: 'linear-gradient(135deg, #4F7CFF, #2046C2)',
+                background: 'linear-gradient(135deg, #7C6BF6, #4A2FA8)',
                 display: 'grid', placeItems: 'center',
-                boxShadow: '0 6px 18px rgba(79,124,255,0.35)',
+                boxShadow: '0 6px 18px rgba(124,107,246,0.35)',
               }}>
                 <img src="/kairo-mark.svg" alt="" style={{ width: 24, height: 24, objectFit: 'contain' }} />
               </div>
@@ -311,7 +311,7 @@ export default function KairoChat() {
               padding: isMobile ? '10px 13px' : '12px 16px',
               borderRadius: t.role === 'user' ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
               ...(t.role === 'user'
-                ? { background: 'linear-gradient(135deg, rgba(79,124,255,0.30), rgba(32,70,194,0.24))', border: `1px solid rgba(102,217,255,0.28)` }
+                ? { background: 'linear-gradient(135deg, rgba(124,107,246,0.30), rgba(74,47,168,0.24))', border: `1px solid rgba(165,180,252,0.28)` }
                 : { ...GLASS, border: `1px solid ${C.border}` }),
               color: C.text, fontSize: isMobile ? 14 : 14.5, lineHeight: 1.6,
               overflowWrap: 'anywhere',
@@ -354,7 +354,7 @@ export default function KairoChat() {
             {!isMobile && (
               <div style={{
                 width: 34, height: 34, borderRadius: 10,
-                background: 'linear-gradient(135deg, #4F7CFF, #2046C2)',
+                background: 'linear-gradient(135deg, #7C6BF6, #4A2FA8)',
                 display: 'grid', placeItems: 'center',
               }}>
                 <img src="/kairo-mark.svg" alt="" style={{ width: 24, height: 24 }} />
@@ -411,10 +411,10 @@ export default function KairoChat() {
               width: isMobile ? 38 : 42, height: isMobile ? 38 : 42,
               borderRadius: 12, border: 'none', cursor: 'pointer',
               background: input.trim() && !busy
-                ? 'linear-gradient(135deg, #4F7CFF, #66D9FF)'
+                ? 'linear-gradient(135deg, #7C6BF6, #A5B4FC)'
                 : 'rgba(255,255,255,0.06)',
               color: '#fff', display: 'grid', placeItems: 'center', flexShrink: 0,
-              boxShadow: input.trim() && !busy ? '0 6px 20px rgba(79,124,255,0.4)' : 'none',
+              boxShadow: input.trim() && !busy ? '0 6px 20px rgba(124,107,246,0.4)' : 'none',
               transition: 'all .2s',
             }}
           >
@@ -431,10 +431,10 @@ export default function KairoChat() {
       <style>{`
         .kc-md p { margin: 0 0 8px; }
         .kc-md p:last-child { margin-bottom: 0; }
-        .kc-md h2, .kc-md h3 { font-size: 14px; color: #66D9FF; margin: 12px 0 6px; letter-spacing: .4px; }
+        .kc-md h2, .kc-md h3 { font-size: 14px; color: #A5B4FC; margin: 12px 0 6px; letter-spacing: .4px; }
         .kc-md ul, .kc-md ol { margin: 4px 0 8px 18px; }
         .kc-md li { margin-bottom: 3px; }
-        .kc-md code { background: rgba(102,217,255,0.10); padding: 1px 5px; border-radius: 4px; font-size: 13px; }
+        .kc-md code { background: rgba(165,180,252,0.10); padding: 1px 5px; border-radius: 4px; font-size: 13px; }
         .kc-md table { border-collapse: collapse; margin: 8px 0; }
         .kc-md th, .kc-md td { border: 1px solid rgba(255,255,255,0.12); padding: 5px 10px; font-size: 13px; }
         .kc-md .katex { font-size: 1.05em; color: #fafafa; }
@@ -466,8 +466,8 @@ function MediaStrip({ turn, onPatch }: { turn: Turn; onPatch: (id: number, p: Pa
             style={{
               display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer',
               padding: 4, paddingRight: 12, borderRadius: 10,
-              background: turn.showVideo ? 'rgba(102,217,255,0.14)' : 'rgba(255,255,255,0.05)',
-              border: `1px solid ${turn.showVideo ? 'rgba(102,217,255,0.5)' : 'rgba(255,255,255,0.10)'}`,
+              background: turn.showVideo ? 'rgba(165,180,252,0.14)' : 'rgba(255,255,255,0.05)',
+              border: `1px solid ${turn.showVideo ? 'rgba(165,180,252,0.5)' : 'rgba(255,255,255,0.10)'}`,
               color: '#fafafa', fontFamily: 'inherit', fontSize: 12, fontWeight: 600,
             }}
           >
@@ -526,7 +526,7 @@ function MediaStrip({ turn, onPatch }: { turn: Turn; onPatch: (id: number, p: Pa
           >
             <div style={{
               marginTop: 10, borderRadius: 12, overflow: 'hidden',
-              border: '1px solid rgba(102,217,255,0.25)', aspectRatio: '16 / 9',
+              border: '1px solid rgba(165,180,252,0.25)', aspectRatio: '16 / 9',
             }}>
               <iframe
                 src={`https://www.youtube-nocookie.com/embed/${turn.videoId}?autoplay=1&modestbranding=1&rel=0&playsinline=1`}
@@ -567,7 +567,7 @@ function MediaStrip({ turn, onPatch }: { turn: Turn; onPatch: (id: number, p: Pa
                   onClick={() => onPatch(turn.id, { lightbox: i })}
                   style={{
                     width: 9, height: 9, borderRadius: '50%', border: 'none', cursor: 'pointer',
-                    background: i === turn.lightbox ? '#66D9FF' : 'rgba(255,255,255,0.25)',
+                    background: i === turn.lightbox ? '#A5B4FC' : 'rgba(255,255,255,0.25)',
                   }}
                 />
               ))}
@@ -603,16 +603,16 @@ function EmptyHero({ isMobile = false }: { isMobile?: boolean }) {
     }}>
       <div style={{
         width: isMobile ? 60 : 74, height: isMobile ? 60 : 74, borderRadius: isMobile ? 17 : 20,
-        background: 'linear-gradient(135deg, #4F7CFF, #2046C2)',
+        background: 'linear-gradient(135deg, #7C6BF6, #4A2FA8)',
         display: 'grid', placeItems: 'center',
-        boxShadow: '0 16px 48px rgba(79,124,255,0.4)',
+        boxShadow: '0 16px 48px rgba(124,107,246,0.4)',
       }}>
         <img src="/kairo-mark.svg" alt="" style={{ width: isMobile ? 44 : 54, height: isMobile ? 44 : 54, objectFit: 'contain' }} />
       </div>
       <div style={{
         fontSize: isMobile ? 21 : 26, fontWeight: 700, color: '#fafafa',
         fontFamily: "'Space Grotesk', system-ui, sans-serif",
-        textShadow: '0 0 24px rgba(79,124,255,0.4)',
+        textShadow: '0 0 24px rgba(124,107,246,0.4)',
       }}>
         Welcome to Kyno!
       </div>
@@ -635,7 +635,7 @@ function EmptyHero({ isMobile = false }: { isMobile?: boolean }) {
             }}
             style={{
               padding: '9px 16px', borderRadius: 999, cursor: 'pointer',
-              ...GLASS, border: '1px solid rgba(102,217,255,0.2)',
+              ...GLASS, border: '1px solid rgba(165,180,252,0.2)',
               color: '#A5B4FC', fontSize: 12.5, fontWeight: 600, fontFamily: 'inherit',
               display: 'flex', alignItems: 'center', gap: 6,
             }}

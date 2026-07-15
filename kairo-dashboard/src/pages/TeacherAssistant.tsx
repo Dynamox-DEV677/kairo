@@ -38,7 +38,7 @@ interface Pack {
 }
 
 const ARTIFACTS = [
-  { id: 'lesson_plan',    label: 'Lesson Plan',    icon: FileText,      color: '#66D9FF' },
+  { id: 'lesson_plan',    label: 'Lesson Plan',    icon: FileText,      color: '#A5B4FC' },
   { id: 'homework',       label: 'Homework',        icon: ClipboardList, color: '#A5B4FC' },
   { id: 'flashcards',     label: 'Flashcards',      icon: BookMarked,    color: '#A5B4FC' },
   { id: 'quiz',           label: 'Quiz',            icon: CheckCircle2,  color: '#A5B4FC' },
@@ -219,9 +219,9 @@ Markdown structure:
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 22 }}>
         <div style={{
           width: 44, height: 44, borderRadius: 11,
-          background: 'linear-gradient(135deg, #66D9FF, #66D9FF)',
+          background: 'linear-gradient(135deg, #A5B4FC, #A5B4FC)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 0 18px rgba(102, 217, 255, 0.04)', flexShrink: 0,
+          boxShadow: '0 0 18px rgba(165, 180, 252, 0.04)', flexShrink: 0,
         }}>
           <Bot size={22} color="#fff" />
         </div>
@@ -271,19 +271,19 @@ Markdown structure:
               style={{ width: '100%' }} />
           </div>
 
-          {err && <p style={{ fontSize: 12, color: '#66D9FF', marginBottom: 12 }}>{err}</p>}
+          {err && <p style={{ fontSize: 12, color: '#A5B4FC', marginBottom: 12 }}>{err}</p>}
 
           <motion.button
             whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
             onClick={generate} disabled={busy || !topic.trim()}
             style={{
               width: '100%', padding: '13px', borderRadius: 11, border: 'none',
-              background: busy || !topic.trim() ? '#1a1f2e' : 'linear-gradient(135deg, #66D9FF, #66D9FF)',
+              background: busy || !topic.trim() ? '#1a1f2e' : 'linear-gradient(135deg, #A5B4FC, #A5B4FC)',
               color: busy || !topic.trim() ? '#6B7280' : '#fff',
               fontFamily: 'inherit', fontSize: 14, fontWeight: 700,
               cursor: busy || !topic.trim() ? 'not-allowed' : 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-              boxShadow: busy || !topic.trim() ? 'none' : '0 0 22px rgba(102, 217, 255, 0.14)',
+              boxShadow: busy || !topic.trim() ? 'none' : '0 0 22px rgba(165, 180, 252, 0.14)',
             }}>
             {busy
               ? <><Loader2 size={14} style={{ animation: 'spin 0.8s linear infinite' }} /> {progress || 'Generating…'}</>
@@ -293,7 +293,7 @@ Markdown structure:
           {busy && (
             <div style={{
               marginTop: 14, padding: '10px 14px', borderRadius: 8,
-              background: 'rgba(102, 217, 255, 0.06)', border: '1px solid rgba(102, 217, 255, 0.2)',
+              background: 'rgba(165, 180, 252, 0.06)', border: '1px solid rgba(165, 180, 252, 0.2)',
               fontSize: 11.5, color: '#A5B4FC',
             }}>
               This runs 5 AI calls in sequence — typically 30-60 seconds total.

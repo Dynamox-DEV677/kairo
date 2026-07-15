@@ -160,9 +160,9 @@ Keep it under 200 words. No fluff.` },
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 22 }}>
         <div style={{
           width: 44, height: 44, borderRadius: 11,
-          background: 'linear-gradient(135deg, #38bdf8, #66D9FF)',
+          background: 'linear-gradient(135deg, #8FA0FA, #A5B4FC)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 0 18px rgba(56,189,248,0.35)', flexShrink: 0,
+          boxShadow: '0 0 18px rgba(143,160,250,0.35)', flexShrink: 0,
         }}>
           <TrendingUp size={22} color="#fff" />
         </div>
@@ -183,7 +183,7 @@ Keep it under 200 words. No fluff.` },
       </div>
 
       {err && (
-        <div style={{ marginBottom: 16, padding: '10px 14px', background: 'rgba(102, 217, 255, 0.08)', border: '1px solid rgba(102, 217, 255, 0.25)', borderRadius: 8, fontSize: 12, color: '#66D9FF' }}>
+        <div style={{ marginBottom: 16, padding: '10px 14px', background: 'rgba(165, 180, 252, 0.08)', border: '1px solid rgba(165, 180, 252, 0.25)', borderRadius: 8, fontSize: 12, color: '#A5B4FC' }}>
           {err}
         </div>
       )}
@@ -208,18 +208,18 @@ Keep it under 200 words. No fluff.` },
             <div style={{
               position: 'absolute', top: -50, right: -50, width: 220, height: 220,
               borderRadius: '50%',
-              background: overall >= 75 ? 'rgba(165, 180, 252, 0.18)' : overall >= 60 ? 'rgba(165, 180, 252, 0.18)' : 'rgba(102, 217, 255, 0.18)',
+              background: overall >= 75 ? 'rgba(165, 180, 252, 0.18)' : overall >= 60 ? 'rgba(165, 180, 252, 0.18)' : 'rgba(165, 180, 252, 0.18)',
               filter: 'blur(60px)',
             }} />
             <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 24 }}>
               <div style={{
                 width: 110, height: 110, borderRadius: '50%',
-                background: '#0E1117', border: `3px solid ${overall >= 75 ? '#A5B4FC' : overall >= 60 ? '#A5B4FC' : '#66D9FF'}`,
+                background: '#0E1117', border: `3px solid ${overall >= 75 ? '#A5B4FC' : overall >= 60 ? '#A5B4FC' : '#A5B4FC'}`,
                 display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
               }}>
                 <div style={{
                   fontSize: 30, fontWeight: 800, lineHeight: 1,
-                  color: overall >= 75 ? '#A5B4FC' : overall >= 60 ? '#A5B4FC' : '#66D9FF',
+                  color: overall >= 75 ? '#A5B4FC' : overall >= 60 ? '#A5B4FC' : '#A5B4FC',
                 }}>{overall}%</div>
                 <div style={{ fontSize: 10, color: '#9CA3AF', marginTop: 4, textTransform: 'uppercase', letterSpacing: 1 }}>predicted</div>
               </div>
@@ -234,8 +234,8 @@ Keep it under 200 words. No fluff.` },
                   <span>Current avg: <strong style={{ color: '#fafafa' }}>{overallCurrent}%</strong></span>
                   <span style={{
                     padding: '2px 8px', borderRadius: 4,
-                    background: overallDelta > 0 ? 'rgba(165, 180, 252, 0.12)' : overallDelta < 0 ? 'rgba(102, 217, 255, 0.12)' : 'rgba(115,115,115,0.12)',
-                    color: overallDelta > 0 ? '#A5B4FC' : overallDelta < 0 ? '#66D9FF' : '#B1B5BA',
+                    background: overallDelta > 0 ? 'rgba(165, 180, 252, 0.12)' : overallDelta < 0 ? 'rgba(165, 180, 252, 0.12)' : 'rgba(115,115,115,0.12)',
+                    color: overallDelta > 0 ? '#A5B4FC' : overallDelta < 0 ? '#A5B4FC' : '#B1B5BA',
                     fontWeight: 700,
                   }}>
                     {overallDelta > 0 ? '+' : ''}{overallDelta} projected change
@@ -255,7 +255,7 @@ Keep it under 200 words. No fluff.` },
               <button onClick={generateInsight} disabled={insightBusy}
                 style={{
                   padding: '8px 16px', borderRadius: 8, border: 'none',
-                  background: insightBusy ? '#1a1f2e' : 'linear-gradient(135deg,#4F7CFF,#4F7CFF)',
+                  background: insightBusy ? '#1a1f2e' : 'linear-gradient(135deg,#7C6BF6,#7C6BF6)',
                   color: insightBusy ? '#6B7280' : '#fff',
                   fontFamily: 'inherit', fontSize: 12, fontWeight: 600,
                   cursor: insightBusy ? 'not-allowed' : 'pointer',
@@ -288,8 +288,8 @@ Keep it under 200 words. No fluff.` },
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {predictions.map(p => {
                 const TrendIcon = p.trajectory === 'up' ? TrendingUp : p.trajectory === 'down' ? TrendingDown : Minus
-                const trendColor = p.trajectory === 'up' ? '#A5B4FC' : p.trajectory === 'down' ? '#66D9FF' : '#B1B5BA'
-                const riskColor = p.risk === 'high' ? '#66D9FF' : p.risk === 'medium' ? '#A5B4FC' : '#A5B4FC'
+                const trendColor = p.trajectory === 'up' ? '#A5B4FC' : p.trajectory === 'down' ? '#A5B4FC' : '#B1B5BA'
+                const riskColor = p.risk === 'high' ? '#A5B4FC' : p.risk === 'medium' ? '#A5B4FC' : '#A5B4FC'
                 return (
                   <div key={p.subject} style={{
                     padding: 14, borderRadius: 10, background: '#0E1117',

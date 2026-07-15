@@ -32,13 +32,13 @@ interface Note {
 }
 
 const KIND_META: Record<Kind, { label: string; icon: any; color: string }> = {
-  flashcards:  { label: 'Flashcards',  icon: BookMarked,    color: '#66D9FF' },
+  flashcards:  { label: 'Flashcards',  icon: BookMarked,    color: '#A5B4FC' },
   summary:     { label: 'Summary',     icon: FileText,      color: '#A5B4FC' },
-  doubt:       { label: 'Doubt',       icon: MessageCircle, color: '#66D9FF' },
-  concept_map: { label: 'Concept Map', icon: Network,       color: '#4F7CFF' },
+  doubt:       { label: 'Doubt',       icon: MessageCircle, color: '#A5B4FC' },
+  concept_map: { label: 'Concept Map', icon: Network,       color: '#7C6BF6' },
   note:        { label: 'Note',        icon: StickyNote,    color: '#A5B4FC' },
-  plan:        { label: 'Study Plan',  icon: Calendar,      color: '#66D9FF' },
-  grade:       { label: 'Graded',      icon: CheckCircle2,  color: '#4F7CFF' },
+  plan:        { label: 'Study Plan',  icon: Calendar,      color: '#A5B4FC' },
+  grade:       { label: 'Graded',      icon: CheckCircle2,  color: '#7C6BF6' },
 }
 
 const card: React.CSSProperties = { background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(14px) saturate(140%)', WebkitBackdropFilter: 'blur(14px) saturate(140%)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14 }
@@ -125,9 +125,9 @@ export default function Notebook() {
       <div className="nb-header" style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 20, flexShrink: 0 }}>
         <div style={{
           width: 44, height: 44, borderRadius: 11,
-          background: 'linear-gradient(135deg, #4F7CFF, #2046C2)',
+          background: 'linear-gradient(135deg, #7C6BF6, #4A2FA8)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 0 18px rgba(79, 124, 255, 0.03)', flexShrink: 0,
+          boxShadow: '0 0 18px rgba(124, 107, 246, 0.03)', flexShrink: 0,
         }}>
           <BookOpen size={22} color="#fff" />
         </div>
@@ -139,7 +139,7 @@ export default function Notebook() {
         </div>
         <button className="nb-newbtn-inline" onClick={() => setCreating(true)} style={{
           padding: '9px 14px', borderRadius: 9, border: 'none',
-          background: 'linear-gradient(135deg, #4F7CFF, #2046C2)', color: '#fff',
+          background: 'linear-gradient(135deg, #7C6BF6, #4A2FA8)', color: '#fff',
           fontFamily: 'inherit', fontSize: 12, fontWeight: 600, cursor: 'pointer',
           display: 'flex', alignItems: 'center', gap: 6,
         }}>
@@ -187,7 +187,7 @@ export default function Notebook() {
 
       <div className={`nb-split${selected ? ' has-sel' : ''}`} style={{ display: 'grid', gridTemplateColumns: selected ? '1fr 1.3fr' : '1fr', gap: 12, flex: 1, minHeight: 0 }}>
         <div className="nb-list" style={{ overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 6 }}>
-          {err && <div style={{ padding: '10px 14px', background: 'rgba(102, 217, 255, 0.08)', border: '1px solid rgba(102, 217, 255, 0.25)', borderRadius: 8, fontSize: 12, color: '#66D9FF' }}>{err}</div>}
+          {err && <div style={{ padding: '10px 14px', background: 'rgba(165, 180, 252, 0.08)', border: '1px solid rgba(165, 180, 252, 0.25)', borderRadius: 8, fontSize: 12, color: '#A5B4FC' }}>{err}</div>}
           {loading && notes.length === 0 && <div style={{ textAlign: 'center', padding: '40px 0', color: '#6B7280' }}>Loading…</div>}
           {!loading && filtered.length === 0 && (
             <div style={{ ...card, padding: '40px 24px', textAlign: 'center' }}>
@@ -348,8 +348,8 @@ function AutoCollectedStrip({ onBuilt }: { onBuilt?: (id: string) => void }) {
   return (
     <div style={{
       marginBottom: 14, padding: 14,
-      background: 'rgba(79, 124, 255, 0.04)',
-      border: '1px solid rgba(102, 217, 255, 0.22)',
+      background: 'rgba(124, 107, 246, 0.04)',
+      border: '1px solid rgba(165, 180, 252, 0.22)',
       borderRadius: 12,
       flexShrink: 0,
       position: 'relative',
@@ -404,7 +404,7 @@ function AutoCollectedStrip({ onBuilt }: { onBuilt?: (id: string) => void }) {
               style={chipBtn(isBusy)}>
               {isBusy ? 'Building…' : <>
                 <span style={{ textTransform: 'capitalize' }}>{c.name}</span>
-                <span style={{ marginLeft: 5, color: '#4F7CFF', fontSize: 10 }}>×{c.visits}</span>
+                <span style={{ marginLeft: 5, color: '#7C6BF6', fontSize: 10 }}>×{c.visits}</span>
               </>}
             </button>
           )
@@ -449,8 +449,8 @@ function AutoCollectedStrip({ onBuilt }: { onBuilt?: (id: string) => void }) {
               position: 'absolute', bottom: -42, left: 12,
               padding: '8px 14px', borderRadius: 10,
               background: 'rgba(13,13,21,0.95)',
-              border: '1px solid rgba(102, 217, 255, 0.18)',
-              boxShadow: '0 14px 32px rgba(79, 124, 255, 0.03)',
+              border: '1px solid rgba(165, 180, 252, 0.18)',
+              boxShadow: '0 14px 32px rgba(124, 107, 246, 0.03)',
               fontSize: 12, color: '#e4e4e7', fontWeight: 500,
               zIndex: 5,
             }}>
@@ -466,8 +466,8 @@ function AutoCollectedStrip({ onBuilt }: { onBuilt?: (id: string) => void }) {
 function chipBtn(busy: boolean): React.CSSProperties {
   return {
     padding: '4px 9px', borderRadius: 6,
-    background: busy ? 'rgba(102, 217, 255, 0.22)' : 'rgba(79, 124, 255, 0.08)',
-    border: `1px solid ${busy ? 'rgba(102, 217, 255, 0.55)' : 'rgba(102, 217, 255, 0.32)'}`,
+    background: busy ? 'rgba(165, 180, 252, 0.22)' : 'rgba(124, 107, 246, 0.08)',
+    border: `1px solid ${busy ? 'rgba(165, 180, 252, 0.55)' : 'rgba(165, 180, 252, 0.32)'}`,
     fontSize: 11.5, color: '#e4e4e7', fontWeight: 500,
     whiteSpace: 'nowrap',
     maxWidth: '100%',
@@ -483,8 +483,8 @@ function Tab({ active, label, onClick }: { active: boolean; label: string; onCli
   return (
     <button onClick={onClick} style={{
       padding: '5px 10px', borderRadius: 7,
-      background: active ? 'rgba(102, 217, 255, 0.18)' : 'transparent',
-      border: `1px solid ${active ? 'rgba(102, 217, 255, 0.18)' : 'rgba(255,255,255,0.08)'}`,
+      background: active ? 'rgba(165, 180, 252, 0.18)' : 'transparent',
+      border: `1px solid ${active ? 'rgba(165, 180, 252, 0.18)' : 'rgba(255,255,255,0.08)'}`,
       color: active ? '#A5B4FC' : '#9CA3AF',
       fontFamily: 'inherit', fontSize: 11, fontWeight: 600,
       cursor: 'pointer',
@@ -567,7 +567,7 @@ function NoteDetail({ note, editing, onClose, onTogglePin, onDelete, onEdit, onS
           )}
           <button onClick={onDelete} title="Delete"
             style={{ padding: 6, borderRadius: 7, border: '1px solid #1f2532', background: '#151922', cursor: 'pointer', color: '#9CA3AF' }}
-            onMouseEnter={e => (e.currentTarget.style.color = '#66D9FF')}
+            onMouseEnter={e => (e.currentTarget.style.color = '#A5B4FC')}
             onMouseLeave={e => (e.currentTarget.style.color = '#9CA3AF')}>
             <Trash2 size={12} />
           </button>
@@ -593,7 +593,7 @@ function NoteDetail({ note, editing, onClose, onTogglePin, onDelete, onEdit, onS
           <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
             <button onClick={save} disabled={saving} style={{
               padding: '8px 16px', borderRadius: 8, border: 'none',
-              background: saving ? '#1a1f2e' : 'linear-gradient(135deg,#4F7CFF,#4F7CFF)',
+              background: saving ? '#1a1f2e' : 'linear-gradient(135deg,#7C6BF6,#7C6BF6)',
               color: saving ? '#6B7280' : '#fff',
               fontFamily: 'inherit', fontSize: 12, fontWeight: 600,
               cursor: saving ? 'not-allowed' : 'pointer',
@@ -681,8 +681,8 @@ function CreateModal({ onClose, onCreated }: { onClose: () => void; onCreated: (
           placeholder="Subject (optional)" style={{ ...inp, marginBottom: 10 }} />
         <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
           <button type="button" onClick={formatWithAI} disabled={formatting || !content.trim()} style={{
-            padding: '6px 11px', borderRadius: 7, border: '1px solid rgba(102, 217, 255, 0.32)',
-            background: formatting ? 'rgba(102, 217, 255, 0.22)' : 'rgba(79, 124, 255, 0.08)',
+            padding: '6px 11px', borderRadius: 7, border: '1px solid rgba(165, 180, 252, 0.32)',
+            background: formatting ? 'rgba(165, 180, 252, 0.22)' : 'rgba(124, 107, 246, 0.08)',
             color: '#A5B4FC', fontFamily: 'inherit', fontSize: 11.5, fontWeight: 600,
             cursor: formatting || !content.trim() ? 'not-allowed' : 'pointer',
             display: 'flex', alignItems: 'center', gap: 6,
@@ -722,7 +722,7 @@ function CreateModal({ onClose, onCreated }: { onClose: () => void; onCreated: (
           }}>Cancel</button>
           <button onClick={save} disabled={saving || !title.trim() || !content.trim()} style={{
             padding: '8px 14px', borderRadius: 7, border: 'none',
-            background: saving || !title.trim() || !content.trim() ? '#1a1f2e' : 'linear-gradient(135deg,#4F7CFF,#4F7CFF)',
+            background: saving || !title.trim() || !content.trim() ? '#1a1f2e' : 'linear-gradient(135deg,#7C6BF6,#7C6BF6)',
             color: '#fff', fontFamily: 'inherit', fontSize: 12, fontWeight: 600,
             cursor: saving || !title.trim() || !content.trim() ? 'not-allowed' : 'pointer',
             display: 'flex', alignItems: 'center', gap: 6,

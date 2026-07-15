@@ -17,7 +17,7 @@ const label = { fontSize: 11, color: '#9CA3AF', display: 'block', marginBottom: 
 const inp   = { background: '#0E1117', border: '1px solid #1f2532', borderRadius: 8, padding: '9px 12px', fontSize: 13, color: '#fafafa', fontFamily: 'inherit', outline: 'none', width: '100%' } as React.CSSProperties
 
 type AttStatus = 'present' | 'absent' | 'late' | 'excused'
-const STATUS_COLORS: Record<AttStatus, string> = { present: '#A5B4FC', absent: '#66D9FF', late: '#A5B4FC', excused: '#66D9FF' }
+const STATUS_COLORS: Record<AttStatus, string> = { present: '#A5B4FC', absent: '#A5B4FC', late: '#A5B4FC', excused: '#A5B4FC' }
 
 export default function Attendance() {
   const [tab, setTab] = useState('mark')
@@ -36,7 +36,7 @@ export default function Attendance() {
             borderRadius: 7, border: 'none', fontFamily: 'inherit',
             fontSize: 12, fontWeight: tab === t.id ? 600 : 400, cursor: 'pointer',
             background: tab === t.id ? '#1f2532' : 'transparent',
-            color: tab === t.id ? '#66D9FF' : '#6B7280',
+            color: tab === t.id ? '#A5B4FC' : '#6B7280',
           }}>
             <t.icon size={13} /> {t.label}
           </button>
@@ -109,9 +109,9 @@ function MarkTab() {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 10, marginBottom: 20 }}>
         {[
           { label: 'Present', count: counts.present, color: '#A5B4FC' },
-          { label: 'Absent',  count: counts.absent,  color: '#66D9FF' },
+          { label: 'Absent',  count: counts.absent,  color: '#A5B4FC' },
           { label: 'Late',    count: counts.late,    color: '#A5B4FC' },
-          { label: 'Total',   count: students.length, color: '#66D9FF' },
+          { label: 'Total',   count: students.length, color: '#A5B4FC' },
         ].map(s => (
           <div key={s.label} style={{ ...card, padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 10 }}>
             <span style={{ fontSize: 22, fontWeight: 700, color: s.color }}>{s.count}</span>
@@ -128,7 +128,7 @@ function MarkTab() {
         <button onClick={save} disabled={saving} style={{
           marginTop: 20, display: 'flex', alignItems: 'center', gap: 7,
           padding: '9px 20px', borderRadius: 9, border: 'none',
-          background: saved ? '#A5B4FC' : 'linear-gradient(135deg,#4F7CFF,#4F7CFF)',
+          background: saved ? '#A5B4FC' : 'linear-gradient(135deg,#7C6BF6,#7C6BF6)',
           color: '#fff', fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: 'pointer',
         }}>
           {saving ? 'Saving…' : saved ? '✓ Saved!' : 'Save Attendance'}
@@ -146,7 +146,7 @@ function MarkTab() {
           return (
             <div key={s._id} onClick={() => toggle(s._id)} style={{
               ...card, padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 14, cursor: 'pointer',
-              borderColor: status === 'absent' ? '#66D9FF30' : '#1f2532',
+              borderColor: status === 'absent' ? '#A5B4FC30' : '#1f2532',
               transition: 'border-color 0.15s',
             }}>
               <div style={{ width: 34, height: 34, borderRadius: 8, background: `${color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 13, fontWeight: 700, color }}>
@@ -194,7 +194,7 @@ function AtRiskTab() {
           </select>
         </div>
         {data && (
-          <div style={{ marginTop: 18, fontSize: 13, color: data.count > 0 ? '#66D9FF' : '#A5B4FC', fontWeight: 600 }}>
+          <div style={{ marginTop: 18, fontSize: 13, color: data.count > 0 ? '#A5B4FC' : '#A5B4FC', fontWeight: 600 }}>
             {data.count > 0 ? `⚠ ${data.count} students at risk` : '✓ All students above threshold'}
           </div>
         )}
@@ -209,7 +209,7 @@ function AtRiskTab() {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         {data?.students?.map((s: any) => {
           const pct = s.percentage
-          const color = pct < 50 ? '#66D9FF' : pct < 65 ? '#A5B4FC' : '#A5B4FC'
+          const color = pct < 50 ? '#A5B4FC' : pct < 65 ? '#A5B4FC' : '#A5B4FC'
           return (
             <div key={s.student_id} style={{ ...card, padding: '14px 18px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
@@ -259,7 +259,7 @@ function StatsTab() {
   if (loading) return <Spinner />
 
   const pct = stats?.percentage || 0
-  const pctColor = pct >= 75 ? '#A5B4FC' : pct >= 60 ? '#A5B4FC' : '#66D9FF'
+  const pctColor = pct >= 75 ? '#A5B4FC' : pct >= 60 ? '#A5B4FC' : '#A5B4FC'
 
   return (
     <div>
@@ -278,9 +278,9 @@ function StatsTab() {
             {[
               { label: 'Attendance',  value: `${pct}%`,        color: pctColor },
               { label: 'Present',     value: stats.present,    color: '#A5B4FC' },
-              { label: 'Absent',      value: stats.absent,     color: '#66D9FF' },
+              { label: 'Absent',      value: stats.absent,     color: '#A5B4FC' },
               { label: 'Late',        value: stats.late,       color: '#A5B4FC' },
-              { label: 'Total Days',  value: stats.total,      color: '#66D9FF' },
+              { label: 'Total Days',  value: stats.total,      color: '#A5B4FC' },
             ].map(s => (
               <div key={s.label} style={{ ...card, padding: '14px 16px', textAlign: 'center' }}>
                 <div style={{ fontSize: 22, fontWeight: 700, color: s.color }}>{s.value}</div>
@@ -336,7 +336,7 @@ function StatsTab() {
 function Spinner() {
   return (
     <div style={{ display: 'flex', justifyContent: 'center', padding: '60px 0' }}>
-      <div style={{ width: 28, height: 28, borderRadius: '50%', border: '2px solid #1f2532', borderTopColor: '#4F7CFF', animation: 'spin 0.8s linear infinite' }} />
+      <div style={{ width: 28, height: 28, borderRadius: '50%', border: '2px solid #1f2532', borderTopColor: '#7C6BF6', animation: 'spin 0.8s linear infinite' }} />
     </div>
   )
 }

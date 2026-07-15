@@ -273,7 +273,7 @@ function IdleHint({ hovered, selected, hint }: any) {
       position: 'absolute', top: 14, left: 14, zIndex: 5,
       padding: '6px 12px', borderRadius: 7,
       background: 'rgba(13,13,13,0.55)', backdropFilter: 'blur(8px)',
-      border: '1px solid rgba(79, 124, 255, 0.25)',
+      border: '1px solid rgba(124, 107, 246, 0.25)',
       fontSize: 10.5, color: '#A5B4FC', fontWeight: 600,
       textTransform: 'uppercase', letterSpacing: 1.5,
       pointerEvents: 'none',
@@ -348,7 +348,7 @@ export const LAB_PALETTE = {
   physics:   '#0c1428',
   math:      '#0a0a18',
   space:     '#02041a',
-  nucleus:    '#66D9FF',
+  nucleus:    '#A5B4FC',
   power:      '#dc2626',
   storage:    '#67e8f9',
   shipping:   '#34d399',
@@ -357,7 +357,7 @@ export const LAB_PALETTE = {
   signal:     '#C7D2E8',
   control:    '#cbd5e1',
   energy:     '#86efac',
-  fluid:      '#22d3ee',
+  fluid:      '#9AA6FF',
 }
 
 export { LabScene }

@@ -297,7 +297,7 @@ export default function App() {
         }}>
           <div style={{
             width: 36, height: 36, borderRadius: '50%',
-            border: '2px solid #1f2532', borderTopColor: '#66D9FF',
+            border: '2px solid #1f2532', borderTopColor: '#A5B4FC',
             animation: 'spin 0.8s linear infinite',
           }} />
           <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
@@ -339,8 +339,8 @@ export default function App() {
           position: 'fixed', left: '50%', transform: 'translateX(-50%)',
           bottom: 'calc(84px + env(safe-area-inset-bottom))', zIndex: 95,
           display: 'flex', alignItems: 'stretch', borderRadius: 999, overflow: 'hidden',
-          background: 'rgba(13,16,25,0.92)', border: '1px solid rgba(102,217,255,0.4)',
-          boxShadow: '0 10px 30px rgba(0,0,0,0.5), 0 0 20px rgba(79,124,255,0.25)',
+          background: 'rgba(13,16,25,0.92)', border: '1px solid rgba(165,180,252,0.4)',
+          boxShadow: '0 10px 30px rgba(0,0,0,0.5), 0 0 20px rgba(124,107,246,0.25)',
           backdropFilter: 'blur(10px)', fontFamily: "'Inter', system-ui, sans-serif",
         }}>
           <button

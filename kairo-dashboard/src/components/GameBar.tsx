@@ -7,7 +7,7 @@ const GLASS: React.CSSProperties = {
   background: 'linear-gradient(150deg, rgba(255,255,255,0.055) 0%, rgba(255,255,255,0.018) 100%)',
   backdropFilter: 'blur(16px) saturate(150%)',
   WebkitBackdropFilter: 'blur(16px) saturate(150%)',
-  border: '1px solid rgba(102,217,255,0.16)',
+  border: '1px solid rgba(165,180,252,0.16)',
   borderRadius: 16,
 }
 const lbl: React.CSSProperties = {
@@ -36,14 +36,14 @@ export function GameBar() {
   return (
     <div className="kg-gamebar" style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr 1fr', gap: 16, marginBottom: 16 }}>
       <div style={{ ...GLASS, padding: 18 }}>
-        <div style={{ ...lbl, color: '#66D9FF', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
+        <div style={{ ...lbl, color: '#A5B4FC', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
           <Zap size={12} /> Level
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
           <div style={{ position: 'relative', width: 66, height: 66, flexShrink: 0 }}>
             <svg viewBox="0 0 66 66" style={{ width: '100%', height: '100%', transform: 'rotate(-90deg)' }}>
               <circle cx="33" cy="33" r="28" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="6" />
-              <circle cx="33" cy="33" r="28" fill="none" stroke="#66D9FF" strokeWidth="6" strokeLinecap="round"
+              <circle cx="33" cy="33" r="28" fill="none" stroke="#A5B4FC" strokeWidth="6" strokeLinecap="round"
                 strokeDasharray={`${2 * Math.PI * 28}`}
                 strokeDashoffset={`${2 * Math.PI * 28 * (1 - into / need)}`}
                 style={{ transition: 'stroke-dashoffset .6s ease' }}
@@ -101,7 +101,7 @@ export function GameBar() {
                   <div style={{ height: 4, background: 'rgba(255,255,255,0.07)', borderRadius: 2, marginTop: 4, overflow: 'hidden' }}>
                     <div style={{
                       height: '100%', width: `${(progress / q.target) * 100}%`,
-                      background: 'linear-gradient(90deg, #4F7CFF, #66D9FF)', borderRadius: 2,
+                      background: 'linear-gradient(90deg, #7C6BF6, #A5B4FC)', borderRadius: 2,
                       transition: 'width .4s ease',
                     }} />
                   </div>
@@ -123,21 +123,21 @@ export function GameBar() {
               <div key={i} style={{
                 display: 'flex', alignItems: 'center', gap: 8, marginBottom: 7,
                 padding: '4px 8px', borderRadius: 8,
-                background: r.you ? 'rgba(102,217,255,0.10)' : 'transparent',
-                border: r.you ? '1px solid rgba(102,217,255,0.30)' : '1px solid transparent',
+                background: r.you ? 'rgba(165,180,252,0.10)' : 'transparent',
+                border: r.you ? '1px solid rgba(165,180,252,0.30)' : '1px solid transparent',
               }}>
                 <span style={{
                   fontSize: 11, fontWeight: 900, width: 18,
                   color: i === 0 ? '#ffd180' : i === 1 ? '#c0c8d0' : i === 2 ? '#cd8a4a' : '#5B616E',
                 }}>#{i + 1}</span>
-                <span style={{ flex: 1, fontSize: 12.5, fontWeight: r.you ? 800 : 600, color: r.you ? '#66D9FF' : '#fafafa', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <span style={{ flex: 1, fontSize: 12.5, fontWeight: r.you ? 800 : 600, color: r.you ? '#A5B4FC' : '#fafafa', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {r.you ? 'You' : r.name}
                 </span>
                 <span style={{ fontSize: 11.5, fontWeight: 800, color: '#9CA3AF' }}>{r.xp} XP</span>
               </div>
             ))}
             {board.rank > 5 && (
-              <div style={{ fontSize: 11, color: '#66D9FF', fontWeight: 700, marginTop: 4 }}>
+              <div style={{ fontSize: 11, color: '#A5B4FC', fontWeight: 700, marginTop: 4 }}>
                 Your rank: #{board.rank}
               </div>
             )}
@@ -187,9 +187,9 @@ export function XPToast() {
               padding: t.levelUp ? '13px 20px' : '10px 15px', borderRadius: 13,
               background: t.levelUp
                 ? 'linear-gradient(135deg, #FFB44A, #FF7A3C)'
-                : 'linear-gradient(135deg, #4F7CFF, #2046C2)',
+                : 'linear-gradient(135deg, #7C6BF6, #4A2FA8)',
               border: '1px solid rgba(255,255,255,0.28)',
-              boxShadow: t.levelUp ? '0 12px 40px rgba(255,140,60,0.45)' : '0 10px 30px rgba(79,124,255,0.4)',
+              boxShadow: t.levelUp ? '0 12px 40px rgba(255,140,60,0.45)' : '0 10px 30px rgba(124,107,246,0.4)',
               color: '#fff', fontFamily: "'Space Grotesk', system-ui, sans-serif",
               display: 'flex', alignItems: 'center', gap: 11, minWidth: 150,
             }}>

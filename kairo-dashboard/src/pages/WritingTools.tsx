@@ -17,7 +17,7 @@ const TABS = [
 const card  = { background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(14px) saturate(140%)', WebkitBackdropFilter: 'blur(14px) saturate(140%)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14, padding: 20 } as React.CSSProperties
 const inp   = { background: '#0E1117', border: '1px solid #1f2532', borderRadius: 8, padding: '9px 12px', fontSize: 13, color: '#fafafa', fontFamily: 'inherit', outline: 'none', width: '100%' } as React.CSSProperties
 const label = { fontSize: 11, color: '#9CA3AF', display: 'block', marginBottom: 5, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.8 } as React.CSSProperties
-const btn   = (active = true) => ({ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', borderRadius: 9, border: 'none', background: active ? 'linear-gradient(135deg,#4F7CFF,#4F7CFF)' : '#1a1f2e', color: active ? '#fff' : '#6B7280', fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: active ? 'pointer' : 'not-allowed' } as React.CSSProperties)
+const btn   = (active = true) => ({ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', borderRadius: 9, border: 'none', background: active ? 'linear-gradient(135deg,#7C6BF6,#7C6BF6)' : '#1a1f2e', color: active ? '#fff' : '#6B7280', fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: active ? 'pointer' : 'not-allowed' } as React.CSSProperties)
 
 export default function WritingTools() {
   const [tab, setTab] = useState('editor')
@@ -37,7 +37,7 @@ export default function WritingTools() {
             fontSize: 12, fontWeight: tab === t.id ? 600 : 400, cursor: 'pointer',
             whiteSpace: 'nowrap',
             background: tab === t.id ? '#1f2532' : 'transparent',
-            color: tab === t.id ? '#66D9FF' : '#6B7280', transition: 'all 0.15s',
+            color: tab === t.id ? '#A5B4FC' : '#6B7280', transition: 'all 0.15s',
           }}>
             <t.icon size={12} /> {t.label}
           </button>
@@ -57,14 +57,14 @@ export default function WritingTools() {
   )
 }
 
-function ResultBox({ title, text, color = '#66D9FF' }: { title: string; text: string; color?: string }) {
+function ResultBox({ title, text, color = '#A5B4FC' }: { title: string; text: string; color?: string }) {
   const [copied, setCopied] = useState(false)
   return (
     <div style={{ ...card, marginTop: 16 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
         <span style={{ fontSize: 13, fontWeight: 600, color }}>{title}</span>
         <button onClick={() => { navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 2000) }}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', color: copied ? '#66D9FF' : '#6B7280', display: 'flex', alignItems: 'center', gap: 4, fontSize: 12 }}>
+          style={{ background: 'none', border: 'none', cursor: 'pointer', color: copied ? '#A5B4FC' : '#6B7280', display: 'flex', alignItems: 'center', gap: 4, fontSize: 12 }}>
           {copied ? <><Check size={12} /> Copied</> : <><Copy size={12} /> Copy</>}
         </button>
       </div>
@@ -189,7 +189,7 @@ Rules:
     }
   }
 
-  const clarityColor = stats.clarity >= 80 ? '#A5B4FC' : stats.clarity >= 60 ? '#DBE7FF' : '#66D9FF'
+  const clarityColor = stats.clarity >= 80 ? '#A5B4FC' : stats.clarity >= 60 ? '#DBE7FF' : '#A5B4FC'
   const clarityLabel = stats.clarity >= 80 ? 'Crystal' : stats.clarity >= 60 ? 'Good' : stats.clarity >= 40 ? 'Cloudy' : 'Foggy'
 
   return (
@@ -200,7 +200,7 @@ Rules:
             padding: '10px 16px', borderBottom: '1px solid #1f2532',
             display: 'flex', alignItems: 'center', gap: 10, fontSize: 11, color: '#9CA3AF',
           }}>
-            <PencilLine size={12} color="#66D9FF" />
+            <PencilLine size={12} color="#A5B4FC" />
             <span style={{ flex: 1, fontWeight: 600, letterSpacing: 0.4 }}>Draft · auto-saved on this device</span>
             <span>{stats.words} words · {stats.sentences} sentences</span>
           </div>
@@ -219,7 +219,7 @@ Rules:
         </div>
 
         {err && (
-          <div style={{ marginTop: 12, padding: '10px 14px', background: 'rgba(102, 217, 255, 0.08)', border: '1px solid rgba(102, 217, 255, 0.25)', borderRadius: 8, fontSize: 12, color: '#66D9FF' }}>
+          <div style={{ marginTop: 12, padding: '10px 14px', background: 'rgba(165, 180, 252, 0.08)', border: '1px solid rgba(165, 180, 252, 0.25)', borderRadius: 8, fontSize: 12, color: '#A5B4FC' }}>
             {err}
           </div>
         )}
@@ -227,7 +227,7 @@ Rules:
         <button onClick={askKyno} disabled={loading}
           style={{
             marginTop: 12, width: '100%', padding: '13px', borderRadius: 10, border: 'none',
-            background: loading ? '#1a1f2e' : 'linear-gradient(135deg, #66D9FF, #4F7CFF)',
+            background: loading ? '#1a1f2e' : 'linear-gradient(135deg, #A5B4FC, #7C6BF6)',
             color: loading ? '#9CA3AF' : '#000',
             fontFamily: 'inherit', fontSize: 14, fontWeight: 700,
             cursor: loading ? 'not-allowed' : 'pointer',
@@ -239,21 +239,21 @@ Rules:
         <AnimatePresence>
           {critique && (
             <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-              style={{ ...card, marginTop: 12, borderColor: 'rgba(102, 217, 255, 0.3)' }}>
+              style={{ ...card, marginTop: 12, borderColor: 'rgba(165, 180, 252, 0.3)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
-                <div style={{ width: 28, height: 28, borderRadius: 8, background: 'linear-gradient(135deg, #66D9FF, #4F7CFF)', display: 'grid', placeItems: 'center' }}>
+                <div style={{ width: 28, height: 28, borderRadius: 8, background: 'linear-gradient(135deg, #A5B4FC, #7C6BF6)', display: 'grid', placeItems: 'center' }}>
                   <Sparkles size={13} color="#000" />
                 </div>
-                <span style={{ fontSize: 11, color: '#66D9FF', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.4 }}>Kyno's verdict</span>
+                <span style={{ fontSize: 11, color: '#A5B4FC', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.4 }}>Kyno's verdict</span>
               </div>
               <p style={{ margin: 0, fontSize: 14, color: '#fafafa', fontWeight: 600, lineHeight: 1.55 }}>"{critique.verdict}"</p>
 
               {critique.rewrites.length > 0 && (
-                <div style={{ marginTop: 14, paddingTop: 14, borderTop: '1px solid rgba(102, 217, 255, 0.18)' }}>
+                <div style={{ marginTop: 14, paddingTop: 14, borderTop: '1px solid rgba(165, 180, 252, 0.18)' }}>
                   <div style={{ fontSize: 10, fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: 1.4, marginBottom: 8 }}>Cleaner rewrites</div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                     {critique.rewrites.map((r, i) => (
-                      <div key={i} style={{ padding: '10px 12px', borderRadius: 8, background: 'rgba(102, 217, 255, 0.06)', border: '1px solid rgba(102, 217, 255, 0.18)', fontSize: 13, color: '#e4e4e7', lineHeight: 1.55, fontFamily: '"Charter", Georgia, serif' }}>
+                      <div key={i} style={{ padding: '10px 12px', borderRadius: 8, background: 'rgba(165, 180, 252, 0.06)', border: '1px solid rgba(165, 180, 252, 0.18)', fontSize: 13, color: '#e4e4e7', lineHeight: 1.55, fontFamily: '"Charter", Georgia, serif' }}>
                         {r}
                       </div>
                     ))}
@@ -262,7 +262,7 @@ Rules:
               )}
 
               {critique.suggestions.length > 0 && (
-                <div style={{ marginTop: 14, paddingTop: 14, borderTop: '1px solid rgba(102, 217, 255, 0.18)' }}>
+                <div style={{ marginTop: 14, paddingTop: 14, borderTop: '1px solid rgba(165, 180, 252, 0.18)' }}>
                   <div style={{ fontSize: 10, fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: 1.4, marginBottom: 8 }}>How to tighten it</div>
                   <ul style={{ margin: 0, paddingLeft: 18, display: 'flex', flexDirection: 'column', gap: 5 }}>
                     {critique.suggestions.map((s, i) => (
@@ -307,17 +307,17 @@ Rules:
           <div style={{ ...card, padding: 14 }}>
             <div style={{ fontSize: 10, fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: 1.4, marginBottom: 10 }}>Issues found</div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-              {stats.longSentences.length > 0 && <IssueChip label={`${stats.longSentences.length} long sentence${stats.longSentences.length === 1 ? '' : 's'}`} color="#66D9FF" />}
+              {stats.longSentences.length > 0 && <IssueChip label={`${stats.longSentences.length} long sentence${stats.longSentences.length === 1 ? '' : 's'}`} color="#A5B4FC" />}
               {stats.passiveCount > 0       && <IssueChip label={`${stats.passiveCount} passive`} color="#DBE7FF" />}
-              {stats.weakVerbs.map(w => <IssueChip key={w} label={`"${w}"`} color="#66D9FF" />)}
+              {stats.weakVerbs.map(w => <IssueChip key={w} label={`"${w}"`} color="#A5B4FC" />)}
               {stats.hedges.map(w  => <IssueChip key={w} label={`hedge: "${w}"`} color="#A5B4FC" />)}
-              {stats.repeats.map(r => <IssueChip key={r.word} label={`${r.word} ×${r.count}`} color="#2046C2" />)}
+              {stats.repeats.map(r => <IssueChip key={r.word} label={`${r.word} ×${r.count}`} color="#4A2FA8" />)}
             </div>
             {stats.longSentences.length > 0 && (
               <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid #1a1f2e' }}>
                 {stats.longSentences.slice(0, 2).map((s, i) => (
-                  <div key={i} style={{ fontSize: 11, color: '#B1B5BA', marginBottom: 6, padding: '6px 8px', borderRadius: 6, background: 'rgba(102, 217, 255, 0.06)', borderLeft: '2px solid #66D9FF' }}>
-                    <span style={{ color: '#66D9FF', fontWeight: 700 }}>{s.words}w · </span>
+                  <div key={i} style={{ fontSize: 11, color: '#B1B5BA', marginBottom: 6, padding: '6px 8px', borderRadius: 6, background: 'rgba(165, 180, 252, 0.06)', borderLeft: '2px solid #A5B4FC' }}>
+                    <span style={{ color: '#A5B4FC', fontWeight: 700 }}>{s.words}w · </span>
                     {s.text}
                   </div>
                 ))}
@@ -400,7 +400,7 @@ function ToneImprover() {
         <label style={label}>Your Text</label>
         <textarea style={{ ...inp, height: 160, resize: 'vertical' }} value={text} onChange={e => setText(e.target.value)} placeholder="Paste your answer or paragraph here…" />
       </div>
-      {err && <p style={{ color: '#2046C2', fontSize: 12, marginBottom: 10 }}>{err}</p>}
+      {err && <p style={{ color: '#4A2FA8', fontSize: 12, marginBottom: 10 }}>{err}</p>}
       <button onClick={run} disabled={loading} style={btn(!loading)}>
         <ArrowRight size={13} /> {loading ? 'Improving…' : 'Improve Tone'}
       </button>
@@ -445,11 +445,11 @@ function ExpandTool() {
         <label style={label}>Short Answer to Expand</label>
         <textarea style={{ ...inp, height: 140, resize: 'vertical' }} value={text} onChange={e => setText(e.target.value)} placeholder="Write a short 2-3 sentence answer…" />
       </div>
-      {err && <p style={{ color: '#2046C2', fontSize: 12, marginBottom: 10 }}>{err}</p>}
+      {err && <p style={{ color: '#4A2FA8', fontSize: 12, marginBottom: 10 }}>{err}</p>}
       <button onClick={run} disabled={loading} style={btn(!loading)}>
         <Expand size={13} /> {loading ? 'Expanding…' : `Expand to ${words} words`}
       </button>
-      {result?.expanded && <ResultBox title="✓ Expanded Answer" text={result.expanded} color="#66D9FF" />}
+      {result?.expanded && <ResultBox title="✓ Expanded Answer" text={result.expanded} color="#A5B4FC" />}
     </div>
   )
 }
@@ -471,8 +471,8 @@ function TopperTool() {
 
   return (
     <div>
-      <div style={{ ...card, marginBottom: 16, background: '#1a1a2e', border: '1px solid #4F7CFF30' }}>
-        <p style={{ fontSize: 12, color: '#66D9FF', margin: 0 }}>⭐ This tool rewrites your answer the way a top-scorer would write it — with precise vocabulary, strong structure, and exam keywords.</p>
+      <div style={{ ...card, marginBottom: 16, background: '#1a1a2e', border: '1px solid #7C6BF630' }}>
+        <p style={{ fontSize: 12, color: '#A5B4FC', margin: 0 }}>⭐ This tool rewrites your answer the way a top-scorer would write it — with precise vocabulary, strong structure, and exam keywords.</p>
       </div>
       <div style={{ marginBottom: 12 }}>
         <label style={label}>Subject</label>
@@ -482,8 +482,8 @@ function TopperTool() {
         <label style={label}>Your Current Answer</label>
         <textarea style={{ ...inp, height: 160, resize: 'vertical' }} value={text} onChange={e => setText(e.target.value)} placeholder="Write your current answer — any quality is fine…" />
       </div>
-      {err && <p style={{ color: '#2046C2', fontSize: 12, marginBottom: 10 }}>{err}</p>}
-      <button onClick={run} disabled={loading} style={{ ...btn(!loading), background: loading ? '#1a1f2e' : 'linear-gradient(135deg,#66D9FF,#4F7CFF)' }}>
+      {err && <p style={{ color: '#4A2FA8', fontSize: 12, marginBottom: 10 }}>{err}</p>}
+      <button onClick={run} disabled={loading} style={{ ...btn(!loading), background: loading ? '#1a1f2e' : 'linear-gradient(135deg,#A5B4FC,#7C6BF6)' }}>
         <Star size={13} /> {loading ? 'Rewriting…' : 'Make it Topper-Level ✦'}
       </button>
       {result?.rewritten && (
@@ -512,7 +512,7 @@ function PlagiarismTool() {
     finally { setLoading(false) }
   }
 
-  const riskColors: Record<string, string> = { low: '#66D9FF', medium: '#A5B4FC', high: '#2046C2', unknown: '#9CA3AF' }
+  const riskColors: Record<string, string> = { low: '#A5B4FC', medium: '#A5B4FC', high: '#4A2FA8', unknown: '#9CA3AF' }
 
   return (
     <div>
@@ -523,7 +523,7 @@ function PlagiarismTool() {
         <label style={label}>Text to Check</label>
         <textarea style={{ ...inp, height: 180, resize: 'vertical' }} value={text} onChange={e => setText(e.target.value)} placeholder="Paste the essay or answer to check…" />
       </div>
-      {err && <p style={{ color: '#2046C2', fontSize: 12, marginBottom: 10 }}>{err}</p>}
+      {err && <p style={{ color: '#4A2FA8', fontSize: 12, marginBottom: 10 }}>{err}</p>}
       <button onClick={run} disabled={loading} style={btn(!loading)}>
         <Shield size={13} /> {loading ? 'Checking…' : 'Check Now'}
       </button>
@@ -558,8 +558,8 @@ function PlagiarismTool() {
             </div>
           )}
           {result.recommendation && (
-            <div style={{ ...card, marginTop: 10, borderColor: '#66D9FF30' }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: '#66D9FF', marginBottom: 6 }}>RECOMMENDATION</div>
+            <div style={{ ...card, marginTop: 10, borderColor: '#A5B4FC30' }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: '#A5B4FC', marginBottom: 6 }}>RECOMMENDATION</div>
               <p style={{ fontSize: 13, color: '#B1B5BA', margin: 0 }}>{result.recommendation}</p>
             </div>
           )}

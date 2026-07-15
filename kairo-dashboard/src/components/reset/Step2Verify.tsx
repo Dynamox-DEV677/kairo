@@ -109,7 +109,7 @@ export default function Step2Verify({ devOtp, onBack, onContinue }: Props) {
           style={{
             marginTop: 18, padding: '12px 16px',
             borderRadius: 14,
-            background: 'rgba(102, 217, 255, 0.08)',
+            background: 'rgba(165, 180, 252, 0.08)',
             border: `1px solid ${RC.borderHi}`,
             color: RC.purpleLite,
             fontFamily: FONT, fontSize: 13.5, fontWeight: 600,

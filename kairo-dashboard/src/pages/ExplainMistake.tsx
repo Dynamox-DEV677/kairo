@@ -140,9 +140,9 @@ Now teach me how to never make this mistake again, following your structure exac
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 22 }}>
         <div style={{
           width: 44, height: 44, borderRadius: 11,
-          background: 'linear-gradient(135deg, #66D9FF, #A5B4FC)',
+          background: 'linear-gradient(135deg, #A5B4FC, #A5B4FC)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 0 18px rgba(102, 217, 255, 0.03)', flexShrink: 0,
+          boxShadow: '0 0 18px rgba(165, 180, 252, 0.03)', flexShrink: 0,
         }}>
           <AlertTriangle size={22} color="#fff" />
         </div>
@@ -185,7 +185,7 @@ Now teach me how to never make this mistake again, following your structure exac
               style={{ ...inp, resize: 'vertical', lineHeight: 1.6 }} />
           </div>
 
-          {err && <p style={{ fontSize: 12, color: '#66D9FF', marginBottom: 12 }}>{err}</p>}
+          {err && <p style={{ fontSize: 12, color: '#A5B4FC', marginBottom: 12 }}>{err}</p>}
 
           <motion.button
             whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
@@ -194,12 +194,12 @@ Now teach me how to never make this mistake again, following your structure exac
               width: '100%', padding: '12px', borderRadius: 10, border: 'none',
               background: busy || !question.trim() || !myAnswer.trim()
                 ? '#1a1f2e'
-                : 'linear-gradient(135deg, #66D9FF, #A5B4FC)',
+                : 'linear-gradient(135deg, #A5B4FC, #A5B4FC)',
               color: busy || !question.trim() || !myAnswer.trim() ? '#6B7280' : '#fff',
               fontFamily: 'inherit', fontSize: 14, fontWeight: 700,
               cursor: busy || !question.trim() || !myAnswer.trim() ? 'not-allowed' : 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-              boxShadow: busy || !question.trim() ? 'none' : '0 0 22px rgba(102, 217, 255, 0.35)',
+              boxShadow: busy || !question.trim() ? 'none' : '0 0 22px rgba(165, 180, 252, 0.35)',
             }}>
             <Brain size={14} />{busy ? 'Analyzing your mistake…' : 'Explain'}
           </motion.button>
@@ -238,8 +238,8 @@ Now teach me how to never make this mistake again, following your structure exac
                   <div style={{ display: 'flex', gap: 8, marginTop: 18, paddingTop: 16, borderTop: '1px solid #1a1f2e' }}>
                     <button onClick={saveToBook} disabled={savedToBook} style={{
                       padding: '8px 14px', borderRadius: 8,
-                      border: `1px solid ${savedToBook ? 'rgba(165, 180, 252, 0.4)' : 'rgba(79, 124, 255, 0.3)'}`,
-                      background: savedToBook ? 'rgba(165, 180, 252, 0.08)' : 'rgba(79, 124, 255, 0.08)',
+                      border: `1px solid ${savedToBook ? 'rgba(165, 180, 252, 0.4)' : 'rgba(124, 107, 246, 0.3)'}`,
+                      background: savedToBook ? 'rgba(165, 180, 252, 0.08)' : 'rgba(124, 107, 246, 0.08)',
                       color: savedToBook ? '#A5B4FC' : '#A5B4FC',
                       cursor: savedToBook ? 'default' : 'pointer',
                       fontFamily: 'inherit', fontSize: 12, fontWeight: 600,

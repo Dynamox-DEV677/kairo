@@ -34,7 +34,7 @@ export default function HeroCore3D({ scrollProgress, pointerXRef, pointerYRef, c
         style={{ background: 'transparent' }}>
         <ambientLight intensity={0.3} />
         <directionalLight position={[3, 4, 5]} intensity={0.65} color="#A5B4FC" />
-        <pointLight position={[-4, 2, 4]} intensity={0.8} color="#66D9FF" />
+        <pointLight position={[-4, 2, 4]} intensity={0.8} color="#A5B4FC" />
         <pointLight position={[4, -2, 3]} intensity={0.6} color="#ffffff" />
 
         <CoreScene
@@ -154,7 +154,7 @@ function CoreScene({ scrollRef, pointerXRef, pointerYRef }: {
     <group ref={rootRef}>
       <mesh ref={haloRef}>
         <sphereGeometry args={[2.4, 32, 32]} />
-        <meshBasicMaterial color="#66D9FF" transparent opacity={0.35} side={THREE.BackSide} depthWrite={false} />
+        <meshBasicMaterial color="#A5B4FC" transparent opacity={0.35} side={THREE.BackSide} depthWrite={false} />
       </mesh>
 
       <mesh ref={ring1Ref} rotation={[Math.PI / 2.6, 0, 0]}>
@@ -169,8 +169,8 @@ function CoreScene({ scrollRef, pointerXRef, pointerYRef }: {
       <mesh ref={coreRef}>
         <icosahedronGeometry args={[1.05, 1]} />
         <meshStandardMaterial
-          color="#2046C2"
-          emissive="#66D9FF"
+          color="#4A2FA8"
+          emissive="#A5B4FC"
           emissiveIntensity={0.9}
           roughness={0.25}
           metalness={0.55}

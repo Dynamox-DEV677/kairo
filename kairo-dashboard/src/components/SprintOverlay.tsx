@@ -11,8 +11,8 @@ const C = {
   textDim:   '#B1B5BA',
   textFaint: '#9CA3AF',
   textGhost: '#6B7280',
-  purple:    '#66D9FF',
-  purpleHi:  '#4F7CFF',
+  purple:    '#A5B4FC',
+  purpleHi:  '#7C6BF6',
   purpleLite:'#A5B4FC',
   purpleSoft:'#DBE7FF',
 }
@@ -81,7 +81,7 @@ export default function SprintOverlay({ open, phaseIdx, fullscreen = true, banne
       <div style={{
         position: 'absolute', top: '-20%', left: '15%',
         width: 280, height: 280, borderRadius: '50%',
-        background: 'radial-gradient(closest-side, rgba(79, 124, 255, 0.35), transparent 70%)',
+        background: 'radial-gradient(closest-side, rgba(124, 107, 246, 0.35), transparent 70%)',
         filter: 'blur(40px)', animation: 'sprint-glow 4s ease-in-out infinite',
         pointerEvents: 'none',
       }} />
@@ -126,7 +126,7 @@ export default function SprintOverlay({ open, phaseIdx, fullscreen = true, banne
         <div style={{
           position: 'absolute', left: 68, right: 68, top: '50%',
           height: 3, transform: 'translateY(-50%)',
-          background: 'linear-gradient(90deg, rgba(165, 180, 252, 0.15), rgba(102, 217, 255, 0.45), rgba(79, 124, 255, 0.32), rgba(102, 217, 255, 0.45), rgba(165, 180, 252, 0.15))',
+          background: 'linear-gradient(90deg, rgba(165, 180, 252, 0.15), rgba(165, 180, 252, 0.45), rgba(124, 107, 246, 0.32), rgba(165, 180, 252, 0.45), rgba(165, 180, 252, 0.15))',
           borderRadius: 999, overflow: 'hidden',
         }}>
           <motion.div
@@ -169,9 +169,9 @@ export default function SprintOverlay({ open, phaseIdx, fullscreen = true, banne
           style={{
             position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)',
             width: 68, height: 68, borderRadius: 17,
-            background: 'linear-gradient(135deg, #A5B4FC 0%, #4F7CFF 60%, #0B1530 100%)',
+            background: 'linear-gradient(135deg, #A5B4FC 0%, #7C6BF6 60%, #0B1530 100%)',
             display: 'grid', placeItems: 'center',
-            boxShadow: '0 0 36px rgba(79, 124, 255, 0.03)',
+            boxShadow: '0 0 36px rgba(124, 107, 246, 0.03)',
             zIndex: 2,
           }}
         >
@@ -241,15 +241,15 @@ export default function SprintOverlay({ open, phaseIdx, fullscreen = true, banne
       <div style={{
         marginTop: 20, width: '100%', maxWidth: 340,
         height: 4, borderRadius: 999, overflow: 'hidden',
-        background: 'rgba(102, 217, 255, 0.12)',
+        background: 'rgba(165, 180, 252, 0.12)',
       }}>
         <motion.div
           animate={{ width: `${progress * 100}%` }}
           transition={{ duration: 0.4 }}
           style={{
             height: '100%',
-            background: 'linear-gradient(90deg, #A5B4FC, #66D9FF, #4F7CFF)',
-            boxShadow: '0 0 12px rgba(102, 217, 255, 0.06)',
+            background: 'linear-gradient(90deg, #A5B4FC, #A5B4FC, #7C6BF6)',
+            boxShadow: '0 0 12px rgba(165, 180, 252, 0.06)',
           }}
         />
       </div>

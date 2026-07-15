@@ -92,7 +92,7 @@ export default function Step3Create({ onBack, onContinue }: Props) {
             style={{
               marginTop: 14, padding: '10px 14px',
               borderRadius: 12,
-              background: 'rgba(102, 217, 255, 0.08)',
+              background: 'rgba(165, 180, 252, 0.08)',
               border: `1px solid ${RC.borderHi}`,
               color: RC.purpleLite,
               fontFamily: FONT, fontSize: 12.5, fontWeight: 600,
@@ -120,12 +120,12 @@ function StrengthChip({ filled, strength }: { filled: number; strength: PinStren
     <div style={{
       display: 'flex', alignItems: 'center', gap: 10,
       padding: '8px 16px', borderRadius: 999,
-      background: 'rgba(102, 217, 255, 0.06)',
+      background: 'rgba(165, 180, 252, 0.06)',
       border: `1px solid ${stages.accent}66`,
     }}>
       <div style={{
         width: 60, height: 4, borderRadius: 999,
-        background: 'rgba(102, 217, 255, 0.18)',
+        background: 'rgba(165, 180, 252, 0.18)',
         position: 'relative', overflow: 'hidden',
       }}>
         <div style={{

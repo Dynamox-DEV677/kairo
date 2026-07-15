@@ -16,9 +16,9 @@ const C = {
   textVery:    '#6B7280',
   purpleLite:  '#DBE7FF',
   purpleSoft:  '#A5B4FC',
-  purple:      '#66D9FF',
-  purpleHi:    '#4F7CFF',
-  purpleDeep:  '#2046C2',
+  purple:      '#A5B4FC',
+  purpleHi:    '#7C6BF6',
+  purpleDeep:  '#4A2FA8',
   purpleInk:   '#0B1530',
 }
 
@@ -292,7 +292,7 @@ export default function AboutPage({ onExit }: Props) {
                       padding: '16px 26px', borderRadius: 12, textDecoration: 'none',
                       background: C.white, color: C.ink,
                       fontFamily: SANS, fontSize: 15, fontWeight: 700,
-                      boxShadow: `0 0 32px rgba(102, 217, 255, 0.03)`,
+                      boxShadow: `0 0 32px rgba(165, 180, 252, 0.03)`,
                     }}>
                     <Mail size={15} />
                     kairoindustries.cor@gmail.com
@@ -362,7 +362,7 @@ function PurpleHalo() {
     <div aria-hidden style={{
       position: 'fixed', top: '-20vh', left: '50%', transform: 'translateX(-50%)',
       width: '120vw', height: '80vh', borderRadius: '50%',
-      background: `radial-gradient(60% 60% at 50% 30%, rgba(79, 124, 255, 0.18) 0%, rgba(32, 70, 194, 0.05) 35%, transparent 70%)`,
+      background: `radial-gradient(60% 60% at 50% 30%, rgba(124, 107, 246, 0.18) 0%, rgba(74, 47, 168, 0.05) 35%, transparent 70%)`,
       pointerEvents: 'none', zIndex: 0,
       filter: 'blur(30px)',
     }} />

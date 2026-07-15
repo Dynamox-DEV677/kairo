@@ -88,11 +88,11 @@ export default function ConfirmModal({
   if (typeof document === 'undefined') return null
 
   const danger = tone === 'danger'
-  const accentColor = danger ? '#f87171' : '#66D9FF'
-  const glowColor   = danger ? 'rgba(248,113,113,0.35)' : 'rgba(79, 124, 255, 0.35)'
+  const accentColor = danger ? '#f87171' : '#A5B4FC'
+  const glowColor   = danger ? 'rgba(248,113,113,0.35)' : 'rgba(124, 107, 246, 0.35)'
   const confirmGradient = danger
     ? 'linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)'
-    : 'linear-gradient(135deg, #4F7CFF 0%, #4f46e5 50%, #2563eb 100%)'
+    : 'linear-gradient(135deg, #7C6BF6 0%, #4f46e5 50%, #6B4EE0 100%)'
 
   const DefaultIcon = danger ? AlertTriangle : Sparkles
 
@@ -122,7 +122,7 @@ export default function ConfirmModal({
             style={{
               width: '100%', maxWidth: 420,
               background: 'linear-gradient(180deg, #151922 0%, #0d0d15 100%)',
-              border: `1px solid ${danger ? 'rgba(248,113,113,0.32)' : 'rgba(79, 124, 255, 0.32)'}`,
+              border: `1px solid ${danger ? 'rgba(248,113,113,0.32)' : 'rgba(124, 107, 246, 0.32)'}`,
               borderRadius: 18,
               padding: 24,
               position: 'relative',
@@ -154,8 +154,8 @@ export default function ConfirmModal({
 
             <div style={{
               width: 44, height: 44, borderRadius: 12,
-              background: danger ? 'rgba(248,113,113,0.12)' : 'rgba(79, 124, 255, 0.12)',
-              border:    `1px solid ${danger ? 'rgba(248,113,113,0.32)' : 'rgba(79, 124, 255, 0.32)'}`,
+              background: danger ? 'rgba(248,113,113,0.12)' : 'rgba(124, 107, 246, 0.12)',
+              border:    `1px solid ${danger ? 'rgba(248,113,113,0.32)' : 'rgba(124, 107, 246, 0.32)'}`,
               display: 'grid', placeItems: 'center',
               marginBottom: 14,
               position: 'relative',

@@ -13,18 +13,18 @@ const C = {
   panel:     '#0E1117',
   panel2:    '#151922',
   border:    'rgba(255,255,255,0.08)',
-  borderHi:  'rgba(102, 217, 255, 0.32)',
+  borderHi:  'rgba(165, 180, 252, 0.32)',
   text:      '#ffffff',
   textDim:   '#CBD5E1',
   textFaint: '#9CA3AF',
   textVery:  '#6B7280',
-  purple:    '#66D9FF',
-  purpleHi:  '#4F7CFF',
+  purple:    '#A5B4FC',
+  purpleHi:  '#7C6BF6',
   purpleSoft:'#A5B4FC',
   purpleLite:'#DBE7FF',
-  ok:    '#66D9FF',
+  ok:    '#A5B4FC',
   warn:  '#A5B4FC',
-  bad:   '#2046C2',
+  bad:   '#4A2FA8',
 }
 
 interface StatusSnapshot {
@@ -153,7 +153,7 @@ export default function StatusPage({ onExit }: Props) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 28 }}>
           <img src="/kairo_logo.png" alt="Kyno"
             style={{ width: 38, height: 38, borderRadius: 10, objectFit: 'contain',
-                     filter: 'drop-shadow(0 0 18px rgba(79, 124, 255, 0.03))' }} />
+                     filter: 'drop-shadow(0 0 18px rgba(124, 107, 246, 0.03))' }} />
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 14, fontWeight: 800, letterSpacing: -0.2, color: C.text }}>
               Kyno Status
@@ -178,9 +178,9 @@ export default function StatusPage({ onExit }: Props) {
             padding: '22px 24px',
             borderRadius: 18,
             background: `linear-gradient(135deg,
-              ${overall === 'ok'       ? 'rgba(102, 217, 255, 0.10)' :
+              ${overall === 'ok'       ? 'rgba(165, 180, 252, 0.10)' :
                 overall === 'degraded' ? 'rgba(165, 180, 252, 0.10)' :
-                                         'rgba(32, 70, 194, 0.18)'} 0%,
+                                         'rgba(74, 47, 168, 0.18)'} 0%,
               ${C.panel} 100%)`,
             border: `1px solid ${overall === 'down' ? C.borderHi : C.border}`,
             display: 'flex', alignItems: 'center', gap: 18,
@@ -295,8 +295,8 @@ export default function StatusPage({ onExit }: Props) {
               <div style={{
                 width: 38, height: 38, borderRadius: 10, flexShrink: 0,
                 background: snap.errors.totalLogged === 0
-                  ? 'rgba(102, 217, 255, 0.10)'
-                  : 'rgba(32, 70, 194, 0.18)',
+                  ? 'rgba(165, 180, 252, 0.10)'
+                  : 'rgba(74, 47, 168, 0.18)',
                 border: `1px solid ${C.border}`,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
@@ -320,7 +320,7 @@ export default function StatusPage({ onExit }: Props) {
 
         <div style={{
           padding: '12px 16px', borderRadius: 12,
-          background: 'rgba(102, 217, 255, 0.04)',
+          background: 'rgba(165, 180, 252, 0.04)',
           border: `1px solid ${C.border}`,
           fontSize: 11, color: C.textFaint, lineHeight: 1.6,
         }}>
@@ -387,7 +387,7 @@ function StatusPill({ health }: { health: Health }) {
     <div style={{
       display: 'inline-flex', alignItems: 'center', gap: 6,
       padding: '5px 10px', borderRadius: 100,
-      background: 'rgba(102, 217, 255, 0.08)',
+      background: 'rgba(165, 180, 252, 0.08)',
       border: `1px solid ${C.border}`,
       color, fontSize: 11, fontWeight: 700, letterSpacing: 0.2,
       flexShrink: 0,
@@ -407,7 +407,7 @@ function StatTile({ icon: Icon, label, value, accent = false }: {
   return (
     <div style={{
       background: accent
-        ? 'linear-gradient(135deg, rgba(102, 217, 255, 0.12), rgba(79, 124, 255, 0.05))'
+        ? 'linear-gradient(135deg, rgba(165, 180, 252, 0.12), rgba(124, 107, 246, 0.05))'
         : C.panel,
       border: `1px solid ${accent ? C.borderHi : C.border}`,
       borderRadius: 14,

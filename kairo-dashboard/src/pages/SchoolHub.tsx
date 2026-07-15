@@ -68,7 +68,7 @@ function Spinner() {
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: 48 }}>
       <motion.div
         animate={{ rotate: 360 }} transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }}
-        style={{ width: 28, height: 28, borderRadius: '50%', border: '2px solid #1f2532', borderTopColor: '#4F7CFF' }}
+        style={{ width: 28, height: 28, borderRadius: '50%', border: '2px solid #1f2532', borderTopColor: '#7C6BF6' }}
       />
     </div>
   )
@@ -87,11 +87,11 @@ function EmptyState({ icon: Icon, title, sub }: { icon: React.ElementType; title
 function ErrBanner({ msg, onDismiss }: { msg: string; onDismiss?: () => void }) {
   return (
     <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
-      style={{ background: 'rgba(79, 124, 255, 0.12)', border: '1px solid rgba(79, 124, 255, 0.25)', borderRadius: 8,
-        padding: '10px 14px', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, color: '#66D9FF' }}>
+      style={{ background: 'rgba(124, 107, 246, 0.12)', border: '1px solid rgba(124, 107, 246, 0.25)', borderRadius: 8,
+        padding: '10px 14px', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, color: '#A5B4FC' }}>
       <AlertCircle size={14} style={{ flexShrink: 0 }} />
       <span style={{ flex: 1 }}>{msg}</span>
-      {onDismiss && <button onClick={onDismiss} style={{ background: 'none', border: 'none', color: '#66D9FF', cursor: 'pointer', padding: 0 }}><X size={13} /></button>}
+      {onDismiss && <button onClick={onDismiss} style={{ background: 'none', border: 'none', color: '#A5B4FC', cursor: 'pointer', padding: 0 }}><X size={13} /></button>}
     </motion.div>
   )
 }
@@ -118,15 +118,15 @@ function TabBar({ tabs, active, setActive }: {
         <button key={t.id} onClick={() => setActive(t.id)} style={{
           display: 'flex', alignItems: 'center', gap: 6,
           padding: '7px 14px', borderRadius: 8, fontSize: 13, fontWeight: active === t.id ? 600 : 400,
-          border: active === t.id ? '1px solid rgba(79, 124, 255, 0.14)' : '1px solid #1f2532',
-          background: active === t.id ? 'rgba(79, 124, 255, 0.12)' : '#0E1117',
-          color: active === t.id ? '#66D9FF' : '#9CA3AF',
+          border: active === t.id ? '1px solid rgba(124, 107, 246, 0.14)' : '1px solid #1f2532',
+          background: active === t.id ? 'rgba(124, 107, 246, 0.12)' : '#0E1117',
+          color: active === t.id ? '#A5B4FC' : '#9CA3AF',
           cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s', position: 'relative',
         }}>
           <t.icon size={13} />
           {t.label}
           {!!t.badge && (
-            <span style={{ background: '#4F7CFF', color: '#fff', borderRadius: 10, fontSize: 10,
+            <span style={{ background: '#7C6BF6', color: '#fff', borderRadius: 10, fontSize: 10,
               fontWeight: 700, padding: '0 5px', minWidth: 16, textAlign: 'center' }}>
               {t.badge}
             </span>
@@ -147,8 +147,8 @@ function Card({ children, style }: { children: React.ReactNode; style?: React.CS
 
 function RoleBadge({ role }: { role: string }) {
   const cfg: Record<string, { bg: string; color: string; label: string }> = {
-    admin:   { bg: 'rgba(79, 124, 255, 0.15)',  color: '#66D9FF', label: 'Admin' },
-    teacher: { bg: 'rgba(79, 124, 255, 0.15)',  color: '#A5B4FC', label: 'Teacher' },
+    admin:   { bg: 'rgba(124, 107, 246, 0.15)',  color: '#A5B4FC', label: 'Admin' },
+    teacher: { bg: 'rgba(124, 107, 246, 0.15)',  color: '#A5B4FC', label: 'Teacher' },
     student: { bg: 'rgba(165, 180, 252, 0.15)',  color: '#A5B4FC', label: 'Student' },
   }
   const c = cfg[role] || { bg: '#1f2532', color: '#9CA3AF', label: role }
@@ -163,10 +163,10 @@ function StatusBadge({ status }: { status: string }) {
   const cfg: Record<string, { bg: string; color: string }> = {
     active:    { bg: 'rgba(165, 180, 252, 0.15)',  color: '#A5B4FC' },
     pending:   { bg: 'rgba(165, 180, 252, 0.15)',  color: '#A5B4FC' },
-    suspended: { bg: 'rgba(79, 124, 255, 0.15)',   color: '#66D9FF' },
-    submitted: { bg: 'rgba(79, 124, 255, 0.15)',  color: '#66D9FF' },
+    suspended: { bg: 'rgba(124, 107, 246, 0.15)',   color: '#A5B4FC' },
+    submitted: { bg: 'rgba(124, 107, 246, 0.15)',  color: '#A5B4FC' },
     graded:    { bg: 'rgba(165, 180, 252, 0.15)',  color: '#A5B4FC' },
-    late:      { bg: 'rgba(79, 124, 255, 0.15)',   color: '#66D9FF' },
+    late:      { bg: 'rgba(124, 107, 246, 0.15)',   color: '#A5B4FC' },
   }
   const c = cfg[status] || { bg: '#1f2532', color: '#9CA3AF' }
   return (
@@ -182,14 +182,14 @@ function Avatar({ name, url, size = 32 }: { name: string; url?: string; size?: n
     : (
       <div style={{
         width: size, height: size, borderRadius: size / 3, flexShrink: 0,
-        background: 'linear-gradient(135deg, #4F7CFF, #4F7CFF)',
+        background: 'linear-gradient(135deg, #7C6BF6, #7C6BF6)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         fontSize: size * 0.4, fontWeight: 700, color: '#fff',
       }}>{name.charAt(0).toUpperCase()}</div>
     )
 }
 
-function StatCard({ label, value, icon: Icon, color = '#4F7CFF', sub }: {
+function StatCard({ label, value, icon: Icon, color = '#7C6BF6', sub }: {
   label: string; value: number | string; icon: React.ElementType; color?: string; sub?: string
 }) {
   return (
@@ -240,8 +240,8 @@ function Btn({ children, onClick, variant = 'primary', size = 'md', disabled = f
   size?: 'sm' | 'md'; disabled?: boolean; style?: React.CSSProperties
 }) {
   const cfg = {
-    primary: { bg: '#4F7CFF', hoverBg: '#5558e8', color: '#fff' },
-    danger:  { bg: 'rgba(79, 124, 255, 0.15)', hoverBg: 'rgba(79, 124, 255, 0.25)', color: '#66D9FF' },
+    primary: { bg: '#7C6BF6', hoverBg: '#5558e8', color: '#fff' },
+    danger:  { bg: 'rgba(124, 107, 246, 0.15)', hoverBg: 'rgba(124, 107, 246, 0.25)', color: '#A5B4FC' },
     ghost:   { bg: '#1a1f2e', hoverBg: '#222', color: '#B1B5BA' },
     success: { bg: 'rgba(165, 180, 252, 0.15)', hoverBg: 'rgba(165, 180, 252, 0.25)', color: '#A5B4FC' },
     warning: { bg: 'rgba(165, 180, 252, 0.15)', hoverBg: 'rgba(165, 180, 252, 0.25)', color: '#A5B4FC' },
@@ -267,7 +267,7 @@ function Input({ label, value, onChange, placeholder, type = 'text', required }:
   return (
     <div style={{ marginBottom: 14 }}>
       <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#9CA3AF', marginBottom: 5 }}>
-        {label}{required && <span style={{ color: '#66D9FF', marginLeft: 2 }}>*</span>}
+        {label}{required && <span style={{ color: '#A5B4FC', marginLeft: 2 }}>*</span>}
       </label>
       <input type={type} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder}
         style={{
@@ -275,7 +275,7 @@ function Input({ label, value, onChange, placeholder, type = 'text', required }:
           borderRadius: 8, color: '#fafafa', fontSize: 13, fontFamily: 'inherit', outline: 'none',
           boxSizing: 'border-box',
         }}
-        onFocus={e => { (e.currentTarget as HTMLInputElement).style.borderColor = '#4F7CFF' }}
+        onFocus={e => { (e.currentTarget as HTMLInputElement).style.borderColor = '#7C6BF6' }}
         onBlur={e => { (e.currentTarget as HTMLInputElement).style.borderColor = '#2a2a2a' }}
       />
     </div>
@@ -309,7 +309,7 @@ function SchoolHeader({ profile }: { profile: AuthProfile }) {
       {profile.school_logo_url
         ? <img src={profile.school_logo_url} alt="logo"
             style={{ width: 48, height: 48, borderRadius: 12, objectFit: 'cover', border: '1px solid #1f2532' }} />
-        : <div style={{ width: 48, height: 48, borderRadius: 12, background: 'linear-gradient(135deg,#4F7CFF,#4F7CFF)',
+        : <div style={{ width: 48, height: 48, borderRadius: 12, background: 'linear-gradient(135deg,#7C6BF6,#7C6BF6)',
             display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <Building2 size={22} color="#fff" />
           </div>
@@ -443,8 +443,8 @@ function AdminAIAnnounce({ schoolId: _ }: { schoolId: string }) {
           {(['friendly', 'formal', 'urgent'] as const).map(t => (
             <button key={t} onClick={() => setTone(t)} style={{
               flex: 1, padding: '7px 0', borderRadius: 7,
-              border: `1px solid ${tone === t ? '#4F7CFF' : '#1f2532'}`,
-              background: tone === t ? 'rgba(79, 124, 255, 0.12)' : '#050505',
+              border: `1px solid ${tone === t ? '#7C6BF6' : '#1f2532'}`,
+              background: tone === t ? 'rgba(124, 107, 246, 0.12)' : '#050505',
               color: tone === t ? '#A5B4FC' : '#6B7280',
               fontFamily: 'inherit', fontSize: 12, fontWeight: 600, cursor: 'pointer',
             }}>{t}</button>
@@ -456,7 +456,7 @@ function AdminAIAnnounce({ schoolId: _ }: { schoolId: string }) {
           disabled={generating || !topic.trim()}
           style={{
             width: '100%', padding: '10px 14px', borderRadius: 8, border: 'none',
-            background: !topic.trim() || generating ? '#1a1f2e' : 'linear-gradient(135deg, #4F7CFF, #4F7CFF)',
+            background: !topic.trim() || generating ? '#1a1f2e' : 'linear-gradient(135deg, #7C6BF6, #7C6BF6)',
             color: !topic.trim() || generating ? '#6B7280' : '#fff',
             fontFamily: 'inherit', fontSize: 13, fontWeight: 600,
             cursor: !topic.trim() || generating ? 'not-allowed' : 'pointer',
@@ -518,7 +518,7 @@ function AdminAIAnnounce({ schoolId: _ }: { schoolId: string }) {
           <option value={72}>3 days</option>
         </select>
 
-        {err     && <p style={{ fontSize: 12, color: '#66D9FF', marginBottom: 10 }}>{err}</p>}
+        {err     && <p style={{ fontSize: 12, color: '#A5B4FC', marginBottom: 10 }}>{err}</p>}
         {success && <p style={{ fontSize: 12, color: '#A5B4FC', marginBottom: 10 }}>{success}</p>}
 
         <button
@@ -526,7 +526,7 @@ function AdminAIAnnounce({ schoolId: _ }: { schoolId: string }) {
           disabled={sending || !draft.trim()}
           style={{
             width: '100%', padding: '10px 14px', borderRadius: 8, border: 'none',
-            background: !draft.trim() || sending ? '#1a1f2e' : 'linear-gradient(135deg, #A5B4FC, #66D9FF)',
+            background: !draft.trim() || sending ? '#1a1f2e' : 'linear-gradient(135deg, #A5B4FC, #A5B4FC)',
             color: !draft.trim() || sending ? '#6B7280' : '#fff',
             fontFamily: 'inherit', fontSize: 13, fontWeight: 600,
             cursor: !draft.trim() || sending ? 'not-allowed' : 'pointer',
@@ -558,13 +558,13 @@ function AdminOverview({ schoolId }: { schoolId: string }) {
   return (
     <div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(190px, 1fr))', gap: 12 }}>
-        <StatCard label="Active Users"      value={stats.total_active_users}   icon={Users}     color="#4F7CFF" />
+        <StatCard label="Active Users"      value={stats.total_active_users}   icon={Users}     color="#7C6BF6" />
         <StatCard label="Students"          value={stats.total_students}        icon={GraduationCap} color="#A5B4FC" />
         <StatCard label="Teachers"          value={stats.total_teachers}        icon={Shield}    color="#A5B4FC" />
         <StatCard label="Pending Approval"  value={stats.pending_students}      icon={Clock}     color="#A5B4FC"
           sub={stats.pending_students > 0 ? 'Go to Pending tab' : undefined} />
-        <StatCard label="Total Tasks"       value={stats.total_tasks}           icon={BookOpen}  color="#66D9FF" />
-        <StatCard label="Open Tasks"        value={stats.open_tasks}            icon={CheckSquare} color="#38bdf8" />
+        <StatCard label="Total Tasks"       value={stats.total_tasks}           icon={BookOpen}  color="#A5B4FC" />
+        <StatCard label="Open Tasks"        value={stats.open_tasks}            icon={CheckSquare} color="#8FA0FA" />
         <StatCard label="Active Notices"    value={stats.active_notifications}  icon={Bell}      color="#A5B4FC" />
       </div>
     </div>
@@ -604,7 +604,7 @@ function AdminHealthMonitor() {
   if (!data)   return null
 
   const score = data.health_score
-  const scoreColor = score >= 80 ? '#A5B4FC' : score >= 60 ? '#A5B4FC' : '#66D9FF'
+  const scoreColor = score >= 80 ? '#A5B4FC' : score >= 60 ? '#A5B4FC' : '#A5B4FC'
   const scoreLabel = score >= 80 ? 'Excellent' : score >= 60 ? 'Healthy' : score >= 40 ? 'Needs attention' : 'Critical'
 
   return (
@@ -659,7 +659,7 @@ function AdminHealthMonitor() {
       {data.alerts.length > 0 && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
           {data.alerts.map((a: any, i: number) => {
-            const c = a.level === 'high' ? '#66D9FF' : '#A5B4FC'
+            const c = a.level === 'high' ? '#A5B4FC' : '#A5B4FC'
             return (
               <div key={i} style={{
                 background: '#0E1117', border: `1px solid ${c}40`, borderRadius: 11,
@@ -696,7 +696,7 @@ function AdminHealthMonitor() {
               <span style={{ fontSize: 24, fontWeight: 800, color: '#fafafa' }}>{s.v}</span>
               <span style={{
                 fontSize: 11, fontWeight: 700,
-                color: s.t > 0 ? '#A5B4FC' : s.t < 0 ? '#66D9FF' : '#9CA3AF',
+                color: s.t > 0 ? '#A5B4FC' : s.t < 0 ? '#A5B4FC' : '#9CA3AF',
               }}>
                 {s.t > 0 ? '+' : ''}{s.t}%
               </span>
@@ -715,13 +715,13 @@ function AdminHealthMonitor() {
                 <span style={{ fontSize: 12, color: '#d4d4d8' }}>{c.class_name}</span>
                 <span style={{
                   fontSize: 11, fontWeight: 700,
-                  color: c.avg_pct >= 75 ? '#A5B4FC' : c.avg_pct >= 60 ? '#A5B4FC' : '#66D9FF',
+                  color: c.avg_pct >= 75 ? '#A5B4FC' : c.avg_pct >= 60 ? '#A5B4FC' : '#A5B4FC',
                 }}>{c.avg_pct}%</span>
               </div>
               <div style={{ height: 6, background: '#0E1117', borderRadius: 3, overflow: 'hidden' }}>
                 <div style={{
                   height: '100%', width: `${c.avg_pct}%`,
-                  background: c.avg_pct >= 75 ? '#A5B4FC' : c.avg_pct >= 60 ? '#A5B4FC' : '#66D9FF',
+                  background: c.avg_pct >= 75 ? '#A5B4FC' : c.avg_pct >= 60 ? '#A5B4FC' : '#A5B4FC',
                 }} />
               </div>
               <div style={{ fontSize: 10, color: '#6B7280', marginTop: 2 }}>{c.exam_count} marks logged</div>
@@ -736,8 +736,8 @@ function AdminHealthMonitor() {
             <div key={t.id} style={{
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
               padding: '6px 10px', marginBottom: 4,
-              background: t.tasks >= 8 ? 'rgba(79, 124, 255, 0.06)' : '#0E1117',
-              border: `1px solid ${t.tasks >= 8 ? 'rgba(79, 124, 255, 0.25)' : '#1a1f2e'}`,
+              background: t.tasks >= 8 ? 'rgba(124, 107, 246, 0.06)' : '#0E1117',
+              border: `1px solid ${t.tasks >= 8 ? 'rgba(124, 107, 246, 0.25)' : '#1a1f2e'}`,
               borderRadius: 6,
             }}>
               <span style={{ fontSize: 12, color: '#d4d4d8' }}>{t.name}</span>
@@ -761,9 +761,9 @@ function AdminHealthMonitor() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
             {[
               { l: 'New',       v: data.leadFunnel.new,       c: '#A5B4FC' },
-              { l: 'Contacted', v: data.leadFunnel.contacted, c: '#66D9FF' },
+              { l: 'Contacted', v: data.leadFunnel.contacted, c: '#A5B4FC' },
               { l: 'Admitted',  v: data.leadFunnel.admitted,  c: '#A5B4FC' },
-              { l: 'Rejected',  v: data.leadFunnel.rejected,  c: '#66D9FF' },
+              { l: 'Rejected',  v: data.leadFunnel.rejected,  c: '#A5B4FC' },
             ].map(s => (
               <div key={s.l} style={{
                 padding: 12, background: '#0E1117',
@@ -910,9 +910,9 @@ function AdminMembers({ schoolId, selfId }: { schoolId: string; selfId: string }
         {filterBtns.map(f => (
           <button key={f.id} onClick={() => setFilter(f.id)} style={{
             padding: '5px 12px', borderRadius: 6, fontSize: 12, fontWeight: 600,
-            background: filter === f.id ? 'rgba(79, 124, 255, 0.15)' : '#151922',
-            color: filter === f.id ? '#66D9FF' : '#9CA3AF',
-            border: filter === f.id ? '1px solid rgba(79, 124, 255, 0.3)' : '1px solid #1f2532',
+            background: filter === f.id ? 'rgba(124, 107, 246, 0.15)' : '#151922',
+            color: filter === f.id ? '#A5B4FC' : '#9CA3AF',
+            border: filter === f.id ? '1px solid rgba(124, 107, 246, 0.3)' : '1px solid #1f2532',
             cursor: 'pointer', fontFamily: 'inherit',
           }}>{f.label}</button>
         ))}
@@ -1062,9 +1062,9 @@ function AdminNetwork({ schoolId: _schoolId }: { schoolId: string }) {
       {success && <SuccessBanner msg={success} onDismiss={() => setSuccess('')} />}
 
       <Card style={{ marginBottom: 16, padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
-        <Globe size={16} color="#4F7CFF" />
+        <Globe size={16} color="#7C6BF6" />
         <span style={{ fontSize: 13, color: '#9CA3AF' }}>Your current IP:</span>
-        <code style={{ fontSize: 13, color: '#66D9FF', background: 'rgba(79, 124, 255, 0.08)',
+        <code style={{ fontSize: 13, color: '#A5B4FC', background: 'rgba(124, 107, 246, 0.08)',
           padding: '2px 8px', borderRadius: 5 }}>{yourIp || '…'}</code>
         {rules.length > 0 && (
           <span style={{ marginLeft: 'auto', fontSize: 12, color: '#6B7280' }}>
@@ -1109,14 +1109,14 @@ function AdminNetwork({ schoolId: _schoolId }: { schoolId: string }) {
               <Card key={r.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px',
                 opacity: r.enabled ? 1 : 0.55 }}>
                 <div style={{ width: 36, height: 36, borderRadius: 8,
-                  background: r.enabled ? 'rgba(165, 180, 252, 0.12)' : 'rgba(79, 124, 255, 0.1)',
+                  background: r.enabled ? 'rgba(165, 180, 252, 0.12)' : 'rgba(124, 107, 246, 0.1)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  {r.enabled ? <Wifi size={16} color="#A5B4FC" /> : <WifiOff size={16} color="#66D9FF" />}
+                  {r.enabled ? <Wifi size={16} color="#A5B4FC" /> : <WifiOff size={16} color="#A5B4FC" />}
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontWeight: 600, color: '#fafafa', fontSize: 13 }}>{r.label}</div>
                   <div style={{ fontSize: 12, color: '#6B7280' }}>
-                    <code style={{ color: '#66D9FF' }}>{r.cidr}</code>
+                    <code style={{ color: '#A5B4FC' }}>{r.cidr}</code>
                     {r.creator && ` · added by ${r.creator.name}`}
                   </div>
                 </div>
@@ -1129,7 +1129,7 @@ function AdminNetwork({ schoolId: _schoolId }: { schoolId: string }) {
                   </button>
                   <button onClick={() => del(r)} disabled={!!busy} title="Delete"
                     style={{ background: 'none', border: '1px solid #1f2532', borderRadius: 6, padding: '4px 8px',
-                      cursor: 'pointer', color: '#66D9FF' }}>
+                      cursor: 'pointer', color: '#A5B4FC' }}>
                     <Trash2 size={13} />
                   </button>
                 </div>
@@ -1175,9 +1175,9 @@ function AdminLogs({ schoolId }: { schoolId: string }) {
         <div style={{ display: 'flex', gap: 8 }}>
           <button onClick={() => setFailOnly(f => !f)} style={{
             padding: '5px 12px', borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: 'pointer',
-            background: failOnly ? 'rgba(79, 124, 255, 0.15)' : '#151922',
-            color: failOnly ? '#66D9FF' : '#9CA3AF',
-            border: failOnly ? '1px solid rgba(79, 124, 255, 0.3)' : '1px solid #1f2532',
+            background: failOnly ? 'rgba(124, 107, 246, 0.15)' : '#151922',
+            color: failOnly ? '#A5B4FC' : '#9CA3AF',
+            border: failOnly ? '1px solid rgba(124, 107, 246, 0.3)' : '1px solid #1f2532',
             fontFamily: 'inherit',
           }}>
             <AlertTriangle size={11} style={{ marginRight: 4 }} />
@@ -1197,22 +1197,22 @@ function AdminLogs({ schoolId }: { schoolId: string }) {
             {logs.map(l => (
               <Card key={l.id} style={{ padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 12 }}>
                 <div style={{ width: 30, height: 30, borderRadius: 8, flexShrink: 0,
-                  background: l.success ? 'rgba(165, 180, 252, 0.12)' : 'rgba(79, 124, 255, 0.12)',
+                  background: l.success ? 'rgba(165, 180, 252, 0.12)' : 'rgba(124, 107, 246, 0.12)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   {l.success
                     ? <CheckCircle size={14} color="#A5B4FC" />
-                    : <AlertCircle size={14} color="#66D9FF" />
+                    : <AlertCircle size={14} color="#A5B4FC" />
                   }
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: l.success ? '#fafafa' : '#66D9FF' }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: l.success ? '#fafafa' : '#A5B4FC' }}>
                     {l.user?.name || l.email}
                     {l.user && <span style={{ fontWeight: 400, color: '#6B7280', fontSize: 11 }}> · {l.email}</span>}
                   </div>
                   <div style={{ fontSize: 11, color: '#6B7280', display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                    <code style={{ color: '#66D9FF' }}>{l.ip_address}</code>
+                    <code style={{ color: '#A5B4FC' }}>{l.ip_address}</code>
                     {!l.success && l.reason && (
-                      <span style={{ color: '#66D9FF' }}>{reasonLabels[l.reason] || l.reason}</span>
+                      <span style={{ color: '#A5B4FC' }}>{reasonLabels[l.reason] || l.reason}</span>
                     )}
                     {l.user && <RoleBadge role={l.user.role} />}
                   </div>
@@ -1317,7 +1317,7 @@ function AdminSettings({ schoolId, profile }: { schoolId: string; profile: AuthP
 
       <Card style={{ marginBottom: 16 }}>
         <div style={{ fontSize: 14, fontWeight: 700, color: '#fafafa', marginBottom: 16, display: 'flex', gap: 8 }}>
-          <Building2 size={16} color="#4F7CFF" /> School Information
+          <Building2 size={16} color="#7C6BF6" /> School Information
         </div>
         <Input label="School Name"  value={schoolName}  onChange={setSchoolName}  required />
         <Input label="School Email" value={schoolEmail} onChange={setSchoolEmail} type="email" required />
@@ -1508,7 +1508,7 @@ function CreateTask({ schoolId: _schoolId, onCreated }: { schoolId: string; onCr
           style={{ width: '100%', padding: '9px 12px', background: '#0E1117', border: '1px solid #2a2a2a',
             borderRadius: 8, color: '#fafafa', fontSize: 13, fontFamily: 'inherit', outline: 'none',
             resize: 'vertical', boxSizing: 'border-box' }}
-          onFocus={e => { (e.currentTarget as HTMLTextAreaElement).style.borderColor = '#4F7CFF' }}
+          onFocus={e => { (e.currentTarget as HTMLTextAreaElement).style.borderColor = '#7C6BF6' }}
           onBlur={e => { (e.currentTarget as HTMLTextAreaElement).style.borderColor = '#2a2a2a' }}
         />
       </div>
@@ -1688,7 +1688,7 @@ function StudentTasks({ profile }: { profile: AuthProfile }) {
                 style={{ width: '100%', padding: '9px 12px', background: '#0E1117', border: '1px solid #2a2a2a',
                   borderRadius: 8, color: '#fafafa', fontSize: 13, fontFamily: 'inherit', outline: 'none',
                   resize: 'vertical', boxSizing: 'border-box' }}
-                onFocus={e => { (e.currentTarget as HTMLTextAreaElement).style.borderColor = '#4F7CFF' }}
+                onFocus={e => { (e.currentTarget as HTMLTextAreaElement).style.borderColor = '#7C6BF6' }}
                 onBlur={e => { (e.currentTarget as HTMLTextAreaElement).style.borderColor = '#2a2a2a' }}
               />
             </div>
@@ -1760,7 +1760,7 @@ function NotifPanel({ schoolId, profile, canSend }: { schoolId: string; profile:
               style={{ width: '100%', padding: '9px 12px', background: '#0E1117', border: '1px solid #2a2a2a',
                 borderRadius: 8, color: '#fafafa', fontSize: 13, fontFamily: 'inherit', outline: 'none',
                 resize: 'vertical', boxSizing: 'border-box' }}
-              onFocus={e => { (e.currentTarget as HTMLTextAreaElement).style.borderColor = '#4F7CFF' }}
+              onFocus={e => { (e.currentTarget as HTMLTextAreaElement).style.borderColor = '#7C6BF6' }}
               onBlur={e => { (e.currentTarget as HTMLTextAreaElement).style.borderColor = '#2a2a2a' }}
             />
           </div>
@@ -1796,7 +1796,7 @@ function NotifPanel({ schoolId, profile, canSend }: { schoolId: string; profile:
               const expires = new Date(n.expires_at).getTime()
               const created = new Date(n.created_at).getTime()
               const pct = Math.max(0, Math.min(100, ((expires - now) / (expires - created)) * 100))
-              const barColor = pct > 50 ? '#A5B4FC' : pct > 20 ? '#A5B4FC' : '#66D9FF'
+              const barColor = pct > 50 ? '#A5B4FC' : pct > 20 ? '#A5B4FC' : '#A5B4FC'
               return (
                 <Card key={n.id} style={{ padding: '12px 14px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, marginBottom: 8 }}>
@@ -1829,7 +1829,7 @@ function gradeInfo(pct: number) {
   if (pct >= 60) return { label: 'B',  color: '#A5B4FC' }
   if (pct >= 45) return { label: 'C',  color: '#A5B4FC' }
   if (pct >= 33) return { label: 'D',  color: '#A5B4FC' }
-  return { label: 'F', color: '#66D9FF' }
+  return { label: 'F', color: '#A5B4FC' }
 }
 
 function TeacherMarks({ schoolId, profile }: { schoolId: string; profile: AuthProfile }) {
@@ -1914,7 +1914,7 @@ function TeacherMarks({ schoolId, profile }: { schoolId: string; profile: AuthPr
           <div style={{ fontSize: 14, fontWeight: 700, color: '#fafafa', marginBottom: 16 }}>Enter Marks</div>
           <div style={{ marginBottom: 12 }}>
             <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#9CA3AF', marginBottom: 5 }}>
-              Student <span style={{ color: '#66D9FF' }}>*</span>
+              Student <span style={{ color: '#A5B4FC' }}>*</span>
             </label>
             <select value={studentId} onChange={e => setStudentId(e.target.value)}
               style={{ width: '100%', padding: '9px 12px', background: '#0E1117', border: '1px solid #2a2a2a',
@@ -1975,7 +1975,7 @@ function TeacherMarks({ schoolId, profile }: { schoolId: string; profile: AuthPr
                     </div>
                     <button onClick={() => deleteMark(m.id)} title="Delete"
                       style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6B7280', padding: 4 }}
-                      onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = '#66D9FF' }}
+                      onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = '#A5B4FC' }}
                       onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = '#6B7280' }}>
                       <Trash2 size={13} />
                     </button>
@@ -2044,15 +2044,15 @@ function StudentMarks({ profile, schoolId }: { profile: AuthProfile; schoolId: s
 
       <Card style={{ marginBottom: 16 }}>
         <div style={{ fontSize: 14, fontWeight: 700, color: '#fafafa', marginBottom: 4, display: 'flex', gap: 8 }}>
-          <QrCode size={16} color="#66D9FF" /> Parent Access Code
+          <QrCode size={16} color="#A5B4FC" /> Parent Access Code
         </div>
         <div style={{ fontSize: 12, color: '#6B7280', marginBottom: 12 }}>
           Share this code with your parent so they can create a Parent account and view your marks.
         </div>
         {code ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-            <code style={{ fontSize: 20, fontWeight: 800, letterSpacing: 3, color: '#66D9FF',
-              background: 'rgba(79, 124, 255, 0.08)', border: '1px solid rgba(79, 124, 255, 0.2)',
+            <code style={{ fontSize: 20, fontWeight: 800, letterSpacing: 3, color: '#A5B4FC',
+              background: 'rgba(124, 107, 246, 0.08)', border: '1px solid rgba(124, 107, 246, 0.2)',
               borderRadius: 8, padding: '8px 14px', fontFamily: 'monospace' }}>
               {code}
             </code>
@@ -2083,10 +2083,10 @@ function StudentMarks({ profile, schoolId }: { profile: AuthProfile; schoolId: s
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(155px, 1fr))', gap: 10, marginBottom: 16 }}>
               <StatCard label="Overall Avg" value={`${summary.average_percentage}%`} icon={Target}
                 color={gradeInfo(summary.average_percentage).color} sub={gradeInfo(summary.average_percentage).label} />
-              <StatCard label="Total Exams" value={summary.total_exams} icon={BookOpen} color="#66D9FF" />
+              <StatCard label="Total Exams" value={summary.total_exams} icon={BookOpen} color="#A5B4FC" />
               <StatCard label="Strong" value={summary.strong_subjects.length} icon={Star} color="#A5B4FC"
                 sub={summary.strong_subjects.slice(0,2).join(', ') || '—'} />
-              <StatCard label="Needs Work" value={summary.weak_subjects.length} icon={TrendingDown} color="#66D9FF"
+              <StatCard label="Needs Work" value={summary.weak_subjects.length} icon={TrendingDown} color="#A5B4FC"
                 sub={summary.weak_subjects.slice(0,2).join(', ') || 'none'} />
             </div>
           )}
@@ -2157,7 +2157,7 @@ function AdminMarksAudit({ schoolId }: { schoolId: string }) {
     <div>
       <Card style={{ marginBottom: 16 }}>
         <div style={{ fontSize: 14, fontWeight: 700, color: '#fafafa', marginBottom: 10, display: 'flex', gap: 8 }}>
-          <Users size={16} color="#4F7CFF" /> Parent Links ({links.length})
+          <Users size={16} color="#7C6BF6" /> Parent Links ({links.length})
         </div>
         {links.length === 0
           ? <div style={{ fontSize: 13, color: '#6B7280' }}>No parents linked yet. Students generate codes from their Marks tab.</div>
@@ -2165,7 +2165,7 @@ function AdminMarksAudit({ schoolId }: { schoolId: string }) {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               {links.map(l => (
                 <div key={l.id} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, color: '#d4d4d8' }}>
-                  <span style={{ fontSize: 11, background: 'rgba(79, 124, 255, 0.12)', color: '#66D9FF',
+                  <span style={{ fontSize: 11, background: 'rgba(124, 107, 246, 0.12)', color: '#A5B4FC',
                     borderRadius: 5, padding: '2px 7px', fontWeight: 600 }}>Parent</span>
                   {l.parent?.name} →
                   <span style={{ fontSize: 11, background: 'rgba(165, 180, 252, 0.12)', color: '#A5B4FC',

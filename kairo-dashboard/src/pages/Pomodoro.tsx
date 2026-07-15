@@ -6,7 +6,7 @@ type Mode = 'focus' | 'short' | 'long'
 
 const DURATIONS: Record<Mode, number> = { focus: 25 * 60, short: 5 * 60, long: 15 * 60 }
 const MODE_LABELS: Record<Mode, string> = { focus: 'Focus Time', short: 'Short Break', long: 'Long Break' }
-const MODE_COLORS: Record<Mode, string> = { focus: '#4F7CFF', short: '#A5B4FC', long: '#38bdf8' }
+const MODE_COLORS: Record<Mode, string> = { focus: '#7C6BF6', short: '#A5B4FC', long: '#8FA0FA' }
 
 const TASKS_PRESET = ['Study Chapter', 'Solve Problems', 'Revise Notes', 'Practice Questions', 'Read Textbook']
 
@@ -139,7 +139,7 @@ export default function Pomodoro() {
 
           <div style={{ display: 'flex', gap: 16, marginTop: 16, width: '100%' }}>
             <div style={{ flex: 1, textAlign: 'center', padding: '8px', background: '#0E1117', borderRadius: 8 }}>
-              <div style={{ fontSize: 20, fontWeight: 700, color: '#66D9FF' }}>{sessions}</div>
+              <div style={{ fontSize: 20, fontWeight: 700, color: '#A5B4FC' }}>{sessions}</div>
               <div style={{ fontSize: 10, color: '#6B7280' }}>Sessions</div>
             </div>
             <div style={{ flex: 1, textAlign: 'center', padding: '8px', background: '#0E1117', borderRadius: 8 }}>
@@ -151,7 +151,7 @@ export default function Pomodoro() {
 
         <div>
           <div style={{ background: '#0E1117', border: '1px solid #1f2532', borderRadius: 14, padding: 20, marginBottom: 14 }}>
-            <div style={{ fontSize: 12, fontWeight: 700, color: mode === 'focus' ? '#66D9FF' : '#A5B4FC', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: mode === 'focus' ? '#A5B4FC' : '#A5B4FC', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 }}>
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
                 {mode === 'focus' ? <Brain size={13} /> : <Coffee size={13} />}
                 {mode === 'focus' ? 'Focus Tips' : 'Break Tips'}

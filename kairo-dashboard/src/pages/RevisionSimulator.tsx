@@ -28,7 +28,7 @@ const card: React.CSSProperties = { background: 'rgba(255,255,255,0.03)', backdr
 const DIFFICULTIES = [
   { id: 'easy',   label: 'Easy',   color: '#A5B4FC', secs: 90, count: 8  },
   { id: 'medium', label: 'Medium', color: '#A5B4FC', secs: 60, count: 10 },
-  { id: 'hard',   label: 'Exam',   color: '#66D9FF', secs: 45, count: 12 },
+  { id: 'hard',   label: 'Exam',   color: '#A5B4FC', secs: 45, count: 12 },
 ]
 
 type Phase = 'setup' | 'loading' | 'live' | 'review' | 'done'
@@ -229,9 +229,9 @@ function SetupView({
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 22 }}>
         <div style={{
           width: 44, height: 44, borderRadius: 11,
-          background: 'linear-gradient(135deg, #66D9FF, #A5B4FC)',
+          background: 'linear-gradient(135deg, #A5B4FC, #A5B4FC)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 0 18px rgba(102, 217, 255, 0.03)', flexShrink: 0,
+          boxShadow: '0 0 18px rgba(165, 180, 252, 0.03)', flexShrink: 0,
         }}>
           <Zap size={22} color="#fff" />
         </div>
@@ -286,10 +286,10 @@ function SetupView({
 
         {memoryReady && weakTopics.length === 0 && (
           <div style={{
-            padding: '16px', background: 'rgba(102, 217, 255, 0.05)',
-            border: '1px solid rgba(102, 217, 255, 0.2)', borderRadius: 8,
+            padding: '16px', background: 'rgba(165, 180, 252, 0.05)',
+            border: '1px solid rgba(165, 180, 252, 0.2)', borderRadius: 8,
           }}>
-            <p style={{ fontSize: 12, color: '#66D9FF', margin: 0, marginBottom: 8 }}>
+            <p style={{ fontSize: 12, color: '#A5B4FC', margin: 0, marginBottom: 8 }}>
               No weak topics in memory yet. Type a few topics manually:
             </p>
             <input
@@ -352,7 +352,7 @@ function SetupView({
       </div>
 
       {err && (
-        <div style={{ marginBottom: 14, padding: '10px 14px', background: 'rgba(102, 217, 255, 0.08)', border: '1px solid rgba(102, 217, 255, 0.25)', borderRadius: 8, fontSize: 12, color: '#66D9FF' }}>
+        <div style={{ marginBottom: 14, padding: '10px 14px', background: 'rgba(165, 180, 252, 0.08)', border: '1px solid rgba(165, 180, 252, 0.25)', borderRadius: 8, fontSize: 12, color: '#A5B4FC' }}>
           {err}
         </div>
       )}
@@ -363,12 +363,12 @@ function SetupView({
         style={{
           width: '100%', padding: '14px', borderRadius: 11, border: 'none',
           background: pickedTopics.length === 0 ? '#1a1f2e'
-            : 'linear-gradient(135deg, #66D9FF, #A5B4FC)',
+            : 'linear-gradient(135deg, #A5B4FC, #A5B4FC)',
           color: pickedTopics.length === 0 ? '#6B7280' : '#fff',
           fontFamily: 'inherit', fontSize: 15, fontWeight: 700,
           cursor: pickedTopics.length === 0 ? 'not-allowed' : 'pointer',
           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-          boxShadow: pickedTopics.length === 0 ? 'none' : '0 0 24px rgba(102, 217, 255, 0.35)',
+          boxShadow: pickedTopics.length === 0 ? 'none' : '0 0 24px rgba(165, 180, 252, 0.35)',
         }}>
         <Zap size={15} /> Start Simulation
       </motion.button>
@@ -387,7 +387,7 @@ function LoadingView() {
         transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
         style={{
           width: 36, height: 36, borderRadius: '50%',
-          border: '3px solid #1f2532', borderTopColor: '#66D9FF',
+          border: '3px solid #1f2532', borderTopColor: '#A5B4FC',
         }} />
       <p style={{ fontSize: 14, color: '#B1B5BA' }}>AI is crafting your simulation…</p>
       <p style={{ fontSize: 11, color: '#6B7280' }}>Targeting your weak topics with exam-grade questions</p>
@@ -397,7 +397,7 @@ function LoadingView() {
 
 function LiveView({ q, idx, total, secsLeft, maxSecs, picked, onPick }: any) {
   const pct = (secsLeft / maxSecs) * 100
-  const dangerColor = secsLeft < 10 ? '#66D9FF' : secsLeft < 20 ? '#A5B4FC' : '#A5B4FC'
+  const dangerColor = secsLeft < 10 ? '#A5B4FC' : secsLeft < 20 ? '#A5B4FC' : '#A5B4FC'
   return (
     <div style={{ padding: '28px 36px', maxWidth: 760, margin: '0 auto', height: '100%', overflowY: 'auto' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 22 }}>
@@ -408,7 +408,7 @@ function LiveView({ q, idx, total, secsLeft, maxSecs, picked, onPick }: any) {
           <div style={{ height: 4, background: '#1a1f2e', borderRadius: 2, overflow: 'hidden' }}>
             <motion.div
               animate={{ width: `${((idx + 1) / total) * 100}%` }}
-              style={{ height: '100%', background: 'linear-gradient(90deg, #4F7CFF, #4F7CFF)' }} />
+              style={{ height: '100%', background: 'linear-gradient(90deg, #7C6BF6, #7C6BF6)' }} />
           </div>
         </div>
         <div style={{
@@ -437,7 +437,7 @@ function LiveView({ q, idx, total, secsLeft, maxSecs, picked, onPick }: any) {
 
       <motion.div key={idx} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
         style={{ ...card, padding: 22, marginBottom: 14 }}>
-        <div style={{ fontSize: 11, color: '#66D9FF', fontWeight: 700, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 1 }}>
+        <div style={{ fontSize: 11, color: '#A5B4FC', fontWeight: 700, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 1 }}>
           {q.subject || 'Topic'} · {q.topic}
         </div>
         <div style={{
@@ -456,15 +456,15 @@ function LiveView({ q, idx, total, secsLeft, maxSecs, picked, onPick }: any) {
               onClick={() => onPick(i)} disabled={picked !== null && picked !== undefined}
               style={{
                 padding: '13px 16px', borderRadius: 10,
-                border: `1px solid ${isPicked ? '#4F7CFF' : '#1f2532'}`,
-                background: isPicked ? 'rgba(79, 124, 255, 0.1)' : '#0E1117',
+                border: `1px solid ${isPicked ? '#7C6BF6' : '#1f2532'}`,
+                background: isPicked ? 'rgba(124, 107, 246, 0.1)' : '#0E1117',
                 cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left',
                 display: 'flex', alignItems: 'center', gap: 12,
                 transition: 'all 0.15s',
               }}>
               <div style={{
                 width: 26, height: 26, borderRadius: 7, flexShrink: 0,
-                background: isPicked ? '#4F7CFF' : '#1a1f2e',
+                background: isPicked ? '#7C6BF6' : '#1a1f2e',
                 color: isPicked ? '#fff' : '#9CA3AF',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: 12, fontWeight: 700,
@@ -485,7 +485,7 @@ function ResultsView({ questions, answers, onReset }: any) {
   const total = questions.length
   const pct = Math.round((correct / total) * 100)
   const grade = pct >= 90 ? 'A+' : pct >= 75 ? 'A' : pct >= 60 ? 'B' : pct >= 40 ? 'C' : 'D'
-  const gradeColor = pct >= 75 ? '#A5B4FC' : pct >= 60 ? '#A5B4FC' : pct >= 40 ? '#A5B4FC' : '#66D9FF'
+  const gradeColor = pct >= 75 ? '#A5B4FC' : pct >= 60 ? '#A5B4FC' : pct >= 40 ? '#A5B4FC' : '#A5B4FC'
 
   return (
     <div style={{ padding: '28px 36px', maxWidth: 880, margin: '0 auto', height: '100%', overflowY: 'auto' }}>
@@ -534,15 +534,15 @@ function ResultsView({ questions, answers, onReset }: any) {
           return (
             <div key={i} style={{
               ...card, padding: 16,
-              borderColor: isCorrect ? 'rgba(165, 180, 252, 0.3)' : 'rgba(102, 217, 255, 0.3)',
+              borderColor: isCorrect ? 'rgba(165, 180, 252, 0.3)' : 'rgba(165, 180, 252, 0.3)',
             }}>
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 10 }}>
                 <div style={{
                   width: 24, height: 24, borderRadius: 6, flexShrink: 0,
-                  background: isCorrect ? 'rgba(165, 180, 252, 0.15)' : 'rgba(102, 217, 255, 0.15)',
+                  background: isCorrect ? 'rgba(165, 180, 252, 0.15)' : 'rgba(165, 180, 252, 0.15)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}>
-                  {isCorrect ? <CheckCircle2 size={13} color="#A5B4FC" /> : <XCircle size={13} color="#66D9FF" />}
+                  {isCorrect ? <CheckCircle2 size={13} color="#A5B4FC" /> : <XCircle size={13} color="#A5B4FC" />}
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 10, fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>
@@ -565,10 +565,10 @@ function ResultsView({ questions, answers, onReset }: any) {
                     <div key={j} style={{
                       padding: '7px 10px', borderRadius: 6, fontSize: 12,
                       border: `1px solid ${isAnswer ? 'rgba(165, 180, 252, 0.4)' :
-                        isPicked && !isAnswer ? 'rgba(102, 217, 255, 0.14)' : '#1a1f2e'}`,
+                        isPicked && !isAnswer ? 'rgba(165, 180, 252, 0.14)' : '#1a1f2e'}`,
                       background: isAnswer ? 'rgba(165, 180, 252, 0.08)' :
-                        isPicked && !isAnswer ? 'rgba(102, 217, 255, 0.08)' : '#0E1117',
-                      color: isAnswer ? '#A5B4FC' : isPicked && !isAnswer ? '#66D9FF' : '#B1B5BA',
+                        isPicked && !isAnswer ? 'rgba(165, 180, 252, 0.08)' : '#0E1117',
+                      color: isAnswer ? '#A5B4FC' : isPicked && !isAnswer ? '#A5B4FC' : '#B1B5BA',
                       display: 'flex', alignItems: 'center', gap: 8,
                     }}>
                       <span style={{ fontWeight: 700, fontSize: 10 }}>{String.fromCharCode(65 + j)}</span>
@@ -594,10 +594,10 @@ function ResultsView({ questions, answers, onReset }: any) {
         <motion.button whileHover={{ scale: 1.03 }} onClick={onReset}
           style={{
             padding: '11px 24px', borderRadius: 10, border: 'none',
-            background: 'linear-gradient(135deg, #66D9FF, #A5B4FC)',
+            background: 'linear-gradient(135deg, #A5B4FC, #A5B4FC)',
             color: '#fff', fontFamily: 'inherit', fontSize: 14, fontWeight: 700,
             cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 7,
-            boxShadow: '0 0 20px rgba(102, 217, 255, 0.03)',
+            boxShadow: '0 0 20px rgba(165, 180, 252, 0.03)',
           }}>
           <RefreshCw size={13} /> Run Another Simulation
         </motion.button>

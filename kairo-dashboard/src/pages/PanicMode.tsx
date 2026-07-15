@@ -200,9 +200,9 @@ Be direct. Indian exam context. Under 200 words total.` },
           transition={{ duration: 1.4, repeat: Infinity, ease: 'easeInOut' }}
           style={{
             width: 44, height: 44, borderRadius: 11,
-            background: 'linear-gradient(135deg, #66D9FF, #4F7CFF)',
+            background: 'linear-gradient(135deg, #A5B4FC, #7C6BF6)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: '0 0 22px rgba(79, 124, 255, 0.03)', flexShrink: 0,
+            boxShadow: '0 0 22px rgba(124, 107, 246, 0.03)', flexShrink: 0,
           }}>
           <AlertTriangle size={22} color="#fff" />
         </motion.div>
@@ -255,7 +255,7 @@ Be direct. Indian exam context. Under 200 words total.` },
                 {weakTopics.map((t, i) => (
                   <span key={i} style={{
                     padding: '4px 9px', borderRadius: 5,
-                    background: 'rgba(79, 124, 255, 0.10)', border: '1px solid rgba(79, 124, 255, 0.25)',
+                    background: 'rgba(124, 107, 246, 0.10)', border: '1px solid rgba(124, 107, 246, 0.25)',
                     color: '#A5B4FC', fontSize: 10.5, fontWeight: 600,
                   }}>{t}</span>
                 ))}
@@ -263,19 +263,19 @@ Be direct. Indian exam context. Under 200 words total.` },
             </div>
           )}
 
-          {err && <p style={{ fontSize: 12, color: '#66D9FF', marginBottom: 12 }}>{err}</p>}
+          {err && <p style={{ fontSize: 12, color: '#A5B4FC', marginBottom: 12 }}>{err}</p>}
 
           <motion.button
             whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
             onClick={generate} disabled={busy}
             style={{
               width: '100%', padding: '14px', borderRadius: 11, border: 'none',
-              background: busy ? '#1a1f2e' : 'linear-gradient(135deg, #66D9FF, #4F7CFF)',
+              background: busy ? '#1a1f2e' : 'linear-gradient(135deg, #A5B4FC, #7C6BF6)',
               color: busy ? '#6B7280' : '#fff',
               fontFamily: 'inherit', fontSize: 15, fontWeight: 800,
               cursor: busy ? 'not-allowed' : 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-              boxShadow: busy ? 'none' : '0 0 26px rgba(79, 124, 255, 0.14)',
+              boxShadow: busy ? 'none' : '0 0 26px rgba(124, 107, 246, 0.14)',
               letterSpacing: 1.5, textTransform: 'uppercase',
             }}>
             {busy
@@ -326,7 +326,7 @@ Be direct. Indian exam context. Under 200 words total.` },
                     borderRadius: 7, border: 'none', fontFamily: 'inherit',
                     fontSize: 12, fontWeight: 600, cursor: 'pointer', flexShrink: 0,
                     background: isActive ? '#1f2532' : 'transparent',
-                    color: isActive ? '#66D9FF' : '#6B7280',
+                    color: isActive ? '#A5B4FC' : '#6B7280',
                   }}>
                   <Icon size={12} /> {t.label}
                   {isSaved && <span style={{ fontSize: 9, color: '#A5B4FC' }}>✓</span>}
@@ -343,8 +343,8 @@ Be direct. Indian exam context. Under 200 words total.` },
               <button onClick={() => saveTab(activeTab as keyof PanicPack)}
                 disabled={savedTabs.has(activeTab)} style={{
                 padding: '6px 12px', borderRadius: 6,
-                border: `1px solid ${savedTabs.has(activeTab) ? 'rgba(165, 180, 252, 0.4)' : 'rgba(79, 124, 255, 0.3)'}`,
-                background: savedTabs.has(activeTab) ? 'rgba(165, 180, 252, 0.08)' : 'rgba(79, 124, 255, 0.08)',
+                border: `1px solid ${savedTabs.has(activeTab) ? 'rgba(165, 180, 252, 0.4)' : 'rgba(124, 107, 246, 0.3)'}`,
+                background: savedTabs.has(activeTab) ? 'rgba(165, 180, 252, 0.08)' : 'rgba(124, 107, 246, 0.08)',
                 color: savedTabs.has(activeTab) ? '#A5B4FC' : '#A5B4FC',
                 cursor: savedTabs.has(activeTab) ? 'default' : 'pointer',
                 fontFamily: 'inherit', fontSize: 11, fontWeight: 600,

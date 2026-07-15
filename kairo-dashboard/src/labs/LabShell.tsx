@@ -37,7 +37,7 @@ const MARKDOWN_COMPONENTS = {
         </pre>
       : <code style={{ background: '#1a1a2e', padding: '2px 6px', borderRadius: 4, fontSize: 12.5, color: '#A5B4FC', fontFamily: 'monospace' }}>{children}</code>
   },
-  blockquote: ({ children }: any) => <blockquote style={{ borderLeft: '3px solid #4F7CFF', paddingLeft: 12, margin: '8px 0', color: '#B1B5BA', fontStyle: 'italic' }}>{children}</blockquote>,
+  blockquote: ({ children }: any) => <blockquote style={{ borderLeft: '3px solid #7C6BF6', paddingLeft: 12, margin: '8px 0', color: '#B1B5BA', fontStyle: 'italic' }}>{children}</blockquote>,
   hr: () => <hr style={{ border: 'none', borderTop: '1px solid #27272a', margin: '12px 0' }} />,
 }
 import { chat } from '../lib/openrouter'
@@ -182,7 +182,7 @@ Keep total length 180-280 words. Tone: friendly, specific, exam-aware.` },
           </button>
         )}
         <div style={{ flex: 1, minWidth: 160 }}>
-          <div style={{ fontSize: 10, color: '#4F7CFF', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.5 }}>
+          <div style={{ fontSize: 10, color: '#7C6BF6', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.5 }}>
             KYNO LABS · {subject}
           </div>
           <h1 style={{ fontSize: 16, fontWeight: 700, color: '#fafafa', margin: 0, marginTop: 2 }}>
@@ -237,7 +237,7 @@ Keep total length 180-280 words. Tone: friendly, specific, exam-aware.` },
                       <span style={{ fontSize: 10, fontWeight: 700, color: '#B1B5BA', textTransform: 'uppercase', letterSpacing: 1 }}>
                         {c.label}
                       </span>
-                      <span style={{ fontSize: 10, color: '#4F7CFF', fontFamily: 'Consolas, monospace', fontWeight: 700 }}>
+                      <span style={{ fontSize: 10, color: '#7C6BF6', fontFamily: 'Consolas, monospace', fontWeight: 700 }}>
                         {params[c.key]}{c.unit ? ' ' + c.unit : ''}
                       </span>
                     </div>
@@ -246,14 +246,14 @@ Keep total length 180-280 words. Tone: friendly, specific, exam-aware.` },
                         min={c.min} max={c.max} step={c.step ?? 1}
                         value={params[c.key]}
                         onChange={e => setParam(c.key, Number(e.target.value))}
-                        style={{ width: '100%', accentColor: '#4F7CFF' }} />
+                        style={{ width: '100%', accentColor: '#7C6BF6' }} />
                     )}
                     {c.type === 'toggle' && (
                       <button onClick={() => setParam(c.key, !params[c.key])}
                         style={{
                           padding: '4px 10px', borderRadius: 5,
-                          border: `1px solid ${params[c.key] ? '#4F7CFF' : '#1f2532'}`,
-                          background: params[c.key] ? 'rgba(79, 124, 255, 0.12)' : '#0E1117',
+                          border: `1px solid ${params[c.key] ? '#7C6BF6' : '#1f2532'}`,
+                          background: params[c.key] ? 'rgba(124, 107, 246, 0.12)' : '#0E1117',
                           color: params[c.key] ? '#A5B4FC' : '#9CA3AF',
                           fontSize: 10, fontWeight: 600, cursor: 'pointer',
                           fontFamily: 'inherit',
@@ -336,8 +336,8 @@ Keep total length 180-280 words. Tone: friendly, specific, exam-aware.` },
               <div style={{ display: 'flex', gap: 8, marginTop: 18, paddingTop: 14, borderTop: '1px solid #1a1f2e' }}>
                 <button onClick={saveExplanation} disabled={savedNote} style={{
                   ...btn, color: savedNote ? '#34d399' : '#A5B4FC',
-                  borderColor: savedNote ? 'rgba(52,211,153,0.4)' : 'rgba(79, 124, 255, 0.3)',
-                  background: savedNote ? 'rgba(52,211,153,0.08)' : 'rgba(79, 124, 255, 0.08)',
+                  borderColor: savedNote ? 'rgba(52,211,153,0.4)' : 'rgba(124, 107, 246, 0.3)',
+                  background: savedNote ? 'rgba(52,211,153,0.08)' : 'rgba(124, 107, 246, 0.08)',
                 }}>
                   <Save size={11} />{savedNote ? 'Saved to Notebook' : 'Save to Notebook'}
                 </button>

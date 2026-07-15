@@ -24,31 +24,31 @@ interface NavItem {
 }
 
 const STUDENT_NAV: NavItem[] = [
-  { label: 'Home',            icon: Sparkles,        to: 'home',             color: '#66D9FF' },
-  { label: 'Kyno',        icon: Cpu,             to: 'kairo-os',         color: '#66D9FF' },
+  { label: 'Home',            icon: Sparkles,        to: 'home',             color: '#A5B4FC' },
+  { label: 'Kyno',        icon: Cpu,             to: 'kairo-os',         color: '#A5B4FC' },
   { label: "Kyno's Solver",  icon: MessageCircle,   to: 'doubt',            color: '#A5B4FC' },
   { label: 'Mistake Analysis',icon: Activity,        to: 'mistakes',         color: '#A5B4FC' },
-  { label: 'Revision Sim',    icon: Zap,             to: 'simulator',        color: '#66D9FF' },
-  { label: 'Concept Map',     icon: Network,         to: 'concept-map',      color: '#66D9FF' },
+  { label: 'Revision Sim',    icon: Zap,             to: 'simulator',        color: '#A5B4FC' },
+  { label: 'Concept Map',     icon: Network,         to: 'concept-map',      color: '#A5B4FC' },
   { label: 'AI Notebook',     icon: BookOpen,        to: 'notebook',         color: '#A5B4FC' },
-  { label: 'Battle Mode',     icon: Swords,          to: 'battle',           color: '#66D9FF' },
+  { label: 'Battle Mode',     icon: Swords,          to: 'battle',           color: '#A5B4FC' },
   { label: 'League',          icon: Trophy,          to: 'league',           color: '#FFB44A' },
   { label: 'Explain Mistake', icon: AlertTriangle,   to: 'explain-mistake',  color: '#A5B4FC' },
-  { label: 'Predictor',       icon: TrendingUp,      to: 'perf-predictor',   color: '#66D9FF' },
+  { label: 'Predictor',       icon: TrendingUp,      to: 'perf-predictor',   color: '#A5B4FC' },
   { label: 'Knowledge Graph', icon: Share2,          to: 'knowledge',        color: '#A5B4FC' },
-  { label: 'Camera Study',    icon: Camera,          to: 'camera',           color: '#66D9FF' },
+  { label: 'Camera Study',    icon: Camera,          to: 'camera',           color: '#A5B4FC' },
   { label: 'Focus Mode',      icon: Target,          to: 'focus',            color: '#A5B4FC' },
-  { label: 'Flashcards',      icon: BookMarked,      to: 'flashcards',       color: '#66D9FF' },
+  { label: 'Flashcards',      icon: BookMarked,      to: 'flashcards',       color: '#A5B4FC' },
   { label: 'Grader',          icon: FileText,        to: 'essay',            color: '#A5B4FC' },
-  { label: 'My Tasks',        icon: BookOpen,        to: 'school',           color: '#66D9FF' },
+  { label: 'My Tasks',        icon: BookOpen,        to: 'school',           color: '#A5B4FC' },
   { label: 'Study Plan',      icon: Calendar,        to: 'study-plan',       color: '#A5B4FC' },
-  { label: 'Exam Planner',    icon: Target,          to: 'exam-planner',     color: '#66D9FF' },
+  { label: 'Exam Planner',    icon: Target,          to: 'exam-planner',     color: '#A5B4FC' },
   { label: 'Topic Architect', icon: Brain,           to: 'topic-architect',  color: '#A5B4FC' },
-  { label: 'Adaptive Quiz',   icon: Brain,           to: 'quiz',             color: '#66D9FF' },
+  { label: 'Adaptive Quiz',   icon: Brain,           to: 'quiz',             color: '#A5B4FC' },
   { label: 'Writing Tools',   icon: Edit3,           to: 'writing',          color: '#A5B4FC' },
-  { label: 'Concept Tools',   icon: Lightbulb,       to: 'concept',          color: '#66D9FF' },
+  { label: 'Concept Tools',   icon: Lightbulb,       to: 'concept',          color: '#A5B4FC' },
   { label: 'Formula Sheet',   icon: FunctionSquare,  to: 'formula',          color: '#A5B4FC' },
-  { label: 'Pomodoro',        icon: Timer,           to: 'pomodoro',         color: '#66D9FF' },
+  { label: 'Pomodoro',        icon: Timer,           to: 'pomodoro',         color: '#A5B4FC' },
 ]
 
 const TEACHER_NAV: NavItem[] = [
@@ -57,19 +57,19 @@ const TEACHER_NAV: NavItem[] = [
   { label: 'Flashcards',      icon: BookMarked,      to: 'flashcards',      color: '#34d399' },
   { label: 'Grader',          icon: FileText,        to: 'essay',           color: '#f472b6' },
   { label: 'Tasks & Marks',   icon: BookOpen,        to: 'school',          color: '#C7D2E8' },
-  { label: 'Question Paper',  icon: BookOpen,        to: 'question-paper',  color: '#66D9FF' },
-  { label: 'Lesson Plan',     icon: Calendar,        to: 'lesson-plan',     color: '#38bdf8' },
-  { label: 'Parent Message',  icon: Bell,            to: 'parent-message',  color: '#4F7CFF' },
+  { label: 'Question Paper',  icon: BookOpen,        to: 'question-paper',  color: '#A5B4FC' },
+  { label: 'Lesson Plan',     icon: Calendar,        to: 'lesson-plan',     color: '#8FA0FA' },
+  { label: 'Parent Message',  icon: Bell,            to: 'parent-message',  color: '#7C6BF6' },
   { label: 'Announcements',   icon: Megaphone,       to: 'announcement',    color: '#f472b6' },
 ]
 
 const ADMIN_NAV: NavItem[] = [
-  { label: 'School Hub',      icon: Building2,   to: 'school',          color: '#4F7CFF' },
+  { label: 'School Hub',      icon: Building2,   to: 'school',          color: '#7C6BF6' },
   { label: 'Announcements',   icon: Megaphone,   to: 'announcement',    color: '#f472b6' },
   { label: 'Fee Reminder',    icon: DollarSign,  to: 'fee-reminder',    color: '#34d399' },
   { label: 'Admission Bot',   icon: Bot,         to: 'admission',       color: '#A5B4FC' },
   { label: 'Attendance',      icon: UserCheck,   to: 'attendance',      color: '#C7D2E8' },
-  { label: 'Timetable',       icon: Grid3x3,     to: 'timetable',       color: '#38bdf8' },
+  { label: 'Timetable',       icon: Grid3x3,     to: 'timetable',       color: '#8FA0FA' },
   { label: 'Ops Dashboard',   icon: Activity,    to: 'ops',             color: '#34d399' },
 ]
 
@@ -222,7 +222,7 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
           background: 'linear-gradient(150deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%)',
           backdropFilter: 'blur(16px) saturate(150%)',
           WebkitBackdropFilter: 'blur(16px) saturate(150%)',
-          border: '1px solid rgba(102, 217, 255, 0.16)',
+          border: '1px solid rgba(165, 180, 252, 0.16)',
           boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06)',
         }}>
           <div style={{
@@ -230,9 +230,9 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
             flexShrink: 0,
             borderRadius: expanded ? 13 : 11,
             background: 'linear-gradient(150deg, #0B0F1C 0%, #05060A 100%)',
-            border: '1px solid rgba(102, 217, 255, 0.30)',
+            border: '1px solid rgba(165, 180, 252, 0.30)',
             display: 'grid', placeItems: 'center',
-            boxShadow: '0 6px 20px rgba(79,124,255,0.30), inset 0 1px 0 rgba(255,255,255,0.08)',
+            boxShadow: '0 6px 20px rgba(124,107,246,0.30), inset 0 1px 0 rgba(255,255,255,0.08)',
             transition: 'width 0.32s cubic-bezier(0.22, 1, 0.36, 1), height 0.32s cubic-bezier(0.22, 1, 0.36, 1)',
           }}>
             <img
@@ -240,7 +240,7 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
               alt="Kyno"
               style={{
                 width: '74%', height: '74%', objectFit: 'contain',
-                filter: 'drop-shadow(0 0 8px rgba(102,217,255,0.45))',
+                filter: 'drop-shadow(0 0 8px rgba(165,180,252,0.45))',
               }}
             />
           </div>
@@ -260,11 +260,11 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
                   color: isDark ? '#F5F5F7' : '#18181b',
                   letterSpacing: '0.2px',
                   whiteSpace: 'nowrap',
-                  textShadow: isDark ? '0 0 20px rgba(79,124,255,0.45)' : 'none',
+                  textShadow: isDark ? '0 0 20px rgba(124,107,246,0.45)' : 'none',
                 }}>Kyno</div>
                 <div style={{
                   fontSize: 8, fontWeight: 600,
-                  color: 'rgba(102, 217, 255, 0.55)',
+                  color: 'rgba(165, 180, 252, 0.55)',
                   letterSpacing: 1.2, textTransform: 'uppercase',
                   whiteSpace: 'nowrap',
                   marginTop: 2,
@@ -324,7 +324,7 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
               }}
               onMouseEnter={e => {
                 const b = e.currentTarget as HTMLButtonElement
-                b.style.borderColor = 'rgba(102, 217, 255, 0.30)'
+                b.style.borderColor = 'rgba(165, 180, 252, 0.30)'
                 b.style.background  = 'rgba(255, 255, 255, 0.04)'
               }}
               onMouseLeave={e => {
@@ -478,7 +478,7 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
             title="New chat"
             style={{
               width: 22, height: 22, borderRadius: 5, marginRight: 6,
-              background: 'rgba(79, 124, 255, 0.1)', border: '1px solid rgba(79, 124, 255, 0.2)',
+              background: 'rgba(124, 107, 246, 0.1)', border: '1px solid rgba(124, 107, 246, 0.2)',
               color: '#A5B4FC', cursor: 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               padding: 0, flexShrink: 0,
@@ -688,7 +688,7 @@ function NavItemRow({ item, isActive, isHovered, isGenerating = false, compact =
           ? 'linear-gradient(135deg, rgba(38, 58, 140, 0.32) 0%, rgba(38, 58, 140, 0.16) 100%)'
           : isHovered ? 'rgba(255, 255, 255, 0.04)' : 'transparent',
         boxShadow: isActive
-          ? '0 0 0 1px rgba(102, 217, 255, 0.22), 0 6px 18px rgba(38, 58, 140, 0.32)'
+          ? '0 0 0 1px rgba(165, 180, 252, 0.22), 0 6px 18px rgba(38, 58, 140, 0.32)'
           : 'none',
         position: 'relative',
         transition: 'background 0.22s cubic-bezier(0.22, 1, 0.36, 1), transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.22s cubic-bezier(0.22, 1, 0.36, 1)',
@@ -701,15 +701,15 @@ function NavItemRow({ item, isActive, isHovered, isGenerating = false, compact =
           style={{
             position: 'absolute', left: 0, top: '18%', bottom: '18%',
             width: 2, borderRadius: 2,
-            background: '#4F7CFF',
-            boxShadow: '0 0 6px rgba(79, 124, 255, 0.12)',
+            background: '#7C6BF6',
+            boxShadow: '0 0 6px rgba(124, 107, 246, 0.12)',
           }}
         />
       )}
 
       <div style={{
         width: 26, height: 26, borderRadius: 8,
-        background: isActive ? 'rgba(79, 124, 255, 0.16)' : 'transparent',
+        background: isActive ? 'rgba(124, 107, 246, 0.16)' : 'transparent',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         flexShrink: 0, transition: 'background 0.22s cubic-bezier(0.22, 1, 0.36, 1)', position: 'relative',
       }}>
@@ -721,8 +721,8 @@ function NavItemRow({ item, isActive, isHovered, isGenerating = false, compact =
             style={{
               position: 'absolute', top: -2, right: -2,
               width: 6, height: 6, borderRadius: '50%',
-              background: '#4F7CFF',
-              boxShadow: '0 0 6px #4F7CFF',
+              background: '#7C6BF6',
+              boxShadow: '0 0 6px #7C6BF6',
             }}
           />
         )}
@@ -741,7 +741,7 @@ function NavItemRow({ item, isActive, isHovered, isGenerating = false, compact =
 
       {isGenerating ? (
         <span style={{
-          fontSize: 9, fontWeight: 600, color: '#4F7CFF',
+          fontSize: 9, fontWeight: 600, color: '#7C6BF6',
           letterSpacing: 0.3, animation: 'pulse 1.2s ease-in-out infinite',
         }}>
           AI…
@@ -749,7 +749,7 @@ function NavItemRow({ item, isActive, isHovered, isGenerating = false, compact =
       ) : item.badge ? (
         <span style={{
           fontSize: 10, fontWeight: 700, minWidth: 18, height: 18,
-          borderRadius: 5, background: '#4F7CFF',
+          borderRadius: 5, background: '#7C6BF6',
           color: '#fff', display: 'flex', alignItems: 'center',
           justifyContent: 'center', padding: '0 4px',
         }}>

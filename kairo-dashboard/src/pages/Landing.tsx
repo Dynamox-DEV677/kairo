@@ -41,9 +41,9 @@ const C = {
 
   purpleLite:  '#DBE7FF',
   purpleSoft:  '#A5B4FC',
-  purple:      '#66D9FF',
-  purpleHi:    '#4F7CFF',
-  purpleDeep:  '#2046C2',
+  purple:      '#A5B4FC',
+  purpleHi:    '#7C6BF6',
+  purpleDeep:  '#4A2FA8',
   purpleInk:   '#0B1530',
 }
 
@@ -143,7 +143,7 @@ function PurpleHalo() {
     <div aria-hidden style={{
       position: 'fixed', top: '-20vh', left: '50%', transform: 'translateX(-50%)',
       width: '120vw', height: '80vh', borderRadius: '50%',
-      background: `radial-gradient(60% 60% at 50% 30%, rgba(79, 124, 255, 0.22) 0%, rgba(32, 70, 194, 0.05) 35%, transparent 70%)`,
+      background: `radial-gradient(60% 60% at 50% 30%, rgba(124, 107, 246, 0.22) 0%, rgba(74, 47, 168, 0.05) 35%, transparent 70%)`,
       pointerEvents: 'none', zIndex: 0,
       filter: 'blur(30px)',
     }} />
@@ -729,13 +729,13 @@ function BentoCard({ span, rowSpan = 1, hero = false, compact = false,
         background: hero
           ? `linear-gradient(140deg, ${C.purpleInk} 0%, ${C.panel} 60%, ${C.ink} 100%)`
           : C.panel,
-        border: `1px solid ${hover ? 'rgba(102, 217, 255, 0.35)' : C.line}`,
+        border: `1px solid ${hover ? 'rgba(165, 180, 252, 0.35)' : C.line}`,
         borderRadius: 22, padding: hero ? '36px 38px 32px' : compact ? '22px' : '28px 28px 24px',
         display: 'flex', flexDirection: 'column', gap: 14,
         position: 'relative', overflow: 'hidden',
         transition: 'border-color .25s',
         minHeight: hero ? 0 : compact ? 160 : 220,
-        boxShadow: hover ? `0 12px 50px rgba(79, 124, 255, 0.18)` : '0 0 0 transparent',
+        boxShadow: hover ? `0 12px 50px rgba(124, 107, 246, 0.18)` : '0 0 0 transparent',
       }}>
       <span aria-hidden style={{
         position: 'absolute', top: 0, right: 0, width: 28, height: 28,
@@ -830,7 +830,7 @@ function ConstructivistInterstitial() {
           border: `1px solid ${C.lineHi}`,
           padding: '70px 60px',
           rotate, transformOrigin: 'left top',
-          boxShadow: `0 30px 90px rgba(32, 70, 194, 0.02), inset 0 0 80px rgba(79, 124, 255, 0.01)`,
+          boxShadow: `0 30px 90px rgba(74, 47, 168, 0.02), inset 0 0 80px rgba(124, 107, 246, 0.01)`,
         }}>
           <div style={{
             position: 'absolute', top: 38, left: -54,
@@ -964,7 +964,7 @@ function LabsShowcase({ onGetStarted }: { onGetStarted: () => void }) {
         <div style={{
           marginTop: 56, padding: '24px 28px',
           border: `1px solid ${C.lineHi}`, borderRadius: 16,
-          background: 'rgba(79, 124, 255, 0.04)',
+          background: 'rgba(124, 107, 246, 0.04)',
           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
           gap: 24, flexWrap: 'wrap',
         }}>
@@ -999,7 +999,7 @@ function LabTile({ lab, big = false, onOpen }: { lab: { name: string; tag: strin
         padding: big ? '36px 38px' : '24px',
         display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
         cursor: 'pointer',
-        boxShadow: '0 20px 80px rgba(32, 70, 194, 0.01)',
+        boxShadow: '0 20px 80px rgba(74, 47, 168, 0.01)',
       }}>
 
       <div style={{
@@ -1228,7 +1228,7 @@ function DesktopApp() {
             <div style={{
               marginTop: 40, padding: '20px 24px',
               borderRadius: 14,
-              background: 'rgba(79, 124, 255, 0.05)',
+              background: 'rgba(124, 107, 246, 0.05)',
               border: `1px solid ${C.line}`,
               display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)',
               gap: 18,
@@ -1261,7 +1261,7 @@ function DownloadCard({ href, platform, detail, file, glyph }: {
       href={href}
       target="_blank"
       rel="noreferrer"
-      whileHover={{ y: -3, borderColor: 'rgba(102, 217, 255, 0.45)' }}
+      whileHover={{ y: -3, borderColor: 'rgba(165, 180, 252, 0.45)' }}
       transition={{ type: 'spring', stiffness: 220, damping: 22 }}
       style={{
         display: 'flex', flexDirection: 'column', gap: 14,
@@ -1279,7 +1279,7 @@ function DownloadCard({ href, platform, detail, file, glyph }: {
           width: 38, height: 38, borderRadius: 10,
           background: `linear-gradient(135deg, ${C.purpleHi}, ${C.purpleInk})`,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: `0 0 18px rgba(79, 124, 255, 0.03)`,
+          boxShadow: `0 0 18px rgba(124, 107, 246, 0.03)`,
         }}>
           {glyph}
         </div>
@@ -1362,7 +1362,7 @@ function FinalCTA({ onGetStarted }: { onGetStarted: () => void }) {
       padding: '160px 0',
       borderTop: `1px solid ${C.lineHi}`,
       background:
-        `radial-gradient(80% 100% at 50% 50%, rgba(79, 124, 255, 0.18) 0%, ${C.ink} 70%)`,
+        `radial-gradient(80% 100% at 50% 50%, rgba(124, 107, 246, 0.18) 0%, ${C.ink} 70%)`,
       position: 'relative', zIndex: 2, overflow: 'hidden',
     }}>
       <motion.div aria-hidden style={{
@@ -1370,7 +1370,7 @@ function FinalCTA({ onGetStarted }: { onGetStarted: () => void }) {
         translate: '-50% -50%',
         width: '70vw', height: '70vw', maxWidth: 900, maxHeight: 900,
         borderRadius: '50%',
-        background: `radial-gradient(circle, rgba(79, 124, 255, 0.18) 0%, transparent 60%)`,
+        background: `radial-gradient(circle, rgba(124, 107, 246, 0.18) 0%, transparent 60%)`,
         scale: haloS,
         pointerEvents: 'none',
       }} />
@@ -1809,7 +1809,7 @@ const pillCta: React.CSSProperties = {
   fontFamily: SANS, fontSize: 13, fontWeight: 600,
   background: `linear-gradient(135deg, ${C.purpleHi}, ${C.purpleDeep})`,
   color: C.white,
-  boxShadow: `0 0 22px rgba(79, 124, 255, 0.04)`,
+  boxShadow: `0 0 22px rgba(124, 107, 246, 0.04)`,
   transition: 'transform .15s',
 }
 const bigCta: React.CSSProperties = {
@@ -1817,7 +1817,7 @@ const bigCta: React.CSSProperties = {
   padding: '16px 26px', borderRadius: 12, border: 'none', cursor: 'pointer',
   fontFamily: SANS, fontSize: 15, fontWeight: 700, letterSpacing: -0.1,
   background: C.white, color: C.ink,
-  boxShadow: `0 0 32px rgba(102, 217, 255, 0.03)`,
+  boxShadow: `0 0 32px rgba(165, 180, 252, 0.03)`,
   transition: 'transform .15s, box-shadow .25s',
 }
 const ghostCta: React.CSSProperties = {

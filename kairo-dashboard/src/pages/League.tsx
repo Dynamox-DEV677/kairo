@@ -8,7 +8,7 @@ type Range = 'week' | 'month' | 'all'
 const C = {
   bg: '#050505', panel: '#0E1117', border: '#1f2532',
   text: '#fafafa', dim: '#9CA3AF', faint: '#6B7280',
-  accent: '#66D9FF', blue: '#4F7CFF', gold: '#FFB44A',
+  accent: '#A5B4FC', blue: '#7C6BF6', gold: '#FFB44A',
 }
 
 const TABS: { id: Range; label: string; icon: any }[] = [
@@ -64,7 +64,7 @@ export default function League() {
               style={{
                 flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
                 padding: '9px 6px', borderRadius: 9, border: 'none', cursor: 'pointer',
-                background: active ? `linear-gradient(135deg, ${C.blue}, #2046C2)` : 'transparent',
+                background: active ? `linear-gradient(135deg, ${C.blue}, #4A2FA8)` : 'transparent',
                 color: active ? '#fff' : C.dim, fontFamily: 'inherit', fontSize: 12.5, fontWeight: 700,
                 transition: 'background 0.2s',
               }}>
@@ -76,8 +76,8 @@ export default function League() {
 
       <div style={{
         display: 'flex', alignItems: 'center', gap: 16, marginBottom: 18,
-        background: `linear-gradient(135deg, rgba(79,124,255,0.14), rgba(102,217,255,0.06))`,
-        border: `1px solid rgba(102,217,255,0.28)`, borderRadius: 14, padding: '16px 18px',
+        background: `linear-gradient(135deg, rgba(124,107,246,0.14), rgba(165,180,252,0.06))`,
+        border: `1px solid rgba(165,180,252,0.28)`, borderRadius: 14, padding: '16px 18px',
       }}>
         <div style={{ textAlign: 'center', minWidth: 66 }}>
           <div style={{ fontSize: 30, fontWeight: 900, color: C.accent, lineHeight: 1 }}>{youRank ? `#${youRank}` : '—'}</div>
@@ -116,8 +116,8 @@ export default function League() {
                 style={{
                   display: 'flex', alignItems: 'center', gap: 12,
                   padding: '12px 15px', borderRadius: 11,
-                  background: r.you ? 'rgba(102,217,255,0.12)' : C.panel,
-                  border: `1px solid ${r.you ? 'rgba(102,217,255,0.4)' : C.border}`,
+                  background: r.you ? 'rgba(165,180,252,0.12)' : C.panel,
+                  border: `1px solid ${r.you ? 'rgba(165,180,252,0.4)' : C.border}`,
                 }}>
                 <div style={{ width: 30, flexShrink: 0, textAlign: 'center' }}>
                   {i < 3
@@ -140,7 +140,7 @@ export default function League() {
             <div style={{
               display: 'flex', alignItems: 'center', gap: 12, marginTop: 4,
               padding: '12px 15px', borderRadius: 11,
-              background: 'rgba(102,217,255,0.12)', border: '1px solid rgba(102,217,255,0.4)',
+              background: 'rgba(165,180,252,0.12)', border: '1px solid rgba(165,180,252,0.4)',
             }}>
               <div style={{ width: 30, flexShrink: 0, textAlign: 'center', fontSize: 14, fontWeight: 800, color: C.accent }}>{youRank}</div>
               <div style={{ flex: 1, fontSize: 14, fontWeight: 800, color: C.accent }}>You</div>

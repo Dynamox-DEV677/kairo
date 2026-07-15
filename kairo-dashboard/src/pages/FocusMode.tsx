@@ -78,7 +78,7 @@ export default function FocusMode() {
   const dash = C * progress
 
   const bg = ambient
-    ? 'radial-gradient(ellipse at top, #1a1a2e 0%, #050505 60%), radial-gradient(ellipse at bottom right, rgba(79, 124, 255, 0.18), transparent 50%)'
+    ? 'radial-gradient(ellipse at top, #1a1a2e 0%, #050505 60%), radial-gradient(ellipse at bottom right, rgba(124, 107, 246, 0.18), transparent 50%)'
     : '#050505'
 
   return (
@@ -102,7 +102,7 @@ export default function FocusMode() {
               position: 'absolute',
               top: `${20 + i * 25}%`, left: `${15 + i * 28}%`,
               width: 260, height: 260, borderRadius: '50%',
-              background: ['#4F7CFF', '#4F7CFF', '#A5B4FC'][i],
+              background: ['#7C6BF6', '#7C6BF6', '#A5B4FC'][i],
               filter: 'blur(80px)', pointerEvents: 'none',
             }} />
         ))}
@@ -111,9 +111,9 @@ export default function FocusMode() {
       <div style={{ width: '100%', maxWidth: 720, display: 'flex', alignItems: 'center', gap: 14, marginBottom: 32, zIndex: 1 }}>
         <div style={{
           width: 40, height: 40, borderRadius: 10,
-          background: 'linear-gradient(135deg,#4F7CFF,#4F7CFF)',
+          background: 'linear-gradient(135deg,#7C6BF6,#7C6BF6)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 0 18px rgba(79, 124, 255, 0.04)', flexShrink: 0,
+          boxShadow: '0 0 18px rgba(124, 107, 246, 0.04)', flexShrink: 0,
         }}>
           <Target size={20} color="#fff" />
         </div>
@@ -126,8 +126,8 @@ export default function FocusMode() {
           title={ambient ? 'Calm mode off' : 'Calm mode on'}
           style={{
             width: 36, height: 36, borderRadius: 8,
-            background: ambient ? 'rgba(79, 124, 255, 0.15)' : '#151922',
-            border: `1px solid ${ambient ? '#4F7CFF' : '#1f2532'}`,
+            background: ambient ? 'rgba(124, 107, 246, 0.15)' : '#151922',
+            border: `1px solid ${ambient ? '#7C6BF6' : '#1f2532'}`,
             color: ambient ? '#A5B4FC' : '#9CA3AF', cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
@@ -151,8 +151,8 @@ export default function FocusMode() {
           />
           <defs>
             <linearGradient id="grad" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0" stopColor="#4F7CFF" />
-              <stop offset="1" stopColor="#4F7CFF" />
+              <stop offset="0" stopColor="#7C6BF6" />
+              <stop offset="1" stopColor="#7C6BF6" />
             </linearGradient>
           </defs>
         </svg>
@@ -184,9 +184,9 @@ export default function FocusMode() {
             onClick={start}
             style={{
               padding: '12px 28px', borderRadius: 10, border: 'none',
-              background: 'linear-gradient(135deg,#4F7CFF,#4F7CFF)',
+              background: 'linear-gradient(135deg,#7C6BF6,#7C6BF6)',
               color: '#fff', fontFamily: 'inherit', fontSize: 14, fontWeight: 700,
-              cursor: 'pointer', boxShadow: '0 0 22px rgba(79, 124, 255, 0.04)',
+              cursor: 'pointer', boxShadow: '0 0 22px rgba(124, 107, 246, 0.04)',
               display: 'flex', alignItems: 'center', gap: 8,
             }}>
             <Play size={14} />{done ? 'Start Again' : 'Start Focus'}
@@ -196,8 +196,8 @@ export default function FocusMode() {
             whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}
             onClick={pause}
             style={{
-              padding: '12px 28px', borderRadius: 10, border: '1px solid #4F7CFF',
-              background: 'rgba(79, 124, 255, 0.1)', color: '#A5B4FC',
+              padding: '12px 28px', borderRadius: 10, border: '1px solid #7C6BF6',
+              background: 'rgba(124, 107, 246, 0.1)', color: '#A5B4FC',
               fontFamily: 'inherit', fontSize: 14, fontWeight: 700, cursor: 'pointer',
               display: 'flex', alignItems: 'center', gap: 8,
             }}>
@@ -217,8 +217,8 @@ export default function FocusMode() {
         {PRESETS.map(p => (
           <button key={p.mins} onClick={() => pickPreset(p.mins)} style={{
             padding: '8px 16px', borderRadius: 8,
-            border: `1px solid ${duration === p.mins * 60 ? '#4F7CFF' : '#1f2532'}`,
-            background: duration === p.mins * 60 ? 'rgba(79, 124, 255, 0.12)' : 'transparent',
+            border: `1px solid ${duration === p.mins * 60 ? '#7C6BF6' : '#1f2532'}`,
+            background: duration === p.mins * 60 ? 'rgba(124, 107, 246, 0.12)' : 'transparent',
             color: duration === p.mins * 60 ? '#A5B4FC' : '#9CA3AF',
             fontFamily: 'inherit', fontSize: 12, fontWeight: 600, cursor: 'pointer',
           }}>{p.label}</button>

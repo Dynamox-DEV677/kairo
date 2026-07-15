@@ -34,9 +34,9 @@ const C = {
   textFaint: '#9CA3AF',
   purpleLite:'#DBE7FF',
   purpleSoft:'#A5B4FC',
-  purple:    '#66D9FF',
-  purpleHi:  '#4F7CFF',
-  purpleDeep:'#2046C2',
+  purple:    '#A5B4FC',
+  purpleHi:  '#7C6BF6',
+  purpleDeep:'#4A2FA8',
 }
 const FONT = "'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif"
 
@@ -190,8 +190,8 @@ export default function ConceptMap() {
       width: '100%', height: '100%', overflowY: 'auto', WebkitOverflowScrolling: 'touch',
       background: C.bg,
       backgroundImage:
-        `radial-gradient(at 8% 0%,  rgba(79, 124, 255, 0.08) 0%, transparent 40%),
-         radial-gradient(at 92% 100%, rgba(32, 70, 194, 0.10) 0%, transparent 45%)`,
+        `radial-gradient(at 8% 0%,  rgba(124, 107, 246, 0.08) 0%, transparent 40%),
+         radial-gradient(at 92% 100%, rgba(74, 47, 168, 0.10) 0%, transparent 45%)`,
       color: C.text, fontFamily: FONT,
       padding: '24px 28px 80px',
     }}>
@@ -210,8 +210,8 @@ export default function ConceptMap() {
             {subjectStats.map(([subj, n]) => (
               <span key={subj} style={{
                 padding: '5px 12px', borderRadius: 999,
-                background: 'rgba(79, 124, 255, 0.08)',
-                border: '1px solid rgba(102, 217, 255, 0.3)',
+                background: 'rgba(124, 107, 246, 0.08)',
+                border: '1px solid rgba(165, 180, 252, 0.3)',
                 fontSize: 12, color: C.text, fontWeight: 600,
               }}>
                 {subj} <span style={{ color: C.purple, marginLeft: 4 }}>· {n}</span>
@@ -250,11 +250,11 @@ export default function ConceptMap() {
               }}>
               <defs>
                 <radialGradient id="nodeGlow" cx="50%" cy="50%" r="50%">
-                  <stop offset="0%"  stopColor="#66D9FF" stopOpacity="0.4" />
-                  <stop offset="100%" stopColor="#66D9FF" stopOpacity="0" />
+                  <stop offset="0%"  stopColor="#A5B4FC" stopOpacity="0.4" />
+                  <stop offset="100%" stopColor="#A5B4FC" stopOpacity="0" />
                 </radialGradient>
                 <linearGradient id="edgeStroke" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%"  stopColor="#4F7CFF" stopOpacity="0.35"/>
+                  <stop offset="0%"  stopColor="#7C6BF6" stopOpacity="0.35"/>
                   <stop offset="100%" stopColor="#A5B4FC" stopOpacity="0.35"/>
                 </linearGradient>
               </defs>
@@ -279,9 +279,9 @@ export default function ConceptMap() {
                 if (!p) return null
                 const r = 16 + Math.min(18, Math.sqrt(n.visits) * 6)
                 const m = n.mastery
-                const fill = m >= 0.7 ? '#66D9FF'
-                            : m >= 0.4 ? '#4F7CFF'
-                                       : '#2046C2'
+                const fill = m >= 0.7 ? '#A5B4FC'
+                            : m >= 0.4 ? '#7C6BF6'
+                                       : '#4A2FA8'
                 const isHover = hover === n.id
                 return (
                   <g key={n.id}
@@ -348,9 +348,9 @@ export default function ConceptMap() {
               border: `1px solid ${C.borderSoft}`,
               display: 'flex', gap: 14, fontSize: 11, color: C.textFaint, alignItems: 'center',
             }}>
-              <LegendDot color="#2046C2" label="< 40% mastery" />
-              <LegendDot color="#4F7CFF" label="40–70%" />
-              <LegendDot color="#66D9FF" label="70%+" />
+              <LegendDot color="#4A2FA8" label="< 40% mastery" />
+              <LegendDot color="#7C6BF6" label="40–70%" />
+              <LegendDot color="#A5B4FC" label="70%+" />
             </div>
           )}
 
@@ -383,9 +383,9 @@ function Header({ onRefresh, nodeCount, edgeCount, mode, setMode }: {
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
         <div style={{
           width: 46, height: 46, borderRadius: 13, flexShrink: 0,
-          background: 'linear-gradient(135deg, #4F7CFF 0%, #2046C2 100%)',
+          background: 'linear-gradient(135deg, #7C6BF6 0%, #4A2FA8 100%)',
           display: 'grid', placeItems: 'center',
-          boxShadow: '0 10px 30px rgba(79, 124, 255, 0.03)',
+          boxShadow: '0 10px 30px rgba(124, 107, 246, 0.03)',
         }}>
           <Network size={22} color="#fff" />
         </div>
@@ -446,7 +446,7 @@ function ModeChip({ active, onClick, icon: Icon, label }: {
     <button onClick={onClick} style={{
       display: 'inline-flex', alignItems: 'center', gap: 6,
       padding: '6px 11px', borderRadius: 7, border: 'none',
-      background: active ? 'rgba(79, 124, 255, 0.15)' : 'transparent',
+      background: active ? 'rgba(124, 107, 246, 0.15)' : 'transparent',
       color: active ? '#A5B4FC' : '#9CA3AF',
       fontFamily: 'inherit', fontWeight: 700, fontSize: 11.5, cursor: 'pointer',
       transition: 'all 0.18s',
@@ -478,12 +478,12 @@ function Empty() {
     }}>
       <div style={{
         width: 64, height: 64, borderRadius: 18,
-        background: 'rgba(79, 124, 255, 0.10)',
-        border: '1px solid rgba(102, 217, 255, 0.35)',
+        background: 'rgba(124, 107, 246, 0.10)',
+        border: '1px solid rgba(165, 180, 252, 0.35)',
         display: 'grid', placeItems: 'center',
-        boxShadow: '0 0 32px rgba(79, 124, 255, 0.02)',
+        boxShadow: '0 0 32px rgba(124, 107, 246, 0.02)',
       }}>
-        <Network size={28} color="#66D9FF" />
+        <Network size={28} color="#A5B4FC" />
       </div>
       <h3 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: C.text }}>
         Your concept map is empty.
@@ -512,9 +512,9 @@ function Empty() {
 const emptyCtaPrimary: React.CSSProperties = {
   display: 'inline-flex', alignItems: 'center', gap: 6,
   padding: '11px 18px', borderRadius: 10, border: 'none', cursor: 'pointer',
-  background: 'linear-gradient(135deg, #4F7CFF 0%, #2046C2 100%)',
+  background: 'linear-gradient(135deg, #7C6BF6 0%, #4A2FA8 100%)',
   color: '#fff', fontFamily: 'inherit', fontSize: 13, fontWeight: 700,
-  boxShadow: '0 6px 18px rgba(79, 124, 255, 0.18)',
+  boxShadow: '0 6px 18px rgba(124, 107, 246, 0.18)',
 }
 const emptyCtaSecondary: React.CSSProperties = {
   display: 'inline-flex', alignItems: 'center', gap: 6,
@@ -561,7 +561,7 @@ function AddConceptCard({ onSaved }: { onSaved: () => void }) {
         <button onClick={save} disabled={!name.trim()}
           style={{
             padding: '10px 16px', borderRadius: 10,
-            background: 'linear-gradient(135deg, #4F7CFF, #2046C2)',
+            background: 'linear-gradient(135deg, #7C6BF6, #4A2FA8)',
             color: '#fff', fontFamily: 'inherit', fontWeight: 700, fontSize: 13,
             border: 'none', cursor: name.trim() ? 'pointer' : 'not-allowed',
             opacity: name.trim() ? 1 : 0.5,

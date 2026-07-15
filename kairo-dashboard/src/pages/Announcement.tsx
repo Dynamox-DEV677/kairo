@@ -8,10 +8,10 @@ const SCHOOL_ID = 'demo_school'
 const card  = { background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(14px) saturate(140%)', WebkitBackdropFilter: 'blur(14px) saturate(140%)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14, padding: 20 } as React.CSSProperties
 const inp   = { background: '#0E1117', border: '1px solid #1f2532', borderRadius: 8, padding: '9px 12px', fontSize: 13, color: '#fafafa', fontFamily: 'inherit', outline: 'none', width: '100%' } as React.CSSProperties
 const lbl   = { fontSize: 11, color: '#9CA3AF', display: 'block', marginBottom: 5, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.8 } as React.CSSProperties
-const btn   = (active = true) => ({ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', borderRadius: 9, border: 'none', background: active ? 'linear-gradient(135deg,#4F7CFF,#4F7CFF)' : '#1a1f2e', color: active ? '#fff' : '#6B7280', fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: active ? 'pointer' : 'not-allowed' } as React.CSSProperties)
+const btn   = (active = true) => ({ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', borderRadius: 9, border: 'none', background: active ? 'linear-gradient(135deg,#7C6BF6,#7C6BF6)' : '#1a1f2e', color: active ? '#fff' : '#6B7280', fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: active ? 'pointer' : 'not-allowed' } as React.CSSProperties)
 
 const TYPES = ['general','exam','holiday','event','fee','result','emergency']
-const TYPE_COLORS: Record<string, string> = { general: '#66D9FF', exam: '#A5B4FC', holiday: '#A5B4FC', event: '#38bdf8', fee: '#A5B4FC', result: '#66D9FF', emergency: '#66D9FF' }
+const TYPE_COLORS: Record<string, string> = { general: '#A5B4FC', exam: '#A5B4FC', holiday: '#A5B4FC', event: '#8FA0FA', fee: '#A5B4FC', result: '#A5B4FC', emergency: '#A5B4FC' }
 
 export default function Announcement() {
   const [announcements, setAnnouncements] = useState<any[]>([])
@@ -80,7 +80,7 @@ export default function Announcement() {
                 <input style={{ ...inp, marginBottom: 8 }} value={form.topic} onChange={e => setForm(f => ({ ...f, topic: e.target.value }))} placeholder="e.g. Annual Day on Dec 15th" />
                 <label style={lbl}>Additional Details</label>
                 <textarea style={{ ...inp, height: 70, resize: 'none', marginBottom: 8 }} value={form.details} onChange={e => setForm(f => ({ ...f, details: e.target.value }))} placeholder="Date, venue, action needed…" />
-                {err && <p style={{ color: '#66D9FF', fontSize: 11, marginBottom: 8 }}>{err}</p>}
+                {err && <p style={{ color: '#A5B4FC', fontSize: 11, marginBottom: 8 }}>{err}</p>}
                 <button onClick={generate} disabled={generating} style={{ ...btn(!generating), width: '100%', justifyContent: 'center', padding: '7px' }}>
                   {generating ? 'Generating…' : 'Generate'}
                 </button>
@@ -96,13 +96,13 @@ export default function Announcement() {
             <div key={a.id || a._id} onClick={() => setSelected(a)}
               style={{ padding: '10px', borderRadius: 8, marginBottom: 4, cursor: 'pointer',
                 background: selected?.id === a.id || selected?._id === a._id ? '#1f2532' : 'transparent',
-                border: `1px solid ${selected?.id === a.id || selected?._id === a._id ? '#4F7CFF30' : 'transparent'}` }}>
+                border: `1px solid ${selected?.id === a.id || selected?._id === a._id ? '#7C6BF630' : 'transparent'}` }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
-                <div style={{ width: 7, height: 7, borderRadius: '50%', background: TYPE_COLORS[a.type] || '#66D9FF', flexShrink: 0 }} />
+                <div style={{ width: 7, height: 7, borderRadius: '50%', background: TYPE_COLORS[a.type] || '#A5B4FC', flexShrink: 0 }} />
                 <div style={{ fontSize: 12, fontWeight: 600, color: '#e4e4e7', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.title || a.topic}</div>
                 <button onClick={e => { e.stopPropagation(); remove(a.id || a._id) }}
                   style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#4B5563' }}
-                  onMouseEnter={e => (e.currentTarget.style.color = '#66D9FF')}
+                  onMouseEnter={e => (e.currentTarget.style.color = '#A5B4FC')}
                   onMouseLeave={e => (e.currentTarget.style.color = '#4B5563')}>
                   <Trash2 size={10} />
                 </button>
@@ -139,7 +139,7 @@ function AnnouncementViewer({ a }: { a: any }) {
   return (
     <motion.div key={a.id || a._id} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
-        <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 5, background: `${TYPE_COLORS[a.type]}20`, color: TYPE_COLORS[a.type] || '#66D9FF' }}>
+        <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 5, background: `${TYPE_COLORS[a.type]}20`, color: TYPE_COLORS[a.type] || '#A5B4FC' }}>
           {a.type?.toUpperCase()}
         </span>
         <span style={{ fontSize: 11, color: '#6B7280' }}>{a.audience} · {a.tone}</span>
@@ -157,8 +157,8 @@ function AnnouncementViewer({ a }: { a: any }) {
           </div>
         )}
         {a.action_required && (
-          <div style={{ marginTop: 10, padding: '8px 12px', background: '#66D9FF15', borderRadius: 8, border: '1px solid #66D9FF30' }}>
-            <div style={{ fontSize: 11, color: '#66D9FF' }}>⚠ Action Required: {a.action_required}</div>
+          <div style={{ marginTop: 10, padding: '8px 12px', background: '#A5B4FC15', borderRadius: 8, border: '1px solid #A5B4FC30' }}>
+            <div style={{ fontSize: 11, color: '#A5B4FC' }}>⚠ Action Required: {a.action_required}</div>
           </div>
         )}
       </div>
@@ -178,7 +178,7 @@ function AnnouncementViewer({ a }: { a: any }) {
         {a.sms_version && (
           <div style={{ background: '#0E1117', border: '1px solid #1f2532', borderRadius: 14, padding: 16 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 700, color: '#38bdf8' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 700, color: '#8FA0FA' }}>
                 <Phone size={13} /> SMS Version
               </div>
               <CopyBtn text={a.sms_version} />

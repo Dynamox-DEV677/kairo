@@ -44,14 +44,14 @@ const lbl: React.CSSProperties = {
   fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.8,
 }
 const btnPrimary: React.CSSProperties = {
-  background: 'linear-gradient(135deg, #4F7CFF 0%, #66D9FF 100%)', color: '#fff',
+  background: 'linear-gradient(135deg, #7C6BF6 0%, #A5B4FC 100%)', color: '#fff',
   border: 'none', borderRadius: 10, padding: '12px 24px', fontSize: 14, fontWeight: 700,
   cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 8,
-  boxShadow: '0 6px 24px rgba(79,124,255,0.32)',
+  boxShadow: '0 6px 24px rgba(124,107,246,0.32)',
 }
 const h3: React.CSSProperties = {
   fontSize: 13, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase',
-  color: '#66D9FF', margin: '0 0 12px', display: 'flex', alignItems: 'center', gap: 8,
+  color: '#A5B4FC', margin: '0 0 12px', display: 'flex', alignItems: 'center', gap: 8,
 }
 const importColor = (i: string) => i === 'HIGH' ? '#ff4d6d' : i === 'MEDIUM' ? '#ffb44a' : '#66ff9a'
 const diffColor = (d: string) => d === 'hard' ? '#ff4d6d' : d === 'medium' ? '#ffb44a' : '#66ff9a'
@@ -93,7 +93,7 @@ export default function TopicArchitect() {
   return (
     <div style={{ padding: 24, maxWidth: 1100, margin: '0 auto', color: '#fafafa', height: '100%', overflowY: 'auto', boxSizing: 'border-box', width: '100%' }}>
       <div style={{ marginBottom: 24 }}>
-        <div style={{ fontSize: 11, letterSpacing: 4, textTransform: 'uppercase', color: '#66D9FF', marginBottom: 8, fontWeight: 700 }}>
+        <div style={{ fontSize: 11, letterSpacing: 4, textTransform: 'uppercase', color: '#A5B4FC', marginBottom: 8, fontWeight: 700 }}>
           Topic Architect
         </div>
         <h1 style={{ fontSize: 32, fontWeight: 900, margin: 0, letterSpacing: -0.5 }}>
@@ -121,9 +121,9 @@ export default function TopicArchitect() {
               {EXAMS.map(e => (
                 <button key={e.id} onClick={() => setExam(e.id)} style={{
                   padding: '8px 16px', fontSize: 13, fontWeight: 700, borderRadius: 8, cursor: 'pointer',
-                  background: exam === e.id ? 'rgba(102,217,255,0.18)' : '#0E1117',
-                  color: exam === e.id ? '#66D9FF' : '#A1A1AA',
-                  border: '1px solid ' + (exam === e.id ? 'rgba(102,217,255,0.55)' : '#1f2532'),
+                  background: exam === e.id ? 'rgba(165,180,252,0.18)' : '#0E1117',
+                  color: exam === e.id ? '#A5B4FC' : '#A1A1AA',
+                  border: '1px solid ' + (exam === e.id ? 'rgba(165,180,252,0.55)' : '#1f2532'),
                 }}>{e.label}</button>
               ))}
             </div>
@@ -135,9 +135,9 @@ export default function TopicArchitect() {
                 <button key={d} onClick={() => setDepth(d)} style={{
                   padding: '8px 16px', fontSize: 13, fontWeight: 700, borderRadius: 8, cursor: 'pointer',
                   textTransform: 'capitalize',
-                  background: depth === d ? 'rgba(102,217,255,0.18)' : '#0E1117',
-                  color: depth === d ? '#66D9FF' : '#A1A1AA',
-                  border: '1px solid ' + (depth === d ? 'rgba(102,217,255,0.55)' : '#1f2532'),
+                  background: depth === d ? 'rgba(165,180,252,0.18)' : '#0E1117',
+                  color: depth === d ? '#A5B4FC' : '#A1A1AA',
+                  border: '1px solid ' + (depth === d ? 'rgba(165,180,252,0.55)' : '#1f2532'),
                 }}>{d}</button>
               ))}
             </div>
@@ -170,7 +170,7 @@ export default function TopicArchitect() {
                   border: '1px solid ' + importColor(plan.examImportance) + '55',
                 }}>{plan.examImportance} PRIORITY</span>
                 <span style={{ fontSize: 13, color: '#9CA3AF' }}>{plan.subject}</span>
-                <span style={{ fontSize: 13, color: '#66D9FF', fontWeight: 700 }}>~{plan.examWeightPercent}% of paper</span>
+                <span style={{ fontSize: 13, color: '#A5B4FC', fontWeight: 700 }}>~{plan.examWeightPercent}% of paper</span>
                 <span style={{ fontSize: 13, color: '#9CA3AF', display: 'flex', alignItems: 'center', gap: 4 }}>
                   <Clock size={13} /> {plan.estimatedHours}h to master
                 </span>
@@ -205,8 +205,8 @@ export default function TopicArchitect() {
                 {plan.mustKnowConcepts?.map((c, i) => (
                   <span key={i} style={{
                     fontSize: 13, fontWeight: 600, padding: '7px 14px', borderRadius: 999,
-                    background: 'rgba(79,124,255,0.14)', color: '#A5B4FC',
-                    border: '1px solid rgba(102,217,255,0.25)',
+                    background: 'rgba(124,107,246,0.14)', color: '#A5B4FC',
+                    border: '1px solid rgba(165,180,252,0.25)',
                   }}>{c}</span>
                 ))}
               </div>
@@ -218,8 +218,8 @@ export default function TopicArchitect() {
                 {plan.conceptMap?.nodes?.map(n => (
                   <span key={n.id} style={{
                     fontSize: 13, fontWeight: 700, padding: '8px 14px', borderRadius: 10,
-                    background: 'rgba(102,217,255,0.12)', color: '#66D9FF',
-                    border: '1px solid rgba(102,217,255,0.30)',
+                    background: 'rgba(165,180,252,0.12)', color: '#A5B4FC',
+                    border: '1px solid rgba(165,180,252,0.30)',
                   }}>{n.label}</span>
                 ))}
               </div>
@@ -229,9 +229,9 @@ export default function TopicArchitect() {
                   const to = plan.conceptMap.nodes.find(n => n.id === l.to)?.label || l.to
                   return (
                     <div key={i} style={{ fontSize: 12, color: '#9CA3AF' }}>
-                      <span style={{ color: '#66D9FF' }}>{from}</span>
+                      <span style={{ color: '#A5B4FC' }}>{from}</span>
                       <span style={{ color: '#5B616E' }}> ──{l.label}──▸ </span>
-                      <span style={{ color: '#66D9FF' }}>{to}</span>
+                      <span style={{ color: '#A5B4FC' }}>{to}</span>
                     </div>
                   )
                 })}
@@ -270,10 +270,10 @@ export default function TopicArchitect() {
               <div style={{ ...card, padding: 18 }}>
                 <h3 style={h3}><History size={14} /> Past-paper insights</h3>
                 <div style={{ fontSize: 13, color: '#fafafa', marginBottom: 8 }}>
-                  <b style={{ color: '#66D9FF' }}>Frequency:</b> {plan.pyqInsights?.frequency}
+                  <b style={{ color: '#A5B4FC' }}>Frequency:</b> {plan.pyqInsights?.frequency}
                 </div>
                 <div style={{ fontSize: 13, color: '#fafafa', marginBottom: 8 }}>
-                  <b style={{ color: '#66D9FF' }}>Usual format:</b> {plan.pyqInsights?.typicalFormat}
+                  <b style={{ color: '#A5B4FC' }}>Usual format:</b> {plan.pyqInsights?.typicalFormat}
                 </div>
                 <div style={{ fontSize: 13, color: '#fafafa', marginBottom: 8 }}>
                   <b style={{ color: '#ff8aa0' }}>Common trap:</b> {plan.pyqInsights?.commonTraps}
@@ -286,7 +286,7 @@ export default function TopicArchitect() {
                 <h3 style={h3}><ListOrdered size={14} /> Study order</h3>
                 {plan.studyOrder?.map((step, i) => (
                   <div key={i} style={{ display: 'flex', gap: 10, marginBottom: 10, alignItems: 'flex-start' }}>
-                    <span style={{ flexShrink: 0, width: 24, height: 24, borderRadius: '50%', background: 'rgba(79,124,255,0.22)', color: '#A5B4FC', fontSize: 12, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{i + 1}</span>
+                    <span style={{ flexShrink: 0, width: 24, height: 24, borderRadius: '50%', background: 'rgba(124,107,246,0.22)', color: '#A5B4FC', fontSize: 12, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{i + 1}</span>
                     <span style={{ fontSize: 13, color: '#fafafa', lineHeight: 1.4 }}>{step}</span>
                   </div>
                 ))}

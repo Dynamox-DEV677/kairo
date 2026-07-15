@@ -94,7 +94,7 @@ function Projectile({ angle, velocity, gravity, playing }: any) {
     <group>
       <mesh ref={ballRef} position={[-10, 0.4, 0]}>
         <sphereGeometry args={[0.25, 16, 16]} />
-        <meshStandardMaterial color="#4F7CFF" emissive="#4F7CFF" emissiveIntensity={0.4} />
+        <meshStandardMaterial color="#7C6BF6" emissive="#7C6BF6" emissiveIntensity={0.4} />
       </mesh>
       <points ref={trailRef} geometry={trailGeom}>
         <pointsMaterial color="#C7D2E8" size={0.12} transparent opacity={0.7} />

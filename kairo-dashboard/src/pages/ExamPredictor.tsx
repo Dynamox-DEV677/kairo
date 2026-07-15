@@ -62,12 +62,12 @@ export default function ExamPredictor() {
           </div>
         </div>
 
-        {error && <p style={{ fontSize: 12, color: '#66D9FF', marginBottom: 14 }}>{error}</p>}
+        {error && <p style={{ fontSize: 12, color: '#A5B4FC', marginBottom: 14 }}>{error}</p>}
 
         <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} onClick={predict} disabled={loading}
           style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '11px 22px', borderRadius: 10, border: 'none',
-            background: 'linear-gradient(135deg, #4F7CFF, #4F7CFF)', color: '#fff', fontFamily: 'inherit', fontSize: 14, fontWeight: 600,
-            cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.6 : 1, boxShadow: '0 0 20px rgba(79, 124, 255, 0.03)' }}>
+            background: 'linear-gradient(135deg, #7C6BF6, #7C6BF6)', color: '#fff', fontFamily: 'inherit', fontSize: 14, fontWeight: 600,
+            cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.6 : 1, boxShadow: '0 0 20px rgba(124, 107, 246, 0.03)' }}>
           <Sparkles size={14} />
           {loading ? 'Analysing patterns…' : 'Predict exam topics'}
         </motion.button>
@@ -76,7 +76,7 @@ export default function ExamPredictor() {
       {loading && (
         <div style={{ textAlign: 'center', padding: 60 }}>
           <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginBottom: 14 }}>
-            {[0,1,2].map(i => <div key={i} style={{ width: 8, height: 8, borderRadius: '50%', background: '#4F7CFF', animation: `dot-bounce 1.2s ease-in-out ${i * 0.2}s infinite` }} />)}
+            {[0,1,2].map(i => <div key={i} style={{ width: 8, height: 8, borderRadius: '50%', background: '#7C6BF6', animation: `dot-bounce 1.2s ease-in-out ${i * 0.2}s infinite` }} />)}
           </div>
           <p style={{ fontSize: 13, color: '#6B7280' }}>Analysing 10 years of question papers…</p>
         </div>

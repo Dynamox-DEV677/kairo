@@ -8,10 +8,10 @@ const DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday']
 const PERIODS = [1,2,3,4,5,6,7,8]
 
 const SUBJECT_COLORS: Record<string, string> = {
-  Mathematics: '#66D9FF', Physics: '#38bdf8', Chemistry: '#A5B4FC',
+  Mathematics: '#A5B4FC', Physics: '#8FA0FA', Chemistry: '#A5B4FC',
   Biology: '#A5B4FC', English: '#A5B4FC', Hindi: '#A5B4FC',
-  History: '#A5B4FC', Geography: '#66D9FF', 'Computer Science': '#DBE7FF',
-  default: '#4F7CFF',
+  History: '#A5B4FC', Geography: '#A5B4FC', 'Computer Science': '#DBE7FF',
+  default: '#7C6BF6',
 }
 
 const card = { background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(14px) saturate(140%)', WebkitBackdropFilter: 'blur(14px) saturate(140%)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14 }
@@ -41,7 +41,7 @@ export default function Timetable() {
             borderRadius: 7, border: 'none', fontFamily: 'inherit',
             fontSize: 12, fontWeight: tab === t.id ? 600 : 400, cursor: 'pointer',
             background: tab === t.id ? '#1f2532' : 'transparent',
-            color: tab === t.id ? '#66D9FF' : '#6B7280',
+            color: tab === t.id ? '#A5B4FC' : '#6B7280',
           }}>
             <t.icon size={13} /> {t.label}
           </button>
@@ -120,7 +120,7 @@ function GridTab() {
         <button onClick={() => setAdding(a => !a)} style={{
           marginTop: 18, display: 'flex', alignItems: 'center', gap: 7,
           padding: '9px 18px', borderRadius: 9, border: 'none',
-          background: 'linear-gradient(135deg,#4F7CFF,#4F7CFF)', color: '#fff',
+          background: 'linear-gradient(135deg,#7C6BF6,#7C6BF6)', color: '#fff',
           fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: 'pointer',
         }}>
           <Plus size={13} /> Add Period
@@ -178,7 +178,7 @@ function GridTab() {
               </div>
             )}
             <div style={{ display: 'flex', gap: 8 }}>
-              <button onClick={addSlot} disabled={saving} style={{ padding: '8px 20px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg,#4F7CFF,#4F7CFF)', color: '#fff', fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+              <button onClick={addSlot} disabled={saving} style={{ padding: '8px 20px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg,#7C6BF6,#7C6BF6)', color: '#fff', fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
                 {saving ? 'Saving…' : 'Add'}
               </button>
               <button onClick={() => { setAdding(false); setErr('') }} style={{ padding: '8px 14px', borderRadius: 8, border: '1px solid #1f2532', background: 'transparent', color: '#6B7280', fontFamily: 'inherit', fontSize: 13, cursor: 'pointer' }}>Cancel</button>
@@ -194,7 +194,7 @@ function GridTab() {
               <tr>
                 <th style={{ padding: '8px 10px', fontSize: 10, color: '#6B7280', textAlign: 'left', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1 }}>Period</th>
                 {DAYS.map(d => (
-                  <th key={d} style={{ padding: '8px 10px', fontSize: 10, color: '#66D9FF', textAlign: 'center', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1 }}>{d.slice(0,3)}</th>
+                  <th key={d} style={{ padding: '8px 10px', fontSize: 10, color: '#A5B4FC', textAlign: 'center', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1 }}>{d.slice(0,3)}</th>
                 ))}
               </tr>
             </thead>
@@ -220,7 +220,7 @@ function GridTab() {
                             <button onClick={() => remove(slot._id)} style={{
                               position: 'absolute', top: 3, right: 3,
                               background: 'none', border: 'none', cursor: 'pointer', padding: 1,
-                              opacity: 0, transition: 'opacity 0.1s', color: '#66D9FF',
+                              opacity: 0, transition: 'opacity 0.1s', color: '#A5B4FC',
                             }}
                               className="delete-btn">
                               <Trash2 size={9} />
@@ -333,17 +333,17 @@ function GenerateTab() {
                 <input style={inp} type="number" placeholder="Periods/wk" value={s.periods_per_week} onChange={e => updateSubject(i, 'periods_per_week', Number(e.target.value))} />
               </div>
             ))}
-            <button onClick={() => setSubjects(s => [...s, { name: '', teacher: '', periods_per_week: 3 }])} style={{ fontSize: 11, color: '#66D9FF', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+            <button onClick={() => setSubjects(s => [...s, { name: '', teacher: '', periods_per_week: 3 }])} style={{ fontSize: 11, color: '#A5B4FC', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
               + Add Subject
             </button>
           </div>
 
-          {err && <p style={{ fontSize: 12, color: '#66D9FF', marginBottom: 12 }}>{err}</p>}
+          {err && <p style={{ fontSize: 12, color: '#A5B4FC', marginBottom: 12 }}>{err}</p>}
 
           <button onClick={generate} disabled={loading} style={{
             width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
             padding: '10px', borderRadius: 9, border: 'none',
-            background: 'linear-gradient(135deg,#4F7CFF,#4F7CFF)', color: '#fff',
+            background: 'linear-gradient(135deg,#7C6BF6,#7C6BF6)', color: '#fff',
             fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: 'pointer',
           }}>
             <Sparkles size={14} /> {loading ? 'Generating…' : 'Generate with AI'}
@@ -362,7 +362,7 @@ function GenerateTab() {
                 <tr>
                   <th style={{ fontSize: 9, color: '#6B7280', padding: '4px 6px', textTransform: 'uppercase' }}>Period</th>
                   {Object.keys(result.timetable || {}).map(d => (
-                    <th key={d} style={{ fontSize: 9, color: '#66D9FF', padding: '4px 6px', textTransform: 'uppercase' }}>{d.slice(0,3)}</th>
+                    <th key={d} style={{ fontSize: 9, color: '#A5B4FC', padding: '4px 6px', textTransform: 'uppercase' }}>{d.slice(0,3)}</th>
                   ))}
                 </tr>
               </thead>
@@ -401,7 +401,7 @@ function GenerateTab() {
 function Spinner() {
   return (
     <div style={{ display: 'flex', justifyContent: 'center', padding: '60px 0' }}>
-      <div style={{ width: 28, height: 28, borderRadius: '50%', border: '2px solid #1f2532', borderTopColor: '#4F7CFF', animation: 'spin 0.8s linear infinite' }} />
+      <div style={{ width: 28, height: 28, borderRadius: '50%', border: '2px solid #1f2532', borderTopColor: '#7C6BF6', animation: 'spin 0.8s linear infinite' }} />
     </div>
   )
 }

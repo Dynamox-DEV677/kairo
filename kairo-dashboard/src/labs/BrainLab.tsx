@@ -19,7 +19,7 @@ const PARTS: PartCatalog = {
     related: ['Prefrontal cortex', 'Motor cortex', 'Broca\'s area (speech production)'],
   },
   parietal: {
-    id: 'parietal', label: 'Parietal Lobe', color: '#60a5fa',
+    id: 'parietal', label: 'Parietal Lobe', color: '#A78BFA',
     function: 'Processes touch, temperature, pain, body position (proprioception) and spatial navigation.',
     whyItMatters: 'How you can walk through a dark room without bumping things — this lobe keeps a 3D map of your body and surroundings.',
     analogy: 'The "sensory dashboard" of the brain.',
@@ -33,7 +33,7 @@ const PARTS: PartCatalog = {
     related: ['Hippocampus', 'Wernicke\'s area (language comprehension)', 'Auditory cortex'],
   },
   occipital: {
-    id: 'occipital', label: 'Occipital Lobe', color: '#66D9FF',
+    id: 'occipital', label: 'Occipital Lobe', color: '#A5B4FC',
     function: 'Processes everything you see — colour, motion, depth, and shape recognition.',
     whyItMatters: 'A surprisingly small region at the back of your head is responsible for ~30% of your brain\'s entire processing power.',
     analogy: 'The visual cortex — the brain\'s GPU.',
@@ -47,7 +47,7 @@ const PARTS: PartCatalog = {
     related: ['Motor coordination', 'Procedural memory', 'Balance'],
   },
   brain_stem: {
-    id: 'brain_stem', label: 'Brain Stem', color: '#4F7CFF',
+    id: 'brain_stem', label: 'Brain Stem', color: '#7C6BF6',
     function: 'Controls automatic life-support: heart rate, breathing, blood pressure, sleep cycles, and reflexes.',
     whyItMatters: 'You can lose huge parts of your cortex and survive, but damage to the brain stem is usually fatal — it runs the body 24/7.',
     analogy: 'The autopilot that keeps the plane flying while the pilot sleeps.',

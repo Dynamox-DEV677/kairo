@@ -34,7 +34,7 @@ Format your response in clean markdown:
 - No <think> tags`
 
 const ACTIONS = [
-  { id: 'solve',     label: 'Solve',         icon: Sparkles,     color: '#4F7CFF',
+  { id: 'solve',     label: 'Solve',         icon: Sparkles,     color: '#7C6BF6',
     prompt: 'Read the question(s) in this image carefully. Solve each one step-by-step with clear working.' + MD_RULES },
   { id: 'explain',   label: 'Explain',       icon: Lightbulb,    color: '#A5B4FC',
     prompt: 'Explain the concept(s) shown in this image as if teaching a Class 10 student in India. Use simple language, give an analogy, end with a 3-line summary under "## Summary".' + MD_RULES },
@@ -210,9 +210,9 @@ export default function CameraStudy() {
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 22 }}>
         <div style={{
           width: 44, height: 44, borderRadius: 11,
-          background: 'linear-gradient(135deg, #4F7CFF, #4F7CFF)',
+          background: 'linear-gradient(135deg, #7C6BF6, #7C6BF6)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 0 18px rgba(79, 124, 255, 0.04)', flexShrink: 0,
+          boxShadow: '0 0 18px rgba(124, 107, 246, 0.04)', flexShrink: 0,
         }}>
           <Camera size={22} color="#fff" />
         </div>
@@ -232,8 +232,8 @@ export default function CameraStudy() {
           {VISION_MODELS.map(m => (
             <button key={m.id} onClick={() => setModel(m.id)} style={{
               padding: '10px 14px', borderRadius: 9,
-              border: `1px solid ${model === m.id ? '#4F7CFF' : '#1f2532'}`,
-              background: model === m.id ? 'rgba(79, 124, 255, 0.10)' : '#0E1117',
+              border: `1px solid ${model === m.id ? '#7C6BF6' : '#1f2532'}`,
+              background: model === m.id ? 'rgba(124, 107, 246, 0.10)' : '#0E1117',
               cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left',
               transition: 'all 0.15s',
             }}>
@@ -259,10 +259,10 @@ export default function CameraStudy() {
           }}>
           <div style={{
             width: 60, height: 60, borderRadius: 16, margin: '0 auto 14px',
-            background: 'rgba(79, 124, 255, 0.1)',
+            background: 'rgba(124, 107, 246, 0.1)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
-            <Upload size={26} color="#66D9FF" />
+            <Upload size={26} color="#A5B4FC" />
           </div>
           <p style={{ fontSize: 14, color: '#fafafa', fontWeight: 600, margin: '0 0 6px' }}>
             Drag a photo here, or pick a source
@@ -273,7 +273,7 @@ export default function CameraStudy() {
           <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
             <button onClick={() => fileInputRef.current?.click()} style={{
               padding: '10px 18px', borderRadius: 9, border: 'none',
-              background: 'linear-gradient(135deg, #4F7CFF, #4F7CFF)', color: '#fff',
+              background: 'linear-gradient(135deg, #7C6BF6, #7C6BF6)', color: '#fff',
               fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: 'pointer',
               display: 'flex', alignItems: 'center', gap: 7,
             }}>
@@ -311,7 +311,7 @@ export default function CameraStudy() {
             <div style={{ display: 'flex', gap: 10, justifyContent: 'center', marginTop: 10 }}>
               <button onClick={snap} style={{
                 padding: '11px 22px', borderRadius: 9, border: 'none',
-                background: 'linear-gradient(135deg,#4F7CFF,#4F7CFF)', color: '#fff',
+                background: 'linear-gradient(135deg,#7C6BF6,#7C6BF6)', color: '#fff',
                 fontFamily: 'inherit', fontSize: 13, fontWeight: 700, cursor: 'pointer',
                 display: 'flex', alignItems: 'center', gap: 7,
               }}>
@@ -384,7 +384,7 @@ export default function CameraStudy() {
       )}
 
       {err && (
-        <div style={{ marginBottom: 14, padding: '10px 14px', background: 'rgba(102, 217, 255, 0.08)', border: '1px solid rgba(102, 217, 255, 0.25)', borderRadius: 8, fontSize: 12, color: '#66D9FF' }}>
+        <div style={{ marginBottom: 14, padding: '10px 14px', background: 'rgba(165, 180, 252, 0.08)', border: '1px solid rgba(165, 180, 252, 0.25)', borderRadius: 8, fontSize: 12, color: '#A5B4FC' }}>
           {err}
         </div>
       )}

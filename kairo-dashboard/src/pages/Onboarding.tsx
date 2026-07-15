@@ -6,7 +6,7 @@ import type { AuthProfile } from './Login'
 
 interface Props { profile: AuthProfile; onDone: () => void; onSkip: () => void }
 
-const A = { bg: '#050505', card: '#0E1117', border: '#1f2532', accent: '#4F7CFF', cyan: '#66D9FF', text: '#fafafa', mut: '#9CA3AF' }
+const A = { bg: '#050505', card: '#0E1117', border: '#1f2532', accent: '#7C6BF6', cyan: '#A5B4FC', text: '#fafafa', mut: '#9CA3AF' }
 const FONT = "'Inter', system-ui, sans-serif"
 
 const BOARDS = ['CBSE', 'ICSE', 'State Board', 'IB', 'IGCSE', 'Other']
@@ -68,13 +68,13 @@ export default function Onboarding({ profile, onDone, onSkip }: Props) {
       <div style={{
         position: 'absolute', top: '-10%', left: '50%', transform: 'translateX(-50%)',
         width: 'min(560px,100vw)', height: 'min(560px,100vw)', borderRadius: '50%',
-        background: 'radial-gradient(circle, rgba(79,124,255,0.12), transparent 70%)', pointerEvents: 'none',
+        background: 'radial-gradient(circle, rgba(124,107,246,0.12), transparent 70%)', pointerEvents: 'none',
       }} />
 
       <div style={{ width: '100%', maxWidth: 540, padding: '26px 20px 40px', position: 'relative', zIndex: 1 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <img src="/kyno-logo.png" alt="" style={{ width: 34, height: 34, objectFit: 'contain', filter: 'drop-shadow(0 0 12px rgba(102,217,255,0.4))' }} />
+            <img src="/kyno-logo.png" alt="" style={{ width: 34, height: 34, objectFit: 'contain', filter: 'drop-shadow(0 0 12px rgba(165,180,252,0.4))' }} />
             <span style={{ fontWeight: 800, letterSpacing: -0.3 }}>Set up your Kyno</span>
           </div>
           <button onClick={onSkip} style={{ background: 'none', border: 'none', color: A.mut, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: FONT }}>Skip for now</button>
@@ -214,10 +214,10 @@ const navBtn: React.CSSProperties = {
 }
 const pillBtn = (on: boolean): React.CSSProperties => ({
   flex: 1, padding: '13px', borderRadius: 12, cursor: 'pointer', fontFamily: FONT, fontSize: 15, fontWeight: 700,
-  background: on ? 'rgba(79,124,255,0.16)' : '#151a24', color: on ? '#fff' : A.mut,
+  background: on ? 'rgba(124,107,246,0.16)' : '#151a24', color: on ? '#fff' : A.mut,
   border: `1px solid ${on ? A.accent : A.border}`,
 })
 const styleCard = (on: boolean): React.CSSProperties => ({
   padding: '18px 16px', borderRadius: 16, cursor: 'pointer', textAlign: 'left', fontFamily: FONT, color: A.text,
-  background: on ? 'rgba(79,124,255,0.12)' : A.card, border: `1px solid ${on ? A.accent : A.border}`, transition: 'all 0.15s',
+  background: on ? 'rgba(124,107,246,0.12)' : A.card, border: `1px solid ${on ? A.accent : A.border}`, transition: 'all 0.15s',
 })

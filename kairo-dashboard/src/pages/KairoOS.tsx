@@ -30,16 +30,16 @@ const C = {
   text:      '#fafafa',
   textDim:   '#B1B5BA',
   textFaint: '#9CA3AF',
-  purple:    '#66D9FF',
+  purple:    '#A5B4FC',
   blue:      '#A5B4FC',
   cyan:      '#A5B4FC',
   green:     '#A5B4FC',
   amber:     '#A5B4FC',
-  red:       '#66D9FF',
+  red:       '#A5B4FC',
 }
 
 const GRAD = {
-  pill:   'linear-gradient(135deg, #4F7CFF 0%, #2046C2 50%, #4F7CFF 100%)',
+  pill:   'linear-gradient(135deg, #7C6BF6 0%, #4A2FA8 50%, #7C6BF6 100%)',
   text:   'linear-gradient(90deg, #A5B4FC 0%, #A5B4FC 50%, #A5B4FC 100%)',
 }
 
@@ -76,20 +76,20 @@ function KairoOSIntro({ onDone }: { onDone: () => void }) {
 
       <div style={{
         position: 'absolute', width: 620, height: 620, borderRadius: '50%',
-        background: 'radial-gradient(circle, rgba(79,124,255,0.16) 0%, transparent 62%)',
+        background: 'radial-gradient(circle, rgba(124,107,246,0.16) 0%, transparent 62%)',
         animation: 'kosGlow 2.4s ease-in-out infinite',
       }} />
 
       <div style={{ position: 'relative', width: 148, height: 148, marginBottom: 38 }}>
         <div style={{
           position: 'absolute', inset: 0, borderRadius: '50%',
-          border: '1px solid rgba(102,217,255,0.25)',
+          border: '1px solid rgba(165,180,252,0.25)',
           animation: 'kosPulse 2s ease-in-out infinite',
         }} />
         <div style={{
           position: 'absolute', inset: 10, borderRadius: '50%',
           border: '2px solid transparent',
-          borderTopColor: '#66D9FF', borderRightColor: 'rgba(79,124,255,0.45)',
+          borderTopColor: '#A5B4FC', borderRightColor: 'rgba(124,107,246,0.45)',
           animation: 'kosRingSpin 1.1s linear infinite',
         }} />
         <div style={{
@@ -98,7 +98,7 @@ function KairoOSIntro({ onDone }: { onDone: () => void }) {
         }}>
           <img src="/kairo-mark.svg" alt="" style={{
             width: 76, height: 76, objectFit: 'contain',
-            filter: 'drop-shadow(0 0 20px rgba(102,217,255,0.6))',
+            filter: 'drop-shadow(0 0 20px rgba(165,180,252,0.6))',
           }} />
         </div>
       </div>
@@ -115,13 +115,13 @@ function KairoOSIntro({ onDone }: { onDone: () => void }) {
               minWidth: ch === ' ' ? '0.35em' : undefined,
               opacity: 0,
               animation: `kosLetter .55s cubic-bezier(.2,.9,.3,1.35) ${0.25 + i * 0.07}s forwards`,
-              textShadow: '0 0 34px rgba(79,124,255,0.5)',
+              textShadow: '0 0 34px rgba(124,107,246,0.5)',
             }}>{ch}</span>
           ))}
         </div>
         <div style={{
           position: 'absolute', top: 0, bottom: 0, width: '34%',
-          background: 'linear-gradient(90deg, transparent, rgba(102,217,255,0.32), transparent)',
+          background: 'linear-gradient(90deg, transparent, rgba(165,180,252,0.32), transparent)',
           animation: 'kosShine 0.9s ease-in-out 1.35s both',
           pointerEvents: 'none',
         }} />
@@ -129,7 +129,7 @@ function KairoOSIntro({ onDone }: { onDone: () => void }) {
 
       <div style={{
         marginTop: 22, fontSize: 'clamp(9px, 3vw, 12px)', fontWeight: 700, letterSpacing: 4,
-        textTransform: 'uppercase', color: '#66D9FF',
+        textTransform: 'uppercase', color: '#A5B4FC',
         fontFamily: "'Space Grotesk', system-ui, sans-serif",
         animation: 'kosFade .6s ease 1.25s both',
         maxWidth: '88vw', padding: '0 16px', textAlign: 'center',
@@ -148,7 +148,7 @@ function KairoOSIntro({ onDone }: { onDone: () => void }) {
       <div style={{ position: 'absolute', bottom: 46, width: 220, height: 2, background: 'rgba(255,255,255,0.08)', borderRadius: 2, overflow: 'hidden' }}>
         <div style={{
           height: '100%', borderRadius: 2,
-          background: 'linear-gradient(90deg, #4F7CFF, #66D9FF)',
+          background: 'linear-gradient(90deg, #7C6BF6, #A5B4FC)',
           animation: 'kosBar 2.7s cubic-bezier(.3,.6,.4,1) .2s both',
         }} />
       </div>
@@ -274,7 +274,7 @@ export default function KairoOS() {
       WebkitOverflowScrolling: 'touch',
       background: C.bg,
       backgroundImage:
-        `radial-gradient(at 12% 0%, rgba(79, 124, 255, 0.10) 0%, transparent 36%),
+        `radial-gradient(at 12% 0%, rgba(124, 107, 246, 0.10) 0%, transparent 36%),
          radial-gradient(at 88% 100%, rgba(37,99,235,0.10) 0%, transparent 42%)`,
       padding: '24px 24px 80px',
     }}>
@@ -392,28 +392,28 @@ function Header({ twin, onRefresh, onWipe, pulse, onBackup }: { twin: Twin; onRe
       background: 'linear-gradient(150deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%)',
       backdropFilter: 'blur(18px) saturate(150%)',
       WebkitBackdropFilter: 'blur(18px) saturate(150%)',
-      border: '1px solid rgba(102, 217, 255, 0.18)',
-      boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.07), 0 14px 44px rgba(79,124,255,0.10)',
+      border: '1px solid rgba(165, 180, 252, 0.18)',
+      boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.07), 0 14px 44px rgba(124,107,246,0.10)',
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
         <div style={{
           width: 76, height: 76, borderRadius: 20,
           background: GRAD.pill, display: 'grid', placeItems: 'center',
-          boxShadow: '0 12px 38px rgba(79, 124, 255, 0.35)',
+          boxShadow: '0 12px 38px rgba(124, 107, 246, 0.35)',
         }}>
           <img src="/kairo-mark.svg" alt="Kyno" style={{ width: 60, height: 60, objectFit: 'contain' }} />
         </div>
         <div>
           <div style={{
             fontSize: 11, fontWeight: 700, letterSpacing: 3, textTransform: 'uppercase',
-            color: '#66D9FF',
+            color: '#A5B4FC',
           }}>
             Your Academic Twin · Live
           </div>
           <h1 style={{
             margin: '3px 0 0', fontSize: 34, fontWeight: 700, color: C.text, letterSpacing: 0.3,
             fontFamily: "'Space Grotesk', system-ui, sans-serif",
-            textShadow: '0 0 26px rgba(79,124,255,0.45)',
+            textShadow: '0 0 26px rgba(124,107,246,0.45)',
             lineHeight: 1.05,
           }}>
             Kyno
@@ -438,12 +438,12 @@ function Header({ twin, onRefresh, onWipe, pulse, onBackup }: { twin: Twin; onRe
           {pulse ? 'Recomputed' : 'Recompute'}
         </button>
         <button onClick={onBackup} title="Backup / restore your Twin to move it between devices" style={{
-          ...chipBtn(), color: C.purple, borderColor: 'rgba(102, 217, 255, 0.14)',
+          ...chipBtn(), color: C.purple, borderColor: 'rgba(165, 180, 252, 0.14)',
         }}>
           <FileJson size={13} />
           Backup
         </button>
-        <button onClick={onWipe} style={{ ...chipBtn(), color: C.red, borderColor: 'rgba(102, 217, 255, 0.14)' }}>
+        <button onClick={onWipe} style={{ ...chipBtn(), color: C.red, borderColor: 'rgba(165, 180, 252, 0.14)' }}>
           <Trash2 size={13} />
           Wipe Twin
         </button>
@@ -466,15 +466,15 @@ function TwinVoice({ obs }: { obs: Observation }) {
   return (
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} style={{
       marginTop: 22, padding: '18px 22px',
-      background: `linear-gradient(135deg, rgba(79, 124, 255, 0.08), rgba(165, 180, 252, 0.05))`,
-      border: `1px solid rgba(79, 124, 255, 0.32)`, borderRadius: 14,
+      background: `linear-gradient(135deg, rgba(124, 107, 246, 0.08), rgba(165, 180, 252, 0.05))`,
+      border: `1px solid rgba(124, 107, 246, 0.32)`, borderRadius: 14,
       display: 'flex', alignItems: 'flex-start', gap: 14, position: 'relative', overflow: 'hidden',
     }}>
-      <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(at 0% 0%, rgba(79, 124, 255, 0.18), transparent 40%)`, pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(at 0% 0%, rgba(124, 107, 246, 0.18), transparent 40%)`, pointerEvents: 'none' }} />
       <div style={{
         width: 38, height: 38, borderRadius: 12, flexShrink: 0,
         background: GRAD.pill, display: 'grid', placeItems: 'center',
-        boxShadow: `0 0 24px rgba(79, 124, 255, 0.03)`,
+        boxShadow: `0 0 24px rgba(124, 107, 246, 0.03)`,
       }}>
         <Sparkles size={18} color="#fff" />
       </div>
@@ -517,7 +517,7 @@ function PulseCard({ twin, openDetail }: { twin: Twin; openDetail: (k: DetailKin
           display: 'inline-block', marginTop: 4, padding: '4px 10px', borderRadius: 999,
           fontSize: 10.5, fontWeight: 700, letterSpacing: 1.4, textTransform: 'uppercase',
           background: pct >= 75 ? 'rgba(165, 180, 252, 0.12)' : pct >= 60 ? 'rgba(165, 180, 252, 0.12)'
-                    : pct >= 45 ? 'rgba(165, 180, 252, 0.12)' : 'rgba(102, 217, 255, 0.12)',
+                    : pct >= 45 ? 'rgba(165, 180, 252, 0.12)' : 'rgba(165, 180, 252, 0.12)',
           color:    pct >= 75 ? C.green : pct >= 60 ? C.blue : pct >= 45 ? C.amber : C.red,
         }}>
           ● {label}
@@ -541,15 +541,15 @@ function Ring({ score }: { score: number }) {
     <div className="kr-pulse-ring" style={{ position: 'relative', width: 200, height: 200 }}>
       <div style={{
         position: 'absolute', inset: -20,
-        background: `radial-gradient(closest-side, rgba(79, 124, 255, 0.42), transparent 70%)`,
+        background: `radial-gradient(closest-side, rgba(124, 107, 246, 0.42), transparent 70%)`,
         filter: 'blur(20px)', animation: 'kr-glow 4s ease-in-out infinite',
       }} />
       <svg className="kr-pulse-svg" width="200" height="200" style={{ position: 'relative', display: 'block' }}>
         <defs>
           <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%"   stopColor="#A5B4FC"/>
-            <stop offset="40%"  stopColor="#4F7CFF"/>
-            <stop offset="80%"  stopColor="#66D9FF"/>
+            <stop offset="40%"  stopColor="#7C6BF6"/>
+            <stop offset="80%"  stopColor="#A5B4FC"/>
             <stop offset="100%" stopColor="#A5B4FC"/>
           </linearGradient>
         </defs>
@@ -573,7 +573,7 @@ function SubMetric({ label, value, unit, onClick }: { label: string; value: numb
     <motion.button
       type="button"
       onClick={onClick}
-      whileHover={{ y: -2, borderColor: 'rgba(102, 217, 255, 0.18)', boxShadow: '0 6px 16px rgba(79, 124, 255, 0.01)' }}
+      whileHover={{ y: -2, borderColor: 'rgba(165, 180, 252, 0.18)', boxShadow: '0 6px 16px rgba(124, 107, 246, 0.01)' }}
       whileTap={{ scale: 0.97 }}
       style={{
         background: C.panel2, border: `1px solid ${C.borderSoft}`, borderRadius: 10, padding: '10px 8px',
@@ -641,7 +641,7 @@ function StyleCard({ twin, openDetail }: { twin: Twin; openDetail: (k: DetailKin
       </div>
       <div style={{
         marginTop: 14, padding: '10px 12px', borderRadius: 10,
-        background: 'rgba(79, 124, 255, 0.06)', border: `1px solid rgba(79, 124, 255, 0.22)`,
+        background: 'rgba(124, 107, 246, 0.06)', border: `1px solid rgba(124, 107, 246, 0.22)`,
         fontSize: 12.5, color: C.textDim, lineHeight: 1.55,
       }}>
         <span style={{ color: top.color, fontWeight: 700 }}>You're a {top.label.toLowerCase()} learner.</span>{' '}
@@ -786,7 +786,7 @@ function HeatmapCard({ mastery, openDetail }: { mastery: (MasteryRow & { retenti
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 12, paddingTop: 12, borderTop: `1px solid ${C.borderSoft}` }}>
         <span style={{ fontSize: 10, color: C.textFaint, fontWeight: 600 }}>WEAK</span>
-        <div style={{ flex: 1, height: 6, borderRadius: 999, background: 'linear-gradient(90deg, #66D9FF, #A5B4FC 50%, #A5B4FC)' }} />
+        <div style={{ flex: 1, height: 6, borderRadius: 999, background: 'linear-gradient(90deg, #A5B4FC, #A5B4FC 50%, #A5B4FC)' }} />
         <span style={{ fontSize: 10, color: C.textFaint, fontWeight: 600 }}>MASTERED</span>
       </div>
     </Card>
@@ -798,7 +798,7 @@ function avgMastery(rows: MasteryRow[]) {
 }
 
 function masteryColor(m: number, alpha: number) {
-  if (m < 0.4)  return alpha === 1 ? '#A5B4FC' : `rgba(102, 217, 255, ${alpha})`
+  if (m < 0.4)  return alpha === 1 ? '#A5B4FC' : `rgba(165, 180, 252, ${alpha})`
   if (m < 0.7)  return alpha === 1 ? '#DBE7FF' : `rgba(165, 180, 252, ${alpha})`
   return alpha === 1 ? '#A5B4FC' : `rgba(165, 180, 252, ${alpha})`
 }
@@ -845,8 +845,8 @@ function RetentionCard({ mastery, forgetting, openDetail }: { mastery: (MasteryR
         <svg viewBox={`0 0 ${W} ${H}`} width="100%" style={{ display: 'block' }}>
           <defs>
             <linearGradient id="retArea" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%"   stopColor="#66D9FF" stopOpacity="0.45"/>
-              <stop offset="100%" stopColor="#66D9FF" stopOpacity="0"/>
+              <stop offset="0%"   stopColor="#A5B4FC" stopOpacity="0.45"/>
+              <stop offset="100%" stopColor="#A5B4FC" stopOpacity="0"/>
             </linearGradient>
             <linearGradient id="retLine" x1="0" y1="0" x2="1" y2="0">
               <stop offset="0%" stopColor="#A5B4FC"/>
@@ -858,7 +858,7 @@ function RetentionCard({ mastery, forgetting, openDetail }: { mastery: (MasteryR
           <path d={areaPath} fill="url(#retArea)" />
           <path d={linePath} fill="none" stroke="url(#retLine)" strokeWidth="2.5" strokeLinejoin="round" />
           {points.map(p => (
-            <circle key={p.d} cx={xs(p.d)} cy={ys(p.retention)} r="3.5" fill="#fff" stroke="#66D9FF" strokeWidth="2" />
+            <circle key={p.d} cx={xs(p.d)} cy={ys(p.retention)} r="3.5" fill="#fff" stroke="#A5B4FC" strokeWidth="2" />
           ))}
           {points.map(p => (
             <text key={`l-${p.d}`} x={xs(p.d)} y={H - 6} fill={C.textFaint} fontSize="9" textAnchor="middle" fontFamily="inherit">
@@ -876,7 +876,7 @@ function RetentionCard({ mastery, forgetting, openDetail }: { mastery: (MasteryR
                 key={f.topic}
                 type="button"
                 onClick={() => openDetail({ type: 'forgetting', subject: f.subject, topic: f.topic })}
-                whileHover={{ x: 4, background: 'rgba(102, 217, 255, 0.08)' }}
+                whileHover={{ x: 4, background: 'rgba(165, 180, 252, 0.08)' }}
                 whileTap={{ scale: 0.98 }}
                 style={{
                   display: 'flex', alignItems: 'center', gap: 10, fontSize: 12, color: C.textDim,
@@ -1114,7 +1114,7 @@ function PrivacyFooter({ onWipe, eventCount }: { onWipe: () => void; eventCount:
   return (
     <div style={{
       marginTop: 26, padding: '14px 18px', borderRadius: 12,
-      background: 'rgba(79, 124, 255, 0.04)', border: `1px solid rgba(79, 124, 255, 0.18)`,
+      background: 'rgba(124, 107, 246, 0.04)', border: `1px solid rgba(124, 107, 246, 0.18)`,
       display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap',
     }}>
       <Sparkles size={14} color={C.purple} />
@@ -1124,7 +1124,7 @@ function PrivacyFooter({ onWipe, eventCount }: { onWipe: () => void; eventCount:
         none of this is uploaded to Kyno's servers. Clearing your browser data wipes it.
       </div>
       <button onClick={onWipe} style={{
-        ...chipBtn(), color: C.red, borderColor: 'rgba(102, 217, 255, 0.14)', flexShrink: 0,
+        ...chipBtn(), color: C.red, borderColor: 'rgba(165, 180, 252, 0.14)', flexShrink: 0,
       }}>
         <Trash2 size={13} />
         Wipe my Twin
@@ -1750,14 +1750,14 @@ function EmptyState({ onRefresh, onSeed }: { onRefresh: () => void; onSeed: () =
       alignItems: 'center', justifyContent: 'center', gap: 12, padding: 40,
       background: C.bg,
       backgroundImage:
-        `radial-gradient(at 12% 0%, rgba(79, 124, 255, 0.10) 0%, transparent 36%),
+        `radial-gradient(at 12% 0%, rgba(124, 107, 246, 0.10) 0%, transparent 36%),
          radial-gradient(at 88% 100%, rgba(37,99,235,0.10) 0%, transparent 42%)`,
     }}>
       <style>{`@keyframes kr-glow { 0%,100% { opacity: .55 } 50% { opacity: .95 } }`}</style>
       <div style={{
         width: 60, height: 60, borderRadius: 16,
         background: GRAD.pill, display: 'grid', placeItems: 'center',
-        boxShadow: '0 12px 36px rgba(79, 124, 255, 0.03)',
+        boxShadow: '0 12px 36px rgba(124, 107, 246, 0.03)',
       }}>
         <Brain size={28} color="#fff" />
       </div>

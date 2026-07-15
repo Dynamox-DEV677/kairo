@@ -4,7 +4,7 @@ const DEFAULT_LOGO: ReactNode = (
   <img
     src="/kairo-mark.svg"
     alt=""
-    style={{ width: '42%', height: '42%', objectFit: 'contain', filter: 'drop-shadow(0 0 10px rgba(102,217,255,0.45))' }}
+    style={{ width: '42%', height: '42%', objectFit: 'contain', filter: 'drop-shadow(0 0 10px rgba(165,180,252,0.45))' }}
   />
 )
 
@@ -27,14 +27,14 @@ export default function KairoGyro({
         @keyframes kgSpin { to { transform: rotate(360deg) } }
         @keyframes kgHalo { 0%,100% { transform: scale(1);    opacity: .30 }
                             50%     { transform: scale(1.14); opacity: .70 } }
-        @keyframes kgCore { 0%,100% { box-shadow: 0 0 ${Math.round(size * 0.12)}px rgba(102,217,255,.55) }
-                            50%     { box-shadow: 0 0 ${Math.round(size * 0.26)}px rgba(102,217,255,.95) } }
+        @keyframes kgCore { 0%,100% { box-shadow: 0 0 ${Math.round(size * 0.12)}px rgba(165,180,252,.55) }
+                            50%     { box-shadow: 0 0 ${Math.round(size * 0.26)}px rgba(165,180,252,.95) } }
         @keyframes kgFade { from { opacity: 0 } to { opacity: 1 } }
       `}</style>
 
       <div style={{
         position: 'absolute', inset: '-8%', borderRadius: '50%',
-        border: '1px solid rgba(102,217,255,0.22)',
+        border: '1px solid rgba(165,180,252,0.22)',
         animation: 'kgHalo 2.1s ease-in-out infinite',
       }} />
 
@@ -42,7 +42,7 @@ export default function KairoGyro({
         <div style={{
           position: 'absolute', inset: '6%', borderRadius: '50%',
           border: '2px solid transparent',
-          borderTopColor: '#66D9FF', borderRightColor: 'rgba(102,217,255,0.33)',
+          borderTopColor: '#A5B4FC', borderRightColor: 'rgba(165,180,252,0.33)',
           animation: 'kgSpin 1.6s linear infinite',
         }} />
       </div>
@@ -50,7 +50,7 @@ export default function KairoGyro({
         <div style={{
           position: 'absolute', inset: '16%', borderRadius: '50%',
           border: '2px solid transparent',
-          borderTopColor: '#4F7CFF', borderRightColor: 'rgba(79,124,255,0.33)',
+          borderTopColor: '#7C6BF6', borderRightColor: 'rgba(124,107,246,0.33)',
           animation: 'kgSpin 2.3s linear infinite reverse',
         }} />
       </div>
@@ -67,7 +67,7 @@ export default function KairoGyro({
         {logo ?? (
           <div style={{
             width: Math.max(6, size * 0.14), height: Math.max(6, size * 0.14), borderRadius: '50%',
-            background: 'radial-gradient(circle, #fff 0%, #66D9FF 70%)',
+            background: 'radial-gradient(circle, #fff 0%, #A5B4FC 70%)',
             animation: 'kgCore 1.8s ease-in-out infinite',
           }} />
         )}
@@ -84,7 +84,7 @@ export default function KairoGyro({
       {label && (
         <div style={{
           fontSize: 12, fontWeight: 700, letterSpacing: 4, textTransform: 'uppercase',
-          color: '#66D9FF', textAlign: 'center',
+          color: '#A5B4FC', textAlign: 'center',
         }}>{label}</div>
       )}
       {sub && (

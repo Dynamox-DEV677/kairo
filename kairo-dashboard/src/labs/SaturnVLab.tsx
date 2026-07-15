@@ -19,7 +19,7 @@ const PARTS: PartCatalog = {
     related: ['Combustion', 'Newton\'s third law', 'Specific impulse'],
   },
   s_ic: {
-    id: 's_ic', label: 'S-IC First Stage', color: '#4F7CFF',
+    id: 's_ic', label: 'S-IC First Stage', color: '#7C6BF6',
     function: 'The 42-metre tall first stage. Burned for 2 minutes 41 seconds, lifting the entire 2,800-tonne stack to 67 km altitude before separating.',
     whyItMatters: 'Solving the "tyranny of the rocket equation" — most of the rocket\'s mass is fuel just to lift the rest of the fuel.',
     analogy: 'The freight train that gets the moon-mission out of Earth\'s thickest air.',
@@ -107,9 +107,9 @@ function RocketFallback() {
   return (
     <Html center>
       <div style={{
-        background: 'rgba(13,13,13,0.85)', border: '1px solid rgba(79, 124, 255, 0.14)',
+        background: 'rgba(13,13,13,0.85)', border: '1px solid rgba(124, 107, 246, 0.14)',
         borderRadius: 10, padding: '10px 16px', fontFamily: 'inherit',
-        fontSize: 12, color: '#4F7CFF', whiteSpace: 'nowrap',
+        fontSize: 12, color: '#7C6BF6', whiteSpace: 'nowrap',
       }}>
         Loading Saturn V…
       </div>

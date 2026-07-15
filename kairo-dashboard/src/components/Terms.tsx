@@ -12,8 +12,8 @@ const C = {
   textDim:   '#CBD5E1',
   textFaint: '#9CA3AF',
   textVery:  '#6B7280',
-  purple:    '#66D9FF',
-  purpleHi:  '#4F7CFF',
+  purple:    '#A5B4FC',
+  purpleHi:  '#7C6BF6',
   purpleSoft:'#A5B4FC',
   purpleLite:'#DBE7FF',
 }
@@ -145,7 +145,7 @@ function TermsSheet({ tab, setTab, onClose }: {
           background: C.panel,
           border: `1px solid ${C.border}`,
           borderRadius: 22,
-          boxShadow: '0 30px 100px rgba(79, 124, 255, 0.01), 0 0 0 1px rgba(102, 217, 255, 0.01)',
+          boxShadow: '0 30px 100px rgba(124, 107, 246, 0.01), 0 0 0 1px rgba(165, 180, 252, 0.01)',
           display: 'flex', flexDirection: 'column',
           overflow: 'hidden',
         }}
@@ -165,7 +165,7 @@ function TermsSheet({ tab, setTab, onClose }: {
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <div style={{
               width: 38, height: 38, borderRadius: 11,
-              background: 'linear-gradient(135deg, rgba(102, 217, 255, 0.18), rgba(79, 124, 255, 0.08))',
+              background: 'linear-gradient(135deg, rgba(165, 180, 252, 0.18), rgba(124, 107, 246, 0.08))',
               border: `1px solid ${C.border}`,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               flexShrink: 0,
@@ -198,7 +198,7 @@ function TermsSheet({ tab, setTab, onClose }: {
                 transition: 'background .15s, color .15s',
               }}
               onMouseEnter={e => {
-                e.currentTarget.style.background = 'rgba(102, 217, 255, 0.08)'
+                e.currentTarget.style.background = 'rgba(165, 180, 252, 0.08)'
                 e.currentTarget.style.color = C.purpleSoft
               }}
               onMouseLeave={e => {
@@ -238,7 +238,7 @@ function TermsSheet({ tab, setTab, onClose }: {
 
           <div style={{
             marginTop: 28, padding: '14px 16px', borderRadius: 12,
-            background: 'rgba(102, 217, 255, 0.05)',
+            background: 'rgba(165, 180, 252, 0.05)',
             border: `1px solid ${C.borderSoft}`,
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             gap: 10, flexWrap: 'wrap',
@@ -277,10 +277,10 @@ function TermsSheet({ tab, setTab, onClose }: {
             onClick={onClose}
             style={{
               padding: '11px 22px', borderRadius: 11, border: 'none',
-              background: 'linear-gradient(135deg, #4F7CFF, #2046C2)',
+              background: 'linear-gradient(135deg, #7C6BF6, #4A2FA8)',
               color: '#fff', fontFamily: FONT, fontSize: 13.5, fontWeight: 700,
               cursor: 'pointer',
-              boxShadow: '0 0 22px rgba(79, 124, 255, 0.03)',
+              boxShadow: '0 0 22px rgba(124, 107, 246, 0.03)',
             }}
           >
             Got it
@@ -301,7 +301,7 @@ function TabBtn({ active, onClick, children }: {
       onClick={onClick}
       style={{
         flex: 1, padding: '8px 12px', borderRadius: 8, border: 'none',
-        background: active ? 'rgba(102, 217, 255, 0.12)' : 'transparent',
+        background: active ? 'rgba(165, 180, 252, 0.12)' : 'transparent',
         color: active ? C.purpleSoft : C.textFaint,
         fontFamily: FONT, fontSize: 12.5, fontWeight: 700,
         cursor: 'pointer',
@@ -665,7 +665,7 @@ function PrivacyBody() {
 const lead: React.CSSProperties = {
   padding: '14px 16px',
   borderRadius: 12,
-  background: 'rgba(102, 217, 255, 0.06)',
+  background: 'rgba(165, 180, 252, 0.06)',
   border: `1px solid ${C.borderSoft}`,
   color: C.purpleLite,
   fontSize: 13, lineHeight: 1.65,

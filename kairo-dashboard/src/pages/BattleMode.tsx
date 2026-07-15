@@ -43,8 +43,8 @@ type AILevel = 'rookie' | 'pro' | 'champion'
 
 const AI_PROFILES: Record<AILevel, { name: string; icon: any; accuracy: number; speedMs: [number, number]; color: string; tag: string }> = {
   rookie:   { name: 'Echo',      icon: Bot,   accuracy: 0.55, speedMs: [9000, 14000], color: '#A5B4FC', tag: 'training wheels' },
-  pro:      { name: 'Quark',     icon: Cpu,   accuracy: 0.82, speedMs: [4500, 8500],  color: '#66D9FF', tag: 'sharp & fast' },
-  champion: { name: 'Vortex',    icon: Skull, accuracy: 0.94, speedMs: [2500, 5000],  color: '#66D9FF', tag: 'merciless' },
+  pro:      { name: 'Quark',     icon: Cpu,   accuracy: 0.82, speedMs: [4500, 8500],  color: '#A5B4FC', tag: 'sharp & fast' },
+  champion: { name: 'Vortex',    icon: Skull, accuracy: 0.94, speedMs: [2500, 5000],  color: '#A5B4FC', tag: 'merciless' },
 }
 
 export default function BattleMode() {
@@ -330,7 +330,7 @@ Tips: each tip is one specific actionable line (max 18 words) — reference the 
     const q = questions[idx]
     if (!q) return null
     const pct = (secsLeft / 20) * 100
-    const color = secsLeft < 5 ? '#2046C2' : secsLeft < 10 ? '#A5B4FC' : '#66D9FF'
+    const color = secsLeft < 5 ? '#4A2FA8' : secsLeft < 10 ? '#A5B4FC' : '#A5B4FC'
     const playerCorrectSoFar = answers.slice(0, idx).filter((a, i) => a === questions[i]?.answer).length
     const aiCorrectSoFar     = aiAnswers.slice(0, idx).filter((a, i) => a !== null && a === questions[i]?.answer).length
     const prof = AI_PROFILES[aiLevel]
@@ -344,7 +344,7 @@ Tips: each tip is one specific actionable line (max 18 words) — reference the 
             </div>
             <div style={{ height: 4, background: '#1a1f2e', borderRadius: 2, overflow: 'hidden' }}>
               <motion.div animate={{ width: `${((idx + 1) / questions.length) * 100}%` }}
-                style={{ height: '100%', background: 'linear-gradient(90deg,#A5B4FC,#4F7CFF)' }} />
+                style={{ height: '100%', background: 'linear-gradient(90deg,#A5B4FC,#7C6BF6)' }} />
             </div>
           </div>
           <div style={{ width: 64, height: 64, position: 'relative' }}>
@@ -364,17 +364,17 @@ Tips: each tip is one specific actionable line (max 18 words) — reference the 
 
         {mode === 'spar' && (
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
-            <div style={{ ...card, padding: '12px 14px', borderColor: 'rgba(102, 217, 255, 0.3)' }}>
+            <div style={{ ...card, padding: '12px 14px', borderColor: 'rgba(165, 180, 252, 0.3)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <div style={{ width: 28, height: 28, borderRadius: 8, background: 'linear-gradient(135deg,#66D9FF,#4F7CFF)', display: 'grid', placeItems: 'center' }}>
+                <div style={{ width: 28, height: 28, borderRadius: 8, background: 'linear-gradient(135deg,#A5B4FC,#7C6BF6)', display: 'grid', placeItems: 'center' }}>
                   <Brain size={14} color="#000" />
                 </div>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 10, fontWeight: 700, color: '#66D9FF', textTransform: 'uppercase', letterSpacing: 1 }}>You</div>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: '#A5B4FC', textTransform: 'uppercase', letterSpacing: 1 }}>You</div>
                   <div style={{ fontSize: 13, fontWeight: 700, color: '#fafafa' }}>{playerCorrectSoFar}/{idx} correct</div>
                 </div>
                 {answers[idx] != null && (
-                  <span style={{ fontSize: 10, color: answers[idx] === q.answer ? '#A5B4FC' : '#66D9FF', fontWeight: 700 }}>
+                  <span style={{ fontSize: 10, color: answers[idx] === q.answer ? '#A5B4FC' : '#A5B4FC', fontWeight: 700 }}>
                     {answers[idx] === q.answer ? '✓ LOCKED' : '✗ LOCKED'}
                   </span>
                 )}
@@ -390,7 +390,7 @@ Tips: each tip is one specific actionable line (max 18 words) — reference the 
                   <div style={{ fontSize: 13, fontWeight: 700, color: '#fafafa' }}>{aiCorrectSoFar}/{idx} correct</div>
                 </div>
                 {aiAnswers[idx] != null ? (
-                  <span style={{ fontSize: 10, color: aiAnswers[idx] === q.answer ? '#A5B4FC' : '#66D9FF', fontWeight: 700 }}>
+                  <span style={{ fontSize: 10, color: aiAnswers[idx] === q.answer ? '#A5B4FC' : '#A5B4FC', fontWeight: 700 }}>
                     {aiAnswers[idx] === q.answer ? '✓ ANSWERED' : '✗ ANSWERED'}
                   </span>
                 ) : aiThinking ? (
@@ -451,8 +451,8 @@ Tips: each tip is one specific actionable line (max 18 words) — reference the 
           style={{ ...card, padding: 32, textAlign: 'center', marginBottom: 18 }}>
           {isSpar ? (
             won  ? <Trophy size={48} color="#A5B4FC" style={{ marginBottom: 14 }} />
-            : tied ? <Swords size={48} color="#66D9FF" style={{ marginBottom: 14 }} />
-            :        <Skull  size={48} color="#66D9FF" style={{ marginBottom: 14 }} />
+            : tied ? <Swords size={48} color="#A5B4FC" style={{ marginBottom: 14 }} />
+            :        <Skull  size={48} color="#A5B4FC" style={{ marginBottom: 14 }} />
           ) : <Trophy size={48} color="#A5B4FC" style={{ marginBottom: 14 }} />}
 
           <h2 style={{ fontSize: 28, fontWeight: 800, color: '#fafafa', margin: 0, marginBottom: 6 }}>
@@ -460,14 +460,14 @@ Tips: each tip is one specific actionable line (max 18 words) — reference the 
           </h2>
           {!isSpar && (
             <p style={{ fontSize: 14, color: '#B1B5BA', margin: 0, marginBottom: 24 }}>
-              You got <strong style={{ color: '#66D9FF' }}>{correct}</strong> out of <strong>{total}</strong> · accuracy {Math.round((correct / total) * 100)}%
+              You got <strong style={{ color: '#A5B4FC' }}>{correct}</strong> out of <strong>{total}</strong> · accuracy {Math.round((correct / total) * 100)}%
             </p>
           )}
 
           {isSpar && (
             <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: 14, margin: '14px 0 22px' }}>
               <div>
-                <div style={{ fontSize: 10, color: '#66D9FF', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.4 }}>You</div>
+                <div style={{ fontSize: 10, color: '#A5B4FC', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.4 }}>You</div>
                 <div style={{ fontSize: 38, fontWeight: 800, color: won || tied ? '#A5B4FC' : '#fafafa', lineHeight: 1, letterSpacing: -1 }}>{correct}</div>
                 <div style={{ fontSize: 11, color: '#9CA3AF' }}>{Math.round((correct / total) * 100)}% accuracy</div>
               </div>
@@ -487,7 +487,7 @@ Tips: each tip is one specific actionable line (max 18 words) — reference the 
             <div style={{
               display: 'inline-flex', alignItems: 'center', gap: 8,
               padding: '12px 22px', borderRadius: 10,
-              background: 'linear-gradient(135deg,#A5B4FC,#4F7CFF)',
+              background: 'linear-gradient(135deg,#A5B4FC,#7C6BF6)',
               color: '#000', fontFamily: 'inherit', fontSize: 18, fontWeight: 800,
             }}>
               <Zap size={18} /> +{xp} XP
@@ -499,18 +499,18 @@ Tips: each tip is one specific actionable line (max 18 words) — reference the 
         <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
           style={{
             ...card, padding: 20, marginBottom: 14,
-            background: judge?.tone === 'praise' ? 'linear-gradient(135deg, rgba(165, 180, 252, 0.08), rgba(102, 217, 255, 0.04))'
-                      : judge?.tone === 'tough'  ? 'linear-gradient(135deg, rgba(102, 217, 255, 0.08), rgba(102, 217, 255, 0.04))'
-                      :                            'linear-gradient(135deg, rgba(102, 217, 255, 0.08), rgba(79, 124, 255, 0.04))',
+            background: judge?.tone === 'praise' ? 'linear-gradient(135deg, rgba(165, 180, 252, 0.08), rgba(165, 180, 252, 0.04))'
+                      : judge?.tone === 'tough'  ? 'linear-gradient(135deg, rgba(165, 180, 252, 0.08), rgba(165, 180, 252, 0.04))'
+                      :                            'linear-gradient(135deg, rgba(165, 180, 252, 0.08), rgba(124, 107, 246, 0.04))',
             borderColor: judge?.tone === 'praise' ? 'rgba(165, 180, 252, 0.3)'
-                       : judge?.tone === 'tough'  ? 'rgba(102, 217, 255, 0.3)'
-                       :                            'rgba(102, 217, 255, 0.3)',
+                       : judge?.tone === 'tough'  ? 'rgba(165, 180, 252, 0.3)'
+                       :                            'rgba(165, 180, 252, 0.3)',
           }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
             <div style={{ width: 32, height: 32, borderRadius: 9,
-              background: judge?.tone === 'praise' ? 'linear-gradient(135deg,#A5B4FC,#2046C2)'
-                         : judge?.tone === 'tough' ? 'linear-gradient(135deg,#66D9FF,#2046C2)'
-                         :                           'linear-gradient(135deg,#66D9FF,#2046C2)',
+              background: judge?.tone === 'praise' ? 'linear-gradient(135deg,#A5B4FC,#4A2FA8)'
+                         : judge?.tone === 'tough' ? 'linear-gradient(135deg,#A5B4FC,#4A2FA8)'
+                         :                           'linear-gradient(135deg,#A5B4FC,#4A2FA8)',
               display: 'grid', placeItems: 'center' }}>
               <Gavel size={15} color="#000" />
             </div>
@@ -529,7 +529,7 @@ Tips: each tip is one specific actionable line (max 18 words) — reference the 
             <>
               <p style={{ margin: 0, fontSize: 14.5, color: '#fafafa', fontWeight: 600, lineHeight: 1.55 }}>"{judge.verdict}"</p>
               {judge.tips.length > 0 && (
-                <div style={{ marginTop: 14, paddingTop: 14, borderTop: '1px solid rgba(102, 217, 255, 0.18)' }}>
+                <div style={{ marginTop: 14, paddingTop: 14, borderTop: '1px solid rgba(165, 180, 252, 0.18)' }}>
                   <div style={{ fontSize: 10, fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: 1.4, marginBottom: 8 }}>What to do next</div>
                   <ul style={{ margin: 0, paddingLeft: 18, display: 'flex', flexDirection: 'column', gap: 5 }}>
                     {judge.tips.map((t, i) => (
@@ -545,7 +545,7 @@ Tips: each tip is one specific actionable line (max 18 words) — reference the 
         <button onClick={backToLobby}
           style={{
             width: '100%', padding: '12px', borderRadius: 10, border: 'none',
-            background: 'linear-gradient(135deg, #A5B4FC, #4F7CFF)',
+            background: 'linear-gradient(135deg, #A5B4FC, #7C6BF6)',
             color: '#000', fontFamily: 'inherit', fontSize: 14, fontWeight: 700,
             cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
           }}>
@@ -560,7 +560,7 @@ Tips: each tip is one specific actionable line (max 18 words) — reference the 
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 22 }}>
         <div style={{
           width: 44, height: 44, borderRadius: 11,
-          background: 'linear-gradient(135deg, #A5B4FC, #4F7CFF)',
+          background: 'linear-gradient(135deg, #A5B4FC, #7C6BF6)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           boxShadow: '0 0 18px rgba(165, 180, 252, 0.04)', flexShrink: 0,
         }}>
@@ -583,7 +583,7 @@ Tips: each tip is one specific actionable line (max 18 words) — reference the 
       </div>
 
       {err && (
-        <div style={{ marginBottom: 14, padding: '10px 14px', background: 'rgba(102, 217, 255, 0.08)', border: '1px solid rgba(102, 217, 255, 0.25)', borderRadius: 8, fontSize: 12, color: '#2046C2' }}>
+        <div style={{ marginBottom: 14, padding: '10px 14px', background: 'rgba(165, 180, 252, 0.08)', border: '1px solid rgba(165, 180, 252, 0.25)', borderRadius: 8, fontSize: 12, color: '#4A2FA8' }}>
           {err}
         </div>
       )}
@@ -591,9 +591,9 @@ Tips: each tip is one specific actionable line (max 18 words) — reference the 
       {stats && (
         <div className="bm-stats-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: 16 }}>
           <Tile icon={Zap}    label="Total XP"  value={stats.total_xp}             color="#A5B4FC" />
-          <Tile icon={Flame}  label="Streak"    value={`${stats.streak}d`}         color="#4F7CFF" />
-          <Tile icon={Target} label="Avg Acc"   value={`${stats.avg_accuracy}%`}   color="#66D9FF" />
-          <Tile icon={Award}  label="Battles"   value={stats.battles}              color="#66D9FF" />
+          <Tile icon={Flame}  label="Streak"    value={`${stats.streak}d`}         color="#7C6BF6" />
+          <Tile icon={Target} label="Avg Acc"   value={`${stats.avg_accuracy}%`}   color="#A5B4FC" />
+          <Tile icon={Award}  label="Battles"   value={stats.battles}              color="#A5B4FC" />
         </div>
       )}
 
@@ -601,7 +601,7 @@ Tips: each tip is one specific actionable line (max 18 words) — reference the 
         <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
           style={{
             ...card, padding: 22, marginBottom: 16,
-            background: 'linear-gradient(135deg, rgba(165, 180, 252, 0.08), rgba(79, 124, 255, 0.04))',
+            background: 'linear-gradient(135deg, rgba(165, 180, 252, 0.08), rgba(124, 107, 246, 0.04))',
             borderColor: 'rgba(165, 180, 252, 0.3)',
           }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
@@ -622,7 +622,7 @@ Tips: each tip is one specific actionable line (max 18 words) — reference the 
           <button onClick={startDaily} disabled={daily.already_played}
             style={{
               width: '100%', padding: '13px', borderRadius: 10, border: 'none',
-              background: daily.already_played ? '#1a1f2e' : 'linear-gradient(135deg, #A5B4FC, #4F7CFF)',
+              background: daily.already_played ? '#1a1f2e' : 'linear-gradient(135deg, #A5B4FC, #7C6BF6)',
               color: daily.already_played ? '#6B7280' : '#000',
               fontFamily: 'inherit', fontSize: 14, fontWeight: 700,
               cursor: daily.already_played ? 'not-allowed' : 'pointer',
@@ -638,13 +638,13 @@ Tips: each tip is one specific actionable line (max 18 words) — reference the 
         <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
           style={{
             ...card, padding: 22, marginBottom: 16,
-            background: 'linear-gradient(135deg, rgba(79, 124, 255, 0.08), rgba(102, 217, 255, 0.04))',
-            borderColor: 'rgba(79, 124, 255, 0.3)',
+            background: 'linear-gradient(135deg, rgba(124, 107, 246, 0.08), rgba(165, 180, 252, 0.04))',
+            borderColor: 'rgba(124, 107, 246, 0.3)',
           }}>
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 14 }}>
-            <Bot size={16} color="#66D9FF" />
+            <Bot size={16} color="#A5B4FC" />
             <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 11, color: '#66D9FF', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1 }}>
+              <div style={{ fontSize: 11, color: '#A5B4FC', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1 }}>
                 AI Sparring · unlimited
               </div>
               <h3 style={{ fontSize: 18, fontWeight: 800, color: '#fafafa', margin: 0, marginTop: 4 }}>
@@ -689,7 +689,7 @@ Tips: each tip is one specific actionable line (max 18 words) — reference the 
           <button onClick={startSparring}
             style={{
               width: '100%', padding: '13px', borderRadius: 10, border: 'none',
-              background: `linear-gradient(135deg, ${AI_PROFILES[aiLevel].color}, #4F7CFF)`,
+              background: `linear-gradient(135deg, ${AI_PROFILES[aiLevel].color}, #7C6BF6)`,
               color: '#000',
               fontFamily: 'inherit', fontSize: 14, fontWeight: 700,
               cursor: 'pointer',
@@ -756,13 +756,13 @@ function Tile({ icon: Icon, label, value, color }: { icon: any; label: string; v
 
 function LeaderRow({ l, highlightSelf }: { l: Leader; highlightSelf?: boolean }) {
   const RankIcon = l.rank === 1 ? Crown : l.rank === 2 ? Medal : l.rank === 3 ? Medal : null
-  const rankColor = l.rank === 1 ? '#A5B4FC' : l.rank === 2 ? '#B1B5BA' : l.rank === 3 ? '#4F7CFF' : '#6B7280'
+  const rankColor = l.rank === 1 ? '#A5B4FC' : l.rank === 2 ? '#B1B5BA' : l.rank === 3 ? '#7C6BF6' : '#6B7280'
   return (
     <div style={{
       display: 'flex', alignItems: 'center', gap: 12,
       padding: '8px 12px', borderRadius: 8,
-      background: highlightSelf ? 'rgba(79, 124, 255, 0.08)' : 'transparent',
-      border: highlightSelf ? '1px solid rgba(79, 124, 255, 0.3)' : '1px solid transparent',
+      background: highlightSelf ? 'rgba(124, 107, 246, 0.08)' : 'transparent',
+      border: highlightSelf ? '1px solid rgba(124, 107, 246, 0.3)' : '1px solid transparent',
     }}>
       <div style={{
         width: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
@@ -772,7 +772,7 @@ function LeaderRow({ l, highlightSelf }: { l: Leader; highlightSelf?: boolean })
       </div>
       <div style={{
         width: 28, height: 28, borderRadius: 7, flexShrink: 0,
-        background: l.avatar_url ? 'transparent' : 'linear-gradient(135deg,#4F7CFF,#4F7CFF)',
+        background: l.avatar_url ? 'transparent' : 'linear-gradient(135deg,#7C6BF6,#7C6BF6)',
         overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center',
         color: '#fff', fontSize: 11, fontWeight: 700,
       }}>

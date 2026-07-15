@@ -63,13 +63,13 @@ initPwa({
 
       <img src="/kairo-mark.svg" alt="Kyno"
            style="width: 96px; height: 96px; border-radius: 22px;
-                  box-shadow: 0 0 50px rgba(79, 124, 255, 0.32);
+                  box-shadow: 0 0 50px rgba(124, 107, 246, 0.32);
                   animation: kairo-pulse 1.6s ease-in-out infinite;" />
 
       <div style="text-align: center;">
         <div style="font-size: 30px; font-weight: 800; color: #fafafa;
                     letter-spacing: -1px; line-height: 1;">kyno</div>
-        <div style="font-size: 11px; font-weight: 700; color: #4F7CFF;
+        <div style="font-size: 11px; font-weight: 700; color: #7C6BF6;
                     letter-spacing: 6px; margin-top: 10px;">
           BY KAIRO INDUSTRIES
         </div>

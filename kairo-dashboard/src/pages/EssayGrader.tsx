@@ -98,7 +98,7 @@ export default function EssayGrader() {
   const textarea = (rows: number, placeholder: string, value: string, onChange: (v: string) => void) => (
     <textarea rows={rows} placeholder={placeholder} value={value} onChange={e => onChange(e.target.value)}
       style={{ width: '100%', background: '#0E1117', border: '1px solid #1f2532', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#fafafa', fontFamily: 'inherit', outline: 'none', resize: 'vertical' }}
-      onFocus={e => (e.target as HTMLTextAreaElement).style.borderColor = '#4F7CFF'}
+      onFocus={e => (e.target as HTMLTextAreaElement).style.borderColor = '#7C6BF6'}
       onBlur={e => (e.target as HTMLTextAreaElement).style.borderColor = '#1f2532'}
     />
   )
@@ -139,12 +139,12 @@ export default function EssayGrader() {
             {textarea(10, 'Paste or type the student\'s answer here…', answer, setAnswer)}
           </div>
 
-          {error && <p style={{ fontSize: 12, color: '#66D9FF', marginBottom: 14 }}>{error}</p>}
+          {error && <p style={{ fontSize: 12, color: '#A5B4FC', marginBottom: 14 }}>{error}</p>}
 
           <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} onClick={grade} disabled={loading || !question.trim() || !answer.trim()}
             style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '11px 22px', borderRadius: 10, border: 'none',
-              background: 'linear-gradient(135deg, #4F7CFF, #4F7CFF)', color: '#fff', fontFamily: 'inherit', fontSize: 14, fontWeight: 600,
-              cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.6 : 1, boxShadow: '0 0 20px rgba(79, 124, 255, 0.03)' }}>
+              background: 'linear-gradient(135deg, #7C6BF6, #7C6BF6)', color: '#fff', fontFamily: 'inherit', fontSize: 14, fontWeight: 600,
+              cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.6 : 1, boxShadow: '0 0 20px rgba(124, 107, 246, 0.03)' }}>
             <Sparkles size={14} />
             {loading ? 'Grading…' : `Grade answer (${marks} marks)`}
           </motion.button>
@@ -156,7 +156,7 @@ export default function EssayGrader() {
             <p style={{ fontSize: 10, fontWeight: 700, color: '#4B5563', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 16 }}>AI Feedback</p>
             {loading ? (
               <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                {[0,1,2].map(i => <div key={i} style={{ width: 7, height: 7, borderRadius: '50%', background: '#4F7CFF', animation: `dot-bounce 1.2s ease-in-out ${i * 0.2}s infinite` }} />)}
+                {[0,1,2].map(i => <div key={i} style={{ width: 7, height: 7, borderRadius: '50%', background: '#7C6BF6', animation: `dot-bounce 1.2s ease-in-out ${i * 0.2}s infinite` }} />)}
                 <span style={{ fontSize: 13, color: '#6B7280' }}>Grading…</span>
               </div>
             ) : (

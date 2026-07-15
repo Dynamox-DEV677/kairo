@@ -67,9 +67,9 @@ function SolarScene({ tint, hover }: { tint: string; hover: boolean }) {
   const group = useRef<THREE.Group>(null)
   const planets = useMemo(() => [
     { r: 1.2, size: 0.13, speed: 1.5, color: '#9ca3af', phase: 0    },
-    { r: 1.8, size: 0.20, speed: 1.0, color: '#66D9FF', phase: 0.7  },
+    { r: 1.8, size: 0.20, speed: 1.0, color: '#A5B4FC', phase: 0.7  },
     { r: 2.5, size: 0.18, speed: 0.6, color: '#A5B4FC', phase: 1.6  },
-    { r: 3.2, size: 0.28, speed: 0.4, color: '#4F7CFF', phase: 2.4  },
+    { r: 3.2, size: 0.28, speed: 0.4, color: '#7C6BF6', phase: 2.4  },
   ], [])
 
   useFrame((state) => {
@@ -82,11 +82,11 @@ function SolarScene({ tint, hover }: { tint: string; hover: boolean }) {
     <group ref={group}>
       <mesh>
         <sphereGeometry args={[0.55, 32, 32]} />
-        <meshStandardMaterial color="#66D9FF" emissive="#66D9FF" emissiveIntensity={hover ? 2.2 : 1.5} toneMapped={false} />
+        <meshStandardMaterial color="#A5B4FC" emissive="#A5B4FC" emissiveIntensity={hover ? 2.2 : 1.5} toneMapped={false} />
       </mesh>
       <mesh>
         <sphereGeometry args={[0.75, 24, 24]} />
-        <meshBasicMaterial color="#66D9FF" transparent opacity={0.22} side={THREE.BackSide} />
+        <meshBasicMaterial color="#A5B4FC" transparent opacity={0.22} side={THREE.BackSide} />
       </mesh>
 
       {planets.map((p, i) => (
@@ -150,11 +150,11 @@ function HeartScene({ tint, hover }: { tint: string; hover: boolean }) {
     <group ref={root} position={[0, -0.2, 0]} rotation={[0, -0.2, 0.1]}>
       <mesh position={[0.55, -0.3, 0]}>
         <sphereGeometry args={[0.85, 24, 24]} />
-        <meshStandardMaterial color="#4F7CFF" emissive="#4F7CFF" emissiveIntensity={hover ? 0.6 : 0.25} roughness={0.45} />
+        <meshStandardMaterial color="#7C6BF6" emissive="#7C6BF6" emissiveIntensity={hover ? 0.6 : 0.25} roughness={0.45} />
       </mesh>
       <mesh position={[0.55, -0.95, 0]} scale={[0.55, 0.7, 0.55]}>
         <sphereGeometry args={[1, 18, 18]} />
-        <meshStandardMaterial color="#2046C2" emissive="#4F7CFF" emissiveIntensity={hover ? 0.55 : 0.20} roughness={0.45} />
+        <meshStandardMaterial color="#4A2FA8" emissive="#7C6BF6" emissiveIntensity={hover ? 0.55 : 0.20} roughness={0.45} />
       </mesh>
       <mesh position={[-0.45, -0.3, 0]} scale={[0.85, 0.95, 0.85]}>
         <sphereGeometry args={[0.85, 22, 22]} />
@@ -170,7 +170,7 @@ function HeartScene({ tint, hover }: { tint: string; hover: boolean }) {
       </mesh>
       <mesh position={[0.55, 1.1, 0]} rotation={[Math.PI / 2, 0, -0.3]}>
         <torusGeometry args={[0.35, 0.13, 12, 24, Math.PI]} />
-        <meshStandardMaterial color="#66D9FF" emissive="#66D9FF" emissiveIntensity={hover ? 0.6 : 0.3} />
+        <meshStandardMaterial color="#A5B4FC" emissive="#A5B4FC" emissiveIntensity={hover ? 0.6 : 0.3} />
       </mesh>
       <mesh>
         <sphereGeometry args={[1.7, 24, 24]} />
@@ -208,7 +208,7 @@ function DnaScene({ tint, hover }: { tint: string; hover: boolean }) {
     root.current.rotation.y = state.clock.elapsedTime * (hover ? 0.9 : 0.35)
   })
 
-  const baseColors = ['#DBE7FF', '#A5B4FC', '#66D9FF', '#4F7CFF']
+  const baseColors = ['#DBE7FF', '#A5B4FC', '#A5B4FC', '#7C6BF6']
 
   return (
     <group ref={root} scale={0.85}>
@@ -299,9 +299,9 @@ function VectorsScene({ tint: _tint, hover }: { tint: string; hover: boolean }) 
   })
 
   const axes: Array<{ dir: [number, number, number]; color: string }> = [
-    { dir: [1.6, 0, 0],   color: '#4F7CFF' },
+    { dir: [1.6, 0, 0],   color: '#7C6BF6' },
     { dir: [0, 1.6, 0],   color: '#A5B4FC' },
-    { dir: [0, 0, 1.6],   color: '#66D9FF' },
+    { dir: [0, 0, 1.6],   color: '#A5B4FC' },
   ]
 
   return (
@@ -385,7 +385,7 @@ function RocketScene({ tint, hover }: { tint: string; hover: boolean }) {
       </mesh>
       <mesh ref={flameRef} position={[0, -1.15, 0]}>
         <coneGeometry args={[0.22, 0.7, 16]} />
-        <meshBasicMaterial color="#66D9FF" transparent opacity={0.9} />
+        <meshBasicMaterial color="#A5B4FC" transparent opacity={0.9} />
       </mesh>
       <mesh position={[0, -1.05, 0]} scale={[0.6, 0.6, 0.6]}>
         <coneGeometry args={[0.22, 0.5, 16]} />

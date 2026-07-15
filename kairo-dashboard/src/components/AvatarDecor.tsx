@@ -42,7 +42,7 @@ export function DecoratedAvatar({
   const core: ReactNode = (
     <div style={{
       width: size, height: size, borderRadius: rounded, overflow: 'hidden',
-      background: pic ? 'transparent' : 'linear-gradient(135deg,#4F7CFF,#2046C2)',
+      background: pic ? 'transparent' : 'linear-gradient(135deg,#7C6BF6,#4A2FA8)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       fontSize: size * 0.42, fontWeight: 800, color: '#fff', flexShrink: 0,
     }}>
@@ -59,8 +59,8 @@ export function DecoratedAvatar({
       {d === 'neon' && (
         <div style={{
           position: 'absolute', inset: 0, borderRadius: rounded + pad,
-          border: '2px solid #66D9FF',
-          boxShadow: '0 0 12px rgba(102,217,255,0.8), inset 0 0 10px rgba(102,217,255,0.35)',
+          border: '2px solid #A5B4FC',
+          boxShadow: '0 0 12px rgba(165,180,252,0.8), inset 0 0 10px rgba(165,180,252,0.35)',
           animation: 'kdPulse 2s ease-in-out infinite',
         }} />
       )}
@@ -69,7 +69,7 @@ export function DecoratedAvatar({
         <div style={{
           position: 'absolute', inset: 0, borderRadius: '50%',
           border: '2.5px solid transparent',
-          borderTopColor: '#66D9FF', borderRightColor: '#4F7CFF',
+          borderTopColor: '#A5B4FC', borderRightColor: '#7C6BF6',
           animation: 'kdSpin 1.4s linear infinite',
         }} />
       )}
@@ -101,7 +101,7 @@ export function DecoratedAvatar({
         <>
           <div style={{
             position: 'absolute', inset: 1, borderRadius: '50%',
-            border: '1.5px dashed rgba(102,217,255,0.4)',
+            border: '1.5px dashed rgba(165,180,252,0.4)',
           }} />
           <div style={{
             position: 'absolute', inset: 0,

@@ -104,7 +104,7 @@ function CurrentDots({ voltage, resistance, playing }: any) {
   const dotScale  = Math.min(1.4, 0.7 + I * 0.08)
   const haloScale = dotScale * 2.2
   const dotColor  = new THREE.Color().lerpColors(
-    new THREE.Color('#22d3ee'), new THREE.Color('#C7D2E8'),
+    new THREE.Color('#9AA6FF'), new THREE.Color('#C7D2E8'),
     Math.min(1, I / 8)
   )
 

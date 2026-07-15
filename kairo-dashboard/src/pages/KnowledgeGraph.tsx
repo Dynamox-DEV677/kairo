@@ -17,9 +17,9 @@ const C = {
   textFaint: '#9CA3AF',
   textVery:  '#6B7280',
   purpleSoft:'#A5B4FC',
-  purple:    '#66D9FF',
-  purpleHi:  '#4F7CFF',
-  purpleDeep:'#2046C2',
+  purple:    '#A5B4FC',
+  purpleHi:  '#7C6BF6',
+  purpleDeep:'#4A2FA8',
 }
 const FONT = "'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif"
 
@@ -75,8 +75,8 @@ export default function KnowledgeGraph() {
       width: '100%', height: '100%', overflowY: 'auto', WebkitOverflowScrolling: 'touch',
       background: C.bg,
       backgroundImage:
-        `radial-gradient(at 8% 0%,  rgba(79, 124, 255, 0.08) 0%, transparent 40%),
-         radial-gradient(at 92% 100%, rgba(32, 70, 194, 0.10) 0%, transparent 45%)`,
+        `radial-gradient(at 8% 0%,  rgba(124, 107, 246, 0.08) 0%, transparent 40%),
+         radial-gradient(at 92% 100%, rgba(74, 47, 168, 0.10) 0%, transparent 45%)`,
       color: C.text, fontFamily: FONT, padding: '24px 28px 80px',
     }}>
       <div style={{ maxWidth: 1000, margin: '0 auto' }}>
@@ -85,9 +85,9 @@ export default function KnowledgeGraph() {
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
             <div style={{
               width: 46, height: 46, borderRadius: 13, flexShrink: 0,
-              background: 'linear-gradient(135deg, #4F7CFF 0%, #2046C2 100%)',
+              background: 'linear-gradient(135deg, #7C6BF6 0%, #4A2FA8 100%)',
               display: 'grid', placeItems: 'center',
-              boxShadow: '0 10px 30px rgba(79, 124, 255, 0.03)',
+              boxShadow: '0 10px 30px rgba(124, 107, 246, 0.03)',
             }}>
               <Share2 size={22} color="#fff" />
             </div>
@@ -120,8 +120,8 @@ export default function KnowledgeGraph() {
             {subjectSummary.map(([subj, n]) => (
               <span key={subj} style={{
                 padding: '5px 12px', borderRadius: 999,
-                background: 'rgba(79, 124, 255, 0.08)',
-                border: '1px solid rgba(102, 217, 255, 0.3)',
+                background: 'rgba(124, 107, 246, 0.08)',
+                border: '1px solid rgba(165, 180, 252, 0.3)',
                 fontSize: 12, color: C.text, fontWeight: 600,
               }}>
                 {subj} <span style={{ color: C.purple, marginLeft: 4 }}>· {n}</span>
@@ -160,8 +160,8 @@ function FilterChip({ active, label, onClick }: { active: boolean; label: React.
     <button onClick={onClick} style={{
       display: 'inline-flex', alignItems: 'center', gap: 5,
       padding: '6px 12px', borderRadius: 8,
-      background: active ? 'rgba(102, 217, 255, 0.20)' : 'transparent',
-      border: `1px solid ${active ? 'rgba(102, 217, 255, 0.18)' : C.borderSoft}`,
+      background: active ? 'rgba(165, 180, 252, 0.20)' : 'transparent',
+      border: `1px solid ${active ? 'rgba(165, 180, 252, 0.18)' : C.borderSoft}`,
       color: active ? C.text : C.textFaint,
       fontFamily: 'inherit', fontSize: 12, fontWeight: 600,
       cursor: 'pointer',

@@ -160,7 +160,7 @@ export default function KairoHome({ onNavigate }: Props) {
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 22, flexWrap: 'wrap', gap: 12 }}>
         <div>
           <h1 style={{ fontSize: 34, fontWeight: 900, margin: 0, letterSpacing: -0.5 }}>
-            {greetingFor()}, <span style={{ color: '#66D9FF' }}>{profile.name}.</span>
+            {greetingFor()}, <span style={{ color: '#A5B4FC' }}>{profile.name}.</span>
           </h1>
           <p style={{ color: '#9CA3AF', fontSize: 14, marginTop: 6 }}>
             {brief?.greetingNote || 'Your AI council is reading your progress…'}
@@ -236,7 +236,7 @@ export default function KairoHome({ onNavigate }: Props) {
 
       <div className="kg-gamebar" style={{ display: 'grid', gridTemplateColumns: '1.1fr 1.1fr 0.8fr', gap: 16, marginBottom: 16 }}>
         <div style={{ ...card, padding: 18 }}>
-          <div style={{ ...lbl, color: '#66D9FF', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}><Calendar size={12} /> Exam tracker</div>
+          <div style={{ ...lbl, color: '#A5B4FC', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}><Calendar size={12} /> Exam tracker</div>
           {(() => {
             const list = brief?.examDates || profile.examDates
               .filter(e => e.date)
@@ -249,14 +249,14 @@ export default function KairoHome({ onNavigate }: Props) {
             return list.map((e, i) => (
               <div key={i} style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 10 }}>
                 <span style={{ fontSize: 14, color: '#fafafa', fontWeight: 600 }}>{e.name}</span>
-                <span><b style={{ fontSize: 24, fontWeight: 900, color: e.days < 30 ? '#ff4d6d' : '#66D9FF' }}>{e.days}</b> <span style={{ fontSize: 11, color: '#9CA3AF' }}>days</span></span>
+                <span><b style={{ fontSize: 24, fontWeight: 900, color: e.days < 30 ? '#ff4d6d' : '#A5B4FC' }}>{e.days}</b> <span style={{ fontSize: 11, color: '#9CA3AF' }}>days</span></span>
               </div>
             ))
           })()}
         </div>
 
         <div style={{ ...card, padding: 18 }}>
-          <div style={{ ...lbl, color: '#66D9FF', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}><TrendingUp size={12} /> AI prediction</div>
+          <div style={{ ...lbl, color: '#A5B4FC', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}><TrendingUp size={12} /> AI prediction</div>
           {brief ? (
             <>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
@@ -266,7 +266,7 @@ export default function KairoHome({ onNavigate }: Props) {
                 <span style={{ fontSize: 12, color: '#9CA3AF', marginLeft: 4 }}>/ {brief.scoreScale}</span>
               </div>
               <div style={{ height: 8, background: '#0E1117', borderRadius: 4, marginTop: 12, overflow: 'hidden', position: 'relative' }}>
-                <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${Math.min(100, brief.predictedScore / +brief.scoreScale * 100)}%`, background: '#4F7CFF' }} />
+                <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${Math.min(100, brief.predictedScore / +brief.scoreScale * 100)}%`, background: '#7C6BF6' }} />
                 <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${Math.min(100, brief.potentialScore / +brief.scoreScale * 100)}%`, background: 'rgba(102,255,154,0.25)', zIndex: -0 }} />
               </div>
               <div style={{ fontSize: 12, color: '#ff8aa0', marginTop: 10 }}>
@@ -290,11 +290,11 @@ export default function KairoHome({ onNavigate }: Props) {
       </div>
 
       <div className="kg-gamebar" style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 16, marginBottom: 16 }}>
-        <div style={{ ...card, padding: 18, borderColor: 'rgba(102,217,255,0.25)' }}>
-          <div style={{ ...lbl, color: '#66D9FF', marginBottom: 14, display: 'flex', alignItems: 'center', gap: 6 }}><Target size={12} /> Today's focus</div>
+        <div style={{ ...card, padding: 18, borderColor: 'rgba(165,180,252,0.25)' }}>
+          <div style={{ ...lbl, color: '#A5B4FC', marginBottom: 14, display: 'flex', alignItems: 'center', gap: 6 }}><Target size={12} /> Today's focus</div>
           {brief?.todaysFocus?.length ? brief.todaysFocus.map((f, i) => (
             <div key={i} style={{ display: 'flex', gap: 12, marginBottom: 12, alignItems: 'flex-start' }}>
-              <div style={{ flexShrink: 0, width: 8, height: 8, borderRadius: '50%', background: '#66D9FF', marginTop: 7 }} />
+              <div style={{ flexShrink: 0, width: 8, height: 8, borderRadius: '50%', background: '#A5B4FC', marginTop: 7 }} />
               <div>
                 <div style={{ fontSize: 15, fontWeight: 700, color: '#fafafa' }}>{f.task}</div>
                 <div style={{ fontSize: 12, color: '#9CA3AF' }}><span style={{ color: '#A5B4FC' }}>{f.subject}</span> · {f.why}</div>
@@ -335,7 +335,7 @@ export default function KairoHome({ onNavigate }: Props) {
           const Icon = q.icon
           return (
             <button key={i} onClick={() => go(q.v)} style={{ ...card, padding: 16, textAlign: 'left', cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: 6 }}>
-              <Icon size={18} style={{ color: '#66D9FF' }} />
+              <Icon size={18} style={{ color: '#A5B4FC' }} />
               <div style={{ fontSize: 14, fontWeight: 700, color: '#fafafa' }}>{q.title}</div>
               <div style={{ fontSize: 11, color: '#9CA3AF' }}>{q.sub}</div>
             </button>
@@ -352,8 +352,8 @@ const ghostBtn: React.CSSProperties = {
   display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: 'inherit',
 }
 const primaryBtn: React.CSSProperties = {
-  background: 'linear-gradient(135deg, #4F7CFF 0%, #66D9FF 100%)', color: '#fff', border: 'none',
+  background: 'linear-gradient(135deg, #7C6BF6 0%, #A5B4FC 100%)', color: '#fff', border: 'none',
   borderRadius: 10, padding: '9px 18px', fontSize: 13, fontWeight: 700, cursor: 'pointer',
   display: 'inline-flex', alignItems: 'center', gap: 7, fontFamily: 'inherit',
-  boxShadow: '0 6px 20px rgba(79,124,255,0.30)',
+  boxShadow: '0 6px 20px rgba(124,107,246,0.30)',
 }

@@ -112,7 +112,7 @@ function Shell({ radius, electrons, shellIdx, playing }: any) {
         return (
           <mesh key={i} position={[radius * Math.cos(angle), 0, radius * Math.sin(angle)]}>
             <sphereGeometry args={[0.13, 12, 12]} />
-            <meshStandardMaterial color="#38bdf8" emissive="#38bdf8" emissiveIntensity={0.6} />
+            <meshStandardMaterial color="#8FA0FA" emissive="#8FA0FA" emissiveIntensity={0.6} />
           </mesh>
         )
       })}

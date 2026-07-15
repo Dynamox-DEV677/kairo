@@ -51,9 +51,9 @@ interface Lead {
 
 const STATUS_META: Record<string, { color: string; icon: any; label: string }> = {
   new:            { color: '#A5B4FC', icon: Clock,         label: 'New' },
-  contacted:      { color: '#66D9FF', icon: Phone,         label: 'Contacted' },
+  contacted:      { color: '#A5B4FC', icon: Phone,         label: 'Contacted' },
   admitted:       { color: '#A5B4FC', icon: CheckCircle,   label: 'Admitted' },
-  rejected:       { color: '#66D9FF', icon: XCircle,       label: 'Rejected' },
+  rejected:       { color: '#A5B4FC', icon: XCircle,       label: 'Rejected' },
   not_interested: { color: '#9CA3AF', icon: XCircle,       label: 'Not Interested' },
 }
 
@@ -127,7 +127,7 @@ export default function AdmissionBot() {
       </div>
 
       {err && (
-        <div style={{ marginBottom: 16, padding: '10px 14px', background: 'rgba(102, 217, 255, 0.08)', border: '1px solid rgba(102, 217, 255, 0.25)', borderRadius: 8, fontSize: 12, color: '#66D9FF' }}>
+        <div style={{ marginBottom: 16, padding: '10px 14px', background: 'rgba(165, 180, 252, 0.08)', border: '1px solid rgba(165, 180, 252, 0.25)', borderRadius: 8, fontSize: 12, color: '#A5B4FC' }}>
           {err}
         </div>
       )}
@@ -139,7 +139,7 @@ export default function AdmissionBot() {
             borderRadius: 7, border: 'none', fontFamily: 'inherit',
             fontSize: 12, fontWeight: tab === t.id ? 600 : 400, cursor: 'pointer',
             background: tab === t.id ? '#1f2532' : 'transparent',
-            color: tab === t.id ? '#66D9FF' : '#6B7280',
+            color: tab === t.id ? '#A5B4FC' : '#6B7280',
             transition: 'all 0.12s',
           }}>
             <t.icon size={13} /> {t.label}
@@ -228,7 +228,7 @@ function ChatTab({ ctx }: { ctx: SchoolCtx }) {
     <div className="mob-stack" style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 20, minHeight: 540 }}>
       <div style={{ ...card, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         <div style={{ padding: '14px 18px', borderBottom: '1px solid #1a1f2e', display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{ width: 36, height: 36, borderRadius: 10, background: 'linear-gradient(135deg,#4F7CFF,#4F7CFF)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+          <div style={{ width: 36, height: 36, borderRadius: 10, background: 'linear-gradient(135deg,#7C6BF6,#7C6BF6)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
             {ctx.school_logo
               ? <img src={ctx.school_logo} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               : <Bot size={18} color="#fff" />}
@@ -248,14 +248,14 @@ function ChatTab({ ctx }: { ctx: SchoolCtx }) {
               <div style={{
                 width: 28, height: 28, borderRadius: 7, flexShrink: 0,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                background: m.role === 'user' ? '#4F7CFF' : '#1f2532',
+                background: m.role === 'user' ? '#7C6BF6' : '#1f2532',
               }}>
-                {m.role === 'user' ? <User size={13} color="#fff" /> : <Bot size={13} color="#66D9FF" />}
+                {m.role === 'user' ? <User size={13} color="#fff" /> : <Bot size={13} color="#A5B4FC" />}
               </div>
               <div style={{
                 maxWidth: '75%', padding: '9px 13px',
                 borderRadius: m.role === 'user' ? '12px 4px 12px 12px' : '4px 12px 12px 12px',
-                background: m.role === 'user' ? 'linear-gradient(135deg,#4F7CFF,#4F7CFF)' : '#1a1f2e',
+                background: m.role === 'user' ? 'linear-gradient(135deg,#7C6BF6,#7C6BF6)' : '#1a1f2e',
                 fontSize: 13, color: '#fafafa', lineHeight: 1.55, whiteSpace: 'pre-wrap',
               }}>
                 {m.content}
@@ -265,11 +265,11 @@ function ChatTab({ ctx }: { ctx: SchoolCtx }) {
           {loading && (
             <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
               <div style={{ width: 28, height: 28, borderRadius: 7, background: '#1f2532', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Bot size={13} color="#66D9FF" />
+                <Bot size={13} color="#A5B4FC" />
               </div>
               <div style={{ padding: '10px 14px', background: '#1a1f2e', borderRadius: '4px 12px 12px 12px', display: 'flex', gap: 5 }}>
                 {[0, 1, 2].map(i => (
-                  <div key={i} style={{ width: 6, height: 6, borderRadius: '50%', background: '#4F7CFF', animation: `dot-bounce 1.2s ease-in-out ${i * 0.2}s infinite` }} />
+                  <div key={i} style={{ width: 6, height: 6, borderRadius: '50%', background: '#7C6BF6', animation: `dot-bounce 1.2s ease-in-out ${i * 0.2}s infinite` }} />
                 ))}
               </div>
             </div>
@@ -288,7 +288,7 @@ function ChatTab({ ctx }: { ctx: SchoolCtx }) {
           <button onClick={send} disabled={!input.trim() || loading} style={{
             width: 38, height: 38, borderRadius: 9, border: 'none',
             cursor: input.trim() ? 'pointer' : 'not-allowed',
-            background: input.trim() ? 'linear-gradient(135deg,#4F7CFF,#4F7CFF)' : '#1a1f2e',
+            background: input.trim() ? 'linear-gradient(135deg,#7C6BF6,#7C6BF6)' : '#1a1f2e',
             display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
           }}>
             <Send size={14} color={input.trim() ? '#fff' : '#6B7280'} />
@@ -317,7 +317,7 @@ function ChatTab({ ctx }: { ctx: SchoolCtx }) {
               ))}
               <button onClick={saveLead} style={{
                 width: '100%', padding: '9px', borderRadius: 8, border: 'none',
-                background: 'linear-gradient(135deg,#4F7CFF,#4F7CFF)', color: '#fff',
+                background: 'linear-gradient(135deg,#7C6BF6,#7C6BF6)', color: '#fff',
                 fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: 'pointer',
               }}>
                 Submit Enquiry
@@ -337,7 +337,7 @@ function ChatTab({ ctx }: { ctx: SchoolCtx }) {
               fontFamily: 'inherit', fontSize: 12, cursor: 'pointer', marginBottom: 6,
               transition: 'all 0.1s',
             }}
-              onMouseEnter={e => { (e.currentTarget).style.borderColor = '#4F7CFF'; (e.currentTarget).style.color = '#A5B4FC' }}
+              onMouseEnter={e => { (e.currentTarget).style.borderColor = '#7C6BF6'; (e.currentTarget).style.color = '#A5B4FC' }}
               onMouseLeave={e => { (e.currentTarget).style.borderColor = '#1f2532'; (e.currentTarget).style.color = '#9CA3AF' }}
             >
               {q}
@@ -387,14 +387,14 @@ function LeadsTab() {
             fontFamily: 'inherit', fontSize: 11, fontWeight: filter === s ? 600 : 400,
             cursor: 'pointer',
             background: filter === s ? '#1f2532' : 'transparent',
-            color: filter === s ? '#66D9FF' : '#6B7280',
+            color: filter === s ? '#A5B4FC' : '#6B7280',
           }}>
             {s.replace('_', ' ')}
           </button>
         ))}
       </div>
 
-      {err     && <div style={{ marginBottom: 12, padding: '10px 14px', background: 'rgba(102, 217, 255, 0.08)', border: '1px solid rgba(102, 217, 255, 0.25)', borderRadius: 8, fontSize: 12, color: '#66D9FF' }}>{err}</div>}
+      {err     && <div style={{ marginBottom: 12, padding: '10px 14px', background: 'rgba(165, 180, 252, 0.08)', border: '1px solid rgba(165, 180, 252, 0.25)', borderRadius: 8, fontSize: 12, color: '#A5B4FC' }}>{err}</div>}
       {loading && <div style={{ textAlign: 'center', padding: '40px 0', color: '#6B7280' }}>Loading…</div>}
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -414,7 +414,7 @@ function LeadsTab() {
                 <div style={{ fontSize: 13, fontWeight: 600, color: '#fafafa' }}>
                   {l.parent_name || 'Unknown parent'}
                   {l.child_name ? ` → ${l.child_name}` : ''}
-                  {l.grade ? <span style={{ marginLeft: 6, fontSize: 11, color: '#66D9FF' }}>({l.grade})</span> : null}
+                  {l.grade ? <span style={{ marginLeft: 6, fontSize: 11, color: '#A5B4FC' }}>({l.grade})</span> : null}
                 </div>
                 <div style={{ fontSize: 11, color: '#6B7280', display: 'flex', gap: 12, marginTop: 2, flexWrap: 'wrap' }}>
                   {l.phone && <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Phone size={10} />{l.phone}</span>}
@@ -436,7 +436,7 @@ function LeadsTab() {
                   background: 'none', border: 'none', cursor: 'pointer',
                   color: '#4B5563', padding: 4, display: 'flex',
                 }}
-                onMouseEnter={e => (e.currentTarget.style.color = '#66D9FF')}
+                onMouseEnter={e => (e.currentTarget.style.color = '#A5B4FC')}
                 onMouseLeave={e => (e.currentTarget.style.color = '#4B5563')}
               >
                 <Trash2 size={13} />
@@ -467,17 +467,17 @@ function StatsTab() {
   }, [])
 
   if (loading) return <div style={{ textAlign: 'center', padding: '40px 0', color: '#6B7280' }}>Loading…</div>
-  if (err)     return <div style={{ color: '#66D9FF', fontSize: 13 }}>{err}</div>
+  if (err)     return <div style={{ color: '#A5B4FC', fontSize: 13 }}>{err}</div>
   if (!stats)  return null
 
   const conversion = stats.total > 0 ? Math.round((stats.admitted / stats.total) * 100) : 0
 
   const tiles = [
-    { label: 'Total leads', value: stats.total,     color: '#66D9FF' },
+    { label: 'Total leads', value: stats.total,     color: '#A5B4FC' },
     { label: 'New',         value: stats.new,        color: '#A5B4FC' },
-    { label: 'Contacted',   value: stats.contacted,  color: '#66D9FF' },
+    { label: 'Contacted',   value: stats.contacted,  color: '#A5B4FC' },
     { label: 'Admitted',    value: stats.admitted,   color: '#A5B4FC' },
-    { label: 'Rejected',    value: stats.rejected,   color: '#66D9FF' },
+    { label: 'Rejected',    value: stats.rejected,   color: '#A5B4FC' },
     { label: 'Conversion',  value: `${conversion}%`, color: '#A5B4FC' },
   ]
 
@@ -534,10 +534,10 @@ function SettingsTab({ ctx, onSaved }: { ctx: SchoolCtx; onSaved: () => void }) 
     <div>
       <div style={{ ...card, padding: 18, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 12 }}>
         <div style={{
-          width: 36, height: 36, borderRadius: 9, background: 'rgba(79, 124, 255, 0.12)',
+          width: 36, height: 36, borderRadius: 9, background: 'rgba(124, 107, 246, 0.12)',
           display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
         }}>
-          <Sparkles size={16} color="#66D9FF" />
+          <Sparkles size={16} color="#A5B4FC" />
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: 12, fontWeight: 700, color: '#fafafa' }}>Public bot link</div>
@@ -581,7 +581,7 @@ function SettingsTab({ ctx, onSaved }: { ctx: SchoolCtx; onSaved: () => void }) 
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 18 }}>
           <button onClick={save} disabled={saving} style={{
             padding: '10px 18px', borderRadius: 8, border: 'none',
-            background: saving ? '#1a1f2e' : 'linear-gradient(135deg,#4F7CFF,#4F7CFF)',
+            background: saving ? '#1a1f2e' : 'linear-gradient(135deg,#7C6BF6,#7C6BF6)',
             color: saving ? '#6B7280' : '#fff',
             fontFamily: 'inherit', fontSize: 13, fontWeight: 600,
             cursor: saving ? 'not-allowed' : 'pointer',
@@ -590,7 +590,7 @@ function SettingsTab({ ctx, onSaved }: { ctx: SchoolCtx; onSaved: () => void }) 
             <Save size={13} />{saving ? 'Saving…' : 'Save Settings'}
           </button>
           {msg && <span style={{ fontSize: 12, color: '#A5B4FC' }}>{msg}</span>}
-          {err && <span style={{ fontSize: 12, color: '#66D9FF' }}>{err}</span>}
+          {err && <span style={{ fontSize: 12, color: '#A5B4FC' }}>{err}</span>}
         </div>
 
         <p style={{ fontSize: 11, color: '#4B5563', marginTop: 14 }}>

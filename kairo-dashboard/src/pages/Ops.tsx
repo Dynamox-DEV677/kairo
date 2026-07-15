@@ -61,9 +61,9 @@ export default function Ops() {
       <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 22 }}>
         <div style={{
           width: 46, height: 46, borderRadius: 12,
-          background: 'linear-gradient(135deg, #4F7CFF, #A5B4FC)',
+          background: 'linear-gradient(135deg, #7C6BF6, #A5B4FC)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 0 22px rgba(79, 124, 255, 0.04)',
+          boxShadow: '0 0 22px rgba(124, 107, 246, 0.04)',
         }}>
           <Activity size={22} color="#fff" />
         </div>
@@ -88,8 +88,8 @@ export default function Ops() {
       {err && (
         <div style={{
           padding: 16, borderRadius: 10, marginBottom: 18,
-          background: 'rgba(102, 217, 255, 0.08)', border: '1px solid rgba(102, 217, 255, 0.25)',
-          color: '#66D9FF', fontSize: 13,
+          background: 'rgba(165, 180, 252, 0.08)', border: '1px solid rgba(165, 180, 252, 0.25)',
+          color: '#A5B4FC', fontSize: 13,
         }}>
           ⚠ {err}
         </div>
@@ -123,7 +123,7 @@ export default function Ops() {
             </div>
           </Section>
 
-          <Section title={`Recent errors (${data.errors.totalLogged} total)`} icon={AlertTriangle} accent="#66D9FF">
+          <Section title={`Recent errors (${data.errors.totalLogged} total)`} icon={AlertTriangle} accent="#A5B4FC">
             {data.errors.recent.length === 0 ? (
               <p style={{ fontSize: 12, color: '#6B7280', margin: 0 }}>No errors logged 🎉</p>
             ) : (
@@ -131,10 +131,10 @@ export default function Ops() {
                 {data.errors.recent.map((e, i) => (
                   <div key={i} style={{
                     padding: '10px 12px', borderRadius: 8,
-                    background: 'rgba(102, 217, 255, 0.05)', border: '1px solid rgba(102, 217, 255, 0.2)',
+                    background: 'rgba(165, 180, 252, 0.05)', border: '1px solid rgba(165, 180, 252, 0.2)',
                     fontSize: 12,
                   }}>
-                    <div style={{ color: '#66D9FF', fontWeight: 600 }}>{e.message}</div>
+                    <div style={{ color: '#A5B4FC', fontWeight: 600 }}>{e.message}</div>
                     <div style={{ color: '#9CA3AF', marginTop: 3, fontFamily: 'monospace', fontSize: 10.5 }}>
                       {e.page} · {new Date(e.ts).toLocaleString()}
                     </div>
@@ -149,7 +149,7 @@ export default function Ops() {
               {Object.entries(data.features.byAudience).map(([aud, n]) => (
                 <span key={aud} style={{
                   padding: '4px 10px', borderRadius: 100,
-                  background: 'rgba(79, 124, 255, 0.08)', border: '1px solid rgba(79, 124, 255, 0.25)',
+                  background: 'rgba(124, 107, 246, 0.08)', border: '1px solid rgba(124, 107, 246, 0.25)',
                   fontSize: 11, color: '#A5B4FC', fontWeight: 600,
                 }}>
                   {aud}: {n}
@@ -215,7 +215,7 @@ function DeployCard({ deploy }: { deploy: DeployInfo }) {
       <Row label="Uptime"   value={formatUptime(deploy.uptimeSeconds)} />
       {deploy.url && (
         <Row label="URL" value={
-          <a href={deploy.url} target="_blank" rel="noreferrer" style={{ color: '#66D9FF' }}>{deploy.url}</a>
+          <a href={deploy.url} target="_blank" rel="noreferrer" style={{ color: '#A5B4FC' }}>{deploy.url}</a>
         } />
       )}
     </div>
@@ -231,12 +231,12 @@ function DatabaseCard({ db, env }: { db: any; env: Record<string, boolean> }) {
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 10, color: '#A5B4FC', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 12 }}>
         <Database size={11} /> Database & Services
       </div>
-      <Row label="Supabase" value={db.reachable ? <Pill color="#A5B4FC" label="Reachable" /> : <Pill color="#66D9FF" label={db.error || 'Down'} />} />
-      <Row label="OpenRouter"     value={env.hasOpenRouter   ? <Pill color="#A5B4FC" label="OK" /> : <Pill color="#66D9FF" label="Missing" />} />
+      <Row label="Supabase" value={db.reachable ? <Pill color="#A5B4FC" label="Reachable" /> : <Pill color="#A5B4FC" label={db.error || 'Down'} />} />
+      <Row label="OpenRouter"     value={env.hasOpenRouter   ? <Pill color="#A5B4FC" label="OK" /> : <Pill color="#A5B4FC" label="Missing" />} />
       <Row label="Gemini (image)" value={env.hasGemini       ? <Pill color="#A5B4FC" label="OK" /> : <Pill color="#B1B5BA" label="Off" />} />
       <Row label="Pexels"         value={env.hasPexels       ? <Pill color="#A5B4FC" label="OK" /> : <Pill color="#B1B5BA" label="Off" />} />
       <Row label="Unsplash"       value={env.hasUnsplash     ? <Pill color="#A5B4FC" label="OK" /> : <Pill color="#B1B5BA" label="Off" />} />
-      <Row label="Service Role"   value={env.hasServiceRole  ? <Pill color="#A5B4FC" label="OK" /> : <Pill color="#66D9FF" label="Missing" />} />
+      <Row label="Service Role"   value={env.hasServiceRole  ? <Pill color="#A5B4FC" label="OK" /> : <Pill color="#A5B4FC" label="Missing" />} />
       <Row label="Razorpay"       value={env.hasRazorpay     ? <Pill color="#A5B4FC" label="Live" /> : <Pill color="#A5B4FC" label="Demo" />} />
       <Row label="PWA"            value={env.pwaEnabled      ? <Pill color="#A5B4FC" label="On" /> : <Pill color="#B1B5BA" label="Off" />} />
     </div>
@@ -310,7 +310,7 @@ function RolePill({ label, count, color }: any) {
 
 function LiveDot({ lastFetch, err }: { lastFetch: number; err: string }) {
   const stale = !err && Date.now() - lastFetch > 60_000
-  const color = err ? '#66D9FF' : stale ? '#A5B4FC' : '#A5B4FC'
+  const color = err ? '#A5B4FC' : stale ? '#A5B4FC' : '#A5B4FC'
   const label = err ? 'Error' : stale ? 'Stale' : 'Live'
   return (
     <div style={{

@@ -400,14 +400,14 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
 
       <div className="ks-composer" style={{
         background: 'linear-gradient(180deg, rgba(20, 24, 35, 0.65) 0%, rgba(11, 11, 15, 0.65) 100%)',
-        border: `1px solid ${voiceOn ? 'rgba(102, 217, 255, 0.55)' : 'rgba(255, 255, 255, 0.06)'}`,
+        border: `1px solid ${voiceOn ? 'rgba(165, 180, 252, 0.55)' : 'rgba(255, 255, 255, 0.06)'}`,
         borderRadius: 28, padding: '10px 12px',
         display: 'flex', alignItems: 'flex-end', gap: 10,
         marginBottom: 18, marginTop: showResult ? 0 : 14,
         position: 'relative', zIndex: 2,
         transition: 'border-color .24s ease, box-shadow .24s ease, background .24s ease',
         boxShadow: voiceOn
-          ? '0 16px 44px rgba(38, 58, 140, 0.45), 0 0 0 3px rgba(38, 58, 140, 0.25), 0 0 0 1px rgba(102, 217, 255, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.05)'
+          ? '0 16px 44px rgba(38, 58, 140, 0.45), 0 0 0 3px rgba(38, 58, 140, 0.25), 0 0 0 1px rgba(165, 180, 252, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.05)'
           : '0 16px 40px rgba(0, 0, 0, 0.40), 0 0 32px rgba(38, 58, 140, 0.10), inset 0 1px 0 rgba(255, 255, 255, 0.04)',
         backdropFilter: 'blur(28px) saturate(170%)',
         WebkitBackdropFilter: 'blur(28px) saturate(170%)',
@@ -436,12 +436,12 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
             style={{
               display: 'inline-flex', alignItems: 'center', gap: 6,
               padding: '8px 14px', borderRadius: 999,
-              background: voiceOn ? 'rgba(102, 217, 255, 0.18)' : 'rgba(255,255,255,0.03)',
-              border: `1px solid ${voiceOn ? 'rgba(102, 217, 255, 0.55)' : 'rgba(255,255,255,0.08)'}`,
+              background: voiceOn ? 'rgba(165, 180, 252, 0.18)' : 'rgba(255,255,255,0.03)',
+              border: `1px solid ${voiceOn ? 'rgba(165, 180, 252, 0.55)' : 'rgba(255,255,255,0.08)'}`,
               color: voiceOn ? '#A5B4FC' : '#B1B5BA',
               fontFamily: 'inherit', fontSize: 12, fontWeight: 600,
               cursor: 'pointer',
-              boxShadow: voiceOn ? '0 0 14px rgba(79, 124, 255, 0.32)' : 'none',
+              boxShadow: voiceOn ? '0 0 14px rgba(124, 107, 246, 0.32)' : 'none',
             }}>
             {voiceOn ? <Mic size={14} className="kr-voice-pulse" /> : <MicOff size={14} />}
             {voiceOn ? 'Listening' : 'Voice'}
@@ -531,10 +531,10 @@ function ExamPlanModal({ onClose }: { onClose: () => void }) {
         style={{
           width: '100%', maxWidth: 460,
           background: '#0E1117',
-          border: '1px solid rgba(102, 217, 255, 0.35)',
+          border: '1px solid rgba(165, 180, 252, 0.35)',
           borderRadius: 18, padding: 24,
           color: '#fafafa', fontFamily: 'inherit',
-          boxShadow: '0 24px 60px rgba(79, 124, 255, 0.03)',
+          boxShadow: '0 24px 60px rgba(124, 107, 246, 0.03)',
           position: 'relative',
         }}>
         <button onClick={onClose} aria-label="Close" style={{
@@ -546,8 +546,8 @@ function ExamPlanModal({ onClose }: { onClose: () => void }) {
           <X size={14} />
         </button>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-          <Calendar size={16} color="#66D9FF" />
-          <span style={{ fontSize: 10.5, fontWeight: 700, color: '#66D9FF', textTransform: 'uppercase', letterSpacing: 2 }}>
+          <Calendar size={16} color="#A5B4FC" />
+          <span style={{ fontSize: 10.5, fontWeight: 700, color: '#A5B4FC', textTransform: 'uppercase', letterSpacing: 2 }}>
             Plan an exam
           </span>
         </div>
@@ -574,7 +574,7 @@ function ExamPlanModal({ onClose }: { onClose: () => void }) {
           }}>Cancel</button>
           <button onClick={save} disabled={!subject.trim() || !date} style={{
             padding: '9px 20px', borderRadius: 9,
-            background: 'linear-gradient(135deg, #4F7CFF, #2046C2)',
+            background: 'linear-gradient(135deg, #7C6BF6, #4A2FA8)',
             color: '#fff', fontFamily: 'inherit', fontSize: 13, fontWeight: 700,
             border: 'none', cursor: subject.trim() && date ? 'pointer' : 'not-allowed',
             opacity: subject.trim() && date ? 1 : 0.5,
@@ -620,14 +620,14 @@ function Hero({ onPick }: { onPick: (q: string) => void }) {
         <div className="animate-pulse-orb" style={{
           position: 'absolute', inset: -22,
           borderRadius: 40,
-          background: 'radial-gradient(ellipse at center, rgba(38, 58, 140, 0.42) 0%, rgba(38, 58, 140, 0.22) 38%, rgba(102, 217, 255, 0.12) 62%, transparent 80%)',
+          background: 'radial-gradient(ellipse at center, rgba(38, 58, 140, 0.42) 0%, rgba(38, 58, 140, 0.22) 38%, rgba(165, 180, 252, 0.12) 62%, transparent 80%)',
           filter: 'blur(12px)',
         }} />
         <div style={{
           position: 'absolute', inset: 0,
           borderRadius: 30,
           background: 'linear-gradient(180deg, rgba(38, 58, 140, 0.22) 0%, rgba(11, 11, 15, 0.55) 100%)',
-          border: '1px solid rgba(102, 217, 255, 0.32)',
+          border: '1px solid rgba(165, 180, 252, 0.32)',
           backdropFilter: 'blur(18px) saturate(170%)',
           WebkitBackdropFilter: 'blur(18px) saturate(170%)',
           boxShadow: '0 14px 48px rgba(38, 58, 140, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.08)',
@@ -669,7 +669,7 @@ function Hero({ onPick }: { onPick: (q: string) => void }) {
             style={{
               padding: '12px 22px',
               background: 'linear-gradient(180deg, rgba(38, 58, 140, 0.22) 0%, rgba(11, 11, 15, 0.55) 100%)',
-              border: '1px solid rgba(102, 217, 255, 0.20)',
+              border: '1px solid rgba(165, 180, 252, 0.20)',
               color: '#A5B4FC',
               fontFamily: 'inherit', fontSize: 13, fontWeight: 600,
               letterSpacing: '-0.005em',
@@ -681,12 +681,12 @@ function Hero({ onPick }: { onPick: (q: string) => void }) {
             }}
             onMouseEnter={e => {
               const b = e.currentTarget as HTMLButtonElement
-              b.style.borderColor = 'rgba(102, 217, 255, 0.55)'
-              b.style.boxShadow   = '0 10px 28px rgba(38, 58, 140, 0.45), 0 0 24px rgba(102, 217, 255, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.08)'
+              b.style.borderColor = 'rgba(165, 180, 252, 0.55)'
+              b.style.boxShadow   = '0 10px 28px rgba(38, 58, 140, 0.45), 0 0 24px rgba(165, 180, 252, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.08)'
             }}
             onMouseLeave={e => {
               const b = e.currentTarget as HTMLButtonElement
-              b.style.borderColor = 'rgba(102, 217, 255, 0.20)'
+              b.style.borderColor = 'rgba(165, 180, 252, 0.20)'
               b.style.boxShadow   = '0 6px 18px rgba(38, 58, 140, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.05)'
             }}
           >
@@ -739,7 +739,7 @@ function VideoPlayer({ videoId, busy, topic }: {
         flexShrink: 0,
         padding: '8px 14px',
         background: 'rgba(13,13,13,0.92)',
-        borderBottom: '1px solid rgba(79, 124, 255, 0.2)',
+        borderBottom: '1px solid rgba(124, 107, 246, 0.2)',
         fontSize: 10.5, color: '#A5B4FC', fontWeight: 700,
         textTransform: 'uppercase', letterSpacing: 1.5,
         whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
@@ -760,7 +760,7 @@ function VideoPlayer({ videoId, busy, topic }: {
             transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
             style={{
               width: 52, height: 52, borderRadius: 13,
-              background: 'linear-gradient(135deg, #4F7CFF, #66D9FF)',
+              background: 'linear-gradient(135deg, #7C6BF6, #A5B4FC)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
             <Loader2 size={22} color="#fff" style={{ animation: 'spin 0.8s linear infinite' }} />
@@ -791,7 +791,7 @@ function VideoPlayer({ videoId, busy, topic }: {
             position: 'absolute', bottom: 8, right: 12, zIndex: 4,
             padding: '3px 8px', borderRadius: 5,
             background: 'rgba(13,13,13,0.6)', backdropFilter: 'blur(8px)',
-            border: '1px solid rgba(79, 124, 255, 0.25)',
+            border: '1px solid rgba(124, 107, 246, 0.25)',
             fontSize: 9, color: '#A5B4FC', fontWeight: 700,
             textTransform: 'uppercase', letterSpacing: 1,
             pointerEvents: 'none',
@@ -840,13 +840,13 @@ function Slideshow({ slides, busy, topic, questionType, err, compact = false }: 
         borderRadius: 18, overflow: 'hidden', position: 'relative',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         minHeight: 0,
-        boxShadow: '0 0 60px rgba(79, 124, 255, 0.01) inset',
+        boxShadow: '0 0 60px rgba(124, 107, 246, 0.01) inset',
       }}>
       <div style={{
         position: 'absolute', top: 14, left: 14, zIndex: 4,
         padding: '6px 12px', borderRadius: 7,
         background: 'rgba(13,13,13,0.85)', backdropFilter: 'blur(12px)',
-        border: '1px solid rgba(79, 124, 255, 0.3)',
+        border: '1px solid rgba(124, 107, 246, 0.3)',
         fontSize: 10.5, color: '#A5B4FC', fontWeight: 700,
         textTransform: 'uppercase', letterSpacing: 1.5,
         maxWidth: '70%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
@@ -882,7 +882,7 @@ function Slideshow({ slides, busy, topic, questionType, err, compact = false }: 
       )}
 
       {!busy && err && slides.length === 0 && (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, padding: 24, textAlign: 'center', color: '#66D9FF', maxWidth: 360 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, padding: 24, textAlign: 'center', color: '#A5B4FC', maxWidth: 360 }}>
           <ImageIcon size={28} />
           <div style={{ fontSize: 13, fontWeight: 600 }}>Couldn't load images</div>
           <div style={{ fontSize: 11, color: '#9CA3AF' }}>{err}</div>
@@ -933,7 +933,7 @@ function Slideshow({ slides, busy, topic, questionType, err, compact = false }: 
               <div style={{ fontSize: 10, color: '#9CA3AF', display: 'flex', alignItems: 'center', gap: 6 }}>
                 <span style={{
                   padding: '1px 6px', borderRadius: 3,
-                  background: 'rgba(79, 124, 255, 0.15)', color: '#A5B4FC',
+                  background: 'rgba(124, 107, 246, 0.15)', color: '#A5B4FC',
                   textTransform: 'uppercase', letterSpacing: 0.8, fontWeight: 700,
                 }}>{current.source === 'kairo-ai' ? '✦ Kyno AI' : current.source}</span>
                 {current.attribution && <span style={{ pointerEvents: 'auto' }}>{current.attribution}</span>}
@@ -988,9 +988,9 @@ function SlideshowSkeleton() {
         transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
         style={{
           width: 64, height: 64, borderRadius: 16,
-          background: 'linear-gradient(135deg, #4F7CFF, #66D9FF)',
+          background: 'linear-gradient(135deg, #7C6BF6, #A5B4FC)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 0 32px rgba(79, 124, 255, 0.04)',
+          boxShadow: '0 0 32px rgba(124, 107, 246, 0.04)',
           padding: 8,
         }}>
         <img
@@ -1007,7 +1007,7 @@ function SlideshowSkeleton() {
         <motion.div
           animate={{ x: ['-100%', '100%'] }}
           transition={{ duration: 1.4, repeat: Infinity, ease: 'easeInOut' }}
-          style={{ width: '40%', height: '100%', background: 'linear-gradient(90deg, transparent, #4F7CFF, transparent)' }}
+          style={{ width: '40%', height: '100%', background: 'linear-gradient(90deg, transparent, #7C6BF6, transparent)' }}
         />
       </div>
     </div>
@@ -1057,11 +1057,11 @@ function ExplanationPanel({ resp, busy, error, retryHint, onOpenLab, onAskRelate
       {error && (
         <div style={{
           padding: '14px 16px', borderRadius: 12,
-          background: 'rgba(102, 217, 255, 0.08)', border: '1px solid rgba(102, 217, 255, 0.28)',
+          background: 'rgba(165, 180, 252, 0.08)', border: '1px solid rgba(165, 180, 252, 0.28)',
           display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap',
         }}>
           <div style={{ flex: 1, minWidth: 200 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: '#66D9FF', textTransform: 'uppercase', letterSpacing: 1.4, marginBottom: 4 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: '#A5B4FC', textTransform: 'uppercase', letterSpacing: 1.4, marginBottom: 4 }}>
               ⚠ Couldn't fetch an answer
             </div>
             <div style={{ fontSize: 13, color: '#e4e4e7', lineHeight: 1.55 }}>
@@ -1073,10 +1073,10 @@ function ExplanationPanel({ resp, busy, error, retryHint, onOpenLab, onAskRelate
               onClick={() => ask(topic)}
               style={{
                 padding: '8px 14px', borderRadius: 9,
-                background: 'linear-gradient(135deg, #4F7CFF 0%, #2046C2 50%, #4F7CFF 100%)',
+                background: 'linear-gradient(135deg, #7C6BF6 0%, #4A2FA8 50%, #7C6BF6 100%)',
                 color: '#fff', fontFamily: 'inherit', fontWeight: 700, fontSize: 12,
                 border: 'none', cursor: 'pointer', flexShrink: 0,
-                boxShadow: '0 6px 18px rgba(79, 124, 255, 0.04)',
+                boxShadow: '0 6px 18px rgba(124, 107, 246, 0.04)',
               }}>
               Try again
             </button>
@@ -1099,7 +1099,7 @@ function ExplanationPanel({ resp, busy, error, retryHint, onOpenLab, onAskRelate
           {resp.formulas.length > 0 && (
             <div style={{
               padding: '12px 14px', borderRadius: 11,
-              background: 'rgba(79, 124, 255, 0.05)', border: '1px solid rgba(79, 124, 255, 0.2)',
+              background: 'rgba(124, 107, 246, 0.05)', border: '1px solid rgba(124, 107, 246, 0.2)',
             }}>
               <div style={{
                 fontSize: 10, color: '#A5B4FC', fontWeight: 700,
@@ -1126,15 +1126,15 @@ function ExplanationPanel({ resp, busy, error, retryHint, onOpenLab, onAskRelate
               onClick={() => onOpenLab(resp.labRoute!)}
               style={{
                 width: '100%', padding: '12px 16px', borderRadius: 12,
-                background: 'linear-gradient(135deg, rgba(102, 217, 255, 0.18), rgba(79, 124, 255, 0.18))',
-                border: '1px solid rgba(102, 217, 255, 0.14)',
+                background: 'linear-gradient(135deg, rgba(165, 180, 252, 0.18), rgba(124, 107, 246, 0.18))',
+                border: '1px solid rgba(165, 180, 252, 0.14)',
                 color: '#fafafa', fontFamily: 'inherit', cursor: 'pointer', textAlign: 'left',
                 display: 'flex', alignItems: 'center', gap: 12,
-                boxShadow: '0 0 24px rgba(102, 217, 255, 0.01)',
+                boxShadow: '0 0 24px rgba(165, 180, 252, 0.01)',
               }}>
               <div style={{
                 width: 36, height: 36, borderRadius: 9, flexShrink: 0,
-                background: 'linear-gradient(135deg, #66D9FF, #4F7CFF)',
+                background: 'linear-gradient(135deg, #A5B4FC, #7C6BF6)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
                 <Beaker size={16} color="#fff" />
@@ -1228,16 +1228,16 @@ const MD_COMPONENTS = {
         </pre>
       : <code style={{ background: '#1a1a2e', padding: '2px 6px', borderRadius: 4, fontSize: 12.5, color: '#A5B4FC', fontFamily: 'monospace' }}>{children}</code>
   },
-  blockquote: ({ children }: any) => <blockquote style={{ borderLeft: '3px solid #4F7CFF', paddingLeft: 12, margin: '8px 0', color: '#B1B5BA', fontStyle: 'italic' }}>{children}</blockquote>,
+  blockquote: ({ children }: any) => <blockquote style={{ borderLeft: '3px solid #7C6BF6', paddingLeft: 12, margin: '8px 0', color: '#B1B5BA', fontStyle: 'italic' }}>{children}</blockquote>,
 }
 
 const btnSend: React.CSSProperties = {
   padding: '9px 18px', borderRadius: 999,
-  background: 'linear-gradient(135deg, #66D9FF 0%, #4F7CFF 60%, #2046C2 100%)',
+  background: 'linear-gradient(135deg, #A5B4FC 0%, #7C6BF6 60%, #4A2FA8 100%)',
   color: '#fff', border: 'none', fontFamily: 'inherit', fontSize: 12.5, fontWeight: 700,
   letterSpacing: '-0.005em',
   display: 'flex', alignItems: 'center', gap: 6,
-  boxShadow: '0 8px 24px rgba(79, 124, 255, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.18)',
+  boxShadow: '0 8px 24px rgba(124, 107, 246, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.18)',
   transition: 'transform 0.18s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.18s ease',
 }
 
@@ -1254,7 +1254,7 @@ const arrowBtn: React.CSSProperties = {
   position: 'absolute', top: '50%', transform: 'translateY(-50%)',
   width: 34, height: 34, borderRadius: 9, zIndex: 4,
   background: 'rgba(13,13,13,0.85)', backdropFilter: 'blur(10px)',
-  border: '1px solid rgba(79, 124, 255, 0.3)', cursor: 'pointer',
+  border: '1px solid rgba(124, 107, 246, 0.3)', cursor: 'pointer',
   display: 'flex', alignItems: 'center', justifyContent: 'center',
 }
 
@@ -1287,7 +1287,7 @@ function ModeChipBar({
     }}>
       <div style={{
         fontFamily: "'Inter', system-ui, sans-serif",
-        fontSize: 9.5, fontWeight: 700, color: '#66D9FF',
+        fontSize: 9.5, fontWeight: 700, color: '#A5B4FC',
         textTransform: 'uppercase', letterSpacing: 1.8, paddingLeft: 4,
       }}>
         View
@@ -1306,7 +1306,7 @@ function ModeChipBar({
                 display: 'inline-flex', alignItems: 'center', gap: 5,
                 padding: '6px 12px', borderRadius: 8,
                 border: 'none', cursor: c.available ? 'pointer' : 'not-allowed',
-                background: active ? 'rgba(79, 124, 255, 0.18)' : 'transparent',
+                background: active ? 'rgba(124, 107, 246, 0.18)' : 'transparent',
                 color: active ? '#A5B4FC' : c.available ? '#CBD5E1' : '#4B5563',
                 fontFamily: 'inherit', fontWeight: 700, fontSize: 11.5,
                 opacity: c.available ? 1 : 0.45,
@@ -1330,9 +1330,9 @@ function ModeChipBar({
             style={{
               display: 'inline-flex', alignItems: 'center', gap: 5,
               padding: '4px 10px', borderRadius: 999,
-              background: 'rgba(102, 217, 255, 0.10)',
-              border: '1px solid rgba(102, 217, 255, 0.35)',
-              color: '#66D9FF',
+              background: 'rgba(165, 180, 252, 0.10)',
+              border: '1px solid rgba(165, 180, 252, 0.35)',
+              color: '#A5B4FC',
               fontFamily: "'Inter', system-ui, sans-serif",
               fontSize: 10, fontWeight: 700,
               textTransform: 'uppercase', letterSpacing: 1.2,

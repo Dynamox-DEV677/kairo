@@ -20,7 +20,7 @@ html, body, #root {
 ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: #4B5563; }
 
-::selection { background: rgba(79, 124, 255, 0.3); color: #c7d2fe; }
+::selection { background: rgba(124, 107, 246, 0.3); color: #c7d2fe; }
 
 @keyframes pulse-orb {
   0%, 100% { transform: scale(1); opacity: 0.85; }
@@ -52,8 +52,8 @@ html, body, #root {
 }
 @keyframes streak-glow {
   /* dimmed 70% — Apple/Linear restraint, no gaming neon */
-  0%, 100% { box-shadow: 0 0 6px rgba(79, 124, 255, 0.05); }
-  50% { box-shadow: 0 0 12px rgba(79, 124, 255, 0.10); }
+  0%, 100% { box-shadow: 0 0 6px rgba(124, 107, 246, 0.05); }
+  50% { box-shadow: 0 0 12px rgba(124, 107, 246, 0.10); }
 }
 
 .animate-pulse-orb { animation: pulse-orb 3s ease-in-out infinite; }
@@ -88,13 +88,13 @@ html, body, #root {
 /* Faint accent fill — applied when a card is the active/selected one.
    The blue rgba is intentionally low (0.06) so the surface tints, not glows. */
 .kairo-selected {
-  background: rgba(79, 124, 255, 0.06) !important;
-  border-color: rgba(79, 124, 255, 0.22) !important;
-  box-shadow: inset 0 0 0 1px rgba(79, 124, 255, 0.10);
+  background: rgba(124, 107, 246, 0.06) !important;
+  border-color: rgba(124, 107, 246, 0.22) !important;
+  box-shadow: inset 0 0 0 1px rgba(124, 107, 246, 0.10);
 }
 
-.glow-accent { box-shadow: 0 0 18px rgba(79, 124, 255, 0.09), 0 0 40px rgba(79, 124, 255, 0.03); }
-.glow-violet { box-shadow: 0 0 14px rgba(79, 124, 255, 0.04); }
+.glow-accent { box-shadow: 0 0 18px rgba(124, 107, 246, 0.09), 0 0 40px rgba(124, 107, 246, 0.03); }
+.glow-violet { box-shadow: 0 0 14px rgba(124, 107, 246, 0.04); }
 
 .gradient-text {
   background: linear-gradient(135deg, #A5B4FC 0%, #c084fc 50%, #f472b6 100%);
@@ -105,7 +105,7 @@ html, body, #root {
 
 .gradient-border {
   background: linear-gradient(#0E1117, #0E1117) padding-box,
-              linear-gradient(135deg, #4F7CFF, #4F7CFF, #ec4899) border-box;
+              linear-gradient(135deg, #7C6BF6, #7C6BF6, #ec4899) border-box;
   border: 1px solid transparent;
 }
 
@@ -114,7 +114,7 @@ html, body, #root {
   overflow: hidden;
   transition: all 0.2s;
 }
-.btn-glow:hover { box-shadow: 0 0 20px rgba(79, 124, 255, 0.32); transform: translateY(-1px); }
+.btn-glow:hover { box-shadow: 0 0 20px rgba(124, 107, 246, 0.32); transform: translateY(-1px); }
 .btn-glow:active { transform: translateY(0); }
 
 .prose-ai { color: #d4d4d8; line-height: 1.75; font-size: 14px; }
@@ -127,7 +127,7 @@ html, body, #root {
 .prose-ai strong { color: #e4e4e7; font-weight: 600; }
 .prose-ai code { background: #1a1f2e; padding: 2px 7px; border-radius: 5px; font-size: 12.5px; color: #A5B4FC; }
 .prose-ai pre { background: #0E1117; border: 1px solid #1f2532; padding: 16px; border-radius: 10px; overflow-x: auto; margin: 0.8em 0; }
-.prose-ai blockquote { border-left: 3px solid #4F7CFF; padding-left: 14px; color: #9CA3AF; margin: 0.8em 0; font-style: italic; }
+.prose-ai blockquote { border-left: 3px solid #7C6BF6; padding-left: 14px; color: #9CA3AF; margin: 0.8em 0; font-style: italic; }
 .prose-ai table { width: 100%; border-collapse: collapse; margin: 0.8em 0; font-size: 13px; }
 .prose-ai th, .prose-ai td { border: 1px solid #1f2532; padding: 8px 12px; }
 .prose-ai th { background: #151922; color: #fafafa; font-weight: 600; }
@@ -336,15 +336,15 @@ html, body, #root {
   --c-ghost:     #6B7280;
   --c-purple-soft: #DBE7FF;
   --c-purple-lite: #A5B4FC;
-  --c-purple:      #66D9FF;
-  --c-purple-hi:   #4F7CFF;
-  --c-purple-deep: #2046C2;
+  --c-purple:      #A5B4FC;
+  --c-purple-hi:   #7C6BF6;
+  --c-purple-deep: #4A2FA8;
   --c-purple-dark: #0B1530;
 
   /* Premium glow */
-  --gl-purple: 0 8px 28px rgba(79, 124, 255, 0.35);
-  --gl-soft:   0 4px 18px rgba(79, 124, 255, 0.22);
-  --gl-inner:  inset 0 0 60px rgba(79, 124, 255, 0.05);
+  --gl-purple: 0 8px 28px rgba(124, 107, 246, 0.35);
+  --gl-soft:   0 4px 18px rgba(124, 107, 246, 0.22);
+  --gl-inner:  inset 0 0 60px rgba(124, 107, 246, 0.05);
 }
 
 /* Mobile shell uses the same user-selected app font as desktop */
@@ -489,8 +489,8 @@ html, body, #root {
 
 /* ── Premium glass card utility (opt-in via .glass-card) ── */
 .glass-card {
-  background: linear-gradient(180deg, rgba(102, 217, 255, 0.06) 0%, rgba(14, 14, 22, 0.55) 100%);
-  border: 1px solid rgba(102, 217, 255, 0.16);
+  background: linear-gradient(180deg, rgba(165, 180, 252, 0.06) 0%, rgba(14, 14, 22, 0.55) 100%);
+  border: 1px solid rgba(165, 180, 252, 0.16);
   border-radius: var(--r-lg);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
@@ -535,7 +535,7 @@ html, body, #root {
 .kairo-mobile [style*="borderRadius: 14"][style*="background: '#0E1117'"],
 .kairo-mobile [style*="borderRadius: 14"][style*="background:'#0E1117'"] {
   padding: 14px !important;
-  border-color: rgba(102, 217, 255, 0.10) !important;
+  border-color: rgba(165, 180, 252, 0.10) !important;
 }
 
 /* Horizontal-scrollable chip rows (typed by .h-scroll) — hide scrollbar */
@@ -654,7 +654,7 @@ html, body, #root {
   bottom: calc(96px + env(safe-area-inset-bottom)) !important;
   z-index: 88;
   padding: 10px 12px !important;
-  border: 1px solid rgba(102, 217, 255, 0.22) !important;
+  border: 1px solid rgba(165, 180, 252, 0.22) !important;
   border-radius: 18px !important;
   background: rgba(6, 6, 10, 0.88) !important;
   backdrop-filter: blur(18px) saturate(180%);
@@ -693,7 +693,7 @@ html, body, #root {
     padding: 14px 18px;
     border-radius: 999px;
     border: none;
-    background: linear-gradient(135deg, #A5B4FC 0%, #4F7CFF 60%, #2046C2 100%);
+    background: linear-gradient(135deg, #A5B4FC 0%, #7C6BF6 60%, #4A2FA8 100%);
     color: #000;
     font-family: inherit;
     font-size: 14px; font-weight: 800;
@@ -704,7 +704,7 @@ html, body, #root {
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
     box-shadow:
-      0 10px 28px rgba(79, 124, 255, 0.32),
+      0 10px 28px rgba(124, 107, 246, 0.32),
       0 0 24px rgba(165, 180, 252, 0.40),
       inset 0 1px 0 rgba(255, 255, 255, 0.25);
     animation: nb-fab-breath 3.5s ease-in-out infinite;
@@ -781,13 +781,13 @@ html, body, #root {
 @keyframes nb-fab-breath {
   0%, 100% {
     box-shadow:
-      0 10px 28px rgba(79, 124, 255, 0.32),
+      0 10px 28px rgba(124, 107, 246, 0.32),
       0 0 24px rgba(165, 180, 252, 0.40),
       inset 0 1px 0 rgba(255, 255, 255, 0.25);
   }
   50% {
     box-shadow:
-      0 14px 34px rgba(79, 124, 255, 0.32),
+      0 14px 34px rgba(124, 107, 246, 0.32),
       0 0 36px rgba(165, 180, 252, 0.55),
       inset 0 1px 0 rgba(255, 255, 255, 0.25);
   }
@@ -929,7 +929,7 @@ html, body, #root {
   /* The canvas pane keeps its fixed height; the text pane scrolls beneath */
   .lab-body > div:first-child {
     height: clamp(280px, 55vh, 460px) !important;
-    border-bottom: 1px solid rgba(102, 217, 255, 0.18);
+    border-bottom: 1px solid rgba(165, 180, 252, 0.18);
   }
   /* The text pane gets normal flow + extra bottom padding for the dock */
   .lab-body > div:nth-child(2) {
@@ -977,7 +977,7 @@ html[data-theme="light"] #root {
 html[data-theme="light"] ::-webkit-scrollbar-thumb       { background: #d4d4d8 !important; }
 html[data-theme="light"] ::-webkit-scrollbar-thumb:hover { background: #B1B5BA !important; }
 html[data-theme="light"] ::selection {
-  background: rgba(79, 124, 255, 0.20) !important;
+  background: rgba(124, 107, 246, 0.20) !important;
   color:      #0B1530 !important;
 }
 
@@ -1053,10 +1053,10 @@ html[data-theme="light"] [style*="border:1px solid rgba(255,255,255,0.08)"]
 { border-color: #e4e4e7 !important; }
 
 /* Border on hover / selected (purple-tinted) — keep purple but soften */
-html[data-theme="light"] [style*="rgba(79, 124, 255, 0.3)"],
-html[data-theme="light"] [style*="rgba(79, 124, 255, 0.3)"],
-html[data-theme="light"] [style*="rgba(102, 217, 255, 0.25)"],
-html[data-theme="light"] [style*="rgba(102, 217, 255, 0.25)"]
+html[data-theme="light"] [style*="rgba(124, 107, 246, 0.3)"],
+html[data-theme="light"] [style*="rgba(124, 107, 246, 0.3)"],
+html[data-theme="light"] [style*="rgba(165, 180, 252, 0.25)"],
+html[data-theme="light"] [style*="rgba(165, 180, 252, 0.25)"]
 { /* untouched — purple borders look fine on both modes */ }
 
 /* ── Text — white → near-black ─────────────────────────────────────────── */
@@ -1097,7 +1097,7 @@ html[data-theme="light"] {
 html[data-theme="light"] input,
 html[data-theme="light"] textarea,
 html[data-theme="light"] select {
-  caret-color: #4F7CFF;
+  caret-color: #7C6BF6;
 }
 html[data-theme="light"] input::placeholder,
 html[data-theme="light"] textarea::placeholder {
@@ -1110,7 +1110,7 @@ html[data-theme="light"] .prose-ai h1,
 html[data-theme="light"] .prose-ai h2,
 html[data-theme="light"] .prose-ai h3         { color: #18181b !important; }
 html[data-theme="light"] .prose-ai strong     { color: #18181b !important; }
-html[data-theme="light"] .prose-ai code       { background: #f4f4f5 !important; color: #2046C2 !important; }
+html[data-theme="light"] .prose-ai code       { background: #f4f4f5 !important; color: #4A2FA8 !important; }
 html[data-theme="light"] .prose-ai pre        { background: #f9f9fa !important; border-color: #e4e4e7 !important; }
 html[data-theme="light"] .prose-ai blockquote { color: #9CA3AF !important; }
 html[data-theme="light"] .prose-ai th         { background: #f4f4f5 !important; color: #18181b !important; }
@@ -1120,7 +1120,7 @@ html[data-theme="light"] .prose-ai td         { border-color: #e4e4e7 !important
 /* ── Gradient-text — re-anchor the white stop to dark so it stays legible */
 html[data-theme="light"] .kr-grad-text,
 html[data-theme="light"] [class*="grad-text"] {
-  background: linear-gradient(90deg, #18181b 0%, #2046C2 60%, #4F7CFF 100%) !important;
+  background: linear-gradient(90deg, #18181b 0%, #4A2FA8 60%, #7C6BF6 100%) !important;
   -webkit-background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
   background-clip: text !important;
@@ -1130,8 +1130,8 @@ html[data-theme="light"] [class*="grad-text"] {
 
 /* ── Glow utility — soften on light so it doesn't look like a halo around
    a white card. Keep purple cast, drop intensity. ─────────────────────── */
-html[data-theme="light"] .glow-violet { box-shadow: 0 0 14px rgba(79, 124, 255, 0.18); }
-html[data-theme="light"] .glow-accent { box-shadow: 0 0 18px rgba(79, 124, 255, 0.14), 0 0 38px rgba(79, 124, 255, 0.06); }
+html[data-theme="light"] .glow-violet { box-shadow: 0 0 14px rgba(124, 107, 246, 0.18); }
+html[data-theme="light"] .glow-accent { box-shadow: 0 0 18px rgba(124, 107, 246, 0.14), 0 0 38px rgba(124, 107, 246, 0.06); }
 
 /* ── Glass utility (used by mobile dock) ───────────────────────────────── */
 html[data-theme="light"] .glass {
@@ -1148,10 +1148,10 @@ html[data-theme="light"] .glass {
    above. The hero icon tile uses a purple gradient that stays the same. */
 
 /* Sidebar active item — keep its purple wash but lift surface contrast */
-html[data-theme="light"] [style*="background: 'rgba(79, 124, 255, 0.10)'"],
-html[data-theme="light"] [style*="background: rgba(79, 124, 255, 0.10)"],
-html[data-theme="light"] [style*="background:rgba(79, 124, 255, 0.10)"]
-{ background: rgba(79, 124, 255, 0.10) !important; }
+html[data-theme="light"] [style*="background: 'rgba(124, 107, 246, 0.10)'"],
+html[data-theme="light"] [style*="background: rgba(124, 107, 246, 0.10)"],
+html[data-theme="light"] [style*="background:rgba(124, 107, 246, 0.10)"]
+{ background: rgba(124, 107, 246, 0.10) !important; }
 
 /* Dashboard top header (currently emitted as background: '#0E1117') — caught
    above; force underline + border to also flip. */
@@ -1164,7 +1164,7 @@ html[data-theme="light"] [style*="borderTop:1px solid #1f2532"]
 /* Tooltip / dropdown panels often use #0E1117 or #0E1117 — already caught. */
 
 /* Code blocks <code> baseline */
-html[data-theme="light"] code { color: #2046C2; }
+html[data-theme="light"] code { color: #4A2FA8; }
 
 /* Make sure SVG strokes that hard-code white become dark on light backgrounds */
 html[data-theme="light"] svg[stroke="#fff"],
@@ -1332,9 +1332,9 @@ html[data-theme="light"] [style*="rgb(17, 17, 17) none repeat scroll"]
   --kx-radius-input:  16px;
 
   --kx-shadow-rest:   0 10px 30px rgba(0, 0, 0, 0.28), 0 0 0 1px rgba(255, 255, 255, 0.025);
-  --kx-shadow-hover:  0 18px 48px rgba(0, 0, 0, 0.38), 0 0 0 1px rgba(102, 217, 255, 0.18);
-  --kx-shadow-drag:   0 28px 80px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(102, 217, 255, 0.32),
-                      0 0 60px rgba(79, 124, 255, 0.18);
+  --kx-shadow-hover:  0 18px 48px rgba(0, 0, 0, 0.38), 0 0 0 1px rgba(165, 180, 252, 0.18);
+  --kx-shadow-drag:   0 28px 80px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(165, 180, 252, 0.32),
+                      0 0 60px rgba(124, 107, 246, 0.18);
 
   --kx-spring:        cubic-bezier(0.22, 1, 0.36, 1);
   --kx-spring-slow:   cubic-bezier(0.16, 1, 0.30, 1);
@@ -1345,8 +1345,8 @@ html[data-theme="light"] [style*="rgb(17, 17, 17) none repeat scroll"]
   --kx-ultramarine:        #263ABC;
   --kx-ultramarine-deep:   #1A2A8C;
   --kx-ultramarine-soft:   rgba(38, 58, 140, 0.40);
-  --kx-cyan:               #66D9FF;     /* secondary highlight */
-  --kx-cyan-soft:          rgba(102, 217, 255, 0.30);
+  --kx-cyan:               #A5B4FC;     /* secondary highlight */
+  --kx-cyan-soft:          rgba(165, 180, 252, 0.30);
 }
 
 /* ── Ambient field — slow drifting ultramarine→black gradient layer that
@@ -1359,7 +1359,7 @@ html[data-theme="light"] [style*="rgb(17, 17, 17) none repeat scroll"]
   z-index: 0;
   background:
     radial-gradient(60% 50% at 18% 12%,  rgba(38, 58, 140, 0.16) 0%, transparent 60%),
-    radial-gradient(45% 40% at 88% 92%,  rgba(102, 217, 255, 0.06) 0%, transparent 60%),
+    radial-gradient(45% 40% at 88% 92%,  rgba(165, 180, 252, 0.06) 0%, transparent 60%),
     radial-gradient(40% 35% at 50% 50%,  rgba(38, 58, 140, 0.05) 0%, transparent 60%);
   animation: kr-ambient-drift 36s ease-in-out infinite alternate;
 }
@@ -1381,11 +1381,11 @@ html[data-theme="light"] [style*="rgb(17, 17, 17) none repeat scroll"]
   z-index: 0;
   background-image:
     radial-gradient(circle at 12% 18%, rgba(255, 255, 255, 0.20) 0, transparent 1.5px),
-    radial-gradient(circle at 78% 32%, rgba(102, 217, 255, 0.30) 0, transparent 1.4px),
+    radial-gradient(circle at 78% 32%, rgba(165, 180, 252, 0.30) 0, transparent 1.4px),
     radial-gradient(circle at 24% 64%, rgba(255, 255, 255, 0.12) 0, transparent 1.6px),
     radial-gradient(circle at 62% 88%, rgba(38, 58, 140, 0.55) 0, transparent 1.8px),
     radial-gradient(circle at 92% 76%, rgba(255, 255, 255, 0.16) 0, transparent 1.4px),
-    radial-gradient(circle at 8% 88%,  rgba(102, 217, 255, 0.18) 0, transparent 1.5px),
+    radial-gradient(circle at 8% 88%,  rgba(165, 180, 252, 0.18) 0, transparent 1.5px),
     radial-gradient(circle at 48% 12%, rgba(255, 255, 255, 0.10) 0, transparent 1.3px),
     radial-gradient(circle at 40% 44%, rgba(38, 58, 140, 0.35) 0, transparent 1.4px);
   background-size: 100% 100%;
@@ -1415,7 +1415,7 @@ html[data-theme="light"] [style*="rgb(17, 17, 17) none repeat scroll"]
   background-clip: content-box;
 }
 .kr-soft-scroll::-webkit-scrollbar-thumb:hover {
-  background: rgba(102, 217, 255, 0.20);
+  background: rgba(165, 180, 252, 0.20);
   background-clip: content-box;
 }
 
@@ -1443,7 +1443,7 @@ html[data-theme="light"] [style*="rgb(17, 17, 17) none repeat scroll"]
 .kr-floating:hover {
   transform: translateY(-2px);
   box-shadow: var(--kx-shadow-hover);
-  border-color: rgba(102, 217, 255, 0.16);
+  border-color: rgba(165, 180, 252, 0.16);
 }
 /* Subtle inner highlight along the top edge — gives the impression of
    an ambient light source above the workspace. */
@@ -1474,7 +1474,7 @@ html[data-theme="light"] [style*="rgb(17, 17, 17) none repeat scroll"]
   transition: box-shadow 0.36s var(--kx-spring), border-color 0.36s var(--kx-spring);
 }
 .kr-bubble:focus-within {
-  border-color: rgba(102, 217, 255, 0.30);
+  border-color: rgba(165, 180, 252, 0.30);
   box-shadow: var(--kx-shadow-hover);
 }
 
@@ -1493,7 +1493,7 @@ html[data-theme="light"] [style*="rgb(17, 17, 17) none repeat scroll"]
 }
 .kr-draggable.kr-dragging {
   box-shadow: var(--kx-shadow-drag);
-  border-color: rgba(102, 217, 255, 0.32) !important;
+  border-color: rgba(165, 180, 252, 0.32) !important;
   z-index: 50;
 }
 .kr-draggable.kr-dragging::after {
@@ -1502,7 +1502,7 @@ html[data-theme="light"] [style*="rgb(17, 17, 17) none repeat scroll"]
   position: absolute;
   inset: -24px;
   border-radius: inherit;
-  background: radial-gradient(closest-side, rgba(79, 124, 255, 0.10), transparent 70%);
+  background: radial-gradient(closest-side, rgba(124, 107, 246, 0.10), transparent 70%);
   filter: blur(20px);
   pointer-events: none;
   z-index: -1;
@@ -1532,9 +1532,9 @@ html[data-theme="light"] [style*="rgb(17, 17, 17) none repeat scroll"]
 }
 .kr-input-soft:focus,
 .kr-input-soft:focus-within {
-  border-color: rgba(102, 217, 255, 0.32);
+  border-color: rgba(165, 180, 252, 0.32);
   background: rgba(255, 255, 255, 0.04);
-  box-shadow: 0 0 0 3px rgba(79, 124, 255, 0.08);
+  box-shadow: 0 0 0 3px rgba(124, 107, 246, 0.08);
   outline: none;
 }
 

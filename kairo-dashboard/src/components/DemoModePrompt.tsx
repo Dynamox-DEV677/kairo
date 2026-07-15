@@ -75,12 +75,12 @@ export default function DemoModePrompt({ delayMs = 1400 }: Props) {
             background: 'rgba(14, 17, 23, 0.86)',
             backdropFilter: 'blur(14px) saturate(140%)',
             WebkitBackdropFilter: 'blur(14px) saturate(140%)',
-            border: '1px solid rgba(79, 124, 255, 0.22)',
+            border: '1px solid rgba(124, 107, 246, 0.22)',
             borderRadius: 14,
             padding: 18,
             color: '#fafafa',
             fontFamily: '-apple-system, "SF Pro Display", "Inter", system-ui, sans-serif',
-            boxShadow: '0 18px 48px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(79, 124, 255, 0.06)',
+            boxShadow: '0 18px 48px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(124, 107, 246, 0.06)',
           }}
         >
           <button
@@ -101,8 +101,8 @@ export default function DemoModePrompt({ delayMs = 1400 }: Props) {
               style={{
                 width: 36, height: 36, borderRadius: 10, flexShrink: 0,
                 display: 'grid', placeItems: 'center',
-                background: 'linear-gradient(135deg, #4F7CFF 0%, #2046C2 100%)',
-                boxShadow: '0 0 18px rgba(79, 124, 255, 0.20)',
+                background: 'linear-gradient(135deg, #7C6BF6 0%, #4A2FA8 100%)',
+                boxShadow: '0 0 18px rgba(124, 107, 246, 0.20)',
               }}
             >
               <Sparkles size={16} color="#fff" />
@@ -127,8 +127,8 @@ export default function DemoModePrompt({ delayMs = 1400 }: Props) {
                 flex: 1,
                 padding: '9px 12px', borderRadius: 9, border: 'none',
                 background: busy
-                  ? 'rgba(79, 124, 255, 0.30)'
-                  : 'linear-gradient(135deg, #4F7CFF 0%, #2046C2 100%)',
+                  ? 'rgba(124, 107, 246, 0.30)'
+                  : 'linear-gradient(135deg, #7C6BF6 0%, #4A2FA8 100%)',
                 color: '#fff', fontFamily: 'inherit', fontSize: 12.5, fontWeight: 700,
                 cursor: busy ? 'wait' : 'pointer',
                 letterSpacing: 0.2,

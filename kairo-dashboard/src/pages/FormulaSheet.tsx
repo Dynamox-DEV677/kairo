@@ -20,9 +20,9 @@ const C = {
   textDim:   '#B1B5BA',
   textFaint: '#9CA3AF',
   textGhost: '#6B7280',
-  purple:    '#66D9FF',
-  purpleHi:  '#4F7CFF',
-  purpleDeep:'#2046C2',
+  purple:    '#A5B4FC',
+  purpleHi:  '#7C6BF6',
+  purpleDeep:'#4A2FA8',
   purpleLite:'#A5B4FC',
   purpleSoft:'#DBE7FF',
 }
@@ -32,11 +32,11 @@ const inp   = { background: C.panel2, border: `1px solid ${C.borderSoft}`, borde
 const lbl   = { fontSize: 10, color: C.purple, display: 'block', marginBottom: 5, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1 } as React.CSSProperties
 const btn   = (active = true) => ({
   display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', borderRadius: 10, border: 'none',
-  background: active ? 'linear-gradient(135deg,#A5B4FC,#4F7CFF)' : C.panel2,
+  background: active ? 'linear-gradient(135deg,#A5B4FC,#7C6BF6)' : C.panel2,
   color: active ? '#000' : C.textGhost,
   fontFamily: 'inherit', fontSize: 13, fontWeight: 700,
   cursor: active ? 'pointer' : 'not-allowed',
-  boxShadow: active ? '0 6px 18px rgba(79, 124, 255, 0.35)' : 'none',
+  boxShadow: active ? '0 6px 18px rgba(124, 107, 246, 0.35)' : 'none',
 } as React.CSSProperties)
 
 const SUBJECTS = ['Physics','Chemistry','Biology','Mathematics','History','Geography','Economics','English','Computer Science']
@@ -88,8 +88,8 @@ export default function FormulaSheet() {
       width: '100%', height: '100%', overflowY: 'auto',
       background: C.bg,
       backgroundImage:
-        `radial-gradient(at 12% 0%, rgba(79, 124, 255, 0.10) 0%, transparent 36%),
-         radial-gradient(at 88% 100%, rgba(32, 70, 194, 0.10) 0%, transparent 42%)`,
+        `radial-gradient(at 12% 0%, rgba(124, 107, 246, 0.10) 0%, transparent 36%),
+         radial-gradient(at 88% 100%, rgba(74, 47, 168, 0.10) 0%, transparent 42%)`,
       padding: '24px 32px 60px',
     }}>
       <div style={{ maxWidth: 1100, margin: '0 auto' }}>
@@ -97,16 +97,16 @@ export default function FormulaSheet() {
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
             <div style={{
               width: 52, height: 52, borderRadius: 14,
-              background: 'linear-gradient(135deg, #A5B4FC 0%, #4F7CFF 60%, #0B1530 100%)',
+              background: 'linear-gradient(135deg, #A5B4FC 0%, #7C6BF6 60%, #0B1530 100%)',
               display: 'grid', placeItems: 'center',
-              boxShadow: '0 14px 38px rgba(79, 124, 255, 0.03)',
+              boxShadow: '0 14px 38px rgba(124, 107, 246, 0.03)',
             }}>
               <Sigma size={24} color="#000" strokeWidth={2.4} />
             </div>
             <div>
               <div style={{
                 fontSize: 11, fontWeight: 700, letterSpacing: 2.2, textTransform: 'uppercase',
-                background: 'linear-gradient(90deg, #A5B4FC, #66D9FF, #4F7CFF)', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent',
+                background: 'linear-gradient(90deg, #A5B4FC, #A5B4FC, #7C6BF6)', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent',
               }}>
                 Formula Sheet
               </div>
@@ -120,8 +120,8 @@ export default function FormulaSheet() {
           </div>
           <div style={{
             display: 'inline-flex', padding: 3, borderRadius: 12,
-            background: 'rgba(102, 217, 255, 0.05)',
-            border: '1px solid rgba(102, 217, 255, 0.22)',
+            background: 'rgba(165, 180, 252, 0.05)',
+            border: '1px solid rgba(165, 180, 252, 0.22)',
           }}>
             <TabBtn active={tab === 'collected'} onClick={() => setTab('collected')}>
               <Archive size={12} /> Collected ({collected.length})
@@ -153,12 +153,12 @@ function TabBtn({ active, onClick, children }: { active: boolean; onClick: () =>
     <button onClick={onClick} style={{
       display: 'inline-flex', alignItems: 'center', gap: 6,
       padding: '9px 16px', borderRadius: 9,
-      background: active ? 'linear-gradient(135deg,#4F7CFF,#2046C2)' : 'transparent',
+      background: active ? 'linear-gradient(135deg,#7C6BF6,#4A2FA8)' : 'transparent',
       border: 'none',
       color: active ? '#fff' : C.textDim,
       fontFamily: 'inherit', fontSize: 12, fontWeight: 700,
       cursor: 'pointer', letterSpacing: 0.3,
-      boxShadow: active ? '0 4px 14px rgba(79, 124, 255, 0.35)' : 'none',
+      boxShadow: active ? '0 4px 14px rgba(124, 107, 246, 0.35)' : 'none',
       transition: 'all 0.18s',
     }}>{children}</button>
   )
@@ -183,7 +183,7 @@ function CollectedFormulas({ formulas, onReload }: { formulas: TwinFormula[]; on
       }}>
         <div style={{
           width: 56, height: 56, borderRadius: 14, margin: '0 auto 16px',
-          background: 'rgba(102, 217, 255, 0.08)', border: '1px solid rgba(102, 217, 255, 0.22)',
+          background: 'rgba(165, 180, 252, 0.08)', border: '1px solid rgba(165, 180, 252, 0.22)',
           display: 'grid', placeItems: 'center',
         }}>
           <Sigma size={24} color={C.purple} style={{ opacity: 0.7 }} />
@@ -213,8 +213,8 @@ function CollectedFormulas({ formulas, onReload }: { formulas: TwinFormula[]; on
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
             <span style={{
               fontSize: 10, fontWeight: 700, padding: '4px 10px', borderRadius: 999,
-              background: 'rgba(102, 217, 255, 0.14)', color: C.purpleLite,
-              border: '1px solid rgba(102, 217, 255, 0.3)',
+              background: 'rgba(165, 180, 252, 0.14)', color: C.purpleLite,
+              border: '1px solid rgba(165, 180, 252, 0.3)',
               textTransform: 'uppercase', letterSpacing: 1.4,
             }}>{subject}</span>
             <span style={{ fontSize: 11, color: C.textFaint }}>{items.length} formula{items.length === 1 ? '' : 's'}</span>
@@ -232,11 +232,11 @@ function TwinFormulaCard({ f }: { f: TwinFormula }) {
   const [copied, setCopied] = useState(false)
   return (
     <motion.div
-      whileHover={{ y: -2, borderColor: 'rgba(102, 217, 255, 0.18)', boxShadow: '0 8px 22px rgba(79, 124, 255, 0.01)' }}
+      whileHover={{ y: -2, borderColor: 'rgba(165, 180, 252, 0.18)', boxShadow: '0 8px 22px rgba(124, 107, 246, 0.01)' }}
       style={{
         background: `linear-gradient(135deg, ${C.panel2} 0%, ${C.bg} 100%)`,
         borderRadius: 11, padding: '14px 14px',
-        border: `1px solid rgba(102, 217, 255, 0.18)`,
+        border: `1px solid rgba(165, 180, 252, 0.18)`,
         transition: 'all 0.2s',
       }}
     >
@@ -334,8 +334,8 @@ function SheetsView({ sheets, loading, selected, setSelected, showForm, setShowF
               style={{
                 padding: '10px 12px', borderRadius: 8, marginBottom: 4,
                 cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8,
-                background: (selected?.id === s.id || selected?._id === s._id) ? 'rgba(102, 217, 255, 0.10)' : 'transparent',
-                border: `1px solid ${(selected?.id === s.id || selected?._id === s._id) ? 'rgba(102, 217, 255, 0.35)' : 'transparent'}`,
+                background: (selected?.id === s.id || selected?._id === s._id) ? 'rgba(165, 180, 252, 0.10)' : 'transparent',
+                border: `1px solid ${(selected?.id === s.id || selected?._id === s._id) ? 'rgba(165, 180, 252, 0.35)' : 'transparent'}`,
                 transition: 'all 0.15s',
               }}>
               <BookOpen size={13} color={C.purpleLite} />
@@ -390,7 +390,7 @@ function SheetViewer({ sheet }: { sheet: any }) {
       </div>
 
       {sheet.sections?.map((section: any, i: number) => (
-        <div key={i} style={{ ...card, marginBottom: 10, padding: 0, overflow: 'hidden', borderColor: 'rgba(102, 217, 255, 0.18)' }}>
+        <div key={i} style={{ ...card, marginBottom: 10, padding: 0, overflow: 'hidden', borderColor: 'rgba(165, 180, 252, 0.18)' }}>
           <button onClick={() => toggle(i)} style={{
             width: '100%', display: 'flex', alignItems: 'center', gap: 10,
             padding: '14px 16px', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit',
@@ -432,7 +432,7 @@ function SheetViewer({ sheet }: { sheet: any }) {
       {(sheet.tips?.length > 0 || sheet.common_mistakes?.length > 0) && (
         <div className="mob-stack" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
           {sheet.tips?.length > 0 && (
-            <div style={{ ...card, borderColor: 'rgba(102, 217, 255, 0.3)' }}>
+            <div style={{ ...card, borderColor: 'rgba(165, 180, 252, 0.3)' }}>
               <div style={{ fontSize: 11, fontWeight: 700, color: C.purpleLite, textTransform: 'uppercase', letterSpacing: 1.4, marginBottom: 8 }}>Quick tips</div>
               {sheet.tips.map((t: string, i: number) => (
                 <div key={i} style={{ fontSize: 12, color: C.textDim, marginBottom: 6, paddingLeft: 14, position: 'relative' }}>

@@ -117,9 +117,9 @@ export default function MemoryBrain() {
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 24 }}>
         <div style={{
           width: 44, height: 44, borderRadius: 11,
-          background: 'linear-gradient(135deg, #4F7CFF, #4F7CFF)',
+          background: 'linear-gradient(135deg, #7C6BF6, #7C6BF6)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 0 20px rgba(79, 124, 255, 0.04)', flexShrink: 0,
+          boxShadow: '0 0 20px rgba(124, 107, 246, 0.04)', flexShrink: 0,
         }}>
           <Brain size={22} color="#fff" />
         </div>
@@ -143,7 +143,7 @@ export default function MemoryBrain() {
       </div>
 
       {err && (
-        <div style={{ marginBottom: 16, padding: '10px 14px', background: 'rgba(102, 217, 255, 0.08)', border: '1px solid rgba(102, 217, 255, 0.25)', borderRadius: 8, fontSize: 12, color: '#66D9FF' }}>
+        <div style={{ marginBottom: 16, padding: '10px 14px', background: 'rgba(165, 180, 252, 0.08)', border: '1px solid rgba(165, 180, 252, 0.25)', borderRadius: 8, fontSize: 12, color: '#A5B4FC' }}>
           {err}
         </div>
       )}
@@ -155,9 +155,9 @@ export default function MemoryBrain() {
       {data && (
         <>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 22 }}>
-            <Stat icon={Brain}          label="Memories"        value={data.total} color="#4F7CFF" />
+            <Stat icon={Brain}          label="Memories"        value={data.total} color="#7C6BF6" />
             <Stat icon={AlertTriangle}  label="Weak Areas"      value={data.weak.length} color="#A5B4FC" />
-            <Stat icon={Target}         label="Mistakes Logged" value={data.mistakes.length} color="#66D9FF" />
+            <Stat icon={Target}         label="Mistakes Logged" value={data.mistakes.length} color="#A5B4FC" />
             <Stat icon={Award}          label="Strong Areas"    value={data.strong.length} color="#A5B4FC" />
           </div>
 
@@ -165,10 +165,10 @@ export default function MemoryBrain() {
             <div style={{ ...card, padding: '60px 32px', textAlign: 'center' }}>
               <div style={{
                 width: 64, height: 64, borderRadius: 18, margin: '0 auto 18px',
-                background: 'rgba(79, 124, 255, 0.1)', border: '1px solid rgba(79, 124, 255, 0.3)',
+                background: 'rgba(124, 107, 246, 0.1)', border: '1px solid rgba(124, 107, 246, 0.3)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
-                <Sparkles size={28} color="#66D9FF" />
+                <Sparkles size={28} color="#A5B4FC" />
               </div>
               <h3 style={{ fontSize: 17, fontWeight: 700, color: '#fafafa', margin: 0, marginBottom: 8 }}>
                 Your memory is empty
@@ -215,11 +215,11 @@ export default function MemoryBrain() {
 
           {data.total > 0 && (
             <div style={{
-              marginTop: 24, padding: '12px 16px', background: 'rgba(102, 217, 255, 0.05)',
-              border: '1px solid rgba(102, 217, 255, 0.2)', borderRadius: 10,
+              marginTop: 24, padding: '12px 16px', background: 'rgba(165, 180, 252, 0.05)',
+              border: '1px solid rgba(165, 180, 252, 0.2)', borderRadius: 10,
               display: 'flex', alignItems: 'center', gap: 12,
             }}>
-              <Trash2 size={14} color="#66D9FF" />
+              <Trash2 size={14} color="#A5B4FC" />
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: 12, fontWeight: 600, color: '#fafafa' }}>Forget everything</div>
                 <div style={{ fontSize: 11, color: '#9CA3AF', marginTop: 2 }}>
@@ -228,8 +228,8 @@ export default function MemoryBrain() {
               </div>
               <button onClick={wipeAll} disabled={busy === 'all'} style={{
                 padding: '7px 14px', borderRadius: 7,
-                border: '1px solid rgba(102, 217, 255, 0.14)',
-                background: 'rgba(102, 217, 255, 0.1)', color: '#66D9FF',
+                border: '1px solid rgba(165, 180, 252, 0.14)',
+                background: 'rgba(165, 180, 252, 0.1)', color: '#A5B4FC',
                 fontFamily: 'inherit', fontSize: 12, fontWeight: 600,
                 cursor: busy === 'all' ? 'not-allowed' : 'pointer',
               }}>
@@ -316,7 +316,7 @@ function EntryList({ items, accent, empty, onForget, busy }: {
                 background: 'none', border: 'none', cursor: 'pointer', padding: 4,
                 color: '#4B5563', display: 'flex',
               }}
-              onMouseEnter={e => (e.currentTarget.style.color = '#66D9FF')}
+              onMouseEnter={e => (e.currentTarget.style.color = '#A5B4FC')}
               onMouseLeave={e => (e.currentTarget.style.color = '#4B5563')}>
               <X size={12} />
             </button>

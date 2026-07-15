@@ -215,7 +215,7 @@ function MobileTopBar({
       background: 'rgba(10, 13, 20, 0.9)',
       backdropFilter: 'blur(10px)',
       WebkitBackdropFilter: 'blur(10px)',
-      borderBottom: '1px solid rgba(102,217,255,0.12)',
+      borderBottom: '1px solid rgba(165,180,252,0.12)',
       display: 'flex', alignItems: 'center', gap: 8,
       padding: '0 14px',
     }}>
@@ -238,7 +238,7 @@ function MobileTopBar({
         }}>{pageTitle}</div>
         {isAdmin && profile?.school_name && (
           <div style={{
-            fontSize: 10, color: '#4F7CFF', fontWeight: 700,
+            fontSize: 10, color: '#7C6BF6', fontWeight: 700,
             textTransform: 'uppercase', letterSpacing: 1.2, marginTop: 2,
             overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
           }}>
@@ -253,8 +253,8 @@ function MobileTopBar({
           setTimeout(() => setCopied(false), 1400)
         }} style={{
           padding: '6px 9px', borderRadius: 7,
-          background: copied ? 'rgba(52,211,153,0.12)' : 'rgba(79, 124, 255, 0.10)',
-          border: `1px solid ${copied ? 'rgba(52,211,153,0.4)' : 'rgba(79, 124, 255, 0.3)'}`,
+          background: copied ? 'rgba(52,211,153,0.12)' : 'rgba(124, 107, 246, 0.10)',
+          border: `1px solid ${copied ? 'rgba(52,211,153,0.4)' : 'rgba(124, 107, 246, 0.3)'}`,
           color: copied ? '#34d399' : '#A5B4FC',
           fontFamily: 'Consolas, monospace', fontSize: 11, fontWeight: 700,
           cursor: 'pointer', flexShrink: 0,
@@ -314,9 +314,9 @@ function BottomNav({
         background: 'rgba(14, 14, 22, 0.9)',
         backdropFilter: 'blur(10px)',
         WebkitBackdropFilter: 'blur(10px)',
-        border: '1px solid rgba(102, 217, 255, 0.22)',
+        border: '1px solid rgba(165, 180, 252, 0.22)',
         borderRadius: 22,
-        boxShadow: '0 20px 60px rgba(0,0,0,0.55), 0 0 40px rgba(79, 124, 255, 0.01), inset 0 1px 0 rgba(255,255,255,0.05)',
+        boxShadow: '0 20px 60px rgba(0,0,0,0.55), 0 0 40px rgba(124, 107, 246, 0.01), inset 0 1px 0 rgba(255,255,255,0.05)',
         maxWidth: 360, width: '100%',
       }}>
         {items.map(item => {
@@ -342,10 +342,10 @@ function BottomNav({
                   transition={{ type: 'spring', stiffness: 380, damping: 32 }}
                   style={{
                     position: 'absolute', inset: 0,
-                    background: 'linear-gradient(135deg, rgba(165, 180, 252, 0.18), rgba(79, 124, 255, 0.16))',
+                    background: 'linear-gradient(135deg, rgba(165, 180, 252, 0.18), rgba(124, 107, 246, 0.16))',
                     border: '1px solid rgba(165, 180, 252, 0.30)',
                     borderRadius: 14,
-                    boxShadow: '0 4px 14px rgba(79, 124, 255, 0.03)',
+                    boxShadow: '0 4px 14px rgba(124, 107, 246, 0.03)',
                   }} />
               )}
               <Icon size={20} style={{ position: 'relative', strokeWidth: isActive ? 2.4 : 1.8 }} />
@@ -407,7 +407,7 @@ function MobileDrawer({
           position: 'fixed', top: 0, left: 0, bottom: 0, zIndex: 101,
           width: 'min(82vw, 320px)',
           background: 'linear-gradient(160deg, rgba(12,16,26,0.985) 0%, rgba(6,8,13,0.99) 100%)',
-          borderRight: '1px solid rgba(102,217,255,0.14)',
+          borderRight: '1px solid rgba(165,180,252,0.14)',
           paddingTop: 'env(safe-area-inset-top)',
           paddingBottom: 'env(safe-area-inset-bottom)',
           display: 'flex', flexDirection: 'column',
@@ -418,28 +418,28 @@ function MobileDrawer({
           padding: '12px 14px',
           borderRadius: 18,
           background: 'linear-gradient(150deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%)',
-          border: '1px solid rgba(102,217,255,0.16)',
+          border: '1px solid rgba(165,180,252,0.16)',
           boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06)',
           display: 'flex', alignItems: 'center', gap: 12,
         }}>
           <div style={{
             width: 46, height: 46, borderRadius: 12, flexShrink: 0,
             background: 'linear-gradient(150deg, #0B0F1C 0%, #05060A 100%)',
-            border: '1px solid rgba(102,217,255,0.30)',
+            border: '1px solid rgba(165,180,252,0.30)',
             display: 'grid', placeItems: 'center',
-            boxShadow: '0 6px 18px rgba(79,124,255,0.30), inset 0 1px 0 rgba(255,255,255,0.08)',
+            boxShadow: '0 6px 18px rgba(124,107,246,0.30), inset 0 1px 0 rgba(255,255,255,0.08)',
           }}>
             <img src="/kairo-mark.svg" alt="Kyno"
-              style={{ width: '74%', height: '74%', objectFit: 'contain', filter: 'drop-shadow(0 0 8px rgba(102,217,255,0.45))' }} />
+              style={{ width: '74%', height: '74%', objectFit: 'contain', filter: 'drop-shadow(0 0 8px rgba(165,180,252,0.45))' }} />
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{
               fontSize: 17, fontWeight: 700, color: '#F5F5F7',
               fontFamily: "'Space Grotesk', system-ui, sans-serif",
               letterSpacing: 0.2,
-              textShadow: '0 0 18px rgba(79,124,255,0.4)',
+              textShadow: '0 0 18px rgba(124,107,246,0.4)',
             }}>Kyno</div>
-            <div style={{ fontSize: 8.5, fontWeight: 600, color: 'rgba(102,217,255,0.6)', textTransform: 'uppercase', letterSpacing: 1.4 }}>
+            <div style={{ fontSize: 8.5, fontWeight: 600, color: 'rgba(165,180,252,0.6)', textTransform: 'uppercase', letterSpacing: 1.4 }}>
               Kairo Industries
             </div>
           </div>
@@ -476,10 +476,10 @@ function MobileDrawer({
                       onClick={() => go(item.to)}
                       style={{
                         width: '100%', padding: '11px 12px',
-                        background: isActive ? 'rgba(79, 124, 255, 0.14)' : 'transparent',
+                        background: isActive ? 'rgba(124, 107, 246, 0.14)' : 'transparent',
                         border: 'none', cursor: 'pointer',
                         display: 'flex', alignItems: 'center', gap: 12,
-                        color: isActive ? '#66D9FF' : '#d4d4d8',
+                        color: isActive ? '#A5B4FC' : '#d4d4d8',
                         fontFamily: 'inherit', fontSize: 14, fontWeight: isActive ? 700 : 500,
                         borderBottom: idx < group.items.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none',
                         WebkitTapHighlightColor: 'transparent',
@@ -489,15 +489,15 @@ function MobileDrawer({
                         width: 28, height: 28, borderRadius: 8, flexShrink: 0,
                         display: 'grid', placeItems: 'center',
                         background: isActive
-                          ? 'linear-gradient(135deg, #4F7CFF, #2046C2)'
-                          : 'rgba(102,217,255,0.08)',
-                        border: isActive ? 'none' : '1px solid rgba(102,217,255,0.14)',
+                          ? 'linear-gradient(135deg, #7C6BF6, #4A2FA8)'
+                          : 'rgba(165,180,252,0.08)',
+                        border: isActive ? 'none' : '1px solid rgba(165,180,252,0.14)',
                         color: isActive ? '#fff' : '#A5B4FC',
                       }}>
                         <Icon size={15} />
                       </span>
                       <span style={{ flex: 1, textAlign: 'left' }}>{item.label}</span>
-                      <ChevronRight size={14} style={{ color: isActive ? '#66D9FF' : '#3a3f4a' }} />
+                      <ChevronRight size={14} style={{ color: isActive ? '#A5B4FC' : '#3a3f4a' }} />
                     </motion.button>
                   )
                 })}

@@ -44,14 +44,14 @@ const PARTS: PartCatalog = {
     related: ['Systemic arteries', 'Blood pressure'],
   },
   pulmonary_artery: {
-    id: 'pulmonary_artery', label: 'Pulmonary Artery', color: '#66D9FF',
+    id: 'pulmonary_artery', label: 'Pulmonary Artery', color: '#A5B4FC',
     function: 'Carries oxygen-poor blood from the RV to the lungs to pick up oxygen.',
     whyItMatters: "The ONLY artery in your body that carries deoxygenated blood. Most arteries carry oxygen.",
     analogy: "The lung-bound exit ramp.",
     related: ['Pulmonary circulation', 'Gas exchange'],
   },
   vena_cava: {
-    id: 'vena_cava', label: 'Vena Cava', color: '#60a5fa',
+    id: 'vena_cava', label: 'Vena Cava', color: '#A78BFA',
     function: 'The two large veins (superior + inferior) that return deoxygenated blood from the body to the right atrium.',
     whyItMatters: "Collects blood from every cell in your body — about 5 litres returning to the heart per minute at rest.",
     analogy: "The body's main return pipe.",
@@ -270,17 +270,17 @@ function PulmonaryArtery({ lit, onHover, onSelect }: { lit: boolean; onHover: an
       onPointerOut={() => { onHover(null); document.body.style.cursor='default' }}
       onClick={(e: ThreeEvent<MouseEvent>) => { e.stopPropagation(); onSelect('pulmonary_artery') }}>
       <meshStandardMaterial
-        color="#66D9FF" roughness={0.4}
-        emissive={lit ? '#66D9FF' : '#000'} emissiveIntensity={lit ? 0.6 : 0.1}/>
+        color="#A5B4FC" roughness={0.4}
+        emissive={lit ? '#A5B4FC' : '#000'} emissiveIntensity={lit ? 0.6 : 0.1}/>
     </mesh>
   )
 }
 
 function VenaCava({ lit, onHover, onSelect }: { lit: boolean; onHover: any; onSelect: any }) {
   const matProps = {
-    color: '#60a5fa',
+    color: '#A78BFA',
     roughness: 0.45,
-    emissive: lit ? '#60a5fa' : '#000',
+    emissive: lit ? '#A78BFA' : '#000',
     emissiveIntensity: lit ? 0.5 : 0.08,
   } as any
   const onOver  = (e: ThreeEvent<PointerEvent>) => { e.stopPropagation(); onHover('vena_cava'); document.body.style.cursor='pointer' }

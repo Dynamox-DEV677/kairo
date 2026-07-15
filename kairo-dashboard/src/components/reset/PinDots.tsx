@@ -30,13 +30,13 @@ export default function PinDots({ filled, length = 6, shake = false, large = fal
             style={{
               width: size, height: size, borderRadius: '50%',
               background: active
-                ? 'radial-gradient(circle at 30% 30%, #DBE7FF, #4F7CFF 80%)'
+                ? 'radial-gradient(circle at 30% 30%, #DBE7FF, #7C6BF6 80%)'
                 : 'transparent',
               border: active
                 ? '1px solid rgba(165, 180, 252, 0.7)'
                 : `1.5px solid ${RC.border}`,
               boxShadow: active
-                ? '0 0 14px rgba(102, 217, 255, 0.6), inset 0 0 6px rgba(255,255,255,0.25)'
+                ? '0 0 14px rgba(165, 180, 252, 0.6), inset 0 0 6px rgba(255,255,255,0.25)'
                 : 'none',
               transition: 'background 0.18s, border-color 0.18s',
             }}

@@ -57,7 +57,7 @@ export default function ResetPasswordPage({ onDone }: Props) {
       <div style={{
         position: 'fixed', top: '15%', left: '50%', transform: 'translateX(-50%)',
         width: 600, height: 600, borderRadius: '50%',
-        background: 'radial-gradient(circle, rgba(79, 124, 255, 0.10) 0%, transparent 70%)',
+        background: 'radial-gradient(circle, rgba(124, 107, 246, 0.10) 0%, transparent 70%)',
         pointerEvents: 'none',
       }} />
 
@@ -67,10 +67,10 @@ export default function ResetPasswordPage({ onDone }: Props) {
             style={{
               width: 64, height: 64, borderRadius: 16, objectFit: 'contain',
               margin: '0 auto 14px', display: 'block',
-              filter: 'drop-shadow(0 0 20px rgba(79, 124, 255, 0.03))',
+              filter: 'drop-shadow(0 0 20px rgba(124, 107, 246, 0.03))',
             }} />
           <h1 style={{ fontSize: 24, fontWeight: 800, color: '#fafafa', margin: 0, letterSpacing: '-0.5px' }}>kairo</h1>
-          <p style={{ fontSize: 11, color: '#4F7CFF', fontWeight: 700, letterSpacing: 4, marginTop: 4, textTransform: 'uppercase' }}>
+          <p style={{ fontSize: 11, color: '#7C6BF6', fontWeight: 700, letterSpacing: 4, marginTop: 4, textTransform: 'uppercase' }}>
             Password Reset
           </p>
         </div>
@@ -88,8 +88,8 @@ export default function ResetPasswordPage({ onDone }: Props) {
                 transition={{ type: 'spring', stiffness: 280, damping: 26 }}>
                 <div style={{
                   width: 52, height: 52, borderRadius: 14, margin: '0 auto 14px',
-                  background: 'linear-gradient(135deg, rgba(102, 217, 255, 0.18), rgba(79, 124, 255, 0.08))',
-                  border: '1px solid rgba(102, 217, 255, 0.35)',
+                  background: 'linear-gradient(135deg, rgba(165, 180, 252, 0.18), rgba(124, 107, 246, 0.08))',
+                  border: '1px solid rgba(165, 180, 252, 0.35)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}>
                   <CheckCircle2 size={26} color="#A5B4FC" />
@@ -152,8 +152,8 @@ export default function ResetPasswordPage({ onDone }: Props) {
                   <div role="alert" style={{
                     display: 'flex', alignItems: 'flex-start', gap: 8,
                     padding: '10px 12px', borderRadius: 9,
-                    background: 'rgba(102, 217, 255, 0.08)',
-                    border: '1px solid rgba(102, 217, 255, 0.25)',
+                    background: 'rgba(165, 180, 252, 0.08)',
+                    border: '1px solid rgba(165, 180, 252, 0.25)',
                     color: '#A5B4FC', fontSize: 12, lineHeight: 1.55,
                     marginTop: 4, marginBottom: 12,
                   }}>
@@ -225,9 +225,9 @@ const eyeBtn: React.CSSProperties = {
 
 const ctaStyle: React.CSSProperties = {
   width: '100%', marginTop: 6, padding: '13px', borderRadius: 11, border: 'none',
-  background: 'linear-gradient(135deg, #4F7CFF, #2046C2)',
+  background: 'linear-gradient(135deg, #7C6BF6, #4A2FA8)',
   color: '#fff', fontFamily: FONT, fontSize: 14, fontWeight: 700,
   cursor: 'pointer',
-  boxShadow: '0 0 22px rgba(79, 124, 255, 0.03)',
+  boxShadow: '0 0 22px rgba(124, 107, 246, 0.03)',
   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
 }

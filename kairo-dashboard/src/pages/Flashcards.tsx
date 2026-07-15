@@ -27,18 +27,18 @@ const C = {
   textDim:   '#B1B5BA',
   textFaint: '#9CA3AF',
   textGhost: '#6B7280',
-  purple:    '#66D9FF',
-  purpleHi:  '#4F7CFF',
-  purpleDeep:'#2046C2',
+  purple:    '#A5B4FC',
+  purpleHi:  '#7C6BF6',
+  purpleDeep:'#4A2FA8',
   purpleLite:'#A5B4FC',
   purpleSoft:'#DBE7FF',
   purpleDark:'#0B1530',
 }
 
 const GRAD = {
-  pill:      'linear-gradient(135deg, #A5B4FC 0%, #4F7CFF 60%, #0B1530 100%)',
-  pillSoft:  'linear-gradient(135deg, #4F7CFF 0%, #2046C2 100%)',
-  text:      'linear-gradient(90deg, #A5B4FC 0%, #66D9FF 50%, #4F7CFF 100%)',
+  pill:      'linear-gradient(135deg, #A5B4FC 0%, #7C6BF6 60%, #0B1530 100%)',
+  pillSoft:  'linear-gradient(135deg, #7C6BF6 0%, #4A2FA8 100%)',
+  text:      'linear-gradient(90deg, #A5B4FC 0%, #A5B4FC 50%, #7C6BF6 100%)',
 }
 
 interface Card { front: string; back: string }
@@ -142,8 +142,8 @@ export default function Flashcards() {
       width: '100%', height: '100%', overflowY: 'auto',
       background: C.bg,
       backgroundImage:
-        `radial-gradient(at 12% 0%, rgba(79, 124, 255, 0.10) 0%, transparent 36%),
-         radial-gradient(at 88% 100%, rgba(32, 70, 194, 0.10) 0%, transparent 42%)`,
+        `radial-gradient(at 12% 0%, rgba(124, 107, 246, 0.10) 0%, transparent 36%),
+         radial-gradient(at 88% 100%, rgba(74, 47, 168, 0.10) 0%, transparent 42%)`,
       padding: 'clamp(14px, 4vw, 24px) clamp(14px, 4vw, 32px) 60px',
     }}>
       <style>{`
@@ -168,7 +168,7 @@ export default function Flashcards() {
               <div style={{
                 position: 'absolute', top: -40, right: -40,
                 width: 220, height: 220, borderRadius: '50%',
-                background: 'radial-gradient(closest-side, rgba(79, 124, 255, 0.32), transparent 70%)',
+                background: 'radial-gradient(closest-side, rgba(124, 107, 246, 0.32), transparent 70%)',
                 filter: 'blur(40px)', animation: 'fc-glow 6s ease-in-out infinite',
                 pointerEvents: 'none',
               }} />
@@ -187,7 +187,7 @@ export default function Flashcards() {
                     value={topic}
                     onChange={e => setTopic(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && generate()}
-                    onFocus={e => { (e.target as HTMLInputElement).style.borderColor = C.purple; (e.target as HTMLInputElement).style.boxShadow = `0 0 0 3px rgba(102, 217, 255, 0.01)` }}
+                    onFocus={e => { (e.target as HTMLInputElement).style.borderColor = C.purple; (e.target as HTMLInputElement).style.boxShadow = `0 0 0 3px rgba(165, 180, 252, 0.01)` }}
                     onBlur={e =>  { (e.target as HTMLInputElement).style.borderColor = C.borderSoft; (e.target as HTMLInputElement).style.boxShadow = 'none' }}
                   />
                   <motion.button
@@ -201,7 +201,7 @@ export default function Flashcards() {
                       color: topic.trim() ? '#000' : C.textGhost,
                       fontFamily: 'inherit', fontSize: 14, fontWeight: 800,
                       cursor: topic.trim() ? 'pointer' : 'not-allowed',
-                      boxShadow: topic.trim() ? '0 8px 24px rgba(79, 124, 255, 0.32)' : 'none',
+                      boxShadow: topic.trim() ? '0 8px 24px rgba(124, 107, 246, 0.32)' : 'none',
                       flexShrink: 0, transition: 'all 0.2s', letterSpacing: 0.2,
                     }}>
                     {loading ? <RotateCcw size={15} className="fc-spin" /> : <Sparkles size={15} />}
@@ -213,13 +213,13 @@ export default function Flashcards() {
                   <span style={{ fontSize: 10, color: C.textFaint, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.2, marginRight: 4, alignSelf: 'center' }}>Try:</span>
                   {QUICK_CHIPS.map(chip => (
                     <motion.button key={chip}
-                      whileHover={{ y: -2, borderColor: 'rgba(102, 217, 255, 0.18)' }}
+                      whileHover={{ y: -2, borderColor: 'rgba(165, 180, 252, 0.18)' }}
                       whileTap={{ scale: 0.95 }}
                       onClick={() => generate(chip)}
                       style={{
                         padding: '6px 12px', borderRadius: 999,
-                        background: 'rgba(102, 217, 255, 0.05)',
-                        border: `1px solid rgba(102, 217, 255, 0.18)`,
+                        background: 'rgba(165, 180, 252, 0.05)',
+                        border: `1px solid rgba(165, 180, 252, 0.18)`,
                         color: C.purpleLite, fontSize: 11.5, fontWeight: 600,
                         fontFamily: 'inherit', cursor: 'pointer',
                       }}>
@@ -244,7 +244,7 @@ export default function Flashcards() {
             {error && (
               <div style={{
                 marginTop: 16, padding: '12px 14px', borderRadius: 10,
-                background: 'rgba(102, 217, 255, 0.05)', border: '1px solid rgba(102, 217, 255, 0.3)',
+                background: 'rgba(165, 180, 252, 0.05)', border: '1px solid rgba(165, 180, 252, 0.3)',
                 color: C.purpleLite, fontSize: 13,
               }}>
                 {error}
@@ -280,7 +280,7 @@ function Header({ mode, setMode, stats }: { mode: 'generate' | 'review'; setMode
         <div style={{
           width: 52, height: 52, borderRadius: 14,
           background: GRAD.pill, display: 'grid', placeItems: 'center',
-          boxShadow: '0 14px 38px rgba(79, 124, 255, 0.03)',
+          boxShadow: '0 14px 38px rgba(124, 107, 246, 0.03)',
         }}>
           <BookMarked size={24} color="#000" />
         </div>
@@ -303,8 +303,8 @@ function Header({ mode, setMode, stats }: { mode: 'generate' | 'review'; setMode
       </div>
       <div style={{
         display: 'inline-flex', padding: 3, borderRadius: 12,
-        background: 'rgba(102, 217, 255, 0.05)',
-        border: '1px solid rgba(102, 217, 255, 0.22)',
+        background: 'rgba(165, 180, 252, 0.05)',
+        border: '1px solid rgba(165, 180, 252, 0.22)',
       }}>
         <ModeBtn active={mode === 'generate'} onClick={() => setMode('generate')}>
           <Sparkles size={12} /> Generate
@@ -327,7 +327,7 @@ function ModeBtn({ active, onClick, children }: { active: boolean; onClick: () =
       color: active ? '#fff' : C.textDim,
       fontFamily: 'inherit', fontSize: 12, fontWeight: 700,
       cursor: 'pointer', letterSpacing: 0.3,
-      boxShadow: active ? '0 4px 14px rgba(79, 124, 255, 0.35)' : 'none',
+      boxShadow: active ? '0 4px 14px rgba(124, 107, 246, 0.35)' : 'none',
       transition: 'all 0.18s',
     }}>{children}</button>
   )
@@ -390,12 +390,12 @@ function SuggestedDeckCard({ title, subject, severity, count, onClick }: { title
   return (
     <motion.button
       onClick={onClick}
-      whileHover={{ y: -4, boxShadow: `0 14px 34px rgba(79, 124, 255, 0.03)` }}
+      whileHover={{ y: -4, boxShadow: `0 14px 34px rgba(124, 107, 246, 0.03)` }}
       whileTap={{ scale: 0.97 }}
       style={{
         textAlign: 'left', padding: '16px 18px', borderRadius: 14,
         background: `linear-gradient(135deg, ${C.panel} 0%, ${C.bg} 100%)`,
-        border: `1px solid rgba(102, 217, 255, ${0.18 + intensity * 0.3})`,
+        border: `1px solid rgba(165, 180, 252, ${0.18 + intensity * 0.3})`,
         cursor: 'pointer', fontFamily: 'inherit', color: 'inherit',
         position: 'relative', overflow: 'hidden',
       }}
@@ -421,7 +421,7 @@ function SuggestedDeckCard({ title, subject, severity, count, onClick }: { title
         <div style={{
           display: 'inline-flex', alignItems: 'center', gap: 5,
           padding: '6px 11px', borderRadius: 8,
-          background: 'rgba(102, 217, 255, 0.12)', border: `1px solid rgba(102, 217, 255, 0.3)`,
+          background: 'rgba(165, 180, 252, 0.12)', border: `1px solid rgba(165, 180, 252, 0.3)`,
           fontSize: 11, color: C.purpleLite, fontWeight: 700, letterSpacing: 0.3,
         }}>
           Generate 10 cards <ChevronsRight size={12} />
@@ -453,7 +453,7 @@ function DeckViewer({ cards, idx, flipped, onFlip, onPrev, onNext }: {
         <button onClick={onPrev} disabled={idx === 0} style={{ ...navBtn, opacity: idx === 0 ? 0.35 : 1 }}>
           <ChevronLeft size={14} /> Previous
         </button>
-        <button onClick={onNext} disabled={idx >= cards.length - 1} style={{ ...navBtn, opacity: idx >= cards.length - 1 ? 0.35 : 1, borderColor: 'rgba(102, 217, 255, 0.14)', color: C.purpleLite }}>
+        <button onClick={onNext} disabled={idx >= cards.length - 1} style={{ ...navBtn, opacity: idx >= cards.length - 1 ? 0.35 : 1, borderColor: 'rgba(165, 180, 252, 0.14)', color: C.purpleLite }}>
           Next <ChevronRight size={14} />
         </button>
       </div>
@@ -502,8 +502,8 @@ function Face({ side, text, active }: { side: 'front' | 'back'; text: string; ac
       background: side === 'front'
         ? `linear-gradient(135deg, ${C.panel} 0%, ${C.bg} 100%)`
         : `linear-gradient(135deg, ${C.purpleDark} 0%, ${C.bg} 100%)`,
-      border: `1px solid ${side === 'front' ? 'rgba(102, 217, 255, 0.3)' : 'rgba(165, 180, 252, 0.5)'}`,
-      boxShadow: '0 24px 60px rgba(79, 124, 255, 0.01), inset 0 0 60px rgba(79, 124, 255, 0.01)',
+      border: `1px solid ${side === 'front' ? 'rgba(165, 180, 252, 0.3)' : 'rgba(165, 180, 252, 0.5)'}`,
+      boxShadow: '0 24px 60px rgba(124, 107, 246, 0.01), inset 0 0 60px rgba(124, 107, 246, 0.01)',
       padding: '40px 38px',
       display: 'grid', placeItems: 'center', textAlign: 'center',
       color: C.text,
@@ -572,7 +572,7 @@ function RecentDecks({ deck }: { deck: TwinCard[] }) {
       {byTopic.map(([topic, cards]) => (
         <motion.div
           key={topic}
-          whileHover={{ y: -3, borderColor: 'rgba(102, 217, 255, 0.14)', boxShadow: '0 10px 28px rgba(79, 124, 255, 0.01)' }}
+          whileHover={{ y: -3, borderColor: 'rgba(165, 180, 252, 0.14)', boxShadow: '0 10px 28px rgba(124, 107, 246, 0.01)' }}
           style={{
             padding: '14px 16px', borderRadius: 12,
             background: C.panel, border: `1px solid ${C.borderSoft}`,
@@ -610,7 +610,7 @@ function ReviewDeck({ deck, onReload }: { deck: TwinCard[]; onReload: () => void
       }}>
         <div style={{
           width: 56, height: 56, borderRadius: 14, margin: '0 auto 16px',
-          background: 'rgba(102, 217, 255, 0.08)', border: '1px solid rgba(102, 217, 255, 0.22)',
+          background: 'rgba(165, 180, 252, 0.08)', border: '1px solid rgba(165, 180, 252, 0.22)',
           display: 'grid', placeItems: 'center',
         }}>
           <Library size={26} color={C.purple} style={{ opacity: 0.7 }} />

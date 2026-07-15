@@ -2,7 +2,7 @@
 const PROXY_URL = '/api/ai/chat'
 
 export const FREE_MODELS = [
-  { id: 'llama-3.3-70b-versatile', name: 'Llama 3.3 70B',    provider: 'Groq', color: '#66D9FF', badge: 'Smart' },
+  { id: 'llama-3.3-70b-versatile', name: 'Llama 3.3 70B',    provider: 'Groq', color: '#A5B4FC', badge: 'Smart' },
   { id: 'llama-3.1-8b-instant',    name: 'Llama 8B Instant', provider: 'Groq', color: '#34d399', badge: 'Fast' },
 ]
 

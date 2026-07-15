@@ -19,11 +19,11 @@ const C = {
   textFaint: '#9CA3AF',
   purpleLite:'#DBE7FF',
   purpleSoft:'#A5B4FC',
-  purple:    '#66D9FF',
-  purpleHi:  '#4F7CFF',
-  purpleDeep:'#2046C2',
+  purple:    '#A5B4FC',
+  purpleHi:  '#7C6BF6',
+  purpleDeep:'#4A2FA8',
 }
-const GRAD_PILL = 'linear-gradient(135deg, #4F7CFF 0%, #2046C2 100%)'
+const GRAD_PILL = 'linear-gradient(135deg, #7C6BF6 0%, #4A2FA8 100%)'
 const FONT = "'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif"
 
 function normalizeMath(md: string): string {
@@ -79,8 +79,8 @@ export default function MistakeAnalysis() {
       width: '100%', height: '100%', overflowY: 'auto', WebkitOverflowScrolling: 'touch',
       background: C.bg,
       backgroundImage:
-        `radial-gradient(at 8% 0%,  rgba(79, 124, 255, 0.08) 0%, transparent 40%),
-         radial-gradient(at 92% 100%, rgba(32, 70, 194, 0.10) 0%, transparent 45%)`,
+        `radial-gradient(at 8% 0%,  rgba(124, 107, 246, 0.08) 0%, transparent 40%),
+         radial-gradient(at 92% 100%, rgba(74, 47, 168, 0.10) 0%, transparent 45%)`,
       color: C.text, fontFamily: FONT,
       padding: '24px 28px 80px',
     }}>
@@ -131,7 +131,7 @@ function Header({ onAddManual }: { onAddManual: () => void }) {
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
         <div style={{
           width: 46, height: 46, borderRadius: 13, flexShrink: 0, background: GRAD_PILL,
-          display: 'grid', placeItems: 'center', boxShadow: '0 10px 30px rgba(79, 124, 255, 0.03)',
+          display: 'grid', placeItems: 'center', boxShadow: '0 10px 30px rgba(124, 107, 246, 0.03)',
         }}>
           <Activity size={22} color="#fff" />
         </div>
@@ -151,8 +151,8 @@ function Header({ onAddManual }: { onAddManual: () => void }) {
       <button onClick={onAddManual} style={{
         display: 'inline-flex', alignItems: 'center', gap: 8,
         padding: '9px 14px', borderRadius: 10,
-        background: 'rgba(79, 124, 255, 0.08)',
-        border: '1px solid rgba(102, 217, 255, 0.14)',
+        background: 'rgba(124, 107, 246, 0.08)',
+        border: '1px solid rgba(165, 180, 252, 0.14)',
         color: C.text, fontFamily: 'inherit', fontWeight: 600, fontSize: 12,
         cursor: 'pointer',
       }}>
@@ -167,15 +167,15 @@ function Kpi({ label, value, hint, highlight }: { label: string; value: number; 
   return (
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} style={{
       background: C.panel,
-      border: `1px solid ${highlight ? 'rgba(102, 217, 255, 0.45)' : C.border}`,
+      border: `1px solid ${highlight ? 'rgba(165, 180, 252, 0.45)' : C.border}`,
       borderRadius: 14, padding: '16px 18px', position: 'relative', overflow: 'hidden',
-      boxShadow: highlight ? '0 0 32px rgba(79, 124, 255, 0.18)' : 'none',
+      boxShadow: highlight ? '0 0 32px rgba(124, 107, 246, 0.18)' : 'none',
     }}>
       {highlight && (
         <div style={{
           position: 'absolute', top: -30, right: -30,
           width: 130, height: 130, borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(79, 124, 255, 0.30) 0%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(124, 107, 246, 0.30) 0%, transparent 70%)',
           pointerEvents: 'none', filter: 'blur(10px)',
         }} />
       )}
@@ -211,8 +211,8 @@ function Heatmap({ rows }: { rows: MistakeRow[] }) {
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
               {items.map(it => {
                 const sev = it.severity
-                const bg = `rgba(102, 217, 255, ${0.10 + sev * 0.45})`
-                const bd = `rgba(102, 217, 255, ${0.3  + sev * 0.45})`
+                const bg = `rgba(165, 180, 252, ${0.10 + sev * 0.45})`
+                const bd = `rgba(165, 180, 252, ${0.3  + sev * 0.45})`
                 return (
                   <span key={it.topic} style={{
                     padding: '5px 9px', borderRadius: 7,
@@ -298,10 +298,10 @@ function AiResultModal({ title, body, loading, onClose }: {
         style={{
           width: '100%', maxWidth: 620,
           background: C.panel,
-          border: '1px solid rgba(102, 217, 255, 0.35)',
+          border: '1px solid rgba(165, 180, 252, 0.35)',
           borderRadius: 18, padding: 24,
           color: C.text, fontFamily: 'inherit',
-          boxShadow: '0 24px 60px rgba(79, 124, 255, 0.03)',
+          boxShadow: '0 24px 60px rgba(124, 107, 246, 0.03)',
           position: 'relative', maxHeight: '88vh', overflowY: 'auto',
         }}>
         <button onClick={onClose} aria-label="Close" style={{
@@ -387,10 +387,10 @@ function AddMistakeModal({ onClose, onSaved }: { onClose: () => void; onSaved: (
         style={{
           width: '100%', maxWidth: 460,
           background: C.panel,
-          border: '1px solid rgba(102, 217, 255, 0.35)',
+          border: '1px solid rgba(165, 180, 252, 0.35)',
           borderRadius: 18, padding: 22,
           color: C.text, fontFamily: 'inherit',
-          boxShadow: '0 24px 60px rgba(79, 124, 255, 0.03)',
+          boxShadow: '0 24px 60px rgba(124, 107, 246, 0.03)',
         }}>
         <h3 style={{ margin: 0, fontSize: 18, fontWeight: 800 }}>Log a mistake</h3>
         <p style={{ margin: '4px 0 14px', fontSize: 12.5, color: C.textFaint }}>

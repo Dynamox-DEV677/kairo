@@ -11,7 +11,7 @@ import { listNotifications, markAllRead, timeAgo, type KynoNotification } from '
 const MODELS = [
   { id: 'openai/gpt-oss-20b:free',                            name: 'GPT OSS 20B',          provider: 'OpenAI', users: 3241, color: '#34d399', badge: 'Default' },
   { id: 'openai/gpt-oss-120b:free',                           name: 'GPT OSS 120B',         provider: 'OpenAI', users: 1872, color: '#A5B4FC', badge: 'Smart' },
-  { id: 'meta-llama/llama-3.3-70b-instruct:free',             name: 'Llama 3.3 70B',        provider: 'Meta',   users: 5104, color: '#66D9FF', badge: '' },
+  { id: 'meta-llama/llama-3.3-70b-instruct:free',             name: 'Llama 3.3 70B',        provider: 'Meta',   users: 5104, color: '#A5B4FC', badge: '' },
   { id: 'nvidia/nemotron-3-super-120b-a12b:free',             name: 'Nemotron Super 120B',  provider: 'Nvidia', users: 987,  color: '#76b900', badge: 'New' },
   { id: 'google/gemma-4-31b-it:free',                         name: 'Gemma 4 31B',          provider: 'Google', users: 2398, color: '#C7D2E8', badge: '' },
   { id: 'qwen/qwen3-coder:free',                              name: 'Qwen3 Coder',          provider: 'Alibaba',users: 2761, color: '#f472b6', badge: 'Huge' },
@@ -112,12 +112,12 @@ export default function TopBar({ title, onModelChange, profile, modelLocked, mod
       flexShrink: 0,
       margin: '10px 12px 0',
       borderRadius: 22,
-      border: isAdmin ? '1px solid rgba(79, 124, 255, 0.25)' : '1px solid rgba(255, 255, 255, 0.05)',
+      border: isAdmin ? '1px solid rgba(124, 107, 246, 0.25)' : '1px solid rgba(255, 255, 255, 0.05)',
       display: 'flex', alignItems: 'center',
       padding: '8px 16px', gap: 10,
       minHeight: 56,
       background: isAdmin
-        ? 'linear-gradient(90deg, rgba(79, 124, 255, 0.06) 0%, rgba(20, 24, 35, 0.55) 60%)'
+        ? 'linear-gradient(90deg, rgba(124, 107, 246, 0.06) 0%, rgba(20, 24, 35, 0.55) 60%)'
         : 'rgba(255, 255, 255, 0.035)',
       backdropFilter: 'blur(24px) saturate(160%)',
       WebkitBackdropFilter: 'blur(24px) saturate(160%)',
@@ -130,9 +130,9 @@ export default function TopBar({ title, onModelChange, profile, modelLocked, mod
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
             <div style={{
               width: 28, height: 28, borderRadius: 7,
-              background: 'linear-gradient(135deg, #4F7CFF, #4F7CFF)',
+              background: 'linear-gradient(135deg, #7C6BF6, #7C6BF6)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              boxShadow: '0 0 14px rgba(79, 124, 255, 0.04)',
+              boxShadow: '0 0 14px rgba(124, 107, 246, 0.04)',
             }}>
               {profile?.school_logo_url
                 ? <img src={profile.school_logo_url} alt="" style={{ width: '100%', height: '100%', borderRadius: 6, objectFit: 'cover' }} />
@@ -157,8 +157,8 @@ export default function TopBar({ title, onModelChange, profile, modelLocked, mod
               style={{
                 display: 'flex', alignItems: 'center', gap: 6,
                 padding: '5px 10px', borderRadius: 7,
-                background: copied ? 'rgba(52,211,153,0.12)' : 'rgba(79, 124, 255, 0.08)',
-                border: `1px solid ${copied ? 'rgba(52,211,153,0.35)' : 'rgba(79, 124, 255, 0.25)'}`,
+                background: copied ? 'rgba(52,211,153,0.12)' : 'rgba(124, 107, 246, 0.08)',
+                border: `1px solid ${copied ? 'rgba(52,211,153,0.35)' : 'rgba(124, 107, 246, 0.25)'}`,
                 cursor: 'pointer', fontFamily: 'monospace', fontSize: 12,
                 color: copied ? '#34d399' : '#A5B4FC', fontWeight: 700,
                 letterSpacing: 0.5, transition: 'all 0.15s',
@@ -342,14 +342,14 @@ export default function TopBar({ title, onModelChange, profile, modelLocked, mod
         <div className="animate-streak" style={{
           display: 'flex', alignItems: 'center', gap: 6,
           padding: '6px 12px', borderRadius: 999,
-          background: 'rgba(79, 124, 255, 0.08)',
-          border: '1px solid rgba(79, 124, 255, 0.22)',
+          background: 'rgba(124, 107, 246, 0.08)',
+          border: '1px solid rgba(124, 107, 246, 0.22)',
           backdropFilter: 'blur(10px)',
           WebkitBackdropFilter: 'blur(10px)',
           transition: 'transform 0.22s cubic-bezier(0.22, 1, 0.36, 1)',
         }}>
-          <Flame size={13} color="#4F7CFF" />
-          <span style={{ fontSize: 12, fontWeight: 700, color: '#4F7CFF' }}>{game.streak}</span>
+          <Flame size={13} color="#7C6BF6" />
+          <span style={{ fontSize: 12, fontWeight: 700, color: '#7C6BF6' }}>{game.streak}</span>
           <span style={{ fontSize: 11, color: '#6B7280' }}>day streak</span>
         </div>
 
@@ -383,7 +383,7 @@ export default function TopBar({ title, onModelChange, profile, modelLocked, mod
               <span style={{
                 position: 'absolute', top: 7, right: 7,
                 width: 6, height: 6, borderRadius: '50%',
-                background: '#4F7CFF', boxShadow: '0 0 6px #4F7CFF',
+                background: '#7C6BF6', boxShadow: '0 0 6px #7C6BF6',
               }} />
             )}
           </motion.button>

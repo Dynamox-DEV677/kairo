@@ -16,7 +16,7 @@ const TABS = [
 const card = { background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(14px) saturate(140%)', WebkitBackdropFilter: 'blur(14px) saturate(140%)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14, padding: 20 }
 const inp  = { background: '#0E1117', border: '1px solid #1f2532', borderRadius: 8, padding: '9px 12px', fontSize: 13, color: '#fafafa', fontFamily: 'inherit', outline: 'none', width: '100%' } as React.CSSProperties
 const label = { fontSize: 11, color: '#9CA3AF', display: 'block', marginBottom: 5, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.8 } as React.CSSProperties
-const btn = (active = true) => ({ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', borderRadius: 9, border: 'none', background: active ? 'linear-gradient(135deg,#4F7CFF,#4F7CFF)' : '#1a1f2e', color: active ? '#fff' : '#6B7280', fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: active ? 'pointer' : 'not-allowed' } as React.CSSProperties)
+const btn = (active = true) => ({ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', borderRadius: 9, border: 'none', background: active ? 'linear-gradient(135deg,#7C6BF6,#7C6BF6)' : '#1a1f2e', color: active ? '#fff' : '#6B7280', fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: active ? 'pointer' : 'not-allowed' } as React.CSSProperties)
 
 export default function FeeReminder() {
   const [tab, setTab] = useState('stats')
@@ -35,7 +35,7 @@ export default function FeeReminder() {
             padding: '7px 10px', borderRadius: 7, border: 'none', fontFamily: 'inherit',
             fontSize: 12, fontWeight: tab === t.id ? 600 : 400, cursor: 'pointer',
             background: tab === t.id ? '#1f2532' : 'transparent',
-            color: tab === t.id ? '#66D9FF' : '#6B7280',
+            color: tab === t.id ? '#A5B4FC' : '#6B7280',
             transition: 'all 0.15s',
           }}>
             <t.icon size={13} /> {t.label}
@@ -68,11 +68,11 @@ function StatsTab() {
   if (!data)   return <ErrorMsg msg="Could not load stats. Is the backend running?" />
 
   const statBoxes = [
-    { label: 'Total Emails', value: data.emails.total,   color: '#66D9FF', icon: Mail },
+    { label: 'Total Emails', value: data.emails.total,   color: '#A5B4FC', icon: Mail },
     { label: 'Sent',         value: data.emails.sent,    color: '#A5B4FC', icon: CheckCircle },
-    { label: 'Failed',       value: data.emails.failed,  color: '#66D9FF', icon: XCircle },
+    { label: 'Failed',       value: data.emails.failed,  color: '#A5B4FC', icon: XCircle },
     { label: 'Pending Fees', value: data.fees.pending,   color: '#A5B4FC', icon: Clock },
-    { label: 'Total Students Fees', value: data.fees.total, color: '#66D9FF', icon: Users },
+    { label: 'Total Students Fees', value: data.fees.total, color: '#A5B4FC', icon: Users },
     { label: 'Pending Amount', value: `₹${data.fees.pending_amount?.toLocaleString()}`, color: '#A5B4FC', icon: DollarSign },
   ]
 
@@ -146,7 +146,7 @@ function StudentsTab() {
                 </div>
               ))}
             </div>
-            {err && <p style={{ fontSize: 12, color: '#66D9FF', marginBottom: 10 }}>{err}</p>}
+            {err && <p style={{ fontSize: 12, color: '#A5B4FC', marginBottom: 10 }}>{err}</p>}
             <div style={{ display: 'flex', gap: 8 }}>
               <button onClick={addStudent} disabled={saving} style={btn(!saving)}><Plus size={13} />{saving ? 'Saving…' : 'Save'}</button>
               <button onClick={() => setAdding(false)} style={btn(false)}>Cancel</button>
@@ -158,7 +158,7 @@ function StudentsTab() {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
         {students.map(s => (
           <div key={s._id} style={{ ...card, display: 'flex', alignItems: 'center', gap: 14, padding: '12px 16px' }}>
-            <div style={{ width: 34, height: 34, borderRadius: 8, background: '#1f2532', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 14, fontWeight: 700, color: '#66D9FF' }}>
+            <div style={{ width: 34, height: 34, borderRadius: 8, background: '#1f2532', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 14, fontWeight: 700, color: '#A5B4FC' }}>
               {s.name.charAt(0)}
             </div>
             <div style={{ flex: 1 }}>
@@ -172,7 +172,7 @@ function StudentsTab() {
                 </span>
               )}
               <button onClick={() => remove(s._id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#4B5563', padding: 4 }}
-                onMouseEnter={e => (e.currentTarget.style.color = '#66D9FF')} onMouseLeave={e => (e.currentTarget.style.color = '#4B5563')}>
+                onMouseEnter={e => (e.currentTarget.style.color = '#A5B4FC')} onMouseLeave={e => (e.currentTarget.style.color = '#4B5563')}>
                 <Trash2 size={13} />
               </button>
             </div>
@@ -231,7 +231,7 @@ function FeesTab() {
               padding: '5px 12px', borderRadius: 6, border: '1px solid #1f2532', fontFamily: 'inherit',
               fontSize: 11, fontWeight: filter === s ? 600 : 400, cursor: 'pointer',
               background: filter === s ? '#1f2532' : 'transparent',
-              color: filter === s ? '#66D9FF' : '#6B7280',
+              color: filter === s ? '#A5B4FC' : '#6B7280',
             }}>{s}</button>
           ))}
         </div>
@@ -263,7 +263,7 @@ function FeesTab() {
                 <input style={inp} value={form.label} onChange={e => setForm(f => ({ ...f, label: e.target.value }))} />
               </div>
             </div>
-            {err && <p style={{ fontSize: 12, color: '#66D9FF', marginBottom: 10 }}>{err}</p>}
+            {err && <p style={{ fontSize: 12, color: '#A5B4FC', marginBottom: 10 }}>{err}</p>}
             <div style={{ display: 'flex', gap: 8 }}>
               <button onClick={addFee} disabled={saving} style={btn(!saving)}>{saving ? 'Saving…' : 'Save Fee'}</button>
               <button onClick={() => setAdding(false)} style={btn(false)}>Cancel</button>
@@ -360,9 +360,9 @@ function SendTab() {
           <div style={{ display: 'flex', gap: 6 }}>
             {(['ai', 'manual'] as const).map(m => (
               <button key={m} onClick={() => setMode(m)} style={{
-                flex: 1, padding: '8px 0', borderRadius: 8, border: `1px solid ${mode === m ? '#4F7CFF' : '#1f2532'}`,
-                background: mode === m ? 'rgba(79, 124, 255, 0.12)' : '#0E1117',
-                color: mode === m ? '#66D9FF' : '#6B7280',
+                flex: 1, padding: '8px 0', borderRadius: 8, border: `1px solid ${mode === m ? '#7C6BF6' : '#1f2532'}`,
+                background: mode === m ? 'rgba(124, 107, 246, 0.12)' : '#0E1117',
+                color: mode === m ? '#A5B4FC' : '#6B7280',
                 fontFamily: 'inherit', fontSize: 12, fontWeight: 600, cursor: 'pointer', transition: 'all 0.15s',
               }}>
                 {m === 'ai' ? '✨ AI Generated' : '✏️ Write Yourself'}
@@ -397,22 +397,22 @@ function SendTab() {
               style={{
                 marginTop: 8, display: 'flex', alignItems: 'center', gap: 6,
                 padding: '7px 14px', borderRadius: 8,
-                border: '1px solid rgba(79, 124, 255, 0.14)',
-                background: 'rgba(79, 124, 255, 0.08)',
-                color: polishing || !message.trim() ? '#4B5563' : '#66D9FF',
+                border: '1px solid rgba(124, 107, 246, 0.14)',
+                background: 'rgba(124, 107, 246, 0.08)',
+                color: polishing || !message.trim() ? '#4B5563' : '#A5B4FC',
                 fontFamily: 'inherit', fontSize: 12, fontWeight: 600,
                 cursor: polishing || !message.trim() ? 'not-allowed' : 'pointer',
                 transition: 'all 0.15s',
               }}
             >
               {polishing
-                ? <><div style={{ width: 11, height: 11, border: '2px solid #4B5563', borderTopColor: '#66D9FF', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} /> Polishing…</>
+                ? <><div style={{ width: 11, height: 11, border: '2px solid #4B5563', borderTopColor: '#A5B4FC', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} /> Polishing…</>
                 : <>✨ Polish with AI</>}
             </button>
           </div>
         )}
 
-        {err && <p style={{ fontSize: 12, color: '#66D9FF', marginBottom: 12 }}>{err}</p>}
+        {err && <p style={{ fontSize: 12, color: '#A5B4FC', marginBottom: 12 }}>{err}</p>}
 
         <button onClick={send} disabled={sending} style={{ ...btn(!sending), width: '100%', justifyContent: 'center' }}>
           <Send size={13} />{sending ? 'Sending…' : 'Send Now'}
@@ -433,7 +433,7 @@ function SendTab() {
             </p>
           )}
           <div style={{ display: 'flex', gap: 12, marginBottom: 14 }}>
-            {[['Sent', result.sent, '#A5B4FC'], ['Failed', result.failed, '#66D9FF'], ['Skipped', result.skipped, '#A5B4FC']].map(([l, v, c]) => (
+            {[['Sent', result.sent, '#A5B4FC'], ['Failed', result.failed, '#A5B4FC'], ['Skipped', result.skipped, '#A5B4FC']].map(([l, v, c]) => (
               <div key={l as string} style={{ flex: 1, background: '#0E1117', borderRadius: 8, padding: '10px 12px', textAlign: 'center' }}>
                 <div style={{ fontSize: 22, fontWeight: 700, color: c as string }}>{v as number}</div>
                 <div style={{ fontSize: 10, color: '#9CA3AF' }}>{l}</div>
@@ -449,7 +449,7 @@ function SendTab() {
             </div>
           )}
           {result.failed > 0 && (
-            <p style={{ fontSize: 11, color: '#66D9FF', marginTop: 10 }}>Failed emails need Gmail credentials. Go to Setup tab.</p>
+            <p style={{ fontSize: 11, color: '#A5B4FC', marginTop: 10 }}>Failed emails need Gmail credentials. Go to Setup tab.</p>
           )}
           {result.skipped > 0 && result.skip_reasons?.[0]?.reason?.includes('24h') && (
             <p style={{ fontSize: 11, color: '#9CA3AF', marginTop: 10 }}>Already sent today — throttled to once per 24h per fee.</p>
@@ -493,7 +493,7 @@ function SetupTab() {
         <h3 style={{ fontSize: 14, fontWeight: 700, color: '#fafafa', margin: '0 0 16px' }}>Gmail SMTP Setup</h3>
         <p style={{ fontSize: 12, color: '#6B7280', marginBottom: 16 }}>
           Generate a 16-char App Password at{' '}
-          <a href="https://myaccount.google.com/apppasswords" target="_blank" rel="noopener" style={{ color: '#66D9FF' }}>myaccount.google.com/apppasswords</a>
+          <a href="https://myaccount.google.com/apppasswords" target="_blank" rel="noopener" style={{ color: '#A5B4FC' }}>myaccount.google.com/apppasswords</a>
         </p>
         <div style={{ marginBottom: 12 }}>
           <label style={label}>Gmail Address</label>
@@ -503,7 +503,7 @@ function SetupTab() {
           <label style={label}>App Password (16 chars)</label>
           <input style={inp} type="password" placeholder="xxxx xxxx xxxx xxxx" value={creds.app_password} onChange={e => setCreds(c => ({ ...c, app_password: e.target.value }))} />
         </div>
-        {err && <p style={{ fontSize: 12, color: '#66D9FF', marginBottom: 10 }}>{err}</p>}
+        {err && <p style={{ fontSize: 12, color: '#A5B4FC', marginBottom: 10 }}>{err}</p>}
         {msg && <p style={{ fontSize: 12, color: '#A5B4FC', marginBottom: 10 }}>{msg}</p>}
         <div style={{ display: 'flex', gap: 8 }}>
           <button onClick={test} disabled={testing} style={btn(!testing)}>{testing ? 'Testing…' : 'Test SMTP'}</button>
@@ -533,7 +533,7 @@ function SetupTab() {
 }
 
 function StatusBadge({ status }: { status: string }) {
-  const colors: any = { pending: '#A5B4FC', paid: '#A5B4FC', waived: '#66D9FF', failed: '#66D9FF', sent: '#A5B4FC' }
+  const colors: any = { pending: '#A5B4FC', paid: '#A5B4FC', waived: '#A5B4FC', failed: '#A5B4FC', sent: '#A5B4FC' }
   return (
     <span style={{ fontSize: 10, fontWeight: 700, background: `${colors[status] || '#9CA3AF'}20`, color: colors[status] || '#9CA3AF', borderRadius: 5, padding: '2px 8px' }}>
       {status}
@@ -544,7 +544,7 @@ function StatusBadge({ status }: { status: string }) {
 function Spinner() {
   return (
     <div style={{ display: 'flex', justifyContent: 'center', padding: '60px 0' }}>
-      <div style={{ width: 28, height: 28, borderRadius: '50%', border: '2px solid #1f2532', borderTopColor: '#4F7CFF', animation: 'spin 0.8s linear infinite' }} />
+      <div style={{ width: 28, height: 28, borderRadius: '50%', border: '2px solid #1f2532', borderTopColor: '#7C6BF6', animation: 'spin 0.8s linear infinite' }} />
     </div>
   )
 }
@@ -554,5 +554,5 @@ function EmptyState({ msg }: { msg: string }) {
 }
 
 function ErrorMsg({ msg }: { msg: string }) {
-  return <div style={{ textAlign: 'center', padding: '40px 0', fontSize: 13, color: '#66D9FF' }}>{msg}</div>
+  return <div style={{ textAlign: 'center', padding: '40px 0', fontSize: 13, color: '#A5B4FC' }}>{msg}</div>
 }
