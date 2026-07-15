@@ -477,6 +477,14 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
         <style>{`
           @keyframes kr-voice-pulse { 0%,100% { opacity: 1 } 50% { opacity: 0.45 } }
           .kr-voice-pulse { animation: kr-voice-pulse 1.2s ease-in-out infinite }
+          /* Mobile: stack the answer + visual full-width (the 2-col grid crushed the
+             visual to nothing on phones), and make the ask box prominent. */
+          @media (max-width: 760px){
+            .ks-result { grid-template-columns: 1fr !important; gap: 12px !important; }
+            .ks-result > * { min-height: 320px; }
+            .ks-composer { flex-wrap: wrap; border-radius: 20px; padding: 12px !important; }
+            .ks-composer textarea { min-width: 100% !important; order: -1; font-size: 16px !important; padding: 6px 4px 10px !important; }
+          }
         `}</style>
       </div>
 

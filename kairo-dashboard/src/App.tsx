@@ -215,6 +215,7 @@ export default function App() {
     try {
       const id = profile.id || ''
       if (localStorage.getItem('kairo:onboarded:' + id) === '1' || isOnboarded()) { setOnboard('done'); return }
+      if (localStorage.getItem('kairo:onboard:hide:' + id) === '1') { setOnboard('done'); return }
       if (localStorage.getItem('kairo:onboard:skip:' + id) === '1') { setOnboard('skipped'); return }
     } catch {  }
     setOnboard('open')
@@ -334,22 +335,38 @@ export default function App() {
         />
       )}
       {onboard === 'skipped' && (
-        <button
-          onClick={() => setOnboard('open')}
-          style={{
-            position: 'fixed', left: '50%', transform: 'translateX(-50%)',
-            bottom: 'calc(84px + env(safe-area-inset-bottom))', zIndex: 95,
-            display: 'flex', alignItems: 'center', gap: 8,
-            padding: '11px 18px', borderRadius: 999, cursor: 'pointer',
-            background: 'rgba(13,16,25,0.92)', color: '#fff',
-            border: '1px solid rgba(102,217,255,0.4)',
-            boxShadow: '0 10px 30px rgba(0,0,0,0.5), 0 0 20px rgba(79,124,255,0.25)',
-            fontFamily: "'Inter', system-ui, sans-serif", fontSize: 13, fontWeight: 700,
-            backdropFilter: 'blur(10px)',
-          }}
-        >
-          ✨ Finish setting up Kyno →
-        </button>
+        <div style={{
+          position: 'fixed', left: '50%', transform: 'translateX(-50%)',
+          bottom: 'calc(84px + env(safe-area-inset-bottom))', zIndex: 95,
+          display: 'flex', alignItems: 'stretch', borderRadius: 999, overflow: 'hidden',
+          background: 'rgba(13,16,25,0.92)', border: '1px solid rgba(102,217,255,0.4)',
+          boxShadow: '0 10px 30px rgba(0,0,0,0.5), 0 0 20px rgba(79,124,255,0.25)',
+          backdropFilter: 'blur(10px)', fontFamily: "'Inter', system-ui, sans-serif",
+        }}>
+          <button
+            onClick={() => setOnboard('open')}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 8,
+              padding: '11px 10px 11px 18px', cursor: 'pointer',
+              background: 'transparent', color: '#fff', border: 'none',
+              fontSize: 13, fontWeight: 700, fontFamily: 'inherit',
+            }}
+          >
+            ✨ Finish setting up Kyno →
+          </button>
+          <button
+            onClick={() => { try { localStorage.setItem('kairo:onboard:hide:' + (profile.id || ''), '1') } catch {  }; setOnboard('done') }}
+            title="Don't remind me again" aria-label="Dismiss"
+            style={{
+              padding: '0 14px', cursor: 'pointer', color: '#9CA3AF',
+              background: 'transparent', border: 'none',
+              borderLeft: '1px solid rgba(255,255,255,0.12)',
+              fontSize: 15, lineHeight: 1, fontFamily: 'inherit',
+            }}
+          >
+            ✕
+          </button>
+        </div>
       )}
       <SprintOverlay
         open={sprintingIn}
