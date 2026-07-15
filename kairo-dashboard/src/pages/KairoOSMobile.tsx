@@ -113,14 +113,14 @@ export default function KairoOSMobile({ onNavigate, onOpenBackup }: Props) {
           <PulseHero pct={pct} label={label} twin={twin} pulsing={pulsing} onRecompute={recompute} />
         </section>
 
-        <section>
-          <SectionLabel>Quick actions</SectionLabel>
-          <div className="h-scroll" style={{ padding: '0 18px' }}>
-            <QuickAction label="Solve a doubt" icon={MessageCircle} onClick={() => onNavigate('doubt')}      accent={C.purple} />
-            <QuickAction label="Battle"         icon={Swords}        onClick={() => onNavigate('battle')}     accent={C.purpleLite} />
-            <QuickAction label="Flashcards"    icon={BookMarked}    onClick={() => onNavigate('flashcards')} accent={C.purpleSoft} />
-            <QuickAction label="Take notes"     icon={BookOpen}      onClick={() => onNavigate('notebook')}   accent={C.purpleLite} />
-            <QuickAction label="Backup"         icon={FileJson}      onClick={onOpenBackup}                    accent={C.purpleSoft} />
+        <section style={{ padding: '0 18px' }}>
+          <SectionLabel inline>Quick actions</SectionLabel>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, minmax(0, 1fr))', gap: 8 }}>
+            <QuickAction label="Solve"  icon={MessageCircle} onClick={() => onNavigate('doubt')}      accent={C.purple} />
+            <QuickAction label="Battle" icon={Swords}        onClick={() => onNavigate('battle')}     accent={C.purpleLite} />
+            <QuickAction label="Cards"  icon={BookMarked}    onClick={() => onNavigate('flashcards')} accent={C.purpleSoft} />
+            <QuickAction label="Notes"  icon={BookOpen}      onClick={() => onNavigate('notebook')}   accent={C.purpleLite} />
+            <QuickAction label="Backup" icon={FileJson}      onClick={onOpenBackup}                    accent={C.purpleSoft} />
           </div>
         </section>
 
@@ -131,14 +131,13 @@ export default function KairoOSMobile({ onNavigate, onOpenBackup }: Props) {
           </section>
         )}
 
-        <section>
-          <SectionLabel>Vitals today</SectionLabel>
-          <div className="h-scroll" style={{ padding: '0 18px' }}>
+        <section style={{ padding: '0 18px' }}>
+          <SectionLabel inline>Vitals today</SectionLabel>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
             <VitalChip title="Burnout"     pct={Math.round(twin.burnoutRisk * 100)}     tone={twin.burnoutRisk > 0.55 ? 'danger' : twin.burnoutRisk > 0.3 ? 'warn' : 'good'} icon={Activity} />
             <VitalChip title="Consistency" pct={Math.round(twin.consistencyScore * 100)} tone={twin.consistencyScore > 0.6 ? 'good' : twin.consistencyScore > 0.3 ? 'warn' : 'danger'} icon={Flame} />
             <VitalChip title="Confidence"  pct={Math.round(twin.confidence * 100)}      tone={twin.confidence > 0.6 ? 'good' : twin.confidence > 0.4 ? 'warn' : 'danger'} icon={Zap} />
             <VitalChip title="Retention"   pct={Math.round(twin.retentionScore * 100)}  tone={twin.retentionScore > 0.6 ? 'good' : twin.retentionScore > 0.3 ? 'warn' : 'danger'} icon={Brain} />
-            <VitalChip title="Streak"      pct={twin.streakDays} unit="d"               tone={twin.streakDays >= 7 ? 'good' : twin.streakDays >= 3 ? 'warn' : 'neutral'} icon={Flame} />
           </div>
         </section>
 
@@ -312,9 +311,9 @@ function QuickAction({ label, icon: Icon, onClick, accent }: { label: string; ic
       whileTap={{ scale: 0.95 }}
       onClick={onClick}
       style={{
-        flexShrink: 0,
+        width: '100%', minWidth: 0,
         display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
-        minWidth: 78, padding: '12px 10px',
+        padding: '12px 6px',
         ...GLASS,
         border: '1px solid rgba(165, 180, 252, 0.18)',
         borderRadius: 16,
@@ -386,8 +385,8 @@ function VitalChip({ title, pct, unit = '%', tone, icon: Icon }: { title: string
   const accent = tone === 'good' ? C.purpleLite : tone === 'warn' ? C.purple : tone === 'danger' ? C.purpleHi : C.purpleSoft
   return (
     <div style={{
-      flexShrink: 0,
-      minWidth: 130, padding: '14px 14px',
+      width: '100%', minWidth: 0,
+      padding: '14px 14px',
       borderRadius: 16,
       ...GLASS,
       border: '1px solid rgba(165, 180, 252, 0.16)',
