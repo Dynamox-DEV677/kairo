@@ -284,7 +284,7 @@ function AiResultModal({ title, body, loading, onClose }: {
 }) {
   return (
     <motion.div
-      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, pointerEvents: 'none' }}
       onClick={onClose}
       style={{
         position: 'fixed', inset: 0, zIndex: 999,
@@ -374,7 +374,7 @@ function AddMistakeModal({ onClose, onSaved }: { onClose: () => void; onSaved: (
   }
   return (
     <motion.div
-      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, pointerEvents: 'none' }}
       onClick={onClose}
       style={{
         position: 'fixed', inset: 0, zIndex: 999,

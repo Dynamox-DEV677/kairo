@@ -6,7 +6,8 @@ import {
 } from 'lucide-react'
 import KairoGyro from '../components/KairoGyro'
 import { GameBar } from '../components/GameBar'
-import { getProfile } from '../lib/twin'
+import { getProfile, getMistakes } from '../lib/twin'
+import { loadGame } from '../lib/game'
 
 interface ExamDate { name: string; date: string }
 interface Profile {
@@ -284,7 +285,7 @@ export default function KairoHome({ onNavigate }: Props) {
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 14, paddingTop: 12, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
             <Flame size={20} style={{ color: '#ff7a4a' }} />
-            <span><b style={{ fontSize: 22, fontWeight: 900 }}>{profile.streak}</b> <span style={{ fontSize: 11, color: '#9CA3AF' }}>day streak</span></span>
+            <span><b style={{ fontSize: 22, fontWeight: 900 }}>{loadGame().streak}</b> <span style={{ fontSize: 11, color: '#9CA3AF' }}>day streak</span></span>
           </div>
         </div>
       </div>
@@ -310,19 +311,34 @@ export default function KairoHome({ onNavigate }: Props) {
 
       <div style={{ ...card, padding: 18, marginBottom: 16 }}>
         <div style={{ ...lbl, color: '#ff8aa0', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}><AlertTriangle size={12} /> Weakness radar</div>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-          {[...profile.weakTopics.map(t => ({ t, s: 'weak' })), ...profile.strongTopics.map(t => ({ t, s: 'strong' }))].map((x, i) => (
-            <span key={i} style={{
-              fontSize: 13, fontWeight: 600, padding: '7px 14px', borderRadius: 999,
-              display: 'inline-flex', alignItems: 'center', gap: 6,
-              color: x.s === 'weak' ? '#ff8aa0' : '#66ff9a',
-              background: x.s === 'weak' ? 'rgba(255,77,109,0.12)' : 'rgba(102,255,154,0.10)',
-              border: '1px solid ' + (x.s === 'weak' ? 'rgba(255,77,109,0.35)' : 'rgba(102,255,154,0.30)'),
-            }}>
-              {x.s === 'weak' ? <AlertTriangle size={12} /> : <CheckCircle2 size={12} />}{x.t}
-            </span>
-          ))}
-        </div>
+        {(() => {
+          let weak = profile.weakTopics
+          if (!weak.length) { try { weak = getMistakes().slice(0, 8).map(m => (m.topic || '').replace(/^\w/, c => c.toUpperCase())) } catch {  } }
+          const items = [...weak.map(t => ({ t, s: 'weak' as const })), ...profile.strongTopics.map(t => ({ t, s: 'strong' as const }))]
+          if (!items.length) return (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '2px' }}>
+              <Gauge size={18} style={{ color: '#6B7280', flexShrink: 0 }} />
+              <div style={{ fontSize: 13, color: '#9CA3AF', lineHeight: 1.5 }}>
+                No weak spots yet — take a quiz or ask Kyno a doubt, and your radar fills in automatically.
+              </div>
+            </div>
+          )
+          return (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+              {items.map((x, i) => (
+                <span key={i} style={{
+                  fontSize: 13, fontWeight: 600, padding: '7px 14px', borderRadius: 999,
+                  display: 'inline-flex', alignItems: 'center', gap: 6,
+                  color: x.s === 'weak' ? '#ff8aa0' : '#66ff9a',
+                  background: x.s === 'weak' ? 'rgba(255,138,160,0.12)' : 'rgba(102,255,154,0.10)',
+                  border: '1px solid ' + (x.s === 'weak' ? 'rgba(255,138,160,0.35)' : 'rgba(102,255,154,0.30)'),
+                }}>
+                  {x.s === 'weak' ? <AlertTriangle size={12} /> : <CheckCircle2 size={12} />}{x.t}
+                </span>
+              ))}
+            </div>
+          )
+        })()}
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(180px,1fr))', gap: 12 }}>
