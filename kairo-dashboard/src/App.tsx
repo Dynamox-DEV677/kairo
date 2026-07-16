@@ -6,7 +6,7 @@ import Landing from './pages/Landing'
 import { GenerationProvider } from './lib/generationContext'
 import { supabase } from './lib/supabase'
 import { refreshIfStale } from './lib/api'
-import { pullFromCloud, syncToCloudNow, deleteCloudSnapshot, pauseSyncUntil, getSyncEnabled, isOnboarded } from './lib/twin'
+import { pullFromCloud, syncToCloudNow, pauseSyncUntil, getSyncEnabled, isOnboarded } from './lib/twin'
 import Onboarding from './pages/Onboarding'
 import SprintOverlay, { SPRINT_MIN_MS } from './components/SprintOverlay'
 import SplashScreen from './components/SplashScreen'
@@ -98,13 +98,10 @@ export default function App() {
         await new Promise(res => setTimeout(res, Math.max(0, SPRINT_MIN_MS - elapsed)))
         if (cancelled) return
 
-        const wiped = await deleteCloudSnapshot()
-        if (!wiped.ok) console.warn('[sync] could not wipe cloud snapshot:', wiped.reason)
-
         setSprintHead('Your data has arrived.')
         setSprintSub(
           `${r.stats?.events ?? 0} events · ${r.stats?.flashcards ?? 0} flashcards · ${r.stats?.formulas ?? 0} formulas restored.` +
-          (wiped.ok ? '  ·  Cloud copy wiped — your data lives only on this device now.' : '')
+          '  ·  Safely backed up in your account — sign in on any device to get it.'
         )
         await new Promise(res => setTimeout(res, 1200))
       } else if (r.reason === 'no-cloud-snapshot' || (!r.ok && r.reason !== 'not-signed-in')) {

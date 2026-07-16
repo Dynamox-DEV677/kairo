@@ -1,10 +1,10 @@
 import { useState, useRef } from 'react'
 import { motion } from 'framer-motion'
-import { Camera, User, Bell, Shield, Trash2, Check, FileJson, Smartphone, Laptop, ChevronsRight, KeyRound, Sparkles, RotateCcw, Mail } from 'lucide-react'
+import { Camera, User, Bell, Shield, Trash2, Check, FileJson, Smartphone, Laptop, ChevronsRight, KeyRound, Sparkles, RotateCcw, Mail, RefreshCw, CloudOff, Loader2 } from 'lucide-react'
 import { confirmDialog } from '../components/ConfirmModal'
 import TwinBackupModal from '../components/TwinBackupModal'
 import ResetPasscode from './ResetPasscode'
-import { seedDemo, resetAllData } from '../lib/twin'
+import { seedDemo, resetAllData, reconcileWithCloud, deleteCloudSnapshot } from '../lib/twin'
 import { getRaw, setRaw, activeBackend } from '../lib/storage'
 import { DecoratedAvatar, DECORATIONS, getDecor, setDecor } from '../components/AvatarDecor'
 
@@ -29,7 +29,51 @@ export default function Settings() {
   const [saved, setSaved] = useState(false)
   const [backupOpen, setBackupOpen] = useState(false)
   const [resetOpen, setResetOpen] = useState(false)
+  const [syncing, setSyncing] = useState(false)
+  const [syncMsg, setSyncMsg] = useState('')
   const fileRef = useRef<HTMLInputElement>(null)
+
+  async function syncNow() {
+    if (syncing) return
+    setSyncing(true); setSyncMsg('')
+    try {
+      const r = await reconcileWithCloud()
+      if (r.ok) {
+        if (r.restored) {
+          setSyncMsg('Synced — pulling your data onto this device…')
+          setTimeout(() => window.location.reload(), 900)
+        } else {
+          setSyncMsg('Synced. This device is already up to date.')
+        }
+      } else {
+        setSyncMsg(r.reason === 'not-signed-in'
+          ? 'Sign in first, then sync.'
+          : 'Sync failed — check your connection and try again.')
+      }
+    } catch {
+      setSyncMsg('Sync failed — try again.')
+    } finally {
+      setSyncing(false)
+    }
+  }
+
+  async function deleteCloud() {
+    const ok = await confirmDialog({
+      title:        'Delete your cloud backup?',
+      body:         'Removes the copy stored in your Kyno account. Your data stays on this device, but other devices won\'t be able to pull it until this device syncs again.',
+      confirmLabel: 'Delete cloud copy',
+      cancelLabel:  'Keep it',
+      tone:         'danger',
+    })
+    if (!ok) return
+    setSyncMsg('')
+    try {
+      const r = await deleteCloudSnapshot()
+      setSyncMsg(r.ok ? 'Cloud backup deleted.' : 'Could not delete — try again.')
+    } catch {
+      setSyncMsg('Could not delete — try again.')
+    }
+  }
 
   const [decor, setDecorSel] = useState(getDecor())
   function pickDecor(id: string) { setDecor(id); setDecorSel(id) }
@@ -343,7 +387,7 @@ export default function Settings() {
         </div>
 
         <p style={{ fontSize: 13, color: '#9CA3AF', marginBottom: 14, lineHeight: 1.6 }}>
-          Your study history syncs to your Kyno account automatically. Sign in on any phone or laptop and you'll see the sprint animation as your data arrives — then the cloud copy is wiped immediately so your data only ever lives on the device in your hand.
+          Your study history is backed up to your Kyno account and kept there — so you can sign in on any phone or laptop and pull it, even when your other devices are off. Only you can read it. Tap <strong style={{ color: '#fafafa' }}>Sync now</strong> to push this device up and pull anything new down.
         </p>
 
         <div style={{
@@ -356,23 +400,60 @@ export default function Settings() {
           <ChevronsRight size={13} color="#9CA3AF" />
           <Smartphone size={16} color="#A5B4FC" />
           <span style={{ fontSize: 12, color: '#B1B5BA', marginLeft: 4 }}>
-            Need a manual file backup too? Open the tool below.
+            Includes your XP, streak, mistakes, flashcards and concept map.
           </span>
         </div>
 
-        <button
-          onClick={() => setBackupOpen(true)}
-          style={{
-            display: 'flex', alignItems: 'center', gap: 7,
-            padding: '10px 18px', borderRadius: 10, cursor: 'pointer',
-            background: 'linear-gradient(135deg, #A5B4FC, #7C6BF6)',
-            border: 'none',
-            color: '#000', fontFamily: 'inherit', fontSize: 13, fontWeight: 800,
-            boxShadow: '0 6px 18px rgba(124, 107, 246, 0.03)',
-          }}
-        >
-          <FileJson size={13} /> Open backup tool
-        </button>
+        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+          <button
+            onClick={syncNow}
+            disabled={syncing}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 7,
+              padding: '10px 18px', borderRadius: 10, cursor: syncing ? 'default' : 'pointer',
+              background: 'linear-gradient(135deg, #A5B4FC, #7C6BF6)',
+              border: 'none', opacity: syncing ? 0.7 : 1,
+              color: '#000', fontFamily: 'inherit', fontSize: 13, fontWeight: 800,
+              boxShadow: '0 6px 18px rgba(124, 107, 246, 0.03)',
+            }}
+          >
+            {syncing
+              ? <motion.span animate={{ rotate: 360 }} transition={{ duration: 0.9, repeat: Infinity, ease: 'linear' }} style={{ display: 'inline-flex' }}><Loader2 size={13} /></motion.span>
+              : <RefreshCw size={13} />}
+            {syncing ? 'Syncing…' : 'Sync now'}
+          </button>
+
+          <button
+            onClick={() => setBackupOpen(true)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 7,
+              padding: '10px 16px', borderRadius: 10, cursor: 'pointer',
+              background: '#1C2233', border: '1px solid rgba(255,255,255,0.08)',
+              color: '#B1B5BA', fontFamily: 'inherit', fontSize: 13, fontWeight: 700,
+            }}
+          >
+            <FileJson size={13} /> Manual file backup
+          </button>
+
+          <button
+            onClick={deleteCloud}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              padding: '10px 14px', borderRadius: 10, cursor: 'pointer',
+              background: 'transparent', border: '1px solid rgba(251,113,133,0.28)',
+              color: '#FB7185', fontFamily: 'inherit', fontSize: 12.5, fontWeight: 700,
+              marginLeft: 'auto',
+            }}
+          >
+            <CloudOff size={13} /> Delete cloud copy
+          </button>
+        </div>
+
+        {syncMsg && (
+          <div style={{ marginTop: 12, fontSize: 12.5, color: '#A5B4FC', fontWeight: 600 }}>
+            {syncMsg}
+          </div>
+        )}
       </Section>
 
       <Section icon={<KeyRound size={14} />} title="Security">

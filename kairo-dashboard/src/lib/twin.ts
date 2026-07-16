@@ -636,6 +636,58 @@ export async function pullFromCloud(opts: { force?: boolean } = {}): Promise<{
   }
 }
 
+// Manual "Sync now": reconcile this device with the cloud in one shot.
+// - Fresh/empty device  -> REPLACE (pull the full account, incl. mastery/profile).
+// - Device with data     -> MERGE (union events/doubts/… + max XP; never loses local).
+// Then push the result back up so the cloud always holds the latest union.
+// The other devices do NOT need to be online — this reads the persisted cloud copy.
+export async function reconcileWithCloud(): Promise<{ ok: boolean; restored: boolean; reason?: string }> {
+  if (typeof window === 'undefined') return { ok: false, restored: false, reason: 'no-window' }
+  const token = localStorage.getItem('kairo_token')
+  if (!token) return { ok: false, restored: false, reason: 'not-signed-in' }
+
+  emitSync('pulling')
+  try {
+    const { get } = await import('./api')
+    const r    = await get('/twin/snapshot') as { snapshot: any | null }
+    const snap = r?.snapshot
+
+    let restored = false
+    if (snap && snap.blob) {
+      const current = loadState()
+      const localEmpty =
+        current.events.length === 0 &&
+        current.flashcards.length === 0 &&
+        current.doubts.length === 0 &&
+        !current.profile
+      const mode: ImportMode = localEmpty ? 'replace' : 'merge'
+
+      const raw = snap.blob as TwinState & { __game?: any }
+      const { __game, ...twin } = raw
+      const wrapped = JSON.stringify({
+        schema:     'kairo-twin-backup-v1',
+        exportedAt: new Date().toISOString(),
+        userKey:    getUserKey(),
+        data:       { ...twin, userKey: getUserKey() },
+        game:       __game,
+      })
+      const res = importTwin(wrapped, mode)
+      restored = res.ok
+      // Nudge every open page (Concept Map, Kyno OS, Home, …) to recompute.
+      try { window.dispatchEvent(new StorageEvent('storage', { key: storageKey() })) } catch {  }
+    }
+
+    // Push the merged/local state up so the cloud stays fresh and available.
+    await syncToCloudNow()
+    emitSync('pulled')
+    return { ok: true, restored }
+  } catch (e: any) {
+    const reason = String(e?.message || e || 'unknown')
+    emitSync('error', { phase: 'reconcile', reason })
+    return { ok: false, restored: false, reason }
+  }
+}
+
 if (typeof window !== 'undefined') {
   syncEnabled = getSyncEnabled()
 }
