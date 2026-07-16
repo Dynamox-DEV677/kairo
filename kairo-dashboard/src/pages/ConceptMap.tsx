@@ -703,9 +703,8 @@ function IllustratedMap({ graph, centerId, setCenterId }: IllustratedMapProps) {
         <HexNode
           x={cx} y={cy}
           width={260} height={170}
-          title="CONCEPT"
-          titleSecond="MAP"
-          subtitle={center.name}
+          title={center.name}
+          subtitle={(center.subject || 'Most studied') + ' · ' + (center.visits || 1) + ' visit' + ((center.visits || 1) === 1 ? '' : 's')}
           isCenter
           onClick={() => setCenterId(null)}
         />
@@ -756,7 +755,7 @@ interface HexNodeProps {
   onClick?: () => void
 }
 function HexNode({
-  x, y, width, height, title, titleSecond, subtitle, isCenter, icon: Icon, iconSide, onClick,
+  x, y, width, height, title, subtitle, isCenter, icon: Icon, iconSide, onClick,
 }: HexNodeProps) {
   const chamfer = isCenter ? 22 : 16
   const w2 = width / 2
@@ -793,23 +792,12 @@ function HexNode({
 
       {isCenter ? (
         <>
-          <text textAnchor="middle" y={-10}
-            fontFamily={HEADLINE_FONT} fontSize={36} fontWeight={800}
-            fill={MONO.ink} letterSpacing="2">
-            {title}
-          </text>
-          {titleSecond && (
-            <text textAnchor="middle" y={28}
-              fontFamily={HEADLINE_FONT} fontSize={36} fontWeight={800}
-              fill={MONO.ink} letterSpacing="2">
-              {titleSecond}
-            </text>
-          )}
-          <text textAnchor="middle" y={62}
+          <TwoLineUppercase text={clipText(title, 30)} y={-18} fontSize={26} fontWeight={800} />
+          <text textAnchor="middle" y={52}
             fontFamily={HEADLINE_FONT} fontSize={11} fontWeight={600}
             fill={MONO.inkDim} letterSpacing="2.5"
             style={{ textTransform: 'uppercase' }}>
-            {clipText(subtitle, 24)}
+            {clipText(subtitle, 28)}
           </text>
         </>
       ) : (
