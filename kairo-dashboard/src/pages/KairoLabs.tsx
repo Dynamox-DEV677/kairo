@@ -301,7 +301,7 @@ function LabCard({ lab, delay, onOpen }: { lab: Lab; delay: number; onOpen: () =
         rotateX: lab.ready ? rx as any : 0,
         rotateY: lab.ready ? ry as any : 0,
         transformStyle: 'preserve-3d',
-        background: 'linear-gradient(180deg, #0E1117 0%, #050505 100%)',
+        background: 'linear-gradient(180deg, #141A2A 0%, #0A0D16 100%)',
         border: `1px solid ${lab.ready ? color + '30' : 'rgba(255,255,255,0.06)'}`,
         borderRadius: 18, padding: 0, textAlign: 'left',
         cursor: lab.ready ? 'pointer' : 'not-allowed',
@@ -412,7 +412,7 @@ function FeaturedLab({ lab, onOpen }: { lab: Lab; onOpen: () => void }) {
       style={{
         width: '100%', marginBottom: 28,
         rotateX: rx as any, rotateY: ry as any, transformStyle: 'preserve-3d',
-        background: `linear-gradient(135deg, #0E1117 0%, #050505 50%, ${color}10 100%)`,
+        background: `linear-gradient(135deg, #141A2A 0%, #0A0D16 50%, ${color}10 100%)`,
         border: `1px solid ${color}40`,
         borderRadius: 22, padding: 0, textAlign: 'left',
         cursor: 'pointer', fontFamily: 'inherit',

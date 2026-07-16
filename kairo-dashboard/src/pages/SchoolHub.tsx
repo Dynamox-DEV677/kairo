@@ -119,7 +119,7 @@ function TabBar({ tabs, active, setActive }: {
           display: 'flex', alignItems: 'center', gap: 6,
           padding: '7px 14px', borderRadius: 8, fontSize: 13, fontWeight: active === t.id ? 600 : 400,
           border: active === t.id ? '1px solid rgba(124, 107, 246, 0.14)' : '1px solid #1f2532',
-          background: active === t.id ? 'rgba(124, 107, 246, 0.12)' : '#0E1117',
+          background: active === t.id ? 'rgba(124, 107, 246, 0.12)' : '#141A2A',
           color: active === t.id ? '#A5B4FC' : '#9CA3AF',
           cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s', position: 'relative',
         }}>
@@ -139,7 +139,7 @@ function TabBar({ tabs, active, setActive }: {
 
 function Card({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
   return (
-    <div style={{ background: '#0E1117', border: '1px solid #1f2532', borderRadius: 12, padding: 20, ...style }}>
+    <div style={{ background: '#141A2A', border: '1px solid #1f2532', borderRadius: 12, padding: 20, ...style }}>
       {children}
     </div>
   )
@@ -218,7 +218,7 @@ function Modal({ open, onClose, title, children, width = 480 }: {
             display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}
           onClick={e => { if (e.target === e.currentTarget) onClose() }}>
           <motion.div initial={{ scale: 0.92, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.92, opacity: 0 }}
-            style={{ background: '#0E1117', border: '1px solid #1f2532', borderRadius: 14,
+            style={{ background: '#141A2A', border: '1px solid #1f2532', borderRadius: 14,
               width: '100%', maxWidth: width, padding: 24, maxHeight: '90vh', overflowY: 'auto' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
               <span style={{ fontWeight: 700, color: '#fafafa', fontSize: 16 }}>{title}</span>
@@ -242,7 +242,7 @@ function Btn({ children, onClick, variant = 'primary', size = 'md', disabled = f
   const cfg = {
     primary: { bg: '#7C6BF6', hoverBg: '#5558e8', color: '#fff' },
     danger:  { bg: 'rgba(124, 107, 246, 0.15)', hoverBg: 'rgba(124, 107, 246, 0.25)', color: '#A5B4FC' },
-    ghost:   { bg: '#1a1f2e', hoverBg: '#222', color: '#B1B5BA' },
+    ghost:   { bg: '#171D2D', hoverBg: '#222', color: '#B1B5BA' },
     success: { bg: 'rgba(165, 180, 252, 0.15)', hoverBg: 'rgba(165, 180, 252, 0.25)', color: '#A5B4FC' },
     warning: { bg: 'rgba(165, 180, 252, 0.15)', hoverBg: 'rgba(165, 180, 252, 0.25)', color: '#A5B4FC' },
   }[variant]
@@ -271,7 +271,7 @@ function Input({ label, value, onChange, placeholder, type = 'text', required }:
       </label>
       <input type={type} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder}
         style={{
-          width: '100%', padding: '9px 12px', background: '#0E1117', border: '1px solid #2a2a2a',
+          width: '100%', padding: '9px 12px', background: '#141A2A', border: '1px solid #2a2a2a',
           borderRadius: 8, color: '#fafafa', fontSize: 13, fontFamily: 'inherit', outline: 'none',
           boxSizing: 'border-box',
         }}
@@ -432,7 +432,7 @@ function AdminAIAnnounce({ schoolId: _ }: { schoolId: string }) {
           onChange={e => setTopic(e.target.value)}
           placeholder='e.g. "Sports day on Friday" or "Holiday on 20th May"'
           style={{
-            width: '100%', background: '#050505', border: '1px solid #1f2532',
+            width: '100%', background: '#0A0D16', border: '1px solid #1f2532',
             borderRadius: 8, padding: '9px 12px', color: '#fafafa', fontSize: 13,
             fontFamily: 'inherit', outline: 'none', marginBottom: 12, boxSizing: 'border-box',
           }}
@@ -444,7 +444,7 @@ function AdminAIAnnounce({ schoolId: _ }: { schoolId: string }) {
             <button key={t} onClick={() => setTone(t)} style={{
               flex: 1, padding: '7px 0', borderRadius: 7,
               border: `1px solid ${tone === t ? '#7C6BF6' : '#1f2532'}`,
-              background: tone === t ? 'rgba(124, 107, 246, 0.12)' : '#050505',
+              background: tone === t ? 'rgba(124, 107, 246, 0.12)' : '#0A0D16',
               color: tone === t ? '#A5B4FC' : '#6B7280',
               fontFamily: 'inherit', fontSize: 12, fontWeight: 600, cursor: 'pointer',
             }}>{t}</button>
@@ -456,7 +456,7 @@ function AdminAIAnnounce({ schoolId: _ }: { schoolId: string }) {
           disabled={generating || !topic.trim()}
           style={{
             width: '100%', padding: '10px 14px', borderRadius: 8, border: 'none',
-            background: !topic.trim() || generating ? '#1a1f2e' : 'linear-gradient(135deg, #7C6BF6, #7C6BF6)',
+            background: !topic.trim() || generating ? '#171D2D' : 'linear-gradient(135deg, #7C6BF6, #7C6BF6)',
             color: !topic.trim() || generating ? '#6B7280' : '#fff',
             fontFamily: 'inherit', fontSize: 13, fontWeight: 600,
             cursor: !topic.trim() || generating ? 'not-allowed' : 'pointer',
@@ -478,7 +478,7 @@ function AdminAIAnnounce({ schoolId: _ }: { schoolId: string }) {
           onChange={e => setDraft(e.target.value)}
           placeholder="Generated announcement will appear here. You can edit it before sending."
           style={{
-            width: '100%', minHeight: 110, background: '#050505',
+            width: '100%', minHeight: 110, background: '#0A0D16',
             border: '1px solid #1f2532', borderRadius: 8, padding: 12,
             color: '#fafafa', fontSize: 13, fontFamily: 'inherit',
             outline: 'none', resize: 'vertical', lineHeight: 1.55, marginBottom: 12,
@@ -492,7 +492,7 @@ function AdminAIAnnounce({ schoolId: _ }: { schoolId: string }) {
             <button key={id} onClick={() => setAudience(id)} style={{
               flex: 1, padding: '7px 0', borderRadius: 7,
               border: `1px solid ${audience === id ? '#A5B4FC' : '#1f2532'}`,
-              background: audience === id ? 'rgba(165, 180, 252, 0.1)' : '#050505',
+              background: audience === id ? 'rgba(165, 180, 252, 0.1)' : '#0A0D16',
               color: audience === id ? '#A5B4FC' : '#6B7280',
               fontFamily: 'inherit', fontSize: 12, fontWeight: 600, cursor: 'pointer',
             }}>{label}</button>
@@ -506,7 +506,7 @@ function AdminAIAnnounce({ schoolId: _ }: { schoolId: string }) {
           value={hours}
           onChange={e => setHours(Number(e.target.value))}
           style={{
-            width: '100%', background: '#050505', border: '1px solid #1f2532',
+            width: '100%', background: '#0A0D16', border: '1px solid #1f2532',
             borderRadius: 8, padding: '9px 12px', color: '#fafafa', fontSize: 13,
             fontFamily: 'inherit', outline: 'none', marginBottom: 14, boxSizing: 'border-box',
           }}
@@ -526,7 +526,7 @@ function AdminAIAnnounce({ schoolId: _ }: { schoolId: string }) {
           disabled={sending || !draft.trim()}
           style={{
             width: '100%', padding: '10px 14px', borderRadius: 8, border: 'none',
-            background: !draft.trim() || sending ? '#1a1f2e' : 'linear-gradient(135deg, #A5B4FC, #A5B4FC)',
+            background: !draft.trim() || sending ? '#171D2D' : 'linear-gradient(135deg, #A5B4FC, #A5B4FC)',
             color: !draft.trim() || sending ? '#6B7280' : '#fff',
             fontFamily: 'inherit', fontSize: 13, fontWeight: 600,
             cursor: !draft.trim() || sending ? 'not-allowed' : 'pointer',
@@ -610,7 +610,7 @@ function AdminHealthMonitor() {
   return (
     <div>
       <div style={{
-        background: '#0E1117', border: '1px solid #1f2532', borderRadius: 14,
+        background: '#141A2A', border: '1px solid #1f2532', borderRadius: 14,
         padding: 26, marginBottom: 16, position: 'relative', overflow: 'hidden',
       }}>
         <div style={{
@@ -620,7 +620,7 @@ function AdminHealthMonitor() {
         <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 24 }}>
           <div style={{ position: 'relative', width: 110, height: 110 }}>
             <svg viewBox="-55 -55 110 110" style={{ width: '100%', height: '100%', transform: 'rotate(-90deg)' }}>
-              <circle r={45} fill="none" stroke="#1a1f2e" strokeWidth={6} />
+              <circle r={45} fill="none" stroke="#171D2D" strokeWidth={6} />
               <circle r={45} fill="none" stroke={scoreColor} strokeWidth={6} strokeLinecap="round"
                 strokeDasharray={2 * Math.PI * 45}
                 strokeDashoffset={2 * Math.PI * 45 * (1 - score / 100)} />
@@ -648,7 +648,7 @@ function AdminHealthMonitor() {
           </div>
           <button onClick={load} style={{
             padding: '8px 14px', borderRadius: 8, border: '1px solid #1f2532',
-            background: '#151922', color: '#9CA3AF', cursor: 'pointer',
+            background: '#1C2233', color: '#9CA3AF', cursor: 'pointer',
             fontFamily: 'inherit', fontSize: 12, display: 'flex', alignItems: 'center', gap: 6,
           }}>
             <RefreshCw size={12} /> Refresh
@@ -662,7 +662,7 @@ function AdminHealthMonitor() {
             const c = a.level === 'high' ? '#A5B4FC' : '#A5B4FC'
             return (
               <div key={i} style={{
-                background: '#0E1117', border: `1px solid ${c}40`, borderRadius: 11,
+                background: '#141A2A', border: `1px solid ${c}40`, borderRadius: 11,
                 borderLeft: `3px solid ${c}`,
                 padding: '12px 16px', display: 'flex', gap: 12, alignItems: 'flex-start',
               }}>
@@ -688,7 +688,7 @@ function AdminHealthMonitor() {
           { l: 'Submissions',    v: data.engagement.last7.subs,   t: data.engagement.trend.subs   },
           { l: 'Notifications',  v: data.engagement.last7.notifs, t: data.engagement.trend.notifs },
         ].map(s => (
-          <div key={s.l} style={{ background: '#0E1117', border: '1px solid #1f2532', borderRadius: 11, padding: 14 }}>
+          <div key={s.l} style={{ background: '#141A2A', border: '1px solid #1f2532', borderRadius: 11, padding: 14 }}>
             <div style={{ fontSize: 10, color: '#9CA3AF', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>
               {s.l}
             </div>
@@ -706,7 +706,7 @@ function AdminHealthMonitor() {
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
-        <div style={{ background: '#0E1117', border: '1px solid #1f2532', borderRadius: 12, padding: 16 }}>
+        <div style={{ background: '#141A2A', border: '1px solid #1f2532', borderRadius: 12, padding: 16 }}>
           <div style={{ fontSize: 13, fontWeight: 700, color: '#fafafa', marginBottom: 12 }}>Class Performance</div>
           {data.classPerformance.length === 0 && <div style={{ fontSize: 12, color: '#6B7280', fontStyle: 'italic' }}>No marks logged yet.</div>}
           {data.classPerformance.map((c: any) => (
@@ -718,7 +718,7 @@ function AdminHealthMonitor() {
                   color: c.avg_pct >= 75 ? '#A5B4FC' : c.avg_pct >= 60 ? '#A5B4FC' : '#A5B4FC',
                 }}>{c.avg_pct}%</span>
               </div>
-              <div style={{ height: 6, background: '#0E1117', borderRadius: 3, overflow: 'hidden' }}>
+              <div style={{ height: 6, background: '#141A2A', borderRadius: 3, overflow: 'hidden' }}>
                 <div style={{
                   height: '100%', width: `${c.avg_pct}%`,
                   background: c.avg_pct >= 75 ? '#A5B4FC' : c.avg_pct >= 60 ? '#A5B4FC' : '#A5B4FC',
@@ -729,15 +729,15 @@ function AdminHealthMonitor() {
           ))}
         </div>
 
-        <div style={{ background: '#0E1117', border: '1px solid #1f2532', borderRadius: 12, padding: 16 }}>
+        <div style={{ background: '#141A2A', border: '1px solid #1f2532', borderRadius: 12, padding: 16 }}>
           <div style={{ fontSize: 13, fontWeight: 700, color: '#fafafa', marginBottom: 12 }}>Teacher Load (30d)</div>
           {data.teacherLoad.length === 0 && <div style={{ fontSize: 12, color: '#6B7280', fontStyle: 'italic' }}>No tasks created yet.</div>}
           {data.teacherLoad.slice(0, 8).map((t: any) => (
             <div key={t.id} style={{
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
               padding: '6px 10px', marginBottom: 4,
-              background: t.tasks >= 8 ? 'rgba(124, 107, 246, 0.06)' : '#0E1117',
-              border: `1px solid ${t.tasks >= 8 ? 'rgba(124, 107, 246, 0.25)' : '#1a1f2e'}`,
+              background: t.tasks >= 8 ? 'rgba(124, 107, 246, 0.06)' : '#141A2A',
+              border: `1px solid ${t.tasks >= 8 ? 'rgba(124, 107, 246, 0.25)' : '#171D2D'}`,
               borderRadius: 6,
             }}>
               <span style={{ fontSize: 12, color: '#d4d4d8' }}>{t.name}</span>
@@ -752,7 +752,7 @@ function AdminHealthMonitor() {
 
       {(data.leadFunnel.new + data.leadFunnel.contacted + data.leadFunnel.admitted) > 0 && (
         <div style={{
-          background: '#0E1117', border: '1px solid #1f2532', borderRadius: 12,
+          background: '#141A2A', border: '1px solid #1f2532', borderRadius: 12,
           padding: 16, marginTop: 14,
         }}>
           <div style={{ fontSize: 13, fontWeight: 700, color: '#fafafa', marginBottom: 12 }}>
@@ -766,7 +766,7 @@ function AdminHealthMonitor() {
               { l: 'Rejected',  v: data.leadFunnel.rejected,  c: '#A5B4FC' },
             ].map(s => (
               <div key={s.l} style={{
-                padding: 12, background: '#0E1117',
+                padding: 12, background: '#141A2A',
                 border: `1px solid ${s.c}30`, borderRadius: 8,
               }}>
                 <div style={{ fontSize: 22, fontWeight: 700, color: s.c }}>{s.v}</div>
@@ -910,7 +910,7 @@ function AdminMembers({ schoolId, selfId }: { schoolId: string; selfId: string }
         {filterBtns.map(f => (
           <button key={f.id} onClick={() => setFilter(f.id)} style={{
             padding: '5px 12px', borderRadius: 6, fontSize: 12, fontWeight: 600,
-            background: filter === f.id ? 'rgba(124, 107, 246, 0.15)' : '#151922',
+            background: filter === f.id ? 'rgba(124, 107, 246, 0.15)' : '#1C2233',
             color: filter === f.id ? '#A5B4FC' : '#9CA3AF',
             border: filter === f.id ? '1px solid rgba(124, 107, 246, 0.3)' : '1px solid #1f2532',
             cursor: 'pointer', fontFamily: 'inherit',
@@ -1175,7 +1175,7 @@ function AdminLogs({ schoolId }: { schoolId: string }) {
         <div style={{ display: 'flex', gap: 8 }}>
           <button onClick={() => setFailOnly(f => !f)} style={{
             padding: '5px 12px', borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: 'pointer',
-            background: failOnly ? 'rgba(124, 107, 246, 0.15)' : '#151922',
+            background: failOnly ? 'rgba(124, 107, 246, 0.15)' : '#1C2233',
             color: failOnly ? '#A5B4FC' : '#9CA3AF',
             border: failOnly ? '1px solid rgba(124, 107, 246, 0.3)' : '1px solid #1f2532',
             fontFamily: 'inherit',
@@ -1324,7 +1324,7 @@ function AdminSettings({ schoolId, profile }: { schoolId: string; profile: AuthP
         <Input label="Domain (optional)" value={domain} onChange={setDomain} placeholder="e.g. schoolname.edu.in" />
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16,
-          padding: '12px 14px', background: '#0E1117', borderRadius: 8, border: '1px solid #1f2532' }}>
+          padding: '12px 14px', background: '#141A2A', borderRadius: 8, border: '1px solid #1f2532' }}>
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 13, fontWeight: 600, color: '#fafafa' }}>Require Admin Approval</div>
             <div style={{ fontSize: 12, color: '#6B7280' }}>New students must be approved before accessing school features.</div>
@@ -1370,7 +1370,7 @@ function AdminSettings({ schoolId, profile }: { schoolId: string; profile: AuthP
           <Key size={32} color="#A5B4FC" style={{ marginBottom: 12 }} />
           <div style={{ fontSize: 11, color: '#6B7280', marginBottom: 8 }}>Save this passcode — it will never be shown again.</div>
           <div style={{ fontSize: 22, fontWeight: 700, letterSpacing: 2, color: '#fafafa',
-            background: '#0E1117', border: '1px solid #2a2a2a', borderRadius: 10, padding: '14px 20px',
+            background: '#141A2A', border: '1px solid #2a2a2a', borderRadius: 10, padding: '14px 20px',
             fontFamily: 'monospace', userSelect: 'all' }}>
             {newPasscode}
           </div>
@@ -1505,7 +1505,7 @@ function CreateTask({ schoolId: _schoolId, onCreated }: { schoolId: string; onCr
         <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#9CA3AF', marginBottom: 5 }}>Description</label>
         <textarea value={desc} onChange={e => setDesc(e.target.value)} rows={3}
           placeholder="Task instructions..."
-          style={{ width: '100%', padding: '9px 12px', background: '#0E1117', border: '1px solid #2a2a2a',
+          style={{ width: '100%', padding: '9px 12px', background: '#141A2A', border: '1px solid #2a2a2a',
             borderRadius: 8, color: '#fafafa', fontSize: 13, fontFamily: 'inherit', outline: 'none',
             resize: 'vertical', boxSizing: 'border-box' }}
           onFocus={e => { (e.currentTarget as HTMLTextAreaElement).style.borderColor = '#7C6BF6' }}
@@ -1685,7 +1685,7 @@ function StudentTasks({ profile }: { profile: AuthProfile }) {
               </label>
               <textarea value={answer} onChange={e => setAnswer(e.target.value)} rows={5}
                 placeholder="Type your answer here..."
-                style={{ width: '100%', padding: '9px 12px', background: '#0E1117', border: '1px solid #2a2a2a',
+                style={{ width: '100%', padding: '9px 12px', background: '#141A2A', border: '1px solid #2a2a2a',
                   borderRadius: 8, color: '#fafafa', fontSize: 13, fontFamily: 'inherit', outline: 'none',
                   resize: 'vertical', boxSizing: 'border-box' }}
                 onFocus={e => { (e.currentTarget as HTMLTextAreaElement).style.borderColor = '#7C6BF6' }}
@@ -1757,7 +1757,7 @@ function NotifPanel({ schoolId, profile, canSend }: { schoolId: string; profile:
           <div style={{ marginBottom: 10 }}>
             <textarea value={msg} onChange={e => setMsg(e.target.value)} rows={2}
               placeholder="Broadcast message to school..."
-              style={{ width: '100%', padding: '9px 12px', background: '#0E1117', border: '1px solid #2a2a2a',
+              style={{ width: '100%', padding: '9px 12px', background: '#141A2A', border: '1px solid #2a2a2a',
                 borderRadius: 8, color: '#fafafa', fontSize: 13, fontFamily: 'inherit', outline: 'none',
                 resize: 'vertical', boxSizing: 'border-box' }}
               onFocus={e => { (e.currentTarget as HTMLTextAreaElement).style.borderColor = '#7C6BF6' }}
@@ -1766,14 +1766,14 @@ function NotifPanel({ schoolId, profile, canSend }: { schoolId: string; profile:
           </div>
           <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
             <select value={targetRole} onChange={e => setTargetRole(e.target.value)}
-              style={{ padding: '7px 10px', background: '#0E1117', border: '1px solid #2a2a2a',
+              style={{ padding: '7px 10px', background: '#141A2A', border: '1px solid #2a2a2a',
                 borderRadius: 7, color: '#fafafa', fontSize: 12, fontFamily: 'inherit' }}>
               <option value="all">Everyone</option>
               <option value="student">Students only</option>
               <option value="teacher">Teachers only</option>
             </select>
             <select value={expiresIn} onChange={e => setExpiresIn(e.target.value)}
-              style={{ padding: '7px 10px', background: '#0E1117', border: '1px solid #2a2a2a',
+              style={{ padding: '7px 10px', background: '#141A2A', border: '1px solid #2a2a2a',
                 borderRadius: 7, color: '#fafafa', fontSize: 12, fontFamily: 'inherit' }}>
               <option value="1">Expires in 1h</option>
               <option value="6">Expires in 6h</option>
@@ -1917,7 +1917,7 @@ function TeacherMarks({ schoolId, profile }: { schoolId: string; profile: AuthPr
               Student <span style={{ color: '#A5B4FC' }}>*</span>
             </label>
             <select value={studentId} onChange={e => setStudentId(e.target.value)}
-              style={{ width: '100%', padding: '9px 12px', background: '#0E1117', border: '1px solid #2a2a2a',
+              style={{ width: '100%', padding: '9px 12px', background: '#141A2A', border: '1px solid #2a2a2a',
                 borderRadius: 8, color: studentId ? '#fafafa' : '#6B7280', fontSize: 13, fontFamily: 'inherit' }}>
               <option value="">— Select student —</option>
               {students.map(s => (
@@ -2231,7 +2231,7 @@ export default function SchoolHub({ profile }: SchoolHubProps) {
   if (!schoolId) return <NoSchoolView />
 
   return (
-    <div style={{ height: '100%', overflow: 'auto', background: '#050505',
+    <div style={{ height: '100%', overflow: 'auto', background: '#0A0D16',
       fontFamily: "'Inter', system-ui, sans-serif" }}>
       <div style={{ maxWidth: 1080, margin: '0 auto', padding: '24px 20px' }}>
         <SchoolHeader profile={profile} />

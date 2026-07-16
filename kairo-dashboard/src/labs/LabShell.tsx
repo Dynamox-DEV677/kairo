@@ -32,7 +32,7 @@ const MARKDOWN_COMPONENTS = {
   code: ({ children, className }: any) => {
     const isBlock = !!className
     return isBlock
-      ? <pre style={{ background: '#050505', border: '1px solid #27272a', borderRadius: 8, padding: '12px 14px', overflowX: 'auto', margin: '10px 0' }}>
+      ? <pre style={{ background: '#0A0D16', border: '1px solid #27272a', borderRadius: 8, padding: '12px 14px', overflowX: 'auto', margin: '10px 0' }}>
           <code style={{ fontSize: 12.5, color: '#86efac', fontFamily: 'monospace' }}>{children}</code>
         </pre>
       : <code style={{ background: '#1a1a2e', padding: '2px 6px', borderRadius: 4, fontSize: 12.5, color: '#A5B4FC', fontFamily: 'monospace' }}>{children}</code>
@@ -166,14 +166,14 @@ Keep total length 180-280 words. Tone: friendly, specific, exam-aware.` },
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       <div style={{
-        padding: '14px 24px', borderBottom: '1px solid #1a1f2e',
+        padding: '14px 24px', borderBottom: '1px solid #171D2D',
         display: 'flex', alignItems: 'center', gap: 14, flexShrink: 0, flexWrap: 'wrap',
         background: 'rgba(13,13,13,0.7)', backdropFilter: 'blur(12px)',
       }}>
         {onBack && (
           <button onClick={onBack} style={{
             width: 34, height: 34, borderRadius: 8,
-            background: '#151922', border: '1px solid #1f2532',
+            background: '#1C2233', border: '1px solid #1f2532',
             cursor: 'pointer', flexShrink: 0,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             color: '#B1B5BA',
@@ -190,7 +190,7 @@ Keep total length 180-280 words. Tone: friendly, specific, exam-aware.` },
           </h1>
         </div>
 
-        <div style={{ display: 'flex', gap: 4, background: '#0E1117', border: '1px solid #1f2532', borderRadius: 9, padding: 3 }}>
+        <div style={{ display: 'flex', gap: 4, background: '#141A2A', border: '1px solid #1f2532', borderRadius: 9, padding: 3 }}>
           {([
             { id: '3d',   label: '3D',    Icon: Box },
             { id: 'text', label: 'Text',  Icon: Type },
@@ -253,7 +253,7 @@ Keep total length 180-280 words. Tone: friendly, specific, exam-aware.` },
                         style={{
                           padding: '4px 10px', borderRadius: 5,
                           border: `1px solid ${params[c.key] ? '#7C6BF6' : '#1f2532'}`,
-                          background: params[c.key] ? 'rgba(124, 107, 246, 0.12)' : '#0E1117',
+                          background: params[c.key] ? 'rgba(124, 107, 246, 0.12)' : '#141A2A',
                           color: params[c.key] ? '#A5B4FC' : '#9CA3AF',
                           fontSize: 10, fontWeight: 600, cursor: 'pointer',
                           fontFamily: 'inherit',
@@ -265,7 +265,7 @@ Keep total length 180-280 words. Tone: friendly, specific, exam-aware.` },
                       <select value={params[c.key]} onChange={e => setParam(c.key, e.target.value)}
                         style={{
                           width: '100%', padding: '4px 8px', borderRadius: 5,
-                          background: '#0E1117', border: '1px solid #1f2532',
+                          background: '#141A2A', border: '1px solid #1f2532',
                           color: '#fafafa', fontFamily: 'inherit', fontSize: 11,
                           outline: 'none',
                         }}>
@@ -292,7 +292,7 @@ Keep total length 180-280 words. Tone: friendly, specific, exam-aware.` },
         {showText && (
           <div style={{
             overflowY: 'auto', padding: '20px 24px',
-            background: '#050505', borderLeft: showSim ? '1px solid #1a1f2e' : 'none',
+            background: '#0A0D16', borderLeft: showSim ? '1px solid #171D2D' : 'none',
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
               <Sparkles size={14} color="#A5B4FC" />
@@ -333,7 +333,7 @@ Keep total length 180-280 words. Tone: friendly, specific, exam-aware.` },
             </AnimatePresence>
 
             {explanation && (
-              <div style={{ display: 'flex', gap: 8, marginTop: 18, paddingTop: 14, borderTop: '1px solid #1a1f2e' }}>
+              <div style={{ display: 'flex', gap: 8, marginTop: 18, paddingTop: 14, borderTop: '1px solid #171D2D' }}>
                 <button onClick={saveExplanation} disabled={savedNote} style={{
                   ...btn, color: savedNote ? '#34d399' : '#A5B4FC',
                   borderColor: savedNote ? 'rgba(52,211,153,0.4)' : 'rgba(124, 107, 246, 0.3)',
@@ -352,7 +352,7 @@ Keep total length 180-280 words. Tone: friendly, specific, exam-aware.` },
 
 const btn: React.CSSProperties = {
   padding: '6px 11px', borderRadius: 6,
-  border: '1px solid #1f2532', background: '#151922',
+  border: '1px solid #1f2532', background: '#1C2233',
   color: '#B1B5BA', cursor: 'pointer',
   fontFamily: 'inherit', fontSize: 10.5, fontWeight: 600,
   display: 'flex', alignItems: 'center', gap: 5,

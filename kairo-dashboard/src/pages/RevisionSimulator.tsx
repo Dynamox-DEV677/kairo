@@ -257,7 +257,7 @@ function SetupView({
               <button key={d.id} onClick={() => setDiff(d)} style={{
                 padding: '14px 12px', borderRadius: 10, cursor: 'pointer',
                 border: `1px solid ${active ? d.color : '#1f2532'}`,
-                background: active ? `${d.color}12` : '#0E1117',
+                background: active ? `${d.color}12` : '#141A2A',
                 fontFamily: 'inherit', textAlign: 'left', transition: 'all 0.15s',
               }}>
                 <div style={{ fontSize: 14, fontWeight: 700, color: active ? d.color : '#fafafa', marginBottom: 4 }}>
@@ -305,7 +305,7 @@ function SetupView({
                 }
               }}
               style={{
-                width: '100%', background: '#0E1117', border: '1px solid #1f2532',
+                width: '100%', background: '#141A2A', border: '1px solid #1f2532',
                 borderRadius: 7, padding: '8px 12px', fontSize: 12, color: '#fafafa',
                 fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box',
               }}
@@ -321,7 +321,7 @@ function SetupView({
                 <button key={t.topic} onClick={() => toggle(t.topic)} style={{
                   padding: '6px 12px', borderRadius: 7,
                   border: `1px solid ${picked ? '#A5B4FC' : '#1f2532'}`,
-                  background: picked ? 'rgba(165, 180, 252, 0.1)' : '#0E1117',
+                  background: picked ? 'rgba(165, 180, 252, 0.1)' : '#141A2A',
                   color: picked ? '#A5B4FC' : '#9CA3AF',
                   cursor: 'pointer', fontFamily: 'inherit', fontSize: 12, fontWeight: 600,
                   display: 'flex', alignItems: 'center', gap: 6,
@@ -340,7 +340,7 @@ function SetupView({
             {pickedTopics.filter(t => !weakTopics.some((w: any) => w.topic === t)).map(t => (
               <span key={t} style={{
                 display: 'inline-flex', alignItems: 'center', gap: 4, marginRight: 6,
-                padding: '2px 8px', borderRadius: 4, background: '#1a1f2e', color: '#B1B5BA',
+                padding: '2px 8px', borderRadius: 4, background: '#171D2D', color: '#B1B5BA',
               }}>
                 {t}
                 <button onClick={() => setPicked((p: string[]) => p.filter(x => x !== t))}
@@ -362,7 +362,7 @@ function SetupView({
         onClick={onStart} disabled={pickedTopics.length === 0}
         style={{
           width: '100%', padding: '14px', borderRadius: 11, border: 'none',
-          background: pickedTopics.length === 0 ? '#1a1f2e'
+          background: pickedTopics.length === 0 ? '#171D2D'
             : 'linear-gradient(135deg, #A5B4FC, #A5B4FC)',
           color: pickedTopics.length === 0 ? '#6B7280' : '#fff',
           fontFamily: 'inherit', fontSize: 15, fontWeight: 700,
@@ -405,7 +405,7 @@ function LiveView({ q, idx, total, secsLeft, maxSecs, picked, onPick }: any) {
           <div style={{ fontSize: 11, color: '#9CA3AF', marginBottom: 6, fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase' }}>
             Question {idx + 1} of {total}
           </div>
-          <div style={{ height: 4, background: '#1a1f2e', borderRadius: 2, overflow: 'hidden' }}>
+          <div style={{ height: 4, background: '#171D2D', borderRadius: 2, overflow: 'hidden' }}>
             <motion.div
               animate={{ width: `${((idx + 1) / total) * 100}%` }}
               style={{ height: '100%', background: 'linear-gradient(90deg, #7C6BF6, #7C6BF6)' }} />
@@ -415,7 +415,7 @@ function LiveView({ q, idx, total, secsLeft, maxSecs, picked, onPick }: any) {
           width: 64, height: 64, position: 'relative',
         }}>
           <svg viewBox="-32 -32 64 64" style={{ width: '100%', height: '100%', transform: 'rotate(-90deg)' }}>
-            <circle r={26} fill="none" stroke="#1a1f2e" strokeWidth={3} />
+            <circle r={26} fill="none" stroke="#171D2D" strokeWidth={3} />
             <motion.circle
               r={26} fill="none" stroke={dangerColor} strokeWidth={3} strokeLinecap="round"
               strokeDasharray={2 * Math.PI * 26}
@@ -457,14 +457,14 @@ function LiveView({ q, idx, total, secsLeft, maxSecs, picked, onPick }: any) {
               style={{
                 padding: '13px 16px', borderRadius: 10,
                 border: `1px solid ${isPicked ? '#7C6BF6' : '#1f2532'}`,
-                background: isPicked ? 'rgba(124, 107, 246, 0.1)' : '#0E1117',
+                background: isPicked ? 'rgba(124, 107, 246, 0.1)' : '#141A2A',
                 cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left',
                 display: 'flex', alignItems: 'center', gap: 12,
                 transition: 'all 0.15s',
               }}>
               <div style={{
                 width: 26, height: 26, borderRadius: 7, flexShrink: 0,
-                background: isPicked ? '#7C6BF6' : '#1a1f2e',
+                background: isPicked ? '#7C6BF6' : '#171D2D',
                 color: isPicked ? '#fff' : '#9CA3AF',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: 12, fontWeight: 700,
@@ -565,9 +565,9 @@ function ResultsView({ questions, answers, onReset }: any) {
                     <div key={j} style={{
                       padding: '7px 10px', borderRadius: 6, fontSize: 12,
                       border: `1px solid ${isAnswer ? 'rgba(165, 180, 252, 0.4)' :
-                        isPicked && !isAnswer ? 'rgba(165, 180, 252, 0.14)' : '#1a1f2e'}`,
+                        isPicked && !isAnswer ? 'rgba(165, 180, 252, 0.14)' : '#171D2D'}`,
                       background: isAnswer ? 'rgba(165, 180, 252, 0.08)' :
-                        isPicked && !isAnswer ? 'rgba(165, 180, 252, 0.08)' : '#0E1117',
+                        isPicked && !isAnswer ? 'rgba(165, 180, 252, 0.08)' : '#141A2A',
                       color: isAnswer ? '#A5B4FC' : isPicked && !isAnswer ? '#A5B4FC' : '#B1B5BA',
                       display: 'flex', alignItems: 'center', gap: 8,
                     }}>
@@ -580,8 +580,8 @@ function ResultsView({ questions, answers, onReset }: any) {
 
               <div style={{
                 fontSize: 11.5, color: '#B1B5BA', lineHeight: 1.55,
-                padding: '8px 10px', background: '#0E1117',
-                border: '1px solid #1a1f2e', borderRadius: 7,
+                padding: '8px 10px', background: '#141A2A',
+                border: '1px solid #171D2D', borderRadius: 7,
               }}>
                 <strong style={{ color: '#A5B4FC' }}>Why:</strong> <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]} components={MD_INLINE}>{q.explain}</ReactMarkdown>
               </div>

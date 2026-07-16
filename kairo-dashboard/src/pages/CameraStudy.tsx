@@ -233,7 +233,7 @@ export default function CameraStudy() {
             <button key={m.id} onClick={() => setModel(m.id)} style={{
               padding: '10px 14px', borderRadius: 9,
               border: `1px solid ${model === m.id ? '#7C6BF6' : '#1f2532'}`,
-              background: model === m.id ? 'rgba(124, 107, 246, 0.10)' : '#0E1117',
+              background: model === m.id ? 'rgba(124, 107, 246, 0.10)' : '#141A2A',
               cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left',
               transition: 'all 0.15s',
             }}>
@@ -255,7 +255,7 @@ export default function CameraStudy() {
           onDragOver={e => e.preventDefault()}
           style={{
             border: '2px dashed #2d2d4d', borderRadius: 14, padding: '46px 24px',
-            background: '#0E1117', textAlign: 'center', marginBottom: 14,
+            background: '#141A2A', textAlign: 'center', marginBottom: 14,
           }}>
           <div style={{
             width: 60, height: 60, borderRadius: 16, margin: '0 auto 14px',
@@ -281,7 +281,7 @@ export default function CameraStudy() {
             </button>
             <button onClick={openCamera} style={{
               padding: '10px 18px', borderRadius: 9,
-              border: '1px solid #1f2532', background: '#151922', color: '#B1B5BA',
+              border: '1px solid #1f2532', background: '#1C2233', color: '#B1B5BA',
               fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: 'pointer',
               display: 'flex', alignItems: 'center', gap: 7,
             }}>
@@ -319,7 +319,7 @@ export default function CameraStudy() {
               </button>
               <button onClick={stopCamera} style={{
                 padding: '11px 18px', borderRadius: 9, border: '1px solid #1f2532',
-                background: '#151922', color: '#B1B5BA',
+                background: '#1C2233', color: '#B1B5BA',
                 fontFamily: 'inherit', fontSize: 13, cursor: 'pointer',
               }}>Cancel</button>
             </div>
@@ -331,7 +331,7 @@ export default function CameraStudy() {
         <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
           className="mob-stack" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
           <div style={{
-            background: '#0E1117', border: '1px solid #1f2532', borderRadius: 14, padding: 12,
+            background: '#141A2A', border: '1px solid #1f2532', borderRadius: 14, padding: 12,
             position: 'relative',
           }}>
             <img src={imageData} alt="Captured"
@@ -357,7 +357,7 @@ export default function CameraStudy() {
                   style={{
                     padding: 16, borderRadius: 12,
                     border: `1px solid ${isActive ? a.color : '#1f2532'}`,
-                    background: isActive ? `${a.color}10` : '#0E1117',
+                    background: isActive ? `${a.color}10` : '#141A2A',
                     cursor: busy ? 'not-allowed' : 'pointer',
                     fontFamily: 'inherit', textAlign: 'left',
                     display: 'flex', flexDirection: 'column', gap: 8,
@@ -393,7 +393,7 @@ export default function CameraStudy() {
         {result && (
           <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
             style={{
-              background: '#0E1117', border: '1px solid #2d2b55', borderRadius: 14,
+              background: '#141A2A', border: '1px solid #2d2b55', borderRadius: 14,
               padding: 22,
             }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
@@ -413,14 +413,14 @@ export default function CameraStudy() {
             <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
               <button onClick={() => navigator.clipboard.writeText(result)} style={{
                 padding: '6px 12px', borderRadius: 7, border: '1px solid #1f2532',
-                background: '#151922', color: '#B1B5BA', cursor: 'pointer',
+                background: '#1C2233', color: '#B1B5BA', cursor: 'pointer',
                 fontFamily: 'inherit', fontSize: 11, display: 'flex', alignItems: 'center', gap: 5,
               }}>
                 Copy
               </button>
               <button onClick={reset} style={{
                 padding: '6px 12px', borderRadius: 7, border: '1px solid #1f2532',
-                background: '#151922', color: '#B1B5BA', cursor: 'pointer',
+                background: '#1C2233', color: '#B1B5BA', cursor: 'pointer',
                 fontFamily: 'inherit', fontSize: 11, display: 'flex', alignItems: 'center', gap: 5,
               }}>
                 <RotateCcw size={11} /> Try another image

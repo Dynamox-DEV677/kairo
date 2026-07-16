@@ -14,9 +14,9 @@ const TABS = [
 ]
 
 const card = { background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(14px) saturate(140%)', WebkitBackdropFilter: 'blur(14px) saturate(140%)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14, padding: 20 }
-const inp  = { background: '#0E1117', border: '1px solid #1f2532', borderRadius: 8, padding: '9px 12px', fontSize: 13, color: '#fafafa', fontFamily: 'inherit', outline: 'none', width: '100%' } as React.CSSProperties
+const inp  = { background: '#141A2A', border: '1px solid #1f2532', borderRadius: 8, padding: '9px 12px', fontSize: 13, color: '#fafafa', fontFamily: 'inherit', outline: 'none', width: '100%' } as React.CSSProperties
 const label = { fontSize: 11, color: '#9CA3AF', display: 'block', marginBottom: 5, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.8 } as React.CSSProperties
-const btn = (active = true) => ({ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', borderRadius: 9, border: 'none', background: active ? 'linear-gradient(135deg,#7C6BF6,#7C6BF6)' : '#1a1f2e', color: active ? '#fff' : '#6B7280', fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: active ? 'pointer' : 'not-allowed' } as React.CSSProperties)
+const btn = (active = true) => ({ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', borderRadius: 9, border: 'none', background: active ? 'linear-gradient(135deg,#7C6BF6,#7C6BF6)' : '#171D2D', color: active ? '#fff' : '#6B7280', fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: active ? 'pointer' : 'not-allowed' } as React.CSSProperties)
 
 export default function FeeReminder() {
   const [tab, setTab] = useState('stats')
@@ -28,7 +28,7 @@ export default function FeeReminder() {
         <p style={{ fontSize: 13, color: '#6B7280', marginTop: 4 }}>Automated Gmail reminders · AI-generated content · Smart scheduling</p>
       </div>
 
-      <div style={{ display: 'flex', gap: 4, marginBottom: 24, background: '#0E1117', border: '1px solid #1f2532', borderRadius: 10, padding: 4 }}>
+      <div style={{ display: 'flex', gap: 4, marginBottom: 24, background: '#141A2A', border: '1px solid #1f2532', borderRadius: 10, padding: 4 }}>
         {TABS.map(t => (
           <button key={t.id} onClick={() => setTab(t.id)} style={{
             flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
@@ -341,7 +341,7 @@ function SendTab() {
       <div style={card}>
         <h3 style={{ fontSize: 14, fontWeight: 700, color: '#fafafa', margin: '0 0 16px' }}>Send Reminders</h3>
 
-        <div style={{ padding: '10px 14px', background: '#0E1117', borderRadius: 8, border: '1px solid #1f2532', marginBottom: 16 }}>
+        <div style={{ padding: '10px 14px', background: '#141A2A', borderRadius: 8, border: '1px solid #1f2532', marginBottom: 16 }}>
           <p style={{ fontSize: 12, color: '#9CA3AF', margin: 0 }}>📧 Sends a reminder to all students with <strong style={{ color: '#A5B4FC' }}>pending fees</strong>. Set up Gmail in the Setup tab first.</p>
         </div>
 
@@ -361,7 +361,7 @@ function SendTab() {
             {(['ai', 'manual'] as const).map(m => (
               <button key={m} onClick={() => setMode(m)} style={{
                 flex: 1, padding: '8px 0', borderRadius: 8, border: `1px solid ${mode === m ? '#7C6BF6' : '#1f2532'}`,
-                background: mode === m ? 'rgba(124, 107, 246, 0.12)' : '#0E1117',
+                background: mode === m ? 'rgba(124, 107, 246, 0.12)' : '#141A2A',
                 color: mode === m ? '#A5B4FC' : '#6B7280',
                 fontFamily: 'inherit', fontSize: 12, fontWeight: 600, cursor: 'pointer', transition: 'all 0.15s',
               }}>
@@ -434,14 +434,14 @@ function SendTab() {
           )}
           <div style={{ display: 'flex', gap: 12, marginBottom: 14 }}>
             {[['Sent', result.sent, '#A5B4FC'], ['Failed', result.failed, '#A5B4FC'], ['Skipped', result.skipped, '#A5B4FC']].map(([l, v, c]) => (
-              <div key={l as string} style={{ flex: 1, background: '#0E1117', borderRadius: 8, padding: '10px 12px', textAlign: 'center' }}>
+              <div key={l as string} style={{ flex: 1, background: '#141A2A', borderRadius: 8, padding: '10px 12px', textAlign: 'center' }}>
                 <div style={{ fontSize: 22, fontWeight: 700, color: c as string }}>{v as number}</div>
                 <div style={{ fontSize: 10, color: '#9CA3AF' }}>{l}</div>
               </div>
             ))}
           </div>
           {result.skip_reasons?.length > 0 && (
-            <div style={{ background: '#0E1117', borderRadius: 8, padding: 12 }}>
+            <div style={{ background: '#141A2A', borderRadius: 8, padding: 12 }}>
               <div style={{ fontSize: 10, fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>Skip Reasons</div>
               {result.skip_reasons.map((r: any, i: number) => (
                 <div key={i} style={{ fontSize: 11, color: '#A5B4FC', marginBottom: 4 }}>⚠ {r.student || r.fee_id}: {r.reason}</div>

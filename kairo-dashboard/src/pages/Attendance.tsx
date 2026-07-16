@@ -14,7 +14,7 @@ const TABS = [
 
 const card  = { background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(14px) saturate(140%)', WebkitBackdropFilter: 'blur(14px) saturate(140%)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14 }
 const label = { fontSize: 11, color: '#9CA3AF', display: 'block', marginBottom: 5, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.8 } as React.CSSProperties
-const inp   = { background: '#0E1117', border: '1px solid #1f2532', borderRadius: 8, padding: '9px 12px', fontSize: 13, color: '#fafafa', fontFamily: 'inherit', outline: 'none', width: '100%' } as React.CSSProperties
+const inp   = { background: '#141A2A', border: '1px solid #1f2532', borderRadius: 8, padding: '9px 12px', fontSize: 13, color: '#fafafa', fontFamily: 'inherit', outline: 'none', width: '100%' } as React.CSSProperties
 
 type AttStatus = 'present' | 'absent' | 'late' | 'excused'
 const STATUS_COLORS: Record<AttStatus, string> = { present: '#A5B4FC', absent: '#A5B4FC', late: '#A5B4FC', excused: '#A5B4FC' }
@@ -29,7 +29,7 @@ export default function Attendance() {
         <p style={{ fontSize: 13, color: '#6B7280', marginTop: 4 }}>Mark daily attendance · Detect at-risk students · View analytics</p>
       </div>
 
-      <div style={{ display: 'flex', gap: 4, marginBottom: 24, background: '#0E1117', border: '1px solid #1f2532', borderRadius: 10, padding: 4, width: 'fit-content' }}>
+      <div style={{ display: 'flex', gap: 4, marginBottom: 24, background: '#141A2A', border: '1px solid #1f2532', borderRadius: 10, padding: 4, width: 'fit-content' }}>
         {TABS.map(t => (
           <button key={t.id} onClick={() => setTab(t.id)} style={{
             display: 'flex', alignItems: 'center', gap: 6, padding: '7px 18px',
@@ -312,12 +312,12 @@ function StatsTab() {
 
           {stats.records?.length > 0 && (
             <div style={card}>
-              <div style={{ padding: '14px 18px', borderBottom: '1px solid #1a1f2e', fontSize: 11, fontWeight: 700, color: '#6B7280', textTransform: 'uppercase', letterSpacing: 1 }}>
+              <div style={{ padding: '14px 18px', borderBottom: '1px solid #171D2D', fontSize: 11, fontWeight: 700, color: '#6B7280', textTransform: 'uppercase', letterSpacing: 1 }}>
                 Recent Records
               </div>
               <div style={{ maxHeight: 260, overflowY: 'auto' }}>
                 {[...stats.records].reverse().slice(0, 30).map((r: any, i: number) => (
-                  <div key={i} style={{ padding: '9px 18px', borderBottom: '1px solid #0E1117', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div key={i} style={{ padding: '9px 18px', borderBottom: '1px solid #141A2A', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span style={{ fontSize: 12, color: '#B1B5BA' }}>{r.date}</span>
                     <span style={{ fontSize: 11, fontWeight: 700, color: STATUS_COLORS[r.status as AttStatus] || '#9CA3AF', background: `${STATUS_COLORS[r.status as AttStatus] || '#9CA3AF'}15`, padding: '2px 10px', borderRadius: 20 }}>
                       {r.status}

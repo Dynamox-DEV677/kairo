@@ -16,7 +16,7 @@ const GRADES   = ['6', '7', '8', '9', '10', '11', '12']
 
 const card: React.CSSProperties = { background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(14px) saturate(140%)', WebkitBackdropFilter: 'blur(14px) saturate(140%)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14 }
 const inp: React.CSSProperties = {
-  background: '#0E1117', border: '1px solid #1f2532', borderRadius: 8,
+  background: '#141A2A', border: '1px solid #1f2532', borderRadius: 8,
   padding: '9px 12px', fontSize: 13, color: '#fafafa',
   fontFamily: 'inherit', outline: 'none', width: '100%', boxSizing: 'border-box',
 }
@@ -278,7 +278,7 @@ Markdown structure:
             onClick={generate} disabled={busy || !topic.trim()}
             style={{
               width: '100%', padding: '13px', borderRadius: 11, border: 'none',
-              background: busy || !topic.trim() ? '#1a1f2e' : 'linear-gradient(135deg, #A5B4FC, #A5B4FC)',
+              background: busy || !topic.trim() ? '#171D2D' : 'linear-gradient(135deg, #A5B4FC, #A5B4FC)',
               color: busy || !topic.trim() ? '#6B7280' : '#fff',
               fontFamily: 'inherit', fontSize: 14, fontWeight: 700,
               cursor: busy || !topic.trim() ? 'not-allowed' : 'pointer',
@@ -319,7 +319,7 @@ Markdown structure:
             <button onClick={() => { setPack(null); setTopic('') }}
               style={{
                 padding: '7px 12px', borderRadius: 7, border: '1px solid #1f2532',
-                background: '#151922', color: '#9CA3AF', cursor: 'pointer',
+                background: '#1C2233', color: '#9CA3AF', cursor: 'pointer',
                 fontFamily: 'inherit', fontSize: 11, display: 'flex', alignItems: 'center', gap: 5,
               }}>
               <RefreshCw size={11} /> New Pack
@@ -327,7 +327,7 @@ Markdown structure:
           </div>
 
           <div style={{
-            display: 'flex', gap: 4, marginBottom: 12, background: '#0E1117',
+            display: 'flex', gap: 4, marginBottom: 12, background: '#141A2A',
             border: '1px solid #1f2532', borderRadius: 10, padding: 4, overflowX: 'auto',
           }}>
             {ARTIFACTS.map(a => {
@@ -352,7 +352,7 @@ Markdown structure:
           <div style={{ ...card, padding: 22 }}>
             <div style={{
               display: 'flex', justifyContent: 'flex-end', gap: 6, marginBottom: 14,
-              paddingBottom: 12, borderBottom: '1px solid #1a1f2e',
+              paddingBottom: 12, borderBottom: '1px solid #171D2D',
             }}>
               <button onClick={saveCurrentTab} disabled={savedTabs.has(activeTab)} style={toolBtn(savedTabs.has(activeTab) ? '#A5B4FC' : '#A5B4FC')}>
                 <Save size={11} />{savedTabs.has(activeTab) ? 'Saved' : 'Save to Notebook'}
@@ -411,7 +411,7 @@ function FlashcardsView({ cards }: { cards: Flashcard[] }) {
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 10 }}>
       {cards.map((c, i) => (
         <div key={i} style={{
-          background: '#0E1117', border: '1px solid #2d2b55', borderRadius: 10, padding: 14,
+          background: '#141A2A', border: '1px solid #2d2b55', borderRadius: 10, padding: 14,
         }}>
           <div style={{ fontSize: 10, fontWeight: 700, color: '#6B7280', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>
             #{i + 1} · Front
@@ -438,7 +438,7 @@ function QuizView({ items }: { items: QuizItem[] }) {
         <button onClick={() => setShowAnswers(s => !s)} style={{
           padding: '5px 12px', borderRadius: 6,
           border: `1px solid ${showAnswers ? '#A5B4FC' : '#1f2532'}`,
-          background: showAnswers ? 'rgba(165, 180, 252, 0.1)' : '#151922',
+          background: showAnswers ? 'rgba(165, 180, 252, 0.1)' : '#1C2233',
           color: showAnswers ? '#A5B4FC' : '#9CA3AF',
           cursor: 'pointer', fontFamily: 'inherit', fontSize: 11, fontWeight: 600,
         }}>{showAnswers ? 'Hide Answers' : 'Reveal Answers'}</button>
@@ -446,7 +446,7 @@ function QuizView({ items }: { items: QuizItem[] }) {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         {items.map((q, i) => (
           <div key={i} style={{
-            background: '#0E1117', border: '1px solid #1a1f2e', borderRadius: 10, padding: 14,
+            background: '#141A2A', border: '1px solid #171D2D', borderRadius: 10, padding: 14,
           }}>
             <div style={{ fontSize: 13, fontWeight: 600, color: '#fafafa', marginBottom: 10 }}>
               <span style={{ color: '#A5B4FC', fontWeight: 800, marginRight: 6 }}>Q{i + 1}.</span>
@@ -458,8 +458,8 @@ function QuizView({ items }: { items: QuizItem[] }) {
                 return (
                   <div key={j} style={{
                     padding: '7px 10px', borderRadius: 6, fontSize: 12,
-                    border: `1px solid ${showAnswers && isAnswer ? 'rgba(165, 180, 252, 0.4)' : '#1a1f2e'}`,
-                    background: showAnswers && isAnswer ? 'rgba(165, 180, 252, 0.08)' : '#050505',
+                    border: `1px solid ${showAnswers && isAnswer ? 'rgba(165, 180, 252, 0.4)' : '#171D2D'}`,
+                    background: showAnswers && isAnswer ? 'rgba(165, 180, 252, 0.08)' : '#0A0D16',
                     color: showAnswers && isAnswer ? '#A5B4FC' : '#B1B5BA',
                     display: 'flex', alignItems: 'center', gap: 8,
                   }}>
@@ -472,8 +472,8 @@ function QuizView({ items }: { items: QuizItem[] }) {
             {showAnswers && (
               <div style={{
                 fontSize: 11.5, color: '#B1B5BA', lineHeight: 1.5,
-                padding: '7px 10px', background: '#050505',
-                border: '1px solid #1a1f2e', borderRadius: 6,
+                padding: '7px 10px', background: '#0A0D16',
+                border: '1px solid #171D2D', borderRadius: 6,
               }}>
                 <strong style={{ color: '#A5B4FC' }}>Why:</strong> {q.explain}
               </div>

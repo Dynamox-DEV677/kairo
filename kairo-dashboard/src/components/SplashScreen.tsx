@@ -42,7 +42,7 @@ export default function SplashScreen({ onComplete, duration = 2600 }: Props) {
           transition={{ duration: 0.5, ease: 'easeInOut' }}
           style={{
             position: 'fixed', inset: 0, zIndex: 99999,
-            background: '#050505', color: '#fff',
+            background: '#0A0D16', color: '#fff',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             overflow: 'hidden', cursor: canSkip ? 'pointer' : 'default',
           }}

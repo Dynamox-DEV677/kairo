@@ -511,7 +511,7 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
                     marginBottom: 1, transition: 'background 0.1s', gap: 6,
                   }}
                   onMouseEnter={e => {
-                    (e.currentTarget as HTMLDivElement).style.background = isDark ? '#151922' : '#f4f4f5';
+                    (e.currentTarget as HTMLDivElement).style.background = isDark ? '#1C2233' : '#f4f4f5';
                     const x = e.currentTarget.querySelector('[data-del]') as HTMLElement | null
                     if (x) x.style.opacity = '1'
                   }}

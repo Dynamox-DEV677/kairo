@@ -17,7 +17,7 @@ Be specific and use markdown formatting.`
 
 const sel = (value: string, onChange: (v: string) => void, options: string[]) => (
   <select value={value} onChange={e => onChange(e.target.value)}
-    style={{ width: '100%', background: '#0E1117', border: '1px solid #1f2532', borderRadius: 8, padding: '9px 12px', fontSize: 13, color: '#fafafa', fontFamily: 'inherit', outline: 'none', appearance: 'none' }}>
+    style={{ width: '100%', background: '#141A2A', border: '1px solid #1f2532', borderRadius: 8, padding: '9px 12px', fontSize: 13, color: '#fafafa', fontFamily: 'inherit', outline: 'none', appearance: 'none' }}>
     {options.map(o => <option key={o}>{o}</option>)}
   </select>
 )
@@ -46,7 +46,7 @@ export default function ExamPredictor() {
         <p style={{ fontSize: 13, color: '#6B7280', marginTop: 4 }}>10-year pattern analysis — highest probability topics</p>
       </div>
 
-      <div style={{ background: '#0E1117', border: '1px solid #1f2532', borderRadius: 14, padding: 24, marginBottom: 24 }}>
+      <div style={{ background: '#141A2A', border: '1px solid #1f2532', borderRadius: 14, padding: 24, marginBottom: 24 }}>
         <div className="mob-stack" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14, marginBottom: 20 }}>
           <div>
             <label style={{ fontSize: 11, fontWeight: 600, color: '#9CA3AF', display: 'block', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.8 }}>Board</label>
@@ -84,7 +84,7 @@ export default function ExamPredictor() {
 
       {prediction && !loading && (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-          style={{ background: '#0E1117', border: '1px solid #1f2532', borderRadius: 14, padding: '28px 32px' }}>
+          style={{ background: '#141A2A', border: '1px solid #1f2532', borderRadius: 14, padding: '28px 32px' }}>
           <div className="prose-ai"><ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>{prediction}</ReactMarkdown></div>
         </motion.div>
       )}

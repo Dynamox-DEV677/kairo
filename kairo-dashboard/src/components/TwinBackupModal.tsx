@@ -12,9 +12,9 @@ import {
 import SprintOverlay, { SPRINT_PHASES, SPRINT_MIN_MS } from './SprintOverlay'
 
 const C = {
-  bg:        '#050505',
-  panel:     '#0E1117',
-  panel2:    '#151922',
+  bg:        '#0A0D16',
+  panel:     '#141A2A',
+  panel2:    '#1C2233',
   border:    'rgba(255,255,255,0.08)',
   borderSoft:'rgba(255,255,255,0.06)',
   text:      '#fafafa',
@@ -183,7 +183,7 @@ export default function TwinBackupModal({ open, onClose, onChange }: Props) {
             background: 'linear-gradient(135deg, #A5B4FC, #7C6BF6)',
             display: 'grid', placeItems: 'center',
           }}>
-            <FileJson size={15} color="#0E1117" />
+            <FileJson size={15} color="#141A2A" />
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <h2 style={{ margin: 0, fontSize: 15.5, fontWeight: 700, color: C.text, letterSpacing: '-0.01em', lineHeight: 1.2 }}>

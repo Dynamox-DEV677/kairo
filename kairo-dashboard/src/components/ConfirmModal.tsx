@@ -121,7 +121,7 @@ export default function ConfirmModal({
             role="dialog" aria-modal="true" aria-labelledby="kairo-confirm-title"
             style={{
               width: '100%', maxWidth: 420,
-              background: 'linear-gradient(180deg, #151922 0%, #0d0d15 100%)',
+              background: 'linear-gradient(180deg, #1C2233 0%, #0d0d15 100%)',
               border: `1px solid ${danger ? 'rgba(248,113,113,0.32)' : 'rgba(124, 107, 246, 0.32)'}`,
               borderRadius: 18,
               padding: 24,

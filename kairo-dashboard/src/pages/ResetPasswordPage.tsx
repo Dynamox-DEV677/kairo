@@ -46,7 +46,7 @@ export default function ResetPasswordPage({ onDone }: Props) {
 
   return (
     <div style={{
-      height: '100dvh', minHeight: '100vh', background: '#050505',
+      height: '100dvh', minHeight: '100vh', background: '#0A0D16',
       fontFamily: FONT,
       display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
       overflowY: 'auto',
@@ -76,7 +76,7 @@ export default function ResetPasswordPage({ onDone }: Props) {
         </div>
 
         <div style={{
-          background: '#0E1117', border: '1px solid #1f2532', borderRadius: 18,
+          background: '#141A2A', border: '1px solid #1f2532', borderRadius: 18,
           padding: 24, position: 'relative',
         }}>
           <AnimatePresence mode="wait">
@@ -212,7 +212,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 }
 
 const inp: React.CSSProperties = {
-  width: '100%', background: '#0E1117', border: '1px solid #1f2532',
+  width: '100%', background: '#141A2A', border: '1px solid #1f2532',
   borderRadius: 9, padding: '11px 14px', fontSize: 14, color: '#fafafa',
   fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box',
   transition: 'border-color 0.15s',

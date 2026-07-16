@@ -342,14 +342,14 @@ Tips: each tip is one specific actionable line (max 18 words) — reference the 
             <div style={{ fontSize: 11, color: '#A5B4FC', marginBottom: 6, fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase' }}>
               {mode === 'spar' ? `Sparring vs ${prof.name}` : 'Battle'} · Question {idx + 1} of {questions.length}
             </div>
-            <div style={{ height: 4, background: '#1a1f2e', borderRadius: 2, overflow: 'hidden' }}>
+            <div style={{ height: 4, background: '#171D2D', borderRadius: 2, overflow: 'hidden' }}>
               <motion.div animate={{ width: `${((idx + 1) / questions.length) * 100}%` }}
                 style={{ height: '100%', background: 'linear-gradient(90deg,#A5B4FC,#7C6BF6)' }} />
             </div>
           </div>
           <div style={{ width: 64, height: 64, position: 'relative' }}>
             <svg viewBox="-32 -32 64 64" style={{ width: '100%', height: '100%', transform: 'rotate(-90deg)' }}>
-              <circle r={26} fill="none" stroke="#1a1f2e" strokeWidth={3} />
+              <circle r={26} fill="none" stroke="#171D2D" strokeWidth={3} />
               <motion.circle r={26} fill="none" stroke={color} strokeWidth={3} strokeLinecap="round"
                 strokeDasharray={2 * Math.PI * 26}
                 animate={{ strokeDashoffset: 2 * Math.PI * 26 * (1 - pct / 100) }}
@@ -414,13 +414,13 @@ Tips: each tip is one specific actionable line (max 18 words) — reference the 
                 style={{
                   padding: '13px 16px', borderRadius: 10,
                   border: `1px solid ${isPicked ? '#A5B4FC' : '#1f2532'}`,
-                  background: isPicked ? 'rgba(165, 180, 252, 0.12)' : '#0E1117',
+                  background: isPicked ? 'rgba(165, 180, 252, 0.12)' : '#141A2A',
                   cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left',
                   display: 'flex', alignItems: 'center', gap: 12,
                 }}>
                 <div style={{
                   width: 26, height: 26, borderRadius: 7, flexShrink: 0,
-                  background: isPicked ? '#A5B4FC' : '#1a1f2e',
+                  background: isPicked ? '#A5B4FC' : '#171D2D',
                   color: isPicked ? '#000' : '#9CA3AF',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   fontSize: 12, fontWeight: 700,
@@ -578,7 +578,7 @@ Tips: each tip is one specific actionable line (max 18 words) — reference the 
         <button onClick={load} title="Refresh"
           style={{
             padding: '8px 12px', borderRadius: 8, border: '1px solid #1f2532',
-            background: '#151922', color: '#9CA3AF', cursor: 'pointer',
+            background: '#1C2233', color: '#9CA3AF', cursor: 'pointer',
             fontFamily: 'inherit', fontSize: 12, display: 'flex', alignItems: 'center', gap: 5,
           }}>
           <RefreshCw size={12} />
@@ -625,7 +625,7 @@ Tips: each tip is one specific actionable line (max 18 words) — reference the 
           <button onClick={startDaily} disabled={daily.already_played}
             style={{
               width: '100%', padding: '13px', borderRadius: 10, border: 'none',
-              background: daily.already_played ? '#1a1f2e' : 'linear-gradient(135deg, #A5B4FC, #7C6BF6)',
+              background: daily.already_played ? '#171D2D' : 'linear-gradient(135deg, #A5B4FC, #7C6BF6)',
               color: daily.already_played ? '#6B7280' : '#000',
               fontFamily: 'inherit', fontSize: 14, fontWeight: 700,
               cursor: daily.already_played ? 'not-allowed' : 'pointer',
@@ -670,7 +670,7 @@ Tips: each tip is one specific actionable line (max 18 words) — reference the 
                   style={{
                     padding: '12px 10px', borderRadius: 10,
                     border: `1px solid ${selected ? p.color : '#1f2532'}`,
-                    background: selected ? `${p.color}14` : '#0E1117',
+                    background: selected ? `${p.color}14` : '#141A2A',
                     cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left',
                     transition: 'all 0.18s ease',
                   }}>
@@ -708,7 +708,7 @@ Tips: each tip is one specific actionable line (max 18 words) — reference the 
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14, flexWrap: 'wrap' }}>
           <Trophy size={15} color="#A5B4FC" />
           <h3 style={{ fontSize: 14, fontWeight: 700, color: '#fafafa', margin: 0, flex: 1, minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>School Leaderboard</h3>
-          <div style={{ display: 'flex', gap: 4, background: '#0E1117', border: '1px solid #1f2532', borderRadius: 8, padding: 3, flexShrink: 0 }}>
+          <div style={{ display: 'flex', gap: 4, background: '#141A2A', border: '1px solid #1f2532', borderRadius: 8, padding: 3, flexShrink: 0 }}>
             {(['today', 'week', 'all'] as const).map(r => (
               <button key={r} onClick={() => setTab(r)}
                 style={{

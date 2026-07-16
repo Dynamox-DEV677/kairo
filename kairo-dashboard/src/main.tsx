@@ -48,7 +48,7 @@ initPwa({
     splash.id = 'kairo-update-splash'
     splash.style.cssText = `
       position: fixed; inset: 0; z-index: 999999;
-      background: #050505;
+      background: #0A0D16;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       gap: 24px; padding: 32px;
       font-family: 'Inter', system-ui, sans-serif;

@@ -43,7 +43,7 @@ const KIND_META: Record<Kind, { label: string; icon: any; color: string }> = {
 
 const card: React.CSSProperties = { background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(14px) saturate(140%)', WebkitBackdropFilter: 'blur(14px) saturate(140%)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14 }
 const inp: React.CSSProperties = {
-  background: '#0E1117', border: '1px solid #1f2532', borderRadius: 8,
+  background: '#141A2A', border: '1px solid #1f2532', borderRadius: 8,
   padding: '9px 12px', fontSize: 13, color: '#fafafa',
   fontFamily: 'inherit', outline: 'none', width: '100%', boxSizing: 'border-box',
 }
@@ -147,7 +147,7 @@ export default function Notebook() {
         </button>
         <button onClick={load} disabled={loading} style={{
           padding: '9px 12px', borderRadius: 9, border: '1px solid #1f2532',
-          background: '#151922', color: '#9CA3AF', cursor: 'pointer',
+          background: '#1C2233', color: '#9CA3AF', cursor: 'pointer',
           fontFamily: 'inherit', fontSize: 12, display: 'flex', alignItems: 'center', gap: 5,
         }}>
           <RefreshCw size={12} style={{ animation: loading ? 'spin 0.8s linear infinite' : 'none' }} />
@@ -206,7 +206,7 @@ export default function Notebook() {
                 onClick={() => { setSelected(n); setEditing(false) }}
                 style={{
                   padding: '12px 14px', borderRadius: 10, cursor: 'pointer',
-                  background: isActive ? '#1a1a2e' : '#0E1117',
+                  background: isActive ? '#1a1a2e' : '#141A2A',
                   border: `1px solid ${isActive ? meta.color : '#1f2532'}`,
                   borderLeft: `3px solid ${meta.color}`,
                   display: 'flex', alignItems: 'flex-start', gap: 10,
@@ -539,7 +539,7 @@ function NoteDetail({ note, editing, onClose, onTogglePin, onDelete, onEdit, onS
           {editing ? (
             <input value={title} onChange={e => setTitle(e.target.value)}
               style={{
-                width: '100%', background: '#0E1117', border: '1px solid #1f2532',
+                width: '100%', background: '#141A2A', border: '1px solid #1f2532',
                 borderRadius: 7, padding: '6px 10px', fontSize: 16, fontWeight: 700,
                 color: '#fafafa', fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box',
               }} />
@@ -556,23 +556,23 @@ function NoteDetail({ note, editing, onClose, onTogglePin, onDelete, onEdit, onS
         </div>
         <div style={{ display: 'flex', gap: 4, marginLeft: 'auto' }}>
           <button onClick={onTogglePin} title={note.pinned ? 'Unpin' : 'Pin'}
-            style={{ padding: 6, borderRadius: 7, border: '1px solid #1f2532', background: '#151922', cursor: 'pointer', color: note.pinned ? '#A5B4FC' : '#9CA3AF' }}>
+            style={{ padding: 6, borderRadius: 7, border: '1px solid #1f2532', background: '#1C2233', cursor: 'pointer', color: note.pinned ? '#A5B4FC' : '#9CA3AF' }}>
             {note.pinned ? <Pin size={12} /> : <PinOff size={12} />}
           </button>
           {!editing && (
             <button onClick={onEdit} title="Edit"
-              style={{ padding: 6, borderRadius: 7, border: '1px solid #1f2532', background: '#151922', cursor: 'pointer', color: '#9CA3AF' }}>
+              style={{ padding: 6, borderRadius: 7, border: '1px solid #1f2532', background: '#1C2233', cursor: 'pointer', color: '#9CA3AF' }}>
               <Edit3 size={12} />
             </button>
           )}
           <button onClick={onDelete} title="Delete"
-            style={{ padding: 6, borderRadius: 7, border: '1px solid #1f2532', background: '#151922', cursor: 'pointer', color: '#9CA3AF' }}
+            style={{ padding: 6, borderRadius: 7, border: '1px solid #1f2532', background: '#1C2233', cursor: 'pointer', color: '#9CA3AF' }}
             onMouseEnter={e => (e.currentTarget.style.color = '#A5B4FC')}
             onMouseLeave={e => (e.currentTarget.style.color = '#9CA3AF')}>
             <Trash2 size={12} />
           </button>
           <button onClick={onClose} title="Close"
-            style={{ padding: 6, borderRadius: 7, border: '1px solid #1f2532', background: '#151922', cursor: 'pointer', color: '#9CA3AF' }}>
+            style={{ padding: 6, borderRadius: 7, border: '1px solid #1f2532', background: '#1C2233', cursor: 'pointer', color: '#9CA3AF' }}>
             <X size={12} />
           </button>
         </div>
@@ -593,7 +593,7 @@ function NoteDetail({ note, editing, onClose, onTogglePin, onDelete, onEdit, onS
           <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
             <button onClick={save} disabled={saving} style={{
               padding: '8px 16px', borderRadius: 8, border: 'none',
-              background: saving ? '#1a1f2e' : 'linear-gradient(135deg,#7C6BF6,#7C6BF6)',
+              background: saving ? '#171D2D' : 'linear-gradient(135deg,#7C6BF6,#7C6BF6)',
               color: saving ? '#6B7280' : '#fff',
               fontFamily: 'inherit', fontSize: 12, fontWeight: 600,
               cursor: saving ? 'not-allowed' : 'pointer',
@@ -601,7 +601,7 @@ function NoteDetail({ note, editing, onClose, onTogglePin, onDelete, onEdit, onS
             }}><Save size={12} />{saving ? 'Saving…' : 'Save'}</button>
             <button onClick={onCancelEdit} style={{
               padding: '8px 16px', borderRadius: 8, border: '1px solid #1f2532',
-              background: '#151922', color: '#9CA3AF', cursor: 'pointer',
+              background: '#1C2233', color: '#9CA3AF', cursor: 'pointer',
               fontFamily: 'inherit', fontSize: 12,
             }}>Cancel</button>
           </div>
@@ -611,7 +611,7 @@ function NoteDetail({ note, editing, onClose, onTogglePin, onDelete, onEdit, onS
           {note.tags.length > 0 && (
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 12 }}>
               {note.tags.map(t => (
-                <span key={t} style={{ padding: '2px 8px', borderRadius: 4, fontSize: 10, background: '#1a1f2e', color: '#B1B5BA' }}>{t}</span>
+                <span key={t} style={{ padding: '2px 8px', borderRadius: 4, fontSize: 10, background: '#171D2D', color: '#B1B5BA' }}>{t}</span>
               ))}
             </div>
           )}
@@ -691,7 +691,7 @@ function CreateModal({ onClose, onCreated }: { onClose: () => void; onCreated: (
           </button>
           <button type="button" onClick={() => setPreview(p => !p)} disabled={!content.trim()} style={{
             padding: '6px 11px', borderRadius: 7, border: '1px solid #1f2532',
-            background: '#151922', color: preview ? '#A5B4FC' : '#9CA3AF',
+            background: '#1C2233', color: preview ? '#A5B4FC' : '#9CA3AF',
             fontFamily: 'inherit', fontSize: 11.5, fontWeight: 600,
             cursor: !content.trim() ? 'not-allowed' : 'pointer',
             display: 'flex', alignItems: 'center', gap: 6, marginLeft: 'auto',
@@ -703,7 +703,7 @@ function CreateModal({ onClose, onCreated }: { onClose: () => void; onCreated: (
           <div className="prose-ai nb-math" style={{
             fontSize: 13.5, color: '#e4e4e7', lineHeight: 1.65,
             minHeight: 160, maxHeight: 320, overflowY: 'auto',
-            background: '#0E1117', border: '1px solid #1f2532', borderRadius: 8, padding: '10px 12px',
+            background: '#141A2A', border: '1px solid #1f2532', borderRadius: 8, padding: '10px 12px',
           }}>
             {content.trim()
               ? <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>{normalizeMath(content)}</ReactMarkdown>
@@ -717,12 +717,12 @@ function CreateModal({ onClose, onCreated }: { onClose: () => void; onCreated: (
         <div style={{ display: 'flex', gap: 8, marginTop: 14, justifyContent: 'flex-end' }}>
           <button onClick={onClose} style={{
             padding: '8px 14px', borderRadius: 7, border: '1px solid #1f2532',
-            background: '#151922', color: '#9CA3AF', cursor: 'pointer',
+            background: '#1C2233', color: '#9CA3AF', cursor: 'pointer',
             fontFamily: 'inherit', fontSize: 12,
           }}>Cancel</button>
           <button onClick={save} disabled={saving || !title.trim() || !content.trim()} style={{
             padding: '8px 14px', borderRadius: 7, border: 'none',
-            background: saving || !title.trim() || !content.trim() ? '#1a1f2e' : 'linear-gradient(135deg,#7C6BF6,#7C6BF6)',
+            background: saving || !title.trim() || !content.trim() ? '#171D2D' : 'linear-gradient(135deg,#7C6BF6,#7C6BF6)',
             color: '#fff', fontFamily: 'inherit', fontSize: 12, fontWeight: 600,
             cursor: saving || !title.trim() || !content.trim() ? 'not-allowed' : 'pointer',
             display: 'flex', alignItems: 'center', gap: 6,

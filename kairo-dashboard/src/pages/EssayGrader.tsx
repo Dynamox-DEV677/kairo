@@ -97,7 +97,7 @@ export default function EssayGrader() {
 
   const textarea = (rows: number, placeholder: string, value: string, onChange: (v: string) => void) => (
     <textarea rows={rows} placeholder={placeholder} value={value} onChange={e => onChange(e.target.value)}
-      style={{ width: '100%', background: '#0E1117', border: '1px solid #1f2532', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#fafafa', fontFamily: 'inherit', outline: 'none', resize: 'vertical' }}
+      style={{ width: '100%', background: '#141A2A', border: '1px solid #1f2532', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#fafafa', fontFamily: 'inherit', outline: 'none', resize: 'vertical' }}
       onFocus={e => (e.target as HTMLTextAreaElement).style.borderColor = '#7C6BF6'}
       onBlur={e => (e.target as HTMLTextAreaElement).style.borderColor = '#1f2532'}
     />
@@ -115,13 +115,13 @@ export default function EssayGrader() {
           <div style={{ display: 'flex', gap: 12, marginBottom: 14 }}>
             <div style={{ flex: 1 }}>
               <label style={{ fontSize: 11, fontWeight: 600, color: '#9CA3AF', display: 'block', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.8 }}>Subject</label>
-              <select value={subject} onChange={e => setSubject(e.target.value)} style={{ width: '100%', background: '#0E1117', border: '1px solid #1f2532', borderRadius: 8, padding: '9px 12px', fontSize: 13, color: '#fafafa', fontFamily: 'inherit', outline: 'none', appearance: 'none' }}>
+              <select value={subject} onChange={e => setSubject(e.target.value)} style={{ width: '100%', background: '#141A2A', border: '1px solid #1f2532', borderRadius: 8, padding: '9px 12px', fontSize: 13, color: '#fafafa', fontFamily: 'inherit', outline: 'none', appearance: 'none' }}>
                 {['General','English','Hindi','History','Geography','Science','Economics','Political Science','Business Studies'].map(s => <option key={s}>{s}</option>)}
               </select>
             </div>
             <div style={{ width: 110 }}>
               <label style={{ fontSize: 11, fontWeight: 600, color: '#9CA3AF', display: 'block', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.8 }}>Total marks</label>
-              <select value={marks} onChange={e => setMarks(e.target.value)} style={{ width: '100%', background: '#0E1117', border: '1px solid #1f2532', borderRadius: 8, padding: '9px 12px', fontSize: 13, color: '#fafafa', fontFamily: 'inherit', outline: 'none', appearance: 'none' }}>
+              <select value={marks} onChange={e => setMarks(e.target.value)} style={{ width: '100%', background: '#141A2A', border: '1px solid #1f2532', borderRadius: 8, padding: '9px 12px', fontSize: 13, color: '#fafafa', fontFamily: 'inherit', outline: 'none', appearance: 'none' }}>
                 {['2','3','4','5','6','8','10','15','20'].map(m => <option key={m}>{m}</option>)}
               </select>
             </div>
@@ -152,7 +152,7 @@ export default function EssayGrader() {
 
         {(feedback || loading) && (
           <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}
-            style={{ background: '#0E1117', border: '1px solid #1f2532', borderRadius: 14, padding: 24, overflowY: 'auto', maxHeight: 600 }}>
+            style={{ background: '#141A2A', border: '1px solid #1f2532', borderRadius: 14, padding: 24, overflowY: 'auto', maxHeight: 600 }}>
             <p style={{ fontSize: 10, fontWeight: 700, color: '#4B5563', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 16 }}>AI Feedback</p>
             {loading ? (
               <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>

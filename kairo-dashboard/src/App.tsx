@@ -293,7 +293,7 @@ export default function App() {
       <>
         <div style={{
           minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
-          background: '#050505',
+          background: '#0A0D16',
         }}>
           <div style={{
             width: 36, height: 36, borderRadius: '50%',

@@ -256,7 +256,7 @@ export default function ChatWindow({ onNewMessage, onNavigate, model = DEFAULT_M
                     style={{
                       display: 'flex', alignItems: 'center', gap: 7,
                       padding: '9px 16px', borderRadius: 24,
-                      background: '#0E1117', border: '1px solid #1f2532',
+                      background: '#141A2A', border: '1px solid #1f2532',
                       cursor: 'pointer', fontFamily: 'inherit',
                       fontSize: 13, color: '#9CA3AF',
                       transition: 'all 0.15s',
@@ -264,12 +264,12 @@ export default function ChatWindow({ onNewMessage, onNavigate, model = DEFAULT_M
                     onMouseEnter={e => {
                       (e.currentTarget as HTMLButtonElement).style.borderColor = '#4B5563'
                       ;(e.currentTarget as HTMLButtonElement).style.color = '#fafafa'
-                      ;(e.currentTarget as HTMLButtonElement).style.background = '#151922'
+                      ;(e.currentTarget as HTMLButtonElement).style.background = '#1C2233'
                     }}
                     onMouseLeave={e => {
                       (e.currentTarget as HTMLButtonElement).style.borderColor = '#1f2532'
                       ;(e.currentTarget as HTMLButtonElement).style.color = '#9CA3AF'
-                      ;(e.currentTarget as HTMLButtonElement).style.background = '#0E1117'
+                      ;(e.currentTarget as HTMLButtonElement).style.background = '#141A2A'
                     }}
                   >
                     <span>{s.emoji}</span>
@@ -307,7 +307,7 @@ export default function ChatWindow({ onNewMessage, onNavigate, model = DEFAULT_M
             style={{
               display: 'flex', alignItems: 'center', gap: 10,
               padding: '14px 18px',
-              background: '#0E1117', border: '1px solid #1f2532',
+              background: '#141A2A', border: '1px solid #1f2532',
               borderRadius: '4px 16px 16px 16px',
               width: 'fit-content', marginBottom: 24,
             }}
@@ -364,14 +364,14 @@ export default function ChatWindow({ onNewMessage, onNavigate, model = DEFAULT_M
 
       <div className="cw-input-bar" style={{
         padding: '14px 20px 18px',
-        borderTop: '1px solid #1a1f2e',
+        borderTop: '1px solid #171D2D',
         background: 'rgba(10,10,10,0.9)',
         backdropFilter: 'blur(8px)',
         flexShrink: 0,
       }}>
         <div style={{
           display: 'flex', gap: 10, alignItems: 'flex-end',
-          background: '#0E1117', border: '1px solid #1f2532',
+          background: '#141A2A', border: '1px solid #1f2532',
           borderRadius: 14, padding: '10px 10px 10px 16px',
           transition: 'border-color 0.15s, box-shadow 0.15s',
         }}
@@ -406,7 +406,7 @@ export default function ChatWindow({ onNewMessage, onNavigate, model = DEFAULT_M
               onClick={stop}
               style={{
                 width: 36, height: 36, borderRadius: 10, flexShrink: 0,
-                background: '#1a1f2e', border: '1px solid rgba(255,255,255,0.08)',
+                background: '#171D2D', border: '1px solid rgba(255,255,255,0.08)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 cursor: 'pointer',
               }}
@@ -423,7 +423,7 @@ export default function ChatWindow({ onNewMessage, onNavigate, model = DEFAULT_M
                 width: 36, height: 36, borderRadius: 10, flexShrink: 0,
                 background: input.trim()
                   ? 'linear-gradient(135deg, #7C6BF6, #7C6BF6)'
-                  : '#1a1f2e',
+                  : '#171D2D',
                 border: 'none',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 cursor: input.trim() ? 'pointer' : 'not-allowed',

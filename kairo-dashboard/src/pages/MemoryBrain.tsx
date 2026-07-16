@@ -134,7 +134,7 @@ export default function MemoryBrain() {
           disabled={loading}
           style={{
             padding: '8px 14px', borderRadius: 8, border: '1px solid #1f2532',
-            background: '#151922', color: '#9CA3AF', cursor: 'pointer',
+            background: '#1C2233', color: '#9CA3AF', cursor: 'pointer',
             fontFamily: 'inherit', fontSize: 12, display: 'flex', alignItems: 'center', gap: 6,
           }}>
           <RefreshCw size={12} style={{ animation: loading ? 'spin 0.8s linear infinite' : 'none' }} />
@@ -295,7 +295,7 @@ function EntryList({ items, accent, empty, onForget, busy }: {
             exit={{ opacity: 0, height: 0 }}
             style={{
               padding: '8px 12px', borderRadius: 7,
-              background: '#0E1117', border: '1px solid #1a1f2e',
+              background: '#141A2A', border: '1px solid #171D2D',
               display: 'flex', alignItems: 'center', gap: 10,
             }}>
             <span style={{ width: 6, height: 6, borderRadius: '50%', background: accent, flexShrink: 0 }} />
@@ -345,7 +345,7 @@ function RecCard({ m }: { m: MemoryEntry & { urgency: number } }) {
         {m.topic || m.content}
       </div>
       <div style={{
-        height: 4, borderRadius: 2, background: '#1a1f2e', overflow: 'hidden',
+        height: 4, borderRadius: 2, background: '#171D2D', overflow: 'hidden',
       }}>
         <div style={{
           height: '100%', width: `${intensity * 100}%`,

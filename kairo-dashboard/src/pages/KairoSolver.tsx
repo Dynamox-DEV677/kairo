@@ -530,7 +530,7 @@ function ExamPlanModal({ onClose }: { onClose: () => void }) {
         onClick={e => e.stopPropagation()}
         style={{
           width: '100%', maxWidth: 460,
-          background: '#0E1117',
+          background: '#141A2A',
           border: '1px solid rgba(165, 180, 252, 0.35)',
           borderRadius: 18, padding: 24,
           color: '#fafafa', fontFamily: 'inherit',
@@ -598,7 +598,7 @@ function ExamInput({ value, onChange, placeholder, autoFocus, type }: { value: s
       style={{
         width: '100%', boxSizing: 'border-box',
         padding: '10px 12px', borderRadius: 10,
-        background: '#151922', border: '1px solid rgba(255,255,255,0.06)',
+        background: '#1C2233', border: '1px solid rgba(255,255,255,0.06)',
         color: '#fafafa', fontFamily: 'inherit', fontSize: 13, outline: 'none',
       }} />
   )
@@ -836,7 +836,7 @@ function Slideshow({ slides, busy, topic, questionType, err, compact = false }: 
   return (
     <div ref={containerRef}
       style={{
-        background: '#050505', border: '1px solid #1f2532',
+        background: '#0A0D16', border: '1px solid #1f2532',
         borderRadius: 18, overflow: 'hidden', position: 'relative',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         minHeight: 0,
@@ -1024,7 +1024,7 @@ function ExplanationPanel({ resp, busy, error, retryHint, onOpenLab, onAskRelate
 }) {
   return (
     <div style={{
-      background: '#0E1117', border: '1px solid #1f2532',
+      background: '#141A2A', border: '1px solid #1f2532',
       borderRadius: 18, padding: 20, overflowY: 'auto',
       display: 'flex', flexDirection: 'column', gap: 12,
     }}>
@@ -1164,7 +1164,7 @@ function ExplanationPanel({ resp, busy, error, retryHint, onOpenLab, onAskRelate
                     onClick={() => onAskRelated(c)}
                     style={{
                       padding: '6px 11px', borderRadius: 100,
-                      background: '#151922', border: '1px solid #1f2532',
+                      background: '#1C2233', border: '1px solid #1f2532',
                       color: '#A5B4FC', fontFamily: 'inherit', fontSize: 11.5, fontWeight: 600,
                       cursor: 'pointer',
                     }}>
@@ -1223,7 +1223,7 @@ const MD_COMPONENTS = {
   code: ({ children, className }: any) => {
     const isBlock = !!className
     return isBlock
-      ? <pre style={{ background: '#050505', border: '1px solid #1f2532', borderRadius: 8, padding: '10px 12px', overflowX: 'auto', margin: '8px 0' }}>
+      ? <pre style={{ background: '#0A0D16', border: '1px solid #1f2532', borderRadius: 8, padding: '10px 12px', overflowX: 'auto', margin: '8px 0' }}>
           <code style={{ fontSize: 12.5, color: '#A5B4FC', fontFamily: 'monospace' }}>{children}</code>
         </pre>
       : <code style={{ background: '#1a1a2e', padding: '2px 6px', borderRadius: 4, fontSize: 12.5, color: '#A5B4FC', fontFamily: 'monospace' }}>{children}</code>

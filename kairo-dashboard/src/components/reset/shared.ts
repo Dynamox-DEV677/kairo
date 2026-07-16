@@ -1,6 +1,6 @@
 export const RC = {
-  bg:        '#050505',
-  bgElev:    '#0E1117',
+  bg:        '#0A0D16',
+  bgElev:    '#141A2A',
   bgGlass:   'rgba(14, 14, 22, 0.62)',
   border:    'rgba(165, 180, 252, 0.18)',
   borderHi:  'rgba(165, 180, 252, 0.45)',

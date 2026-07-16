@@ -4,8 +4,8 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { X, FileText, Shield, ChevronDown } from 'lucide-react'
 
 const C = {
-  bg:        '#050505',
-  panel:     '#0E1117',
+  bg:        '#0A0D16',
+  panel:     '#141A2A',
   border:    'rgba(255,255,255,0.08)',
   borderSoft:'rgba(255,255,255,0.06)',
   text:      '#ffffff',

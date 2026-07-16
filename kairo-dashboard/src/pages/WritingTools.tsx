@@ -15,9 +15,9 @@ const TABS = [
 ]
 
 const card  = { background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(14px) saturate(140%)', WebkitBackdropFilter: 'blur(14px) saturate(140%)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14, padding: 20 } as React.CSSProperties
-const inp   = { background: '#0E1117', border: '1px solid #1f2532', borderRadius: 8, padding: '9px 12px', fontSize: 13, color: '#fafafa', fontFamily: 'inherit', outline: 'none', width: '100%' } as React.CSSProperties
+const inp   = { background: '#141A2A', border: '1px solid #1f2532', borderRadius: 8, padding: '9px 12px', fontSize: 13, color: '#fafafa', fontFamily: 'inherit', outline: 'none', width: '100%' } as React.CSSProperties
 const label = { fontSize: 11, color: '#9CA3AF', display: 'block', marginBottom: 5, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.8 } as React.CSSProperties
-const btn   = (active = true) => ({ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', borderRadius: 9, border: 'none', background: active ? 'linear-gradient(135deg,#7C6BF6,#7C6BF6)' : '#1a1f2e', color: active ? '#fff' : '#6B7280', fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: active ? 'pointer' : 'not-allowed' } as React.CSSProperties)
+const btn   = (active = true) => ({ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', borderRadius: 9, border: 'none', background: active ? 'linear-gradient(135deg,#7C6BF6,#7C6BF6)' : '#171D2D', color: active ? '#fff' : '#6B7280', fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: active ? 'pointer' : 'not-allowed' } as React.CSSProperties)
 
 export default function WritingTools() {
   const [tab, setTab] = useState('editor')
@@ -29,7 +29,7 @@ export default function WritingTools() {
         <p style={{ fontSize: 13, color: '#6B7280', marginTop: 4 }}>AI-powered writing enhancement for exam success</p>
       </div>
 
-      <div style={{ display: 'flex', gap: 4, marginBottom: 24, background: '#0E1117', border: '1px solid #1f2532', borderRadius: 10, padding: 4, overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+      <div style={{ display: 'flex', gap: 4, marginBottom: 24, background: '#141A2A', border: '1px solid #1f2532', borderRadius: 10, padding: 4, overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
         {TABS.map(t => (
           <button key={t.id} onClick={() => setTab(t.id)} style={{
             flex: '1 0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
@@ -227,7 +227,7 @@ Rules:
         <button onClick={askKyno} disabled={loading}
           style={{
             marginTop: 12, width: '100%', padding: '13px', borderRadius: 10, border: 'none',
-            background: loading ? '#1a1f2e' : 'linear-gradient(135deg, #A5B4FC, #7C6BF6)',
+            background: loading ? '#171D2D' : 'linear-gradient(135deg, #A5B4FC, #7C6BF6)',
             color: loading ? '#9CA3AF' : '#000',
             fontFamily: 'inherit', fontSize: 14, fontWeight: 700,
             cursor: loading ? 'not-allowed' : 'pointer',
@@ -281,7 +281,7 @@ Rules:
           <div style={{ fontSize: 10, fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: 1.4 }}>Clarity score</div>
           <div style={{ position: 'relative', width: 132, height: 132, margin: '10px auto 6px' }}>
             <svg viewBox="0 0 132 132" style={{ width: '100%', height: '100%', transform: 'rotate(-90deg)' }}>
-              <circle cx={66} cy={66} r={56} fill="none" stroke="#1a1f2e" strokeWidth={10} />
+              <circle cx={66} cy={66} r={56} fill="none" stroke="#171D2D" strokeWidth={10} />
               <motion.circle cx={66} cy={66} r={56} fill="none"
                 stroke={clarityColor} strokeWidth={10} strokeLinecap="round"
                 strokeDasharray={2 * Math.PI * 56}
@@ -314,7 +314,7 @@ Rules:
               {stats.repeats.map(r => <IssueChip key={r.word} label={`${r.word} ×${r.count}`} color="#4A2FA8" />)}
             </div>
             {stats.longSentences.length > 0 && (
-              <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid #1a1f2e' }}>
+              <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid #171D2D' }}>
                 {stats.longSentences.slice(0, 2).map((s, i) => (
                   <div key={i} style={{ fontSize: 11, color: '#B1B5BA', marginBottom: 6, padding: '6px 8px', borderRadius: 6, background: 'rgba(165, 180, 252, 0.06)', borderLeft: '2px solid #A5B4FC' }}>
                     <span style={{ color: '#A5B4FC', fontWeight: 700 }}>{s.words}w · </span>
@@ -483,7 +483,7 @@ function TopperTool() {
         <textarea style={{ ...inp, height: 160, resize: 'vertical' }} value={text} onChange={e => setText(e.target.value)} placeholder="Write your current answer — any quality is fine…" />
       </div>
       {err && <p style={{ color: '#4A2FA8', fontSize: 12, marginBottom: 10 }}>{err}</p>}
-      <button onClick={run} disabled={loading} style={{ ...btn(!loading), background: loading ? '#1a1f2e' : 'linear-gradient(135deg,#A5B4FC,#7C6BF6)' }}>
+      <button onClick={run} disabled={loading} style={{ ...btn(!loading), background: loading ? '#171D2D' : 'linear-gradient(135deg,#A5B4FC,#7C6BF6)' }}>
         <Star size={13} /> {loading ? 'Rewriting…' : 'Make it Topper-Level ✦'}
       </button>
       {result?.rewritten && (

@@ -160,7 +160,7 @@ export default function Ops() {
               {data.features.list.map(f => (
                 <div key={f.id} style={{
                   padding: '8px 11px', borderRadius: 7,
-                  background: '#0E1117', border: '1px solid #1f2532',
+                  background: '#141A2A', border: '1px solid #1f2532',
                   display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
                 }}>
                   <span style={{ fontSize: 12, color: '#fafafa', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -183,7 +183,7 @@ function StatCard({ icon: Icon, label, value, sub, accent }: any) {
       initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
       style={{
         padding: '14px 16px', borderRadius: 11,
-        background: '#0E1117', border: '1px solid #1f2532',
+        background: '#141A2A', border: '1px solid #1f2532',
         display: 'flex', flexDirection: 'column', gap: 6,
       }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 10, color: '#9CA3AF', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1 }}>
@@ -201,7 +201,7 @@ function DeployCard({ deploy }: { deploy: DeployInfo }) {
   return (
     <div style={{
       padding: 16, borderRadius: 12,
-      background: '#0E1117', border: '1px solid #1f2532',
+      background: '#141A2A', border: '1px solid #1f2532',
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 10, color: '#A5B4FC', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 12 }}>
         <GitBranch size={11} /> Latest Deploy
@@ -226,7 +226,7 @@ function DatabaseCard({ db, env }: { db: any; env: Record<string, boolean> }) {
   return (
     <div style={{
       padding: 16, borderRadius: 12,
-      background: '#0E1117', border: '1px solid #1f2532',
+      background: '#141A2A', border: '1px solid #1f2532',
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 10, color: '#A5B4FC', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 12 }}>
         <Database size={11} /> Database & Services
@@ -253,7 +253,7 @@ function Section({ title, icon: Icon, children, accent = '#A5B4FC' }: any) {
       }}>
         <Icon size={12} /> {title}
       </h2>
-      <div style={{ background: '#0E1117', border: '1px solid #1f2532', borderRadius: 12, padding: 14 }}>
+      <div style={{ background: '#141A2A', border: '1px solid #1f2532', borderRadius: 12, padding: 14 }}>
         {children}
       </div>
     </div>

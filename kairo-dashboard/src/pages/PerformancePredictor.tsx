@@ -174,7 +174,7 @@ Keep it under 200 words. No fluff.` },
         </div>
         <button onClick={compute} disabled={loading} style={{
           padding: '8px 14px', borderRadius: 8, border: '1px solid #1f2532',
-          background: '#151922', color: '#9CA3AF', cursor: 'pointer',
+          background: '#1C2233', color: '#9CA3AF', cursor: 'pointer',
           fontFamily: 'inherit', fontSize: 12, display: 'flex', alignItems: 'center', gap: 6,
         }}>
           <RefreshCw size={12} style={{ animation: loading ? 'spin 0.8s linear infinite' : 'none' }} />
@@ -214,7 +214,7 @@ Keep it under 200 words. No fluff.` },
             <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 24 }}>
               <div style={{
                 width: 110, height: 110, borderRadius: '50%',
-                background: '#0E1117', border: `3px solid ${overall >= 75 ? '#A5B4FC' : overall >= 60 ? '#A5B4FC' : '#A5B4FC'}`,
+                background: '#141A2A', border: `3px solid ${overall >= 75 ? '#A5B4FC' : overall >= 60 ? '#A5B4FC' : '#A5B4FC'}`,
                 display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
               }}>
                 <div style={{
@@ -255,7 +255,7 @@ Keep it under 200 words. No fluff.` },
               <button onClick={generateInsight} disabled={insightBusy}
                 style={{
                   padding: '8px 16px', borderRadius: 8, border: 'none',
-                  background: insightBusy ? '#1a1f2e' : 'linear-gradient(135deg,#7C6BF6,#7C6BF6)',
+                  background: insightBusy ? '#171D2D' : 'linear-gradient(135deg,#7C6BF6,#7C6BF6)',
                   color: insightBusy ? '#6B7280' : '#fff',
                   fontFamily: 'inherit', fontSize: 12, fontWeight: 600,
                   cursor: insightBusy ? 'not-allowed' : 'pointer',
@@ -268,7 +268,7 @@ Keep it under 200 words. No fluff.` },
               <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
                 className="prose-ai"
                 style={{
-                  background: '#0E1117', border: '1px solid #1f2532',
+                  background: '#141A2A', border: '1px solid #1f2532',
                   borderRadius: 10, padding: 16, fontSize: 13, color: '#e4e4e7', lineHeight: 1.65,
                 }}>
                 <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>{insight}</ReactMarkdown>
@@ -292,7 +292,7 @@ Keep it under 200 words. No fluff.` },
                 const riskColor = p.risk === 'high' ? '#A5B4FC' : p.risk === 'medium' ? '#A5B4FC' : '#A5B4FC'
                 return (
                   <div key={p.subject} style={{
-                    padding: 14, borderRadius: 10, background: '#0E1117',
+                    padding: 14, borderRadius: 10, background: '#141A2A',
                     border: `1px solid ${riskColor}30`, borderLeft: `3px solid ${riskColor}`,
                     display: 'flex', alignItems: 'center', gap: 14,
                   }}>
@@ -303,7 +303,7 @@ Keep it under 200 words. No fluff.` },
                           {p.exams} exam{p.exams === 1 ? '' : 's'} · confidence {p.confidence}
                         </span>
                       </div>
-                      <div style={{ position: 'relative', height: 8, background: '#1a1f2e', borderRadius: 4, overflow: 'hidden' }}>
+                      <div style={{ position: 'relative', height: 8, background: '#171D2D', borderRadius: 4, overflow: 'hidden' }}>
                         <motion.div
                           initial={{ width: 0 }} animate={{ width: `${p.predicted}%` }}
                           transition={{ duration: 0.7, ease: 'easeOut' }}

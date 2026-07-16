@@ -144,7 +144,7 @@ export default function Settings() {
   }
 
   const inp = {
-    width: '100%', background: '#0E1117', border: '1px solid #1f2532',
+    width: '100%', background: '#141A2A', border: '1px solid #1f2532',
     borderRadius: 8, padding: '10px 12px', fontSize: 13, color: '#fafafa',
     fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box' as const,
   }
@@ -449,7 +449,7 @@ export default function Settings() {
         </button>
       </Section>
 
-      <div style={{ padding: '20px 0', borderTop: '1px solid #1a1f2e', marginTop: 8 }}>
+      <div style={{ padding: '20px 0', borderTop: '1px solid #171D2D', marginTop: 8 }}>
         <p style={{ fontSize: 11, color: '#27272a' }}>Kyno v1.0 · Built for Indian students · Powered by OpenRouter</p>
       </div>
 
@@ -467,7 +467,7 @@ export default function Settings() {
 
 function Section({ icon, title, children }: { icon: React.ReactNode; title: string; children: React.ReactNode }) {
   return (
-    <div style={{ background: '#0E1117', border: '1px solid #1f2532', borderRadius: 14, padding: '20px 22px', marginBottom: 14 }}>
+    <div style={{ background: '#141A2A', border: '1px solid #1f2532', borderRadius: 14, padding: '20px 22px', marginBottom: 14 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 18, color: '#B1B5BA' }}>
         {icon}
         <span style={{ fontSize: 13, fontWeight: 700, color: '#B1B5BA' }}>{title}</span>
@@ -497,7 +497,7 @@ function ToggleRow({ label, desc, value, onChange }: { label: string; desc: stri
         onClick={() => onChange(!value)}
         style={{
           width: 42, height: 24, borderRadius: 12, border: 'none', cursor: 'pointer',
-          background: value ? '#7C6BF6' : '#1a1f2e',
+          background: value ? '#7C6BF6' : '#171D2D',
           position: 'relative', transition: 'background 0.2s', flexShrink: 0,
         }}
       >

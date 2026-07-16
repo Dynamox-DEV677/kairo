@@ -78,7 +78,7 @@ function BarChart({ subjects }: { subjects: SubjectSummary[] }) {
                 overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {s.subject}
               </div>
-              <div style={{ flex: 1, height: 20, background: '#1a1f2e', borderRadius: 4, overflow: 'hidden', position: 'relative' }}>
+              <div style={{ flex: 1, height: 20, background: '#171D2D', borderRadius: 4, overflow: 'hidden', position: 'relative' }}>
                 <motion.div
                   initial={{ width: 0 }}
                   animate={{ width: `${(s.percentage / max) * 100}%` }}
@@ -146,11 +146,11 @@ export default function ParentDashboard({ profile, onLogout }: ParentDashboardPr
 
   return (
     <div style={{
-      minHeight: '100vh', background: '#050505',
+      minHeight: '100vh', background: '#0A0D16',
       fontFamily: "'Inter', system-ui, sans-serif",
     }}>
       <div style={{
-        background: '#0E1117', borderBottom: '1px solid #1f2532',
+        background: '#141A2A', borderBottom: '1px solid #1f2532',
         padding: '0 24px', display: 'flex', alignItems: 'center',
         height: 56, gap: 16,
       }}>
@@ -255,7 +255,7 @@ export default function ParentDashboard({ profile, onLogout }: ParentDashboardPr
                 <button key={t} onClick={() => setTab(t)} style={{
                   padding: '7px 16px', borderRadius: 8, fontSize: 13, fontWeight: tab === t ? 600 : 400,
                   border: tab === t ? '1px solid rgba(124, 107, 246, 0.14)' : '1px solid #1f2532',
-                  background: tab === t ? 'rgba(124, 107, 246, 0.12)' : '#0E1117',
+                  background: tab === t ? 'rgba(124, 107, 246, 0.12)' : '#141A2A',
                   color: tab === t ? '#A5B4FC' : '#9CA3AF',
                   cursor: 'pointer', fontFamily: 'inherit',
                 }}>
@@ -269,7 +269,7 @@ export default function ParentDashboard({ profile, onLogout }: ParentDashboardPr
                 <motion.div key="overview"
                   initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
 
-                  <div style={{ background: '#0E1117', border: '1px solid #1f2532', borderRadius: 14, padding: 20, marginBottom: 16 }}>
+                  <div style={{ background: '#141A2A', border: '1px solid #1f2532', borderRadius: 14, padding: 20, marginBottom: 16 }}>
                     <div style={{ fontSize: 14, fontWeight: 700, color: '#fafafa', marginBottom: 16, display: 'flex', gap: 8 }}>
                       <BarChart3 size={16} color="#7C6BF6" /> Subject-wise Performance
                     </div>
@@ -313,14 +313,14 @@ export default function ParentDashboard({ profile, onLogout }: ParentDashboardPr
                     <button onClick={() => setSortSubject('')} style={{
                       padding: '4px 10px', borderRadius: 6, fontSize: 12, cursor: 'pointer',
                       border: !sortSubject ? '1px solid #7C6BF6' : '1px solid #1f2532',
-                      background: !sortSubject ? 'rgba(124, 107, 246, 0.12)' : '#151922',
+                      background: !sortSubject ? 'rgba(124, 107, 246, 0.12)' : '#1C2233',
                       color: !sortSubject ? '#A5B4FC' : '#9CA3AF', fontFamily: 'inherit',
                     }}>All</button>
                     {[...new Set(marks.map(m => m.subject))].map(s => (
                       <button key={s} onClick={() => setSortSubject(s === sortSubject ? '' : s)} style={{
                         padding: '4px 10px', borderRadius: 6, fontSize: 12, cursor: 'pointer',
                         border: sortSubject === s ? '1px solid #7C6BF6' : '1px solid #1f2532',
-                        background: sortSubject === s ? 'rgba(124, 107, 246, 0.12)' : '#151922',
+                        background: sortSubject === s ? 'rgba(124, 107, 246, 0.12)' : '#1C2233',
                         color: sortSubject === s ? '#A5B4FC' : '#9CA3AF', fontFamily: 'inherit',
                       }}>{s}</button>
                     ))}
@@ -334,7 +334,7 @@ export default function ParentDashboard({ profile, onLogout }: ParentDashboardPr
                         <motion.div key={m.id}
                           initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: i * 0.04 }}
-                          style={{ background: '#0E1117', border: '1px solid #1f2532', borderRadius: 12, padding: '14px 16px',
+                          style={{ background: '#141A2A', border: '1px solid #1f2532', borderRadius: 12, padding: '14px 16px',
                             display: 'flex', alignItems: 'center', gap: 14 }}>
                           <div style={{ width: 40, height: 40, borderRadius: 10, flexShrink: 0,
                             background: `${g.color}18`, border: `1px solid ${g.color}44`,
@@ -386,7 +386,7 @@ function SummaryCard({ icon: Icon, label, value, color, sub }: {
   icon: React.ElementType; label: string; value: number | string; color: string; sub?: string
 }) {
   return (
-    <div style={{ background: '#0E1117', border: '1px solid #1f2532', borderRadius: 12, padding: 16,
+    <div style={{ background: '#141A2A', border: '1px solid #1f2532', borderRadius: 12, padding: 16,
       display: 'flex', alignItems: 'flex-start', gap: 12 }}>
       <div style={{ width: 36, height: 36, borderRadius: 9, background: `${color}18`,
         display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>

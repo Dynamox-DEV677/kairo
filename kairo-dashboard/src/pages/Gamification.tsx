@@ -51,7 +51,7 @@ export default function Gamification() {
         <p style={{ fontSize: 13, color: '#6B7280', marginTop: 4 }}>XP · Levels · Badges · Leaderboard</p>
       </div>
 
-      <div style={{ display: 'flex', gap: 4, marginBottom: 24, background: '#0E1117', border: '1px solid #1f2532', borderRadius: 10, padding: 4 }}>
+      <div style={{ display: 'flex', gap: 4, marginBottom: 24, background: '#141A2A', border: '1px solid #1f2532', borderRadius: 10, padding: 4 }}>
         {TABS.map(t => (
           <button key={t.id} onClick={() => setTab(t.id)} style={{
             flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
@@ -75,7 +75,7 @@ function ProfileTab({ profile, onAddXP }: any) {
   return (
     <div>
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-        style={{ ...card, background: 'linear-gradient(135deg,#1f2532,#0E1117)', borderColor: '#7C6BF630', marginBottom: 16 }}>
+        style={{ ...card, background: 'linear-gradient(135deg,#1f2532,#141A2A)', borderColor: '#7C6BF630', marginBottom: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
           <div style={{ width: 70, height: 70, borderRadius: 16, background: `linear-gradient(135deg,#7C6BF6,#7C6BF6)`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             <div style={{ fontSize: 22, fontWeight: 800, color: '#fff' }}>{level?.level}</div>

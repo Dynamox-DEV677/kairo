@@ -11,7 +11,7 @@ interface KairoLoaderProps {
 }
 
 const C = {
-  bg:        '#050505',
+  bg:        '#0A0D16',
   primary:   '#7C6BF6',
   secondary: '#A5B4FC',
   highlight: '#A5B4FC',

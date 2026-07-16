@@ -45,7 +45,7 @@ const card: React.CSSProperties = {
   borderRadius: 14,
 }
 const inp: React.CSSProperties = {
-  background: '#0E1117', border: '1px solid #1f2532', borderRadius: 8,
+  background: '#141A2A', border: '1px solid #1f2532', borderRadius: 8,
   padding: '9px 12px', fontSize: 13, color: '#fafafa', fontFamily: 'inherit',
   outline: 'none', width: '100%', boxSizing: 'border-box',
 }
@@ -361,7 +361,7 @@ export default function ExamPlanner() {
                 <button key={L} onClick={() => setCurrentLevel(L)}
                   style={{
                     flex: 1, padding: '9px 0', fontSize: 12, fontWeight: 700,
-                    background: currentLevel === L ? 'rgba(165,180,252,0.18)' : '#0E1117',
+                    background: currentLevel === L ? 'rgba(165,180,252,0.18)' : '#141A2A',
                     color: currentLevel === L ? '#A5B4FC' : '#A1A1AA',
                     border: '1px solid ' + (currentLevel === L ? 'rgba(165,180,252,0.55)' : '#1f2532'),
                     borderRadius: 8, cursor: 'pointer', textTransform: 'capitalize', letterSpacing: 0.5,

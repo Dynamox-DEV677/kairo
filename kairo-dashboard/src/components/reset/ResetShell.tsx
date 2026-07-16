@@ -159,7 +159,7 @@ export default function ResetShell({
           style={{
             position: 'relative', zIndex: 2,
             padding: '14px 22px calc(env(safe-area-inset-bottom) + 16px)',
-            background: 'linear-gradient(180deg, transparent 0%, rgba(5,5,5,0.95) 30%, #050505 100%)',
+            background: 'linear-gradient(180deg, transparent 0%, rgba(5,5,5,0.95) 30%, #0A0D16 100%)',
             display: 'flex', flexDirection: 'column', gap: 10,
           }}
         >

@@ -6,7 +6,7 @@ import { fetchLeagueBoard, loadGame, type LeagueBoard } from '../lib/game'
 type Range = 'week' | 'month' | 'all'
 
 const C = {
-  bg: '#050505', panel: '#0E1117', border: '#1f2532',
+  bg: '#0A0D16', panel: '#141A2A', border: '#1f2532',
   text: '#fafafa', dim: '#9CA3AF', faint: '#6B7280',
   accent: '#A5B4FC', blue: '#7C6BF6', gold: '#FFB44A',
 }

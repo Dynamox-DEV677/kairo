@@ -59,7 +59,7 @@ const STATUS_META: Record<string, { color: string; icon: any; label: string }> =
 
 const card = { background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(14px) saturate(140%)', WebkitBackdropFilter: 'blur(14px) saturate(140%)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14 }
 const inp: React.CSSProperties = {
-  background: '#0E1117', border: '1px solid #1f2532', borderRadius: 8,
+  background: '#141A2A', border: '1px solid #1f2532', borderRadius: 8,
   padding: '9px 12px', fontSize: 13, color: '#fafafa',
   fontFamily: 'inherit', outline: 'none', width: '100%', boxSizing: 'border-box',
 }
@@ -132,7 +132,7 @@ export default function AdmissionBot() {
         </div>
       )}
 
-      <div style={{ display: 'flex', gap: 4, marginBottom: 22, background: '#0E1117', border: '1px solid #1f2532', borderRadius: 10, padding: 4, width: 'fit-content' }}>
+      <div style={{ display: 'flex', gap: 4, marginBottom: 22, background: '#141A2A', border: '1px solid #1f2532', borderRadius: 10, padding: 4, width: 'fit-content' }}>
         {TABS.map(t => (
           <button key={t.id} onClick={() => setTab(t.id)} style={{
             display: 'flex', alignItems: 'center', gap: 6, padding: '7px 18px',
@@ -227,7 +227,7 @@ function ChatTab({ ctx }: { ctx: SchoolCtx }) {
   return (
     <div className="mob-stack" style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 20, minHeight: 540 }}>
       <div style={{ ...card, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-        <div style={{ padding: '14px 18px', borderBottom: '1px solid #1a1f2e', display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div style={{ padding: '14px 18px', borderBottom: '1px solid #171D2D', display: 'flex', alignItems: 'center', gap: 10 }}>
           <div style={{ width: 36, height: 36, borderRadius: 10, background: 'linear-gradient(135deg,#7C6BF6,#7C6BF6)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
             {ctx.school_logo
               ? <img src={ctx.school_logo} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -255,7 +255,7 @@ function ChatTab({ ctx }: { ctx: SchoolCtx }) {
               <div style={{
                 maxWidth: '75%', padding: '9px 13px',
                 borderRadius: m.role === 'user' ? '12px 4px 12px 12px' : '4px 12px 12px 12px',
-                background: m.role === 'user' ? 'linear-gradient(135deg,#7C6BF6,#7C6BF6)' : '#1a1f2e',
+                background: m.role === 'user' ? 'linear-gradient(135deg,#7C6BF6,#7C6BF6)' : '#171D2D',
                 fontSize: 13, color: '#fafafa', lineHeight: 1.55, whiteSpace: 'pre-wrap',
               }}>
                 {m.content}
@@ -267,7 +267,7 @@ function ChatTab({ ctx }: { ctx: SchoolCtx }) {
               <div style={{ width: 28, height: 28, borderRadius: 7, background: '#1f2532', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <Bot size={13} color="#A5B4FC" />
               </div>
-              <div style={{ padding: '10px 14px', background: '#1a1f2e', borderRadius: '4px 12px 12px 12px', display: 'flex', gap: 5 }}>
+              <div style={{ padding: '10px 14px', background: '#171D2D', borderRadius: '4px 12px 12px 12px', display: 'flex', gap: 5 }}>
                 {[0, 1, 2].map(i => (
                   <div key={i} style={{ width: 6, height: 6, borderRadius: '50%', background: '#7C6BF6', animation: `dot-bounce 1.2s ease-in-out ${i * 0.2}s infinite` }} />
                 ))}
@@ -277,7 +277,7 @@ function ChatTab({ ctx }: { ctx: SchoolCtx }) {
           <div ref={bottomRef} />
         </div>
 
-        <div style={{ padding: '12px 14px', borderTop: '1px solid #1a1f2e', display: 'flex', gap: 8 }}>
+        <div style={{ padding: '12px 14px', borderTop: '1px solid #171D2D', display: 'flex', gap: 8 }}>
           <input
             style={{ ...inp, flex: 1 }}
             placeholder="Type your question…"
@@ -288,7 +288,7 @@ function ChatTab({ ctx }: { ctx: SchoolCtx }) {
           <button onClick={send} disabled={!input.trim() || loading} style={{
             width: 38, height: 38, borderRadius: 9, border: 'none',
             cursor: input.trim() ? 'pointer' : 'not-allowed',
-            background: input.trim() ? 'linear-gradient(135deg,#7C6BF6,#7C6BF6)' : '#1a1f2e',
+            background: input.trim() ? 'linear-gradient(135deg,#7C6BF6,#7C6BF6)' : '#171D2D',
             display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
           }}>
             <Send size={14} color={input.trim() ? '#fff' : '#6B7280'} />
@@ -423,7 +423,7 @@ function LeadsTab() {
                 </div>
               </div>
               <select value={l.status} onChange={e => updateStatus(l.id, e.target.value)} style={{
-                background: '#0E1117', border: '1px solid #1f2532', borderRadius: 6,
+                background: '#141A2A', border: '1px solid #1f2532', borderRadius: 6,
                 padding: '4px 8px', fontSize: 11, color: meta.color,
                 fontFamily: 'inherit', cursor: 'pointer',
               }}>
@@ -485,7 +485,7 @@ function StatsTab() {
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 14 }}>
       {tiles.map(t => (
         <div key={t.label} style={{
-          background: '#0E1117', border: `1px solid ${t.color}30`, borderRadius: 12,
+          background: '#141A2A', border: `1px solid ${t.color}30`, borderRadius: 12,
           padding: 18,
         }}>
           <div style={{ fontSize: 30, fontWeight: 700, color: t.color, lineHeight: 1.1 }}>{t.value}</div>
@@ -546,13 +546,13 @@ function SettingsTab({ ctx, onSaved }: { ctx: SchoolCtx; onSaved: () => void }) 
           </div>
         </div>
         <code style={{
-          fontSize: 11, padding: '5px 10px', background: '#0E1117',
+          fontSize: 11, padding: '5px 10px', background: '#141A2A',
           border: '1px solid #1f2532', borderRadius: 6, color: '#A5B4FC',
         }}>{shareUrl}</code>
         <button onClick={() => { navigator.clipboard.writeText(shareUrl); setMsg('Link copied') }}
           style={{
             padding: '6px 10px', borderRadius: 7, border: '1px solid #1f2532',
-            background: '#151922', color: '#9CA3AF', cursor: 'pointer',
+            background: '#1C2233', color: '#9CA3AF', cursor: 'pointer',
             fontFamily: 'inherit', fontSize: 11, fontWeight: 600,
             display: 'flex', alignItems: 'center', gap: 5,
           }}>
@@ -581,7 +581,7 @@ function SettingsTab({ ctx, onSaved }: { ctx: SchoolCtx; onSaved: () => void }) 
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 18 }}>
           <button onClick={save} disabled={saving} style={{
             padding: '10px 18px', borderRadius: 8, border: 'none',
-            background: saving ? '#1a1f2e' : 'linear-gradient(135deg,#7C6BF6,#7C6BF6)',
+            background: saving ? '#171D2D' : 'linear-gradient(135deg,#7C6BF6,#7C6BF6)',
             color: saving ? '#6B7280' : '#fff',
             fontFamily: 'inherit', fontSize: 13, fontWeight: 600,
             cursor: saving ? 'not-allowed' : 'pointer',

@@ -9,9 +9,9 @@ import {
 const FONT = "'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif"
 
 const C = {
-  bg:        '#050505',
-  panel:     '#0E1117',
-  panel2:    '#151922',
+  bg:        '#0A0D16',
+  panel:     '#141A2A',
+  panel2:    '#1C2233',
   border:    'rgba(255,255,255,0.08)',
   borderHi:  'rgba(165, 180, 252, 0.32)',
   text:      '#ffffff',

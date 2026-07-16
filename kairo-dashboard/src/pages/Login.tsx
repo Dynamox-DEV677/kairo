@@ -104,7 +104,7 @@ export default function Login({ onLogin }: LoginProps) {
     <div style={{
       height: '100dvh',
       minHeight: '100vh',
-      background: '#050505',
+      background: '#0A0D16',
       fontFamily: "'Inter', system-ui, sans-serif",
       display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
       overflowY: 'auto',
@@ -139,7 +139,7 @@ export default function Login({ onLogin }: LoginProps) {
         </div>
 
         <div style={{
-          background: '#0E1117', border: '1px solid #1f2532', borderRadius: 18,
+          background: '#141A2A', border: '1px solid #1f2532', borderRadius: 18,
           padding: 24,
         }}>
           <AnimatePresence mode="wait">
@@ -256,14 +256,14 @@ function ChoiceCard({ onClick, icon: Icon, title, desc, highlight = false }: any
       whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}
       style={{
         width: '100%', padding: '16px 18px', borderRadius: 12,
-        background: highlight ? 'rgba(124, 107, 246, 0.06)' : '#0E1117',
+        background: highlight ? 'rgba(124, 107, 246, 0.06)' : '#141A2A',
         border: `1px solid ${highlight ? 'rgba(124, 107, 246, 0.3)' : '#1f2532'}`,
         cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left',
         display: 'flex', alignItems: 'center', gap: 14, marginBottom: 10,
       }}>
       <div style={{
         width: 42, height: 42, borderRadius: 10, flexShrink: 0,
-        background: highlight ? 'linear-gradient(135deg,#7C6BF6,#7C6BF6)' : '#1a1f2e',
+        background: highlight ? 'linear-gradient(135deg,#7C6BF6,#7C6BF6)' : '#171D2D',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}>
         <Icon size={18} color={highlight ? '#fff' : '#B1B5BA'} />
@@ -556,7 +556,7 @@ function PersonalSignup({ onLogin, onBack }: any) {
                 style={{
                   flex: 1,
                   padding: '12px 14px', borderRadius: 11,
-                  background: active ? 'rgba(124, 107, 246, 0.12)' : '#0E1117',
+                  background: active ? 'rgba(124, 107, 246, 0.12)' : '#141A2A',
                   border: `1px solid ${active ? '#7C6BF6' : '#1f2532'}`,
                   cursor: 'pointer', fontFamily: 'inherit',
                   display: 'flex', alignItems: 'center', gap: 10,
@@ -564,7 +564,7 @@ function PersonalSignup({ onLogin, onBack }: any) {
                 }}>
                 <div style={{
                   width: 32, height: 32, borderRadius: 8, flexShrink: 0,
-                  background: active ? 'linear-gradient(135deg,#7C6BF6,#4A2FA8)' : '#1a1f2e',
+                  background: active ? 'linear-gradient(135deg,#7C6BF6,#4A2FA8)' : '#171D2D',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}>
                   <Icon size={14} color={active ? '#fff' : '#B1B5BA'} />
@@ -590,7 +590,7 @@ function PersonalSignup({ onLogin, onBack }: any) {
                 onClick={() => setBoard(active ? '' : b)}
                 style={{
                   padding: '7px 13px', borderRadius: 8,
-                  background: active ? 'rgba(124, 107, 246, 0.12)' : '#0E1117',
+                  background: active ? 'rgba(124, 107, 246, 0.12)' : '#141A2A',
                   border: `1px solid ${active ? '#7C6BF6' : '#1f2532'}`,
                   color: active ? '#A5B4FC' : '#B1B5BA',
                   fontFamily: 'inherit', fontSize: 12, fontWeight: 600, cursor: 'pointer',
@@ -792,14 +792,14 @@ function JoinSchool({ onLogin, onBack }: any) {
               onClick={() => setRole(r.id as any)}
               style={{
                 padding: '14px 16px', borderRadius: 11,
-                background: active ? 'rgba(124, 107, 246, 0.10)' : '#0E1117',
+                background: active ? 'rgba(124, 107, 246, 0.10)' : '#141A2A',
                 border: `1px solid ${active ? '#7C6BF6' : '#1f2532'}`,
                 cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left',
                 display: 'flex', alignItems: 'center', gap: 12,
               }}>
               <div style={{
                 width: 38, height: 38, borderRadius: 9, flexShrink: 0,
-                background: active ? 'linear-gradient(135deg,#7C6BF6,#7C6BF6)' : '#1a1f2e',
+                background: active ? 'linear-gradient(135deg,#7C6BF6,#7C6BF6)' : '#171D2D',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
                 <Icon size={16} color={active ? '#fff' : '#B1B5BA'} />
@@ -1022,7 +1022,7 @@ function Wizard({ back, step, of, title, subtitle, children }: any) {
         {back && (
           <button onClick={back} style={{
             width: 30, height: 30, borderRadius: 7, flexShrink: 0,
-            background: '#151922', border: '1px solid #1f2532',
+            background: '#1C2233', border: '1px solid #1f2532',
             color: '#B1B5BA', cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
@@ -1155,7 +1155,7 @@ function AvatarPicker({ avatar, onPick, fallback }: {
         <div style={{
           position: 'absolute', bottom: 0, right: 0,
           width: 26, height: 26, borderRadius: '50%',
-          background: '#7C6BF6', border: '2px solid #0E1117',
+          background: '#7C6BF6', border: '2px solid #141A2A',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: 11,
         }}>
@@ -1173,13 +1173,13 @@ function AvatarPicker({ avatar, onPick, fallback }: {
       <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
         <button type="button" onClick={() => inputRef.current?.click()} style={{
           padding: '5px 11px', borderRadius: 6, border: '1px solid #1f2532',
-          background: '#151922', color: '#B1B5BA', cursor: 'pointer',
+          background: '#1C2233', color: '#B1B5BA', cursor: 'pointer',
           fontFamily: 'inherit', fontSize: 11, fontWeight: 600,
         }}>{avatar ? 'Change' : 'Upload photo'}</button>
         {avatar && (
           <button type="button" onClick={() => onPick(null)} style={{
             padding: '5px 11px', borderRadius: 6, border: '1px solid #1f2532',
-            background: '#151922', color: '#9CA3AF', cursor: 'pointer',
+            background: '#1C2233', color: '#9CA3AF', cursor: 'pointer',
             fontFamily: 'inherit', fontSize: 11,
           }}>Remove</button>
         )}
@@ -1192,7 +1192,7 @@ function AvatarPicker({ avatar, onPick, fallback }: {
 }
 
 const inp: React.CSSProperties = {
-  width: '100%', background: '#0E1117', border: '1px solid #1f2532',
+  width: '100%', background: '#141A2A', border: '1px solid #1f2532',
   borderRadius: 9, padding: '11px 14px', fontSize: 14, color: '#fafafa',
   fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box',
   transition: 'border-color 0.15s',

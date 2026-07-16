@@ -43,7 +43,7 @@ export default function HeroCore3D({ scrollProgress, pointerXRef, pointerYRef, c
           pointerYRef={pointerYRef}
         />
 
-        <fog attach="fog" args={['#050505', 5, 14]} />
+        <fog attach="fog" args={['#0A0D16', 5, 14]} />
       </Canvas>
     </div>
   )

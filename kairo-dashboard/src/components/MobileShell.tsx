@@ -507,14 +507,14 @@ function MobileDrawer({
         </div>
 
         <div style={{
-          borderTop: `1px solid ${isDark ? '#1a1f2e' : '#e4e4e7'}`,
+          borderTop: `1px solid ${isDark ? '#171D2D' : '#e4e4e7'}`,
           padding: '10px 14px',
         }}>
           <div style={{ display: 'flex', gap: 6, marginBottom: 10 }}>
             <button onClick={() => go('settings')}
               style={{
                 flex: 1, padding: '11px 14px', borderRadius: 9,
-                background: isDark ? '#151922' : '#f4f4f5',
+                background: isDark ? '#1C2233' : '#f4f4f5',
                 border: `1px solid ${isDark ? '#1f2532' : '#e4e4e7'}`,
                 color: isDark ? '#B1B5BA' : '#6B7280', cursor: 'pointer',
                 fontFamily: 'inherit', fontSize: 13, fontWeight: 600,

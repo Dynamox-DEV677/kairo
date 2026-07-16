@@ -25,7 +25,7 @@ export default function LessonPlan() {
   const [error, setError] = useState('')
 
   const sel = (v: string, set: (v: string) => void, opts: string[]) => (
-    <select value={v} onChange={e => set(e.target.value)} style={{ width: '100%', background: '#0E1117', border: '1px solid #1f2532', borderRadius: 8, padding: '9px 12px', fontSize: 13, color: '#fafafa', fontFamily: 'inherit', outline: 'none', appearance: 'none' }}>
+    <select value={v} onChange={e => set(e.target.value)} style={{ width: '100%', background: '#141A2A', border: '1px solid #1f2532', borderRadius: 8, padding: '9px 12px', fontSize: 13, color: '#fafafa', fontFamily: 'inherit', outline: 'none', appearance: 'none' }}>
       {opts.map(o => <option key={o}>{o}</option>)}
     </select>
   )
@@ -47,7 +47,7 @@ export default function LessonPlan() {
         <p style={{ fontSize: 13, color: '#6B7280', marginTop: 4 }}>NEP 2020-aligned lesson plans in seconds</p>
       </div>
 
-      <div style={{ background: '#0E1117', border: '1px solid #1f2532', borderRadius: 14, padding: 24, marginBottom: 24 }}>
+      <div style={{ background: '#141A2A', border: '1px solid #1f2532', borderRadius: 14, padding: 24, marginBottom: 24 }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 12, marginBottom: 14 }}>
           {[
             { label: 'Board', v: board, set: setBoard, opts: ['CBSE','ICSE','Maharashtra','Tamil Nadu','Karnataka'] },
@@ -65,7 +65,7 @@ export default function LessonPlan() {
           <label style={{ fontSize: 11, fontWeight: 600, color: '#9CA3AF', display: 'block', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.8 }}>Topic</label>
           <input value={topic} onChange={e => setTopic(e.target.value)} onKeyDown={e => e.key === 'Enter' && generate()}
             placeholder="e.g. Introduction to Quadratic Equations"
-            style={{ width: '100%', background: '#0E1117', border: '1px solid #1f2532', borderRadius: 8, padding: '9px 12px', fontSize: 13, color: '#fafafa', fontFamily: 'inherit', outline: 'none' }} />
+            style={{ width: '100%', background: '#141A2A', border: '1px solid #1f2532', borderRadius: 8, padding: '9px 12px', fontSize: 13, color: '#fafafa', fontFamily: 'inherit', outline: 'none' }} />
         </div>
         {error && <p style={{ fontSize: 12, color: '#A5B4FC', marginBottom: 14 }}>{error}</p>}
         <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} onClick={generate} disabled={loading || !topic.trim()}
@@ -88,9 +88,9 @@ export default function LessonPlan() {
       {plan && !loading && (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
-            <button onClick={() => setPlan('')} style={{ fontSize: 12, padding: '6px 14px', borderRadius: 7, background: '#151922', border: '1px solid #1f2532', color: '#9CA3AF', cursor: 'pointer', fontFamily: 'inherit' }}>New plan</button>
+            <button onClick={() => setPlan('')} style={{ fontSize: 12, padding: '6px 14px', borderRadius: 7, background: '#1C2233', border: '1px solid #1f2532', color: '#9CA3AF', cursor: 'pointer', fontFamily: 'inherit' }}>New plan</button>
           </div>
-          <div style={{ background: '#0E1117', border: '1px solid #1f2532', borderRadius: 14, padding: '28px 32px' }}>
+          <div style={{ background: '#141A2A', border: '1px solid #1f2532', borderRadius: 14, padding: '28px 32px' }}>
             <div className="prose-ai"><ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>{plan}</ReactMarkdown></div>
           </div>
         </motion.div>

@@ -87,8 +87,8 @@ export default function InsightPanel({ hasContent, lastQuestion }: InsightPanelP
       style={{
         flexShrink: 0,
         height: '100%',
-        background: '#0E1117',
-        borderLeft: '1px solid #1a1f2e',
+        background: '#141A2A',
+        borderLeft: '1px solid #171D2D',
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden',
@@ -102,7 +102,7 @@ export default function InsightPanel({ hasContent, lastQuestion }: InsightPanelP
           left: collapsed ? 4 : undefined,
           right: collapsed ? undefined : 10,
           width: 24, height: 24, borderRadius: 6,
-          background: '#151922', border: '1px solid #1f2532',
+          background: '#1C2233', border: '1px solid #1f2532',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           cursor: 'pointer', zIndex: 10, color: '#6B7280',
           transition: 'all 0.15s',
@@ -128,14 +128,14 @@ export default function InsightPanel({ hasContent, lastQuestion }: InsightPanelP
                 Insight Panel
               </h3>
 
-              <div style={{ display: 'flex', gap: 2, background: '#0E1117', borderRadius: 8, padding: 3, border: '1px solid #1f2532' }}>
+              <div style={{ display: 'flex', gap: 2, background: '#141A2A', borderRadius: 8, padding: 3, border: '1px solid #1f2532' }}>
                 {TABS.map(t => (
                   <button
                     key={t.id}
                     onClick={() => setTab(t.id)}
                     style={{
                       flex: 1, padding: '5px 4px', borderRadius: 6, border: 'none',
-                      background: tab === t.id ? '#1a1f2e' : 'none',
+                      background: tab === t.id ? '#171D2D' : 'none',
                       cursor: 'pointer', fontFamily: 'inherit',
                       display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
                       fontSize: 10, fontWeight: 600,
@@ -191,7 +191,7 @@ export default function InsightPanel({ hasContent, lastQuestion }: InsightPanelP
                               <span style={{ fontSize: 11, fontWeight: 600, color: '#B1B5BA' }}>Exam Probability</span>
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                              <div style={{ flex: 1, height: 5, background: '#1a1f2e', borderRadius: 3, overflow: 'hidden' }}>
+                              <div style={{ flex: 1, height: 5, background: '#171D2D', borderRadius: 3, overflow: 'hidden' }}>
                                 <motion.div
                                   key={examProbability}
                                   initial={{ width: 0 }}
@@ -216,7 +216,7 @@ export default function InsightPanel({ hasContent, lastQuestion }: InsightPanelP
                               {[1,2,3,4,5].map(n => (
                                 <div key={n} style={{
                                   flex: 1, height: 6, borderRadius: 3,
-                                  background: n <= difficultyLevel ? '#C7D2E8' : '#1a1f2e',
+                                  background: n <= difficultyLevel ? '#C7D2E8' : '#171D2D',
                                 }} />
                               ))}
                             </div>
@@ -234,7 +234,7 @@ export default function InsightPanel({ hasContent, lastQuestion }: InsightPanelP
                               {relatedTopics.map((tag: string) => (
                                 <span key={tag} style={{
                                   fontSize: 10, padding: '3px 8px', borderRadius: 20,
-                                  background: '#151922', border: '1px solid #1f2532',
+                                  background: '#1C2233', border: '1px solid #1f2532',
                                   color: '#9CA3AF', cursor: 'pointer', transition: 'all 0.1s',
                                 }}
                                   onMouseEnter={e => { (e.currentTarget as HTMLSpanElement).style.borderColor = '#7C6BF6'; (e.currentTarget as HTMLSpanElement).style.color = '#A5B4FC' }}
@@ -268,7 +268,7 @@ export default function InsightPanel({ hasContent, lastQuestion }: InsightPanelP
                           <span style={{ fontSize: 12, color: '#B1B5BA' }}>{c.name}</span>
                           <span style={{ fontSize: 11, fontWeight: 700, color: c.color }}>{c.strength}%</span>
                         </div>
-                        <div style={{ height: 4, background: '#1a1f2e', borderRadius: 3, overflow: 'hidden' }}>
+                        <div style={{ height: 4, background: '#171D2D', borderRadius: 3, overflow: 'hidden' }}>
                           <motion.div
                             key={`${c.name}-${c.strength}`}
                             initial={{ width: 0 }}
@@ -311,7 +311,7 @@ export default function InsightPanel({ hasContent, lastQuestion }: InsightPanelP
                           <span style={{ fontSize: 12, color: '#B1B5BA' }}>{s.name}</span>
                           <span style={{ fontSize: 11, fontWeight: 700, color: s.color }}>{s.progress}%</span>
                         </div>
-                        <div style={{ height: 5, background: '#1a1f2e', borderRadius: 3, overflow: 'hidden' }}>
+                        <div style={{ height: 5, background: '#171D2D', borderRadius: 3, overflow: 'hidden' }}>
                           <motion.div
                             initial={{ width: 0 }}
                             animate={{ width: `${s.progress}%` }}
@@ -333,8 +333,8 @@ export default function InsightPanel({ hasContent, lastQuestion }: InsightPanelP
                         ].map((b, i) => (
                           <div key={i} title={b.label} style={{
                             width: 36, height: 36, borderRadius: 9,
-                            background: b.unlocked ? '#1a1f2e' : '#0E1117',
-                            border: `1px solid ${b.unlocked ? '#2d2d3d' : '#1a1f2e'}`,
+                            background: b.unlocked ? '#171D2D' : '#141A2A',
+                            border: `1px solid ${b.unlocked ? '#2d2d3d' : '#171D2D'}`,
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                             fontSize: 17, opacity: b.unlocked ? 1 : 0.3,
                             cursor: 'pointer',
@@ -358,7 +358,7 @@ export default function InsightPanel({ hasContent, lastQuestion }: InsightPanelP
 function SmallCard({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
   return (
     <div style={{
-      background: '#0E1117', border: '1px solid #1f2532',
+      background: '#141A2A', border: '1px solid #1f2532',
       borderRadius: 10, padding: '12px 12px', ...style,
     }}>
       {children}
@@ -370,7 +370,7 @@ function EmptyState({ icon: Icon, text }: { icon: React.ElementType; text: strin
   return (
     <div style={{ textAlign: 'center', paddingTop: 40 }}>
       <div style={{
-        width: 36, height: 36, borderRadius: 10, background: '#151922',
+        width: 36, height: 36, borderRadius: 10, background: '#1C2233',
         border: '1px solid #1f2532', display: 'flex', alignItems: 'center',
         justifyContent: 'center', margin: '0 auto 10px',
       }}>

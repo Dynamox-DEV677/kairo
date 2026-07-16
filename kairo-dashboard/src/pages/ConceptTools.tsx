@@ -16,9 +16,9 @@ const TABS = [
 ]
 
 const card  = { background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(14px) saturate(140%)', WebkitBackdropFilter: 'blur(14px) saturate(140%)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14, padding: 20 } as React.CSSProperties
-const inp   = { background: '#0E1117', border: '1px solid #1f2532', borderRadius: 8, padding: '9px 12px', fontSize: 13, color: '#fafafa', fontFamily: 'inherit', outline: 'none', width: '100%' } as React.CSSProperties
+const inp   = { background: '#141A2A', border: '1px solid #1f2532', borderRadius: 8, padding: '9px 12px', fontSize: 13, color: '#fafafa', fontFamily: 'inherit', outline: 'none', width: '100%' } as React.CSSProperties
 const lbl   = { fontSize: 11, color: '#9CA3AF', display: 'block', marginBottom: 5, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.8 } as React.CSSProperties
-const btn   = (active = true, color?: string) => ({ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', borderRadius: 9, border: 'none', background: active ? (color || 'linear-gradient(135deg,#7C6BF6,#7C6BF6)') : '#1a1f2e', color: active ? '#fff' : '#6B7280', fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: active ? 'pointer' : 'not-allowed' } as React.CSSProperties)
+const btn   = (active = true, color?: string) => ({ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', borderRadius: 9, border: 'none', background: active ? (color || 'linear-gradient(135deg,#7C6BF6,#7C6BF6)') : '#171D2D', color: active ? '#fff' : '#6B7280', fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: active ? 'pointer' : 'not-allowed' } as React.CSSProperties)
 
 const SUBJECTS = ['General','Physics','Chemistry','Biology','Mathematics','History','Geography','English','Hindi','Economics']
 
@@ -32,7 +32,7 @@ export default function ConceptTools() {
         <p style={{ fontSize: 13, color: '#6B7280', marginTop: 4 }}>Simplify concepts · Visual mindmaps · Doubt history</p>
       </div>
 
-      <div className="seg-scroll" style={{ display: 'flex', gap: 4, marginBottom: 24, background: '#0E1117', border: '1px solid #1f2532', borderRadius: 10, padding: 4 }}>
+      <div className="seg-scroll" style={{ display: 'flex', gap: 4, marginBottom: 24, background: '#141A2A', border: '1px solid #1f2532', borderRadius: 10, padding: 4 }}>
         {TABS.map(t => (
           <button key={t.id} onClick={() => setTab(t.id)} style={{
             flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
@@ -137,7 +137,7 @@ function SimplifyTab() {
               <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>{result.explanation}</ReactMarkdown>
             </div>
             {concept && (
-              <div style={{ marginTop: 12, padding: '8px 12px', background: '#0E1117', borderRadius: 8, fontSize: 11, color: '#9CA3AF' }}>
+              <div style={{ marginTop: 12, padding: '8px 12px', background: '#141A2A', borderRadius: 8, fontSize: 11, color: '#9CA3AF' }}>
                 💡 Tip: Try asking the same concept at a different level for deeper understanding.
               </div>
             )}

@@ -9,7 +9,7 @@
 
 html, body, #root {
   height: 100%;
-  background: #050505;
+  background: #0A0D16;
   color: #fafafa;
   font-family: var(--kairo-font);
   -webkit-font-smoothing: antialiased;
@@ -104,7 +104,7 @@ html, body, #root {
 }
 
 .gradient-border {
-  background: linear-gradient(#0E1117, #0E1117) padding-box,
+  background: linear-gradient(#141A2A, #141A2A) padding-box,
               linear-gradient(135deg, #7C6BF6, #7C6BF6, #ec4899) border-box;
   border: 1px solid transparent;
 }
@@ -125,12 +125,12 @@ html, body, #root {
 .prose-ai ul, .prose-ai ol { padding-left: 1.4em; margin: 0.5em 0; }
 .prose-ai li { margin: 0.25em 0; }
 .prose-ai strong { color: #e4e4e7; font-weight: 600; }
-.prose-ai code { background: #1a1f2e; padding: 2px 7px; border-radius: 5px; font-size: 12.5px; color: #A5B4FC; }
-.prose-ai pre { background: #0E1117; border: 1px solid #1f2532; padding: 16px; border-radius: 10px; overflow-x: auto; margin: 0.8em 0; }
+.prose-ai code { background: #171D2D; padding: 2px 7px; border-radius: 5px; font-size: 12.5px; color: #A5B4FC; }
+.prose-ai pre { background: #141A2A; border: 1px solid #1f2532; padding: 16px; border-radius: 10px; overflow-x: auto; margin: 0.8em 0; }
 .prose-ai blockquote { border-left: 3px solid #7C6BF6; padding-left: 14px; color: #9CA3AF; margin: 0.8em 0; font-style: italic; }
 .prose-ai table { width: 100%; border-collapse: collapse; margin: 0.8em 0; font-size: 13px; }
 .prose-ai th, .prose-ai td { border: 1px solid #1f2532; padding: 8px 12px; }
-.prose-ai th { background: #151922; color: #fafafa; font-weight: 600; }
+.prose-ai th { background: #1C2233; color: #fafafa; font-weight: 600; }
 
 /* ──────────────────────────────────────────────────────────────────────────
    MOBILE — feature-flagged via .kairo-mobile root class on the shell.
@@ -262,7 +262,7 @@ html, body, #root {
 }
 
 /* ChatWindow's input border — give the input area its own breathing room from the nav */
-.kairo-mobile [style*="border-top: 1px solid #1a1f2e"]:last-child,
+.kairo-mobile [style*="border-top: 1px solid #171D2D"]:last-child,
 .kairo-mobile [style*="border-top: 1px solid #1f2532"]:last-child,
 .kairo-mobile [style*="border-top: 1px solid rgb(26, 26, 26)"]:last-child,
 .kairo-mobile [style*="border-top: 1px solid rgb(30, 30, 30)"]:last-child {
@@ -325,9 +325,9 @@ html, body, #root {
   --r-sm: 10px; --r-md: 14px; --r-lg: 18px; --r-xl: 24px;
 
   /* Palette — black + white + purple only */
-  --c-bg:        #050505;
-  --c-bg-elev1:  #0E1117;
-  --c-bg-elev2:  #151922;
+  --c-bg:        #0A0D16;
+  --c-bg-elev1:  #141A2A;
+  --c-bg-elev2:  #1C2233;
   --c-line:      rgba(255,255,255,0.06);
   --c-line-soft: #14141c;
   --c-text:      #fafafa;
@@ -532,8 +532,8 @@ html, body, #root {
 
 /* Cards: tighten on phone, kill heavy borders */
 .kairo-mobile .kr-card,
-.kairo-mobile [style*="borderRadius: 14"][style*="background: '#0E1117'"],
-.kairo-mobile [style*="borderRadius: 14"][style*="background:'#0E1117'"] {
+.kairo-mobile [style*="borderRadius: 14"][style*="background: '#141A2A'"],
+.kairo-mobile [style*="borderRadius: 14"][style*="background:'#141A2A'"] {
   padding: 14px !important;
   border-color: rgba(165, 180, 252, 0.10) !important;
 }
@@ -598,7 +598,7 @@ html, body, #root {
 }
 
 /* Writing Tools tabs row — let the tabs wrap on narrow phones */
-.kairo-mobile [style*="display: flex"][style*="gap: 4"][style*="background: '#0E1117'"] {
+.kairo-mobile [style*="display: flex"][style*="gap: 4"][style*="background: '#141A2A'"] {
   flex-wrap: wrap !important;
   gap: 6px !important;
 }
@@ -895,7 +895,7 @@ html, body, #root {
 /* Pomodoro — mode selector tabs (Focus/Short/Long) become full-width row
    so the labels don't break into multiple lines */
 @media (max-width: 768px) {
-  .kairo-mobile [style*="background: '#0E1117'"][style*="borderRadius: 20"][style*="padding: 28px"] {
+  .kairo-mobile [style*="background: '#141A2A'"][style*="borderRadius: 20"][style*="padding: 28px"] {
     padding: 18px !important;
   }
 }
@@ -953,7 +953,7 @@ html, body, #root {
    LIGHT THEME — overrides every common dark inline-style colour Kyno uses.
    Activated by Dashboard.tsx via document.documentElement.setAttribute(
      'data-theme', 'light'). Because the codebase paints everything with
-   inline `style={{ background: '#050505' }}` etc., we cannot rely on CSS
+   inline `style={{ background: '#0A0D16' }}` etc., we cannot rely on CSS
    variables — we match the literal serialised inline-style strings React
    emits and flip the colour. This file is the single source of truth for
    the light theme.
@@ -982,35 +982,35 @@ html[data-theme="light"] ::selection {
 }
 
 /* ── Page-level dark backgrounds → light ──────────────────────────────── */
-html[data-theme="light"] [style*="background: #050505"],
-html[data-theme="light"] [style*="background:#050505"],
-html[data-theme="light"] [style*="background: '#050505'"],
-html[data-theme="light"] [style*="background: #050505"],
-html[data-theme="light"] [style*="background:#050505"]
+html[data-theme="light"] [style*="background: #0A0D16"],
+html[data-theme="light"] [style*="background:#0A0D16"],
+html[data-theme="light"] [style*="background: '#0A0D16'"],
+html[data-theme="light"] [style*="background: #0A0D16"],
+html[data-theme="light"] [style*="background:#0A0D16"]
 { background: #fafafa !important; color: #18181b; }
 
 /* ── Panel / card backgrounds — slightly darker than page ──────────────── */
-html[data-theme="light"] [style*="background: #0E1117"]:not([style*="#1118"]):not([style*="#1112"]),
-html[data-theme="light"] [style*="background:#0E1117"]:not([style*="#1118"]):not([style*="#1112"]),
-html[data-theme="light"] [style*="background: #0E1117"],
-html[data-theme="light"] [style*="background:#0E1117"],
-html[data-theme="light"] [style*="background: #0E1117"],
-html[data-theme="light"] [style*="background:#0E1117"],
-html[data-theme="light"] [style*="background: #0E1117"],
-html[data-theme="light"] [style*="background:#0E1117"]
+html[data-theme="light"] [style*="background: #141A2A"]:not([style*="#1118"]):not([style*="#1112"]),
+html[data-theme="light"] [style*="background:#141A2A"]:not([style*="#1118"]):not([style*="#1112"]),
+html[data-theme="light"] [style*="background: #141A2A"],
+html[data-theme="light"] [style*="background:#141A2A"],
+html[data-theme="light"] [style*="background: #141A2A"],
+html[data-theme="light"] [style*="background:#141A2A"],
+html[data-theme="light"] [style*="background: #141A2A"],
+html[data-theme="light"] [style*="background:#141A2A"]
 { background: #ffffff !important; color: #18181b; }
 
 /* ── Elevated surfaces (slightly darker still) ─────────────────────────── */
-html[data-theme="light"] [style*="background: #151922"],
-html[data-theme="light"] [style*="background:#151922"],
-html[data-theme="light"] [style*="background: #151922"],
-html[data-theme="light"] [style*="background:#151922"],
-html[data-theme="light"] [style*="background: #151922"],
-html[data-theme="light"] [style*="background:#151922"],
-html[data-theme="light"] [style*="background: #1a1f2e"],
-html[data-theme="light"] [style*="background:#1a1f2e"],
-html[data-theme="light"] [style*="background: #1a1f2e"],
-html[data-theme="light"] [style*="background:#1a1f2e"]
+html[data-theme="light"] [style*="background: #1C2233"],
+html[data-theme="light"] [style*="background:#1C2233"],
+html[data-theme="light"] [style*="background: #1C2233"],
+html[data-theme="light"] [style*="background:#1C2233"],
+html[data-theme="light"] [style*="background: #1C2233"],
+html[data-theme="light"] [style*="background:#1C2233"],
+html[data-theme="light"] [style*="background: #171D2D"],
+html[data-theme="light"] [style*="background:#171D2D"],
+html[data-theme="light"] [style*="background: #171D2D"],
+html[data-theme="light"] [style*="background:#171D2D"]
 { background: #f4f4f5 !important; color: #18181b; }
 
 /* ── Hover / pressed states ────────────────────────────────────────────── */
@@ -1040,12 +1040,12 @@ html[data-theme="light"] [style*="background: rgba(255,255,255,0.06"]
 /* ── Borders ───────────────────────────────────────────────────────────── */
 html[data-theme="light"] [style*="border: 1px solid #1f2532"],
 html[data-theme="light"] [style*="border:1px solid #1f2532"],
-html[data-theme="light"] [style*="border: 1px solid #1a1f2e"],
-html[data-theme="light"] [style*="border:1px solid #1a1f2e"],
+html[data-theme="light"] [style*="border: 1px solid #171D2D"],
+html[data-theme="light"] [style*="border:1px solid #171D2D"],
 html[data-theme="light"] [style*="border: 1px solid rgba(255,255,255,0.06)"],
 html[data-theme="light"] [style*="border:1px solid rgba(255,255,255,0.06)"],
-html[data-theme="light"] [style*="border: 1px solid #151922"],
-html[data-theme="light"] [style*="border:1px solid #151922"],
+html[data-theme="light"] [style*="border: 1px solid #1C2233"],
+html[data-theme="light"] [style*="border:1px solid #1C2233"],
 html[data-theme="light"] [style*="border: 1px solid rgba(255,255,255,0.08)"],
 html[data-theme="light"] [style*="border:1px solid rgba(255,255,255,0.08)"],
 html[data-theme="light"] [style*="border: 1px solid rgba(255,255,255,0.08)"],
@@ -1153,7 +1153,7 @@ html[data-theme="light"] [style*="background: rgba(124, 107, 246, 0.10)"],
 html[data-theme="light"] [style*="background:rgba(124, 107, 246, 0.10)"]
 { background: rgba(124, 107, 246, 0.10) !important; }
 
-/* Dashboard top header (currently emitted as background: '#0E1117') — caught
+/* Dashboard top header (currently emitted as background: '#141A2A') — caught
    above; force underline + border to also flip. */
 html[data-theme="light"] [style*="borderBottom: '1px solid #1f2532'"],
 html[data-theme="light"] [style*="borderBottom:1px solid #1f2532"],
@@ -1161,7 +1161,7 @@ html[data-theme="light"] [style*="borderTop: '1px solid #1f2532'"],
 html[data-theme="light"] [style*="borderTop:1px solid #1f2532"]
 { border-color: #e4e4e7 !important; }
 
-/* Tooltip / dropdown panels often use #0E1117 or #0E1117 — already caught. */
+/* Tooltip / dropdown panels often use #141A2A or #141A2A — already caught. */
 
 /* Code blocks <code> baseline */
 html[data-theme="light"] code { color: #4A2FA8; }
@@ -1176,18 +1176,18 @@ html[data-theme="light"] svg[stroke="white"] {
 /* ════════════════════════════════════════════════════════════════════════════
    RGB-CANONICALISED VARIANTS
 
-   React applies styles via `el.style.background = '#050505'`, and Chrome /
+   React applies styles via `el.style.background = '#0A0D16'`, and Chrome /
    Firefox normalise the inline style attribute to the rgb form
    (`background-color: rgb(10, 10, 10);`). The hex-based selectors above
    miss those — so we repeat every rule here with the rgb spelling.
 
    Hex ↔ rgb table:
-     #050505 → rgb(6, 6, 10)         #050505 → rgb(10, 10, 10)
-     #0E1117 → rgb(13, 13, 13)       #0E1117 → rgb(14, 14, 22)
-     #0E1117 → rgb(15, 15, 15)       #0E1117    → rgb(17, 17, 17)
-     #151922 → rgb(19, 19, 29)       #151922 → rgb(20, 20, 31)
-     #151922 → rgb(22, 22, 22)       #1a1f2e → rgb(26, 26, 26)
-     rgba(255,255,255,0.06) → rgb(26, 26, 38)       #1a1f2e → rgb(28, 28, 28)
+     #0A0D16 → rgb(6, 6, 10)         #0A0D16 → rgb(10, 10, 10)
+     #141A2A → rgb(13, 13, 13)       #141A2A → rgb(14, 14, 22)
+     #141A2A → rgb(15, 15, 15)       #141A2A    → rgb(17, 17, 17)
+     #1C2233 → rgb(19, 19, 29)       #1C2233 → rgb(20, 20, 31)
+     #1C2233 → rgb(22, 22, 22)       #171D2D → rgb(26, 26, 26)
+     rgba(255,255,255,0.06) → rgb(26, 26, 38)       #171D2D → rgb(28, 28, 28)
      #1f2532 → rgb(30, 30, 30)       #1f2532 → rgb(30, 30, 46)
      rgba(255,255,255,0.08) → rgb(34, 34, 46)       rgba(255,255,255,0.08) → rgb(45, 45, 45)
      #fafafa → rgb(250, 250, 250)    #fff    → rgb(255, 255, 255)
@@ -1205,7 +1205,7 @@ html[data-theme="light"] [style*="background-color: rgb(6, 6, 10)"],
 html[data-theme="light"] [style*="background-color:rgb(6, 6, 10)"]
 { background-color: #fafafa !important; color: #18181b; }
 
-/* ── Panel / card backgrounds (#0E1117, #0E1117, #0E1117, #0E1117) ────────── */
+/* ── Panel / card backgrounds (#141A2A, #141A2A, #141A2A, #141A2A) ────────── */
 html[data-theme="light"] [style*="background: rgb(17, 17, 17)"],
 html[data-theme="light"] [style*="background:rgb(17, 17, 17)"],
 html[data-theme="light"] [style*="background-color: rgb(17, 17, 17)"],
@@ -1224,7 +1224,7 @@ html[data-theme="light"] [style*="background-color: rgb(15, 15, 15)"],
 html[data-theme="light"] [style*="background-color:rgb(15, 15, 15)"]
 { background-color: #ffffff !important; color: #18181b; }
 
-/* ── Elevated surfaces (#151922, #151922, #151922, #1a1f2e, #1a1f2e) ──── */
+/* ── Elevated surfaces (#1C2233, #1C2233, #1C2233, #171D2D, #171D2D) ──── */
 html[data-theme="light"] [style*="background: rgb(20, 20, 31)"],
 html[data-theme="light"] [style*="background:rgb(20, 20, 31)"],
 html[data-theme="light"] [style*="background-color: rgb(20, 20, 31)"],
@@ -1272,7 +1272,7 @@ html[data-theme="light"] [style*="color: rgb(212, 212, 216)"],
 html[data-theme="light"] [style*="color:rgb(212, 212, 216)"]
 { color: #4B5563 !important; }
 
-/* ── Borders (#1f2532, #1a1f2e, #151922, rgba(255,255,255,0.06), rgba(255,255,255,0.08), rgba(255,255,255,0.08)) ──── */
+/* ── Borders (#1f2532, #171D2D, #1C2233, rgba(255,255,255,0.06), rgba(255,255,255,0.08), rgba(255,255,255,0.08)) ──── */
 html[data-theme="light"] [style*="solid rgb(30, 30, 30)"],
 html[data-theme="light"] [style*="solid rgb(26, 26, 26)"],
 html[data-theme="light"] [style*="solid rgb(22, 22, 22)"],

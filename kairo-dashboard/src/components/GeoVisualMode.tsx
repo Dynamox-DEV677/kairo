@@ -47,8 +47,8 @@ interface GeoVisualModeProps {
 }
 
 const C = {
-  bg:        '#050505',
-  surface:   '#151922',
+  bg:        '#0A0D16',
+  surface:   '#1C2233',
   glass:     'rgba(20, 24, 35, 0.65)',
   border:    'rgba(255, 255, 255, 0.08)',
   borderHi:  'rgba(165, 180, 252, 0.35)',

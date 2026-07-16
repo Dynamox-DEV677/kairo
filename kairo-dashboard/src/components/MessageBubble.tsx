@@ -72,7 +72,7 @@ export default function MessageBubble({ message, isLast, isStreaming, onChipActi
         <div style={{
           padding: isUser ? '11px 16px' : '14px 18px',
           borderRadius: isUser ? '16px 4px 16px 16px' : '4px 16px 16px 16px',
-          background: isUser ? 'linear-gradient(135deg, #1f2532, #16162a)' : '#0E1117',
+          background: isUser ? 'linear-gradient(135deg, #1f2532, #16162a)' : '#141A2A',
           border: isUser ? '1px solid #2d2d3d' : '1px solid #1f2532',
           boxShadow: isUser ? '0 4px 20px rgba(0,0,0,0.3)' : '0 4px 20px rgba(0,0,0,0.2)',
           position: 'relative',
@@ -99,7 +99,7 @@ export default function MessageBubble({ message, isLast, isStreaming, onChipActi
                   code: ({ children, className }) => {
                     const isBlock = !!className
                     return isBlock
-                      ? <pre style={{ background: '#050505', border: '1px solid #27272a', borderRadius: 8, padding: '12px 14px', overflowX: 'auto', margin: '10px 0' }}>
+                      ? <pre style={{ background: '#0A0D16', border: '1px solid #27272a', borderRadius: 8, padding: '12px 14px', overflowX: 'auto', margin: '10px 0' }}>
                           <code style={{ fontSize: 13, color: '#86efac', fontFamily: 'monospace' }}>{children}</code>
                         </pre>
                       : <code style={{ background: '#1a1a2e', padding: '2px 6px', borderRadius: 4, fontSize: 13, color: '#A5B4FC', fontFamily: 'monospace' }}>{children}</code>

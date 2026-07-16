@@ -27,7 +27,7 @@ const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
 const card: React.CSSProperties = { background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(14px) saturate(140%)', WebkitBackdropFilter: 'blur(14px) saturate(140%)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14 }
 const inp: React.CSSProperties = {
-  background: '#0E1117', border: '1px solid #1f2532', borderRadius: 8,
+  background: '#141A2A', border: '1px solid #1f2532', borderRadius: 8,
   padding: '9px 12px', fontSize: 13, color: '#fafafa',
   fontFamily: 'inherit', outline: 'none', width: '100%', boxSizing: 'border-box',
 }
@@ -242,7 +242,7 @@ Generate the JSON schedule and markdown plan as instructed.`
                   <button key={s} onClick={() => toggleSubject(s)} style={{
                     padding: '6px 12px', borderRadius: 7, cursor: 'pointer',
                     border: `1px solid ${selected ? colorFor(s) : '#1f2532'}`,
-                    background: selected ? `${colorFor(s)}15` : '#0E1117',
+                    background: selected ? `${colorFor(s)}15` : '#141A2A',
                     color: selected ? colorFor(s) : '#9CA3AF',
                     fontFamily: 'inherit', fontSize: 12, fontWeight: 600,
                   }}>{s}</button>
@@ -256,7 +256,7 @@ Generate the JSON schedule and markdown plan as instructed.`
               <label style={lbl}>Exam dates (optional — sharpens AI priorities)</label>
               <button onClick={addExamDate} disabled={subjects.length === 0} style={{
                 padding: '5px 10px', borderRadius: 6, border: '1px solid #1f2532',
-                background: '#151922', color: '#B1B5BA',
+                background: '#1C2233', color: '#B1B5BA',
                 fontFamily: 'inherit', fontSize: 11, cursor: subjects.length === 0 ? 'not-allowed' : 'pointer',
                 display: 'flex', alignItems: 'center', gap: 5,
               }}><Plus size={11} /> Add Exam</button>
@@ -273,7 +273,7 @@ Generate the JSON schedule and markdown plan as instructed.`
                     style={{ ...inp, width: 180 }} />
                   <button onClick={() => removeExamDate(i)} style={{
                     width: 36, height: 36, borderRadius: 7, border: '1px solid #1f2532',
-                    background: '#151922', color: '#9CA3AF', cursor: 'pointer',
+                    background: '#1C2233', color: '#9CA3AF', cursor: 'pointer',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                   }}><X size={13} /></button>
                 </motion.div>
@@ -307,7 +307,7 @@ Generate the JSON schedule and markdown plan as instructed.`
             style={{
               padding: '12px 24px', borderRadius: 10, border: 'none',
               background: busy || subjects.length === 0
-                ? '#1a1f2e'
+                ? '#171D2D'
                 : 'linear-gradient(135deg, #7C6BF6, #7C6BF6)',
               color: busy || subjects.length === 0 ? '#6B7280' : '#fff',
               fontFamily: 'inherit', fontSize: 14, fontWeight: 700,
@@ -345,7 +345,7 @@ Generate the JSON schedule and markdown plan as instructed.`
             <div style={{ display: 'flex', gap: 8, marginTop: 18 }}>
               <button onClick={() => { setPlan(null); }} style={{
                 padding: '8px 14px', borderRadius: 8, border: '1px solid #1f2532',
-                background: '#151922', color: '#B1B5BA', cursor: 'pointer',
+                background: '#1C2233', color: '#B1B5BA', cursor: 'pointer',
                 fontFamily: 'inherit', fontSize: 12, display: 'flex', alignItems: 'center', gap: 6,
               }}>
                 <Plus size={12} /> Edit Setup

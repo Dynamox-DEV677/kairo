@@ -270,7 +270,7 @@ Be direct. Indian exam context. Under 200 words total.` },
             onClick={generate} disabled={busy}
             style={{
               width: '100%', padding: '14px', borderRadius: 11, border: 'none',
-              background: busy ? '#1a1f2e' : 'linear-gradient(135deg, #A5B4FC, #7C6BF6)',
+              background: busy ? '#171D2D' : 'linear-gradient(135deg, #A5B4FC, #7C6BF6)',
               color: busy ? '#6B7280' : '#fff',
               fontFamily: 'inherit', fontSize: 15, fontWeight: 800,
               cursor: busy ? 'not-allowed' : 'pointer',
@@ -304,7 +304,7 @@ Be direct. Indian exam context. Under 200 words total.` },
             </div>
             <button onClick={() => setPack(null)} style={{
               padding: '7px 12px', borderRadius: 7, border: '1px solid #1f2532',
-              background: '#151922', color: '#9CA3AF', cursor: 'pointer',
+              background: '#1C2233', color: '#9CA3AF', cursor: 'pointer',
               fontFamily: 'inherit', fontSize: 11, display: 'flex', alignItems: 'center', gap: 5,
             }}>
               <RefreshCw size={11} /> New Pack
@@ -312,7 +312,7 @@ Be direct. Indian exam context. Under 200 words total.` },
           </div>
 
           <div style={{
-            display: 'flex', gap: 4, marginBottom: 12, background: '#0E1117',
+            display: 'flex', gap: 4, marginBottom: 12, background: '#141A2A',
             border: '1px solid #1f2532', borderRadius: 10, padding: 4, overflowX: 'auto',
           }}>
             {TABS.map(t => {
@@ -336,7 +336,7 @@ Be direct. Indian exam context. Under 200 words total.` },
           </div>
 
           <div style={{ ...card, padding: 24 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16, paddingBottom: 12, borderBottom: '1px solid #1a1f2e' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16, paddingBottom: 12, borderBottom: '1px solid #171D2D' }}>
               <div style={{ flex: 1, fontSize: 13, fontWeight: 700, color: '#fafafa' }}>
                 {STAGE_TITLES[activeTab]}
               </div>
@@ -374,7 +374,7 @@ const lblStyle: React.CSSProperties = {
   fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.8,
 }
 const inpStyle: React.CSSProperties = {
-  background: '#0E1117', border: '1px solid #1f2532', borderRadius: 8,
+  background: '#141A2A', border: '1px solid #1f2532', borderRadius: 8,
   padding: '9px 12px', fontSize: 13, color: '#fafafa',
   fontFamily: 'inherit', outline: 'none', width: '100%', boxSizing: 'border-box',
 }

@@ -8,9 +8,9 @@ import { awardXP } from '../lib/game'
 const SCHOOL_ID = 'demo_school'
 
 const card  = { background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(14px) saturate(140%)', WebkitBackdropFilter: 'blur(14px) saturate(140%)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14, padding: 20 } as React.CSSProperties
-const inp   = { background: '#0E1117', border: '1px solid #1f2532', borderRadius: 8, padding: '9px 12px', fontSize: 13, color: '#fafafa', fontFamily: 'inherit', outline: 'none', width: '100%' } as React.CSSProperties
+const inp   = { background: '#141A2A', border: '1px solid #1f2532', borderRadius: 8, padding: '9px 12px', fontSize: 13, color: '#fafafa', fontFamily: 'inherit', outline: 'none', width: '100%' } as React.CSSProperties
 const lbl   = { fontSize: 11, color: '#9CA3AF', display: 'block', marginBottom: 5, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.8 } as React.CSSProperties
-const btn   = (active = true, color?: string) => ({ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', borderRadius: 9, border: 'none', background: active ? (color || 'linear-gradient(135deg,#7C6BF6,#7C6BF6)') : '#1a1f2e', color: active ? '#fff' : '#6B7280', fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: active ? 'pointer' : 'not-allowed' } as React.CSSProperties)
+const btn   = (active = true, color?: string) => ({ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', borderRadius: 9, border: 'none', background: active ? (color || 'linear-gradient(135deg,#7C6BF6,#7C6BF6)') : '#171D2D', color: active ? '#fff' : '#6B7280', fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: active ? 'pointer' : 'not-allowed' } as React.CSSProperties)
 
 const SUBJECTS = ['Physics','Chemistry','Biology','Mathematics','History','Geography','Economics','English','Computer Science']
 
@@ -61,7 +61,7 @@ export default function AdaptiveQuiz() {
           <p style={{ fontSize: 13, color: '#6B7280', marginTop: 4 }}>MCQ quiz that adapts to your difficulty level</p>
         </div>
         <button onClick={() => { if (screen !== 'history') { loadHistory(); setScreen('history') } else setScreen('setup') }}
-          style={{ ...btn(true, '#0E1117'), border: '1px solid #1f2532', color: '#9CA3AF', whiteSpace: 'nowrap', flexShrink: 0 }}>
+          style={{ ...btn(true, '#141A2A'), border: '1px solid #1f2532', color: '#9CA3AF', whiteSpace: 'nowrap', flexShrink: 0 }}>
           <History size={13} /> History
         </button>
       </div>
@@ -326,7 +326,7 @@ function ResultScreen({ result, onRetry }: any) {
 function HistoryScreen({ history, onBack }: any) {
   return (
     <div>
-      <button onClick={onBack} style={{ ...btn(true, '#1a1f2e'), color: '#9CA3AF', marginBottom: 16, border: '1px solid #1f2532' }}>← Back to Setup</button>
+      <button onClick={onBack} style={{ ...btn(true, '#171D2D'), color: '#9CA3AF', marginBottom: 16, border: '1px solid #1f2532' }}>← Back to Setup</button>
 
       {history.length === 0 && (
         <div style={{ textAlign: 'center', padding: 60, color: '#4B5563', fontSize: 13 }}>No completed quizzes yet.</div>

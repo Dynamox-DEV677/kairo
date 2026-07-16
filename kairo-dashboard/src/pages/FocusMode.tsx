@@ -78,8 +78,8 @@ export default function FocusMode() {
   const dash = C * progress
 
   const bg = ambient
-    ? 'radial-gradient(ellipse at top, #1a1a2e 0%, #050505 60%), radial-gradient(ellipse at bottom right, rgba(124, 107, 246, 0.18), transparent 50%)'
-    : '#050505'
+    ? 'radial-gradient(ellipse at top, #1a1a2e 0%, #0A0D16 60%), radial-gradient(ellipse at bottom right, rgba(124, 107, 246, 0.18), transparent 50%)'
+    : '#0A0D16'
 
   return (
     <div style={{
@@ -126,7 +126,7 @@ export default function FocusMode() {
           title={ambient ? 'Calm mode off' : 'Calm mode on'}
           style={{
             width: 36, height: 36, borderRadius: 8,
-            background: ambient ? 'rgba(124, 107, 246, 0.15)' : '#151922',
+            background: ambient ? 'rgba(124, 107, 246, 0.15)' : '#1C2233',
             border: `1px solid ${ambient ? '#7C6BF6' : '#1f2532'}`,
             color: ambient ? '#A5B4FC' : '#9CA3AF', cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -140,7 +140,7 @@ export default function FocusMode() {
       }}>
         <svg viewBox="-160 -160 320 320" width={320} height={320}
           style={{ transform: 'rotate(-90deg)' }}>
-          <circle r={R} fill="none" stroke="#1a1f2e" strokeWidth={6} />
+          <circle r={R} fill="none" stroke="#171D2D" strokeWidth={6} />
           <motion.circle
             r={R} fill="none"
             stroke={done ? '#A5B4FC' : 'url(#grad)'}
@@ -206,7 +206,7 @@ export default function FocusMode() {
         )}
         <button onClick={reset} style={{
           padding: '12px 18px', borderRadius: 10, border: '1px solid #1f2532',
-          background: '#151922', color: '#9CA3AF', cursor: 'pointer',
+          background: '#1C2233', color: '#9CA3AF', cursor: 'pointer',
           fontFamily: 'inherit', fontSize: 13, display: 'flex', alignItems: 'center', gap: 6,
         }}>
           <RotateCcw size={13} />Reset
@@ -238,7 +238,7 @@ export default function FocusMode() {
           placeholder="e.g. Revise quadratic equations · Read Chapter 6"
           style={{
             width: '100%', padding: '12px 16px', borderRadius: 10,
-            background: '#0E1117', border: '1px solid #1f2532',
+            background: '#141A2A', border: '1px solid #1f2532',
             color: '#fafafa', fontFamily: 'inherit', fontSize: 14,
             outline: 'none', boxSizing: 'border-box',
           }}

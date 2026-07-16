@@ -175,7 +175,7 @@ export default function TopBar({ title, onModelChange, profile, modelLocked, mod
             title="Regenerate passcode"
             style={{
               width: 26, height: 26, borderRadius: 6,
-              background: '#151922', border: '1px solid #1f2532',
+              background: '#1C2233', border: '1px solid #1f2532',
               cursor: regenerating ? 'not-allowed' : 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               color: '#9CA3AF', flexShrink: 0,
@@ -218,7 +218,7 @@ export default function TopBar({ title, onModelChange, profile, modelLocked, mod
                 transition={{ duration: 0.15 }}
                 style={{
                   position: 'absolute', top: '100%', left: 0, marginTop: 6,
-                  background: '#0E1117', border: '1px solid #1f2532', borderRadius: 10,
+                  background: '#141A2A', border: '1px solid #1f2532', borderRadius: 10,
                   minWidth: 180, zIndex: 300, overflow: 'hidden',
                   boxShadow: '0 20px 50px rgba(0,0,0,0.7)',
                 }}
@@ -227,13 +227,13 @@ export default function TopBar({ title, onModelChange, profile, modelLocked, mod
                   <button key={m.id} onClick={() => { setMode(m.id); setModeOpen(false) }}
                     style={{
                       width: '100%', padding: '10px 14px', border: 'none',
-                      background: mode === m.id ? '#151922' : 'none',
+                      background: mode === m.id ? '#1C2233' : 'none',
                       cursor: 'pointer', fontFamily: 'inherit',
                       display: 'flex', alignItems: 'center', gap: 10,
                       borderLeft: mode === m.id ? `2px solid ${m.color}` : '2px solid transparent',
                       transition: 'background 0.1s',
                     }}
-                    onMouseEnter={e => { if (mode !== m.id) (e.currentTarget as HTMLButtonElement).style.background = '#151922' }}
+                    onMouseEnter={e => { if (mode !== m.id) (e.currentTarget as HTMLButtonElement).style.background = '#1C2233' }}
                     onMouseLeave={e => { if (mode !== m.id) (e.currentTarget as HTMLButtonElement).style.background = 'none' }}
                   >
                     <m.icon size={14} color={m.color} />
@@ -294,24 +294,24 @@ export default function TopBar({ title, onModelChange, profile, modelLocked, mod
                 transition={{ duration: 0.15 }}
                 style={{
                   position: 'absolute', top: '100%', right: 0, marginTop: 6,
-                  background: '#0E1117', border: '1px solid #1f2532', borderRadius: 12,
+                  background: '#141A2A', border: '1px solid #1f2532', borderRadius: 12,
                   minWidth: 300, zIndex: 300, overflow: 'hidden',
                   boxShadow: '0 20px 50px rgba(0,0,0,0.7)',
                 }}
               >
-                <div style={{ padding: '10px 14px 8px', borderBottom: '1px solid #1a1f2e' }}>
+                <div style={{ padding: '10px 14px 8px', borderBottom: '1px solid #171D2D' }}>
                   <p style={{ fontSize: 10, fontWeight: 700, color: '#4B5563', textTransform: 'uppercase', letterSpacing: 1 }}>AI Models · All Free</p>
                 </div>
                 {MODELS.map(m => (
                   <button key={m.id} onClick={() => selectModel(m)}
                     style={{
                       width: '100%', padding: '10px 14px', border: 'none',
-                      background: model.id === m.id ? '#151922' : 'none',
+                      background: model.id === m.id ? '#1C2233' : 'none',
                       cursor: 'pointer', fontFamily: 'inherit',
                       display: 'flex', alignItems: 'center', gap: 10,
                       borderLeft: model.id === m.id ? `2px solid ${m.color}` : '2px solid transparent',
                     }}
-                    onMouseEnter={e => { if (model.id !== m.id) (e.currentTarget as HTMLButtonElement).style.background = '#151922' }}
+                    onMouseEnter={e => { if (model.id !== m.id) (e.currentTarget as HTMLButtonElement).style.background = '#1C2233' }}
                     onMouseLeave={e => { if (model.id !== m.id) (e.currentTarget as HTMLButtonElement).style.background = 'none' }}
                   >
                     <span style={{ width: 8, height: 8, borderRadius: '50%', background: m.color, boxShadow: `0 0 6px ${m.color}`, flexShrink: 0 }} />
@@ -329,7 +329,7 @@ export default function TopBar({ title, onModelChange, profile, modelLocked, mod
                     </div>
                   </button>
                 ))}
-                <div style={{ padding: '8px 14px', borderTop: '1px solid #1a1f2e' }}>
+                <div style={{ padding: '8px 14px', borderTop: '1px solid #171D2D' }}>
                   <p style={{ fontSize: 11, color: '#4B5563' }}>Powered by OpenRouter — zero cost</p>
                 </div>
               </motion.div>
@@ -373,7 +373,7 @@ export default function TopBar({ title, onModelChange, profile, modelLocked, mod
             onClick={() => { const willOpen = !notifOpen; setNotifOpen(willOpen); setModelOpen(false); setModeOpen(false); if (willOpen) { markAllRead(); setNotifs(listNotifications()) } }}
             style={{
               width: 34, height: 34, borderRadius: 8,
-              background: '#151922', border: '1px solid #1f2532',
+              background: '#1C2233', border: '1px solid #1f2532',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               cursor: 'pointer', position: 'relative',
             }}
@@ -397,12 +397,12 @@ export default function TopBar({ title, onModelChange, profile, modelLocked, mod
                 transition={{ duration: 0.15 }}
                 style={{
                   position: 'absolute', top: '100%', right: 0, marginTop: 6,
-                  background: '#0E1117', border: '1px solid #1f2532', borderRadius: 12,
+                  background: '#141A2A', border: '1px solid #1f2532', borderRadius: 12,
                   width: 300, zIndex: 300, overflow: 'hidden',
                   boxShadow: '0 20px 50px rgba(0,0,0,0.7)',
                 }}
               >
-                <div style={{ padding: '12px 14px 8px', borderBottom: '1px solid #1a1f2e' }}>
+                <div style={{ padding: '12px 14px 8px', borderBottom: '1px solid #171D2D' }}>
                   <p style={{ fontSize: 12, fontWeight: 700, color: '#fafafa' }}>Notifications</p>
                 </div>
                 {notifs.length === 0 ? (
@@ -412,7 +412,7 @@ export default function TopBar({ title, onModelChange, profile, modelLocked, mod
                   </div>
                 ) : notifs.slice(0, 12).map((n, i) => (
                   <div key={n.id} style={{
-                    padding: '10px 14px', borderBottom: i < Math.min(notifs.length, 12) - 1 ? '1px solid #1a1f2e' : 'none',
+                    padding: '10px 14px', borderBottom: i < Math.min(notifs.length, 12) - 1 ? '1px solid #171D2D' : 'none',
                     display: 'flex', gap: 10,
                   }}>
                     <span style={{ fontSize: 18 }}>{n.icon}</span>

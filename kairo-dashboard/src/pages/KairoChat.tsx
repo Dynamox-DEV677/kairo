@@ -54,7 +54,7 @@ function openView(view: string) {
 }
 
 const C = {
-  bg:     '#050505',
+  bg:     '#0A0D16',
   text:   '#fafafa',
   dim:    '#9CA3AF',
   cyan:   '#A5B4FC',

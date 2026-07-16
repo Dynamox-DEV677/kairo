@@ -69,7 +69,7 @@ function NamePicker({
     <div ref={ref} style={{ position: 'relative' }}>
       <div style={{
         display: 'flex', alignItems: 'center', gap: 8,
-        background: '#0E1117', border: '1px solid #1f2532', borderRadius: 8,
+        background: '#141A2A', border: '1px solid #1f2532', borderRadius: 8,
         padding: '0 12px', transition: 'border-color 0.15s',
       }}
         onFocus={() => {}}
@@ -104,7 +104,7 @@ function NamePicker({
             transition={{ duration: 0.12 }}
             style={{
               position: 'absolute', top: 'calc(100% + 6px)', left: 0, right: 0, zIndex: 50,
-              background: '#151922', border: '1px solid #2a2a2a', borderRadius: 10,
+              background: '#1C2233', border: '1px solid #2a2a2a', borderRadius: 10,
               boxShadow: '0 8px 32px rgba(0,0,0,0.5)', maxHeight: 220, overflowY: 'auto',
             }}
           >
@@ -235,7 +235,7 @@ export default function ParentMessage() {
                   onClick={() => setSituation(t.prompt)}
                   style={{
                     padding: '5px 10px', borderRadius: 6, fontSize: 11, cursor: 'pointer', fontFamily: 'inherit',
-                    background: situation === t.prompt ? 'rgba(124, 107, 246, 0.15)' : '#151922',
+                    background: situation === t.prompt ? 'rgba(124, 107, 246, 0.15)' : '#1C2233',
                     border: `1px solid ${situation === t.prompt ? '#7C6BF6' : '#1f2532'}`,
                     color: situation === t.prompt ? '#A5B4FC' : '#9CA3AF',
                     transition: 'all 0.1s',
@@ -264,7 +264,7 @@ export default function ParentMessage() {
               textTransform: 'uppercase', letterSpacing: 0.8 }}>Situation</label>
             <textarea rows={4} value={situation} onChange={e => setSituation(e.target.value)}
               placeholder="Describe what happened or what you need to communicate…"
-              style={{ width: '100%', background: '#0E1117', border: '1px solid #1f2532', borderRadius: 8,
+              style={{ width: '100%', background: '#141A2A', border: '1px solid #1f2532', borderRadius: 8,
                 padding: '10px 12px', fontSize: 13, color: '#fafafa', fontFamily: 'inherit',
                 outline: 'none', resize: 'vertical', boxSizing: 'border-box' }}
               onFocus={e => { (e.currentTarget as HTMLTextAreaElement).style.borderColor = '#7C6BF6' }}
@@ -280,7 +280,7 @@ export default function ParentMessage() {
                 <motion.button key={t} whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }} onClick={() => setTone(t)}
                   style={{
                     padding: '5px 12px', borderRadius: 7, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit',
-                    background: tone === t ? 'rgba(124, 107, 246, 0.15)' : '#151922',
+                    background: tone === t ? 'rgba(124, 107, 246, 0.15)' : '#1C2233',
                     border: `1px solid ${tone === t ? '#7C6BF6' : '#1f2532'}`,
                     color: tone === t ? '#A5B4FC' : '#6B7280',
                     transition: 'all 0.12s',
@@ -323,7 +323,7 @@ export default function ParentMessage() {
           {message && (
             <motion.div
               initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }}
-              style={{ background: '#0E1117', border: '1px solid #1f2532', borderRadius: 14,
+              style={{ background: '#141A2A', border: '1px solid #1f2532', borderRadius: 14,
                 padding: 20, display: 'flex', flexDirection: 'column', gap: 0 }}>
 
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
@@ -348,7 +348,7 @@ export default function ParentMessage() {
                   onChange={e => setMessage(e.target.value)}
                   rows={12}
                   style={{
-                    flex: 1, width: '100%', background: '#0E1117', border: '1px solid #7C6BF6',
+                    flex: 1, width: '100%', background: '#141A2A', border: '1px solid #7C6BF6',
                     borderRadius: 8, padding: '12px', fontSize: 14, color: '#d4d4d8',
                     fontFamily: 'inherit', lineHeight: 1.7, outline: 'none', resize: 'vertical',
                     boxSizing: 'border-box',
@@ -376,7 +376,7 @@ export default function ParentMessage() {
                   style={{
                     display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 600,
                     color: copied ? '#A5B4FC' : '#fafafa',
-                    background: copied ? 'rgba(165, 180, 252, 0.12)' : '#1a1f2e',
+                    background: copied ? 'rgba(165, 180, 252, 0.12)' : '#171D2D',
                     border: `1px solid ${copied ? 'rgba(165, 180, 252, 0.3)' : '#2a2a2a'}`,
                     borderRadius: 8, padding: '8px 14px', cursor: 'pointer', fontFamily: 'inherit',
                     transition: 'all 0.15s',
@@ -396,7 +396,7 @@ export default function ParentMessage() {
                 <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} onClick={openMailto}
                   style={{
                     display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 600,
-                    color: '#9CA3AF', background: '#151922', border: '1px solid #1f2532',
+                    color: '#9CA3AF', background: '#1C2233', border: '1px solid #1f2532',
                     borderRadius: 8, padding: '8px 14px', cursor: 'pointer', fontFamily: 'inherit',
                   }}>
                   <Mail size={12} /> Mail app

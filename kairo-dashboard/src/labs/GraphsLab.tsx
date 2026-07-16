@@ -135,7 +135,7 @@ function GraphsSim({ params }: SimProps) {
       </mesh>
 
       {wireSegs.map((seg, i) => (
-        <Line key={i} points={seg} color="#0E1117" lineWidth={0.5} transparent opacity={0.55} />
+        <Line key={i} points={seg} color="#141A2A" lineWidth={0.5} transparent opacity={0.55} />
       ))}
 
       <Text position={[0, zMax + 1.0, 0]} fontSize={0.42} color="#fafafa" anchorX="center"

@@ -24,10 +24,10 @@ import {
 
 const C = {
   black:       '#000000',
-  ink:         '#050505',
-  paper:       '#050505',
+  ink:         '#0A0D16',
+  paper:       '#0A0D16',
   panel:       '#101018',
-  panel2:      '#151922',
+  panel2:      '#1C2233',
   line:        'rgba(255,255,255,0.06)',
   lineSoft:    '#15151e',
   lineHi:      'rgba(255,255,255,0.10)',

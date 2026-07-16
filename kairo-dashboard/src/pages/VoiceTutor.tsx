@@ -262,7 +262,7 @@ export default function VoiceTutor() {
           title={muted ? 'Unmute Kyno' : 'Mute Kyno'}
           style={{
             width: 36, height: 36, borderRadius: 9,
-            background: muted ? 'rgba(165, 180, 252, 0.1)' : '#151922',
+            background: muted ? 'rgba(165, 180, 252, 0.1)' : '#1C2233',
             border: `1px solid ${muted ? 'rgba(165, 180, 252, 0.14)' : '#1f2532'}`,
             color: muted ? '#A5B4FC' : '#9CA3AF', cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -272,7 +272,7 @@ export default function VoiceTutor() {
         <button onClick={() => setShowSettings(s => !s)} title="Voice settings"
           style={{
             width: 36, height: 36, borderRadius: 9,
-            background: '#151922', border: '1px solid #1f2532',
+            background: '#1C2233', border: '1px solid #1f2532',
             color: '#9CA3AF', cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
@@ -304,7 +304,7 @@ export default function VoiceTutor() {
             </label>
             <select value={selectedVoice} onChange={e => setSelectedVoice(e.target.value)}
               style={{
-                width: '100%', background: '#0E1117', border: '1px solid #1f2532',
+                width: '100%', background: '#141A2A', border: '1px solid #1f2532',
                 borderRadius: 7, padding: '7px 10px', color: '#fafafa', fontSize: 12,
                 fontFamily: 'inherit', outline: 'none', appearance: 'none' as any,
               }}>
@@ -424,7 +424,7 @@ export default function VoiceTutor() {
         </div>
 
         <div style={{
-          padding: '16px 18px', borderTop: '1px solid #1a1f2e',
+          padding: '16px 18px', borderTop: '1px solid #171D2D',
           display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0,
         }}>
           <motion.button
@@ -434,7 +434,7 @@ export default function VoiceTutor() {
             style={{
               width: 56, height: 56, borderRadius: '50%',
               border: 'none', flexShrink: 0,
-              background: !SpeechRecognitionCtor || thinking ? '#1a1f2e'
+              background: !SpeechRecognitionCtor || thinking ? '#171D2D'
                 : listening ? 'linear-gradient(135deg,#A5B4FC,#A5B4FC)'
                 : 'linear-gradient(135deg,#A5B4FC,#8FA0FA)',
               color: '#fff', cursor: !SpeechRecognitionCtor || thinking ? 'not-allowed' : 'pointer',
@@ -478,7 +478,7 @@ export default function VoiceTutor() {
               placeholder={listening ? 'Listening…' : 'Or type a question…'}
               disabled={listening || thinking}
               style={{
-                width: '100%', background: '#0E1117', border: '1px solid #1f2532',
+                width: '100%', background: '#141A2A', border: '1px solid #1f2532',
                 borderRadius: 9, padding: '10px 14px', fontSize: 13, color: '#fafafa',
                 fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box',
                 opacity: listening || thinking ? 0.5 : 1,
@@ -489,7 +489,7 @@ export default function VoiceTutor() {
           <button onClick={submitText} disabled={!textInput.trim() || listening || thinking}
             style={{
               width: 38, height: 38, borderRadius: 9, flexShrink: 0,
-              background: textInput.trim() ? 'linear-gradient(135deg,#7C6BF6,#7C6BF6)' : '#1a1f2e',
+              background: textInput.trim() ? 'linear-gradient(135deg,#7C6BF6,#7C6BF6)' : '#171D2D',
               border: 'none', color: textInput.trim() ? '#fff' : '#6B7280',
               cursor: textInput.trim() ? 'pointer' : 'not-allowed',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -529,7 +529,7 @@ export default function VoiceTutor() {
             <button onClick={clearAll}
               style={{
                 padding: '7px 13px', borderRadius: 7, border: '1px solid #1f2532',
-                background: '#151922', color: '#9CA3AF', cursor: 'pointer',
+                background: '#1C2233', color: '#9CA3AF', cursor: 'pointer',
                 fontFamily: 'inherit', fontSize: 11, display: 'flex', alignItems: 'center', gap: 5,
               }}>
               <RefreshCw size={11} /> New conversation

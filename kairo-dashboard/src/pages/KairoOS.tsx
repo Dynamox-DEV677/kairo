@@ -22,9 +22,9 @@ import { useIsMobile } from '../lib/useIsMobile'
 import KairoOSMobile from './KairoOSMobile'
 
 const C = {
-  bg:        '#050505',
-  panel:     '#0E1117',
-  panel2:    '#151922',
+  bg:        '#0A0D16',
+  panel:     '#141A2A',
+  panel2:    '#1C2233',
   border:    '#222232',
   borderSoft:'rgba(255,255,255,0.06)',
   text:      '#fafafa',

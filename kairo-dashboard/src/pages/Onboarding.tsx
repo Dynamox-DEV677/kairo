@@ -6,7 +6,7 @@ import type { AuthProfile } from './Login'
 
 interface Props { profile: AuthProfile; onDone: () => void; onSkip: () => void }
 
-const A = { bg: '#050505', card: '#0E1117', border: '#1f2532', accent: '#7C6BF6', cyan: '#A5B4FC', text: '#fafafa', mut: '#9CA3AF' }
+const A = { bg: '#0A0D16', card: '#141A2A', border: '#1f2532', accent: '#7C6BF6', cyan: '#A5B4FC', text: '#fafafa', mut: '#9CA3AF' }
 const FONT = "'Inter', system-ui, sans-serif"
 
 const BOARDS = ['CBSE', 'ICSE', 'State Board', 'IB', 'IGCSE', 'Other']

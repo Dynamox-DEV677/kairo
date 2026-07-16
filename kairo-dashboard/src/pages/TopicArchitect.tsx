@@ -35,7 +35,7 @@ const card: React.CSSProperties = {
   borderRadius: 14,
 }
 const inp: React.CSSProperties = {
-  background: '#0E1117', border: '1px solid #1f2532', borderRadius: 8,
+  background: '#141A2A', border: '1px solid #1f2532', borderRadius: 8,
   padding: '11px 14px', fontSize: 14, color: '#fafafa', fontFamily: 'inherit',
   outline: 'none', width: '100%', boxSizing: 'border-box',
 }
@@ -121,7 +121,7 @@ export default function TopicArchitect() {
               {EXAMS.map(e => (
                 <button key={e.id} onClick={() => setExam(e.id)} style={{
                   padding: '8px 16px', fontSize: 13, fontWeight: 700, borderRadius: 8, cursor: 'pointer',
-                  background: exam === e.id ? 'rgba(165,180,252,0.18)' : '#0E1117',
+                  background: exam === e.id ? 'rgba(165,180,252,0.18)' : '#141A2A',
                   color: exam === e.id ? '#A5B4FC' : '#A1A1AA',
                   border: '1px solid ' + (exam === e.id ? 'rgba(165,180,252,0.55)' : '#1f2532'),
                 }}>{e.label}</button>
@@ -135,7 +135,7 @@ export default function TopicArchitect() {
                 <button key={d} onClick={() => setDepth(d)} style={{
                   padding: '8px 16px', fontSize: 13, fontWeight: 700, borderRadius: 8, cursor: 'pointer',
                   textTransform: 'capitalize',
-                  background: depth === d ? 'rgba(165,180,252,0.18)' : '#0E1117',
+                  background: depth === d ? 'rgba(165,180,252,0.18)' : '#141A2A',
                   color: depth === d ? '#A5B4FC' : '#A1A1AA',
                   border: '1px solid ' + (depth === d ? 'rgba(165,180,252,0.55)' : '#1f2532'),
                 }}>{d}</button>

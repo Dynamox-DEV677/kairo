@@ -15,7 +15,7 @@ const SUBJECT_COLORS: Record<string, string> = {
 }
 
 const card = { background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(14px) saturate(140%)', WebkitBackdropFilter: 'blur(14px) saturate(140%)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14 }
-const inp  = { background: '#0E1117', border: '1px solid #1f2532', borderRadius: 8, padding: '9px 12px', fontSize: 13, color: '#fafafa', fontFamily: 'inherit', outline: 'none', width: '100%' } as React.CSSProperties
+const inp  = { background: '#141A2A', border: '1px solid #1f2532', borderRadius: 8, padding: '9px 12px', fontSize: 13, color: '#fafafa', fontFamily: 'inherit', outline: 'none', width: '100%' } as React.CSSProperties
 const label = { fontSize: 11, color: '#9CA3AF', display: 'block', marginBottom: 5, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.8 } as React.CSSProperties
 
 const TABS = [
@@ -34,7 +34,7 @@ export default function Timetable() {
         <p style={{ fontSize: 13, color: '#6B7280', marginTop: 4 }}>Smart scheduling · Clash detection · AI-generated timetables</p>
       </div>
 
-      <div style={{ display: 'flex', gap: 4, marginBottom: 24, background: '#0E1117', border: '1px solid #1f2532', borderRadius: 10, padding: 4, width: 'fit-content' }}>
+      <div style={{ display: 'flex', gap: 4, marginBottom: 24, background: '#141A2A', border: '1px solid #1f2532', borderRadius: 10, padding: 4, width: 'fit-content' }}>
         {TABS.map(t => (
           <button key={t.id} onClick={() => setTab(t.id)} style={{
             display: 'flex', alignItems: 'center', gap: 6, padding: '7px 18px',
@@ -313,7 +313,7 @@ function GenerateTab() {
   return (
     <div style={{ display: 'grid', gridTemplateColumns: result ? '1fr 1.5fr' : '1fr', gap: 20 }}>
       <div style={card}>
-        <div style={{ padding: '16px 18px', borderBottom: '1px solid #1a1f2e' }}>
+        <div style={{ padding: '16px 18px', borderBottom: '1px solid #171D2D' }}>
           <div style={{ fontSize: 13, fontWeight: 700, color: '#fafafa' }}>Configure Timetable</div>
         </div>
         <div style={{ padding: 18 }}>
@@ -353,7 +353,7 @@ function GenerateTab() {
 
       {result && (
         <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} style={{ ...card, overflow: 'hidden' }}>
-          <div style={{ padding: '14px 18px', borderBottom: '1px solid #1a1f2e', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ padding: '14px 18px', borderBottom: '1px solid #171D2D', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div style={{ fontSize: 13, fontWeight: 700, color: '#A5B4FC' }}>✓ {result.title || `Class ${result.class} Timetable`}</div>
           </div>
           <div style={{ padding: 16, overflowX: 'auto' }}>
@@ -381,7 +381,7 @@ function GenerateTab() {
                               {slot.teacher && <div style={{ fontSize: 8, color: '#9CA3AF' }}>{slot.teacher}</div>}
                             </div>
                           ) : (
-                            <div style={{ height: 38, borderRadius: 6, border: '1px dashed #1a1f2e', minWidth: 70 }} />
+                            <div style={{ height: 38, borderRadius: 6, border: '1px dashed #171D2D', minWidth: 70 }} />
                           )}
                         </td>
                       )
@@ -390,7 +390,7 @@ function GenerateTab() {
                 ))}
               </tbody>
             </table>
-            {result.notes && <p style={{ fontSize: 11, color: '#9CA3AF', marginTop: 12, padding: '10px 12px', background: '#0E1117', borderRadius: 8 }}>{result.notes}</p>}
+            {result.notes && <p style={{ fontSize: 11, color: '#9CA3AF', marginTop: 12, padding: '10px 12px', background: '#141A2A', borderRadius: 8 }}>{result.notes}</p>}
           </div>
         </motion.div>
       )}

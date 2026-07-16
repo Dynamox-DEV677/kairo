@@ -15,7 +15,7 @@ const SUBJECTS = ['Mathematics', 'Physics', 'Chemistry', 'Biology', 'English', '
 
 const card: React.CSSProperties = { background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(14px) saturate(140%)', WebkitBackdropFilter: 'blur(14px) saturate(140%)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14 }
 const inp: React.CSSProperties = {
-  background: '#0E1117', border: '1px solid #1f2532', borderRadius: 8,
+  background: '#141A2A', border: '1px solid #1f2532', borderRadius: 8,
   padding: '10px 12px', fontSize: 13.5, color: '#fafafa',
   fontFamily: 'inherit', outline: 'none', width: '100%', boxSizing: 'border-box',
 }
@@ -193,7 +193,7 @@ Now teach me how to never make this mistake again, following your structure exac
             style={{
               width: '100%', padding: '12px', borderRadius: 10, border: 'none',
               background: busy || !question.trim() || !myAnswer.trim()
-                ? '#1a1f2e'
+                ? '#171D2D'
                 : 'linear-gradient(135deg, #A5B4FC, #A5B4FC)',
               color: busy || !question.trim() || !myAnswer.trim() ? '#6B7280' : '#fff',
               fontFamily: 'inherit', fontSize: 14, fontWeight: 700,
@@ -235,7 +235,7 @@ Now teach me how to never make this mistake again, following your structure exac
                     </ReactMarkdown>
                   </div>
 
-                  <div style={{ display: 'flex', gap: 8, marginTop: 18, paddingTop: 16, borderTop: '1px solid #1a1f2e' }}>
+                  <div style={{ display: 'flex', gap: 8, marginTop: 18, paddingTop: 16, borderTop: '1px solid #171D2D' }}>
                     <button onClick={saveToBook} disabled={savedToBook} style={{
                       padding: '8px 14px', borderRadius: 8,
                       border: `1px solid ${savedToBook ? 'rgba(165, 180, 252, 0.4)' : 'rgba(124, 107, 246, 0.3)'}`,
@@ -249,7 +249,7 @@ Now teach me how to never make this mistake again, following your structure exac
                     </button>
                     <button onClick={reset} style={{
                       padding: '8px 14px', borderRadius: 8, border: '1px solid #1f2532',
-                      background: '#151922', color: '#9CA3AF', cursor: 'pointer',
+                      background: '#1C2233', color: '#9CA3AF', cursor: 'pointer',
                       fontFamily: 'inherit', fontSize: 12, display: 'flex', alignItems: 'center', gap: 6,
                     }}>
                       <RefreshCw size={12} /> Another mistake

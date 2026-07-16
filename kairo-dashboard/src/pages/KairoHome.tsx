@@ -77,7 +77,7 @@ const lbl: React.CSSProperties = {
   fontSize: 10, color: '#9CA3AF', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.2,
 }
 const inp: React.CSSProperties = {
-  background: '#0E1117', border: '1px solid #1f2532', borderRadius: 8,
+  background: '#141A2A', border: '1px solid #1f2532', borderRadius: 8,
   padding: '8px 11px', fontSize: 13, color: '#fafafa', fontFamily: 'inherit',
   outline: 'none', width: '100%', boxSizing: 'border-box',
 }
@@ -265,7 +265,7 @@ export default function KairoHome({ onNavigate }: Props) {
                 <span style={{ fontSize: 36, fontWeight: 900, color: '#66ff9a' }}>{brief.potentialScore}</span>
                 <span style={{ fontSize: 12, color: '#9CA3AF', marginLeft: 4 }}>/ {brief.scoreScale}</span>
               </div>
-              <div style={{ height: 8, background: '#0E1117', borderRadius: 4, marginTop: 12, overflow: 'hidden', position: 'relative' }}>
+              <div style={{ height: 8, background: '#141A2A', borderRadius: 4, marginTop: 12, overflow: 'hidden', position: 'relative' }}>
                 <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${Math.min(100, brief.predictedScore / +brief.scoreScale * 100)}%`, background: '#7C6BF6' }} />
                 <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${Math.min(100, brief.potentialScore / +brief.scoreScale * 100)}%`, background: 'rgba(102,255,154,0.25)', zIndex: -0 }} />
               </div>

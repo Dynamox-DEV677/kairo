@@ -80,8 +80,8 @@ export default function Pomodoro() {
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
-        <div style={{ background: '#0E1117', border: '1px solid #1f2532', borderRadius: 20, padding: 28, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <div style={{ display: 'flex', gap: 4, marginBottom: 24, background: '#0E1117', border: '1px solid #1f2532', borderRadius: 9, padding: 3 }}>
+        <div style={{ background: '#141A2A', border: '1px solid #1f2532', borderRadius: 20, padding: 28, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: 4, marginBottom: 24, background: '#141A2A', border: '1px solid #1f2532', borderRadius: 9, padding: 3 }}>
             {(['focus', 'short', 'long'] as Mode[]).map(m => (
               <button key={m} onClick={() => switchMode(m)} style={{
                 padding: '5px 10px', borderRadius: 7, border: 'none', fontFamily: 'inherit',
@@ -122,14 +122,14 @@ export default function Pomodoro() {
             }}>
               {running ? <Pause size={22} color="#fff" /> : <Play size={22} color="#fff" fill="#fff" />}
             </button>
-            <button onClick={reset} style={{ width: 44, height: 44, borderRadius: '50%', border: '1px solid #1f2532', background: '#0E1117', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', alignSelf: 'center' }}>
+            <button onClick={reset} style={{ width: 44, height: 44, borderRadius: '50%', border: '1px solid #1f2532', background: '#141A2A', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', alignSelf: 'center' }}>
               <RotateCcw size={15} color="#6B7280" />
             </button>
           </div>
 
           <div style={{ width: '100%' }}>
             <div style={{ fontSize: 11, color: '#6B7280', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 6 }}>Current Task</div>
-            <input value={task} onChange={e => setTask(e.target.value)} placeholder="What are you working on?" style={{ background: '#0E1117', border: '1px solid #1f2532', borderRadius: 8, padding: '8px 12px', fontSize: 12, color: '#fafafa', fontFamily: 'inherit', outline: 'none', width: '100%' }} />
+            <input value={task} onChange={e => setTask(e.target.value)} placeholder="What are you working on?" style={{ background: '#141A2A', border: '1px solid #1f2532', borderRadius: 8, padding: '8px 12px', fontSize: 12, color: '#fafafa', fontFamily: 'inherit', outline: 'none', width: '100%' }} />
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 6 }}>
               {TASKS_PRESET.map(t => (
                 <button key={t} onClick={() => setTask(t)} style={{ fontSize: 10, padding: '2px 8px', borderRadius: 4, border: '1px solid #1f2532', background: 'transparent', color: '#6B7280', cursor: 'pointer', fontFamily: 'inherit' }}>{t}</button>
@@ -138,11 +138,11 @@ export default function Pomodoro() {
           </div>
 
           <div style={{ display: 'flex', gap: 16, marginTop: 16, width: '100%' }}>
-            <div style={{ flex: 1, textAlign: 'center', padding: '8px', background: '#0E1117', borderRadius: 8 }}>
+            <div style={{ flex: 1, textAlign: 'center', padding: '8px', background: '#141A2A', borderRadius: 8 }}>
               <div style={{ fontSize: 20, fontWeight: 700, color: '#A5B4FC' }}>{sessions}</div>
               <div style={{ fontSize: 10, color: '#6B7280' }}>Sessions</div>
             </div>
-            <div style={{ flex: 1, textAlign: 'center', padding: '8px', background: '#0E1117', borderRadius: 8 }}>
+            <div style={{ flex: 1, textAlign: 'center', padding: '8px', background: '#141A2A', borderRadius: 8 }}>
               <div style={{ fontSize: 20, fontWeight: 700, color: '#A5B4FC' }}>{Math.floor(sessions * 25 / 60)}h {(sessions * 25) % 60}m</div>
               <div style={{ fontSize: 10, color: '#6B7280' }}>Focused</div>
             </div>
@@ -150,7 +150,7 @@ export default function Pomodoro() {
         </div>
 
         <div>
-          <div style={{ background: '#0E1117', border: '1px solid #1f2532', borderRadius: 14, padding: 20, marginBottom: 14 }}>
+          <div style={{ background: '#141A2A', border: '1px solid #1f2532', borderRadius: 14, padding: 20, marginBottom: 14 }}>
             <div style={{ fontSize: 12, fontWeight: 700, color: mode === 'focus' ? '#A5B4FC' : '#A5B4FC', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 }}>
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
                 {mode === 'focus' ? <Brain size={13} /> : <Coffee size={13} />}
@@ -173,13 +173,13 @@ export default function Pomodoro() {
             ].map((t, i) => <div key={i} style={{ fontSize: 12, color: '#B1B5BA', marginBottom: 6 }}>→ {t}</div>)}
           </div>
 
-          <div style={{ background: '#0E1117', border: '1px solid #1f2532', borderRadius: 14, padding: 20 }}>
+          <div style={{ background: '#141A2A', border: '1px solid #1f2532', borderRadius: 14, padding: 20 }}>
             <div style={{ fontSize: 12, fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 }}>Session Log</div>
             {history.length === 0 && <div style={{ fontSize: 12, color: '#4B5563', textAlign: 'center', padding: '20px 0' }}>Start your first session!</div>}
             <AnimatePresence>
               {history.slice(0, 8).map((h, i) => (
                 <motion.div key={i} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}
-                  style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6, padding: '6px 0', borderBottom: '1px solid #1a1f2e' }}>
+                  style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6, padding: '6px 0', borderBottom: '1px solid #171D2D' }}>
                   <div style={{ width: 6, height: 6, borderRadius: '50%', background: MODE_COLORS[h.mode], flexShrink: 0 }} />
                   <div style={{ flex: 1, fontSize: 12, color: '#B1B5BA' }}>{h.task}</div>
                   <div style={{ fontSize: 10, color: '#4B5563' }}>{h.time}</div>

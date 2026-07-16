@@ -6,9 +6,9 @@ import { post, get, del } from '../lib/api'
 const SCHOOL_ID = 'demo_school'
 
 const card  = { background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(14px) saturate(140%)', WebkitBackdropFilter: 'blur(14px) saturate(140%)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14, padding: 20 } as React.CSSProperties
-const inp   = { background: '#0E1117', border: '1px solid #1f2532', borderRadius: 8, padding: '9px 12px', fontSize: 13, color: '#fafafa', fontFamily: 'inherit', outline: 'none', width: '100%' } as React.CSSProperties
+const inp   = { background: '#141A2A', border: '1px solid #1f2532', borderRadius: 8, padding: '9px 12px', fontSize: 13, color: '#fafafa', fontFamily: 'inherit', outline: 'none', width: '100%' } as React.CSSProperties
 const lbl   = { fontSize: 11, color: '#9CA3AF', display: 'block', marginBottom: 5, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.8 } as React.CSSProperties
-const btn   = (active = true) => ({ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', borderRadius: 9, border: 'none', background: active ? 'linear-gradient(135deg,#7C6BF6,#7C6BF6)' : '#1a1f2e', color: active ? '#fff' : '#6B7280', fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: active ? 'pointer' : 'not-allowed' } as React.CSSProperties)
+const btn   = (active = true) => ({ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', borderRadius: 9, border: 'none', background: active ? 'linear-gradient(135deg,#7C6BF6,#7C6BF6)' : '#171D2D', color: active ? '#fff' : '#6B7280', fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: active ? 'pointer' : 'not-allowed' } as React.CSSProperties)
 
 const TYPES = ['general','exam','holiday','event','fee','result','emergency']
 const TYPE_COLORS: Record<string, string> = { general: '#A5B4FC', exam: '#A5B4FC', holiday: '#A5B4FC', event: '#8FA0FA', fee: '#A5B4FC', result: '#A5B4FC', emergency: '#A5B4FC' }
@@ -50,8 +50,8 @@ export default function Announcement() {
 
   return (
     <div style={{ display: 'flex', height: '100%', overflow: 'hidden' }}>
-      <div style={{ width: 270, borderRight: '1px solid #1a1f2e', display: 'flex', flexDirection: 'column', overflow: 'hidden', background: '#0E1117' }}>
-        <div style={{ padding: '16px 12px', borderBottom: '1px solid #1a1f2e' }}>
+      <div style={{ width: 270, borderRight: '1px solid #171D2D', display: 'flex', flexDirection: 'column', overflow: 'hidden', background: '#141A2A' }}>
+        <div style={{ padding: '16px 12px', borderBottom: '1px solid #171D2D' }}>
           <div style={{ fontSize: 13, fontWeight: 700, color: '#fafafa', marginBottom: 10 }}>Announcements</div>
           <button onClick={() => setShowForm(f => !f)} style={{ ...btn(), width: '100%', justifyContent: 'center', padding: '7px 12px' }}>
             <Plus size={13} /> New Announcement
@@ -60,7 +60,7 @@ export default function Announcement() {
 
         <AnimatePresence>
           {showForm && (
-            <motion.div initial={{ height: 0 }} animate={{ height: 'auto' }} exit={{ height: 0 }} style={{ overflow: 'hidden', borderBottom: '1px solid #1a1f2e' }}>
+            <motion.div initial={{ height: 0 }} animate={{ height: 'auto' }} exit={{ height: 0 }} style={{ overflow: 'hidden', borderBottom: '1px solid #171D2D' }}>
               <div style={{ padding: 12 }}>
                 <label style={lbl}>School Name</label>
                 <input style={{ ...inp, marginBottom: 8 }} value={form.school_name} onChange={e => setForm(f => ({ ...f, school_name: e.target.value }))} />
@@ -145,14 +145,14 @@ function AnnouncementViewer({ a }: { a: any }) {
         <span style={{ fontSize: 11, color: '#6B7280' }}>{a.audience} · {a.tone}</span>
       </div>
 
-      <div style={{ background: '#0E1117', border: '1px solid #1f2532', borderRadius: 14, padding: 20, marginBottom: 14 }}>
+      <div style={{ background: '#141A2A', border: '1px solid #1f2532', borderRadius: 14, padding: 20, marginBottom: 14 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
           <div style={{ fontSize: 15, fontWeight: 700, color: '#fafafa', flex: 1 }}>{a.title}</div>
           <CopyBtn text={a.body || ''} />
         </div>
         <div style={{ fontSize: 13, color: '#B1B5BA', lineHeight: 1.9, whiteSpace: 'pre-wrap' }}>{a.body}</div>
         {a.key_dates?.length > 0 && (
-          <div style={{ marginTop: 12, padding: '10px 12px', background: '#0E1117', borderRadius: 8 }}>
+          <div style={{ marginTop: 12, padding: '10px 12px', background: '#141A2A', borderRadius: 8 }}>
             {a.key_dates.map((d: string, i: number) => <div key={i} style={{ fontSize: 11, color: '#A5B4FC', marginBottom: 2 }}>📅 {d}</div>)}
           </div>
         )}
@@ -165,7 +165,7 @@ function AnnouncementViewer({ a }: { a: any }) {
 
       <div className="mob-stack" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
         {a.whatsapp_message && (
-          <div style={{ background: '#0E1117', border: '1px solid #1f2532', borderRadius: 14, padding: 16 }}>
+          <div style={{ background: '#141A2A', border: '1px solid #1f2532', borderRadius: 14, padding: 16 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 700, color: '#A5B4FC' }}>
                 <MessageCircle size={13} /> WhatsApp Version
@@ -176,7 +176,7 @@ function AnnouncementViewer({ a }: { a: any }) {
           </div>
         )}
         {a.sms_version && (
-          <div style={{ background: '#0E1117', border: '1px solid #1f2532', borderRadius: 14, padding: 16 }}>
+          <div style={{ background: '#141A2A', border: '1px solid #1f2532', borderRadius: 14, padding: 16 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 700, color: '#8FA0FA' }}>
                 <Phone size={13} /> SMS Version
@@ -190,7 +190,7 @@ function AnnouncementViewer({ a }: { a: any }) {
       </div>
 
       {a.short_version && (
-        <div style={{ background: '#0E1117', border: '1px solid #1f2532', borderRadius: 14, padding: 14, marginTop: 12 }}>
+        <div style={{ background: '#141A2A', border: '1px solid #1f2532', borderRadius: 14, padding: 14, marginTop: 12 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
             <div style={{ fontSize: 11, fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: 1 }}>Notice Board (1 line)</div>
             <CopyBtn text={a.short_version} />

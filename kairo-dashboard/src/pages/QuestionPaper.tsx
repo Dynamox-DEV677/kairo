@@ -28,18 +28,18 @@ Make all questions accurate and board-standard.`
 
 const sel = (v: string, set: (v: string) => void, opts: string[]) => (
   <select value={v} onChange={e => set(e.target.value)}
-    style={{ width: '100%', background: '#0E1117', border: '1px solid #1f2532', borderRadius: 8, padding: '9px 12px', fontSize: 13, color: '#fafafa', fontFamily: 'inherit', outline: 'none', appearance: 'none' }}>
+    style={{ width: '100%', background: '#141A2A', border: '1px solid #1f2532', borderRadius: 8, padding: '9px 12px', fontSize: 13, color: '#fafafa', fontFamily: 'inherit', outline: 'none', appearance: 'none' }}>
     {opts.map(o => <option key={o}>{o}</option>)}
   </select>
 )
 
 const PAPER_CSS = `
-  .qp-paper { font-family: 'Times New Roman', Times, serif; font-size: 14px; line-height: 1.8; color: #1a1f2e; }
+  .qp-paper { font-family: 'Times New Roman', Times, serif; font-size: 14px; line-height: 1.8; color: #171D2D; }
   .qp-paper p { margin: 5px 0; }
   .qp-paper h1, .qp-paper h2, .qp-paper h3 { text-align: center; margin: 4px 0; font-family: inherit; }
   .qp-paper h1 { font-size: 17px; text-transform: uppercase; letter-spacing: 1px; }
   .qp-paper h2 { font-size: 15px; }
-  .qp-paper hr { border: none; border-top: 1.5px solid #1a1f2e; margin: 12px 0; }
+  .qp-paper hr { border: none; border-top: 1.5px solid #171D2D; margin: 12px 0; }
   .qp-paper ul, .qp-paper ol { margin: 4px 0 4px 22px; padding: 0; }
   .qp-paper li { margin: 3px 0; }
   .qp-paper table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 13px; }
@@ -89,11 +89,11 @@ export default function QuestionPaper() {
 
       {!paper && !loading && (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-          style={{ background: '#0E1117', border: '1px solid #1f2532', borderRadius: 14, padding: 28 }}>
+          style={{ background: '#141A2A', border: '1px solid #1f2532', borderRadius: 14, padding: 28 }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 14 }}>
             <div>
               <label style={{ fontSize: 11, fontWeight: 600, color: '#9CA3AF', display: 'block', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.8 }}>School name</label>
-              <input value={school} onChange={e => setSchool(e.target.value)} style={{ width: '100%', background: '#0E1117', border: '1px solid #1f2532', borderRadius: 8, padding: '9px 12px', fontSize: 13, color: '#fafafa', fontFamily: 'inherit', outline: 'none' }} />
+              <input value={school} onChange={e => setSchool(e.target.value)} style={{ width: '100%', background: '#141A2A', border: '1px solid #1f2532', borderRadius: 8, padding: '9px 12px', fontSize: 13, color: '#fafafa', fontFamily: 'inherit', outline: 'none' }} />
             </div>
             <div>
               <label style={{ fontSize: 11, fontWeight: 600, color: '#9CA3AF', display: 'block', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.8 }}>Board</label>
@@ -120,7 +120,7 @@ export default function QuestionPaper() {
           <div style={{ marginBottom: 14 }}>
             <label style={{ fontSize: 11, fontWeight: 600, color: '#9CA3AF', display: 'block', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.8 }}>Topics (optional)</label>
             <input value={topics} onChange={e => setTopics(e.target.value)} placeholder="e.g. Algebra, Geometry — leave blank for full syllabus"
-              style={{ width: '100%', background: '#0E1117', border: '1px solid #1f2532', borderRadius: 8, padding: '9px 12px', fontSize: 13, color: '#fafafa', fontFamily: 'inherit', outline: 'none' }} />
+              style={{ width: '100%', background: '#141A2A', border: '1px solid #1f2532', borderRadius: 8, padding: '9px 12px', fontSize: 13, color: '#fafafa', fontFamily: 'inherit', outline: 'none' }} />
           </div>
 
           <div style={{ marginBottom: 24 }}>
@@ -129,7 +129,7 @@ export default function QuestionPaper() {
               {['Easy','Medium','Hard','Mixed'].map(d => (
                 <motion.button key={d} whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }} onClick={() => setDifficulty(d)}
                   style={{ padding: '6px 16px', borderRadius: 7, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit',
-                    background: difficulty === d ? 'rgba(124, 107, 246, 0.15)' : '#151922',
+                    background: difficulty === d ? 'rgba(124, 107, 246, 0.15)' : '#1C2233',
                     border: `1px solid ${difficulty === d ? '#7C6BF6' : '#1f2532'}`,
                     color: difficulty === d ? '#A5B4FC' : '#6B7280' }}>
                   {d}
@@ -162,7 +162,7 @@ export default function QuestionPaper() {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
             <p style={{ fontSize: 13, color: '#6B7280' }}>Your question paper is ready</p>
             <div style={{ display: 'flex', gap: 8 }}>
-              <button onClick={() => setPaper('')} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 7, fontSize: 12, background: '#151922', border: '1px solid #1f2532', color: '#9CA3AF', cursor: 'pointer', fontFamily: 'inherit' }}>
+              <button onClick={() => setPaper('')} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 7, fontSize: 12, background: '#1C2233', border: '1px solid #1f2532', color: '#9CA3AF', cursor: 'pointer', fontFamily: 'inherit' }}>
                 <RotateCcw size={12} /> Regenerate
               </button>
               <button onClick={printPaper} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 7, fontSize: 12, background: '#7C6BF6', border: 'none', color: '#fff', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600 }}>
