@@ -441,8 +441,8 @@ export default function Settings() {
           style={{
             display: 'flex', alignItems: 'center', gap: 7,
             padding: '9px 16px', borderRadius: 8, cursor: 'pointer',
-            background: 'rgba(165, 180, 252, 0.08)', border: '1px solid rgba(165, 180, 252, 0.2)',
-            color: '#A5B4FC', fontFamily: 'inherit', fontSize: 13, fontWeight: 600,
+            background: 'rgba(251,113,133,0.08)', border: '1px solid rgba(251,113,133,0.28)',
+            color: '#FB7185', fontFamily: 'inherit', fontSize: 13, fontWeight: 700,
           }}
         >
           <Trash2 size={13} /> Clear all data &amp; reset

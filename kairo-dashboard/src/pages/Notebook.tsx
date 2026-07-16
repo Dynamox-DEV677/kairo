@@ -609,13 +609,17 @@ function NoteDetail({ note, editing, onClose, onTogglePin, onDelete, onEdit, onS
       ) : (
         <>
           {note.tags.length > 0 && (
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 12 }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 }}>
               {note.tags.map(t => (
-                <span key={t} style={{ padding: '2px 8px', borderRadius: 4, fontSize: 10, background: '#171D2D', color: '#B1B5BA' }}>{t}</span>
+                <span key={t} style={{
+                  padding: '3px 10px', borderRadius: 999, fontSize: 10.5, fontWeight: 600,
+                  background: 'rgba(124,107,246,0.12)', color: '#A5B4FC',
+                  border: '1px solid rgba(165,180,252,0.22)',
+                }}>#{t}</span>
               ))}
             </div>
           )}
-          <div className="prose-ai nb-math" style={{ fontSize: 13.5, color: '#e4e4e7', lineHeight: 1.65 }}>
+          <div className="prose-ai nb-math" style={{ fontSize: 14, color: '#e4e4e7', lineHeight: 1.7, maxWidth: 760 }}>
             <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>{normalizeMath(note.content)}</ReactMarkdown>
           </div>
         </>

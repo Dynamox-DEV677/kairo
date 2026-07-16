@@ -237,7 +237,8 @@ function MistakeCard({ row, delay, onRevise, onExplain }: {
   onRevise: () => void; onExplain: () => void
 }) {
   const severityLabel = row.severity > 0.55 ? 'High' : row.severity > 0.30 ? 'Medium' : 'Low'
-  const severityColor = row.severity > 0.55 ? C.purpleHi : row.severity > 0.30 ? C.purple : C.purpleSoft
+  const severityColor = row.severity > 0.55 ? '#FB7185' : row.severity > 0.30 ? '#F5B544' : '#34D399'
+  const severityLevel = row.severity > 0.55 ? 3 : row.severity > 0.30 ? 2 : 1
   const avgScore = row.recentScores.length ? Math.round(row.recentScores.reduce((a, b) => a + b, 0) / row.recentScores.length) : null
   return (
     <motion.div
@@ -258,7 +259,13 @@ function MistakeCard({ row, delay, onRevise, onExplain }: {
             background: `${severityColor}22`, border: `1px solid ${severityColor}55`,
             fontSize: 10, fontWeight: 700, color: severityColor,
             textTransform: 'uppercase', letterSpacing: 1.2,
+            display: 'inline-flex', alignItems: 'center', gap: 5,
           }}>
+            <span style={{ display: 'inline-flex', gap: 2 }}>
+              {[0, 1, 2].map(d => (
+                <span key={d} style={{ width: 5, height: 5, borderRadius: '50%', background: d < severityLevel ? severityColor : `${severityColor}33` }} />
+              ))}
+            </span>
             {severityLabel} severity
           </span>
         </div>

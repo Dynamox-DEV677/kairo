@@ -89,12 +89,12 @@ export function GameBar() {
           return (
             <div key={q.id} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
               {done
-                ? <CheckCircle2 size={16} style={{ color: '#66ff9a', flexShrink: 0 }} />
+                ? <CheckCircle2 size={16} style={{ color: '#34D399', flexShrink: 0 }} />
                 : <Circle size={16} style={{ color: '#5B616E', flexShrink: 0 }} />}
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{
                   fontSize: 12.5, fontWeight: 600,
-                  color: done ? '#66ff9a' : '#fafafa',
+                  color: done ? '#34D399' : '#fafafa',
                   textDecoration: done ? 'line-through' : 'none',
                 }}>{q.label}</div>
                 {!done && (

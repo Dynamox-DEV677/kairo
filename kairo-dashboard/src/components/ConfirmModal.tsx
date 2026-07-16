@@ -88,10 +88,10 @@ export default function ConfirmModal({
   if (typeof document === 'undefined') return null
 
   const danger = tone === 'danger'
-  const accentColor = danger ? '#f87171' : '#A5B4FC'
-  const glowColor   = danger ? 'rgba(248,113,113,0.35)' : 'rgba(124, 107, 246, 0.35)'
+  const accentColor = danger ? '#FB7185' : '#A5B4FC'
+  const glowColor   = danger ? 'rgba(251,113,133,0.32)' : 'rgba(124, 107, 246, 0.35)'
   const confirmGradient = danger
-    ? 'linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)'
+    ? 'linear-gradient(135deg, #FB7185 0%, #E11D48 100%)'
     : 'linear-gradient(135deg, #7C6BF6 0%, #4f46e5 50%, #6B4EE0 100%)'
 
   const DefaultIcon = danger ? AlertTriangle : Sparkles

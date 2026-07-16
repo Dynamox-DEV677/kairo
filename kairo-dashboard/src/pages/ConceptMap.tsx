@@ -266,11 +266,18 @@ export default function ConceptMap() {
                 const b = positions.get(e.to)
                 if (!a || !b) return null
                 const isHot = hover && (hover === e.from || hover === e.to)
+                // Gentle perpendicular arc so links read as an organic knowledge web, not a grid.
+                const dx = b.x - a.x, dy = b.y - a.y
+                const dist = Math.sqrt(dx * dx + dy * dy) || 1
+                const bow = Math.min(dist * 0.16, 46)
+                const cx = (a.x + b.x) / 2 + (-dy / dist) * bow
+                const cy = (a.y + b.y) / 2 + (dx / dist) * bow
                 return (
-                  <line key={i} x1={a.x} y1={a.y} x2={b.x} y2={b.y}
+                  <path key={i} d={`M ${a.x} ${a.y} Q ${cx} ${cy} ${b.x} ${b.y}`}
+                    fill="none"
                     stroke={isHot ? '#A5B4FC' : 'url(#edgeStroke)'}
-                    strokeWidth={isHot ? 1.4 : 0.8}
-                    strokeLinecap="round" opacity={isHot ? 0.85 : 0.45} />
+                    strokeWidth={isHot ? 1.6 : 0.9}
+                    strokeLinecap="round" opacity={isHot ? 0.9 : 0.45} />
                 )
               })}
 
@@ -688,10 +695,17 @@ function IllustratedMap({ graph, centerId, setCenterId }: IllustratedMapProps) {
       >
         {satellites.map((sat, i) => {
           const p = POSITIONS[i]
+          // Curve each spoke into a gentle petal so the map feels hand-drawn, not radial-rigid.
+          const dx = p.x - cx, dy = p.y - cy
+          const dist = Math.sqrt(dx * dx + dy * dy) || 1
+          const bow = Math.min(dist * 0.12, 34)
+          const mx = (cx + p.x) / 2 + (-dy / dist) * bow
+          const my = (cy + p.y) / 2 + (dx / dist) * bow
           return (
-            <line
+            <path
               key={'edge-' + sat.id}
-              x1={cx} y1={cy} x2={p.x} y2={p.y}
+              d={`M ${cx} ${cy} Q ${mx} ${my} ${p.x} ${p.y}`}
+              fill="none"
               stroke={MONO.inkFaint}
               strokeWidth={1}
               strokeLinecap="round"
