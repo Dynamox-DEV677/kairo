@@ -910,6 +910,7 @@ function Slideshow({ slides, busy, topic, questionType, err, compact = false }: 
               }}
               onError={(e) => {
                 const img = e.currentTarget
+                if (img.dataset.placeheld === '1') return
                 const tries = Number(img.dataset.retries || '0')
                 if (tries < 2) {
                   img.dataset.retries = String(tries + 1)
@@ -917,7 +918,11 @@ function Slideshow({ slides, busy, topic, questionType, err, compact = false }: 
                   img.style.opacity = '0.25'
                   setTimeout(() => { img.src = ''; img.src = src; img.style.opacity = '1' }, 8000)
                 } else {
-                  img.style.display = 'none'
+                  // Graceful themed placeholder instead of a black/broken slide.
+                  img.dataset.placeheld = '1'
+                  img.style.opacity = '1'
+                  const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='440' height='320'><rect width='440' height='320' rx='14' fill='#141A2A'/><g fill='none' stroke='#3a4258' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round' transform='translate(190,120)'><rect x='0' y='0' width='60' height='48' rx='6'/><circle cx='16' cy='15' r='6'/><path d='M2 46 L22 26 L34 38 L46 26 L58 38'/></g><text x='220' y='218' fill='#5b647a' font-family='sans-serif' font-size='13' font-weight='600' text-anchor='middle'>Visual unavailable</text></svg>`
+                  img.src = 'data:image/svg+xml;utf8,' + encodeURIComponent(svg)
                 }
               }}
             />
