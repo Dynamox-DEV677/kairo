@@ -35,6 +35,8 @@ type Phase = 'setup' | 'loading' | 'live' | 'review' | 'done'
 
 export default function RevisionSimulator() {
   const [phase, setPhase]         = useState<Phase>('setup')
+  const [mode, setMode]           = useState<'practice' | 'exam'>('practice')
+  const [revealed, setRevealed]   = useState(false)
   const [diff, setDiff]           = useState<typeof DIFFICULTIES[0]>(DIFFICULTIES[1])
   const [weakTopics, setWeakTopics] = useState<{ topic: string; subject?: string }[]>([])
   const [pickedTopics, setPicked] = useState<string[]>([])
@@ -77,7 +79,7 @@ export default function RevisionSimulator() {
   useEffect(() => { loadMemory() }, [loadMemory])
 
   useEffect(() => {
-    if (phase !== 'live') return
+    if (phase !== 'live' || mode !== 'exam') return
     setSecsLeft(diff.secs)
     intervalRef.current = window.setInterval(() => {
       setSecsLeft(s => {
@@ -96,7 +98,7 @@ export default function RevisionSimulator() {
     }, 1000)
     return () => { if (intervalRef.current) window.clearInterval(intervalRef.current) }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [phase, idx])
+  }, [phase, idx, mode])
 
   function advance(picked: number | null) {
     if (intervalRef.current) window.clearInterval(intervalRef.current)
@@ -153,7 +155,15 @@ export default function RevisionSimulator() {
         })
       }
     } catch {  }
-    setTimeout(() => advance(i), 250)
+    // Exam mode: lock in and move on. Practice mode: reveal the answer + explanation,
+    // then wait for the student to tap Next.
+    if (mode === 'exam') setTimeout(() => advance(i), 250)
+    else setRevealed(true)
+  }
+
+  function nextPractice() {
+    setRevealed(false)
+    advance(answers[idx])
   }
 
   async function startSession() {
@@ -180,6 +190,7 @@ Return ONLY a JSON array, no other text:
       setQuestions(valid)
       setAnswers(new Array(valid.length).fill(null))
       setIdx(0)
+      setRevealed(false)
       setPhase('live')
     } catch (e: any) {
       setErr(e.message)
@@ -188,12 +199,13 @@ Return ONLY a JSON array, no other text:
   }
 
   function reset() {
-    setPhase('setup'); setQuestions([]); setAnswers([]); setIdx(0); setErr('')
+    setPhase('setup'); setQuestions([]); setAnswers([]); setIdx(0); setErr(''); setRevealed(false)
     loadMemory()
   }
 
   if (phase === 'setup') return <SetupView
     diff={diff} setDiff={setDiff}
+    mode={mode} setMode={setMode}
     weakTopics={weakTopics} memoryReady={memoryReady}
     pickedTopics={pickedTopics} setPicked={setPicked}
     err={err} onStart={startSession}
@@ -208,6 +220,7 @@ Return ONLY a JSON array, no other text:
       q={q} idx={idx} total={questions.length}
       secsLeft={secsLeft} maxSecs={diff.secs}
       picked={answers[idx]} onPick={pickAnswer}
+      mode={mode} revealed={revealed} onNext={nextPractice}
     />
   }
 
@@ -219,8 +232,9 @@ Return ONLY a JSON array, no other text:
 }
 
 function SetupView({
-  diff, setDiff, weakTopics, memoryReady, pickedTopics, setPicked, err, onStart,
+  diff, setDiff, mode, setMode, weakTopics, memoryReady, pickedTopics, setPicked, err, onStart,
 }: any) {
+  const isExam = mode === 'exam'
   function toggle(t: string) {
     setPicked((p: string[]) => p.includes(t) ? p.filter(x => x !== t) : [...p, t])
   }
@@ -238,8 +252,41 @@ function SetupView({
         <div style={{ flex: 1 }}>
           <h1 style={{ fontSize: 20, fontWeight: 700, color: '#fafafa', margin: 0 }}>Revision Simulator</h1>
           <p style={{ fontSize: 13, color: '#6B7280', marginTop: 4 }}>
-            Real exam pressure · timed MCQs · targets your weakest topics
+            Practice with instant feedback, or simulate real exam pressure · targets your weakest topics
           </p>
+        </div>
+      </div>
+
+      <div style={{ ...card, padding: 18, marginBottom: 14 }}>
+        <label style={{
+          fontSize: 11, fontWeight: 700, color: '#9CA3AF',
+          textTransform: 'uppercase', letterSpacing: 1.5, display: 'block', marginBottom: 10,
+        }}>
+          Mode
+        </label>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>
+          {[
+            { id: 'practice', label: 'Practice', icon: '✎', desc: 'Instant feedback after each question. Untimed — learn as you go.' },
+            { id: 'exam',     label: 'Exam',     icon: '⏱', desc: 'Timed, no hints. Full results at the end — real exam pressure.' },
+          ].map(m => {
+            const active = mode === m.id
+            const col = m.id === 'exam' ? '#FB7185' : '#A5B4FC'
+            return (
+              <button key={m.id} onClick={() => setMode(m.id)} style={{
+                padding: '14px 14px', borderRadius: 10, cursor: 'pointer',
+                border: `1px solid ${active ? col : '#1f2532'}`,
+                background: active ? `${col}14` : '#141A2A',
+                fontFamily: 'inherit', textAlign: 'left', transition: 'all 0.15s',
+              }}>
+                <div style={{ fontSize: 14, fontWeight: 800, color: active ? col : '#fafafa', marginBottom: 4 }}>
+                  {m.icon} {m.label}
+                </div>
+                <div style={{ fontSize: 11, color: '#9CA3AF', lineHeight: 1.5 }}>
+                  {m.desc}
+                </div>
+              </button>
+            )
+          })}
         </div>
       </div>
 
@@ -264,7 +311,7 @@ function SetupView({
                   {d.label}
                 </div>
                 <div style={{ fontSize: 11, color: '#9CA3AF' }}>
-                  {d.count} questions · {d.secs}s each
+                  {d.count} questions{isExam ? ` · ${d.secs}s each` : ' · untimed'}
                 </div>
               </button>
             )
@@ -370,7 +417,7 @@ function SetupView({
           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
           boxShadow: pickedTopics.length === 0 ? 'none' : '0 0 24px rgba(165, 180, 252, 0.35)',
         }}>
-        <Zap size={15} /> Start Simulation
+        <Zap size={15} /> {isExam ? 'Start Exam' : 'Start Practice'}
       </motion.button>
     </div>
   )
@@ -395,15 +442,27 @@ function LoadingView() {
   )
 }
 
-function LiveView({ q, idx, total, secsLeft, maxSecs, picked, onPick }: any) {
+function LiveView({ q, idx, total, secsLeft, maxSecs, picked, onPick, mode, revealed, onNext }: any) {
   const pct = (secsLeft / maxSecs) * 100
-  const dangerColor = secsLeft < 10 ? '#A5B4FC' : secsLeft < 20 ? '#A5B4FC' : '#A5B4FC'
+  const isExam = mode === 'exam'
+  const locked = picked !== null && picked !== undefined
+  const isCorrect = locked && picked === q.answer
+  const lastQ = idx + 1 >= total
+  const GREEN = '#34D399', RED = '#FB7185'
   return (
     <div style={{ padding: '28px 36px', maxWidth: 760, margin: '0 auto', height: '100%', overflowY: 'auto' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 22 }}>
         <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 11, color: '#9CA3AF', marginBottom: 6, fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase' }}>
+          <div style={{ fontSize: 11, color: '#9CA3AF', marginBottom: 6, fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: 8 }}>
             Question {idx + 1} of {total}
+            <span style={{
+              padding: '2px 8px', borderRadius: 999, fontSize: 9.5, letterSpacing: 1,
+              background: isExam ? 'rgba(251,113,133,0.14)' : 'rgba(165,180,252,0.14)',
+              color: isExam ? '#FB7185' : '#A5B4FC',
+              border: `1px solid ${isExam ? 'rgba(251,113,133,0.3)' : 'rgba(165,180,252,0.3)'}`,
+            }}>
+              {isExam ? '⏱ EXAM' : '✎ PRACTICE'}
+            </span>
           </div>
           <div style={{ height: 4, background: '#171D2D', borderRadius: 2, overflow: 'hidden' }}>
             <motion.div
@@ -411,28 +470,28 @@ function LiveView({ q, idx, total, secsLeft, maxSecs, picked, onPick }: any) {
               style={{ height: '100%', background: 'linear-gradient(90deg, #7C6BF6, #7C6BF6)' }} />
           </div>
         </div>
-        <div style={{
-          width: 64, height: 64, position: 'relative',
-        }}>
-          <svg viewBox="-32 -32 64 64" style={{ width: '100%', height: '100%', transform: 'rotate(-90deg)' }}>
-            <circle r={26} fill="none" stroke="#171D2D" strokeWidth={3} />
-            <motion.circle
-              r={26} fill="none" stroke={dangerColor} strokeWidth={3} strokeLinecap="round"
-              strokeDasharray={2 * Math.PI * 26}
-              animate={{ strokeDashoffset: 2 * Math.PI * 26 * (1 - pct / 100) }}
-              transition={{ duration: 0.95, ease: 'linear' }}
-            />
-          </svg>
-          <div style={{
-            position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column',
-            alignItems: 'center', justifyContent: 'center',
-          }}>
-            <Clock size={11} color={dangerColor} />
-            <div style={{ fontSize: 14, fontWeight: 800, color: dangerColor, fontFamily: 'monospace' }}>
-              {secsLeft}
+        {isExam && (
+          <div style={{ width: 64, height: 64, position: 'relative' }}>
+            <svg viewBox="-32 -32 64 64" style={{ width: '100%', height: '100%', transform: 'rotate(-90deg)' }}>
+              <circle r={26} fill="none" stroke="#171D2D" strokeWidth={3} />
+              <motion.circle
+                r={26} fill="none" stroke="#A5B4FC" strokeWidth={3} strokeLinecap="round"
+                strokeDasharray={2 * Math.PI * 26}
+                animate={{ strokeDashoffset: 2 * Math.PI * 26 * (1 - pct / 100) }}
+                transition={{ duration: 0.95, ease: 'linear' }}
+              />
+            </svg>
+            <div style={{
+              position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column',
+              alignItems: 'center', justifyContent: 'center',
+            }}>
+              <Clock size={11} color="#A5B4FC" />
+              <div style={{ fontSize: 14, fontWeight: 800, color: '#A5B4FC', fontFamily: 'monospace' }}>
+                {secsLeft}
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
 
       <motion.div key={idx} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
@@ -450,32 +509,68 @@ function LiveView({ q, idx, total, secsLeft, maxSecs, picked, onPick }: any) {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         {q.options.map((opt: string, i: number) => {
           const isPicked = picked === i
+          // Practice mode reveals correctness after a pick; exam mode only shows the choice.
+          const showRight = revealed && i === q.answer
+          const showWrong = revealed && isPicked && i !== q.answer
+          const borderCol = showRight ? GREEN : showWrong ? RED : isPicked ? '#7C6BF6' : '#1f2532'
+          const bgCol = showRight ? 'rgba(52,211,153,0.10)' : showWrong ? 'rgba(251,113,133,0.10)' : isPicked ? 'rgba(124, 107, 246, 0.1)' : '#141A2A'
+          const badgeBg = showRight ? GREEN : showWrong ? RED : isPicked ? '#7C6BF6' : '#171D2D'
+          const badgeFg = (showRight || showWrong || isPicked) ? '#fff' : '#9CA3AF'
           return (
             <motion.button key={i}
-              whileHover={{ x: 3 }} whileTap={{ scale: 0.99 }}
-              onClick={() => onPick(i)} disabled={picked !== null && picked !== undefined}
+              whileHover={locked ? undefined : { x: 3 }} whileTap={locked ? undefined : { scale: 0.99 }}
+              onClick={() => onPick(i)} disabled={locked}
               style={{
                 padding: '13px 16px', borderRadius: 10,
-                border: `1px solid ${isPicked ? '#7C6BF6' : '#1f2532'}`,
-                background: isPicked ? 'rgba(124, 107, 246, 0.1)' : '#141A2A',
-                cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left',
+                border: `1px solid ${borderCol}`,
+                background: bgCol,
+                cursor: locked ? 'default' : 'pointer', fontFamily: 'inherit', textAlign: 'left',
                 display: 'flex', alignItems: 'center', gap: 12,
                 transition: 'all 0.15s',
+                opacity: revealed && !showRight && !showWrong ? 0.55 : 1,
               }}>
               <div style={{
                 width: 26, height: 26, borderRadius: 7, flexShrink: 0,
-                background: isPicked ? '#7C6BF6' : '#171D2D',
-                color: isPicked ? '#fff' : '#9CA3AF',
+                background: badgeBg, color: badgeFg,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: 12, fontWeight: 700,
               }}>
-                {String.fromCharCode(65 + i)}
+                {showRight ? <CheckCircle2 size={15} /> : showWrong ? <XCircle size={15} /> : String.fromCharCode(65 + i)}
               </div>
               <span style={{ flex: 1, fontSize: 14, color: '#e4e4e7' }}><ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]} components={MD_INLINE}>{opt}</ReactMarkdown></span>
             </motion.button>
           )
         })}
       </div>
+
+      {revealed && (
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+          style={{ ...card, padding: 18, marginTop: 14, borderColor: isCorrect ? 'rgba(52,211,153,0.3)' : 'rgba(251,113,133,0.3)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+            {isCorrect
+              ? <><CheckCircle2 size={18} color={GREEN} /><span style={{ fontSize: 14, fontWeight: 800, color: GREEN }}>Correct</span></>
+              : <><XCircle size={18} color={RED} /><span style={{ fontSize: 14, fontWeight: 800, color: RED }}>Not quite</span></>}
+            {!isCorrect && (
+              <span style={{ fontSize: 12, color: '#9CA3AF', marginLeft: 4 }}>
+                Correct answer: <b style={{ color: '#e4e4e7' }}>{String.fromCharCode(65 + q.answer)}</b>
+              </span>
+            )}
+          </div>
+          {q.explain && (
+            <div style={{ fontSize: 13.5, color: '#B1B5BA', lineHeight: 1.7 }}>
+              <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]} components={MD_INLINE}>{q.explain}</ReactMarkdown>
+            </div>
+          )}
+          <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={onNext}
+            style={{
+              marginTop: 16, width: '100%', padding: '12px 16px', borderRadius: 10, border: 'none', cursor: 'pointer',
+              background: 'linear-gradient(135deg, #7C6BF6, #A5B4FC)', color: '#fff', fontFamily: 'inherit',
+              fontSize: 14, fontWeight: 800, letterSpacing: 0.3,
+            }}>
+            {lastQ ? 'See results →' : 'Next question →'}
+          </motion.button>
+        </motion.div>
+      )}
     </div>
   )
 }
