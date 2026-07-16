@@ -79,11 +79,29 @@ const SUGGESTIONS = [
   'Solve x² - 5x + 6 = 0',
 ]
 
+// --- Last-solve persistence (survives reload + Chat<->Visual toggle remount) ---
+const SOLVE_KEY = 'kairo:solve:last'
+
+function loadLastSolve(): { topic: string; resp: SolverResponse | null } {
+  try {
+    const raw = localStorage.getItem(SOLVE_KEY)
+    if (!raw) return { topic: '', resp: null }
+    const v = JSON.parse(raw)
+    if (v && typeof v.topic === 'string') {
+      // Force any in-flight flags off so a restored solve never shows a stuck spinner.
+      const resp = v.resp ? { ...v.resp, imagesBusy: false, videoBusy: false } : null
+      return { topic: v.topic, resp }
+    }
+  } catch {  }
+  return { topic: '', resp: null }
+}
+
 export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverProps) {
+  const [boot]                          = useState(loadLastSolve)
   const [input, setInput]               = useState('')
   const [busy, setBusy]                 = useState(false)
-  const [topic, setTopic]               = useState('')
-  const [resp, setResp]                 = useState<SolverResponse | null>(null)
+  const [topic, setTopic]               = useState(boot.topic)
+  const [resp, setResp]                 = useState<SolverResponse | null>(boot.resp)
   const [error, setError]               = useState('')
   const [retryHint, setRetryHint]       = useState('')
   const [voiceOn, setVoiceOn]           = useState(false)
@@ -296,6 +314,21 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
   }
 
   const showResult = !!topic
+
+  // Persist the last completed solve so it survives a reload or a Chat<->Visual
+  // toggle (which remounts this component). Only write finished solves — never
+  // mid-flight (busy) or failed (resp null) states, so a stale-but-real solve
+  // stays recoverable rather than being wiped by a failed attempt.
+  useEffect(() => {
+    if (busy) return
+    if (!topic || !resp) return
+    try {
+      localStorage.setItem(SOLVE_KEY, JSON.stringify({
+        topic,
+        resp: { ...resp, imagesBusy: false, videoBusy: false },
+      }))
+    } catch {  }
+  }, [topic, resp, busy])
 
   useEffect(() => {
     if (resp?.questionType === 'geography' && viewMode === 'auto' && resp.geography) {
