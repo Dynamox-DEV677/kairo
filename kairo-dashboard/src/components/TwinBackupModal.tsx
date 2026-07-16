@@ -10,6 +10,7 @@ import {
   type ImportMode, type ImportResult, dumpState,
 } from '../lib/twin'
 import SprintOverlay, { SPRINT_PHASES, SPRINT_MIN_MS } from './SprintOverlay'
+import { loadGame } from '../lib/game'
 
 const C = {
   bg:        '#0A0D16',
@@ -55,6 +56,7 @@ export default function TwinBackupModal({ open, onClose, onChange }: Props) {
         formulas:   s.formulas.length,
         flashcards: s.flashcards.length,
         mastery:    s.mastery.length,
+        xp:         (() => { try { return loadGame().totalXP } catch { return 0 } })(),
       }
     } catch { return null }
   }, [open])
@@ -251,6 +253,7 @@ export default function TwinBackupModal({ open, onClose, onChange }: Props) {
                     <StatTile label="Formulas"   value={stats.formulas} />
                     <StatTile label="Flashcards" value={stats.flashcards} />
                     <StatTile label="Mastery"    value={stats.mastery} />
+                    <StatTile label="XP"         value={stats.xp} />
                   </div>
                 </div>
               )}

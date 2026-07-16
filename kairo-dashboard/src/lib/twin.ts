@@ -166,6 +166,7 @@ export interface TwinState {
 }
 
 import * as storage from './storage'
+import { exportGameState, importGameState } from './game'
 
 const STORAGE_PREFIX = 'kairo:twin:'
 const MAX_EVENTS     = 800
@@ -366,6 +367,7 @@ export interface TwinBackup {
     mastery:    number
   }
   data:       TwinState
+  game?:      any   // XP / streak / lifetime snapshot (kairo:game:v1)
 }
 
 export function exportTwin(): string {
@@ -383,6 +385,7 @@ export function exportTwin(): string {
       mastery:    state.mastery.length,
     },
     data: state,
+    game: exportGameState(),
   }
   return JSON.stringify(payload, null, 2)
 }
@@ -438,6 +441,9 @@ export function importTwin(jsonText: string, mode: ImportMode = 'replace'): Impo
     }
     saveState(next)
   }
+
+  // Carry XP / streak across devices too (older backups won't have this).
+  if (parsed.game) { try { importGameState(parsed.game, mode) } catch {  } }
 
   return {
     ok:    true,
@@ -541,7 +547,8 @@ export async function syncToCloudNow(): Promise<{ ok: boolean; reason?: string }
     const { post } = await import('./api')
     const state    = loadState()
     await post('/twin/snapshot', {
-      blob:         state,
+      // __game rides inside the blob so XP/streak sync without any server change.
+      blob:         { ...state, __game: exportGameState() },
       deviceLabel:  deviceLabel(),
       eventsCount:  state.events.length,
     })
@@ -595,7 +602,8 @@ export async function pullFromCloud(opts: { force?: boolean } = {}): Promise<{
       return { ok: true, restored: false, reason: 'no-cloud-snapshot' }
     }
 
-    const incoming = snap.blob as TwinState
+    const rawBlob  = snap.blob as TwinState & { __game?: any }
+    const { __game, ...incoming } = rawBlob
     const localKey = getUserKey()
     const localProfile = loadState().profile
     const next: TwinState = {
@@ -609,6 +617,8 @@ export async function pullFromCloud(opts: { force?: boolean } = {}): Promise<{
       flashcards: incoming.flashcards ?? [],
     }
     saveState(next)
+    // Restore XP / streak that rode along inside the snapshot blob.
+    if (__game) { try { importGameState(__game, 'replace') } catch {  } }
     const stats = {
       events:     next.events.length,
       doubts:     next.doubts.length,

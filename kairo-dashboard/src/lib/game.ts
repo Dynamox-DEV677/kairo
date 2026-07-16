@@ -91,6 +91,61 @@ function rollover(s: GameState) {
   if (s.weekKey !== w) { s.weekKey = w; s.weekXP = 0 }
 }
 
+// --- Cross-device sync helpers -------------------------------------------
+// XP / streak / lifetime totals live in a device-local blob (kairo:game:v1)
+// that the Twin cloud sync historically ignored — so a freshly signed-in
+// device always read 0 XP even when the account had hundreds. These let the
+// Twin backup/restore (cloud + manual JSON) carry game state across devices.
+
+export function exportGameState(): GameState | null {
+  try {
+    const raw = getRaw(KEY)
+    if (!raw) return null
+    return { ...fresh(), ...JSON.parse(raw) } as GameState
+  } catch { return null }
+}
+
+function mergeLifetime(a: Record<string, number> = {}, b: Record<string, number> = {}): Record<string, number> {
+  const out: Record<string, number> = { ...a }
+  for (const k of Object.keys(b)) out[k] = Math.max(out[k] || 0, b[k] || 0)
+  return out
+}
+
+export function importGameState(
+  incoming: Partial<GameState> | null | undefined,
+  mode: 'replace' | 'merge' = 'replace',
+): boolean {
+  if (!incoming || typeof incoming !== 'object') return false
+  const inXP     = Number(incoming.totalXP || 0)
+  const inLife   = incoming.lifetime && typeof incoming.lifetime === 'object' ? incoming.lifetime : {}
+  const inStreak = Number(incoming.streak || 0)
+  // Never let an empty/zero cloud copy wipe real local progress.
+  if (inXP <= 0 && inStreak <= 0 && Object.keys(inLife).length === 0) return false
+
+  try {
+    const cur = loadGame()
+    let next: GameState
+    if (mode === 'merge') {
+      const sameWeek = cur.weekKey === incoming.weekKey
+      next = {
+        ...cur,
+        totalXP:  Math.max(cur.totalXP, inXP),
+        streak:   Math.max(cur.streak, inStreak),
+        weekXP:   sameWeek ? Math.max(cur.weekXP, Number(incoming.weekXP || 0)) : cur.weekXP,
+        lifetime: mergeLifetime(cur.lifetime, inLife),
+      }
+    } else {
+      // Replace: trust the incoming snapshot; rollover() normalizes day/week on load.
+      next = { ...fresh(), ...incoming } as GameState
+    }
+    rollover(next)
+    save(next)
+    // Refresh XP-driven UI (GameBar, Home, Kyno OS) without a full reload.
+    try { window.dispatchEvent(new CustomEvent('kairo:xp', { detail: { total: next.totalXP, level: levelFromXP(next.totalXP).level } })) } catch {  }
+    return true
+  } catch { return false }
+}
+
 export function levelFromXP(xp: number): { level: number; into: number; need: number } {
   let level = 1, need = 100, rest = xp
   while (rest >= need) { rest -= need; level++; need = level * 100 }

@@ -88,13 +88,16 @@ export default function App() {
       pauseSyncUntil(Date.now() + SPRINT_MIN_MS + 5_000)
 
       const r = await pullFromCloud()
-
-      const elapsed   = Date.now() - startedAt
-      const remaining = Math.max(0, SPRINT_MIN_MS - elapsed)
-      await new Promise(res => setTimeout(res, remaining))
       if (cancelled) return
 
+      let markPulled = true
       if (r.ok && r.restored) {
+        // Pad to the minimum only when we actually restored, so the "sprint"
+        // animation feels intentional (and doesn't stall an empty pull).
+        const elapsed = Date.now() - startedAt
+        await new Promise(res => setTimeout(res, Math.max(0, SPRINT_MIN_MS - elapsed)))
+        if (cancelled) return
+
         const wiped = await deleteCloudSnapshot()
         if (!wiped.ok) console.warn('[sync] could not wipe cloud snapshot:', wiped.reason)
 
@@ -104,12 +107,16 @@ export default function App() {
           (wiped.ok ? '  ·  Cloud copy wiped — your data lives only on this device now.' : '')
         )
         await new Promise(res => setTimeout(res, 1200))
-      } else if (!r.ok && r.reason !== 'not-signed-in') {
-        console.warn('[sync] auto-pull failed:', r.reason)
+      } else if (r.reason === 'no-cloud-snapshot' || (!r.ok && r.reason !== 'not-signed-in')) {
+        // Nothing to pull yet (another device hasn't synced up) or a transient
+        // error — don't latch, so a later refresh retries and data can still land.
+        markPulled = false
+        if (!r.ok) console.warn('[sync] auto-pull failed:', r.reason)
       }
+      // else: local-not-empty / not-signed-in → latch; nothing useful to retry.
 
       if (cancelled) return
-      sessionStorage.setItem('kairo:sync:pulled', '1')
+      if (markPulled) sessionStorage.setItem('kairo:sync:pulled', '1')
       setSprintingIn(false)
 
       pauseSyncUntil(0)
