@@ -37,6 +37,19 @@ export function initPwa(opts?: {
     onOfflineReady() {
       opts?.onOfflineReady?.()
     },
+    onRegisteredSW(_swUrl, r) {
+      if (!r) return
+      // A PWA that stays open would otherwise never notice a new deploy. Poll for
+      // an update periodically and whenever the app is re-foregrounded, so a fresh
+      // build (with the latest sync/XP logic) actually reaches every device.
+      const check = () => { r.update().catch(() => {}) }
+      setInterval(check, 30 * 60 * 1000)
+      if (typeof document !== 'undefined') {
+        document.addEventListener('visibilitychange', () => {
+          if (document.visibilityState === 'visible') check()
+        })
+      }
+    },
     onRegisterError(err) {
       console.warn('[PWA] Service worker registration failed:', err)
     },

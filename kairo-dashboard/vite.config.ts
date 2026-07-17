@@ -30,7 +30,11 @@ export default defineConfig({
       },
     }] : []),
     ...(PWA_ENABLED ? [VitePWA({
-      registerType: 'autoUpdate',
+      // 'prompt' (not 'autoUpdate') so onNeedRefresh fires when a new deploy is
+      // ready — main.tsx shows the branded "Updating…" splash and reloads. With
+      // autoUpdate an already-open PWA silently kept the old bundle, which is how
+      // two devices ended up on different code (and different XP).
+      registerType: 'prompt',
       includeAssets: ['kairo_logo.png', 'favicon.svg', 'apple-touch-icon.png'],
       manifest: {
         name:             'Kairo — Accelerate Your Academics',
