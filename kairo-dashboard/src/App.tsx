@@ -6,9 +6,10 @@ import Landing from './pages/Landing'
 import { GenerationProvider } from './lib/generationContext'
 import { supabase } from './lib/supabase'
 import { refreshIfStale } from './lib/api'
-import { pullFromCloud, syncToCloudNow, pauseSyncUntil, getSyncEnabled, isOnboarded } from './lib/twin'
+import { peekCloudSnapshot, applyCloudSnapshot, hasLocalTwinData, pauseSyncUntil, getSyncEnabled, isOnboarded, type CloudPeek } from './lib/twin'
 import Onboarding from './pages/Onboarding'
 import SprintOverlay, { SPRINT_MIN_MS } from './components/SprintOverlay'
+import CloudRestorePrompt from './components/CloudRestorePrompt'
 import SplashScreen from './components/SplashScreen'
 import { TermsHost } from './components/Terms'
 import DesktopUpdateBanner from './components/DesktopUpdateBanner'
@@ -49,6 +50,8 @@ export default function App() {
   const [sprintingIn, setSprintingIn] = useState(false)
   const [sprintHead, setSprintHead]   = useState<string | undefined>()
   const [sprintSub,  setSprintSub]    = useState<string | undefined>()
+  const [pendingCloud, setPendingCloud] = useState<CloudPeek | null>(null)
+  const [restoring, setRestoring]       = useState(false)
   const [splashing,  setSplashing]    = useState(() => {
     if (typeof window === 'undefined') return false
     try { return sessionStorage.getItem('kairo:splash:shown') !== '1' }
@@ -78,50 +81,53 @@ export default function App() {
     if (sessionStorage.getItem('kairo:sync:pulled') === '1') return
 
     let cancelled = false
-    const startedAt = Date.now()
 
     ;(async () => {
-      setSprintHead('Welcome back — pulling your data')
-      setSprintSub(`We\'ll have your study history on this device in a moment.`)
-      setSprintingIn(true)
-
-      pauseSyncUntil(Date.now() + SPRINT_MIN_MS + 5_000)
-
-      const r = await pullFromCloud()
+      // Peek only — never save without the user's OK. Show a confirm card first.
+      const peek = await peekCloudSnapshot()
       if (cancelled) return
 
-      let markPulled = true
-      if (r.ok && r.restored) {
-        // Pad to the minimum only when we actually restored, so the "sprint"
-        // animation feels intentional (and doesn't stall an empty pull).
-        const elapsed = Date.now() - startedAt
-        await new Promise(res => setTimeout(res, Math.max(0, SPRINT_MIN_MS - elapsed)))
-        if (cancelled) return
-
-        setSprintHead('Your data has arrived.')
-        setSprintSub(
-          `${r.stats?.events ?? 0} events · ${r.stats?.flashcards ?? 0} flashcards · ${r.stats?.formulas ?? 0} formulas restored.` +
-          '  ·  Safely backed up in your account — sign in on any device to get it.'
-        )
-        await new Promise(res => setTimeout(res, 1200))
-      } else if (r.reason === 'no-cloud-snapshot' || (!r.ok && r.reason !== 'not-signed-in')) {
-        // Nothing to pull yet (another device hasn't synced up) or a transient
-        // error — don't latch, so a later refresh retries and data can still land.
-        markPulled = false
-        if (!r.ok) console.warn('[sync] auto-pull failed:', r.reason)
+      if (peek.ok && peek.found && !hasLocalTwinData()) {
+        // Fresh device with a cloud backup available → ask before restoring.
+        setPendingCloud(peek)
+      } else if (peek.ok && hasLocalTwinData()) {
+        // This device already has data; don't nag. "Sync now" (merge) is available.
+        sessionStorage.setItem('kairo:sync:pulled', '1')
       }
-      // else: local-not-empty / not-signed-in → latch; nothing useful to retry.
-
-      if (cancelled) return
-      if (markPulled) sessionStorage.setItem('kairo:sync:pulled', '1')
-      setSprintingIn(false)
-
-      pauseSyncUntil(0)
+      // else: nothing in the cloud yet, or a transient/not-signed-in result —
+      // leave unlatched so a later refresh re-checks and can still surface the
+      // prompt once another device has synced up.
     })()
 
     return () => { cancelled = true }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profile])
+
+  async function confirmCloudRestore() {
+    const p = pendingCloud
+    if (!p?.blob || restoring) return
+    setRestoring(true)
+    setSprintHead('Restoring your data')
+    setSprintSub('Bringing your history onto this device…')
+    setSprintingIn(true)
+    pauseSyncUntil(Date.now() + SPRINT_MIN_MS + 5_000)
+    const startedAt = Date.now()
+    try { applyCloudSnapshot(p.blob, 'replace') } catch {  }
+    const elapsed = Date.now() - startedAt
+    await new Promise(res => setTimeout(res, Math.max(0, SPRINT_MIN_MS - elapsed)))
+    sessionStorage.setItem('kairo:sync:pulled', '1')
+    setPendingCloud(null)
+    setSprintingIn(false)
+    setRestoring(false)
+    pauseSyncUntil(0)
+    // Reload so every page recomputes from the freshly restored data.
+    window.location.reload()
+  }
+
+  function dismissCloudRestore() {
+    sessionStorage.setItem('kairo:sync:pulled', '1')
+    setPendingCloud(null)
+  }
 
   useEffect(() => {
     async function restoreSession() {
@@ -377,6 +383,13 @@ export default function App() {
         banner="Welcome back"
         headline={sprintHead}
         subhead={sprintSub}
+      />
+      <CloudRestorePrompt
+        open={!!pendingCloud && !sprintingIn}
+        stats={pendingCloud?.stats ?? null}
+        busy={restoring}
+        onConfirm={confirmCloudRestore}
+        onDismiss={dismissCloudRestore}
       />
       <TermsHost />
       <DesktopUpdateBanner />

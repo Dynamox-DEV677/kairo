@@ -688,6 +688,70 @@ export async function reconcileWithCloud(): Promise<{ ok: boolean; restored: boo
   }
 }
 
+export function hasLocalTwinData(): boolean {
+  const s = loadState()
+  return s.events.length > 0 || s.flashcards.length > 0 || s.doubts.length > 0 || !!s.profile
+}
+
+export interface CloudPeek {
+  ok:      boolean
+  found:   boolean
+  reason?: string
+  stats?:  { events: number; flashcards: number; doubts: number; formulas: number; concepts: number; mastery: number; xp: number }
+  blob?:   any
+}
+
+// Read the cloud snapshot WITHOUT saving anything — so we can show the user a
+// summary and let them approve the restore first (confirm-on-this-device).
+export async function peekCloudSnapshot(): Promise<CloudPeek> {
+  if (typeof window === 'undefined') return { ok: false, found: false, reason: 'no-window' }
+  const token = localStorage.getItem('kairo_token')
+  if (!token) return { ok: false, found: false, reason: 'not-signed-in' }
+  try {
+    const { get } = await import('./api')
+    const r    = await get('/twin/snapshot') as { snapshot: any | null }
+    const snap = r?.snapshot
+    if (!snap || !snap.blob) return { ok: true, found: false }
+    const blob = snap.blob as TwinState & { __game?: any }
+    const g    = (blob.__game || {}) as { totalXP?: number }
+    const len  = (a: any) => (Array.isArray(a) ? a.length : 0)
+    return {
+      ok: true, found: true, blob,
+      stats: {
+        events:     len(blob.events),
+        flashcards: len(blob.flashcards),
+        doubts:     len(blob.doubts),
+        formulas:   len(blob.formulas),
+        concepts:   len(blob.concepts),
+        mastery:    len(blob.mastery),
+        xp:         Number(g.totalXP || 0),
+      },
+    }
+  } catch (e: any) {
+    return { ok: false, found: false, reason: String(e?.message || e || 'unknown') }
+  }
+}
+
+// Save a peeked snapshot onto this device — call this only AFTER the user approves.
+// Reuses importTwin so XP (parsed.game) rides along and merge/replace stay correct.
+export function applyCloudSnapshot(blob: any, mode: ImportMode = 'replace'): boolean {
+  if (!blob || typeof blob !== 'object') return false
+  try {
+    const raw = blob as TwinState & { __game?: any }
+    const { __game, ...twin } = raw
+    const wrapped = JSON.stringify({
+      schema:     'kairo-twin-backup-v1',
+      exportedAt: new Date().toISOString(),
+      userKey:    getUserKey(),
+      data:       { ...twin, userKey: getUserKey() },
+      game:       __game,
+    })
+    const res = importTwin(wrapped, mode)
+    try { window.dispatchEvent(new StorageEvent('storage', { key: storageKey() })) } catch {  }
+    return res.ok
+  } catch { return false }
+}
+
 if (typeof window !== 'undefined') {
   syncEnabled = getSyncEnabled()
 }
