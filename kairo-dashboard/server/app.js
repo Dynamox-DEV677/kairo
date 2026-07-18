@@ -71,8 +71,8 @@ if (!process.env.ENCRYPTION_SECRET || process.env.ENCRYPTION_SECRET.length < 32)
   process.env.ENCRYPTION_SECRET = 'kairo-default-secret-key-change-in-production-please-set-env-var-now'
   console.warn('⚠️  ENCRYPTION_SECRET not set — using insecure default. Set it in Vercel env vars.')
 }
-if (!process.env.OPENROUTER_API_KEY) {
-  console.warn('⚠️   OPENROUTER_API_KEY not set — AI features will fail.')
+if (!process.env.GROQ_API_KEYS && !process.env.GROQ_API_KEY) {
+  console.warn('⚠️   GROQ_API_KEYS not set — AI features will fail.')
 }
 
 const app = express()

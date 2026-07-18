@@ -531,7 +531,7 @@ export default function Settings() {
       </Section>
 
       <div style={{ padding: '20px 0', borderTop: '1px solid #171D2D', marginTop: 8 }}>
-        <p style={{ fontSize: 11, color: '#27272a' }}>Kyno v1.0 · Built for Indian students · Powered by OpenRouter</p>
+        <p style={{ fontSize: 11, color: '#27272a' }}>Kyno v1.0 · Built for Indian students · Powered by Groq</p>
       </div>
 
       <TwinBackupModal open={backupOpen} onClose={() => setBackupOpen(false)} />

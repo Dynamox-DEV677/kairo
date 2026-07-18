@@ -4,7 +4,6 @@ import { supabaseAdmin } from '../services/supabase.js'
 import groqPool from '../services/groqPool.js'
 
 const router = express.Router()
-const OR_URL = 'https://openrouter.ai/api/v1/chat/completions'
 
 const SOLVER_CACHE = new Map()
 const SOLVER_CACHE_TTL_MS = 24 * 60 * 60 * 1000
@@ -463,45 +462,6 @@ async function callGroq(question, apiKey, timeout = 7000) {
 
 function callGroqAll(question, apiKey, timeout = 7000) {
   return GROQ_MODELS.map(m => callGroqOne(m, question, apiKey, timeout))
-}
-
-async function callModel(model, question, apiKey, timeout = 7000) {
-  const ctrl = new AbortController()
-  const timer = setTimeout(() => ctrl.abort(), timeout)
-  try {
-    const resp = await fetch(OR_URL, {
-      method: 'POST',
-      signal: ctrl.signal,
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type':  'application/json',
-        'HTTP-Referer':  process.env.ALLOWED_ORIGIN || 'https://kairo-daily-edu.vercel.app',
-        'X-Title':       'Kyno Solver',
-      },
-      body: JSON.stringify({
-        model,
-        messages: [
-          { role: 'system', content: SOLVER_SYSTEM },
-          { role: 'user',   content: question },
-        ],
-        temperature: 0.3,
-        max_tokens:  2000,
-      }),
-    })
-    if (!resp.ok) {
-      const t = await resp.text()
-      throw new Error(`${model} HTTP ${resp.status}: ${t.slice(0, 120)}`)
-    }
-    const data = await resp.json()
-    const raw = data?.choices?.[0]?.message?.content || ''
-    const plan = parseJsonLoose(raw)
-    if (!plan || !plan.textExplanation) {
-      throw new Error(`${model} malformed JSON (len=${raw.length})`)
-    }
-    return { plan, model }
-  } finally {
-    clearTimeout(timer)
-  }
 }
 
 async function getSolverPlan(question) {
@@ -1020,7 +980,6 @@ function parseJsonLoose(text) {
 }
 
 router.get('/solver/status', async (_req, res) => {
-  const hasOR    = !!process.env.OPENROUTER_API_KEY
   const groqInfo = groqPool.status()
   const hasGroq  = groqInfo.total > 0
   const hasModel = !!process.env.SOLVER_MODEL
@@ -1052,11 +1011,6 @@ router.get('/solver/status', async (_req, res) => {
   }
 
   const probes = []
-  if (hasOR) {
-    probes.push(probeProvider('openrouter:gpt-oss-20b', () =>
-      callModel('openai/gpt-oss-20b:free', probe, process.env.OPENROUTER_API_KEY, 5000)
-    ))
-  }
   if (hasGroq) {
     for (const m of GROQ_MODELS) {
       probes.push(probeProvider(`groq:${m}`, () =>
@@ -1080,7 +1034,6 @@ router.get('/solver/status', async (_req, res) => {
   res.json({
     overall: anyOk ? 'healthy' : 'degraded',
     env: {
-      OPENROUTER_API_KEY_set: hasOR,
       GROQ_API_KEY_set:       hasGroq,
       SOLVER_MODEL_override:  hasModel ? process.env.SOLVER_MODEL : null,
     },
@@ -1093,7 +1046,7 @@ router.get('/solver/status', async (_req, res) => {
     providers: results,
     hint: anyOk
       ? 'At least one provider is responding. The Solver will use the fastest one.'
-      : 'No providers responded. Check that OPENROUTER_API_KEY and/or GROQ_API_KEYS are set in Vercel env vars and that you have redeployed since adding them.',
+      : 'No providers responded. Check that GROQ_API_KEYS is set in Vercel env vars and that you have redeployed since adding them.',
   })
 })
 

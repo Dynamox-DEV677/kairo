@@ -82,7 +82,7 @@ Kyno — by Kairo Industries.
 ## 5. Data safety form (declare this)
 Data collected: **Name, Email, App activity (your questions & progress)**.
 - Purpose: **App functionality + personalisation**.
-- Shared with third parties: processed by AI providers (Groq/OpenRouter) to generate answers — declare as "shared for app functionality".
+- Shared with third parties: processed by our AI provider (Groq) to generate answers — declare as "shared for app functionality".
 - Encrypted in transit: **Yes**.
 - Users can request deletion: **Yes** (via the email in the privacy policy).
 

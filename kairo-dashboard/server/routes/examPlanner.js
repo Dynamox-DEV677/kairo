@@ -33,7 +33,7 @@ async function aiCallSmart({ taskType, messages, maxTokens = 4000, temperature =
       const content = data?.choices?.[0]?.message?.content
       if (content) return content
     } catch (e) {
-      console.warn('[exam-planner] Groq failed, trying OpenRouter:', e.message)
+      console.warn('[exam-planner] primary Groq call failed, falling back to Groq pool:', e.message)
     }
   }
   return aiCall({ taskType, messages, maxTokens, temperature })

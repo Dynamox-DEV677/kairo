@@ -102,11 +102,11 @@ export default function StatusPage({ onExit }: Props) {
       {
         id:       'ai',
         icon:     Sparkles,
-        label:    'AI providers',
-        body:     ((snap.env as any).hasGroq ?? snap.env.hasOpenRouter)
+        label:    'AI provider',
+        body:     (snap.env as any).hasGroq
                     ? 'Groq key pool configured — all AI runs on Groq'
                     : 'GROQ_API_KEYS missing — Solver, Chat, Notebook AI will fail',
-        health:   (((snap.env as any).hasGroq ?? snap.env.hasOpenRouter) ? 'ok' : 'down') as Health,
+        health:   ((snap.env as any).hasGroq ? 'ok' : 'down') as Health,
       },
       {
         id:       'email',

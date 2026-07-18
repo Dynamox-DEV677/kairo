@@ -62,7 +62,6 @@ router.get('/status', async (_req, res) => {
       byAudience: countByAudience(FEATURES),
     },
     env: {
-      hasOpenRouter:   !!process.env.OPENROUTER_API_KEY,
       hasGroq:         !!(process.env.GROQ_API_KEYS || process.env.GROQ_API_KEY),
       hasGemini:       !!process.env.GEMINI_API_KEY,
       hasPexels:       !!process.env.PEXELS_API_KEY,
@@ -129,7 +128,7 @@ router.get('/diagnose', async (_req, res) => {
     checks.push({ name, status, details, latencyMs })
 
   const REQUIRED_ENV = [
-    'SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY', 'OPENROUTER_API_KEY',
+    'SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY',
   ]
   for (const key of REQUIRED_ENV) {
     if (process.env[key] || process.env['VITE_' + key]) {
@@ -137,6 +136,12 @@ router.get('/diagnose', async (_req, res) => {
     } else {
       push(`env: ${key}`, 'failed', 'missing — feature dependent on this key will 503')
     }
+  }
+  // Groq is the only AI provider; accept either the pooled or single-key var name.
+  if (process.env.GROQ_API_KEYS || process.env.GROQ_API_KEY) {
+    push('env: GROQ_API_KEYS', 'ok')
+  } else {
+    push('env: GROQ_API_KEYS', 'failed', 'missing — AI features will 503')
   }
 
   const GLBS = [
