@@ -6,7 +6,7 @@ import Landing from './pages/Landing'
 import { GenerationProvider } from './lib/generationContext'
 import { supabase } from './lib/supabase'
 import { refreshIfStale } from './lib/api'
-import { peekCloudSnapshot, applyCloudSnapshot, hasLocalTwinData, pauseSyncUntil, getSyncEnabled, isOnboarded, type CloudPeek } from './lib/twin'
+import { peekCloudSnapshot, applyCloudSnapshot, hasLocalTwinData, reconcileWithCloud, pauseSyncUntil, getSyncEnabled, isOnboarded, type CloudPeek } from './lib/twin'
 import Onboarding from './pages/Onboarding'
 import SprintOverlay, { SPRINT_MIN_MS } from './components/SprintOverlay'
 import CloudRestorePrompt from './components/CloudRestorePrompt'
@@ -91,8 +91,12 @@ export default function App() {
         // Fresh device with a cloud backup available → ask before restoring.
         setPendingCloud(peek)
       } else if (peek.ok && hasLocalTwinData()) {
-        // This device already has data; don't nag. "Sync now" (merge) is available.
+        // This device already has data → don't show the restore card, but quietly
+        // reconcile in the background so XP + data converge across devices WITHOUT a
+        // manual "Sync now". Merge is non-destructive: it unions data and keeps the
+        // higher XP, then pushes the union up so the other device catches up too.
         sessionStorage.setItem('kairo:sync:pulled', '1')
+        reconcileWithCloud().catch(() => {})
       }
       // else: nothing in the cloud yet, or a transient/not-signed-in result —
       // leave unlatched so a later refresh re-checks and can still surface the

@@ -13,6 +13,7 @@ import {
 import { useGeneration } from '../lib/generationContext'
 import { getRecentChats, deleteRecentChat, timeAgo } from '../lib/recentChats'
 import type { RecentChat } from '../lib/recentChats'
+import { loadGame } from '../lib/game'
 import { DecoratedAvatar } from './AvatarDecor'
 
 interface NavItem {
@@ -125,6 +126,14 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
     catch {  }
   }, [expanded])
 
+  // Keep the footer XP live + correct (mirrors the top bar).
+  const [, forceXp] = useState(0)
+  useEffect(() => {
+    const onXP = () => forceXp(n => n + 1)
+    window.addEventListener('kairo:xp', onXP)
+    return () => window.removeEventListener('kairo:xp', onXP)
+  }, [])
+
   const [showAll, setShowAll] = useState<boolean>(() => {
     try { return localStorage.getItem('kairo:sidebar:showAll') === '1' }
     catch { return false }
@@ -165,12 +174,13 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
     deleteRecentChat(id)
     setRecents(getRecentChats())
   }
+  const totalXP = (() => { try { return loadGame().totalXP } catch { return 0 } })()
   const displayName = profile?.name || 'Arjun Sharma'
   const displaySub  = profile?.school_name
     ? `🏫 ${profile.school_name}`
     : profile?.board && profile?.cls
       ? `${profile.board} · Class ${profile.cls}`
-      : 'Free plan · 450 XP'
+      : `Free plan · ${totalXP.toLocaleString()} XP`
   const fileInputRef = useRef<HTMLInputElement>(null)
   const { generating } = useGeneration()
 
