@@ -105,3 +105,20 @@ export async function exportEncrypted(key: CryptoKey, opts: { deviceLabel: strin
   const enc = await encryptSnapshot(payload, key)
   return { ...enc, payload }
 }
+
+// ── .kyno file container (encrypted-file transfer path) ──────────────────────
+export const TRANSFER_FILE_FORMAT = 'kyno-transfer-file-v1' as const
+
+export function serializeSnapshotFile(enc: EncryptedSnapshot): string {
+  return JSON.stringify({
+    format: TRANSFER_FILE_FORMAT,
+    bundle: enc.bundle,
+    cipher: bytesToB64(enc.cipher),
+  })
+}
+
+export function transferFileName(): string {
+  const d = new Date()
+  const p = (n: number) => String(n).padStart(2, '0')
+  return `kyno-transfer-${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}.kyno`
+}

@@ -91,3 +91,34 @@ export async function importEncrypted(
     return { ok: false, restoredKeys: 0, error: String(e?.message || e) }
   }
 }
+
+// ── .kyno file container path ────────────────────────────────────────────────
+export function parseSnapshotFile(text: string): { bundle: EncryptedBundle; cipher: Uint8Array } {
+  let obj: any
+  try { obj = JSON.parse(text) } catch { throw new Error('not a valid .kyno file (bad JSON)') }
+  if (obj?.format !== 'kyno-transfer-file-v1' || !obj.bundle || typeof obj.cipher !== 'string') {
+    throw new Error('this is not a Kyno transfer file')
+  }
+  return { bundle: obj.bundle as EncryptedBundle, cipher: b64ToBytes(obj.cipher) }
+}
+
+export async function verifyCipher(bundle: EncryptedBundle, cipher: Uint8Array): Promise<void> {
+  const sha = await sha256Hex(cipher)
+  if (sha !== bundle.cipherSha256) throw new Error('file checksum mismatch — the .kyno file is corrupted or incomplete')
+}
+
+// Whole-ciphertext import (file path). Verifies checksum, then decrypts (which
+// fails cleanly on a wrong key), then restores.
+export async function importFromCipher(bundle: EncryptedBundle, cipher: Uint8Array, key: CryptoKey): Promise<RestoreResult> {
+  try {
+    await verifyCipher(bundle, cipher)
+    const payload = await decryptSnapshot(bundle, cipher, key)
+    return applySnapshot(payload)
+  } catch (e: any) {
+    log.error('file import failed', e)
+    const msg = /operation-specific reason|decrypt|tag/i.test(String(e?.message))
+      ? 'Wrong key — double-check the code from the other device.'
+      : String(e?.message || e)
+    return { ok: false, restoredKeys: 0, error: msg }
+  }
+}

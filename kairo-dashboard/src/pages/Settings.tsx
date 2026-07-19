@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import { Camera, User, Bell, Shield, Trash2, Check, FileJson, Smartphone, Laptop, ChevronsRight, KeyRound, Sparkles, RotateCcw, Mail, RefreshCw, CloudOff, Loader2 } from 'lucide-react'
 import { confirmDialog } from '../components/ConfirmModal'
 import TwinBackupModal from '../components/TwinBackupModal'
+import DeviceTransferModal from '../components/DeviceTransferModal'
 import ResetPasscode from './ResetPasscode'
 import { seedDemo, resetAllData, reconcileWithCloud, deleteCloudSnapshot } from '../lib/twin'
 import { getRaw, setRaw, activeBackend } from '../lib/storage'
@@ -28,6 +29,7 @@ export default function Settings() {
   const [notifs, setNotifs] = useState(true)
   const [saved, setSaved] = useState(false)
   const [backupOpen, setBackupOpen] = useState(false)
+  const [transferOpen, setTransferOpen] = useState(false)
   const [resetOpen, setResetOpen] = useState(false)
   const [syncing, setSyncing] = useState(false)
   const [syncMsg, setSyncMsg] = useState('')
@@ -449,6 +451,22 @@ export default function Settings() {
           </button>
         </div>
 
+        <button
+          onClick={() => setTransferOpen(true)}
+          style={{
+            width: '100%', marginTop: 12, padding: '12px 16px', borderRadius: 12, cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+            background: 'linear-gradient(135deg, rgba(124,107,246,0.16), rgba(52,211,153,0.12))',
+            border: '1px solid rgba(165,180,252,0.35)', color: '#A5B4FC',
+            fontFamily: 'inherit', fontSize: 13.5, fontWeight: 800,
+          }}
+        >
+          <Smartphone size={15} /> Transfer to a new device
+        </button>
+        <p style={{ fontSize: 11, color: '#6B7280', marginTop: 8, lineHeight: 1.5 }}>
+          Move your whole profile to another phone or laptop — encrypted end-to-end, nothing uploaded to Kyno.
+        </p>
+
         {syncMsg && (
           <div style={{ marginTop: 12, fontSize: 12.5, color: '#A5B4FC', fontWeight: 600 }}>
             {syncMsg}
@@ -535,6 +553,7 @@ export default function Settings() {
       </div>
 
       <TwinBackupModal open={backupOpen} onClose={() => setBackupOpen(false)} />
+      <DeviceTransferModal open={transferOpen} onClose={() => setTransferOpen(false)} />
 
       {resetOpen && (
         <ResetPasscode
