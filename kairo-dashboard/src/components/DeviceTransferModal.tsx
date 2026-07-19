@@ -32,19 +32,22 @@ export default function DeviceTransferModal({ open, onClose }: { open: boolean; 
   return createPortal(
     <AnimatePresence>
       {open && (
-        <>
-          <motion.div key="dt-bg"
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }} onClick={onClose}
-            style={{ position: 'fixed', inset: 0, zIndex: 9998, background: 'rgba(4,5,8,0.92)', backdropFilter: 'blur(14px)' }} />
-          <motion.div key="dt-panel"
+        <motion.div key="dt-wrap"
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }} onClick={onClose}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 9998,
+            background: 'rgba(4,5,8,0.92)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: '16px 14px', boxSizing: 'border-box', overflowY: 'auto',
+          }}>
+          <motion.div key="dt-panel" onClick={e => e.stopPropagation()}
             initial={{ opacity: 0, y: 18, scale: 0.97 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 18, scale: 0.97 }}
             transition={{ type: 'spring', stiffness: 360, damping: 30 }}
             style={{
-              position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
-              width: 'min(500px, calc(100vw - 28px))', maxHeight: 'calc(100vh - 40px)', overflowY: 'auto',
-              zIndex: 9999, background: C.panel, border: `1px solid ${C.border}`, borderRadius: 20,
-              boxShadow: '0 24px 70px rgba(0,0,0,0.72)', padding: '22px 22px 26px',
+              width: 'min(460px, 100%)', maxHeight: 'calc(100dvh - 32px)', overflowY: 'auto',
+              background: C.panel, border: `1px solid ${C.border}`, borderRadius: 20,
+              boxShadow: '0 24px 70px rgba(0,0,0,0.72)', padding: '22px 20px 26px', boxSizing: 'border-box',
             }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
               {mode !== 'home' && (
@@ -69,7 +72,7 @@ export default function DeviceTransferModal({ open, onClose }: { open: boolean; 
               End-to-end encrypted (AES-256) · never uploaded to Kyno servers
             </div>
           </motion.div>
-        </>
+        </motion.div>
       )}
     </AnimatePresence>,
     document.body,
