@@ -649,7 +649,8 @@ export async function reconcileWithCloud(): Promise<{ ok: boolean; restored: boo
   emitSync('pulling')
   try {
     const { get } = await import('./api')
-    const r    = await get('/twin/snapshot') as { snapshot: any | null }
+    const r    = await get('/twin/snapshot') as { snapshot: any | null; setup_required?: boolean }
+    if (r?.setup_required) return { ok: false, restored: false, reason: 'cloud backup not set up on the server (twin_snapshots table missing)' }
     const snap = r?.snapshot
 
     let restored = false
@@ -678,7 +679,13 @@ export async function reconcileWithCloud(): Promise<{ ok: boolean; restored: boo
     }
 
     // Push the merged/local state up so the cloud stays fresh and available.
-    await syncToCloudNow()
+    // If the upload fails (missing table, auth, network), surface it — otherwise
+    // devices silently never converge and nobody knows why.
+    const push = await syncToCloudNow()
+    if (!push.ok) {
+      emitSync('error', { phase: 'push', reason: push.reason })
+      return { ok: false, restored, reason: 'upload failed — ' + (push.reason || 'unknown') }
+    }
     emitSync('pulled')
     return { ok: true, restored }
   } catch (e: any) {

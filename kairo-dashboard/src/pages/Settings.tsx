@@ -6,6 +6,7 @@ import TwinBackupModal from '../components/TwinBackupModal'
 import DeviceTransferModal from '../components/DeviceTransferModal'
 import ResetPasscode from './ResetPasscode'
 import { seedDemo, resetAllData, reconcileWithCloud, deleteCloudSnapshot } from '../lib/twin'
+import { loadGame } from '../lib/game'
 import { getRaw, setRaw, activeBackend } from '../lib/storage'
 import { DecoratedAvatar, DECORATIONS, getDecor, setDecor } from '../components/AvatarDecor'
 
@@ -41,19 +42,16 @@ export default function Settings() {
     try {
       const r = await reconcileWithCloud()
       if (r.ok) {
-        if (r.restored) {
-          setSyncMsg('Synced — pulling your data onto this device…')
-          setTimeout(() => window.location.reload(), 900)
-        } else {
-          setSyncMsg('Synced. This device is already up to date.')
-        }
+        const xp = (() => { try { return loadGame().totalXP } catch { return 0 } })()
+        setSyncMsg(`Synced ✓ This device now has ${xp.toLocaleString()} XP. Reloading…`)
+        setTimeout(() => window.location.reload(), 1200)
       } else {
         setSyncMsg(r.reason === 'not-signed-in'
-          ? 'Sign in first, then sync.'
-          : 'Sync failed — check your connection and try again.')
+          ? 'You must be signed in to sync — sign in and try again.'
+          : `Sync failed: ${r.reason || 'network issue'}`)
       }
-    } catch {
-      setSyncMsg('Sync failed — try again.')
+    } catch (e: any) {
+      setSyncMsg('Sync failed: ' + String(e?.message || e))
     } finally {
       setSyncing(false)
     }
