@@ -44,6 +44,10 @@ createRoot(document.getElementById('root')!).render(
 
 initPwa({
   onUpdateAvailable(reload) {
+    // Safety: attempt the auto-update reload at most ONCE per session, so a bad
+    // service-worker state can never trap the app in a splash/reload loop.
+    if (sessionStorage.getItem('kairo:updating') === '1') return
+    try { sessionStorage.setItem('kairo:updating', '1') } catch {  }
     const splash = document.createElement('div')
     splash.id = 'kairo-update-splash'
     splash.style.cssText = `
@@ -91,6 +95,9 @@ initPwa({
     document.body.appendChild(splash)
 
     requestAnimationFrame(() => setTimeout(() => reload(), 600))
+    // Never trap the user: if the reload hasn't happened (stuck/looping SW), drop
+    // the splash so the app stays usable on the current build.
+    setTimeout(() => { document.getElementById('kairo-update-splash')?.remove() }, 5000)
   },
   onOfflineReady() {
     console.log('[Kyno] Ready to use offline.')

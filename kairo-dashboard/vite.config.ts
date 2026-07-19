@@ -30,11 +30,11 @@ export default defineConfig({
       },
     }] : []),
     ...(PWA_ENABLED ? [VitePWA({
-      // 'prompt' (not 'autoUpdate') so onNeedRefresh fires when a new deploy is
-      // ready — main.tsx shows the branded "Updating…" splash and reloads. With
-      // autoUpdate an already-open PWA silently kept the old bundle, which is how
-      // two devices ended up on different code (and different XP).
-      registerType: 'prompt',
+      // 'autoUpdate' — the service worker updates silently in the background and
+      // the new build applies on the next reload/relaunch. (We tried 'prompt' +
+      // an auto-reload splash, but a stuck/looping SW state could trap the app on
+      // the "Updating…" screen, so we reverted to the safe silent update.)
+      registerType: 'autoUpdate',
       includeAssets: ['kairo_logo.png', 'favicon.svg', 'apple-touch-icon.png'],
       manifest: {
         name:             'Kairo — Accelerate Your Academics',
