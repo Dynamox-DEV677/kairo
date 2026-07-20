@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, memo } from 'react'
 import Sidebar from '../components/Sidebar'
 import TopBar from '../components/TopBar'
 import MobileShell from '../components/MobileShell'
@@ -52,6 +52,22 @@ import { DEFAULT_MODEL } from '../lib/openrouter'
 
 import type { AuthProfile } from './Login'
 type Profile = AuthProfile
+
+// Perf: memoize the page components. Every tab switch re-renders Dashboard; without
+// memo, all ~40 mounted pages re-run their render on every tap (the "laggy taps"
+// cascade). Props passed to these are stable (setActive, useCallback handlers).
+const KairoHomeM         = memo(KairoHome)
+const KairoChatM         = memo(KairoChat)
+const KairoSolverM       = memo(KairoSolver)
+const FlashcardsM        = memo(Flashcards)
+const MistakeAnalysisM   = memo(MistakeAnalysis)
+const RevisionSimulatorM = memo(RevisionSimulator)
+const NotebookM          = memo(Notebook)
+const ConceptMapM        = memo(ConceptMap)
+const BattleModeM        = memo(BattleMode)
+const LeagueM            = memo(League)
+const KnowledgeGraphM    = memo(KnowledgeGraph)
+const KairoOSM           = memo(KairoOS)
 
 const PAGE_TITLES: Record<string, string> = {
   home:             'Home',
@@ -144,6 +160,19 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
     setHasContent(true)
   }
 
+  // Stable so <KairoSolverM> stays memoized (an inline arrow would break memo).
+  const handleSolverNavigate = useCallback((target: string) => {
+    if (target.startsWith('labs:')) {
+      const lab = target.slice('labs:'.length)
+      setActive('labs')
+      setTimeout(() => {
+        window.dispatchEvent(new CustomEvent('kairo:open-lab', { detail: { id: lab } }))
+      }, 100)
+    } else {
+      setActive(target)
+    }
+  }, [])
+
   const pageStyle = (id: string) => ({
     position: 'absolute' as const,
     inset: 0,
@@ -203,7 +232,7 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
 
             <ErrorBoundary>
 
-            <div style={pageStyle('home')}>{mounted('home') && <KairoHome onNavigate={setActive} />}</div>
+            <div style={pageStyle('home')}>{mounted('home') && <KairoHomeM onNavigate={setActive} />}</div>
 
             <div style={pageStyle('doubt')}>
               {mounted('doubt') && (
@@ -229,29 +258,19 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
                 </button>
 
                 {solverUi === 'chat' ? (
-                  <KairoChat />
+                  <KairoChatM />
                 ) : (
-                  <KairoSolver
+                  <KairoSolverM
                     model={selectedModel}
                     onActiveChange={setSolverActive}
-                    onNavigate={(target) => {
-                      if (target.startsWith('labs:')) {
-                        const lab = target.slice('labs:'.length)
-                        setActive('labs')
-                        setTimeout(() => {
-                          window.dispatchEvent(new CustomEvent('kairo:open-lab', { detail: { id: lab } }))
-                        }, 100)
-                      } else {
-                        setActive(target)
-                      }
-                    }}
+                    onNavigate={handleSolverNavigate}
                   />
                 )}
               </div>
               )}
             </div>
 
-            <div style={pageStyle('flashcards')}>{mounted('flashcards') && <Flashcards />}</div>
+            <div style={pageStyle('flashcards')}>{mounted('flashcards') && <FlashcardsM />}</div>
 
             <div style={pageStyle('study-plan')}>{mounted('study-plan') && <StudyPlan />}</div>
 
@@ -297,19 +316,19 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
 
             <div style={pageStyle('camera')}>{mounted('camera') && <CameraStudy />}</div>
 
-            <div style={pageStyle('mistakes')}>{mounted('mistakes') && <MistakeAnalysis />}</div>
+            <div style={pageStyle('mistakes')}>{mounted('mistakes') && <MistakeAnalysisM />}</div>
 
-            <div style={pageStyle('simulator')}>{mounted('simulator') && <RevisionSimulator />}</div>
+            <div style={pageStyle('simulator')}>{mounted('simulator') && <RevisionSimulatorM />}</div>
 
-            <div style={pageStyle('notebook')}>{mounted('notebook') && <Notebook />}</div>
+            <div style={pageStyle('notebook')}>{mounted('notebook') && <NotebookM />}</div>
 
-            <div style={pageStyle('concept-map')}>{mounted('concept-map') && <ConceptMap />}</div>
+            <div style={pageStyle('concept-map')}>{mounted('concept-map') && <ConceptMapM />}</div>
 
-            <div style={pageStyle('battle')}>{mounted('battle') && <BattleMode />}</div>
+            <div style={pageStyle('battle')}>{mounted('battle') && <BattleModeM />}</div>
 
-            <div style={pageStyle('league')}>{mounted('league') && <League />}</div>
+            <div style={pageStyle('league')}>{mounted('league') && <LeagueM />}</div>
 
-            <div style={pageStyle('knowledge')}>{mounted('knowledge') && <KnowledgeGraph />}</div>
+            <div style={pageStyle('knowledge')}>{mounted('knowledge') && <KnowledgeGraphM />}</div>
 
             <div style={pageStyle('ops')}>{mounted('ops') && <Ops />}</div>
 
@@ -321,7 +340,7 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
 
             <div style={pageStyle('labs')}>{mounted('labs') && <KairoLabs />}</div>
 
-            <div style={pageStyle('kairo-os')}>{mounted('kairo-os') && <KairoOS />}</div>
+            <div style={pageStyle('kairo-os')}>{mounted('kairo-os') && <KairoOSM />}</div>
 
             </ErrorBoundary>
 

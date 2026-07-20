@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, type ReactNode } from 'react'
+import { createContext, useContext, useState, useCallback, useMemo, type ReactNode } from 'react'
 
 interface GenerationState {
   [pageId: string]: boolean
@@ -23,10 +23,16 @@ export function GenerationProvider({ children }: { children: ReactNode }) {
     setGeneratingState(prev => ({ ...prev, [pageId]: isGenerating }))
   }, [])
 
-  const isAnyGenerating = Object.values(generating).some(Boolean)
+  // Memoize so the value identity only changes when `generating` changes —
+  // otherwise every consumer re-renders on any parent render.
+  const value = useMemo(() => ({
+    generating,
+    setGenerating,
+    isAnyGenerating: Object.values(generating).some(Boolean),
+  }), [generating, setGenerating])
 
   return (
-    <GenerationContext.Provider value={{ generating, setGenerating, isAnyGenerating }}>
+    <GenerationContext.Provider value={value}>
       {children}
     </GenerationContext.Provider>
   )

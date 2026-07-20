@@ -5,6 +5,23 @@
 :root {
   /* App-wide font — user-selectable in Settings ("kairo:font"). */
   --kairo-font: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+
+  /* ── Kyno gamified theme tokens (mirror of src/theme/tokens.ts) ──────────── */
+  --kyno-bg:            #0A0D16;   /* deep navy-black base                    */
+  --kyno-surface:       #141A2B;   /* elevated cards / surfaces               */
+  --kyno-surface-2:     #1E2740;   /* higher elevation / hover                */
+  --kyno-violet:        #7C5CFF;   /* primary accent (buttons, active nav)    */
+  --kyno-violet-deep:   #5B3FD0;   /* pressed state / chunky-button underside */
+  --kyno-cyan:          #22D3EE;   /* celebration · XP fills · correct        */
+  --kyno-gold:          #FFB020;   /* streak · rewards                        */
+  --kyno-error:         #FF5C5C;   /* wrong answer                            */
+  --kyno-text:          #FAFAFA;
+  --kyno-text-muted:    #9AA3B2;
+  --kyno-border:        rgba(255,255,255,0.08);
+  /* Hero-only gradients — level ring + primary CTA. Use sparingly.           */
+  --kyno-hero-gradient: linear-gradient(135deg, #7C5CFF 0%, #22D3EE 100%);
+  /* Rounded, friendly display font for headings + big numbers.               */
+  --kyno-display:       'Nunito', 'Baloo 2', system-ui, sans-serif;
 }
 
 html, body, #root {
