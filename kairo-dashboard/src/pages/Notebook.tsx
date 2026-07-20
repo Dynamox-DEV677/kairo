@@ -31,20 +31,21 @@ interface Note {
   updated_at: string
 }
 
+// Distinct on-palette accent per type so the chips/badges read at a glance.
 const KIND_META: Record<Kind, { label: string; icon: any; color: string }> = {
-  flashcards:  { label: 'Flashcards',  icon: BookMarked,    color: '#A5B4FC' },
-  summary:     { label: 'Summary',     icon: FileText,      color: '#A5B4FC' },
-  doubt:       { label: 'Doubt',       icon: MessageCircle, color: '#A5B4FC' },
-  concept_map: { label: 'Concept Map', icon: Network,       color: '#7C6BF6' },
-  note:        { label: 'Note',        icon: StickyNote,    color: '#A5B4FC' },
-  plan:        { label: 'Study Plan',  icon: Calendar,      color: '#A5B4FC' },
-  grade:       { label: 'Graded',      icon: CheckCircle2,  color: '#7C6BF6' },
+  flashcards:  { label: 'Flashcards',  icon: BookMarked,    color: '#ffb020' },  // gold — review
+  summary:     { label: 'Summary',     icon: FileText,      color: '#a5b4fc' },  // light purple
+  doubt:       { label: 'Doubt',       icon: MessageCircle, color: '#22d3ee' },  // cyan — questions
+  concept_map: { label: 'Concept Map', icon: Network,       color: '#7c6bf6' },  // purple — concepts
+  note:        { label: 'Note',        icon: StickyNote,    color: '#a5b4fc' },  // light purple
+  plan:        { label: 'Study Plan',  icon: Calendar,      color: '#34d399' },  // green — plans
+  grade:       { label: 'Graded',      icon: CheckCircle2,  color: '#ffb020' },  // gold
 }
 
 const card: React.CSSProperties = { background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(14px) saturate(140%)', WebkitBackdropFilter: 'blur(14px) saturate(140%)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14 }
 const inp: React.CSSProperties = {
-  background: '#141A2A', border: '1px solid #1f2532', borderRadius: 8,
-  padding: '9px 12px', fontSize: 13, color: '#fafafa',
+  background: 'var(--c-bg-elev1)', border: '1px solid #2a3352', borderRadius: 11,
+  padding: '10px 13px', fontSize: 13, color: '#fafafa',
   fontFamily: 'inherit', outline: 'none', width: '100%', boxSizing: 'border-box',
 }
 
