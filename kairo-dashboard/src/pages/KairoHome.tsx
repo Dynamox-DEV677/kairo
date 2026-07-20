@@ -160,8 +160,8 @@ export default function KairoHome({ onNavigate }: Props) {
     <div style={{ padding: 24, maxWidth: 1150, margin: '0 auto', color: '#fafafa', height: '100%', overflowY: 'auto', boxSizing: 'border-box', width: '100%' }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 22, flexWrap: 'wrap', gap: 12 }}>
         <div>
-          <h1 style={{ fontSize: 34, fontWeight: 900, margin: 0, letterSpacing: -0.5 }}>
-            {greetingFor()}, <span style={{ color: '#A5B4FC' }}>{profile.name}.</span>
+          <h1 style={{ fontSize: 36, fontWeight: 900, margin: 0, letterSpacing: -0.6, fontFamily: 'var(--kyno-display)' }}>
+            {greetingFor()}, <span style={{ color: '#7C5CFF' }}>{profile.name}.</span>
           </h1>
           <p style={{ color: '#9CA3AF', fontSize: 14, marginTop: 6 }}>
             {brief?.greetingNote || 'Your AI council is reading your progress…'}
@@ -171,7 +171,7 @@ export default function KairoHome({ onNavigate }: Props) {
           <button onClick={() => setEditing(e => !e)} style={ghostBtn}>
             <Settings2 size={13} /> Profile
           </button>
-          <button onClick={fetchBrief} disabled={loading} style={primaryBtn}>
+          <button onClick={fetchBrief} disabled={loading} className="kyno-chunky" style={primaryBtn}>
             {loading ? <Loader2 size={13} className="animate-spin" /> : <Sparkles size={13} />}
             {loading ? 'Thinking…' : 'Refresh brief'}
           </button>
@@ -223,7 +223,7 @@ export default function KairoHome({ onNavigate }: Props) {
               <button onClick={() => saveProfile({ ...profile, examDates: [...profile.examDates, { name: 'My exam', date: '' }] })} style={{ ...ghostBtn, marginTop: 4 }}>+ Add exam</button>
             </div>
           </div>
-          <button onClick={() => { setEditing(false); fetchBrief() }} style={{ ...primaryBtn, marginTop: 12 }}>Save & re-brief</button>
+          <button onClick={() => { setEditing(false); fetchBrief() }} className="kyno-chunky" style={{ ...primaryBtn, marginTop: 12 }}>Save & re-brief</button>
         </motion.div>
       )}
 
@@ -363,13 +363,13 @@ export default function KairoHome({ onNavigate }: Props) {
 }
 
 const ghostBtn: React.CSSProperties = {
-  background: 'transparent', color: '#A1A1AA', border: '1px solid rgba(255,255,255,0.10)',
-  borderRadius: 10, padding: '9px 16px', fontSize: 12, fontWeight: 600, cursor: 'pointer',
-  display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: 'inherit',
+  background: 'transparent', color: '#9AA3B2', border: '1px solid rgba(124,92,255,0.28)',
+  borderRadius: 12, padding: '9px 16px', fontSize: 12, fontWeight: 700, cursor: 'pointer',
+  display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: 'var(--kyno-display)',
 }
+// Chunky Duolingo-style primary button. Layout only here — the .kyno-chunky class
+// provides the violet fill, dark text, thick bottom border and press-down on tap.
 const primaryBtn: React.CSSProperties = {
-  background: 'linear-gradient(135deg, #7C6BF6 0%, #A5B4FC 100%)', color: '#fff', border: 'none',
-  borderRadius: 10, padding: '9px 18px', fontSize: 13, fontWeight: 700, cursor: 'pointer',
-  display: 'inline-flex', alignItems: 'center', gap: 7, fontFamily: 'inherit',
-  boxShadow: '0 6px 20px rgba(124,107,246,0.30)',
+  padding: '11px 18px', fontSize: 13,
+  display: 'inline-flex', alignItems: 'center', gap: 7,
 }
