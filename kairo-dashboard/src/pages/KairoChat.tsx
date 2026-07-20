@@ -331,14 +331,21 @@ export default function KairoChat() {
                 <button
                   onClick={() => openView(t.done!.view)}
                   style={{
-                    marginTop: 10, display: 'flex', alignItems: 'center', gap: 7,
-                    padding: '8px 13px', borderRadius: 10, cursor: 'pointer',
-                    background: 'rgba(74, 222, 128, 0.12)',
-                    border: '1px solid rgba(74, 222, 128, 0.4)',
-                    color: '#4ade80', fontFamily: 'inherit', fontSize: 12.5, fontWeight: 700,
+                    marginTop: 10, width: '100%', maxWidth: 340,
+                    display: 'flex', alignItems: 'center', gap: 11,
+                    padding: '10px 12px', borderRadius: 14, cursor: 'pointer',
+                    background: 'var(--c-bg-elev2)',
+                    border: '1px solid rgba(52,211,153,0.35)',
+                    color: 'var(--c-text)', fontFamily: 'inherit', textAlign: 'left',
+                    boxShadow: '0 4px 14px rgba(0,0,0,0.25)',
                   }}
                 >
-                  ✓ {t.done.label} — open →
+                  <span style={{ width: 34, height: 34, borderRadius: 10, flexShrink: 0, display: 'grid', placeItems: 'center', background: 'rgba(52,211,153,0.16)', color: 'var(--c-success)', fontWeight: 900, fontSize: 17 }}>✓</span>
+                  <span style={{ flex: 1, minWidth: 0 }}>
+                    <span style={{ display: 'block', fontSize: 13, fontWeight: 700, color: 'var(--c-text)' }}>{t.done.label}</span>
+                    <span style={{ display: 'block', fontSize: 11, fontWeight: 700, color: 'var(--c-success)', marginTop: 1 }}>Tap to open</span>
+                  </span>
+                  <span style={{ color: 'var(--c-purple-lite)', fontWeight: 800, fontSize: 17, flexShrink: 0 }}>→</span>
                 </button>
               )}
 
@@ -462,22 +469,27 @@ function MediaStrip({ turn, onPatch }: { turn: Turn; onPatch: (id: number, p: Pa
           <button
             onClick={() => onPatch(turn.id, { showVideo: !turn.showVideo })}
             style={{
-              display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer',
-              padding: 4, paddingRight: 12, borderRadius: 10,
-              background: turn.showVideo ? 'rgba(165,180,252,0.14)' : 'rgba(255,255,255,0.05)',
-              border: `1px solid ${turn.showVideo ? 'rgba(165,180,252,0.5)' : 'rgba(255,255,255,0.10)'}`,
-              color: '#fafafa', fontFamily: 'inherit', fontSize: 12, fontWeight: 600,
+              display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer',
+              padding: '5px 14px 5px 5px', borderRadius: 12,
+              background: turn.showVideo ? 'rgba(124,107,246,0.16)' : 'var(--c-bg-elev2)',
+              border: `1px solid ${turn.showVideo ? 'rgba(124,107,246,0.5)' : 'var(--c-line)'}`,
+              color: '#fafafa', fontFamily: 'inherit', fontSize: 12.5, fontWeight: 700,
+              boxShadow: '0 4px 14px rgba(0,0,0,0.28)',
             }}
           >
-            <span style={{ position: 'relative', width: 58, height: 34, borderRadius: 7, overflow: 'hidden', flexShrink: 0 }}>
+            <span style={{ position: 'relative', width: 72, height: 44, borderRadius: 9, overflow: 'hidden', flexShrink: 0 }}>
               <img
                 src={`https://i.ytimg.com/vi/${turn.videoId}/mqdefault.jpg`}
                 alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }}
               />
               <span style={{
                 position: 'absolute', inset: 0, display: 'grid', placeItems: 'center',
-                background: 'rgba(0,0,0,0.35)',
-              }}><Play size={13} fill="#fff" color="#fff" /></span>
+                background: 'rgba(0,0,0,0.32)',
+              }}>
+                <span style={{ width: 26, height: 26, borderRadius: '50%', background: 'var(--c-purple)', display: 'grid', placeItems: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.4)' }}>
+                  <Play size={12} fill="#fff" color="#fff" />
+                </span>
+              </span>
             </span>
             {turn.showVideo ? 'Hide video' : 'Watch lesson'}
           </button>
@@ -488,13 +500,13 @@ function MediaStrip({ turn, onPatch }: { turn: Turn; onPatch: (id: number, p: Pa
             onClick={() => onPatch(turn.id, { lightbox: i })}
             title={s.caption}
             style={{
-              width: 46, height: 34, borderRadius: 8, overflow: 'hidden', padding: 0,
-              border: '1px solid rgba(255,255,255,0.12)', cursor: 'pointer',
-              background: 'rgba(255,255,255,0.04)',
+              width: 48, height: 40, borderRadius: 10, overflow: 'hidden', padding: 0,
+              border: '1px solid var(--c-line)', cursor: 'pointer',
+              background: 'var(--c-bg-elev2)',
             }}
           >
             <img src={s.url} alt="" loading="lazy"
-              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
               onError={e => { e.currentTarget.parentElement!.style.display = 'none' }}
             />
           </button>
@@ -503,13 +515,13 @@ function MediaStrip({ turn, onPatch }: { turn: Turn; onPatch: (id: number, p: Pa
           <button
             onClick={() => onPatch(turn.id, { lightbox: 4 })}
             style={{
-              height: 34, padding: '0 10px', borderRadius: 8, cursor: 'pointer',
-              background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.10)',
-              color: '#9CA3AF', fontSize: 11, fontWeight: 700, fontFamily: 'inherit',
-              display: 'flex', alignItems: 'center', gap: 4,
+              width: 48, height: 40, borderRadius: 10, cursor: 'pointer',
+              background: 'rgba(124,107,246,0.12)', border: '1px solid rgba(124,107,246,0.30)',
+              color: 'var(--c-purple-lite)', fontSize: 12, fontWeight: 800, fontFamily: 'inherit',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}
           >
-            <ImageIcon size={11} /> +{slides.length - 4}
+            +{slides.length - 4}
           </button>
         )}
       </div>
