@@ -30,8 +30,8 @@ export const KYNO = {
   heroGradient:     'linear-gradient(135deg, #7c6bf6 0%, #22d3ee 100%)',
   heroGradientSoft: 'linear-gradient(135deg, rgba(124,107,246,0.18) 0%, rgba(34,211,238,0.14) 100%)',
 
-  // Rounded, friendly display font for headings + big numbers.
-  display:    "'Nunito', 'Baloo 2', system-ui, sans-serif",
+  // Display font = the app default (no separate display face — keep the current font).
+  display:    'var(--kairo-font)',
 } as const
 
 // Translucent accent tints (for soft fills / glows) built from the accents above.

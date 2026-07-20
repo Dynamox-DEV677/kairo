@@ -20,8 +20,9 @@
   --kyno-border:        rgba(255,255,255,0.08);
   /* Hero-only gradients — level ring + primary CTA. Use sparingly.           */
   --kyno-hero-gradient: linear-gradient(135deg, #7c6bf6 0%, #22d3ee 100%);
-  /* Rounded, friendly display font for headings + big numbers.               */
-  --kyno-display:       'Nunito', 'Baloo 2', system-ui, sans-serif;
+  /* Display font intentionally maps to the app default (no separate display
+     face) — headings + big numbers stay on the user's chosen --kairo-font.     */
+  --kyno-display:       var(--kairo-font);
 }
 
 html, body, #root {
