@@ -120,7 +120,7 @@ function GridTab() {
         <button onClick={() => setAdding(a => !a)} style={{
           marginTop: 18, display: 'flex', alignItems: 'center', gap: 7,
           padding: '9px 18px', borderRadius: 9, border: 'none',
-          background: 'linear-gradient(135deg,#7C6BF6,#7C6BF6)', color: '#fff',
+          background: 'linear-gradient(135deg,#7C6BF6,#6455e0)', color: '#fff',
           fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: 'pointer',
         }}>
           <Plus size={13} /> Add Period
@@ -178,7 +178,7 @@ function GridTab() {
               </div>
             )}
             <div style={{ display: 'flex', gap: 8 }}>
-              <button onClick={addSlot} disabled={saving} style={{ padding: '8px 20px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg,#7C6BF6,#7C6BF6)', color: '#fff', fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+              <button onClick={addSlot} disabled={saving} style={{ padding: '8px 20px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg,#7C6BF6,#6455e0)', color: '#fff', fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
                 {saving ? 'Saving…' : 'Add'}
               </button>
               <button onClick={() => { setAdding(false); setErr('') }} style={{ padding: '8px 14px', borderRadius: 8, border: '1px solid #1f2532', background: 'transparent', color: '#6B7280', fontFamily: 'inherit', fontSize: 13, cursor: 'pointer' }}>Cancel</button>
@@ -343,7 +343,7 @@ function GenerateTab() {
           <button onClick={generate} disabled={loading} style={{
             width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
             padding: '10px', borderRadius: 9, border: 'none',
-            background: 'linear-gradient(135deg,#7C6BF6,#7C6BF6)', color: '#fff',
+            background: 'linear-gradient(135deg,#7C6BF6,#6455e0)', color: '#fff',
             fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: 'pointer',
           }}>
             <Sparkles size={14} /> {loading ? 'Generating…' : 'Generate with AI'}

@@ -10,7 +10,7 @@ const SCHOOL_ID = 'demo_school'
 const card  = { background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(14px) saturate(140%)', WebkitBackdropFilter: 'blur(14px) saturate(140%)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14, padding: 20 } as React.CSSProperties
 const inp   = { background: '#141A2A', border: '1px solid #1f2532', borderRadius: 8, padding: '9px 12px', fontSize: 13, color: '#fafafa', fontFamily: 'inherit', outline: 'none', width: '100%' } as React.CSSProperties
 const lbl   = { fontSize: 11, color: '#9CA3AF', display: 'block', marginBottom: 5, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.8 } as React.CSSProperties
-const btn   = (active = true, color?: string) => ({ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', borderRadius: 9, border: 'none', background: active ? (color || 'linear-gradient(135deg,#7C6BF6,#7C6BF6)') : '#171D2D', color: active ? '#fff' : '#6B7280', fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: active ? 'pointer' : 'not-allowed' } as React.CSSProperties)
+const btn   = (active = true, color?: string) => ({ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', borderRadius: 9, border: 'none', background: active ? (color || 'linear-gradient(135deg,#7C6BF6,#6455e0)') : '#171D2D', color: active ? '#fff' : '#6B7280', fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: active ? 'pointer' : 'not-allowed' } as React.CSSProperties)
 
 const SUBJECTS = ['Physics','Chemistry','Biology','Mathematics','History','Geography','Economics','English','Computer Science']
 
@@ -246,12 +246,12 @@ function QuizScreen({ questions, onComplete }: any) {
         <span style={{ fontSize: 12, color: '#A5B4FC', fontWeight: 600 }}>Score: {score}/{index + (revealed ? 1 : 0)}</span>
       </div>
       <div style={{ height: 4, background: '#1f2532', borderRadius: 2, marginBottom: 20 }}>
-        <div style={{ height: '100%', background: 'linear-gradient(90deg,#7C6BF6,#7C6BF6)', borderRadius: 2, width: `${((index + 1) / questions.length) * 100}%`, transition: 'width 0.3s' }} />
+        <div style={{ height: '100%', background: 'linear-gradient(90deg,#7C6BF6,#9d8dff)', borderRadius: 2, width: `${((index + 1) / questions.length) * 100}%`, transition: 'width 0.3s' }} />
       </div>
 
       <div style={card}>
         <div style={{ display: 'flex', gap: 10, marginBottom: 16, alignItems: 'flex-start' }}>
-          <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 5, background: q.difficulty === 'easy' ? '#A5B4FC15' : q.difficulty === 'hard' ? '#A5B4FC15' : '#A5B4FC15', color: q.difficulty === 'easy' ? '#A5B4FC' : q.difficulty === 'hard' ? '#A5B4FC' : '#A5B4FC', fontWeight: 600, flexShrink: 0 }}>
+          <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 5, background: q.difficulty === 'easy' ? '#34d39918' : q.difficulty === 'hard' ? '#ff5c5c18' : '#ffb02018', color: q.difficulty === 'easy' ? '#34d399' : q.difficulty === 'hard' ? '#ff5c5c' : '#ffb020', fontWeight: 700, flexShrink: 0 }}>
             {q.difficulty}
           </span>
           <div style={{ fontSize: 15, fontWeight: 600, color: '#fafafa', lineHeight: 1.5 }}>{q.question}</div>

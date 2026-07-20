@@ -351,7 +351,7 @@ export default function ExamPlanner() {
             <label style={lbl}><Clock size={11} style={{ verticalAlign: 'middle', marginRight: 4 }} />Hours per day · {hoursPerDay}h</label>
             <input type="range" min={1} max={12} step={0.5}
               value={hoursPerDay} onChange={e => setHoursPerDay(parseFloat(e.target.value))}
-              style={{ width: '100%', accentColor: '#A5B4FC' }}
+              style={{ width: '100%', accentColor: '#7C6BF6', height: 6, cursor: 'pointer' }}
             />
           </div>
           <div>
@@ -361,10 +361,12 @@ export default function ExamPlanner() {
                 <button key={L} onClick={() => setCurrentLevel(L)}
                   style={{
                     flex: 1, padding: '9px 0', fontSize: 12, fontWeight: 700,
-                    background: currentLevel === L ? 'rgba(165,180,252,0.18)' : '#141A2A',
-                    color: currentLevel === L ? '#A5B4FC' : '#A1A1AA',
-                    border: '1px solid ' + (currentLevel === L ? 'rgba(165,180,252,0.55)' : '#1f2532'),
+                    background: currentLevel === L ? 'rgba(124,107,246,0.22)' : '#141A2A',
+                    color: currentLevel === L ? '#fff' : '#A1A1AA',
+                    border: '1.5px solid ' + (currentLevel === L ? '#7C6BF6' : '#1f2532'),
+                    boxShadow: currentLevel === L ? '0 2px 10px rgba(124,107,246,0.28)' : 'none',
                     borderRadius: 8, cursor: 'pointer', textTransform: 'capitalize', letterSpacing: 0.5,
+                    transition: 'all 0.15s',
                   }}
                 >{L}</button>
               ))}

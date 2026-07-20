@@ -140,9 +140,9 @@ Now teach me how to never make this mistake again, following your structure exac
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 22 }}>
         <div style={{
           width: 44, height: 44, borderRadius: 11,
-          background: 'linear-gradient(135deg, #A5B4FC, #A5B4FC)',
+          background: 'linear-gradient(135deg, #7C6BF6, #6455e0)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 0 18px rgba(165, 180, 252, 0.03)', flexShrink: 0,
+          boxShadow: '0 6px 18px rgba(124, 107, 246, 0.35)', flexShrink: 0,
         }}>
           <AlertTriangle size={22} color="#fff" />
         </div>
@@ -194,12 +194,12 @@ Now teach me how to never make this mistake again, following your structure exac
               width: '100%', padding: '12px', borderRadius: 10, border: 'none',
               background: busy || !question.trim() || !myAnswer.trim()
                 ? '#171D2D'
-                : 'linear-gradient(135deg, #A5B4FC, #A5B4FC)',
+                : 'linear-gradient(135deg, #7C6BF6, #6455e0)',
               color: busy || !question.trim() || !myAnswer.trim() ? '#6B7280' : '#fff',
               fontFamily: 'inherit', fontSize: 14, fontWeight: 700,
               cursor: busy || !question.trim() || !myAnswer.trim() ? 'not-allowed' : 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-              boxShadow: busy || !question.trim() ? 'none' : '0 0 22px rgba(165, 180, 252, 0.35)',
+              boxShadow: busy || !question.trim() ? 'none' : '0 6px 20px rgba(124, 107, 246, 0.4)',
             }}>
             <Brain size={14} />{busy ? 'Analyzing your mistake…' : 'Explain'}
           </motion.button>
