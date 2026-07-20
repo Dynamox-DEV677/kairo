@@ -2,7 +2,6 @@
 import './index.css'
 import Dashboard from './pages/Dashboard'
 import Login, { type AuthProfile } from './pages/Login'
-import Landing from './pages/Landing'
 import { GenerationProvider } from './lib/generationContext'
 import { supabase } from './lib/supabase'
 import { refreshIfStale } from './lib/api'
@@ -18,21 +17,11 @@ import ResetPasswordPage from './pages/ResetPasswordPage'
 import StatusPage from './pages/StatusPage'
 import AboutPage from './pages/AboutPage'
 
-type View = 'landing' | 'login' | 'app'
-
 export default function App() {
   const [profile, setProfile] = useState<AuthProfile | null>(null)
   const [checking, setChecking] = useState(true)
-  const [view, setView] = useState<View>(() => {
-    if (typeof window === 'undefined') return 'landing'
-    const w = window as any
-    const isApp = !!w.kairoDesktop?.isDesktop
-      || !!w.matchMedia?.('(display-mode: standalone)')?.matches
-      || !!w.matchMedia?.('(display-mode: fullscreen)')?.matches
-      || w.navigator?.standalone === true
-      || (typeof document !== 'undefined' && document.referrer.startsWith('android-app://'))
-    return isApp ? 'login' : 'landing'
-  })
+  // No marketing landing page — Kyno is an app: it opens straight to login
+  // (or the dashboard once a session exists).
   const [resetMode, setResetMode] = useState(() => {
     if (typeof window === 'undefined') return false
     return window.location.pathname === '/reset-password'
@@ -260,7 +249,6 @@ export default function App() {
           onDone={() => {
             try { window.history.replaceState({}, '', '/') } catch {  }
             setResetMode(false)
-            setView('login')
           }}
         />
         <TermsHost />
@@ -327,9 +315,7 @@ export default function App() {
   if (!profile) {
     return (
       <>
-        {view === 'login'
-          ? <Login onLogin={handleLogin} />
-          : <Landing onGetStarted={() => setView('login')} />}
+        <Login onLogin={handleLogin} />
         <TermsHost />
         <DesktopUpdateBanner />
         <DemoModePrompt />
