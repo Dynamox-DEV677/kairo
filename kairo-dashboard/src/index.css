@@ -42,16 +42,36 @@ html, body, #root {
 /* ── Kyno gamified components (Duolingo-style, GPU-friendly transforms only) ── */
 .kyno-chunky {
   position: relative; border: none; border-radius: 14px;
-  background: var(--kyno-violet); color: #0A0D16;
+  background: var(--c-purple); color: #fff;
   font-family: var(--kyno-display); font-weight: 800; letter-spacing: 0.2px;
-  box-shadow: 0 4px 0 0 var(--kyno-violet-deep);
+  box-shadow: 0 4px 0 0 var(--c-purple-deep);
   transition: transform .07s ease, box-shadow .07s ease;
   cursor: pointer; will-change: transform;
 }
-.kyno-chunky:active { transform: translateY(3px); box-shadow: 0 1px 0 0 var(--kyno-violet-deep); }
-.kyno-chunky.cyan  { background: var(--kyno-cyan); box-shadow: 0 4px 0 0 #0E9BB5; }
+.kyno-chunky:active { transform: translateY(3px); box-shadow: 0 1px 0 0 var(--c-purple-deep); }
+.kyno-chunky.cyan  { background: var(--c-cyan); color: #062B31; box-shadow: 0 4px 0 0 #0E9BB5; }
 .kyno-chunky.cyan:active { box-shadow: 0 1px 0 0 #0E9BB5; }
-.kyno-chunky:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.kyno-chunky.gold  { background: var(--c-gold); color: #2A1A00; box-shadow: 0 4px 0 0 #A66A00; }
+.kyno-chunky.gold:active { box-shadow: 0 1px 0 0 #A66A00; }
+.kyno-chunky:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: 0 4px 0 0 var(--c-purple-deep); }
+
+/* Outline (ghost) variant — subtle press, purple hairline */
+.kyno-ghost {
+  border: 1.5px solid var(--c-purple); background: transparent; color: var(--c-purple);
+  border-radius: 14px; font-family: var(--kyno-display); font-weight: 800; cursor: pointer;
+  transition: transform .07s ease, background .14s ease;
+}
+.kyno-ghost:active { transform: translateY(2px); }
+.kyno-ghost:hover  { background: rgba(124,107,246,0.10); }
+
+/* Bold rounded gamified card */
+.kyno-card {
+  background: var(--c-bg-elev2); border: 1px solid var(--c-line); border-radius: 18px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.28);
+}
+
+/* Active nav item pop */
+@keyframes kyno-nav-pop { 0% { transform: scale(1); } 45% { transform: scale(1.22); } 100% { transform: scale(1); } }
 
 @keyframes kyno-pop {
   0%   { transform: scale(0.3); opacity: 0; }
