@@ -37,9 +37,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['kairo_logo.png', 'favicon.svg', 'apple-touch-icon.png'],
       manifest: {
-        name:             'Kairo — Accelerate Your Academics',
-        short_name:       'Kairo',
-        description:      'AI-powered school operating system for Indian classrooms.',
+        name:             'Kyno – AI Education System',
+        short_name:       'Kyno',
+        description:      'Kyno is an AI-powered education platform by Kairo Industries.',
         // Match the rest of Kairo — deep purple accent on pure black.
         // Both theme + background are dark so the install/launch flow on
         // Android no longer flashes white at any point.
