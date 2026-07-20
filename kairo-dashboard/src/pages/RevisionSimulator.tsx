@@ -404,21 +404,15 @@ function SetupView({
         </div>
       )}
 
-      <motion.button
-        whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
+      <button
         onClick={onStart} disabled={pickedTopics.length === 0}
+        className="kyno-chunky"
         style={{
-          width: '100%', padding: '14px', borderRadius: 11, border: 'none',
-          background: pickedTopics.length === 0 ? '#171D2D'
-            : 'linear-gradient(135deg, #A5B4FC, #A5B4FC)',
-          color: pickedTopics.length === 0 ? '#6B7280' : '#fff',
-          fontFamily: 'inherit', fontSize: 15, fontWeight: 700,
-          cursor: pickedTopics.length === 0 ? 'not-allowed' : 'pointer',
+          width: '100%', padding: '14px', fontSize: 15,
           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-          boxShadow: pickedTopics.length === 0 ? 'none' : '0 0 24px rgba(165, 180, 252, 0.35)',
         }}>
         <Zap size={15} /> {isExam ? 'Start Exam' : 'Start Practice'}
-      </motion.button>
+      </button>
     </div>
   )
 }

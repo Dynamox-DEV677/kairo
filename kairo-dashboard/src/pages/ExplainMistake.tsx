@@ -187,22 +187,15 @@ Now teach me how to never make this mistake again, following your structure exac
 
           {err && <p style={{ fontSize: 12, color: '#A5B4FC', marginBottom: 12 }}>{err}</p>}
 
-          <motion.button
-            whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
+          <button
             onClick={explain} disabled={busy || !question.trim() || !myAnswer.trim()}
+            className="kyno-chunky"
             style={{
-              width: '100%', padding: '12px', borderRadius: 10, border: 'none',
-              background: busy || !question.trim() || !myAnswer.trim()
-                ? '#171D2D'
-                : 'linear-gradient(135deg, #7C6BF6, #6455e0)',
-              color: busy || !question.trim() || !myAnswer.trim() ? '#6B7280' : '#fff',
-              fontFamily: 'inherit', fontSize: 14, fontWeight: 700,
-              cursor: busy || !question.trim() || !myAnswer.trim() ? 'not-allowed' : 'pointer',
+              width: '100%', padding: '12px', fontSize: 14,
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-              boxShadow: busy || !question.trim() ? 'none' : '0 6px 20px rgba(124, 107, 246, 0.4)',
             }}>
             <Brain size={14} />{busy ? 'Analyzing your mistake…' : 'Explain'}
-          </motion.button>
+          </button>
         </div>
 
         <AnimatePresence>

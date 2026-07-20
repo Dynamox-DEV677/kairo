@@ -134,7 +134,7 @@ function SetupScreen({ form, setForm, onStart, loading, err }: any) {
           </div>
         </div>
         {err && <p style={{ color: '#A5B4FC', fontSize: 12, marginBottom: 12 }}>{err}</p>}
-        <button onClick={onStart} disabled={loading} style={{ ...btn(!loading), width: '100%', justifyContent: 'center' }}>
+        <button onClick={onStart} disabled={loading} className="kyno-chunky" style={{ ...btn(!loading), width: '100%', justifyContent: 'center' }}>
           <Brain size={13} /> {loading ? 'Generating Quiz…' : 'Start Quiz'}
         </button>
       </div>

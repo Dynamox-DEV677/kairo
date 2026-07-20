@@ -622,17 +622,10 @@ Tips: each tip is one specific actionable line (max 18 words) — reference the 
               </p>
             </div>
           </div>
-          <motion.button onClick={startDaily} disabled={daily.already_played}
-            whileHover={daily.already_played ? undefined : { scale: 1.02 }}
-            whileTap={daily.already_played ? undefined : { scale: 0.97 }}
+          <button onClick={startDaily} disabled={daily.already_played} className="kyno-chunky"
             style={{
-              width: '100%', padding: '14px', borderRadius: 10, border: 'none',
-              background: daily.already_played ? '#171D2D' : 'linear-gradient(135deg, #7C6BF6, #9d8dff)',
-              color: daily.already_played ? '#6B7280' : '#fff',
-              fontFamily: 'inherit', fontSize: 14, fontWeight: 800,
-              cursor: daily.already_played ? 'not-allowed' : 'pointer',
+              width: '100%', padding: '14px', fontSize: 14,
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-              boxShadow: daily.already_played ? 'none' : '0 8px 24px rgba(124, 107, 246, 0.45)',
             }}>
             <motion.span
               animate={daily.already_played ? undefined : { rotate: [0, -12, 12, 0] }}
@@ -641,7 +634,7 @@ Tips: each tip is one specific actionable line (max 18 words) — reference the 
               <Swords size={15} />
             </motion.span>
             {daily.already_played ? 'Already Played Today — Come Back Tomorrow' : 'Start Today\'s Battle'}
-          </motion.button>
+          </button>
         </motion.div>
       )}
 

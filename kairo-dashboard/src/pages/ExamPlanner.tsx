@@ -53,12 +53,12 @@ const lbl: React.CSSProperties = {
   fontSize: 11, color: '#9CA3AF', display: 'block', marginBottom: 5,
   fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.8,
 }
+// Layout + gradient face only — .kyno-chunky adds the 3D edge, radius and press.
 const btnPrimary: React.CSSProperties = {
   background: 'linear-gradient(135deg, #7C6BF6 0%, #A5B4FC 100%)',
-  color: '#fff', border: 'none', borderRadius: 10,
+  color: '#fff', border: 'none',
   padding: '11px 22px', fontSize: 13, fontWeight: 700, letterSpacing: 0.5,
-  cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 8,
-  boxShadow: '0 6px 24px rgba(124,107,246,0.32)',
+  display: 'inline-flex', alignItems: 'center', gap: 8,
 }
 const btnGhost: React.CSSProperties = {
   background: 'transparent', color: '#A1A1AA',
@@ -389,7 +389,7 @@ export default function ExamPlanner() {
           <div style={{ fontSize: 12, color: '#9CA3AF' }}>
             <b style={{ color: '#A5B4FC' }}>{daysLeft}</b> days until your exam · {hoursPerDay}h × {daysLeft} = <b style={{ color: '#fafafa' }}>{(hoursPerDay * daysLeft).toFixed(0)}h</b> total prep
           </div>
-          <button onClick={generate} disabled={loading} style={btnPrimary}>
+          <button onClick={generate} disabled={loading} className="kyno-chunky" style={btnPrimary}>
             {loading ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
             {loading ? 'Planning…' : (plan ? 'Re-generate' : 'Generate plan')}
           </button>
@@ -452,7 +452,7 @@ export default function ExamPlanner() {
                     </div>
                   </div>
                   <div style={{ marginTop: 12, display: 'flex', gap: 8 }}>
-                    <button onClick={submitMock} disabled={loading} style={btnPrimary}>
+                    <button onClick={submitMock} disabled={loading} className="kyno-chunky" style={btnPrimary}>
                       <Sparkles size={13} /> Re-plan based on this
                     </button>
                     <button onClick={() => setShowMockForm(false)} style={btnGhost}>

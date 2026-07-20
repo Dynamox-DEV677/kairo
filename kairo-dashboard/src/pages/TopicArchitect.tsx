@@ -43,11 +43,11 @@ const lbl: React.CSSProperties = {
   fontSize: 11, color: '#9CA3AF', display: 'block', marginBottom: 5,
   fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.8,
 }
+// Layout + gradient face only — .kyno-chunky adds the 3D edge, radius and press.
 const btnPrimary: React.CSSProperties = {
   background: 'linear-gradient(135deg, #7C6BF6 0%, #A5B4FC 100%)', color: '#fff',
-  border: 'none', borderRadius: 10, padding: '12px 24px', fontSize: 14, fontWeight: 700,
-  cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 8,
-  boxShadow: '0 6px 24px rgba(124,107,246,0.32)',
+  border: 'none', padding: '12px 24px', fontSize: 14, fontWeight: 700,
+  display: 'inline-flex', alignItems: 'center', gap: 8,
 }
 const h3: React.CSSProperties = {
   fontSize: 13, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase',
@@ -146,7 +146,7 @@ export default function TopicArchitect() {
               ))}
             </div>
           </div>
-          <button onClick={generate} disabled={loading} style={{ ...btnPrimary, marginLeft: 'auto' }}>
+          <button onClick={generate} disabled={loading} className="kyno-chunky" style={{ ...btnPrimary, marginLeft: 'auto' }}>
             {loading ? <Loader2 size={15} className="animate-spin" /> : <Sparkles size={15} />}
             {loading ? 'Planning…' : 'Plan this topic'}
           </button>
