@@ -912,8 +912,14 @@ button, [role="button"], a, .kyno-tile, .kyno-chip {
 
   /* Split view collapses to one column; when a note is open, the note IS
      the screen (the list hides) — closing it brings the list back. */
-  .nb-split { grid-template-columns: 1fr !important; }
+  .nb-split { grid-template-columns: 1fr !important; flex: none !important; min-height: 0 !important; }
   .nb-split.has-sel .nb-list { display: none !important; }
+  /* Let the PAGE scroll on phones. The desktop layout scrolls the note list
+     INTERNALLY inside a fixed-height column; but in the mobile auto-height flex
+     column that inner area collapsed to ~0px, so notes below "Generate" were
+     unreachable. Drop the internal scroll and flex-grow so content flows and
+     the page scrolls normally. */
+  .nb-list { overflow: visible !important; }
 
   /* Open note = a full-screen reader on phones: big, scrollable, readable.
      Covers the whole screen (above the dock) so the definition/content has
