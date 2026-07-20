@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import {
-  TrendingUp, TrendingDown, Minus, AlertTriangle, Sparkles,
+  TrendingUp, TrendingDown, Minus, Sparkles,
   RefreshCw, Target, Zap, Award,
 } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
@@ -194,8 +194,10 @@ Keep it under 200 words. No fluff.` },
 
       {predictions && predictions.length === 0 && (
         <div style={{ ...card, padding: '60px 32px', textAlign: 'center' }}>
-          <AlertTriangle size={32} color="#6B7280" style={{ marginBottom: 14 }} />
-          <h3 style={{ fontSize: 17, fontWeight: 700, color: '#fafafa', margin: 0, marginBottom: 8 }}>No exam history yet</h3>
+          <div style={{ width: 56, height: 56, borderRadius: 15, margin: '0 auto 16px', background: 'rgba(124,107,246,0.10)', border: '1px solid rgba(124,107,246,0.28)', display: 'grid', placeItems: 'center' }}>
+            <TrendingUp size={26} color="#7C6BF6" />
+          </div>
+          <h3 style={{ fontSize: 17, fontWeight: 800, color: '#fafafa', margin: 0, marginBottom: 8 }}>No exam history yet</h3>
           <p style={{ fontSize: 13, color: '#9CA3AF', maxWidth: 460, margin: '0 auto', lineHeight: 1.6 }}>
             Predictions need at least one mark per subject. Once teachers enter marks or you complete graded essays, this page will project your trajectory.
           </p>
@@ -208,18 +210,18 @@ Keep it under 200 words. No fluff.` },
             <div style={{
               position: 'absolute', top: -50, right: -50, width: 220, height: 220,
               borderRadius: '50%',
-              background: overall >= 75 ? 'rgba(165, 180, 252, 0.18)' : overall >= 60 ? 'rgba(165, 180, 252, 0.18)' : 'rgba(165, 180, 252, 0.18)',
+              background: overall >= 75 ? 'rgba(52,211,153,0.20)' : overall >= 60 ? 'rgba(255,176,32,0.20)' : 'rgba(255,92,92,0.20)',
               filter: 'blur(60px)',
             }} />
             <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 24 }}>
               <div style={{
                 width: 110, height: 110, borderRadius: '50%',
-                background: '#141A2A', border: `3px solid ${overall >= 75 ? '#A5B4FC' : overall >= 60 ? '#A5B4FC' : '#A5B4FC'}`,
+                background: '#141A2A', border: `3px solid ${overall >= 75 ? '#34D399' : overall >= 60 ? '#FFB020' : '#FF5C5C'}`,
                 display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
               }}>
                 <div style={{
                   fontSize: 30, fontWeight: 800, lineHeight: 1,
-                  color: overall >= 75 ? '#A5B4FC' : overall >= 60 ? '#A5B4FC' : '#A5B4FC',
+                  color: overall >= 75 ? '#34D399' : overall >= 60 ? '#FFB020' : '#FF5C5C',
                 }}>{overall}%</div>
                 <div style={{ fontSize: 10, color: '#9CA3AF', marginTop: 4, textTransform: 'uppercase', letterSpacing: 1 }}>predicted</div>
               </div>

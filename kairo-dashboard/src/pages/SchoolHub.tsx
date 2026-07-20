@@ -77,9 +77,11 @@ function Spinner() {
 function EmptyState({ icon: Icon, title, sub }: { icon: React.ElementType; title: string; sub?: string }) {
   return (
     <div style={{ textAlign: 'center', padding: '48px 24px', color: '#6B7280' }}>
-      <Icon size={36} style={{ margin: '0 auto 12px', opacity: 0.4 }} />
-      <div style={{ fontSize: 15, fontWeight: 600, color: '#9CA3AF', marginBottom: 4 }}>{title}</div>
-      {sub && <div style={{ fontSize: 13, opacity: 0.7 }}>{sub}</div>}
+      <div style={{ width: 54, height: 54, borderRadius: 15, margin: '0 auto 14px', background: 'rgba(124,107,246,0.10)', border: '1px solid rgba(124,107,246,0.26)', display: 'grid', placeItems: 'center' }}>
+        <Icon size={24} color="#7C6BF6" />
+      </div>
+      <div style={{ fontSize: 15, fontWeight: 800, color: '#e4e4e7', marginBottom: 5 }}>{title}</div>
+      {sub && <div style={{ fontSize: 13, opacity: 0.75, maxWidth: 320, margin: '0 auto', lineHeight: 1.5 }}>{sub}</div>}
     </div>
   )
 }
@@ -294,9 +296,11 @@ function NoSchoolView() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
       minHeight: '60vh', color: '#6B7280', gap: 12 }}>
-      <Building2 size={48} style={{ opacity: 0.3 }} />
-      <div style={{ fontSize: 18, fontWeight: 700, color: '#9CA3AF' }}>Not in a school yet</div>
-      <div style={{ fontSize: 13, maxWidth: 300, textAlign: 'center' }}>
+      <div style={{ width: 72, height: 72, borderRadius: 20, background: 'rgba(124,107,246,0.10)', border: '1px solid rgba(124,107,246,0.24)', display: 'grid', placeItems: 'center', marginBottom: 4 }}>
+        <Building2 size={34} color="#7C6BF6" />
+      </div>
+      <div style={{ fontSize: 18, fontWeight: 800, color: '#e4e4e7' }}>Not in a school yet</div>
+      <div style={{ fontSize: 13, maxWidth: 320, textAlign: 'center', lineHeight: 1.55 }}>
         Register or join a school from the login screen to access School Hub.
       </div>
     </div>

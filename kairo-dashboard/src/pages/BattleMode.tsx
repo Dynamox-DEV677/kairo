@@ -593,10 +593,10 @@ Tips: each tip is one specific actionable line (max 18 words) — reference the 
 
       {stats && (
         <div className="bm-stats-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: 16 }}>
-          <Tile icon={Zap}    label="Total XP"  value={stats.total_xp}             color="#A5B4FC" />
-          <Tile icon={Flame}  label="Streak"    value={`${stats.streak}d`}         color="#7C6BF6" />
-          <Tile icon={Target} label="Avg Acc"   value={`${stats.avg_accuracy}%`}   color="#A5B4FC" />
-          <Tile icon={Award}  label="Battles"   value={stats.battles}              color="#A5B4FC" />
+          <Tile icon={Zap}    label="Total XP"  value={stats.total_xp}             color="#22D3EE" />
+          <Tile icon={Flame}  label="Streak"    value={`${stats.streak}d`}         color="#FFB020" />
+          <Tile icon={Target} label="Avg Acc"   value={`${stats.avg_accuracy}%`}   color="#34D399" />
+          <Tile icon={Award}  label="Battles"   value={stats.battles}              color="#7C6BF6" />
         </div>
       )}
 
@@ -622,18 +622,26 @@ Tips: each tip is one specific actionable line (max 18 words) — reference the 
               </p>
             </div>
           </div>
-          <button onClick={startDaily} disabled={daily.already_played}
+          <motion.button onClick={startDaily} disabled={daily.already_played}
+            whileHover={daily.already_played ? undefined : { scale: 1.02 }}
+            whileTap={daily.already_played ? undefined : { scale: 0.97 }}
             style={{
-              width: '100%', padding: '13px', borderRadius: 10, border: 'none',
-              background: daily.already_played ? '#171D2D' : 'linear-gradient(135deg, #A5B4FC, #7C6BF6)',
-              color: daily.already_played ? '#6B7280' : '#000',
-              fontFamily: 'inherit', fontSize: 14, fontWeight: 700,
+              width: '100%', padding: '14px', borderRadius: 10, border: 'none',
+              background: daily.already_played ? '#171D2D' : 'linear-gradient(135deg, #7C6BF6, #9d8dff)',
+              color: daily.already_played ? '#6B7280' : '#fff',
+              fontFamily: 'inherit', fontSize: 14, fontWeight: 800,
               cursor: daily.already_played ? 'not-allowed' : 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-              boxShadow: daily.already_played ? 'none' : '0 0 22px rgba(165, 180, 252, 0.35)',
+              boxShadow: daily.already_played ? 'none' : '0 8px 24px rgba(124, 107, 246, 0.45)',
             }}>
-            <Swords size={14} /> {daily.already_played ? 'Already Played Today — Come Back Tomorrow' : 'Start Today\'s Battle'}
-          </button>
+            <motion.span
+              animate={daily.already_played ? undefined : { rotate: [0, -12, 12, 0] }}
+              transition={{ repeat: Infinity, repeatDelay: 2.4, duration: 0.7 }}
+              style={{ display: 'inline-flex' }}>
+              <Swords size={15} />
+            </motion.span>
+            {daily.already_played ? 'Already Played Today — Come Back Tomorrow' : 'Start Today\'s Battle'}
+          </motion.button>
         </motion.div>
       )}
 
