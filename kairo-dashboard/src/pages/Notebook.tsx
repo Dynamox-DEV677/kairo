@@ -212,10 +212,9 @@ export default function Notebook() {
                   borderLeft: `3px solid ${meta.color}`,
                   display: 'flex', alignItems: 'flex-start', gap: 10,
                 }}>
-                <div style={{
-                  width: 28, height: 28, borderRadius: 7, flexShrink: 0,
+                <div className="kyno-ichip" style={{
+                  width: 28, height: 28,
                   background: `${meta.color}18`,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}>
                   <meta.icon size={13} color={meta.color} />
                 </div>
@@ -482,13 +481,8 @@ function chipBtn(busy: boolean): React.CSSProperties {
 
 function Tab({ active, label, onClick }: { active: boolean; label: string; onClick: () => void }) {
   return (
-    <button onClick={onClick} style={{
-      padding: '5px 10px', borderRadius: 7,
-      background: active ? 'rgba(165, 180, 252, 0.18)' : 'transparent',
-      border: `1px solid ${active ? 'rgba(165, 180, 252, 0.18)' : 'rgba(255,255,255,0.08)'}`,
-      color: active ? '#A5B4FC' : '#9CA3AF',
-      fontFamily: 'inherit', fontSize: 11, fontWeight: 600,
-      cursor: 'pointer',
+    <button onClick={onClick} className={`kyno-chip${active ? ' on' : ''}`} style={{
+      padding: '6px 12px', fontSize: 11,
     }}>{label}</button>
   )
 }
