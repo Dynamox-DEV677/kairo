@@ -566,28 +566,14 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
         <div style={{ display: 'flex', gap: 4, marginBottom: 6 }}>
           <button
             title={expanded ? undefined : 'Settings'}
+            className="kyno-ghost"
+            onClick={() => setActive('settings')}
             style={{
-              flex: 1, padding: expanded ? '8px 10px' : '8px 0',
-              background: 'none',
-              border: '1px solid transparent', borderRadius: 14,
-              color: '#6B7280', fontSize: 12, cursor: 'pointer',
-              fontFamily: 'inherit',
+              flex: 1, padding: expanded ? '8px 10px' : '8px 0', fontSize: 12,
               display: 'flex', alignItems: 'center',
               gap: expanded ? 7 : 0,
               justifyContent: expanded ? 'flex-start' : 'center',
-              transition: 'all 0.22s cubic-bezier(0.22, 1, 0.36, 1)',
             }}
-            onMouseEnter={e => {
-              const b = e.currentTarget as HTMLButtonElement
-              b.style.background = 'rgba(255, 255, 255, 0.04)'
-              b.style.color = '#fafafa'
-            }}
-            onMouseLeave={e => {
-              const b = e.currentTarget as HTMLButtonElement
-              b.style.background = 'none'
-              b.style.color = '#6B7280'
-            }}
-            onClick={() => setActive('settings')}
           >
             <Settings size={13} />
             {expanded && <span>Settings</span>}
@@ -602,8 +588,8 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
           onChange={handleProfilePicChange}
         />
 
-        <div style={{
-          padding: expanded ? '10px 10px 4px' : '8px 0 4px',
+        <div className="kyno-stat" style={{
+          padding: expanded ? '10px 10px' : '8px 4px',
           display: 'flex', alignItems: 'center',
           gap: expanded ? 9 : 0,
           justifyContent: expanded ? 'flex-start' : 'center',
@@ -680,29 +666,20 @@ function NavItemRow({ item, isActive, isHovered, isGenerating = false, compact =
   onClick: () => void
 }) {
   return (
-    <motion.button
+    <button
       onClick={onClick}
       onMouseEnter={() => onHover(item.to)}
       onMouseLeave={() => onHover(null)}
-      whileTap={{ scale: 0.98 }}
       title={compact ? item.label : undefined}
+      className={`kyno-nav${isActive ? ' on' : ''}`}
       style={{
         width: '100%',
         display: 'flex', alignItems: 'center',
         gap: compact ? 0 : 11,
         justifyContent: compact ? 'center' : 'flex-start',
         padding: compact ? '10px 0' : '10px 12px',
-        borderRadius: 14, textDecoration: 'none',
-        marginBottom: 4, cursor: 'pointer', border: 'none', fontFamily: 'inherit',
-        background: isActive
-          ? 'linear-gradient(135deg, rgba(38, 58, 140, 0.32) 0%, rgba(38, 58, 140, 0.16) 100%)'
-          : isHovered ? 'rgba(255, 255, 255, 0.04)' : 'transparent',
-        boxShadow: isActive
-          ? '0 0 0 1px rgba(165, 180, 252, 0.22), 0 6px 18px rgba(38, 58, 140, 0.32)'
-          : 'none',
+        marginBottom: 6, fontFamily: 'inherit',
         position: 'relative',
-        transition: 'background 0.22s cubic-bezier(0.22, 1, 0.36, 1), transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.22s cubic-bezier(0.22, 1, 0.36, 1)',
-        transform: isHovered && !compact ? 'translateX(2px)' : 'translateX(0)',
       }}
     >
       {isActive && (
@@ -766,6 +743,6 @@ function NavItemRow({ item, isActive, isHovered, isGenerating = false, compact =
           {item.badge}
         </span>
       ) : null}
-    </motion.button>
+    </button>
   )
 }

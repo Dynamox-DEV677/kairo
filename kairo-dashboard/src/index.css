@@ -100,6 +100,12 @@ button, [role="button"], a, .kyno-tile, .kyno-chip {
 }
 .kyno-tile:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 1px 0 0 rgba(0,0,0,0.32), 0 4px 12px rgba(0,0,0,0.28); }
 .kyno-tile:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+/* Selected tile / active nav row — stays pressed-in with a purple fill */
+.kyno-tile.on {
+  background: linear-gradient(160deg, rgba(124,107,246,0.30), rgba(124,107,246,0.14));
+  border-color: var(--c-purple); color: #fff;
+  transform: translateY(3px); box-shadow: 0 1px 0 0 var(--c-purple-deep);
+}
 
 /* Raised 3D chip / mode toggle / tab — selected shows a pressed-in purple fill */
 .kyno-chip {
@@ -119,6 +125,21 @@ button, [role="button"], a, .kyno-tile, .kyno-chip {
 .kyno-chip.cyan.on { background: var(--c-cyan); color: #062B31; border-color: var(--c-cyan); box-shadow: 0 1px 0 0 var(--c-cyan-deep); }
 .kyno-chip.gold.on { background: var(--c-gold); color: #2A1A00; border-color: var(--c-gold); box-shadow: 0 1px 0 0 var(--c-gold-deep); }
 
+/* Sidebar / drawer nav row — subtle raised edge, press-down, active = pressed-in purple */
+.kyno-nav {
+  border: 1px solid transparent; border-radius: 12px;
+  background: rgba(255,255,255,0.025);
+  box-shadow: 0 2px 0 0 rgba(0,0,0,0.22);
+  transition: transform .07s ease, box-shadow .07s ease, background .12s ease, border-color .12s ease;
+  cursor: pointer; -webkit-user-select: none; user-select: none;
+}
+.kyno-nav:active:not(.on) { transform: translateY(2px); box-shadow: 0 0 0 0 rgba(0,0,0,0); }
+.kyno-nav.on {
+  background: linear-gradient(135deg, rgba(124,107,246,0.32), rgba(124,107,246,0.15));
+  border-color: rgba(165,180,252,0.28);
+  transform: translateY(2px); box-shadow: 0 1px 0 0 var(--c-purple-deep);
+}
+
 /* Composer send button — tactile tap */
 .kyno-send { transition: transform .1s ease, background .2s ease, box-shadow .2s ease; will-change: transform; }
 .kyno-send:active:not(:disabled) { transform: scale(0.86); }
@@ -128,6 +149,24 @@ button, [role="button"], a, .kyno-tile, .kyno-chip {
   .kyno-chunky:hover:not(:disabled) { transform: translateY(-1px); }
   .kyno-tile:hover:not(:disabled)   { transform: translateY(-1px); border-color: var(--c-purple); }
   .kyno-ghost:hover:not(:disabled)  { background: rgba(124,107,246,0.10); }
+}
+
+/* Inputs / dropdowns — subtle raised container that presses IN on focus (not up) */
+.kyno-input {
+  border: 1px solid var(--c-line); border-radius: 12px; background: var(--c-bg-elev1);
+  box-shadow: 0 3px 0 0 rgba(0,0,0,0.20);
+  transition: box-shadow .1s ease, border-color .12s ease;
+}
+.kyno-input:focus, .kyno-input:focus-within {
+  outline: none; border-color: var(--c-purple);
+  box-shadow: inset 0 2px 5px rgba(0,0,0,0.30);
+}
+
+/* Accessibility: keep the 3D depth, drop the movement */
+@media (prefers-reduced-motion: reduce) {
+  .kyno-chunky, .kyno-tile, .kyno-ghost, .kyno-chip, .kyno-send, .kyno-input { transition: none; }
+  .kyno-chunky:active, .kyno-tile:active, .kyno-ghost:active, .kyno-chip:active, .kyno-send:active,
+  .kyno-chip.on, .kyno-tile.on { transform: none; }
 }
 
 /* Active nav item pop */
