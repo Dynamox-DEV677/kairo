@@ -142,3 +142,38 @@ export function StreakFlame({ days, showLabel = true }: { days: number; showLabe
     </span>
   )
 }
+
+// ── Vibrant Quick-Action tile (press-down + purple accent) ───────────────────
+export function QuickTile({ icon, label, onClick }: { icon: ReactNode; label: string; onClick?: () => void }) {
+  return (
+    <button className="kyno-tile" onClick={onClick}
+      style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, padding: '14px 8px', color: 'var(--c-text)', fontFamily: 'inherit', width: '100%' }}>
+      <span style={{
+        width: 40, height: 40, borderRadius: 12, display: 'grid', placeItems: 'center',
+        background: 'rgba(124,107,246,0.16)', color: 'var(--c-purple-lite)',
+        border: '1px solid rgba(124,107,246,0.30)',
+      }}>{icon}</span>
+      <span style={{ fontSize: 12, fontWeight: 700 }}>{label}</span>
+    </button>
+  )
+}
+
+// ── Small value-tied progress bar (Vitals mini-bars) ─────────────────────────
+export function MiniBar({ value, color = 'var(--c-cyan)', height = 5 }: { value: number; color?: string; height?: number }) {
+  const p = Math.max(0, Math.min(100, value))
+  return (
+    <div style={{ height, background: 'rgba(255,255,255,0.08)', borderRadius: 999, overflow: 'hidden', marginTop: 6 }}>
+      <div style={{ height: '100%', width: `${p}%`, background: color, borderRadius: 999, transition: 'width .5s cubic-bezier(0.22,1,0.36,1)' }} />
+    </div>
+  )
+}
+
+// ── Big number + smaller muted unit, baseline-aligned ────────────────────────
+export function StatNumber({ value, unit, color = 'var(--c-text)', size = 30 }: { value: ReactNode; unit?: string; color?: string; size?: number }) {
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'baseline', gap: 4 }}>
+      <span style={{ fontSize: size, fontWeight: 900, color, lineHeight: 1 }}>{value}</span>
+      {unit && <span style={{ fontSize: Math.round(size * 0.42), fontWeight: 700, color: 'var(--c-faint)' }}>{unit}</span>}
+    </span>
+  )
+}
