@@ -337,9 +337,9 @@ function StatsRow({ stats }: { stats: { total: number; today: number; mastered: 
   return (
     <div className="fc-stats-row" style={{ marginTop: 22, display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
       <StatTile icon={<Layers size={13} />}  label="Total cards"  value={stats.total}    accent={C.purpleLite} />
-      <StatTile icon={<Zap size={13} />}     label="Added today"   value={stats.today}    accent={C.purple} />
-      <StatTile icon={<Brain size={13} />}   label="Mastered"      value={stats.mastered} accent={C.purpleHi} />
-      <StatTile icon={<Flame size={13} />}   label="Due for review" value={stats.due}     accent={C.purpleDeep} />
+      <StatTile icon={<Zap size={13} />}     label="Added today"   value={stats.today}    accent="#22d3ee" />
+      <StatTile icon={<Brain size={13} />}   label="Mastered"      value={stats.mastered} accent="#34d399" />
+      <StatTile icon={<Flame size={13} />}   label="Due for review" value={stats.due}     accent="#ffb020" />
     </div>
   )
 }

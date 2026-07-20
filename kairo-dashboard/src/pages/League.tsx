@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Trophy, Flame, Crown, Medal, Calendar, Infinity as InfinityIcon, Loader2 } from 'lucide-react'
+import { Trophy, Flame, Crown, Medal, Calendar, Infinity as InfinityIcon, Loader2, Gem } from 'lucide-react'
 import { fetchLeagueBoard, loadGame, type LeagueBoard } from '../lib/game'
 
 type Range = 'week' | 'month' | 'all'
@@ -18,6 +18,16 @@ const TABS: { id: Range; label: string; icon: any }[] = [
 ]
 
 const RANK_COLOR = ['#FFD700', '#C0C7D0', '#CD7F32']
+
+// XP tiers (all-time) — badge in the rank hero. Ordered high→low.
+const TIERS: { name: string; min: number; color: string }[] = [
+  { name: 'Diamond',  min: 10000, color: '#A5B4FC' },
+  { name: 'Platinum', min: 4000,  color: '#22D3EE' },
+  { name: 'Gold',     min: 1500,  color: '#FFD700' },
+  { name: 'Silver',   min: 500,   color: '#C0C7D0' },
+  { name: 'Bronze',   min: 0,     color: '#CD7F32' },
+]
+function tierFor(xp: number) { return TIERS.find(t => xp >= t.min) || TIERS[TIERS.length - 1] }
 
 export default function League() {
   const [range, setRange]   = useState<Range>('week')
@@ -40,6 +50,10 @@ export default function League() {
   const offline = board?.offline || (!loading && rows.length === 0)
   const youRank = board?.rank || 0
   const youXp = board?.youXp ?? localXp
+  const tier = tierFor(g.totalXP)
+  const tierIdx = TIERS.indexOf(tier)
+  const nextTier = tierIdx > 0 ? TIERS[tierIdx - 1] : null
+  const toNext = nextTier ? nextTier.min - g.totalXP : 0
 
   return (
     <div style={{ padding: 'clamp(16px, 5vw, 28px) clamp(14px, 4vw, 32px)', maxWidth: 720, margin: '0 auto', height: '100%', overflowY: 'auto', color: C.text }}>
@@ -80,7 +94,7 @@ export default function League() {
         border: `1px solid rgba(165,180,252,0.28)`, borderRadius: 14, padding: '16px 18px',
       }}>
         <div style={{ textAlign: 'center', minWidth: 66 }}>
-          <div style={{ fontSize: 30, fontWeight: 900, color: C.accent, lineHeight: 1 }}>{youRank ? `#${youRank}` : '—'}</div>
+          <div style={{ fontSize: 30, fontWeight: 900, color: tier.color, lineHeight: 1 }}>{youRank ? `#${youRank}` : '—'}</div>
           <div style={{ fontSize: 10, color: C.dim, textTransform: 'uppercase', letterSpacing: 1, marginTop: 4 }}>Your rank</div>
         </div>
         <div style={{ width: 1, alignSelf: 'stretch', background: C.border }} />
@@ -89,6 +103,11 @@ export default function League() {
           <div style={{ fontSize: 11.5, color: C.dim, marginTop: 5 }}>
             {range === 'week' ? 'earned this week' : range === 'month' ? 'earned this month' : 'earned all-time'}
             {board && board.total > 0 && ` · ${board.total} student${board.total === 1 ? '' : 's'} competing`}
+          </div>
+          <div style={{ marginTop: 9, display: 'inline-flex', alignItems: 'center', gap: 6, padding: '5px 11px', borderRadius: 999, background: tier.color + '1e', border: `1px solid ${tier.color}55` }}>
+            <Gem size={13} color={tier.color} />
+            <span style={{ fontSize: 11.5, fontWeight: 800, color: tier.color }}>{tier.name} tier</span>
+            {nextTier && <span style={{ fontSize: 10.5, color: C.faint, fontWeight: 600 }}>· {toNext.toLocaleString()} XP to {nextTier.name}</span>}
           </div>
         </div>
       </div>
