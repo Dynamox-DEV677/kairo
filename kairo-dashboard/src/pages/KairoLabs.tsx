@@ -131,7 +131,7 @@ const SUBJECT_TAGS: Record<string, string> = {
   Space: 'planets · rockets · stars',
 }
 
-export default function KairoLabs() {
+export default function KairoLabs({ active = true }: { active?: boolean }) {
   const [activeLab, setActive] = useState<Lab | null>(null)
   const [filter, setFilter]    = useState<'all' | 'Physics' | 'Chemistry' | 'Biology' | 'Math' | 'Space'>('all')
 
@@ -152,6 +152,11 @@ export default function KairoLabs() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeLab?.id])
+
+  // When the Labs tab isn't the active screen, render nothing — this UNMOUNTS any
+  // open 3D lab so its three.js render loop stops instead of thrashing the main
+  // thread in the background. The open lab reopens when you return (state kept).
+  if (!active) return null
 
   if (activeLab && activeLab.ready && activeLab.Component) {
     const C = activeLab.Component

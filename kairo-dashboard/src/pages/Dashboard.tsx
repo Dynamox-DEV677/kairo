@@ -338,7 +338,7 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
 
             <div style={pageStyle('perf-predictor')}>{mounted('perf-predictor') && <PerformancePredictor />}</div>
 
-            <div style={pageStyle('labs')}>{mounted('labs') && <KairoLabs />}</div>
+            <div style={pageStyle('labs')}>{mounted('labs') && <KairoLabs active={active === 'labs'} />}</div>
 
             <div style={pageStyle('kairo-os')}>{mounted('kairo-os') && <KairoOSM />}</div>
 
