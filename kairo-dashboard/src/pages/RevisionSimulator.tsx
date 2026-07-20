@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Zap, Clock, Target, CheckCircle2, XCircle, Sparkles,
-  Trophy, RefreshCw, Brain, AlertTriangle,
+  Trophy, RefreshCw, Brain, AlertTriangle, Pencil,
 } from 'lucide-react'
 import { chat } from '../lib/openrouter'
 import { getMistakes, track } from '../lib/twin'
@@ -266,8 +266,8 @@ function SetupView({
         </label>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>
           {[
-            { id: 'practice', label: 'Practice', icon: '✎', desc: 'Instant feedback after each question. Untimed — learn as you go.' },
-            { id: 'exam',     label: 'Exam',     icon: '⏱', desc: 'Timed, no hints. Full results at the end — real exam pressure.' },
+            { id: 'practice', label: 'Practice', icon: Pencil, desc: 'Instant feedback after each question. Untimed — learn as you go.' },
+            { id: 'exam',     label: 'Exam',     icon: Clock,  desc: 'Timed, no hints. Full results at the end — real exam pressure.' },
           ].map(m => {
             const active = mode === m.id
             const col = m.id === 'exam' ? '#FB7185' : '#A5B4FC'
@@ -278,8 +278,8 @@ function SetupView({
                 background: active ? `${col}14` : '#141A2A',
                 fontFamily: 'inherit', textAlign: 'left', transition: 'all 0.15s',
               }}>
-                <div style={{ fontSize: 14, fontWeight: 800, color: active ? col : '#fafafa', marginBottom: 4 }}>
-                  {m.icon} {m.label}
+                <div style={{ fontSize: 14, fontWeight: 800, color: active ? col : '#fafafa', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 7 }}>
+                  <m.icon size={15} /> {m.label}
                 </div>
                 <div style={{ fontSize: 11, color: '#9CA3AF', lineHeight: 1.5 }}>
                   {m.desc}

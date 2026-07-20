@@ -232,14 +232,15 @@ export default function CameraStudy() {
           {VISION_MODELS.map(m => (
             <button key={m.id} onClick={() => setModel(m.id)} style={{
               padding: '10px 14px', borderRadius: 9,
-              border: `1px solid ${model === m.id ? '#7C6BF6' : '#1f2532'}`,
-              background: model === m.id ? 'rgba(124, 107, 246, 0.10)' : '#141A2A',
+              border: `1.5px solid ${model === m.id ? '#7C6BF6' : '#1f2532'}`,
+              background: model === m.id ? 'rgba(124, 107, 246, 0.20)' : '#141A2A',
               cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left',
               transition: 'all 0.15s',
+              boxShadow: model === m.id ? '0 2px 12px rgba(124,107,246,0.28)' : 'none',
             }}>
               <div style={{
-                fontSize: 12, fontWeight: 700,
-                color: model === m.id ? '#A5B4FC' : '#d4d4d8', marginBottom: 3,
+                fontSize: 12, fontWeight: model === m.id ? 800 : 700,
+                color: model === m.id ? '#fff' : '#d4d4d8', marginBottom: 3,
               }}>
                 {m.label}
               </div>

@@ -36,10 +36,11 @@ export default function ConceptTools() {
         {TABS.map(t => (
           <button key={t.id} onClick={() => setTab(t.id)} style={{
             flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-            padding: '7px 8px', borderRadius: 7, border: 'none', fontFamily: 'inherit',
-            fontSize: 12, fontWeight: tab === t.id ? 600 : 400, cursor: 'pointer',
-            background: tab === t.id ? '#1f2532' : 'transparent',
-            color: tab === t.id ? '#A5B4FC' : '#6B7280', transition: 'all 0.15s',
+            padding: '8px 8px', borderRadius: 7, border: 'none', fontFamily: 'inherit',
+            fontSize: 12, fontWeight: tab === t.id ? 700 : 500, cursor: 'pointer',
+            background: tab === t.id ? 'linear-gradient(135deg,#7C6BF6,#6455e0)' : 'transparent',
+            color: tab === t.id ? '#fff' : '#6B7280', transition: 'all 0.15s',
+            boxShadow: tab === t.id ? '0 4px 12px rgba(124,107,246,0.35)' : 'none',
           }}>
             <t.icon size={12} /> {t.label}
           </button>
@@ -99,9 +100,10 @@ function SimplifyTab() {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6 }}>
               {[['class5','Class 5'],['class8','Class 8'],['class12','Class 12']].map(([v, l]) => (
                 <button key={v} onClick={() => setLevel(v)} style={{
-                  padding: '7px', borderRadius: 7, border: `1px solid ${level === v ? '#7C6BF6' : '#1f2532'}`,
-                  background: level === v ? '#7C6BF610' : 'transparent',
-                  color: level === v ? '#A5B4FC' : '#9CA3AF', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+                  padding: '8px 7px', borderRadius: 8, border: `1.5px solid ${level === v ? '#7C6BF6' : '#1f2532'}`,
+                  background: level === v ? 'rgba(124,107,246,0.16)' : 'transparent',
+                  color: level === v ? '#fff' : '#9CA3AF', fontSize: 11, fontWeight: level === v ? 800 : 600, cursor: 'pointer', fontFamily: 'inherit',
+                  transition: 'all 0.15s',
                 }}>{l}</button>
               ))}
             </div>

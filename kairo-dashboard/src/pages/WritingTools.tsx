@@ -33,11 +33,12 @@ export default function WritingTools() {
         {TABS.map(t => (
           <button key={t.id} onClick={() => setTab(t.id)} style={{
             flex: '1 0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-            padding: '7px 12px', borderRadius: 7, border: 'none', fontFamily: 'inherit',
-            fontSize: 12, fontWeight: tab === t.id ? 600 : 400, cursor: 'pointer',
+            padding: '8px 12px', borderRadius: 7, border: 'none', fontFamily: 'inherit',
+            fontSize: 12, fontWeight: tab === t.id ? 700 : 500, cursor: 'pointer',
             whiteSpace: 'nowrap',
-            background: tab === t.id ? '#1f2532' : 'transparent',
-            color: tab === t.id ? '#A5B4FC' : '#6B7280', transition: 'all 0.15s',
+            background: tab === t.id ? 'linear-gradient(135deg,#7C6BF6,#6455e0)' : 'transparent',
+            color: tab === t.id ? '#fff' : '#6B7280', transition: 'all 0.15s',
+            boxShadow: tab === t.id ? '0 4px 12px rgba(124,107,246,0.35)' : 'none',
           }}>
             <t.icon size={12} /> {t.label}
           </button>

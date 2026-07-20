@@ -121,9 +121,11 @@ export default function TopicArchitect() {
               {EXAMS.map(e => (
                 <button key={e.id} onClick={() => setExam(e.id)} style={{
                   padding: '8px 16px', fontSize: 13, fontWeight: 700, borderRadius: 8, cursor: 'pointer',
-                  background: exam === e.id ? 'rgba(165,180,252,0.18)' : '#141A2A',
-                  color: exam === e.id ? '#A5B4FC' : '#A1A1AA',
-                  border: '1px solid ' + (exam === e.id ? 'rgba(165,180,252,0.55)' : '#1f2532'),
+                  background: exam === e.id ? 'rgba(124,107,246,0.22)' : '#141A2A',
+                  color: exam === e.id ? '#fff' : '#A1A1AA',
+                  border: '1.5px solid ' + (exam === e.id ? '#7C6BF6' : '#1f2532'),
+                  boxShadow: exam === e.id ? '0 2px 10px rgba(124,107,246,0.28)' : 'none',
+                  transition: 'all 0.15s',
                 }}>{e.label}</button>
               ))}
             </div>
@@ -135,9 +137,11 @@ export default function TopicArchitect() {
                 <button key={d} onClick={() => setDepth(d)} style={{
                   padding: '8px 16px', fontSize: 13, fontWeight: 700, borderRadius: 8, cursor: 'pointer',
                   textTransform: 'capitalize',
-                  background: depth === d ? 'rgba(165,180,252,0.18)' : '#141A2A',
-                  color: depth === d ? '#A5B4FC' : '#A1A1AA',
-                  border: '1px solid ' + (depth === d ? 'rgba(165,180,252,0.55)' : '#1f2532'),
+                  background: depth === d ? 'rgba(124,107,246,0.22)' : '#141A2A',
+                  color: depth === d ? '#fff' : '#A1A1AA',
+                  border: '1.5px solid ' + (depth === d ? '#7C6BF6' : '#1f2532'),
+                  boxShadow: depth === d ? '0 2px 10px rgba(124,107,246,0.28)' : 'none',
+                  transition: 'all 0.15s',
                 }}>{d}</button>
               ))}
             </div>

@@ -23,12 +23,12 @@ const C = {
 }
 const FONT = "'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif"
 
-const KIND_META: Record<HistoryEntry['kind'], { icon: any; label: string }> = {
-  event:     { icon: Activity,       label: 'Activity' },
-  doubt:     { icon: MessageCircle,  label: 'Doubt'    },
-  concept:   { icon: Network,        label: 'Concept'  },
-  formula:   { icon: FunctionSquare, label: 'Formula'  },
-  flashcard: { icon: Layers,         label: 'Card'     },
+const KIND_META: Record<HistoryEntry['kind'], { icon: any; label: string; color: string }> = {
+  event:     { icon: Activity,       label: 'Activity', color: '#a5b4fc' },
+  doubt:     { icon: MessageCircle,  label: 'Doubt',    color: '#22d3ee' },
+  concept:   { icon: Network,        label: 'Concept',  color: '#7c6bf6' },
+  formula:   { icon: FunctionSquare, label: 'Formula',  color: '#ffb020' },
+  flashcard: { icon: Layers,         label: 'Card',     color: '#34d399' },
 }
 
 export default function KnowledgeGraph() {
@@ -137,7 +137,7 @@ export default function KnowledgeGraph() {
             if (n === 0) return null
             const Icon = KIND_META[k].icon
             return (
-              <FilterChip key={k} active={kindFilter === k}
+              <FilterChip key={k} active={kindFilter === k} color={KIND_META[k].color}
                 label={<><Icon size={11} /> {KIND_META[k].label} {n}</>}
                 onClick={() => setKindFilter(k)} />
             )
@@ -155,16 +155,16 @@ export default function KnowledgeGraph() {
   )
 }
 
-function FilterChip({ active, label, onClick }: { active: boolean; label: React.ReactNode; onClick: () => void }) {
+function FilterChip({ active, label, onClick, color = '#7c6bf6' }: { active: boolean; label: React.ReactNode; onClick: () => void; color?: string }) {
   return (
     <button onClick={onClick} style={{
       display: 'inline-flex', alignItems: 'center', gap: 5,
-      padding: '6px 12px', borderRadius: 8,
-      background: active ? 'rgba(165, 180, 252, 0.20)' : 'transparent',
-      border: `1px solid ${active ? 'rgba(165, 180, 252, 0.18)' : C.borderSoft}`,
-      color: active ? C.text : C.textFaint,
-      fontFamily: 'inherit', fontSize: 12, fontWeight: 600,
-      cursor: 'pointer',
+      padding: '6px 12px', borderRadius: 999,
+      background: active ? color + '22' : 'transparent',
+      border: `1px solid ${active ? color : C.borderSoft}`,
+      color: active ? color : C.textFaint,
+      fontFamily: 'inherit', fontSize: 12, fontWeight: active ? 800 : 600,
+      cursor: 'pointer', transition: 'background .15s, border-color .15s, color .15s',
     }}>
       {label}
     </button>
