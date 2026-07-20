@@ -244,12 +244,16 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
                     try { localStorage.setItem('kairo:solver-ui', next) } catch {}
                   }}
                   style={{
-                    position: 'absolute', top: isMobile ? 8 : 10, right: isMobile ? 10 : 14, zIndex: 20,
-                    padding: isMobile ? '5px 11px' : '6px 14px', borderRadius: 999, cursor: 'pointer',
-                    background: 'rgba(13,16,25,0.85)', backdropFilter: 'blur(10px)',
-                    border: '1px solid rgba(165,180,252,0.28)',
-                    color: '#A5B4FC', fontSize: isMobile ? 10 : 11, fontWeight: 700,
-                    letterSpacing: 1, textTransform: 'uppercase', fontFamily: 'inherit',
+                    position: 'absolute', top: isMobile ? 8 : 10, zIndex: 20,
+                    right: isMobile ? 'max(12px, env(safe-area-inset-right))' : 16,
+                    padding: isMobile ? '6px 12px' : '6px 14px', borderRadius: 999, cursor: 'pointer',
+                    background: 'rgba(13,16,25,0.9)', backdropFilter: 'blur(10px)',
+                    WebkitBackdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(124,107,246,0.4)',
+                    color: 'var(--c-purple-lite)', fontSize: isMobile ? 10 : 11, fontWeight: 700,
+                    letterSpacing: 0.5, textTransform: 'uppercase', fontFamily: 'inherit',
+                    whiteSpace: 'nowrap', maxWidth: 'calc(100vw - 24px)',
+                    boxShadow: '0 4px 14px rgba(0,0,0,0.4)',
                   }}
                 >
                   {solverUi === 'chat'
