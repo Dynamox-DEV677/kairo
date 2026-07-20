@@ -140,6 +140,17 @@ button, [role="button"], a, .kyno-tile, .kyno-chip {
   transform: translateY(2px); box-shadow: 0 1px 0 0 var(--c-purple-deep);
 }
 
+/* 3D icon chip — sit an icon on a small raised rounded background so it reads
+   tactile, not flat. Set size + accent tint inline (bg/border/color per usage);
+   the class provides the solid bottom edge + top-highlight. */
+.kyno-ichip {
+  display: inline-grid; place-items: center; flex-shrink: 0;
+  border-radius: 10px;
+  box-shadow: 0 3px 0 0 rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.07);
+}
+/* Subtle drop-shadow for standalone icons that aren't on a chip */
+.kyno-idrop { filter: drop-shadow(0 1px 1px rgba(0,0,0,0.45)); }
+
 /* Composer send button — tactile tap */
 .kyno-send { transition: transform .1s ease, background .2s ease, box-shadow .2s ease; will-change: transform; }
 .kyno-send:active:not(:disabled) { transform: scale(0.86); }

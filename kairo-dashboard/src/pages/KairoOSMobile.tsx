@@ -27,10 +27,12 @@ const C = {
   purpleSoft:'#DBE7FF',
 }
 
+// Raised 3D card surface. Replaces the old backdrop-blur "glass": blur is the
+// main tap-lag source on mobile, and the 3D spec wants solid depth, not glass.
+// A solid elevated fill + a no-blur bottom edge = the chunky look, cheaply.
 const GLASS: React.CSSProperties = {
-  background: 'linear-gradient(150deg, rgba(255,255,255,0.055) 0%, rgba(255,255,255,0.018) 100%)',
-  backdropFilter: 'blur(16px) saturate(150%)',
-  WebkitBackdropFilter: 'blur(16px) saturate(150%)',
+  background: 'linear-gradient(160deg, #1B2138 0%, #141A2A 100%)',
+  boxShadow: '0 4px 0 0 rgba(0,0,0,0.32), inset 0 1px 0 rgba(255,255,255,0.05)',
 }
 
 interface Props {
@@ -195,7 +197,7 @@ function PulseHero({ pct, label, twin, pulsing, onRecompute }: {
         position: 'relative', padding: 22, borderRadius: 22,
         ...GLASS,
         border: '1px solid rgba(165, 180, 252, 0.22)',
-        boxShadow: '0 18px 50px rgba(124, 107, 246, 0.08), inset 0 1px 0 rgba(255,255,255,0.06)',
+        boxShadow: '0 6px 0 0 rgba(0,0,0,0.34), 0 16px 34px rgba(124, 107, 246, 0.14), inset 0 1px 0 rgba(255,255,255,0.06)',
         overflow: 'hidden',
       }}
     >
@@ -248,18 +250,13 @@ function PulseHero({ pct, label, twin, pulsing, onRecompute }: {
             Retention × consistency × confidence — refreshed live.
           </div>
 
-          <button onClick={onRecompute}
+          <button onClick={onRecompute} className="kyno-chunky"
             style={{
-              marginTop: 14, padding: '8px 12px', borderRadius: 10,
-              background: pulsing ? 'rgba(165, 180, 252, 0.20)' : 'rgba(165, 180, 252, 0.10)',
-              border: '1px solid rgba(165, 180, 252, 0.32)',
-              color: pulsing ? C.purpleSoft : C.purpleLite,
-              fontFamily: 'inherit', fontSize: 11, fontWeight: 700,
-              display: 'inline-flex', alignItems: 'center', gap: 6, cursor: 'pointer',
-              letterSpacing: 0.3, transition: 'all 0.2s',
-              minHeight: 36,
+              marginTop: 14, padding: '9px 16px', fontSize: 11.5,
+              display: 'inline-flex', alignItems: 'center', gap: 6,
+              letterSpacing: 0.3, minHeight: 38,
             }}>
-            <RefreshCw size={11} style={{ transform: pulsing ? 'rotate(360deg)' : 'none', transition: 'transform 0.7s' }} />
+            <RefreshCw size={12} style={{ transform: pulsing ? 'rotate(360deg)' : 'none', transition: 'transform 0.7s' }} />
             {pulsing ? 'Done' : 'Recompute'}
           </button>
         </div>
@@ -319,12 +316,11 @@ function QuickAction({ label, icon: Icon, onClick }: { label: string; icon: any;
         WebkitTapHighlightColor: 'transparent',
       }}
     >
-      <div style={{
-        width: 38, height: 38, borderRadius: 12,
-        background: 'rgba(124,107,246,0.16)',
+      <div className="kyno-ichip" style={{
+        width: 38, height: 38,
+        background: 'rgba(124,107,246,0.20)',
         border: '1px solid rgba(124,107,246,0.30)',
         color: 'var(--c-purple-lite)',
-        display: 'grid', placeItems: 'center',
       }}>
         <Icon size={18} strokeWidth={2.2} />
       </div>
@@ -356,14 +352,12 @@ function TopRecommendation({ rec, onClick }: { rec: any; onClick: () => void }) 
         cursor: 'pointer', fontFamily: 'inherit',
         WebkitTapHighlightColor: 'transparent',
         display: 'flex', alignItems: 'center', gap: 12,
-        boxShadow: '0 10px 30px rgba(124, 107, 246, 0.02)',
+        boxShadow: '0 4px 0 0 rgba(74,47,168,0.5), 0 10px 24px rgba(124, 107, 246, 0.14)',
       }}
     >
-      <div style={{
-        width: 44, height: 44, borderRadius: 13, flexShrink: 0,
+      <div className="kyno-ichip" style={{
+        width: 44, height: 44, flexShrink: 0,
         background: 'linear-gradient(135deg, #A5B4FC, #7C6BF6)',
-        display: 'grid', placeItems: 'center',
-        boxShadow: '0 6px 18px rgba(124, 107, 246, 0.04)',
       }}>
         <Icon size={20} color="#000" strokeWidth={2.2} />
       </div>
@@ -385,19 +379,19 @@ function VitalChip({ title, pct, unit = '%', tone, icon: Icon }: { title: string
   const accent = tone === 'good' ? 'var(--c-cyan)' : tone === 'warn' ? 'var(--c-gold)' : tone === 'danger' ? 'var(--c-error)' : 'var(--c-purple-lite)'
   const p = Math.max(0, Math.min(100, pct))
   return (
-    <div className="kyno-card" style={{
+    <div className="kyno-stat" style={{
       width: '100%', minWidth: 0, padding: '13px 14px',
-      display: 'flex', flexDirection: 'column', gap: 4,
+      display: 'flex', flexDirection: 'column', gap: 7,
     }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-        <span style={{ color: accent, display: 'inline-flex' }}><Icon size={11} /></span>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <span className="kyno-ichip" style={{ width: 26, height: 26, background: 'rgba(255,255,255,0.05)', color: accent }}><Icon size={13} /></span>
         <span style={{ fontSize: 10, fontWeight: 700, color: accent, textTransform: 'uppercase', letterSpacing: 1.4 }}>{title}</span>
       </div>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 3 }}>
         <span style={{ fontSize: 24, fontWeight: 900, color: C.text, lineHeight: 1, letterSpacing: -0.6 }}>{pct}</span>
         <span style={{ fontSize: 11, color: C.textFaint, fontWeight: 700 }}>{unit}</span>
       </div>
-      <div style={{ height: 5, background: 'rgba(255,255,255,0.08)', borderRadius: 999, overflow: 'hidden', marginTop: 2 }}>
+      <div style={{ height: 6, background: 'rgba(255,255,255,0.08)', borderRadius: 999, overflow: 'hidden' }}>
         <div style={{ height: '100%', width: `${p}%`, background: accent, borderRadius: 999, transition: 'width .5s cubic-bezier(0.22,1,0.36,1)' }} />
       </div>
     </div>
@@ -415,10 +409,10 @@ function TrajectoryCard({ trend, predicted, band, mastered, tracked }: {
       border: '1px solid rgba(165, 180, 252, 0.16)',
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-        <div style={{
-          width: 44, height: 44, borderRadius: 12,
+        <div className="kyno-ichip" style={{
+          width: 44, height: 44,
           background: 'linear-gradient(135deg, #A5B4FC, #7C6BF6)',
-          display: 'grid', placeItems: 'center', flexShrink: 0,
+          flexShrink: 0,
         }}>
           <TrendingUp size={20} color="#000" />
         </div>
