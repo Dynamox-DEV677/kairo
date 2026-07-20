@@ -10,8 +10,8 @@
   --kyno-bg:            #0A0D16;   /* deep navy-black base                    */
   --kyno-surface:       #141A2B;   /* elevated cards / surfaces               */
   --kyno-surface-2:     #1E2740;   /* higher elevation / hover                */
-  --kyno-violet:        #7C5CFF;   /* primary accent (buttons, active nav)    */
-  --kyno-violet-deep:   #5B3FD0;   /* pressed state / chunky-button underside */
+  --kyno-violet:        #7c6bf6;   /* primary accent (buttons, active nav)    */
+  --kyno-violet-deep:   #4a2fa8;   /* pressed state / chunky-button underside */
   --kyno-cyan:          #22D3EE;   /* celebration · XP fills · correct        */
   --kyno-gold:          #FFB020;   /* streak · rewards                        */
   --kyno-error:         #FF5C5C;   /* wrong answer                            */
@@ -19,7 +19,7 @@
   --kyno-text-muted:    #9AA3B2;
   --kyno-border:        rgba(255,255,255,0.08);
   /* Hero-only gradients — level ring + primary CTA. Use sparingly.           */
-  --kyno-hero-gradient: linear-gradient(135deg, #7C5CFF 0%, #22D3EE 100%);
+  --kyno-hero-gradient: linear-gradient(135deg, #7c6bf6 0%, #22d3ee 100%);
   /* Rounded, friendly display font for headings + big numbers.               */
   --kyno-display:       'Nunito', 'Baloo 2', system-ui, sans-serif;
 }
@@ -380,11 +380,16 @@ html, body, #root {
   --c-faint:     #9CA3AF;
   --c-ghost:     #6B7280;
   --c-purple-soft: #DBE7FF;
-  --c-purple-lite: #A5B4FC;
-  --c-purple:      #A5B4FC;
-  --c-purple-hi:   #7C6BF6;
-  --c-purple-deep: #4A2FA8;
+  --c-purple-lite: #a5b4fc;   /* light accents / icons        */
+  --c-purple:      #7c6bf6;   /* PRIMARY — buttons, active, ring */
+  --c-purple-hi:   #9d8dff;   /* hover / glow                 */
+  --c-purple-deep: #4a2fa8;   /* pressed / button bottom-border */
   --c-purple-dark: #0B1530;
+  /* ── gamified accents (Duolingo palette) ── */
+  --c-cyan:        #22d3ee;   /* XP fills · correct · celebration */
+  --c-gold:        #ffb020;   /* streak flame · rewards       */
+  --c-success:     #34d399;   /* completed quests             */
+  --c-error:       #ff5c5c;   /* wrong / warnings             */
 
   /* Premium glow */
   --gl-purple: 0 8px 28px rgba(124, 107, 246, 0.35);
@@ -1390,7 +1395,7 @@ html[data-theme="light"] [style*="rgb(17, 17, 17) none repeat scroll"]
   --kx-ultramarine:        #263ABC;
   --kx-ultramarine-deep:   #1A2A8C;
   --kx-ultramarine-soft:   rgba(38, 58, 140, 0.40);
-  --kx-cyan:               #A5B4FC;     /* secondary highlight */
+  --kx-cyan:               #22d3ee;     /* secondary highlight (Duolingo cyan) */
   --kx-cyan-soft:          rgba(165, 180, 252, 0.30);
 }
 
