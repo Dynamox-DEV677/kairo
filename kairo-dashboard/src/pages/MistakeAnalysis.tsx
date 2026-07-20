@@ -88,9 +88,9 @@ export default function MistakeAnalysis() {
         <Header onAddManual={() => setAdding(true)} />
 
         <div className="kr-mst-kpi" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14, marginTop: 22 }}>
-          <Kpi label="Total mistakes"   value={totalMistakes}    hint="across every Kyno activity" />
-          <Kpi label="Recurring topics" value={recurringTopics}  hint="≥ 3 wrong attempts" />
-          <Kpi label="High-severity"    value={highSeverity}     hint="needs attention now" highlight={highSeverity > 0} />
+          <Kpi label="Total mistakes"   value={totalMistakes}    hint="across every Kyno activity" accent="#7c6bf6" />
+          <Kpi label="Recurring topics" value={recurringTopics}  hint="≥ 3 wrong attempts" accent="#ffb020" />
+          <Kpi label="High-severity"    value={highSeverity}     hint="needs attention now" accent="#ff5c5c" />
         </div>
 
         <div style={{ marginTop: 22 }}>
@@ -148,41 +148,39 @@ function Header({ onAddManual }: { onAddManual: () => void }) {
         </div>
       </div>
 
-      <button onClick={onAddManual} style={{
+      <button onClick={onAddManual} className="kyno-chunky" style={{
         display: 'inline-flex', alignItems: 'center', gap: 8,
-        padding: '9px 14px', borderRadius: 10,
-        background: 'rgba(124, 107, 246, 0.08)',
-        border: '1px solid rgba(165, 180, 252, 0.14)',
-        color: C.text, fontFamily: 'inherit', fontWeight: 600, fontSize: 12,
-        cursor: 'pointer',
+        padding: '10px 16px', fontSize: 13,
       }}>
-        <Plus size={13} color={C.purple} />
+        <Plus size={14} />
         Log a mistake
       </button>
     </div>
   )
 }
 
-function Kpi({ label, value, hint, highlight }: { label: string; value: number; hint: string; highlight?: boolean }) {
+function Kpi({ label, value, hint, accent = '#7c6bf6' }: { label: string; value: number; hint: string; accent?: string }) {
+  // Light up in the accent colour only when there's something to signal.
+  const on = value > 0
   return (
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} style={{
       background: C.panel,
-      border: `1px solid ${highlight ? 'rgba(165, 180, 252, 0.45)' : C.border}`,
+      border: `1px solid ${on ? accent + '55' : C.border}`,
       borderRadius: 14, padding: '16px 18px', position: 'relative', overflow: 'hidden',
-      boxShadow: highlight ? '0 0 32px rgba(124, 107, 246, 0.18)' : 'none',
+      boxShadow: on ? `0 0 26px ${accent}22` : 'none',
     }}>
-      {highlight && (
+      {on && (
         <div style={{
           position: 'absolute', top: -30, right: -30,
           width: 130, height: 130, borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(124, 107, 246, 0.30) 0%, transparent 70%)',
+          background: `radial-gradient(circle, ${accent}44 0%, transparent 70%)`,
           pointerEvents: 'none', filter: 'blur(10px)',
         }} />
       )}
-      <div style={{ fontSize: 11, fontWeight: 700, color: C.textFaint, textTransform: 'uppercase', letterSpacing: 1.4 }}>
+      <div style={{ fontSize: 11, fontWeight: 700, color: on ? accent : C.textFaint, textTransform: 'uppercase', letterSpacing: 1.4 }}>
         {label}
       </div>
-      <div style={{ fontSize: 36, fontWeight: 800, color: C.text, marginTop: 4, letterSpacing: -1, lineHeight: 1 }}>
+      <div style={{ fontSize: 36, fontWeight: 800, color: on ? accent : C.text, marginTop: 4, letterSpacing: -1, lineHeight: 1 }}>
         {value}
       </div>
       <div style={{ fontSize: 11.5, color: C.textFaint, marginTop: 6 }}>{hint}</div>
