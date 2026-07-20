@@ -323,8 +323,9 @@ function BottomNav({
           const isActive = active === item.to
           const Icon = item.icon
           return (
-            <button key={item.to}
+            <motion.button key={item.to}
               data-bottom-tab="true"
+              whileTap={{ scale: 0.88 }}
               onClick={() => setActive(item.to)}
               aria-label={item.label}
               style={{
@@ -332,7 +333,7 @@ function BottomNav({
                 background: 'none', border: 'none', cursor: 'pointer',
                 display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                 gap: 2, padding: '8px 0', position: 'relative',
-                color: isActive ? '#fafafa' : '#9CA3AF',
+                color: isActive ? 'var(--c-purple-lite)' : '#9CA3AF',
                 fontFamily: 'inherit',
                 WebkitTapHighlightColor: 'transparent',
                 borderRadius: 14,
@@ -342,23 +343,24 @@ function BottomNav({
                   transition={{ type: 'spring', stiffness: 380, damping: 32 }}
                   style={{
                     position: 'absolute', inset: 0,
-                    background: 'linear-gradient(135deg, rgba(165, 180, 252, 0.18), rgba(124, 107, 246, 0.16))',
-                    border: '1px solid rgba(165, 180, 252, 0.30)',
+                    background: 'rgba(124, 107, 246, 0.18)',
+                    border: '1px solid rgba(124, 107, 246, 0.45)',
                     borderRadius: 14,
-                    boxShadow: '0 4px 14px rgba(124, 107, 246, 0.03)',
+                    boxShadow: '0 4px 14px rgba(124, 107, 246, 0.28)',
                   }} />
               )}
-              <Icon size={20} style={{ position: 'relative', strokeWidth: isActive ? 2.4 : 1.8 }} />
+              <Icon size={20} style={{ position: 'relative', strokeWidth: isActive ? 2.6 : 1.8 }} />
               <span style={{
                 position: 'relative',
-                fontSize: 10, fontWeight: 700, letterSpacing: 0.2,
-                color: isActive ? '#fafafa' : '#B1B5BA',
+                fontSize: 10, fontWeight: 800, letterSpacing: 0.2, fontFamily: 'var(--kyno-display)',
+                color: isActive ? 'var(--c-purple-lite)' : '#B1B5BA',
               }}>{item.label}</span>
-            </button>
+            </motion.button>
           )
         })}
-        <button onClick={onOpenMore}
+        <motion.button onClick={onOpenMore}
           data-bottom-tab="true"
+          whileTap={{ scale: 0.88 }}
           aria-label="More"
           style={{
             flex: 1,
@@ -370,8 +372,8 @@ function BottomNav({
             borderRadius: 14,
           }}>
           <MoreHorizontal size={20} style={{ strokeWidth: 1.8 }} />
-          <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: 0.2, color: '#B1B5BA' }}>More</span>
-        </button>
+          <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: 0.2, fontFamily: 'var(--kyno-display)', color: '#B1B5BA' }}>More</span>
+        </motion.button>
       </div>
     </div>
   )
