@@ -168,7 +168,7 @@ export default function KairoHome({ onNavigate }: Props) {
           </p>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
-          <button onClick={() => setEditing(e => !e)} style={ghostBtn}>
+          <button onClick={() => setEditing(e => !e)} className="kyno-ghost" style={ghostBtn}>
             <Settings2 size={13} /> Profile
           </button>
           <button onClick={fetchBrief} disabled={loading} className="kyno-chunky" style={primaryBtn}>
@@ -220,7 +220,7 @@ export default function KairoHome({ onNavigate }: Props) {
                   <input style={{ ...inp, flex: 1 }} type="date" value={ex.date} onChange={e => { const a = [...profile.examDates]; a[i] = { ...a[i], date: e.target.value }; saveProfile({ ...profile, examDates: a }) }} />
                 </div>
               ))}
-              <button onClick={() => saveProfile({ ...profile, examDates: [...profile.examDates, { name: 'My exam', date: '' }] })} style={{ ...ghostBtn, marginTop: 4 }}>+ Add exam</button>
+              <button onClick={() => saveProfile({ ...profile, examDates: [...profile.examDates, { name: 'My exam', date: '' }] })} className="kyno-ghost" style={{ ...ghostBtn, marginTop: 4 }}>+ Add exam</button>
             </div>
           </div>
           <button onClick={() => { setEditing(false); fetchBrief() }} className="kyno-chunky" style={{ ...primaryBtn, marginTop: 12 }}>Save & re-brief</button>
@@ -243,7 +243,7 @@ export default function KairoHome({ onNavigate }: Props) {
               .filter(e => e.date)
               .map(e => ({ ...e, days: Math.max(0, Math.round((+new Date(e.date) - Date.now()) / 86400000)) }))
             if (!list.length) return (
-              <button onClick={() => setEditing(true)} style={{ ...ghostBtn, width: '100%', justifyContent: 'center' }}>
+              <button onClick={() => setEditing(true)} className="kyno-ghost" style={{ ...ghostBtn, width: '100%', justifyContent: 'center' }}>
                 <Calendar size={13} /> Add your exam date
               </button>
             )
@@ -350,7 +350,7 @@ export default function KairoHome({ onNavigate }: Props) {
         ].map((q, i) => {
           const Icon = q.icon
           return (
-            <button key={i} onClick={() => go(q.v)} style={{ ...card, padding: 16, textAlign: 'left', cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <button key={i} onClick={() => go(q.v)} className="kyno-tile" style={{ padding: 16, textAlign: 'left', display: 'flex', flexDirection: 'column', gap: 6 }}>
               <Icon size={18} style={{ color: '#A5B4FC' }} />
               <div style={{ fontSize: 14, fontWeight: 700, color: '#fafafa' }}>{q.title}</div>
               <div style={{ fontSize: 11, color: '#9CA3AF' }}>{q.sub}</div>
@@ -362,10 +362,10 @@ export default function KairoHome({ onNavigate }: Props) {
   )
 }
 
+// Layout only — the .kyno-ghost class provides the purple hairline, colour, font and press-down.
 const ghostBtn: React.CSSProperties = {
-  background: 'transparent', color: '#9AA3B2', border: '1px solid rgba(124,92,255,0.28)',
-  borderRadius: 12, padding: '9px 16px', fontSize: 12, fontWeight: 700, cursor: 'pointer',
-  display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: 'var(--kyno-display)',
+  padding: '9px 16px', fontSize: 12,
+  display: 'inline-flex', alignItems: 'center', gap: 6,
 }
 // Chunky Duolingo-style primary button. Layout only here — the .kyno-chunky class
 // provides the violet fill, dark text, thick bottom border and press-down on tap.
