@@ -6,7 +6,7 @@ type Mode = 'focus' | 'short' | 'long'
 
 const DURATIONS: Record<Mode, number> = { focus: 25 * 60, short: 5 * 60, long: 15 * 60 }
 const MODE_LABELS: Record<Mode, string> = { focus: 'Focus Time', short: 'Short Break', long: 'Long Break' }
-const MODE_COLORS: Record<Mode, string> = { focus: '#7C6BF6', short: '#A5B4FC', long: '#8FA0FA' }
+const MODE_COLORS: Record<Mode, string> = { focus: '#7C6BF6', short: '#34D399', long: '#22D3EE' }
 
 const TASKS_PRESET = ['Study Chapter', 'Solve Problems', 'Revise Notes', 'Practice Questions', 'Read Textbook']
 
@@ -84,9 +84,9 @@ export default function Pomodoro() {
           <div style={{ display: 'flex', gap: 4, marginBottom: 24, background: '#141A2A', border: '1px solid #1f2532', borderRadius: 9, padding: 3 }}>
             {(['focus', 'short', 'long'] as Mode[]).map(m => (
               <button key={m} onClick={() => switchMode(m)} style={{
-                padding: '5px 10px', borderRadius: 7, border: 'none', fontFamily: 'inherit',
-                fontSize: 11, fontWeight: mode === m ? 600 : 400, cursor: 'pointer',
-                background: mode === m ? `${MODE_COLORS[m]}20` : 'transparent',
+                padding: '6px 12px', borderRadius: 7, border: `1px solid ${mode === m ? MODE_COLORS[m] : 'transparent'}`, fontFamily: 'inherit',
+                fontSize: 11, fontWeight: mode === m ? 800 : 500, cursor: 'pointer',
+                background: mode === m ? `${MODE_COLORS[m]}26` : 'transparent',
                 color: mode === m ? MODE_COLORS[m] : '#6B7280', transition: 'all 0.15s',
               }}>
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
@@ -99,12 +99,13 @@ export default function Pomodoro() {
 
           <div style={{ position: 'relative', width: 200, height: 200, marginBottom: 20 }}>
             <svg width="200" height="200" style={{ position: 'absolute', top: 0, left: 0, transform: 'rotate(-90deg)' }}>
-              <circle cx="100" cy="100" r={r} fill="none" stroke="#1f2532" strokeWidth="8" />
+              <circle cx="100" cy="100" r={r} fill="none" stroke="#1f2532" strokeWidth="9" />
               <motion.circle
-                cx="100" cy="100" r={r} fill="none" stroke={color} strokeWidth="8"
+                cx="100" cy="100" r={r} fill="none" stroke={color} strokeWidth="9"
                 strokeLinecap="round" strokeDasharray={circ} strokeDashoffset={stroke}
                 animate={{ strokeDashoffset: stroke }}
                 transition={{ duration: 0.3 }}
+                style={{ filter: running ? `drop-shadow(0 0 6px ${color}88)` : 'none' }}
               />
             </svg>
             <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
@@ -114,14 +115,14 @@ export default function Pomodoro() {
           </div>
 
           <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
-            <button onClick={() => setRunning(r => !r)} style={{
-              width: 56, height: 56, borderRadius: '50%', border: 'none', cursor: 'pointer',
+            <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.9 }} onClick={() => setRunning(r => !r)} style={{
+              width: 60, height: 60, borderRadius: '50%', border: 'none', cursor: 'pointer',
               background: `linear-gradient(135deg,${color},${color}cc)`,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              boxShadow: `0 0 20px ${color}40`,
+              boxShadow: `0 6px 22px ${color}55`,
             }}>
-              {running ? <Pause size={22} color="#fff" /> : <Play size={22} color="#fff" fill="#fff" />}
-            </button>
+              {running ? <Pause size={24} color="#fff" fill="#fff" /> : <Play size={24} color="#fff" fill="#fff" />}
+            </motion.button>
             <button onClick={reset} style={{ width: 44, height: 44, borderRadius: '50%', border: '1px solid #1f2532', background: '#141A2A', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', alignSelf: 'center' }}>
               <RotateCcw size={15} color="#6B7280" />
             </button>
@@ -151,7 +152,7 @@ export default function Pomodoro() {
 
         <div>
           <div style={{ background: '#141A2A', border: '1px solid #1f2532', borderRadius: 14, padding: 20, marginBottom: 14 }}>
-            <div style={{ fontSize: 12, fontWeight: 700, color: mode === 'focus' ? '#A5B4FC' : '#A5B4FC', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: color, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 }}>
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
                 {mode === 'focus' ? <Brain size={13} /> : <Coffee size={13} />}
                 {mode === 'focus' ? 'Focus Tips' : 'Break Tips'}

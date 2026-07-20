@@ -140,19 +140,20 @@ export default function FocusMode() {
       }}>
         <svg viewBox="-160 -160 320 320" width={320} height={320}
           style={{ transform: 'rotate(-90deg)' }}>
-          <circle r={R} fill="none" stroke="#171D2D" strokeWidth={6} />
+          <circle r={R} fill="none" stroke="#171D2D" strokeWidth={9} />
           <motion.circle
             r={R} fill="none"
             stroke={done ? '#A5B4FC' : 'url(#grad)'}
-            strokeWidth={6} strokeLinecap="round"
+            strokeWidth={9} strokeLinecap="round"
             strokeDasharray={C}
             animate={{ strokeDashoffset: C - dash }}
             transition={{ ease: 'linear', duration: 0.8 }}
+            style={{ filter: running && !done ? 'drop-shadow(0 0 6px rgba(124,107,246,0.55))' : 'none' }}
           />
           <defs>
             <linearGradient id="grad" x1="0" y1="0" x2="1" y2="1">
               <stop offset="0" stopColor="#7C6BF6" />
-              <stop offset="1" stopColor="#7C6BF6" />
+              <stop offset="1" stopColor="#A5B4FC" />
             </linearGradient>
           </defs>
         </svg>
@@ -171,8 +172,11 @@ export default function FocusMode() {
             }}>
             {done ? 'Done' : fmt(remaining)}
           </motion.div>
-          <div style={{ fontSize: 11, color: '#6B7280', marginTop: 8, textTransform: 'uppercase', letterSpacing: 2.5 }}>
-            {done ? 'great session' : running ? 'focusing' : 'paused'}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginTop: 8 }}>
+            <span style={{ width: 7, height: 7, borderRadius: '50%', background: done ? '#A5B4FC' : running ? '#34d399' : '#6B7280', boxShadow: running && !done ? '0 0 8px #34d399' : 'none' }} />
+            <div style={{ fontSize: 11, color: '#6B7280', textTransform: 'uppercase', letterSpacing: 2.5 }}>
+              {done ? 'great session' : running ? 'focusing' : 'paused'}
+            </div>
           </div>
         </div>
       </div>
@@ -184,9 +188,9 @@ export default function FocusMode() {
             onClick={start}
             style={{
               padding: '12px 28px', borderRadius: 10, border: 'none',
-              background: 'linear-gradient(135deg,#7C6BF6,#7C6BF6)',
+              background: 'linear-gradient(135deg,#7C6BF6,#6455e0)',
               color: '#fff', fontFamily: 'inherit', fontSize: 14, fontWeight: 700,
-              cursor: 'pointer', boxShadow: '0 0 22px rgba(124, 107, 246, 0.04)',
+              cursor: 'pointer', boxShadow: '0 8px 24px rgba(124, 107, 246, 0.4)',
               display: 'flex', alignItems: 'center', gap: 8,
             }}>
             <Play size={14} />{done ? 'Start Again' : 'Start Focus'}
