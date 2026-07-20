@@ -380,10 +380,10 @@ export default function KairoChat() {
         flexShrink: 0,
       }}>
         <div style={{
-          ...GLASS, border: `1px solid ${C.border}`,
+          ...GLASS, border: '1px solid rgba(124,107,246,0.24)',
           borderRadius: isMobile ? 16 : 18, display: 'flex', alignItems: 'flex-end', gap: 8,
           padding: isMobile ? '6px 6px 6px 14px' : '10px 10px 10px 18px',
-          boxShadow: '0 12px 40px rgba(0,0,0,0.45)',
+          boxShadow: '0 12px 40px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.04)',
         }}>
           <textarea
             value={input}
@@ -407,15 +407,13 @@ export default function KairoChat() {
           <button
             onClick={send}
             disabled={busy || !input.trim()}
+            className="kyno-send"
             style={{
               width: isMobile ? 38 : 42, height: isMobile ? 38 : 42,
-              borderRadius: 12, border: 'none', cursor: 'pointer',
-              background: input.trim() && !busy
-                ? 'linear-gradient(135deg, #7C6BF6, #A5B4FC)'
-                : 'rgba(255,255,255,0.06)',
+              borderRadius: 12, border: 'none', cursor: input.trim() && !busy ? 'pointer' : 'not-allowed',
+              background: input.trim() && !busy ? 'var(--c-purple)' : 'rgba(255,255,255,0.06)',
               color: '#fff', display: 'grid', placeItems: 'center', flexShrink: 0,
-              boxShadow: input.trim() && !busy ? '0 6px 20px rgba(124,107,246,0.4)' : 'none',
-              transition: 'all .2s',
+              boxShadow: input.trim() && !busy ? '0 6px 20px rgba(124,107,246,0.45)' : 'none',
             }}
           >
             {busy ? <Loader2 size={17} className="animate-spin" /> : <Send size={17} />}
