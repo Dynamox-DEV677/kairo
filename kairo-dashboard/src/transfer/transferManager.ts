@@ -2,14 +2,23 @@
 // end-to-end (build → download/share + one-time key → pick file + key → restore).
 // The WebRTC live path (Phase 3) plugs into the same export/import core.
 import { makeLog } from './log'
-import { generateSessionKey, exportKeyB64, importKeyB64 } from './encryption'
+import {
+  generateSessionKey, exportKeyB64, importKeyB64,
+  generateHandshakeKeyPair, exportPublicKeyB64,
+} from './encryption'
 import {
   collectSnapshot, encryptSnapshot, serializeSnapshotFile, transferFileName,
+  exportEncrypted,
 } from './exporter'
 import {
-  parseSnapshotFile, importFromCipher, type RestoreResult,
+  parseSnapshotFile, importFromCipher, importEncrypted, type RestoreResult,
 } from './importer'
-import type { TransferManifest } from './types'
+import { createSession } from './qr'
+import {
+  connectSender, connectReceiver, sendChunks, receiveChunks,
+  webrtcSupported, signalingAvailable, type WebRTCSession,
+} from './webrtcTransport'
+import type { TransferManifest, SessionInfo } from './types'
 
 const log = makeLog('manager')
 
@@ -95,4 +104,93 @@ export async function shareTransferFile(fileText: string, fileName: string): Pro
     }
   } catch (e) { log.warn('share cancelled/failed', e) }
   return false
+}
+
+// ── live WebRTC path ─────────────────────────────────────────────────────────
+// Direct device-to-device transfer. Sender shows a QR (carrying its ephemeral
+// ECDH public key); receiver scans it, both pair over Supabase Realtime signaling,
+// then the encrypted snapshot streams straight across a WebRTC data channel.
+
+// True only when the browser supports WebRTC AND signaling (Supabase) is configured.
+export function livePairingAvailable(): boolean {
+  return webrtcSupported() && signalingAvailable()
+}
+
+export interface WebRTCPairing {
+  info:    SessionInfo    // encode this into the QR (kind:'webrtc', carries pubKey)
+  keyPair: CryptoKeyPair  // held only on the sender; never leaves this device
+}
+
+// Sender: mint a one-time live session + the QR payload the receiver will scan.
+export async function createWebRTCSession(): Promise<WebRTCPairing> {
+  const keyPair = await generateHandshakeKeyPair()
+  const pubKey  = await exportPublicKeyB64(keyPair)
+  const info    = createSession('webrtc', pubKey)
+  info.signal   = info.sessionId   // signaling channel is keyed by the session id
+  log.info(`live session ${info.sessionId} · code ${info.code}`)
+  return { info, keyPair }
+}
+
+// Sender: connect to the scanned receiver, then stream the encrypted snapshot.
+export async function sendOverWebRTC(opts: {
+  pairing:     WebRTCPairing
+  appVersion?: string
+  onState?:    (s: RTCPeerConnectionState) => void
+  onProgress?: (sentChunks: number, totalChunks: number) => void
+}): Promise<{ ok: boolean; manifest?: TransferManifest; error?: string }> {
+  let session: WebRTCSession
+  try {
+    session = await connectSender({
+      sessionId: opts.pairing.info.sessionId,
+      myKeyPair: opts.pairing.keyPair,
+      onState:   opts.onState,
+    })
+  } catch (e: any) {
+    return { ok: false, error: String(e?.message || e) }
+  }
+  try {
+    // Encrypt only AFTER pairing — the AES key is derived from the ECDH exchange.
+    const enc = await exportEncrypted(session.sharedKey, {
+      deviceLabel: currentDeviceLabel(),
+      appVersion:  opts.appVersion,
+    })
+    await sendChunks(session, enc.bundle, enc.chunks, opts.onProgress)
+    log.info('live send complete')
+    return { ok: true, manifest: enc.bundle.manifest }
+  } catch (e: any) {
+    return { ok: false, error: String(e?.message || e) }
+  } finally {
+    setTimeout(() => session.close(), 1500)   // let the last SCTP frames flush
+  }
+}
+
+// Receiver: connect to the sender named in the scanned QR, receive + restore.
+export async function receiveOverWebRTC(opts: {
+  info:        SessionInfo
+  onState?:    (s: RTCPeerConnectionState) => void
+  onProgress?: (recvChunks: number, totalChunks: number) => void
+}): Promise<RestoreResult> {
+  if (!opts.info.pubKey) {
+    return { ok: false, restoredKeys: 0, error: 'This pairing code is missing its security key — regenerate the QR on the other device.' }
+  }
+  let session: WebRTCSession
+  try {
+    session = await connectReceiver({
+      sessionId:       opts.info.sessionId,
+      senderPubKeyB64: opts.info.pubKey,
+      onState:         opts.onState,
+    })
+  } catch (e: any) {
+    return { ok: false, restoredKeys: 0, error: String(e?.message || e) }
+  }
+  try {
+    const { bundle, chunks } = await receiveChunks(session, opts.onProgress)
+    const result = await importEncrypted(bundle, chunks, session.sharedKey)
+    log.info(`live receive: ok=${result.ok} keys=${result.restoredKeys}`)
+    return result
+  } catch (e: any) {
+    return { ok: false, restoredKeys: 0, error: String(e?.message || e) }
+  } finally {
+    session.close()
+  }
 }
