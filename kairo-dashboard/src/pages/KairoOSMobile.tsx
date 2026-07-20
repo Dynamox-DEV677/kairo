@@ -306,34 +306,32 @@ function SectionLabel({ children, inline = false }: { children: React.ReactNode;
   )
 }
 
-function QuickAction({ label, icon: Icon, onClick, accent }: { label: string; icon: any; onClick: () => void; accent: string }) {
+function QuickAction({ label, icon: Icon, onClick }: { label: string; icon: any; onClick: () => void; accent?: string }) {
   return (
-    <motion.button
-      whileTap={{ scale: 0.95 }}
+    <button
+      className="kyno-tile"
       onClick={onClick}
       style={{
         width: '100%', minWidth: 0,
         display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
-        padding: '12px 6px',
-        ...GLASS,
-        border: '1px solid rgba(165, 180, 252, 0.18)',
-        borderRadius: 16,
-        color: C.text, fontFamily: 'inherit', cursor: 'pointer',
+        padding: '13px 6px',
+        color: C.text, fontFamily: 'inherit',
         WebkitTapHighlightColor: 'transparent',
       }}
     >
       <div style={{
-        width: 36, height: 36, borderRadius: 12,
-        background: `linear-gradient(135deg, ${accent}, ${C.purpleHi})`,
+        width: 38, height: 38, borderRadius: 12,
+        background: 'rgba(124,107,246,0.16)',
+        border: '1px solid rgba(124,107,246,0.30)',
+        color: 'var(--c-purple-lite)',
         display: 'grid', placeItems: 'center',
-        boxShadow: `0 6px 18px ${accent}44`,
       }}>
-        <Icon size={18} color="#000" strokeWidth={2.2} />
+        <Icon size={18} strokeWidth={2.2} />
       </div>
       <span style={{ fontSize: 11, fontWeight: 700, color: C.textDim, letterSpacing: 0.2, textAlign: 'center', lineHeight: 1.1 }}>
         {label}
       </span>
-    </motion.button>
+    </button>
   )
 }
 
@@ -383,22 +381,24 @@ function TopRecommendation({ rec, onClick }: { rec: any; onClick: () => void }) 
 }
 
 function VitalChip({ title, pct, unit = '%', tone, icon: Icon }: { title: string; pct: number; unit?: string; tone: 'good' | 'warn' | 'danger' | 'neutral'; icon: any }) {
-  const accent = tone === 'good' ? C.purpleLite : tone === 'warn' ? C.purple : tone === 'danger' ? C.purpleHi : C.purpleSoft
+  // Health-coded accent: good = cyan, watch = gold, risk = error, else purple.
+  const accent = tone === 'good' ? 'var(--c-cyan)' : tone === 'warn' ? 'var(--c-gold)' : tone === 'danger' ? 'var(--c-error)' : 'var(--c-purple-lite)'
+  const p = Math.max(0, Math.min(100, pct))
   return (
-    <div style={{
-      width: '100%', minWidth: 0,
-      padding: '14px 14px',
-      borderRadius: 16,
-      ...GLASS,
-      border: '1px solid rgba(165, 180, 252, 0.16)',
-      display: 'flex', flexDirection: 'column', gap: 6,
+    <div className="kyno-card" style={{
+      width: '100%', minWidth: 0, padding: '13px 14px',
+      display: 'flex', flexDirection: 'column', gap: 4,
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-        <Icon size={11} color={accent} />
+        <span style={{ color: accent, display: 'inline-flex' }}><Icon size={11} /></span>
         <span style={{ fontSize: 10, fontWeight: 700, color: accent, textTransform: 'uppercase', letterSpacing: 1.4 }}>{title}</span>
       </div>
-      <div style={{ fontSize: 22, fontWeight: 800, color: C.text, lineHeight: 1, letterSpacing: -0.6 }}>
-        {pct}<span style={{ fontSize: 11, color: C.textFaint, marginLeft: 1, fontWeight: 700 }}>{unit}</span>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 3 }}>
+        <span style={{ fontSize: 24, fontWeight: 900, color: C.text, lineHeight: 1, letterSpacing: -0.6 }}>{pct}</span>
+        <span style={{ fontSize: 11, color: C.textFaint, fontWeight: 700 }}>{unit}</span>
+      </div>
+      <div style={{ height: 5, background: 'rgba(255,255,255,0.08)', borderRadius: 999, overflow: 'hidden', marginTop: 2 }}>
+        <div style={{ height: '100%', width: `${p}%`, background: accent, borderRadius: 999, transition: 'width .5s cubic-bezier(0.22,1,0.36,1)' }} />
       </div>
     </div>
   )
