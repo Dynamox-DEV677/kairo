@@ -416,6 +416,12 @@ button, [role="button"], a, .kyno-tile, .kyno-chip {
 @media (max-width: 768px) {
   .ks-composer {
     margin-bottom: calc(100px + env(safe-area-inset-bottom)) !important;
+    transition: margin-bottom .2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  /* When the input is focused, the bottom dock auto-hides — so drop the composer
+     down to sit at the bottom instead of leaving the dock's reserved gap. */
+  .ks-composer:focus-within {
+    margin-bottom: calc(12px + env(safe-area-inset-bottom)) !important;
   }
 }
 
