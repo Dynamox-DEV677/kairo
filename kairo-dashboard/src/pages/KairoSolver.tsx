@@ -432,7 +432,7 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
       )}
 
       <div className="ks-composer" style={{
-        background: 'linear-gradient(180deg, rgba(20, 24, 35, 0.65) 0%, rgba(11, 11, 15, 0.65) 100%)',
+        background: 'linear-gradient(180deg, rgba(20, 24, 35, 1) 0%, rgba(11, 11, 15, 1) 100%)',
         border: `1px solid ${voiceOn ? 'rgba(165, 180, 252, 0.55)' : 'rgba(255, 255, 255, 0.06)'}`,
         borderRadius: 28, padding: '10px 12px',
         display: 'flex', alignItems: 'flex-end', gap: 10,
@@ -442,8 +442,8 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
         boxShadow: voiceOn
           ? '0 16px 44px rgba(38, 58, 140, 0.45), 0 0 0 3px rgba(38, 58, 140, 0.25), 0 0 0 1px rgba(165, 180, 252, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.05)'
           : '0 16px 40px rgba(0, 0, 0, 0.40), 0 0 32px rgba(38, 58, 140, 0.10), inset 0 1px 0 rgba(255, 255, 255, 0.04)',
-        backdropFilter: 'blur(28px) saturate(170%)',
-        WebkitBackdropFilter: 'blur(28px) saturate(170%)',
+
+
       }}>
         <textarea
           ref={taRef}
@@ -555,7 +555,7 @@ function ExamPlanModal({ onClose }: { onClose: () => void }) {
       onClick={onClose}
       style={{
         position: 'fixed', inset: 0, zIndex: 999,
-        background: 'rgba(0,0,0,0.78)', backdropFilter: 'blur(8px)',
+        background: 'rgba(0,0,0,0.78)',
         display: 'grid', placeItems: 'center', padding: 16,
       }}>
       <motion.div
@@ -661,8 +661,8 @@ function Hero({ onPick }: { onPick: (q: string) => void }) {
           borderRadius: 30,
           background: 'linear-gradient(180deg, rgba(38, 58, 140, 0.22) 0%, rgba(11, 11, 15, 0.55) 100%)',
           border: '1px solid rgba(165, 180, 252, 0.32)',
-          backdropFilter: 'blur(18px) saturate(170%)',
-          WebkitBackdropFilter: 'blur(18px) saturate(170%)',
+
+
           boxShadow: '0 14px 48px rgba(38, 58, 140, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.08)',
         }} />
         <div style={{
@@ -707,8 +707,8 @@ function Hero({ onPick }: { onPick: (q: string) => void }) {
               fontFamily: 'inherit', fontSize: 13, fontWeight: 600,
               letterSpacing: '-0.005em',
               cursor: 'pointer',
-              backdropFilter: 'blur(18px) saturate(160%)',
-              WebkitBackdropFilter: 'blur(18px) saturate(160%)',
+
+
               boxShadow: '0 6px 18px rgba(38, 58, 140, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.05)',
               transition: 'box-shadow 0.24s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.24s cubic-bezier(0.22, 1, 0.36, 1)',
             }}
@@ -823,7 +823,7 @@ function VideoPlayer({ videoId, busy, topic }: {
           <div style={{
             position: 'absolute', bottom: 8, right: 12, zIndex: 4,
             padding: '3px 8px', borderRadius: 5,
-            background: 'rgba(13,13,13,0.6)', backdropFilter: 'blur(8px)',
+            background: 'rgba(13,13,13,0.6)',
             border: '1px solid rgba(124, 92, 255, 0.25)',
             fontSize: 9, color: '#A5B4FC', fontWeight: 700,
             textTransform: 'uppercase', letterSpacing: 1,
@@ -878,7 +878,7 @@ function Slideshow({ slides, busy, topic, questionType, err, compact = false }: 
       <div style={{
         position: 'absolute', top: 14, left: 14, zIndex: 4,
         padding: '6px 12px', borderRadius: 7,
-        background: 'rgba(13,13,13,0.85)', backdropFilter: 'blur(12px)',
+        background: 'rgba(13,13,13,0.85)',
         border: '1px solid rgba(124, 92, 255, 0.3)',
         fontSize: 10.5, color: '#A5B4FC', fontWeight: 700,
         textTransform: 'uppercase', letterSpacing: 1.5,
@@ -893,7 +893,7 @@ function Slideshow({ slides, busy, topic, questionType, err, compact = false }: 
         <div style={{
           position: 'absolute', top: 14, right: 14, zIndex: 4,
           padding: '5px 11px', borderRadius: 6,
-          background: 'rgba(13,13,13,0.85)', backdropFilter: 'blur(12px)',
+          background: 'rgba(13,13,13,0.85)',
           border: '1px solid #1f2532',
           fontSize: 10, color: '#B1B5BA', fontWeight: 700,
           fontFamily: 'monospace', letterSpacing: 0.5,
@@ -1291,7 +1291,7 @@ const btnStop: React.CSSProperties = {
 const arrowBtn: React.CSSProperties = {
   position: 'absolute', top: '50%', transform: 'translateY(-50%)',
   width: 34, height: 34, borderRadius: 9, zIndex: 4,
-  background: 'rgba(13,13,13,0.85)', backdropFilter: 'blur(10px)',
+  background: 'rgba(13,13,13,0.85)',
   border: '1px solid rgba(124, 92, 255, 0.3)', cursor: 'pointer',
   display: 'flex', alignItems: 'center', justifyContent: 'center',
 }
@@ -1320,8 +1320,8 @@ function ModeChipBar({
       background: 'rgba(20, 24, 35, 0.55)',
       border: '1px solid rgba(255, 255, 255, 0.06)',
       borderRadius: 12,
-      backdropFilter: 'blur(14px)',
-      WebkitBackdropFilter: 'blur(14px)',
+
+
     }}>
       <div style={{
         fontFamily: "'Inter', system-ui, sans-serif",
