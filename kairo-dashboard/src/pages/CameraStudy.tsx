@@ -171,6 +171,7 @@ export default function CameraStudy() {
       let data: any
       try { data = JSON.parse(raw) }
       catch { throw new Error('The vision service returned an unexpected response (it may be overloaded or the photo too large). Try again or pick another model.') }
+      if (data?._fallback) throw new Error('Vision AI is busy or not enabled right now — try again in a moment, or switch models.')
       const text = data?.choices?.[0]?.message?.content
       if (!text) throw new Error('Empty response — try a different model.')
       setResult(typeof text === 'string' ? text : JSON.stringify(text))

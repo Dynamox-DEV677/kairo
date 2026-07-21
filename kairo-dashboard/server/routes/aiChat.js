@@ -213,6 +213,15 @@ router.post('/chat', async (req, res) => {
       return res.end()
     }
 
+    // A text "busy" message is meaningless for an IMAGE request — surface the
+    // real vision error so the client shows it (and we can diagnose) instead of
+    // a generic fallback that looks like a broken/empty analysis.
+    if (wantVision) {
+      return res.status(502).json({
+        error: 'Vision model unavailable right now — ' + (err.message || 'unknown error').slice(0, 220),
+      })
+    }
+
     const userQ = lastUserText(messages)
     if (isKnowledgeQuestion(userQ)) {
       const wiki = await chatWikipediaFallback(userQ)
