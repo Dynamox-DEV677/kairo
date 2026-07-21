@@ -230,35 +230,39 @@ export default function Settings() {
           </Field>
 
           {role === 'student' && (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               <Field label="Board">
-                <select value={board} onChange={e => setBoard(e.target.value)} style={sel}>
-                  {BOARDS.map(b => <option key={b}>{b}</option>)}
-                </select>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                  {BOARDS.map(b => (
+                    <button key={b} type="button" onClick={() => setBoard(b)}
+                      className={`kyno-chip${board === b ? ' on' : ''}`}
+                      style={{ padding: '6px 12px', fontSize: 12 }}>{b}</button>
+                  ))}
+                </div>
               </Field>
               <Field label="Class">
-                <select value={cls} onChange={e => setCls(e.target.value)} style={sel}>
-                  {CLASSES.map(c => <option key={c}>Class {c}</option>)}
-                </select>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                  {CLASSES.map(c => (
+                    <button key={c} type="button" onClick={() => setCls(`Class ${c}`)}
+                      className={`kyno-chip${cls === `Class ${c}` ? ' on' : ''}`}
+                      style={{ padding: '6px 12px', fontSize: 12 }}>Class {c}</button>
+                  ))}
+                </div>
               </Field>
             </div>
           )}
         </div>
 
-        <motion.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.97 }}
+        <button
           onClick={save}
+          className={`kyno-chunky${saved ? ' cyan' : ''}`}
           style={{
-            marginTop: 18, padding: '10px 22px', borderRadius: 9, border: 'none',
-            background: saved ? '#7C5CFF' : 'linear-gradient(135deg, #7C5CFF, #7C5CFF)',
-            color: '#fff', fontFamily: 'inherit', fontSize: 13, fontWeight: 600,
-            cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 7,
-            transition: 'background 0.2s',
+            marginTop: 18, padding: '11px 22px', fontSize: 13,
+            display: 'flex', alignItems: 'center', gap: 7,
           }}
         >
           {saved ? <><Check size={14} /> Saved!</> : 'Save changes'}
-        </motion.button>
+        </button>
       </Section>
 
       <Section icon={<Mail size={14} />} title="Email">
@@ -292,12 +296,8 @@ export default function Settings() {
               <button
                 onClick={requestEmailCode}
                 disabled={!newEmail.includes('@') || emailStep === 'sending' || emailStep === 'verifying'}
-                style={{
-                  padding: '9px 16px', borderRadius: 9, border: 'none', cursor: 'pointer',
-                  background: '#7C5CFF', color: '#fff', fontFamily: 'inherit',
-                  fontSize: 12.5, fontWeight: 700, whiteSpace: 'nowrap',
-                  opacity: !newEmail.includes('@') || emailStep === 'sending' ? 0.55 : 1,
-                }}
+                className="kyno-chunky"
+                style={{ padding: '10px 16px', fontSize: 12.5, whiteSpace: 'nowrap' }}
               >
                 {emailStep === 'sending' ? 'Sending…' : emailStep === 'code' || emailStep === 'verifying' ? 'Resend code' : 'Send code'}
               </button>
@@ -315,12 +315,8 @@ export default function Settings() {
                 <button
                   onClick={verifyEmailCode}
                   disabled={emailCode.length !== 6 || emailStep === 'verifying'}
-                  style={{
-                    padding: '9px 16px', borderRadius: 9, border: 'none', cursor: 'pointer',
-                    background: '#4ade80', color: '#04150a', fontFamily: 'inherit',
-                    fontSize: 12.5, fontWeight: 800, whiteSpace: 'nowrap',
-                    opacity: emailCode.length !== 6 || emailStep === 'verifying' ? 0.55 : 1,
-                  }}
+                  className="kyno-chunky cyan"
+                  style={{ padding: '10px 16px', fontSize: 12.5, whiteSpace: 'nowrap' }}
                 >
                   {emailStep === 'verifying' ? 'Checking…' : 'Verify & change'}
                 </button>
@@ -344,12 +340,10 @@ export default function Settings() {
               key={d.id}
               onClick={() => pickDecor(d.id)}
               title={d.label}
+              className={`kyno-tile${decor === d.id ? ' on' : ''}`}
               style={{
                 display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
-                padding: '10px 8px 8px', borderRadius: 14, cursor: 'pointer',
-                background: decor === d.id ? 'rgba(124, 92, 255, 0.14)' : 'rgba(255,255,255,0.03)',
-                border: decor === d.id ? '1.5px solid #7C5CFF' : '1.5px solid rgba(255,255,255,0.08)',
-                width: 84, fontFamily: 'inherit',
+                padding: '10px 8px 8px', width: 84, fontFamily: 'inherit',
               }}
             >
               <DecoratedAvatar pic={pic} name={name} size={40} decor={d.id} rounded={11} />
@@ -408,13 +402,10 @@ export default function Settings() {
           <button
             onClick={syncNow}
             disabled={syncing}
+            className="kyno-chunky cyan"
             style={{
               display: 'flex', alignItems: 'center', gap: 7,
-              padding: '10px 18px', borderRadius: 10, cursor: syncing ? 'default' : 'pointer',
-              background: 'linear-gradient(135deg, #A5B4FC, #7C5CFF)',
-              border: 'none', opacity: syncing ? 0.7 : 1,
-              color: '#000', fontFamily: 'inherit', fontSize: 13, fontWeight: 800,
-              boxShadow: '0 6px 18px rgba(124, 92, 255, 0.03)',
+              padding: '11px 18px', fontSize: 13,
             }}
           >
             {syncing

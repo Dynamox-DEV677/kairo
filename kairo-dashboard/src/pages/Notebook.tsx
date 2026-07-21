@@ -138,18 +138,14 @@ export default function Notebook() {
             Your second brain — every flashcard, summary, and doubt saved automatically.
           </p>
         </div>
-        <button className="nb-newbtn-inline" onClick={() => setCreating(true)} style={{
-          padding: '9px 14px', borderRadius: 9, border: 'none',
-          background: 'linear-gradient(135deg, #7C5CFF, #4A2FA8)', color: '#fff',
-          fontFamily: 'inherit', fontSize: 12, fontWeight: 600, cursor: 'pointer',
+        <button className="nb-newbtn-inline kyno-chunky" onClick={() => setCreating(true)} style={{
+          padding: '9px 14px', fontSize: 12,
           display: 'flex', alignItems: 'center', gap: 6,
         }}>
           <Plus size={13} /> New Note
         </button>
-        <button onClick={load} disabled={loading} style={{
-          padding: '9px 12px', borderRadius: 9, border: '1px solid #1f2532',
-          background: '#1C2233', color: '#9CA3AF', cursor: 'pointer',
-          fontFamily: 'inherit', fontSize: 12, display: 'flex', alignItems: 'center', gap: 5,
+        <button onClick={load} disabled={loading} className="kyno-ghost" style={{
+          padding: '9px 12px', fontSize: 12, display: 'flex', alignItems: 'center', gap: 5,
         }}>
           <RefreshCw size={12} style={{ animation: loading ? 'spin 0.8s linear infinite' : 'none' }} />
         </button>
@@ -204,12 +200,14 @@ export default function Notebook() {
             return (
               <motion.div key={n.id}
                 whileHover={{ x: 2 }}
+                whileTap={{ scale: 0.99 }}
                 onClick={() => { setSelected(n); setEditing(false) }}
                 style={{
                   padding: '12px 14px', borderRadius: 10, cursor: 'pointer',
                   background: isActive ? '#1a1a2e' : '#141A2A',
                   border: `1px solid ${isActive ? meta.color : '#1f2532'}`,
                   borderLeft: `3px solid ${meta.color}`,
+                  boxShadow: '0 3px 0 0 rgba(0,0,0,0.28)',
                   display: 'flex', alignItems: 'flex-start', gap: 10,
                 }}>
                 <div className="kyno-ichip" style={{
