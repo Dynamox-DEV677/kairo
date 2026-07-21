@@ -128,7 +128,7 @@ function MarkTab() {
         <button onClick={save} disabled={saving} style={{
           marginTop: 20, display: 'flex', alignItems: 'center', gap: 7,
           padding: '9px 20px', borderRadius: 9, border: 'none',
-          background: saved ? '#A5B4FC' : 'linear-gradient(135deg,#7C6BF6,#7C6BF6)',
+          background: saved ? '#A5B4FC' : 'linear-gradient(135deg,#7C5CFF,#7C5CFF)',
           color: '#fff', fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: 'pointer',
         }}>
           {saving ? 'Saving…' : saved ? '✓ Saved!' : 'Save Attendance'}
@@ -336,7 +336,7 @@ function StatsTab() {
 function Spinner() {
   return (
     <div style={{ display: 'flex', justifyContent: 'center', padding: '60px 0' }}>
-      <div style={{ width: 28, height: 28, borderRadius: '50%', border: '2px solid #1f2532', borderTopColor: '#7C6BF6', animation: 'spin 0.8s linear infinite' }} />
+      <div style={{ width: 28, height: 28, borderRadius: '50%', border: '2px solid #1f2532', borderTopColor: '#7C5CFF', animation: 'spin 0.8s linear infinite' }} />
     </div>
   )
 }

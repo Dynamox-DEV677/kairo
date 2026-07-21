@@ -128,7 +128,7 @@ function NamePicker({
                 >
                   <div style={{
                     width: 28, height: 28, borderRadius: 7, flexShrink: 0,
-                    background: 'linear-gradient(135deg, #7C6BF6, #7C6BF6)',
+                    background: 'linear-gradient(135deg, #7C5CFF, #7C5CFF)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     fontSize: 11, fontWeight: 700, color: '#fff',
                   }}>
@@ -235,8 +235,8 @@ export default function ParentMessage() {
                   onClick={() => setSituation(t.prompt)}
                   style={{
                     padding: '5px 10px', borderRadius: 6, fontSize: 11, cursor: 'pointer', fontFamily: 'inherit',
-                    background: situation === t.prompt ? 'rgba(124, 107, 246, 0.15)' : '#1C2233',
-                    border: `1px solid ${situation === t.prompt ? '#7C6BF6' : '#1f2532'}`,
+                    background: situation === t.prompt ? 'rgba(124, 92, 255, 0.15)' : '#1C2233',
+                    border: `1px solid ${situation === t.prompt ? '#7C5CFF' : '#1f2532'}`,
                     color: situation === t.prompt ? '#A5B4FC' : '#9CA3AF',
                     transition: 'all 0.1s',
                   }}>
@@ -267,7 +267,7 @@ export default function ParentMessage() {
               style={{ width: '100%', background: '#141A2A', border: '1px solid #1f2532', borderRadius: 8,
                 padding: '10px 12px', fontSize: 13, color: '#fafafa', fontFamily: 'inherit',
                 outline: 'none', resize: 'vertical', boxSizing: 'border-box' }}
-              onFocus={e => { (e.currentTarget as HTMLTextAreaElement).style.borderColor = '#7C6BF6' }}
+              onFocus={e => { (e.currentTarget as HTMLTextAreaElement).style.borderColor = '#7C5CFF' }}
               onBlur={e => { (e.currentTarget as HTMLTextAreaElement).style.borderColor = '#1f2532' }}
             />
           </div>
@@ -280,8 +280,8 @@ export default function ParentMessage() {
                 <motion.button key={t} whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }} onClick={() => setTone(t)}
                   style={{
                     padding: '5px 12px', borderRadius: 7, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit',
-                    background: tone === t ? 'rgba(124, 107, 246, 0.15)' : '#1C2233',
-                    border: `1px solid ${tone === t ? '#7C6BF6' : '#1f2532'}`,
+                    background: tone === t ? 'rgba(124, 92, 255, 0.15)' : '#1C2233',
+                    border: `1px solid ${tone === t ? '#7C5CFF' : '#1f2532'}`,
                     color: tone === t ? '#A5B4FC' : '#6B7280',
                     transition: 'all 0.12s',
                   }}>
@@ -293,13 +293,13 @@ export default function ParentMessage() {
 
           <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20, cursor: 'pointer' }}>
             <input type="checkbox" checked={bilingual} onChange={e => setBilingual(e.target.checked)}
-              style={{ accentColor: '#7C6BF6', width: 15, height: 15 }} />
+              style={{ accentColor: '#7C5CFF', width: 15, height: 15 }} />
             <span style={{ fontSize: 13, color: '#9CA3AF' }}>Include Hindi translation</span>
           </label>
 
           {error && (
-            <div style={{ fontSize: 12, color: '#A5B4FC', background: 'rgba(124, 107, 246, 0.08)',
-              border: '1px solid rgba(124, 107, 246, 0.2)', borderRadius: 7, padding: '8px 12px', marginBottom: 14 }}>
+            <div style={{ fontSize: 12, color: '#A5B4FC', background: 'rgba(124, 92, 255, 0.08)',
+              border: '1px solid rgba(124, 92, 255, 0.2)', borderRadius: 7, padding: '8px 12px', marginBottom: 14 }}>
               {error}
             </div>
           )}
@@ -309,11 +309,11 @@ export default function ParentMessage() {
             style={{
               display: 'flex', alignItems: 'center', gap: 7, padding: '11px 22px',
               borderRadius: 10, border: 'none',
-              background: 'linear-gradient(135deg, #7C6BF6, #7C6BF6)', color: '#fff',
+              background: 'linear-gradient(135deg, #7C5CFF, #7C5CFF)', color: '#fff',
               fontFamily: 'inherit', fontSize: 14, fontWeight: 600,
               cursor: loading || !situation.trim() ? 'not-allowed' : 'pointer',
               opacity: loading || !situation.trim() ? 0.6 : 1,
-              boxShadow: '0 0 20px rgba(124, 107, 246, 0.03)',
+              boxShadow: '0 0 20px rgba(124, 92, 255, 0.03)',
             }}>
             <Sparkles size={14} />{loading ? 'Writing…' : 'Write message'}
           </motion.button>
@@ -334,8 +334,8 @@ export default function ParentMessage() {
                   style={{
                     display: 'flex', alignItems: 'center', gap: 5, fontSize: 11,
                     color: editing ? '#A5B4FC' : '#9CA3AF',
-                    background: editing ? 'rgba(124, 107, 246, 0.1)' : 'none',
-                    border: `1px solid ${editing ? '#7C6BF6' : '#1f2532'}`,
+                    background: editing ? 'rgba(124, 92, 255, 0.1)' : 'none',
+                    border: `1px solid ${editing ? '#7C5CFF' : '#1f2532'}`,
                     borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontFamily: 'inherit',
                   }}>
                   <Edit3 size={11} />{editing ? 'Done editing' : 'Edit'}
@@ -348,7 +348,7 @@ export default function ParentMessage() {
                   onChange={e => setMessage(e.target.value)}
                   rows={12}
                   style={{
-                    flex: 1, width: '100%', background: '#141A2A', border: '1px solid #7C6BF6',
+                    flex: 1, width: '100%', background: '#141A2A', border: '1px solid #7C5CFF',
                     borderRadius: 8, padding: '12px', fontSize: 14, color: '#d4d4d8',
                     fontFamily: 'inherit', lineHeight: 1.7, outline: 'none', resize: 'vertical',
                     boxSizing: 'border-box',
@@ -406,7 +406,7 @@ export default function ParentMessage() {
                   onClick={generate} disabled={loading}
                   style={{
                     display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 600,
-                    color: '#A5B4FC', background: 'rgba(124, 107, 246, 0.1)', border: '1px solid rgba(124, 107, 246, 0.25)',
+                    color: '#A5B4FC', background: 'rgba(124, 92, 255, 0.1)', border: '1px solid rgba(124, 92, 255, 0.25)',
                     borderRadius: 8, padding: '8px 14px', cursor: loading ? 'not-allowed' : 'pointer',
                     fontFamily: 'inherit', opacity: loading ? 0.5 : 1,
                   }}>

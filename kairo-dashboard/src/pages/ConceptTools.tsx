@@ -18,7 +18,7 @@ const TABS = [
 const card  = { background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(14px) saturate(140%)', WebkitBackdropFilter: 'blur(14px) saturate(140%)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14, padding: 20 } as React.CSSProperties
 const inp   = { background: '#141A2A', border: '1px solid #1f2532', borderRadius: 8, padding: '9px 12px', fontSize: 13, color: '#fafafa', fontFamily: 'inherit', outline: 'none', width: '100%' } as React.CSSProperties
 const lbl   = { fontSize: 11, color: '#9CA3AF', display: 'block', marginBottom: 5, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.8 } as React.CSSProperties
-const btn   = (active = true, color?: string) => ({ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', borderRadius: 9, border: 'none', background: active ? (color || 'linear-gradient(135deg,#7C6BF6,#7C6BF6)') : '#171D2D', color: active ? '#fff' : '#6B7280', fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: active ? 'pointer' : 'not-allowed' } as React.CSSProperties)
+const btn   = (active = true, color?: string) => ({ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', borderRadius: 9, border: 'none', background: active ? (color || 'linear-gradient(135deg,#7C5CFF,#7C5CFF)') : '#171D2D', color: active ? '#fff' : '#6B7280', fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: active ? 'pointer' : 'not-allowed' } as React.CSSProperties)
 
 const SUBJECTS = ['General','Physics','Chemistry','Biology','Mathematics','History','Geography','English','Hindi','Economics']
 
@@ -38,9 +38,9 @@ export default function ConceptTools() {
             flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
             padding: '8px 8px', borderRadius: 7, border: 'none', fontFamily: 'inherit',
             fontSize: 12, fontWeight: tab === t.id ? 700 : 500, cursor: 'pointer',
-            background: tab === t.id ? 'linear-gradient(135deg,#7C6BF6,#6455e0)' : 'transparent',
+            background: tab === t.id ? 'linear-gradient(135deg,#7C5CFF,#6455e0)' : 'transparent',
             color: tab === t.id ? '#fff' : '#6B7280', transition: 'all 0.15s',
-            boxShadow: tab === t.id ? '0 4px 12px rgba(124,107,246,0.35)' : 'none',
+            boxShadow: tab === t.id ? '0 4px 12px rgba(124, 92, 255,0.35)' : 'none',
           }}>
             <t.icon size={12} /> {t.label}
           </button>
@@ -100,8 +100,8 @@ function SimplifyTab() {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6 }}>
               {[['class5','Class 5'],['class8','Class 8'],['class12','Class 12']].map(([v, l]) => (
                 <button key={v} onClick={() => setLevel(v)} style={{
-                  padding: '8px 7px', borderRadius: 8, border: `1.5px solid ${level === v ? '#7C6BF6' : '#1f2532'}`,
-                  background: level === v ? 'rgba(124,107,246,0.16)' : 'transparent',
+                  padding: '8px 7px', borderRadius: 8, border: `1.5px solid ${level === v ? '#7C5CFF' : '#1f2532'}`,
+                  background: level === v ? 'rgba(124, 92, 255,0.16)' : 'transparent',
                   color: level === v ? '#fff' : '#9CA3AF', fontSize: 11, fontWeight: level === v ? 800 : 600, cursor: 'pointer', fontFamily: 'inherit',
                   transition: 'all 0.15s',
                 }}>{l}</button>

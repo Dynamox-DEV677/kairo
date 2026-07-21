@@ -60,12 +60,12 @@ const TEACHER_NAV: NavItem[] = [
   { label: 'Tasks & Marks',   icon: BookOpen,        to: 'school',          color: '#C7D2E8' },
   { label: 'Question Paper',  icon: BookOpen,        to: 'question-paper',  color: '#A5B4FC' },
   { label: 'Lesson Plan',     icon: Calendar,        to: 'lesson-plan',     color: '#8FA0FA' },
-  { label: 'Parent Message',  icon: Bell,            to: 'parent-message',  color: '#7C6BF6' },
+  { label: 'Parent Message',  icon: Bell,            to: 'parent-message',  color: '#7C5CFF' },
   { label: 'Announcements',   icon: Megaphone,       to: 'announcement',    color: '#f472b6' },
 ]
 
 const ADMIN_NAV: NavItem[] = [
-  { label: 'School Hub',      icon: Building2,   to: 'school',          color: '#7C6BF6' },
+  { label: 'School Hub',      icon: Building2,   to: 'school',          color: '#7C5CFF' },
   { label: 'Announcements',   icon: Megaphone,   to: 'announcement',    color: '#f472b6' },
   { label: 'Fee Reminder',    icon: DollarSign,  to: 'fee-reminder',    color: '#34d399' },
   { label: 'Admission Bot',   icon: Bot,         to: 'admission',       color: '#A5B4FC' },
@@ -242,7 +242,7 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
             background: 'linear-gradient(150deg, #0B0F1C 0%, #05060A 100%)',
             border: '1px solid rgba(165, 180, 252, 0.30)',
             display: 'grid', placeItems: 'center',
-            boxShadow: '0 6px 20px rgba(124,107,246,0.30), inset 0 1px 0 rgba(255,255,255,0.08)',
+            boxShadow: '0 6px 20px rgba(124, 92, 255,0.30), inset 0 1px 0 rgba(255,255,255,0.08)',
             transition: 'width 0.32s cubic-bezier(0.22, 1, 0.36, 1), height 0.32s cubic-bezier(0.22, 1, 0.36, 1)',
           }}>
             <img
@@ -270,7 +270,7 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
                   color: isDark ? '#F5F5F7' : '#18181b',
                   letterSpacing: '0.2px',
                   whiteSpace: 'nowrap',
-                  textShadow: isDark ? '0 0 20px rgba(124,107,246,0.45)' : 'none',
+                  textShadow: isDark ? '0 0 20px rgba(124, 92, 255,0.45)' : 'none',
                 }}>Kyno</div>
                 <div style={{
                   fontSize: 8, fontWeight: 600,
@@ -488,7 +488,7 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
             title="New chat"
             style={{
               width: 22, height: 22, borderRadius: 5, marginRight: 6,
-              background: 'rgba(124, 107, 246, 0.1)', border: '1px solid rgba(124, 107, 246, 0.2)',
+              background: 'rgba(124, 92, 255, 0.1)', border: '1px solid rgba(124, 92, 255, 0.2)',
               color: '#A5B4FC', cursor: 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               padding: 0, flexShrink: 0,
@@ -688,15 +688,15 @@ function NavItemRow({ item, isActive, isHovered, isGenerating = false, compact =
           style={{
             position: 'absolute', left: 0, top: '18%', bottom: '18%',
             width: 2, borderRadius: 2,
-            background: '#7C6BF6',
-            boxShadow: '0 0 6px rgba(124, 107, 246, 0.12)',
+            background: '#7C5CFF',
+            boxShadow: '0 0 6px rgba(124, 92, 255, 0.12)',
           }}
         />
       )}
 
       <div style={{
         width: 26, height: 26, borderRadius: 8,
-        background: isActive ? 'rgba(124, 107, 246, 0.16)' : 'transparent',
+        background: isActive ? 'rgba(124, 92, 255, 0.16)' : 'transparent',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         flexShrink: 0, transition: 'background 0.22s cubic-bezier(0.22, 1, 0.36, 1)', position: 'relative',
       }}>
@@ -708,8 +708,8 @@ function NavItemRow({ item, isActive, isHovered, isGenerating = false, compact =
             style={{
               position: 'absolute', top: -2, right: -2,
               width: 6, height: 6, borderRadius: '50%',
-              background: '#7C6BF6',
-              boxShadow: '0 0 6px #7C6BF6',
+              background: '#7C5CFF',
+              boxShadow: '0 0 6px #7C5CFF',
             }}
           />
         )}
@@ -728,7 +728,7 @@ function NavItemRow({ item, isActive, isHovered, isGenerating = false, compact =
 
       {isGenerating ? (
         <span style={{
-          fontSize: 9, fontWeight: 600, color: '#7C6BF6',
+          fontSize: 9, fontWeight: 600, color: '#7C5CFF',
           letterSpacing: 0.3, animation: 'pulse 1.2s ease-in-out infinite',
         }}>
           AI…
@@ -736,7 +736,7 @@ function NavItemRow({ item, isActive, isHovered, isGenerating = false, compact =
       ) : item.badge ? (
         <span style={{
           fontSize: 10, fontWeight: 700, minWidth: 18, height: 18,
-          borderRadius: 5, background: '#7C6BF6',
+          borderRadius: 5, background: '#7C5CFF',
           color: '#fff', display: 'flex', alignItems: 'center',
           justifyContent: 'center', padding: '0 4px',
         }}>

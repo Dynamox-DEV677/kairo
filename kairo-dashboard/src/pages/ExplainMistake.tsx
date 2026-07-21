@@ -140,9 +140,9 @@ Now teach me how to never make this mistake again, following your structure exac
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 22 }}>
         <div style={{
           width: 44, height: 44, borderRadius: 11,
-          background: 'linear-gradient(135deg, #7C6BF6, #6455e0)',
+          background: 'linear-gradient(135deg, #7C5CFF, #6455e0)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 6px 18px rgba(124, 107, 246, 0.35)', flexShrink: 0,
+          boxShadow: '0 6px 18px rgba(124, 92, 255, 0.35)', flexShrink: 0,
         }}>
           <AlertTriangle size={22} color="#fff" />
         </div>
@@ -231,8 +231,8 @@ Now teach me how to never make this mistake again, following your structure exac
                   <div style={{ display: 'flex', gap: 8, marginTop: 18, paddingTop: 16, borderTop: '1px solid #171D2D' }}>
                     <button onClick={saveToBook} disabled={savedToBook} style={{
                       padding: '8px 14px', borderRadius: 8,
-                      border: `1px solid ${savedToBook ? 'rgba(165, 180, 252, 0.4)' : 'rgba(124, 107, 246, 0.3)'}`,
-                      background: savedToBook ? 'rgba(165, 180, 252, 0.08)' : 'rgba(124, 107, 246, 0.08)',
+                      border: `1px solid ${savedToBook ? 'rgba(165, 180, 252, 0.4)' : 'rgba(124, 92, 255, 0.3)'}`,
+                      background: savedToBook ? 'rgba(165, 180, 252, 0.08)' : 'rgba(124, 92, 255, 0.08)',
                       color: savedToBook ? '#A5B4FC' : '#A5B4FC',
                       cursor: savedToBook ? 'default' : 'pointer',
                       fontFamily: 'inherit', fontSize: 12, fontWeight: 600,

@@ -200,9 +200,9 @@ Be direct. Indian exam context. Under 200 words total.` },
           transition={{ duration: 1.4, repeat: Infinity, ease: 'easeInOut' }}
           style={{
             width: 44, height: 44, borderRadius: 11,
-            background: 'linear-gradient(135deg, #A5B4FC, #7C6BF6)',
+            background: 'linear-gradient(135deg, #A5B4FC, #7C5CFF)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: '0 0 22px rgba(124, 107, 246, 0.03)', flexShrink: 0,
+            boxShadow: '0 0 22px rgba(124, 92, 255, 0.03)', flexShrink: 0,
           }}>
           <AlertTriangle size={22} color="#fff" />
         </motion.div>
@@ -255,7 +255,7 @@ Be direct. Indian exam context. Under 200 words total.` },
                 {weakTopics.map((t, i) => (
                   <span key={i} style={{
                     padding: '4px 9px', borderRadius: 5,
-                    background: 'rgba(124, 107, 246, 0.10)', border: '1px solid rgba(124, 107, 246, 0.25)',
+                    background: 'rgba(124, 92, 255, 0.10)', border: '1px solid rgba(124, 92, 255, 0.25)',
                     color: '#A5B4FC', fontSize: 10.5, fontWeight: 600,
                   }}>{t}</span>
                 ))}
@@ -270,12 +270,12 @@ Be direct. Indian exam context. Under 200 words total.` },
             onClick={generate} disabled={busy}
             style={{
               width: '100%', padding: '14px', borderRadius: 11, border: 'none',
-              background: busy ? '#171D2D' : 'linear-gradient(135deg, #A5B4FC, #7C6BF6)',
+              background: busy ? '#171D2D' : 'linear-gradient(135deg, #A5B4FC, #7C5CFF)',
               color: busy ? '#6B7280' : '#fff',
               fontFamily: 'inherit', fontSize: 15, fontWeight: 800,
               cursor: busy ? 'not-allowed' : 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-              boxShadow: busy ? 'none' : '0 0 26px rgba(124, 107, 246, 0.14)',
+              boxShadow: busy ? 'none' : '0 0 26px rgba(124, 92, 255, 0.14)',
               letterSpacing: 1.5, textTransform: 'uppercase',
             }}>
             {busy
@@ -343,8 +343,8 @@ Be direct. Indian exam context. Under 200 words total.` },
               <button onClick={() => saveTab(activeTab as keyof PanicPack)}
                 disabled={savedTabs.has(activeTab)} style={{
                 padding: '6px 12px', borderRadius: 6,
-                border: `1px solid ${savedTabs.has(activeTab) ? 'rgba(165, 180, 252, 0.4)' : 'rgba(124, 107, 246, 0.3)'}`,
-                background: savedTabs.has(activeTab) ? 'rgba(165, 180, 252, 0.08)' : 'rgba(124, 107, 246, 0.08)',
+                border: `1px solid ${savedTabs.has(activeTab) ? 'rgba(165, 180, 252, 0.4)' : 'rgba(124, 92, 255, 0.3)'}`,
+                background: savedTabs.has(activeTab) ? 'rgba(165, 180, 252, 0.08)' : 'rgba(124, 92, 255, 0.08)',
                 color: savedTabs.has(activeTab) ? '#A5B4FC' : '#A5B4FC',
                 cursor: savedTabs.has(activeTab) ? 'default' : 'pointer',
                 fontFamily: 'inherit', fontSize: 11, fontWeight: 600,

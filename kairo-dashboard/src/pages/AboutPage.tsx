@@ -17,7 +17,7 @@ const C = {
   purpleLite:  '#DBE7FF',
   purpleSoft:  '#A5B4FC',
   purple:      '#A5B4FC',
-  purpleHi:    '#7C6BF6',
+  purpleHi:    '#7C5CFF',
   purpleDeep:  '#4A2FA8',
   purpleInk:   '#0B1530',
 }
@@ -362,7 +362,7 @@ function PurpleHalo() {
     <div aria-hidden style={{
       position: 'fixed', top: '-20vh', left: '50%', transform: 'translateX(-50%)',
       width: '120vw', height: '80vh', borderRadius: '50%',
-      background: `radial-gradient(60% 60% at 50% 30%, rgba(124, 107, 246, 0.18) 0%, rgba(74, 47, 168, 0.05) 35%, transparent 70%)`,
+      background: `radial-gradient(60% 60% at 50% 30%, rgba(124, 92, 255, 0.18) 0%, rgba(74, 47, 168, 0.05) 35%, transparent 70%)`,
       pointerEvents: 'none', zIndex: 0,
       filter: 'blur(30px)',
     }} />

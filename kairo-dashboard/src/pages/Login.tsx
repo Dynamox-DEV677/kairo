@@ -119,7 +119,7 @@ export default function Login({ onLogin }: LoginProps) {
       <div style={{
         position: 'absolute', top: '15%', left: '50%', transform: 'translateX(-50%)',
         width: 'min(600px, 100vw)', height: 'min(600px, 100vw)', borderRadius: '50%',
-        background: 'radial-gradient(circle, rgba(124, 107, 246, 0.10) 0%, transparent 70%)',
+        background: 'radial-gradient(circle, rgba(124, 92, 255, 0.10) 0%, transparent 70%)',
         pointerEvents: 'none',
         zIndex: 1,
       }} />
@@ -130,10 +130,10 @@ export default function Login({ onLogin }: LoginProps) {
             style={{
               width: 82, height: 'auto', objectFit: 'contain',
               margin: '0 auto 12px', display: 'block',
-              filter: 'drop-shadow(0 0 28px rgba(124, 107, 246, 0.30))',
+              filter: 'drop-shadow(0 0 28px rgba(124, 92, 255, 0.30))',
             }} />
           <h1 style={{ fontSize: 24, fontWeight: 800, color: '#fafafa', margin: 0, letterSpacing: '-0.5px' }}>kyno</h1>
-          <p style={{ fontSize: 11, color: '#7C6BF6', fontWeight: 700, letterSpacing: 4, marginTop: 4, textTransform: 'uppercase' }}>
+          <p style={{ fontSize: 11, color: '#7C5CFF', fontWeight: 700, letterSpacing: 4, marginTop: 4, textTransform: 'uppercase' }}>
             By Kairo Industries
           </p>
         </div>
@@ -256,14 +256,14 @@ function ChoiceCard({ onClick, icon: Icon, title, desc, highlight = false }: any
       whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}
       style={{
         width: '100%', padding: '16px 18px', borderRadius: 12,
-        background: highlight ? 'rgba(124, 107, 246, 0.06)' : '#141A2A',
-        border: `1px solid ${highlight ? 'rgba(124, 107, 246, 0.3)' : '#1f2532'}`,
+        background: highlight ? 'rgba(124, 92, 255, 0.06)' : '#141A2A',
+        border: `1px solid ${highlight ? 'rgba(124, 92, 255, 0.3)' : '#1f2532'}`,
         cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left',
         display: 'flex', alignItems: 'center', gap: 14, marginBottom: 10,
       }}>
       <div style={{
         width: 42, height: 42, borderRadius: 10, flexShrink: 0,
-        background: highlight ? 'linear-gradient(135deg,#7C6BF6,#7C6BF6)' : '#171D2D',
+        background: highlight ? 'linear-gradient(135deg,#7C5CFF,#7C5CFF)' : '#171D2D',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}>
         <Icon size={18} color={highlight ? '#fff' : '#B1B5BA'} />
@@ -556,15 +556,15 @@ function PersonalSignup({ onLogin, onBack }: any) {
                 style={{
                   flex: 1,
                   padding: '12px 14px', borderRadius: 11,
-                  background: active ? 'rgba(124, 107, 246, 0.12)' : '#141A2A',
-                  border: `1px solid ${active ? '#7C6BF6' : '#1f2532'}`,
+                  background: active ? 'rgba(124, 92, 255, 0.12)' : '#141A2A',
+                  border: `1px solid ${active ? '#7C5CFF' : '#1f2532'}`,
                   cursor: 'pointer', fontFamily: 'inherit',
                   display: 'flex', alignItems: 'center', gap: 10,
                   transition: 'all 0.15s',
                 }}>
                 <div style={{
                   width: 32, height: 32, borderRadius: 8, flexShrink: 0,
-                  background: active ? 'linear-gradient(135deg,#7C6BF6,#4A2FA8)' : '#171D2D',
+                  background: active ? 'linear-gradient(135deg,#7C5CFF,#4A2FA8)' : '#171D2D',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}>
                   <Icon size={14} color={active ? '#fff' : '#B1B5BA'} />
@@ -590,8 +590,8 @@ function PersonalSignup({ onLogin, onBack }: any) {
                 onClick={() => setBoard(active ? '' : b)}
                 style={{
                   padding: '7px 13px', borderRadius: 8,
-                  background: active ? 'rgba(124, 107, 246, 0.12)' : '#141A2A',
-                  border: `1px solid ${active ? '#7C6BF6' : '#1f2532'}`,
+                  background: active ? 'rgba(124, 92, 255, 0.12)' : '#141A2A',
+                  border: `1px solid ${active ? '#7C5CFF' : '#1f2532'}`,
                   color: active ? '#A5B4FC' : '#B1B5BA',
                   fontFamily: 'inherit', fontSize: 12, fontWeight: 600, cursor: 'pointer',
                 }}>
@@ -792,14 +792,14 @@ function JoinSchool({ onLogin, onBack }: any) {
               onClick={() => setRole(r.id as any)}
               style={{
                 padding: '14px 16px', borderRadius: 11,
-                background: active ? 'rgba(124, 107, 246, 0.10)' : '#141A2A',
-                border: `1px solid ${active ? '#7C6BF6' : '#1f2532'}`,
+                background: active ? 'rgba(124, 92, 255, 0.10)' : '#141A2A',
+                border: `1px solid ${active ? '#7C5CFF' : '#1f2532'}`,
                 cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left',
                 display: 'flex', alignItems: 'center', gap: 12,
               }}>
               <div style={{
                 width: 38, height: 38, borderRadius: 9, flexShrink: 0,
-                background: active ? 'linear-gradient(135deg,#7C6BF6,#7C6BF6)' : '#171D2D',
+                background: active ? 'linear-gradient(135deg,#7C5CFF,#7C5CFF)' : '#171D2D',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
                 <Icon size={16} color={active ? '#fff' : '#B1B5BA'} />
@@ -808,7 +808,7 @@ function JoinSchool({ onLogin, onBack }: any) {
                 <div style={{ fontSize: 14, fontWeight: 700, color: active ? '#A5B4FC' : '#fafafa' }}>{r.label}</div>
                 <div style={{ fontSize: 11, color: '#9CA3AF', marginTop: 2 }}>{r.desc}</div>
               </div>
-              {active && <Check size={16} color="#7C6BF6" />}
+              {active && <Check size={16} color="#7C5CFF" />}
             </motion.button>
           )
         })}
@@ -978,7 +978,7 @@ function CreateSchool({ onLogin, onBack }: any) {
   return (
     <Wizard back={null} step={null} title="School Created" subtitle="Save your join code somewhere safe.">
       <div style={{
-        background: 'rgba(124, 107, 246, 0.08)', border: '1px solid rgba(124, 107, 246, 0.3)',
+        background: 'rgba(124, 92, 255, 0.08)', border: '1px solid rgba(124, 92, 255, 0.3)',
         borderRadius: 12, padding: 18, marginBottom: 16, textAlign: 'center',
       }}>
         <div style={{ fontSize: 10, fontWeight: 700, color: '#A5B4FC', textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 8 }}>
@@ -994,7 +994,7 @@ function CreateSchool({ onLogin, onBack }: any) {
         <button onClick={() => navigator.clipboard.writeText(result.passcode)}
           style={{
             padding: '6px 14px', borderRadius: 6, fontSize: 11,
-            background: 'rgba(124, 107, 246, 0.15)', border: '1px solid rgba(124, 107, 246, 0.3)',
+            background: 'rgba(124, 92, 255, 0.15)', border: '1px solid rgba(124, 92, 255, 0.3)',
             color: '#A5B4FC', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600,
           }}>
           Copy code
@@ -1044,7 +1044,7 @@ function Wizard({ back, step, of, title, subtitle, children }: any) {
           {[...Array(of)].map((_, i) => (
             <div key={i} style={{
               flex: 1, height: 3, borderRadius: 2,
-              background: i < step ? '#7C6BF6' : '#1f2532',
+              background: i < step ? '#7C5CFF' : '#1f2532',
             }} />
           ))}
         </div>
@@ -1058,12 +1058,12 @@ function SchoolPreview({ school, compact = false }: { school: any; compact?: boo
   return (
     <div style={{
       padding: compact ? '10px 14px' : '14px 16px', borderRadius: 11,
-      background: 'rgba(124, 107, 246, 0.06)', border: '1px solid rgba(124, 107, 246, 0.3)',
+      background: 'rgba(124, 92, 255, 0.06)', border: '1px solid rgba(124, 92, 255, 0.3)',
       display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14,
     }}>
       <div style={{
         width: compact ? 34 : 40, height: compact ? 34 : 40, borderRadius: 9, flexShrink: 0,
-        background: school.school_logo_url ? '#fff' : 'linear-gradient(135deg,#7C6BF6,#7C6BF6)',
+        background: school.school_logo_url ? '#fff' : 'linear-gradient(135deg,#7C5CFF,#7C5CFF)',
         overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}>
         {school.school_logo_url
@@ -1104,10 +1104,10 @@ function PrimaryBtn({ busy, onClick, icon: Icon, children }: any) {
       onClick={onClick} disabled={busy}
       style={{
         width: '100%', marginTop: 6, padding: '13px', borderRadius: 11, border: 'none',
-        background: busy ? '#1f2532' : 'linear-gradient(135deg, #7C6BF6, #7C6BF6)',
+        background: busy ? '#1f2532' : 'linear-gradient(135deg, #7C5CFF, #7C5CFF)',
         color: busy ? '#6B7280' : '#fff', fontFamily: 'inherit', fontSize: 14, fontWeight: 700,
         cursor: busy ? 'not-allowed' : 'pointer',
-        boxShadow: busy ? 'none' : '0 0 22px rgba(124, 107, 246, 0.35)',
+        boxShadow: busy ? 'none' : '0 0 22px rgba(124, 92, 255, 0.35)',
         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
       }}>
       {busy
@@ -1140,12 +1140,12 @@ function AvatarPicker({ avatar, onPick, fallback }: {
         onClick={() => inputRef.current?.click()}
         style={{
           width: 90, height: 90, borderRadius: '50%', cursor: 'pointer',
-          background: avatar ? 'transparent' : 'linear-gradient(135deg,#7C6BF6,#7C6BF6)',
+          background: avatar ? 'transparent' : 'linear-gradient(135deg,#7C5CFF,#7C5CFF)',
           overflow: 'hidden', position: 'relative',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: 32, fontWeight: 800, color: '#fff',
-          border: '2px solid rgba(124, 107, 246, 0.14)',
-          boxShadow: avatar ? '0 0 22px rgba(124, 107, 246, 0.3)' : 'none',
+          border: '2px solid rgba(124, 92, 255, 0.14)',
+          boxShadow: avatar ? '0 0 22px rgba(124, 92, 255, 0.3)' : 'none',
           transition: 'box-shadow 0.2s, border-color 0.2s',
         }}
       >
@@ -1155,7 +1155,7 @@ function AvatarPicker({ avatar, onPick, fallback }: {
         <div style={{
           position: 'absolute', bottom: 0, right: 0,
           width: 26, height: 26, borderRadius: '50%',
-          background: '#7C6BF6', border: '2px solid #141A2A',
+          background: '#7C5CFF', border: '2px solid #141A2A',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: 11,
         }}>

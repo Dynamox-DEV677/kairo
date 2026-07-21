@@ -64,7 +64,7 @@ export default function Step5Success({ onContinue }: Props) {
         >
           <div style={{
             width: 220, height: 220, borderRadius: '50%',
-            background: 'radial-gradient(circle, rgba(124, 107, 246, 0.32) 0%, transparent 70%)',
+            background: 'radial-gradient(circle, rgba(124, 92, 255, 0.32) 0%, transparent 70%)',
             filter: 'blur(20px)',
           }} />
         </motion.div>
@@ -76,9 +76,9 @@ export default function Step5Success({ onContinue }: Props) {
           style={{
             position: 'relative',
             width: 130, height: 130, borderRadius: '50%',
-            background: 'linear-gradient(135deg, #A5B4FC 0%, #7C6BF6 100%)',
+            background: 'linear-gradient(135deg, #A5B4FC 0%, #7C5CFF 100%)',
             display: 'grid', placeItems: 'center',
-            boxShadow: '0 24px 60px rgba(124, 107, 246, 0.03), inset 0 1px 0 rgba(255,255,255,0.25)',
+            boxShadow: '0 24px 60px rgba(124, 92, 255, 0.03), inset 0 1px 0 rgba(255,255,255,0.25)',
           }}
         >
           <div style={{

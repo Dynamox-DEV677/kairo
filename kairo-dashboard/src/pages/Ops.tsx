@@ -61,9 +61,9 @@ export default function Ops() {
       <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 22 }}>
         <div style={{
           width: 46, height: 46, borderRadius: 12,
-          background: 'linear-gradient(135deg, #7C6BF6, #A5B4FC)',
+          background: 'linear-gradient(135deg, #7C5CFF, #A5B4FC)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 0 22px rgba(124, 107, 246, 0.04)',
+          boxShadow: '0 0 22px rgba(124, 92, 255, 0.04)',
         }}>
           <Activity size={22} color="#fff" />
         </div>
@@ -149,7 +149,7 @@ export default function Ops() {
               {Object.entries(data.features.byAudience).map(([aud, n]) => (
                 <span key={aud} style={{
                   padding: '4px 10px', borderRadius: 100,
-                  background: 'rgba(124, 107, 246, 0.08)', border: '1px solid rgba(124, 107, 246, 0.25)',
+                  background: 'rgba(124, 92, 255, 0.08)', border: '1px solid rgba(124, 92, 255, 0.25)',
                   fontSize: 11, color: '#A5B4FC', fontWeight: 600,
                 }}>
                   {aud}: {n}

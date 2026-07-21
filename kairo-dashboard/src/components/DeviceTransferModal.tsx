@@ -18,7 +18,7 @@ import type { RestoreResult } from '../transfer/importer'
 const C = {
   bg: '#0A0D16', panel: '#141A2A', panel2: '#1C2233',
   border: 'rgba(255,255,255,0.08)', text: '#fafafa', dim: '#B1B5BA', faint: '#9CA3AF',
-  purple: '#A5B4FC', purpleHi: '#7C6BF6', green: '#34D399', amber: '#FFB44A', coral: '#FB7185',
+  purple: '#A5B4FC', purpleHi: '#7C5CFF', green: '#34D399', amber: '#FFB44A', coral: '#FB7185',
 }
 
 type Mode = 'home' | 'send' | 'receive'
@@ -125,7 +125,7 @@ function SendFlow() {
       <StatsRow s={s} />
 
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, marginTop: 14 }}>
-        <div style={{ padding: 10, background: '#fff', borderRadius: 16, boxShadow: '0 8px 30px rgba(124,107,246,0.25)' }}>
+        <div style={{ padding: 10, background: '#fff', borderRadius: 16, boxShadow: '0 8px 30px rgba(124, 92, 255,0.25)' }}>
           {qrUrl
             ? <img src={qrUrl} alt="One-time key QR" width={200} height={200} style={{ display: 'block', borderRadius: 8 }} />
             : <div style={{ width: 200, height: 200, display: 'grid', placeItems: 'center' }}><Loader2 size={20} className="animate-spin" color="#0b0f19" /></div>}

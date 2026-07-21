@@ -344,7 +344,7 @@ Tips: each tip is one specific actionable line (max 18 words) — reference the 
             </div>
             <div style={{ height: 4, background: '#171D2D', borderRadius: 2, overflow: 'hidden' }}>
               <motion.div animate={{ width: `${((idx + 1) / questions.length) * 100}%` }}
-                style={{ height: '100%', background: 'linear-gradient(90deg,#A5B4FC,#7C6BF6)' }} />
+                style={{ height: '100%', background: 'linear-gradient(90deg,#A5B4FC,#7C5CFF)' }} />
             </div>
           </div>
           <div style={{ width: 64, height: 64, position: 'relative' }}>
@@ -366,7 +366,7 @@ Tips: each tip is one specific actionable line (max 18 words) — reference the 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
             <div style={{ ...card, padding: '12px 14px', borderColor: 'rgba(165, 180, 252, 0.3)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <div style={{ width: 28, height: 28, borderRadius: 8, background: 'linear-gradient(135deg,#A5B4FC,#7C6BF6)', display: 'grid', placeItems: 'center' }}>
+                <div style={{ width: 28, height: 28, borderRadius: 8, background: 'linear-gradient(135deg,#A5B4FC,#7C5CFF)', display: 'grid', placeItems: 'center' }}>
                   <Brain size={14} color="#000" />
                 </div>
                 <div style={{ flex: 1 }}>
@@ -487,7 +487,7 @@ Tips: each tip is one specific actionable line (max 18 words) — reference the 
             <div style={{
               display: 'inline-flex', alignItems: 'center', gap: 8,
               padding: '12px 22px', borderRadius: 10,
-              background: 'linear-gradient(135deg,#A5B4FC,#7C6BF6)',
+              background: 'linear-gradient(135deg,#A5B4FC,#7C5CFF)',
               color: '#000', fontFamily: 'inherit', fontSize: 18, fontWeight: 800,
             }}>
               <Zap size={18} /> +{xp} XP
@@ -501,7 +501,7 @@ Tips: each tip is one specific actionable line (max 18 words) — reference the 
             ...card, padding: 20, marginBottom: 14,
             background: judge?.tone === 'praise' ? 'linear-gradient(135deg, rgba(165, 180, 252, 0.08), rgba(165, 180, 252, 0.04))'
                       : judge?.tone === 'tough'  ? 'linear-gradient(135deg, rgba(165, 180, 252, 0.08), rgba(165, 180, 252, 0.04))'
-                      :                            'linear-gradient(135deg, rgba(165, 180, 252, 0.08), rgba(124, 107, 246, 0.04))',
+                      :                            'linear-gradient(135deg, rgba(165, 180, 252, 0.08), rgba(124, 92, 255, 0.04))',
             borderColor: judge?.tone === 'praise' ? 'rgba(165, 180, 252, 0.3)'
                        : judge?.tone === 'tough'  ? 'rgba(165, 180, 252, 0.3)'
                        :                            'rgba(165, 180, 252, 0.3)',
@@ -548,7 +548,7 @@ Tips: each tip is one specific actionable line (max 18 words) — reference the 
         <button onClick={backToLobby}
           style={{
             width: '100%', padding: '12px', borderRadius: 10, border: 'none',
-            background: 'linear-gradient(135deg, #A5B4FC, #7C6BF6)',
+            background: 'linear-gradient(135deg, #A5B4FC, #7C5CFF)',
             color: '#000', fontFamily: 'inherit', fontSize: 14, fontWeight: 700,
             cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
           }}>
@@ -563,7 +563,7 @@ Tips: each tip is one specific actionable line (max 18 words) — reference the 
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 22 }}>
         <div style={{
           width: 44, height: 44, borderRadius: 11,
-          background: 'linear-gradient(135deg, #A5B4FC, #7C6BF6)',
+          background: 'linear-gradient(135deg, #A5B4FC, #7C5CFF)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           boxShadow: '0 0 18px rgba(165, 180, 252, 0.04)', flexShrink: 0,
         }}>
@@ -593,10 +593,10 @@ Tips: each tip is one specific actionable line (max 18 words) — reference the 
 
       {stats && (
         <div className="bm-stats-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: 16 }}>
-          <Tile icon={Zap}    label="Total XP"  value={stats.total_xp}             color="#22D3EE" />
+          <Tile icon={Zap}    label="Total XP"  value={stats.total_xp}             color="#4FD8E8" />
           <Tile icon={Flame}  label="Streak"    value={`${stats.streak}d`}         color="#FFB020" />
           <Tile icon={Target} label="Avg Acc"   value={`${stats.avg_accuracy}%`}   color="#34D399" />
-          <Tile icon={Award}  label="Battles"   value={stats.battles}              color="#7C6BF6" />
+          <Tile icon={Award}  label="Battles"   value={stats.battles}              color="#7C5CFF" />
         </div>
       )}
 
@@ -604,7 +604,7 @@ Tips: each tip is one specific actionable line (max 18 words) — reference the 
         <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
           style={{
             ...card, padding: 22, marginBottom: 16,
-            background: 'linear-gradient(135deg, rgba(165, 180, 252, 0.08), rgba(124, 107, 246, 0.04))',
+            background: 'linear-gradient(135deg, rgba(165, 180, 252, 0.08), rgba(124, 92, 255, 0.04))',
             borderColor: 'rgba(165, 180, 252, 0.3)',
           }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
@@ -642,8 +642,8 @@ Tips: each tip is one specific actionable line (max 18 words) — reference the 
         <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
           style={{
             ...card, padding: 22, marginBottom: 16,
-            background: 'linear-gradient(135deg, rgba(124, 107, 246, 0.08), rgba(165, 180, 252, 0.04))',
-            borderColor: 'rgba(124, 107, 246, 0.3)',
+            background: 'linear-gradient(135deg, rgba(124, 92, 255, 0.08), rgba(165, 180, 252, 0.04))',
+            borderColor: 'rgba(124, 92, 255, 0.3)',
           }}>
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 14 }}>
             <Bot size={16} color="#A5B4FC" />
@@ -693,7 +693,7 @@ Tips: each tip is one specific actionable line (max 18 words) — reference the 
           <button onClick={startSparring}
             style={{
               width: '100%', padding: '13px', borderRadius: 10, border: 'none',
-              background: `linear-gradient(135deg, ${AI_PROFILES[aiLevel].color}, #7C6BF6)`,
+              background: `linear-gradient(135deg, ${AI_PROFILES[aiLevel].color}, #7C5CFF)`,
               color: '#000',
               fontFamily: 'inherit', fontSize: 14, fontWeight: 700,
               cursor: 'pointer',
@@ -760,13 +760,13 @@ function Tile({ icon: Icon, label, value, color }: { icon: any; label: string; v
 
 function LeaderRow({ l, highlightSelf }: { l: Leader; highlightSelf?: boolean }) {
   const RankIcon = l.rank === 1 ? Crown : l.rank === 2 ? Medal : l.rank === 3 ? Medal : null
-  const rankColor = l.rank === 1 ? '#A5B4FC' : l.rank === 2 ? '#B1B5BA' : l.rank === 3 ? '#7C6BF6' : '#6B7280'
+  const rankColor = l.rank === 1 ? '#A5B4FC' : l.rank === 2 ? '#B1B5BA' : l.rank === 3 ? '#7C5CFF' : '#6B7280'
   return (
     <div style={{
       display: 'flex', alignItems: 'center', gap: 12,
       padding: '8px 12px', borderRadius: 8,
-      background: highlightSelf ? 'rgba(124, 107, 246, 0.08)' : 'transparent',
-      border: highlightSelf ? '1px solid rgba(124, 107, 246, 0.3)' : '1px solid transparent',
+      background: highlightSelf ? 'rgba(124, 92, 255, 0.08)' : 'transparent',
+      border: highlightSelf ? '1px solid rgba(124, 92, 255, 0.3)' : '1px solid transparent',
     }}>
       <div style={{
         width: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
@@ -776,7 +776,7 @@ function LeaderRow({ l, highlightSelf }: { l: Leader; highlightSelf?: boolean })
       </div>
       <div style={{
         width: 28, height: 28, borderRadius: 7, flexShrink: 0,
-        background: l.avatar_url ? 'transparent' : 'linear-gradient(135deg,#7C6BF6,#7C6BF6)',
+        background: l.avatar_url ? 'transparent' : 'linear-gradient(135deg,#7C5CFF,#7C5CFF)',
         overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center',
         color: '#fff', fontSize: 11, fontWeight: 700,
       }}>

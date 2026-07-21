@@ -69,7 +69,7 @@ function SolarScene({ tint, hover }: { tint: string; hover: boolean }) {
     { r: 1.2, size: 0.13, speed: 1.5, color: '#9ca3af', phase: 0    },
     { r: 1.8, size: 0.20, speed: 1.0, color: '#A5B4FC', phase: 0.7  },
     { r: 2.5, size: 0.18, speed: 0.6, color: '#A5B4FC', phase: 1.6  },
-    { r: 3.2, size: 0.28, speed: 0.4, color: '#7C6BF6', phase: 2.4  },
+    { r: 3.2, size: 0.28, speed: 0.4, color: '#7C5CFF', phase: 2.4  },
   ], [])
 
   useFrame((state) => {
@@ -150,11 +150,11 @@ function HeartScene({ tint, hover }: { tint: string; hover: boolean }) {
     <group ref={root} position={[0, -0.2, 0]} rotation={[0, -0.2, 0.1]}>
       <mesh position={[0.55, -0.3, 0]}>
         <sphereGeometry args={[0.85, 24, 24]} />
-        <meshStandardMaterial color="#7C6BF6" emissive="#7C6BF6" emissiveIntensity={hover ? 0.6 : 0.25} roughness={0.45} />
+        <meshStandardMaterial color="#7C5CFF" emissive="#7C5CFF" emissiveIntensity={hover ? 0.6 : 0.25} roughness={0.45} />
       </mesh>
       <mesh position={[0.55, -0.95, 0]} scale={[0.55, 0.7, 0.55]}>
         <sphereGeometry args={[1, 18, 18]} />
-        <meshStandardMaterial color="#4A2FA8" emissive="#7C6BF6" emissiveIntensity={hover ? 0.55 : 0.20} roughness={0.45} />
+        <meshStandardMaterial color="#4A2FA8" emissive="#7C5CFF" emissiveIntensity={hover ? 0.55 : 0.20} roughness={0.45} />
       </mesh>
       <mesh position={[-0.45, -0.3, 0]} scale={[0.85, 0.95, 0.85]}>
         <sphereGeometry args={[0.85, 22, 22]} />
@@ -208,7 +208,7 @@ function DnaScene({ tint, hover }: { tint: string; hover: boolean }) {
     root.current.rotation.y = state.clock.elapsedTime * (hover ? 0.9 : 0.35)
   })
 
-  const baseColors = ['#DBE7FF', '#A5B4FC', '#A5B4FC', '#7C6BF6']
+  const baseColors = ['#DBE7FF', '#A5B4FC', '#A5B4FC', '#7C5CFF']
 
   return (
     <group ref={root} scale={0.85}>
@@ -299,7 +299,7 @@ function VectorsScene({ tint: _tint, hover }: { tint: string; hover: boolean }) 
   })
 
   const axes: Array<{ dir: [number, number, number]; color: string }> = [
-    { dir: [1.6, 0, 0],   color: '#7C6BF6' },
+    { dir: [1.6, 0, 0],   color: '#7C5CFF' },
     { dir: [0, 1.6, 0],   color: '#A5B4FC' },
     { dir: [0, 0, 1.6],   color: '#A5B4FC' },
   ]

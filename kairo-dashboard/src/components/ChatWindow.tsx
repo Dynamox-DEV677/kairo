@@ -223,7 +223,7 @@ export default function ChatWindow({ onNewMessage, onNavigate, model = DEFAULT_M
                   background: '#000',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   margin: '0 auto',
-                  boxShadow: '0 0 40px rgba(124, 107, 246, 0.04), 0 0 80px rgba(124, 107, 246, 0.02)',
+                  boxShadow: '0 0 40px rgba(124, 92, 255, 0.04), 0 0 80px rgba(124, 92, 255, 0.02)',
                   border: '1px solid #27272a',
                 }}>
                   <img src="/kairo_logo.png" alt="Kyno" style={{ width: 48, height: 48, objectFit: 'contain' }} />
@@ -313,9 +313,9 @@ export default function ChatWindow({ onNewMessage, onNavigate, model = DEFAULT_M
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-              <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#7C6BF6', animation: 'dot-bounce 1.2s ease-in-out infinite' }} />
-              <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#7C6BF6', animation: 'dot-bounce 1.2s ease-in-out 0.2s infinite' }} />
-              <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#7C6BF6', animation: 'dot-bounce 1.2s ease-in-out 0.4s infinite' }} />
+              <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#7C5CFF', animation: 'dot-bounce 1.2s ease-in-out infinite' }} />
+              <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#7C5CFF', animation: 'dot-bounce 1.2s ease-in-out 0.2s infinite' }} />
+              <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#7C5CFF', animation: 'dot-bounce 1.2s ease-in-out 0.4s infinite' }} />
             </div>
             <span style={{ fontSize: 12, color: '#6B7280' }}>Kyno is thinking…</span>
           </motion.div>
@@ -341,11 +341,11 @@ export default function ChatWindow({ onNewMessage, onNavigate, model = DEFAULT_M
               fontSize: 13,
               background: fcState === 'success' ? 'rgba(16,185,129,0.1)'
                         : fcState === 'error'   ? 'rgba(239,68,68,0.1)'
-                        : 'rgba(124, 107, 246, 0.1)',
+                        : 'rgba(124, 92, 255, 0.1)',
               border: `1px solid ${
                 fcState === 'success' ? 'rgba(16,185,129,0.3)'
                 : fcState === 'error' ? 'rgba(239,68,68,0.3)'
-                : 'rgba(124, 107, 246, 0.3)'
+                : 'rgba(124, 92, 255, 0.3)'
               }`,
               color: fcState === 'success' ? '#34d399'
                    : fcState === 'error'   ? '#f87171'
@@ -377,7 +377,7 @@ export default function ChatWindow({ onNewMessage, onNavigate, model = DEFAULT_M
         }}
           onFocusCapture={e => {
             (e.currentTarget as HTMLDivElement).style.borderColor = '#4B5563'
-            ;(e.currentTarget as HTMLDivElement).style.boxShadow = '0 0 0 3px rgba(124, 107, 246, 0.01)'
+            ;(e.currentTarget as HTMLDivElement).style.boxShadow = '0 0 0 3px rgba(124, 92, 255, 0.01)'
           }}
           onBlurCapture={e => {
             (e.currentTarget as HTMLDivElement).style.borderColor = '#1f2532'
@@ -422,12 +422,12 @@ export default function ChatWindow({ onNewMessage, onNavigate, model = DEFAULT_M
               style={{
                 width: 36, height: 36, borderRadius: 10, flexShrink: 0,
                 background: input.trim()
-                  ? 'linear-gradient(135deg, #7C6BF6, #7C6BF6)'
+                  ? 'linear-gradient(135deg, #7C5CFF, #7C5CFF)'
                   : '#171D2D',
                 border: 'none',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 cursor: input.trim() ? 'pointer' : 'not-allowed',
-                boxShadow: input.trim() ? '0 0 16px rgba(124, 107, 246, 0.14)' : 'none',
+                boxShadow: input.trim() ? '0 0 16px rgba(124, 92, 255, 0.14)' : 'none',
                 transition: 'all 0.2s',
               }}
             >

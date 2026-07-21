@@ -474,7 +474,7 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
               color: voiceOn ? '#A5B4FC' : '#B1B5BA',
               fontFamily: 'inherit', fontSize: 12, fontWeight: 600,
               cursor: 'pointer',
-              boxShadow: voiceOn ? '0 0 14px rgba(124, 107, 246, 0.32)' : 'none',
+              boxShadow: voiceOn ? '0 0 14px rgba(124, 92, 255, 0.32)' : 'none',
             }}>
             {voiceOn ? <Mic size={14} className="kr-voice-pulse" /> : <MicOff size={14} />}
             {voiceOn ? 'Listening' : 'Voice'}
@@ -567,7 +567,7 @@ function ExamPlanModal({ onClose }: { onClose: () => void }) {
           border: '1px solid rgba(165, 180, 252, 0.35)',
           borderRadius: 18, padding: 24,
           color: '#fafafa', fontFamily: 'inherit',
-          boxShadow: '0 24px 60px rgba(124, 107, 246, 0.03)',
+          boxShadow: '0 24px 60px rgba(124, 92, 255, 0.03)',
           position: 'relative',
         }}>
         <button onClick={onClose} aria-label="Close" style={{
@@ -607,7 +607,7 @@ function ExamPlanModal({ onClose }: { onClose: () => void }) {
           }}>Cancel</button>
           <button onClick={save} disabled={!subject.trim() || !date} style={{
             padding: '9px 20px', borderRadius: 9,
-            background: 'linear-gradient(135deg, #7C6BF6, #4A2FA8)',
+            background: 'linear-gradient(135deg, #7C5CFF, #4A2FA8)',
             color: '#fff', fontFamily: 'inherit', fontSize: 13, fontWeight: 700,
             border: 'none', cursor: subject.trim() && date ? 'pointer' : 'not-allowed',
             opacity: subject.trim() && date ? 1 : 0.5,
@@ -772,7 +772,7 @@ function VideoPlayer({ videoId, busy, topic }: {
         flexShrink: 0,
         padding: '8px 14px',
         background: 'rgba(13,13,13,0.92)',
-        borderBottom: '1px solid rgba(124, 107, 246, 0.2)',
+        borderBottom: '1px solid rgba(124, 92, 255, 0.2)',
         fontSize: 10.5, color: '#A5B4FC', fontWeight: 700,
         textTransform: 'uppercase', letterSpacing: 1.5,
         whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
@@ -793,7 +793,7 @@ function VideoPlayer({ videoId, busy, topic }: {
             transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
             style={{
               width: 52, height: 52, borderRadius: 13,
-              background: 'linear-gradient(135deg, #7C6BF6, #A5B4FC)',
+              background: 'linear-gradient(135deg, #7C5CFF, #A5B4FC)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
             <Loader2 size={22} color="#fff" style={{ animation: 'spin 0.8s linear infinite' }} />
@@ -824,7 +824,7 @@ function VideoPlayer({ videoId, busy, topic }: {
             position: 'absolute', bottom: 8, right: 12, zIndex: 4,
             padding: '3px 8px', borderRadius: 5,
             background: 'rgba(13,13,13,0.6)', backdropFilter: 'blur(8px)',
-            border: '1px solid rgba(124, 107, 246, 0.25)',
+            border: '1px solid rgba(124, 92, 255, 0.25)',
             fontSize: 9, color: '#A5B4FC', fontWeight: 700,
             textTransform: 'uppercase', letterSpacing: 1,
             pointerEvents: 'none',
@@ -873,13 +873,13 @@ function Slideshow({ slides, busy, topic, questionType, err, compact = false }: 
         borderRadius: 18, overflow: 'hidden', position: 'relative',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         minHeight: 0,
-        boxShadow: '0 0 60px rgba(124, 107, 246, 0.01) inset',
+        boxShadow: '0 0 60px rgba(124, 92, 255, 0.01) inset',
       }}>
       <div style={{
         position: 'absolute', top: 14, left: 14, zIndex: 4,
         padding: '6px 12px', borderRadius: 7,
         background: 'rgba(13,13,13,0.85)', backdropFilter: 'blur(12px)',
-        border: '1px solid rgba(124, 107, 246, 0.3)',
+        border: '1px solid rgba(124, 92, 255, 0.3)',
         fontSize: 10.5, color: '#A5B4FC', fontWeight: 700,
         textTransform: 'uppercase', letterSpacing: 1.5,
         maxWidth: '70%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
@@ -971,7 +971,7 @@ function Slideshow({ slides, busy, topic, questionType, err, compact = false }: 
               <div style={{ fontSize: 10, color: '#9CA3AF', display: 'flex', alignItems: 'center', gap: 6 }}>
                 <span style={{
                   padding: '1px 6px', borderRadius: 3,
-                  background: 'rgba(124, 107, 246, 0.15)', color: '#A5B4FC',
+                  background: 'rgba(124, 92, 255, 0.15)', color: '#A5B4FC',
                   textTransform: 'uppercase', letterSpacing: 0.8, fontWeight: 700,
                 }}>{current.source === 'kairo-ai' ? '✦ Kyno AI' : current.source}</span>
                 {current.attribution && <span style={{ pointerEvents: 'auto' }}>{current.attribution}</span>}
@@ -1026,9 +1026,9 @@ function SlideshowSkeleton() {
         transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
         style={{
           width: 64, height: 64, borderRadius: 16,
-          background: 'linear-gradient(135deg, #7C6BF6, #A5B4FC)',
+          background: 'linear-gradient(135deg, #7C5CFF, #A5B4FC)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 0 32px rgba(124, 107, 246, 0.04)',
+          boxShadow: '0 0 32px rgba(124, 92, 255, 0.04)',
           padding: 8,
         }}>
         <img
@@ -1045,7 +1045,7 @@ function SlideshowSkeleton() {
         <motion.div
           animate={{ x: ['-100%', '100%'] }}
           transition={{ duration: 1.4, repeat: Infinity, ease: 'easeInOut' }}
-          style={{ width: '40%', height: '100%', background: 'linear-gradient(90deg, transparent, #7C6BF6, transparent)' }}
+          style={{ width: '40%', height: '100%', background: 'linear-gradient(90deg, transparent, #7C5CFF, transparent)' }}
         />
       </div>
     </div>
@@ -1111,10 +1111,10 @@ function ExplanationPanel({ resp, busy, error, retryHint, onOpenLab, onAskRelate
               onClick={() => ask(topic)}
               style={{
                 padding: '8px 14px', borderRadius: 9,
-                background: 'linear-gradient(135deg, #7C6BF6 0%, #4A2FA8 50%, #7C6BF6 100%)',
+                background: 'linear-gradient(135deg, #7C5CFF 0%, #4A2FA8 50%, #7C5CFF 100%)',
                 color: '#fff', fontFamily: 'inherit', fontWeight: 700, fontSize: 12,
                 border: 'none', cursor: 'pointer', flexShrink: 0,
-                boxShadow: '0 6px 18px rgba(124, 107, 246, 0.04)',
+                boxShadow: '0 6px 18px rgba(124, 92, 255, 0.04)',
               }}>
               Try again
             </button>
@@ -1137,7 +1137,7 @@ function ExplanationPanel({ resp, busy, error, retryHint, onOpenLab, onAskRelate
           {resp.formulas.length > 0 && (
             <div style={{
               padding: '12px 14px', borderRadius: 11,
-              background: 'rgba(124, 107, 246, 0.05)', border: '1px solid rgba(124, 107, 246, 0.2)',
+              background: 'rgba(124, 92, 255, 0.05)', border: '1px solid rgba(124, 92, 255, 0.2)',
             }}>
               <div style={{
                 fontSize: 10, color: '#A5B4FC', fontWeight: 700,
@@ -1164,7 +1164,7 @@ function ExplanationPanel({ resp, busy, error, retryHint, onOpenLab, onAskRelate
               onClick={() => onOpenLab(resp.labRoute!)}
               style={{
                 width: '100%', padding: '12px 16px', borderRadius: 12,
-                background: 'linear-gradient(135deg, rgba(165, 180, 252, 0.18), rgba(124, 107, 246, 0.18))',
+                background: 'linear-gradient(135deg, rgba(165, 180, 252, 0.18), rgba(124, 92, 255, 0.18))',
                 border: '1px solid rgba(165, 180, 252, 0.14)',
                 color: '#fafafa', fontFamily: 'inherit', cursor: 'pointer', textAlign: 'left',
                 display: 'flex', alignItems: 'center', gap: 12,
@@ -1172,7 +1172,7 @@ function ExplanationPanel({ resp, busy, error, retryHint, onOpenLab, onAskRelate
               }}>
               <div style={{
                 width: 36, height: 36, borderRadius: 9, flexShrink: 0,
-                background: 'linear-gradient(135deg, #A5B4FC, #7C6BF6)',
+                background: 'linear-gradient(135deg, #A5B4FC, #7C5CFF)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
                 <Beaker size={16} color="#fff" />
@@ -1266,16 +1266,16 @@ const MD_COMPONENTS = {
         </pre>
       : <code style={{ background: '#1a1a2e', padding: '2px 6px', borderRadius: 4, fontSize: 12.5, color: '#A5B4FC', fontFamily: 'monospace' }}>{children}</code>
   },
-  blockquote: ({ children }: any) => <blockquote style={{ borderLeft: '3px solid #7C6BF6', paddingLeft: 12, margin: '8px 0', color: '#B1B5BA', fontStyle: 'italic' }}>{children}</blockquote>,
+  blockquote: ({ children }: any) => <blockquote style={{ borderLeft: '3px solid #7C5CFF', paddingLeft: 12, margin: '8px 0', color: '#B1B5BA', fontStyle: 'italic' }}>{children}</blockquote>,
 }
 
 const btnSend: React.CSSProperties = {
   padding: '9px 18px', borderRadius: 999,
-  background: 'linear-gradient(135deg, #A5B4FC 0%, #7C6BF6 60%, #4A2FA8 100%)',
+  background: 'linear-gradient(135deg, #A5B4FC 0%, #7C5CFF 60%, #4A2FA8 100%)',
   color: '#fff', border: 'none', fontFamily: 'inherit', fontSize: 12.5, fontWeight: 700,
   letterSpacing: '-0.005em',
   display: 'flex', alignItems: 'center', gap: 6,
-  boxShadow: '0 8px 24px rgba(124, 107, 246, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.18)',
+  boxShadow: '0 8px 24px rgba(124, 92, 255, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.18)',
   transition: 'transform 0.18s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.18s ease',
 }
 
@@ -1292,7 +1292,7 @@ const arrowBtn: React.CSSProperties = {
   position: 'absolute', top: '50%', transform: 'translateY(-50%)',
   width: 34, height: 34, borderRadius: 9, zIndex: 4,
   background: 'rgba(13,13,13,0.85)', backdropFilter: 'blur(10px)',
-  border: '1px solid rgba(124, 107, 246, 0.3)', cursor: 'pointer',
+  border: '1px solid rgba(124, 92, 255, 0.3)', cursor: 'pointer',
   display: 'flex', alignItems: 'center', justifyContent: 'center',
 }
 
@@ -1344,7 +1344,7 @@ function ModeChipBar({
                 display: 'inline-flex', alignItems: 'center', gap: 5,
                 padding: '6px 12px', borderRadius: 8,
                 border: 'none', cursor: c.available ? 'pointer' : 'not-allowed',
-                background: active ? 'rgba(124, 107, 246, 0.18)' : 'transparent',
+                background: active ? 'rgba(124, 92, 255, 0.18)' : 'transparent',
                 color: active ? '#A5B4FC' : c.available ? '#CBD5E1' : '#4B5563',
                 fontFamily: 'inherit', fontWeight: 700, fontSize: 11.5,
                 opacity: c.available ? 1 : 0.45,

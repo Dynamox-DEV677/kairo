@@ -21,7 +21,7 @@ const C = {
   textFaint: '#9CA3AF',
   textGhost: '#6B7280',
   purple:    '#A5B4FC',
-  purpleHi:  '#7C6BF6',
+  purpleHi:  '#7C5CFF',
   purpleDeep:'#4A2FA8',
   purpleLite:'#A5B4FC',
   purpleSoft:'#DBE7FF',
@@ -32,11 +32,11 @@ const inp   = { background: C.panel2, border: `1px solid ${C.borderSoft}`, borde
 const lbl   = { fontSize: 10, color: C.purple, display: 'block', marginBottom: 5, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1 } as React.CSSProperties
 const btn   = (active = true) => ({
   display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', borderRadius: 10, border: 'none',
-  background: active ? 'linear-gradient(135deg,#A5B4FC,#7C6BF6)' : C.panel2,
+  background: active ? 'linear-gradient(135deg,#A5B4FC,#7C5CFF)' : C.panel2,
   color: active ? '#000' : C.textGhost,
   fontFamily: 'inherit', fontSize: 13, fontWeight: 700,
   cursor: active ? 'pointer' : 'not-allowed',
-  boxShadow: active ? '0 6px 18px rgba(124, 107, 246, 0.35)' : 'none',
+  boxShadow: active ? '0 6px 18px rgba(124, 92, 255, 0.35)' : 'none',
 } as React.CSSProperties)
 
 const SUBJECTS = ['Physics','Chemistry','Biology','Mathematics','History','Geography','Economics','English','Computer Science']
@@ -88,7 +88,7 @@ export default function FormulaSheet() {
       width: '100%', height: '100%', overflowY: 'auto',
       background: C.bg,
       backgroundImage:
-        `radial-gradient(at 12% 0%, rgba(124, 107, 246, 0.10) 0%, transparent 36%),
+        `radial-gradient(at 12% 0%, rgba(124, 92, 255, 0.10) 0%, transparent 36%),
          radial-gradient(at 88% 100%, rgba(74, 47, 168, 0.10) 0%, transparent 42%)`,
       padding: '24px 32px 60px',
     }}>
@@ -97,16 +97,16 @@ export default function FormulaSheet() {
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
             <div style={{
               width: 52, height: 52, borderRadius: 14,
-              background: 'linear-gradient(135deg, #A5B4FC 0%, #7C6BF6 60%, #0B1530 100%)',
+              background: 'linear-gradient(135deg, #A5B4FC 0%, #7C5CFF 60%, #0B1530 100%)',
               display: 'grid', placeItems: 'center',
-              boxShadow: '0 14px 38px rgba(124, 107, 246, 0.03)',
+              boxShadow: '0 14px 38px rgba(124, 92, 255, 0.03)',
             }}>
               <Sigma size={24} color="#000" strokeWidth={2.4} />
             </div>
             <div>
               <div style={{
                 fontSize: 11, fontWeight: 700, letterSpacing: 2.2, textTransform: 'uppercase',
-                background: 'linear-gradient(90deg, #A5B4FC, #A5B4FC, #7C6BF6)', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent',
+                background: 'linear-gradient(90deg, #A5B4FC, #A5B4FC, #7C5CFF)', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent',
               }}>
                 Formula Sheet
               </div>
@@ -153,12 +153,12 @@ function TabBtn({ active, onClick, children }: { active: boolean; onClick: () =>
     <button onClick={onClick} style={{
       display: 'inline-flex', alignItems: 'center', gap: 6,
       padding: '9px 16px', borderRadius: 9,
-      background: active ? 'linear-gradient(135deg,#7C6BF6,#4A2FA8)' : 'transparent',
+      background: active ? 'linear-gradient(135deg,#7C5CFF,#4A2FA8)' : 'transparent',
       border: 'none',
       color: active ? '#fff' : C.textDim,
       fontFamily: 'inherit', fontSize: 12, fontWeight: 700,
       cursor: 'pointer', letterSpacing: 0.3,
-      boxShadow: active ? '0 4px 14px rgba(124, 107, 246, 0.35)' : 'none',
+      boxShadow: active ? '0 4px 14px rgba(124, 92, 255, 0.35)' : 'none',
       transition: 'all 0.18s',
     }}>{children}</button>
   )
@@ -232,7 +232,7 @@ function TwinFormulaCard({ f }: { f: TwinFormula }) {
   const [copied, setCopied] = useState(false)
   return (
     <motion.div
-      whileHover={{ y: -2, borderColor: 'rgba(165, 180, 252, 0.18)', boxShadow: '0 8px 22px rgba(124, 107, 246, 0.01)' }}
+      whileHover={{ y: -2, borderColor: 'rgba(165, 180, 252, 0.18)', boxShadow: '0 8px 22px rgba(124, 92, 255, 0.01)' }}
       style={{
         background: `linear-gradient(135deg, ${C.panel2} 0%, ${C.bg} 100%)`,
         borderRadius: 11, padding: '14px 14px',

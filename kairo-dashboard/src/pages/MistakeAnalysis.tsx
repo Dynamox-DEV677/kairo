@@ -20,10 +20,10 @@ const C = {
   purpleLite:'#DBE7FF',
   purpleSoft:'#A5B4FC',
   purple:    '#A5B4FC',
-  purpleHi:  '#7C6BF6',
+  purpleHi:  '#7C5CFF',
   purpleDeep:'#4A2FA8',
 }
-const GRAD_PILL = 'linear-gradient(135deg, #7C6BF6 0%, #4A2FA8 100%)'
+const GRAD_PILL = 'linear-gradient(135deg, #7C5CFF 0%, #4A2FA8 100%)'
 const FONT = "'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif"
 
 function normalizeMath(md: string): string {
@@ -79,7 +79,7 @@ export default function MistakeAnalysis() {
       width: '100%', height: '100%', overflowY: 'auto', WebkitOverflowScrolling: 'touch',
       background: C.bg,
       backgroundImage:
-        `radial-gradient(at 8% 0%,  rgba(124, 107, 246, 0.08) 0%, transparent 40%),
+        `radial-gradient(at 8% 0%,  rgba(124, 92, 255, 0.08) 0%, transparent 40%),
          radial-gradient(at 92% 100%, rgba(74, 47, 168, 0.10) 0%, transparent 45%)`,
       color: C.text, fontFamily: FONT,
       padding: '24px 28px 80px',
@@ -88,9 +88,9 @@ export default function MistakeAnalysis() {
         <Header onAddManual={() => setAdding(true)} />
 
         <div className="kr-mst-kpi" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14, marginTop: 22 }}>
-          <Kpi label="Total mistakes"   value={totalMistakes}    hint="across every Kyno activity" accent="#7c6bf6" />
+          <Kpi label="Total mistakes"   value={totalMistakes}    hint="across every Kyno activity" accent="#7C5CFF" />
           <Kpi label="Recurring topics" value={recurringTopics}  hint="≥ 3 wrong attempts" accent="#ffb020" />
-          <Kpi label="High-severity"    value={highSeverity}     hint="needs attention now" accent="#ff5c5c" />
+          <Kpi label="High-severity"    value={highSeverity}     hint="needs attention now" accent="#FF5A6E" />
         </div>
 
         <div style={{ marginTop: 22 }}>
@@ -131,7 +131,7 @@ function Header({ onAddManual }: { onAddManual: () => void }) {
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
         <div style={{
           width: 46, height: 46, borderRadius: 13, flexShrink: 0, background: GRAD_PILL,
-          display: 'grid', placeItems: 'center', boxShadow: '0 10px 30px rgba(124, 107, 246, 0.03)',
+          display: 'grid', placeItems: 'center', boxShadow: '0 10px 30px rgba(124, 92, 255, 0.03)',
         }}>
           <Activity size={22} color="#fff" />
         </div>
@@ -159,7 +159,7 @@ function Header({ onAddManual }: { onAddManual: () => void }) {
   )
 }
 
-function Kpi({ label, value, hint, accent = '#7c6bf6' }: { label: string; value: number; hint: string; accent?: string }) {
+function Kpi({ label, value, hint, accent = '#7C5CFF' }: { label: string; value: number; hint: string; accent?: string }) {
   // Light up in the accent colour only when there's something to signal.
   const on = value > 0
   return (
@@ -306,7 +306,7 @@ function AiResultModal({ title, body, loading, onClose }: {
           border: '1px solid rgba(165, 180, 252, 0.35)',
           borderRadius: 18, padding: 24,
           color: C.text, fontFamily: 'inherit',
-          boxShadow: '0 24px 60px rgba(124, 107, 246, 0.03)',
+          boxShadow: '0 24px 60px rgba(124, 92, 255, 0.03)',
           position: 'relative', maxHeight: '88vh', overflowY: 'auto',
         }}>
         <button onClick={onClose} aria-label="Close" style={{
@@ -395,7 +395,7 @@ function AddMistakeModal({ onClose, onSaved }: { onClose: () => void; onSaved: (
           border: '1px solid rgba(165, 180, 252, 0.35)',
           borderRadius: 18, padding: 22,
           color: C.text, fontFamily: 'inherit',
-          boxShadow: '0 24px 60px rgba(124, 107, 246, 0.03)',
+          boxShadow: '0 24px 60px rgba(124, 92, 255, 0.03)',
         }}>
         <h3 style={{ margin: 0, fontSize: 18, fontWeight: 800 }}>Log a mistake</h3>
         <p style={{ margin: '4px 0 14px', fontSize: 12.5, color: C.textFaint }}>

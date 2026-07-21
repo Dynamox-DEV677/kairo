@@ -157,7 +157,7 @@ export default function ParentDashboard({ profile, onLogout }: ParentDashboardPr
         {profile.school_logo_url
           ? <img src={profile.school_logo_url} alt="school"
               style={{ width: 32, height: 32, borderRadius: 8, objectFit: 'cover' }} />
-          : <div style={{ width: 32, height: 32, borderRadius: 8, background: 'linear-gradient(135deg,#7C6BF6,#7C6BF6)',
+          : <div style={{ width: 32, height: 32, borderRadius: 8, background: 'linear-gradient(135deg,#7C5CFF,#7C5CFF)',
               display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <Building2 size={16} color="#fff" />
             </div>
@@ -192,10 +192,10 @@ export default function ParentDashboard({ profile, onLogout }: ParentDashboardPr
       <div style={{ maxWidth: 860, margin: '0 auto', padding: '28px 20px' }}>
         {student && (
           <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
-            style={{ background: 'linear-gradient(135deg, rgba(124, 107, 246, 0.12), rgba(124, 107, 246, 0.08))',
-              border: '1px solid rgba(124, 107, 246, 0.25)', borderRadius: 14, padding: '18px 22px',
+            style={{ background: 'linear-gradient(135deg, rgba(124, 92, 255, 0.12), rgba(124, 92, 255, 0.08))',
+              border: '1px solid rgba(124, 92, 255, 0.25)', borderRadius: 14, padding: '18px 22px',
               display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24 }}>
-            <div style={{ width: 52, height: 52, borderRadius: 14, background: 'linear-gradient(135deg,#7C6BF6,#7C6BF6)',
+            <div style={{ width: 52, height: 52, borderRadius: 14, background: 'linear-gradient(135deg,#7C5CFF,#7C5CFF)',
               display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               <GraduationCap size={24} color="#fff" />
             </div>
@@ -206,7 +206,7 @@ export default function ParentDashboard({ profile, onLogout }: ParentDashboardPr
                 {' · '}Your linked child
               </div>
             </div>
-            <button onClick={load} style={{ marginLeft: 'auto', background: 'none', border: '1px solid rgba(124, 107, 246, 0.3)',
+            <button onClick={load} style={{ marginLeft: 'auto', background: 'none', border: '1px solid rgba(124, 92, 255, 0.3)',
               borderRadius: 8, padding: '6px 10px', color: '#A5B4FC', cursor: 'pointer' }}>
               <RefreshCw size={13} />
             </button>
@@ -214,7 +214,7 @@ export default function ParentDashboard({ profile, onLogout }: ParentDashboardPr
         )}
 
         {err && (
-          <div style={{ background: 'rgba(124, 107, 246, 0.1)', border: '1px solid rgba(124, 107, 246, 0.25)',
+          <div style={{ background: 'rgba(124, 92, 255, 0.1)', border: '1px solid rgba(124, 92, 255, 0.25)',
             borderRadius: 10, padding: '12px 16px', marginBottom: 20, display: 'flex', gap: 10, color: '#A5B4FC', fontSize: 13 }}>
             <AlertCircle size={16} style={{ flexShrink: 0, marginTop: 1 }} />
             {err}
@@ -224,7 +224,7 @@ export default function ParentDashboard({ profile, onLogout }: ParentDashboardPr
         {loading ? (
           <div style={{ display: 'flex', justifyContent: 'center', padding: 60 }}>
             <motion.div animate={{ rotate: 360 }} transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }}
-              style={{ width: 32, height: 32, borderRadius: '50%', border: '2px solid #1f2532', borderTopColor: '#7C6BF6' }} />
+              style={{ width: 32, height: 32, borderRadius: '50%', border: '2px solid #1f2532', borderTopColor: '#7C5CFF' }} />
           </div>
         ) : marks.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '60px 20px', color: '#6B7280' }}>
@@ -254,8 +254,8 @@ export default function ParentDashboard({ profile, onLogout }: ParentDashboardPr
               {(['overview', 'details'] as const).map(t => (
                 <button key={t} onClick={() => setTab(t)} style={{
                   padding: '7px 16px', borderRadius: 8, fontSize: 13, fontWeight: tab === t ? 600 : 400,
-                  border: tab === t ? '1px solid rgba(124, 107, 246, 0.14)' : '1px solid #1f2532',
-                  background: tab === t ? 'rgba(124, 107, 246, 0.12)' : '#141A2A',
+                  border: tab === t ? '1px solid rgba(124, 92, 255, 0.14)' : '1px solid #1f2532',
+                  background: tab === t ? 'rgba(124, 92, 255, 0.12)' : '#141A2A',
                   color: tab === t ? '#A5B4FC' : '#9CA3AF',
                   cursor: 'pointer', fontFamily: 'inherit',
                 }}>
@@ -271,7 +271,7 @@ export default function ParentDashboard({ profile, onLogout }: ParentDashboardPr
 
                   <div style={{ background: '#141A2A', border: '1px solid #1f2532', borderRadius: 14, padding: 20, marginBottom: 16 }}>
                     <div style={{ fontSize: 14, fontWeight: 700, color: '#fafafa', marginBottom: 16, display: 'flex', gap: 8 }}>
-                      <BarChart3 size={16} color="#7C6BF6" /> Subject-wise Performance
+                      <BarChart3 size={16} color="#7C5CFF" /> Subject-wise Performance
                     </div>
                     <BarChart subjects={subjects} />
                   </div>
@@ -289,7 +289,7 @@ export default function ParentDashboard({ profile, onLogout }: ParentDashboardPr
                         ))
                       }
                     </div>
-                    <div style={{ background: 'rgba(124, 107, 246, 0.06)', border: '1px solid rgba(124, 107, 246, 0.2)',
+                    <div style={{ background: 'rgba(124, 92, 255, 0.06)', border: '1px solid rgba(124, 92, 255, 0.2)',
                       borderRadius: 12, padding: 16 }}>
                       <div style={{ fontSize: 13, fontWeight: 700, color: '#A5B4FC', marginBottom: 10, display: 'flex', gap: 6 }}>
                         <AlertCircle size={14} /> Needs Attention (&lt;50%)
@@ -312,15 +312,15 @@ export default function ParentDashboard({ profile, onLogout }: ParentDashboardPr
                   <div style={{ display: 'flex', gap: 6, marginBottom: 14, flexWrap: 'wrap' }}>
                     <button onClick={() => setSortSubject('')} style={{
                       padding: '4px 10px', borderRadius: 6, fontSize: 12, cursor: 'pointer',
-                      border: !sortSubject ? '1px solid #7C6BF6' : '1px solid #1f2532',
-                      background: !sortSubject ? 'rgba(124, 107, 246, 0.12)' : '#1C2233',
+                      border: !sortSubject ? '1px solid #7C5CFF' : '1px solid #1f2532',
+                      background: !sortSubject ? 'rgba(124, 92, 255, 0.12)' : '#1C2233',
                       color: !sortSubject ? '#A5B4FC' : '#9CA3AF', fontFamily: 'inherit',
                     }}>All</button>
                     {[...new Set(marks.map(m => m.subject))].map(s => (
                       <button key={s} onClick={() => setSortSubject(s === sortSubject ? '' : s)} style={{
                         padding: '4px 10px', borderRadius: 6, fontSize: 12, cursor: 'pointer',
-                        border: sortSubject === s ? '1px solid #7C6BF6' : '1px solid #1f2532',
-                        background: sortSubject === s ? 'rgba(124, 107, 246, 0.12)' : '#1C2233',
+                        border: sortSubject === s ? '1px solid #7C5CFF' : '1px solid #1f2532',
+                        background: sortSubject === s ? 'rgba(124, 92, 255, 0.12)' : '#1C2233',
                         color: sortSubject === s ? '#A5B4FC' : '#9CA3AF', fontFamily: 'inherit',
                       }}>{s}</button>
                     ))}

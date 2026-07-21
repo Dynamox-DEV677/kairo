@@ -16,7 +16,7 @@ const TABS = [
 const card = { background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(14px) saturate(140%)', WebkitBackdropFilter: 'blur(14px) saturate(140%)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14, padding: 20 }
 const inp  = { background: '#141A2A', border: '1px solid #1f2532', borderRadius: 8, padding: '9px 12px', fontSize: 13, color: '#fafafa', fontFamily: 'inherit', outline: 'none', width: '100%' } as React.CSSProperties
 const label = { fontSize: 11, color: '#9CA3AF', display: 'block', marginBottom: 5, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.8 } as React.CSSProperties
-const btn = (active = true) => ({ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', borderRadius: 9, border: 'none', background: active ? 'linear-gradient(135deg,#7C6BF6,#7C6BF6)' : '#171D2D', color: active ? '#fff' : '#6B7280', fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: active ? 'pointer' : 'not-allowed' } as React.CSSProperties)
+const btn = (active = true) => ({ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', borderRadius: 9, border: 'none', background: active ? 'linear-gradient(135deg,#7C5CFF,#7C5CFF)' : '#171D2D', color: active ? '#fff' : '#6B7280', fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: active ? 'pointer' : 'not-allowed' } as React.CSSProperties)
 
 export default function FeeReminder() {
   const [tab, setTab] = useState('stats')
@@ -360,8 +360,8 @@ function SendTab() {
           <div style={{ display: 'flex', gap: 6 }}>
             {(['ai', 'manual'] as const).map(m => (
               <button key={m} onClick={() => setMode(m)} style={{
-                flex: 1, padding: '8px 0', borderRadius: 8, border: `1px solid ${mode === m ? '#7C6BF6' : '#1f2532'}`,
-                background: mode === m ? 'rgba(124, 107, 246, 0.12)' : '#141A2A',
+                flex: 1, padding: '8px 0', borderRadius: 8, border: `1px solid ${mode === m ? '#7C5CFF' : '#1f2532'}`,
+                background: mode === m ? 'rgba(124, 92, 255, 0.12)' : '#141A2A',
                 color: mode === m ? '#A5B4FC' : '#6B7280',
                 fontFamily: 'inherit', fontSize: 12, fontWeight: 600, cursor: 'pointer', transition: 'all 0.15s',
               }}>
@@ -397,8 +397,8 @@ function SendTab() {
               style={{
                 marginTop: 8, display: 'flex', alignItems: 'center', gap: 6,
                 padding: '7px 14px', borderRadius: 8,
-                border: '1px solid rgba(124, 107, 246, 0.14)',
-                background: 'rgba(124, 107, 246, 0.08)',
+                border: '1px solid rgba(124, 92, 255, 0.14)',
+                background: 'rgba(124, 92, 255, 0.08)',
                 color: polishing || !message.trim() ? '#4B5563' : '#A5B4FC',
                 fontFamily: 'inherit', fontSize: 12, fontWeight: 600,
                 cursor: polishing || !message.trim() ? 'not-allowed' : 'pointer',
@@ -544,7 +544,7 @@ function StatusBadge({ status }: { status: string }) {
 function Spinner() {
   return (
     <div style={{ display: 'flex', justifyContent: 'center', padding: '60px 0' }}>
-      <div style={{ width: 28, height: 28, borderRadius: '50%', border: '2px solid #1f2532', borderTopColor: '#7C6BF6', animation: 'spin 0.8s linear infinite' }} />
+      <div style={{ width: 28, height: 28, borderRadius: '50%', border: '2px solid #1f2532', borderTopColor: '#7C5CFF', animation: 'spin 0.8s linear infinite' }} />
     </div>
   )
 }

@@ -11,7 +11,7 @@ const SUBJECT_COLORS: Record<string, string> = {
   Mathematics: '#A5B4FC', Physics: '#8FA0FA', Chemistry: '#A5B4FC',
   Biology: '#A5B4FC', English: '#A5B4FC', Hindi: '#A5B4FC',
   History: '#A5B4FC', Geography: '#A5B4FC', 'Computer Science': '#DBE7FF',
-  default: '#7C6BF6',
+  default: '#7C5CFF',
 }
 
 const card = { background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(14px) saturate(140%)', WebkitBackdropFilter: 'blur(14px) saturate(140%)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14 }
@@ -120,7 +120,7 @@ function GridTab() {
         <button onClick={() => setAdding(a => !a)} style={{
           marginTop: 18, display: 'flex', alignItems: 'center', gap: 7,
           padding: '9px 18px', borderRadius: 9, border: 'none',
-          background: 'linear-gradient(135deg,#7C6BF6,#6455e0)', color: '#fff',
+          background: 'linear-gradient(135deg,#7C5CFF,#6455e0)', color: '#fff',
           fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: 'pointer',
         }}>
           <Plus size={13} /> Add Period
@@ -178,7 +178,7 @@ function GridTab() {
               </div>
             )}
             <div style={{ display: 'flex', gap: 8 }}>
-              <button onClick={addSlot} disabled={saving} style={{ padding: '8px 20px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg,#7C6BF6,#6455e0)', color: '#fff', fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+              <button onClick={addSlot} disabled={saving} style={{ padding: '8px 20px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg,#7C5CFF,#6455e0)', color: '#fff', fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
                 {saving ? 'Saving…' : 'Add'}
               </button>
               <button onClick={() => { setAdding(false); setErr('') }} style={{ padding: '8px 14px', borderRadius: 8, border: '1px solid #1f2532', background: 'transparent', color: '#6B7280', fontFamily: 'inherit', fontSize: 13, cursor: 'pointer' }}>Cancel</button>
@@ -343,7 +343,7 @@ function GenerateTab() {
           <button onClick={generate} disabled={loading} style={{
             width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
             padding: '10px', borderRadius: 9, border: 'none',
-            background: 'linear-gradient(135deg,#7C6BF6,#6455e0)', color: '#fff',
+            background: 'linear-gradient(135deg,#7C5CFF,#6455e0)', color: '#fff',
             fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: 'pointer',
           }}>
             <Sparkles size={14} /> {loading ? 'Generating…' : 'Generate with AI'}
@@ -401,7 +401,7 @@ function GenerateTab() {
 function Spinner() {
   return (
     <div style={{ display: 'flex', justifyContent: 'center', padding: '60px 0' }}>
-      <div style={{ width: 28, height: 28, borderRadius: '50%', border: '2px solid #1f2532', borderTopColor: '#7C6BF6', animation: 'spin 0.8s linear infinite' }} />
+      <div style={{ width: 28, height: 28, borderRadius: '50%', border: '2px solid #1f2532', borderTopColor: '#7C5CFF', animation: 'spin 0.8s linear infinite' }} />
     </div>
   )
 }

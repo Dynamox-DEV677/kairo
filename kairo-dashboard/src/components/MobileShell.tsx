@@ -238,7 +238,7 @@ function MobileTopBar({
         }}>{pageTitle}</div>
         {isAdmin && profile?.school_name && (
           <div style={{
-            fontSize: 10, color: '#7C6BF6', fontWeight: 700,
+            fontSize: 10, color: '#7C5CFF', fontWeight: 700,
             textTransform: 'uppercase', letterSpacing: 1.2, marginTop: 2,
             overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
           }}>
@@ -253,8 +253,8 @@ function MobileTopBar({
           setTimeout(() => setCopied(false), 1400)
         }} style={{
           padding: '6px 9px', borderRadius: 7,
-          background: copied ? 'rgba(52,211,153,0.12)' : 'rgba(124, 107, 246, 0.10)',
-          border: `1px solid ${copied ? 'rgba(52,211,153,0.4)' : 'rgba(124, 107, 246, 0.3)'}`,
+          background: copied ? 'rgba(52,211,153,0.12)' : 'rgba(124, 92, 255, 0.10)',
+          border: `1px solid ${copied ? 'rgba(52,211,153,0.4)' : 'rgba(124, 92, 255, 0.3)'}`,
           color: copied ? '#34d399' : '#A5B4FC',
           fontFamily: 'Consolas, monospace', fontSize: 11, fontWeight: 700,
           cursor: 'pointer', flexShrink: 0,
@@ -343,8 +343,8 @@ function BottomNav({
                   transition={{ type: 'spring', stiffness: 380, damping: 32 }}
                   style={{
                     position: 'absolute', inset: 0,
-                    background: 'linear-gradient(135deg, rgba(124,107,246,0.42), rgba(124,107,246,0.24))',
-                    border: '1px solid rgba(124, 107, 246, 0.6)',
+                    background: 'linear-gradient(135deg, rgba(124, 92, 255,0.42), rgba(124, 92, 255,0.24))',
+                    border: '1px solid rgba(124, 92, 255, 0.6)',
                     borderRadius: 14,
                     boxShadow: 'inset 0 2px 6px rgba(0,0,0,0.35), 0 1px 0 0 var(--c-purple-deep)',
                   }} />
@@ -429,7 +429,7 @@ function MobileDrawer({
             background: 'linear-gradient(150deg, #0B0F1C 0%, #05060A 100%)',
             border: '1px solid rgba(165,180,252,0.30)',
             display: 'grid', placeItems: 'center',
-            boxShadow: '0 6px 18px rgba(124,107,246,0.30), inset 0 1px 0 rgba(255,255,255,0.08)',
+            boxShadow: '0 6px 18px rgba(124, 92, 255,0.30), inset 0 1px 0 rgba(255,255,255,0.08)',
           }}>
             <img src="/kairo-mark.svg" alt="Kyno"
               style={{ width: '74%', height: '74%', objectFit: 'contain', filter: 'drop-shadow(0 0 8px rgba(165,180,252,0.45))' }} />
@@ -439,7 +439,7 @@ function MobileDrawer({
               fontSize: 17, fontWeight: 700, color: '#F5F5F7',
               fontFamily: "'Space Grotesk', system-ui, sans-serif",
               letterSpacing: 0.2,
-              textShadow: '0 0 18px rgba(124,107,246,0.4)',
+              textShadow: '0 0 18px rgba(124, 92, 255,0.4)',
             }}>Kyno</div>
             <div style={{ fontSize: 8.5, fontWeight: 600, color: 'rgba(165,180,252,0.6)', textTransform: 'uppercase', letterSpacing: 1.4 }}>
               Kairo Industries
@@ -478,7 +478,7 @@ function MobileDrawer({
                       onClick={() => go(item.to)}
                       style={{
                         width: '100%', padding: '11px 12px',
-                        background: isActive ? 'rgba(124, 107, 246, 0.14)' : 'transparent',
+                        background: isActive ? 'rgba(124, 92, 255, 0.14)' : 'transparent',
                         border: 'none', cursor: 'pointer',
                         display: 'flex', alignItems: 'center', gap: 12,
                         color: isActive ? '#A5B4FC' : '#d4d4d8',
@@ -491,7 +491,7 @@ function MobileDrawer({
                         width: 28, height: 28, borderRadius: 8, flexShrink: 0,
                         display: 'grid', placeItems: 'center',
                         background: isActive
-                          ? 'linear-gradient(135deg, #7C6BF6, #4A2FA8)'
+                          ? 'linear-gradient(135deg, #7C5CFF, #4A2FA8)'
                           : 'rgba(165,180,252,0.08)',
                         border: isActive ? 'none' : '1px solid rgba(165,180,252,0.14)',
                         color: isActive ? '#fff' : '#A5B4FC',

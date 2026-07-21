@@ -27,7 +27,7 @@ const ATOMS: AtomState[] = [
 function ReactionSim({ params, playing }: SimProps) {
   return (
     <LabScene cameraPos={[0, 1.5, 9]} cameraFov={55} tint="#1a0a18" particles={45}>
-      <pointLight position={[0, 0, 0]} intensity={params.temperature / 200} color="#7C6BF6" distance={8} />
+      <pointLight position={[0, 0, 0]} intensity={params.temperature / 200} color="#7C5CFF" distance={8} />
       <ReactionAtoms params={params} playing={playing} />
       <Text position={[-3, -3, 0]} fontSize={0.4} color="#B1B5BA" anchorX="center">CH4 + 2O2</Text>
       <Text position={[ 0, -3, 0]} fontSize={0.4} color="#C7D2E8" anchorX="center">→</Text>

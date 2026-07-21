@@ -55,7 +55,7 @@ export default function SplashScreen({ onComplete, duration = 2600 }: Props) {
           <div style={{
             position: 'absolute', top: '34%', left: '50%', width: 520, height: 520,
             transform: 'translate(-50%, -50%)', borderRadius: '50%',
-            background: 'radial-gradient(circle, rgba(124,107,246,0.28), transparent 68%)',
+            background: 'radial-gradient(circle, rgba(124, 92, 255,0.28), transparent 68%)',
             filter: 'blur(24px)', animation: 'kb-glow 3.6s ease-in-out infinite', pointerEvents: 'none',
           }} />
 
@@ -68,7 +68,7 @@ export default function SplashScreen({ onComplete, duration = 2600 }: Props) {
               transition={{ duration: 0.8, ease: [0.2, 0.8, 0.2, 1] }}
               style={{
                 width: 128, height: 128, objectFit: 'contain',
-                filter: 'drop-shadow(0 0 26px rgba(165,180,252,0.5)) drop-shadow(0 10px 30px rgba(124,107,246,0.4))',
+                filter: 'drop-shadow(0 0 26px rgba(165,180,252,0.5)) drop-shadow(0 10px 30px rgba(124, 92, 255,0.4))',
                 animation: 'kb-breath 4s 0.9s ease-in-out infinite',
                 userSelect: 'none', WebkitUserDrag: 'none',
               }}
@@ -110,7 +110,7 @@ export default function SplashScreen({ onComplete, duration = 2600 }: Props) {
                 initial={{ width: '0%' }}
                 animate={{ width: '100%' }}
                 transition={{ delay: 0.4, duration: (duration - 700) / 1000, ease: 'easeInOut' }}
-                style={{ height: '100%', background: 'linear-gradient(90deg, #A5B4FC, #7C6BF6)' }}
+                style={{ height: '100%', background: 'linear-gradient(90deg, #A5B4FC, #7C5CFF)' }}
               />
             </motion.div>
           </div>

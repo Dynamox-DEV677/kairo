@@ -117,9 +117,9 @@ export default function MemoryBrain() {
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 24 }}>
         <div style={{
           width: 44, height: 44, borderRadius: 11,
-          background: 'linear-gradient(135deg, #7C6BF6, #7C6BF6)',
+          background: 'linear-gradient(135deg, #7C5CFF, #7C5CFF)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 0 20px rgba(124, 107, 246, 0.04)', flexShrink: 0,
+          boxShadow: '0 0 20px rgba(124, 92, 255, 0.04)', flexShrink: 0,
         }}>
           <Brain size={22} color="#fff" />
         </div>
@@ -155,7 +155,7 @@ export default function MemoryBrain() {
       {data && (
         <>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 22 }}>
-            <Stat icon={Brain}          label="Memories"        value={data.total} color="#7C6BF6" />
+            <Stat icon={Brain}          label="Memories"        value={data.total} color="#7C5CFF" />
             <Stat icon={AlertTriangle}  label="Weak Areas"      value={data.weak.length} color="#A5B4FC" />
             <Stat icon={Target}         label="Mistakes Logged" value={data.mistakes.length} color="#A5B4FC" />
             <Stat icon={Award}          label="Strong Areas"    value={data.strong.length} color="#A5B4FC" />
@@ -165,7 +165,7 @@ export default function MemoryBrain() {
             <div style={{ ...card, padding: '60px 32px', textAlign: 'center' }}>
               <div style={{
                 width: 64, height: 64, borderRadius: 18, margin: '0 auto 18px',
-                background: 'rgba(124, 107, 246, 0.1)', border: '1px solid rgba(124, 107, 246, 0.3)',
+                background: 'rgba(124, 92, 255, 0.1)', border: '1px solid rgba(124, 92, 255, 0.3)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
                 <Sparkles size={28} color="#A5B4FC" />

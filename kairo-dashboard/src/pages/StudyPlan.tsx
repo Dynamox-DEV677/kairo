@@ -21,7 +21,7 @@ const SUBJECT_COLORS: Record<string, string> = {
   'Political Science': '#DBE7FF', Economics: '#A5B4FC',
   'Computer Science': '#DBE7FF',
 }
-const colorFor = (s: string) => SUBJECT_COLORS[s] || '#7C6BF6'
+const colorFor = (s: string) => SUBJECT_COLORS[s] || '#7C5CFF'
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
@@ -175,7 +175,7 @@ Generate the JSON schedule and markdown plan as instructed.`
           width: 44, height: 44, borderRadius: 11,
           background: 'linear-gradient(135deg, #A5B4FC, #A5B4FC)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 0 18px rgba(124, 107, 246, 0.03)', flexShrink: 0,
+          boxShadow: '0 0 18px rgba(124, 92, 255, 0.03)', flexShrink: 0,
         }}>
           <Calendar size={22} color="#fff" />
         </div>
@@ -190,8 +190,8 @@ Generate the JSON schedule and markdown plan as instructed.`
       {!loadingMemory && (
         <div style={{
           display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px',
-          background: weakTopics.length ? 'rgba(124, 107, 246, 0.06)' : 'rgba(82,82,91,0.04)',
-          border: `1px solid ${weakTopics.length ? 'rgba(124, 107, 246, 0.2)' : '#1f2532'}`,
+          background: weakTopics.length ? 'rgba(124, 92, 255, 0.06)' : 'rgba(82,82,91,0.04)',
+          border: `1px solid ${weakTopics.length ? 'rgba(124, 92, 255, 0.2)' : '#1f2532'}`,
           borderRadius: 10, marginBottom: 18,
         }}>
           <Brain size={14} color={weakTopics.length ? '#A5B4FC' : '#9CA3AF'} />
@@ -308,12 +308,12 @@ Generate the JSON schedule and markdown plan as instructed.`
               padding: '12px 24px', borderRadius: 10, border: 'none',
               background: busy || subjects.length === 0
                 ? '#171D2D'
-                : 'linear-gradient(135deg, #7C6BF6, #7C6BF6)',
+                : 'linear-gradient(135deg, #7C5CFF, #7C5CFF)',
               color: busy || subjects.length === 0 ? '#6B7280' : '#fff',
               fontFamily: 'inherit', fontSize: 14, fontWeight: 700,
               cursor: busy || subjects.length === 0 ? 'not-allowed' : 'pointer',
               display: 'flex', alignItems: 'center', gap: 8,
-              boxShadow: busy || subjects.length === 0 ? 'none' : '0 0 22px rgba(124, 107, 246, 0.35)',
+              boxShadow: busy || subjects.length === 0 ? 'none' : '0 0 22px rgba(124, 92, 255, 0.35)',
             }}>
             <Sparkles size={14} />{busy ? 'Optimizing your week…' : 'Generate Smart Schedule'}
           </motion.button>
@@ -351,8 +351,8 @@ Generate the JSON schedule and markdown plan as instructed.`
                 <Plus size={12} /> Edit Setup
               </button>
               <button onClick={generate} disabled={busy} style={{
-                padding: '8px 14px', borderRadius: 8, border: '1px solid rgba(124, 107, 246, 0.3)',
-                background: 'rgba(124, 107, 246, 0.08)', color: '#A5B4FC', cursor: 'pointer',
+                padding: '8px 14px', borderRadius: 8, border: '1px solid rgba(124, 92, 255, 0.3)',
+                background: 'rgba(124, 92, 255, 0.08)', color: '#A5B4FC', cursor: 'pointer',
                 fontFamily: 'inherit', fontSize: 12, display: 'flex', alignItems: 'center', gap: 6,
               }}>
                 <RefreshCw size={12} style={{ animation: busy ? 'spin 0.8s linear infinite' : 'none' }} />

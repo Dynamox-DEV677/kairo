@@ -273,7 +273,7 @@ function IdleHint({ hovered, selected, hint }: any) {
       position: 'absolute', top: 14, left: 14, zIndex: 5,
       padding: '6px 12px', borderRadius: 7,
       background: 'rgba(13,13,13,0.55)', backdropFilter: 'blur(8px)',
-      border: '1px solid rgba(124, 107, 246, 0.25)',
+      border: '1px solid rgba(124, 92, 255, 0.25)',
       fontSize: 10.5, color: '#A5B4FC', fontWeight: 600,
       textTransform: 'uppercase', letterSpacing: 1.5,
       pointerEvents: 'none',

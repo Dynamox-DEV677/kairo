@@ -13,7 +13,7 @@ const C = {
   textFaint: '#9CA3AF',
   textVery:  '#6B7280',
   purple:    '#A5B4FC',
-  purpleHi:  '#7C6BF6',
+  purpleHi:  '#7C5CFF',
   purpleSoft:'#A5B4FC',
   purpleLite:'#DBE7FF',
 }
@@ -145,7 +145,7 @@ function TermsSheet({ tab, setTab, onClose }: {
           background: C.panel,
           border: `1px solid ${C.border}`,
           borderRadius: 22,
-          boxShadow: '0 30px 100px rgba(124, 107, 246, 0.01), 0 0 0 1px rgba(165, 180, 252, 0.01)',
+          boxShadow: '0 30px 100px rgba(124, 92, 255, 0.01), 0 0 0 1px rgba(165, 180, 252, 0.01)',
           display: 'flex', flexDirection: 'column',
           overflow: 'hidden',
         }}
@@ -165,7 +165,7 @@ function TermsSheet({ tab, setTab, onClose }: {
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <div style={{
               width: 38, height: 38, borderRadius: 11,
-              background: 'linear-gradient(135deg, rgba(165, 180, 252, 0.18), rgba(124, 107, 246, 0.08))',
+              background: 'linear-gradient(135deg, rgba(165, 180, 252, 0.18), rgba(124, 92, 255, 0.08))',
               border: `1px solid ${C.border}`,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               flexShrink: 0,
@@ -277,10 +277,10 @@ function TermsSheet({ tab, setTab, onClose }: {
             onClick={onClose}
             style={{
               padding: '11px 22px', borderRadius: 11, border: 'none',
-              background: 'linear-gradient(135deg, #7C6BF6, #4A2FA8)',
+              background: 'linear-gradient(135deg, #7C5CFF, #4A2FA8)',
               color: '#fff', fontFamily: FONT, fontSize: 13.5, fontWeight: 700,
               cursor: 'pointer',
-              boxShadow: '0 0 22px rgba(124, 107, 246, 0.03)',
+              boxShadow: '0 0 22px rgba(124, 92, 255, 0.03)',
             }}
           >
             Got it

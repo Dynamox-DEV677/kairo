@@ -119,7 +119,7 @@ const LABS: Lab[] = [
 const SUBJECT_COLORS: Record<string, string> = {
   Physics:   '#A5B4FC',
   Chemistry: '#A5B4FC',
-  Biology:   '#7C6BF6',
+  Biology:   '#7C5CFF',
   Math:      '#4A2FA8',
   Space:     '#8b5cf6',
 }
@@ -182,7 +182,7 @@ export default function KairoLabs({ active = true }: { active?: boolean }) {
       padding: 'clamp(16px, 3vw, 28px) clamp(14px, 4vw, 36px) 110px', maxWidth: 1240, margin: '0 auto',
       height: '100%', overflowY: 'auto', WebkitOverflowScrolling: 'touch',
       background: `
-        radial-gradient(at 12% 0%, rgba(124, 107, 246, 0.10) 0%, transparent 36%),
+        radial-gradient(at 12% 0%, rgba(124, 92, 255, 0.10) 0%, transparent 36%),
         radial-gradient(at 88% 100%, rgba(74, 47, 168, 0.10) 0%, transparent 42%)`,
     }}>
       <style>{`@keyframes kl-glow { 0%,100% { opacity: 0.45 } 50% { opacity: 0.95 } }`}</style>
@@ -191,22 +191,22 @@ export default function KairoLabs({ active = true }: { active?: boolean }) {
         <div style={{
           position: 'absolute', top: -20, left: 30,
           width: 240, height: 240, borderRadius: '50%',
-          background: 'radial-gradient(closest-side, rgba(124, 107, 246, 0.35), transparent 70%)',
+          background: 'radial-gradient(closest-side, rgba(124, 92, 255, 0.35), transparent 70%)',
           filter: 'blur(40px)', animation: 'kl-glow 6s ease-in-out infinite',
           pointerEvents: 'none',
         }} />
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 18, position: 'relative' }}>
           <div style={{
             width: 56, height: 56, borderRadius: 14,
-            background: 'linear-gradient(135deg, #A5B4FC 0%, #7C6BF6 60%, #0B1530 100%)',
+            background: 'linear-gradient(135deg, #A5B4FC 0%, #7C5CFF 60%, #0B1530 100%)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: '0 12px 36px rgba(124, 107, 246, 0.03)', flexShrink: 0,
+            boxShadow: '0 12px 36px rgba(124, 92, 255, 0.03)', flexShrink: 0,
           }}>
             <Beaker size={26} color="#000" />
           </div>
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 2.2, textTransform: 'uppercase',
-              background: 'linear-gradient(90deg, #A5B4FC, #A5B4FC, #7C6BF6)', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent' }}>
+              background: 'linear-gradient(90deg, #A5B4FC, #A5B4FC, #7C5CFF)', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent' }}>
               Kyno Labs  ·  3D Simulations
             </div>
             <h1 style={{ margin: '4px 0 6px', fontSize: 'clamp(22px, 5vw, 32px)', fontWeight: 800, color: '#fafafa', letterSpacing: -0.6, lineHeight: 1.1 }}>
@@ -258,7 +258,7 @@ export default function KairoLabs({ active = true }: { active?: boolean }) {
 
       <div style={{
         marginTop: 28, padding: '14px 18px', borderRadius: 12,
-        background: 'rgba(124, 107, 246, 0.05)', border: '1px solid rgba(124, 107, 246, 0.18)',
+        background: 'rgba(124, 92, 255, 0.05)', border: '1px solid rgba(124, 92, 255, 0.18)',
         display: 'flex', alignItems: 'center', gap: 12,
       }}>
         <Sparkles size={14} color="#A5B4FC" />
@@ -460,7 +460,7 @@ function FeaturedLab({ lab, onOpen }: { lab: Lab; onOpen: () => void }) {
           <div style={{
             display: 'inline-flex', alignItems: 'center', gap: 8,
             padding: '11px 20px', borderRadius: 10,
-            background: `linear-gradient(135deg, ${color}, #7C6BF6)`,
+            background: `linear-gradient(135deg, ${color}, #7C5CFF)`,
             color: '#000', fontWeight: 800, fontSize: 13,
             boxShadow: `0 8px 24px ${color}55`,
           }}>

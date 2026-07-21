@@ -50,7 +50,7 @@ export default function MessageBubble({ message, isLast, isStreaming, onChipActi
         background: isUser ? 'linear-gradient(135deg, #374151, #1f2937)' : '#000',
         border: isUser ? '1px solid #27272a' : '1px solid #2a2a2a',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        boxShadow: isUser ? 'none' : '0 0 12px rgba(124, 107, 246, 0.2)',
+        boxShadow: isUser ? 'none' : '0 0 12px rgba(124, 92, 255, 0.2)',
         marginTop: 2, overflow: 'hidden',
       }}>
         {isUser
@@ -111,7 +111,7 @@ export default function MessageBubble({ message, isLast, isStreaming, onChipActi
                   ),
                   th: ({ children }) => <th style={{ padding: '8px 12px', background: '#1a1a2e', color: '#A5B4FC', fontWeight: 700, border: '1px solid #27272a', textAlign: 'left' }}>{children}</th>,
                   td: ({ children }) => <td style={{ padding: '7px 12px', border: '1px solid #1f2532', color: '#d4d4d8', verticalAlign: 'top' }}>{children}</td>,
-                  blockquote: ({ children }) => <blockquote style={{ borderLeft: '3px solid #7C6BF6', paddingLeft: 12, margin: '8px 0', color: '#B1B5BA', fontStyle: 'italic' }}>{children}</blockquote>,
+                  blockquote: ({ children }) => <blockquote style={{ borderLeft: '3px solid #7C5CFF', paddingLeft: 12, margin: '8px 0', color: '#B1B5BA', fontStyle: 'italic' }}>{children}</blockquote>,
                   hr: () => <hr style={{ border: 'none', borderTop: '1px solid #27272a', margin: '12px 0' }} />,
                   a: ({ children, href }) => <a href={href} target="_blank" rel="noreferrer" style={{ color: '#A5B4FC', textDecoration: 'underline' }}>{children}</a>,
                 }}

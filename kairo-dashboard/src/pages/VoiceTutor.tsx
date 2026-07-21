@@ -361,7 +361,7 @@ export default function VoiceTutor() {
               }}>
               <div style={{
                 width: 28, height: 28, borderRadius: 7, flexShrink: 0,
-                background: t.role === 'user' ? '#7C6BF6' : 'linear-gradient(135deg,#A5B4FC,#8FA0FA)',
+                background: t.role === 'user' ? '#7C5CFF' : 'linear-gradient(135deg,#A5B4FC,#8FA0FA)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
                 {t.role === 'user' ? <Mic size={13} color="#fff" /> : <Sparkles size={13} color="#fff" />}
@@ -370,7 +370,7 @@ export default function VoiceTutor() {
                 maxWidth: '78%',
                 padding: '10px 14px',
                 borderRadius: t.role === 'user' ? '12px 4px 12px 12px' : '4px 12px 12px 12px',
-                background: t.role === 'user' ? 'linear-gradient(135deg,#7C6BF6,#7C6BF6)' : '#1a1a2e',
+                background: t.role === 'user' ? 'linear-gradient(135deg,#7C5CFF,#7C5CFF)' : '#1a1a2e',
                 fontSize: 13.5, color: '#fafafa', lineHeight: 1.55,
               }}>
                 {t.text}
@@ -384,14 +384,14 @@ export default function VoiceTutor() {
             }}>
               <div style={{
                 width: 28, height: 28, borderRadius: 7, flexShrink: 0,
-                background: '#7C6BF6', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: '#7C5CFF', display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
                 <Mic size={13} color="#fff" />
               </div>
               <div style={{
                 maxWidth: '78%', padding: '10px 14px',
                 borderRadius: '12px 4px 12px 12px',
-                background: 'rgba(124, 107, 246, 0.15)', border: '1px solid rgba(124, 107, 246, 0.3)',
+                background: 'rgba(124, 92, 255, 0.15)', border: '1px solid rgba(124, 92, 255, 0.3)',
                 fontSize: 13.5, color: '#A5B4FC', lineHeight: 1.55, fontStyle: 'italic',
               }}>
                 {interim}…
@@ -489,7 +489,7 @@ export default function VoiceTutor() {
           <button onClick={submitText} disabled={!textInput.trim() || listening || thinking}
             style={{
               width: 38, height: 38, borderRadius: 9, flexShrink: 0,
-              background: textInput.trim() ? 'linear-gradient(135deg,#7C6BF6,#7C6BF6)' : '#171D2D',
+              background: textInput.trim() ? 'linear-gradient(135deg,#7C5CFF,#7C5CFF)' : '#171D2D',
               border: 'none', color: textInput.trim() ? '#fff' : '#6B7280',
               cursor: textInput.trim() ? 'pointer' : 'not-allowed',
               display: 'flex', alignItems: 'center', justifyContent: 'center',

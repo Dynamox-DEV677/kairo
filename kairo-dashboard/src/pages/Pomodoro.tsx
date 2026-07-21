@@ -6,7 +6,7 @@ type Mode = 'focus' | 'short' | 'long'
 
 const DURATIONS: Record<Mode, number> = { focus: 25 * 60, short: 5 * 60, long: 15 * 60 }
 const MODE_LABELS: Record<Mode, string> = { focus: 'Focus Time', short: 'Short Break', long: 'Long Break' }
-const MODE_COLORS: Record<Mode, string> = { focus: '#7C6BF6', short: '#34D399', long: '#22D3EE' }
+const MODE_COLORS: Record<Mode, string> = { focus: '#7C5CFF', short: '#34D399', long: '#4FD8E8' }
 
 const TASKS_PRESET = ['Study Chapter', 'Solve Problems', 'Revise Notes', 'Practice Questions', 'Read Textbook']
 

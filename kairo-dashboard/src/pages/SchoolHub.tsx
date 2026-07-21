@@ -68,7 +68,7 @@ function Spinner() {
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: 48 }}>
       <motion.div
         animate={{ rotate: 360 }} transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }}
-        style={{ width: 28, height: 28, borderRadius: '50%', border: '2px solid #1f2532', borderTopColor: '#7C6BF6' }}
+        style={{ width: 28, height: 28, borderRadius: '50%', border: '2px solid #1f2532', borderTopColor: '#7C5CFF' }}
       />
     </div>
   )
@@ -77,8 +77,8 @@ function Spinner() {
 function EmptyState({ icon: Icon, title, sub }: { icon: React.ElementType; title: string; sub?: string }) {
   return (
     <div style={{ textAlign: 'center', padding: '48px 24px', color: '#6B7280' }}>
-      <div style={{ width: 54, height: 54, borderRadius: 15, margin: '0 auto 14px', background: 'rgba(124,107,246,0.10)', border: '1px solid rgba(124,107,246,0.26)', display: 'grid', placeItems: 'center' }}>
-        <Icon size={24} color="#7C6BF6" />
+      <div style={{ width: 54, height: 54, borderRadius: 15, margin: '0 auto 14px', background: 'rgba(124, 92, 255,0.10)', border: '1px solid rgba(124, 92, 255,0.26)', display: 'grid', placeItems: 'center' }}>
+        <Icon size={24} color="#7C5CFF" />
       </div>
       <div style={{ fontSize: 15, fontWeight: 800, color: '#e4e4e7', marginBottom: 5 }}>{title}</div>
       {sub && <div style={{ fontSize: 13, opacity: 0.75, maxWidth: 320, margin: '0 auto', lineHeight: 1.5 }}>{sub}</div>}
@@ -89,7 +89,7 @@ function EmptyState({ icon: Icon, title, sub }: { icon: React.ElementType; title
 function ErrBanner({ msg, onDismiss }: { msg: string; onDismiss?: () => void }) {
   return (
     <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
-      style={{ background: 'rgba(124, 107, 246, 0.12)', border: '1px solid rgba(124, 107, 246, 0.25)', borderRadius: 8,
+      style={{ background: 'rgba(124, 92, 255, 0.12)', border: '1px solid rgba(124, 92, 255, 0.25)', borderRadius: 8,
         padding: '10px 14px', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, color: '#A5B4FC' }}>
       <AlertCircle size={14} style={{ flexShrink: 0 }} />
       <span style={{ flex: 1 }}>{msg}</span>
@@ -120,15 +120,15 @@ function TabBar({ tabs, active, setActive }: {
         <button key={t.id} onClick={() => setActive(t.id)} style={{
           display: 'flex', alignItems: 'center', gap: 6,
           padding: '7px 14px', borderRadius: 8, fontSize: 13, fontWeight: active === t.id ? 600 : 400,
-          border: active === t.id ? '1px solid rgba(124, 107, 246, 0.14)' : '1px solid #1f2532',
-          background: active === t.id ? 'rgba(124, 107, 246, 0.12)' : '#141A2A',
+          border: active === t.id ? '1px solid rgba(124, 92, 255, 0.14)' : '1px solid #1f2532',
+          background: active === t.id ? 'rgba(124, 92, 255, 0.12)' : '#141A2A',
           color: active === t.id ? '#A5B4FC' : '#9CA3AF',
           cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s', position: 'relative',
         }}>
           <t.icon size={13} />
           {t.label}
           {!!t.badge && (
-            <span style={{ background: '#7C6BF6', color: '#fff', borderRadius: 10, fontSize: 10,
+            <span style={{ background: '#7C5CFF', color: '#fff', borderRadius: 10, fontSize: 10,
               fontWeight: 700, padding: '0 5px', minWidth: 16, textAlign: 'center' }}>
               {t.badge}
             </span>
@@ -149,8 +149,8 @@ function Card({ children, style }: { children: React.ReactNode; style?: React.CS
 
 function RoleBadge({ role }: { role: string }) {
   const cfg: Record<string, { bg: string; color: string; label: string }> = {
-    admin:   { bg: 'rgba(124, 107, 246, 0.15)',  color: '#A5B4FC', label: 'Admin' },
-    teacher: { bg: 'rgba(124, 107, 246, 0.15)',  color: '#A5B4FC', label: 'Teacher' },
+    admin:   { bg: 'rgba(124, 92, 255, 0.15)',  color: '#A5B4FC', label: 'Admin' },
+    teacher: { bg: 'rgba(124, 92, 255, 0.15)',  color: '#A5B4FC', label: 'Teacher' },
     student: { bg: 'rgba(165, 180, 252, 0.15)',  color: '#A5B4FC', label: 'Student' },
   }
   const c = cfg[role] || { bg: '#1f2532', color: '#9CA3AF', label: role }
@@ -165,10 +165,10 @@ function StatusBadge({ status }: { status: string }) {
   const cfg: Record<string, { bg: string; color: string }> = {
     active:    { bg: 'rgba(165, 180, 252, 0.15)',  color: '#A5B4FC' },
     pending:   { bg: 'rgba(165, 180, 252, 0.15)',  color: '#A5B4FC' },
-    suspended: { bg: 'rgba(124, 107, 246, 0.15)',   color: '#A5B4FC' },
-    submitted: { bg: 'rgba(124, 107, 246, 0.15)',  color: '#A5B4FC' },
+    suspended: { bg: 'rgba(124, 92, 255, 0.15)',   color: '#A5B4FC' },
+    submitted: { bg: 'rgba(124, 92, 255, 0.15)',  color: '#A5B4FC' },
     graded:    { bg: 'rgba(165, 180, 252, 0.15)',  color: '#A5B4FC' },
-    late:      { bg: 'rgba(124, 107, 246, 0.15)',   color: '#A5B4FC' },
+    late:      { bg: 'rgba(124, 92, 255, 0.15)',   color: '#A5B4FC' },
   }
   const c = cfg[status] || { bg: '#1f2532', color: '#9CA3AF' }
   return (
@@ -184,14 +184,14 @@ function Avatar({ name, url, size = 32 }: { name: string; url?: string; size?: n
     : (
       <div style={{
         width: size, height: size, borderRadius: size / 3, flexShrink: 0,
-        background: 'linear-gradient(135deg, #7C6BF6, #7C6BF6)',
+        background: 'linear-gradient(135deg, #7C5CFF, #7C5CFF)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         fontSize: size * 0.4, fontWeight: 700, color: '#fff',
       }}>{name.charAt(0).toUpperCase()}</div>
     )
 }
 
-function StatCard({ label, value, icon: Icon, color = '#7C6BF6', sub }: {
+function StatCard({ label, value, icon: Icon, color = '#7C5CFF', sub }: {
   label: string; value: number | string; icon: React.ElementType; color?: string; sub?: string
 }) {
   return (
@@ -242,8 +242,8 @@ function Btn({ children, onClick, variant = 'primary', size = 'md', disabled = f
   size?: 'sm' | 'md'; disabled?: boolean; style?: React.CSSProperties
 }) {
   const cfg = {
-    primary: { bg: '#7C6BF6', hoverBg: '#5558e8', color: '#fff' },
-    danger:  { bg: 'rgba(124, 107, 246, 0.15)', hoverBg: 'rgba(124, 107, 246, 0.25)', color: '#A5B4FC' },
+    primary: { bg: '#7C5CFF', hoverBg: '#5558e8', color: '#fff' },
+    danger:  { bg: 'rgba(124, 92, 255, 0.15)', hoverBg: 'rgba(124, 92, 255, 0.25)', color: '#A5B4FC' },
     ghost:   { bg: '#171D2D', hoverBg: '#222', color: '#B1B5BA' },
     success: { bg: 'rgba(165, 180, 252, 0.15)', hoverBg: 'rgba(165, 180, 252, 0.25)', color: '#A5B4FC' },
     warning: { bg: 'rgba(165, 180, 252, 0.15)', hoverBg: 'rgba(165, 180, 252, 0.25)', color: '#A5B4FC' },
@@ -277,7 +277,7 @@ function Input({ label, value, onChange, placeholder, type = 'text', required }:
           borderRadius: 8, color: '#fafafa', fontSize: 13, fontFamily: 'inherit', outline: 'none',
           boxSizing: 'border-box',
         }}
-        onFocus={e => { (e.currentTarget as HTMLInputElement).style.borderColor = '#7C6BF6' }}
+        onFocus={e => { (e.currentTarget as HTMLInputElement).style.borderColor = '#7C5CFF' }}
         onBlur={e => { (e.currentTarget as HTMLInputElement).style.borderColor = '#2a2a2a' }}
       />
     </div>
@@ -296,8 +296,8 @@ function NoSchoolView() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
       minHeight: '60vh', color: '#6B7280', gap: 12 }}>
-      <div style={{ width: 72, height: 72, borderRadius: 20, background: 'rgba(124,107,246,0.10)', border: '1px solid rgba(124,107,246,0.24)', display: 'grid', placeItems: 'center', marginBottom: 4 }}>
-        <Building2 size={34} color="#7C6BF6" />
+      <div style={{ width: 72, height: 72, borderRadius: 20, background: 'rgba(124, 92, 255,0.10)', border: '1px solid rgba(124, 92, 255,0.24)', display: 'grid', placeItems: 'center', marginBottom: 4 }}>
+        <Building2 size={34} color="#7C5CFF" />
       </div>
       <div style={{ fontSize: 18, fontWeight: 800, color: '#e4e4e7' }}>Not in a school yet</div>
       <div style={{ fontSize: 13, maxWidth: 320, textAlign: 'center', lineHeight: 1.55 }}>
@@ -313,7 +313,7 @@ function SchoolHeader({ profile }: { profile: AuthProfile }) {
       {profile.school_logo_url
         ? <img src={profile.school_logo_url} alt="logo"
             style={{ width: 48, height: 48, borderRadius: 12, objectFit: 'cover', border: '1px solid #1f2532' }} />
-        : <div style={{ width: 48, height: 48, borderRadius: 12, background: 'linear-gradient(135deg,#7C6BF6,#7C6BF6)',
+        : <div style={{ width: 48, height: 48, borderRadius: 12, background: 'linear-gradient(135deg,#7C5CFF,#7C5CFF)',
             display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <Building2 size={22} color="#fff" />
           </div>
@@ -447,8 +447,8 @@ function AdminAIAnnounce({ schoolId: _ }: { schoolId: string }) {
           {(['friendly', 'formal', 'urgent'] as const).map(t => (
             <button key={t} onClick={() => setTone(t)} style={{
               flex: 1, padding: '7px 0', borderRadius: 7,
-              border: `1px solid ${tone === t ? '#7C6BF6' : '#1f2532'}`,
-              background: tone === t ? 'rgba(124, 107, 246, 0.12)' : '#0A0D16',
+              border: `1px solid ${tone === t ? '#7C5CFF' : '#1f2532'}`,
+              background: tone === t ? 'rgba(124, 92, 255, 0.12)' : '#0A0D16',
               color: tone === t ? '#A5B4FC' : '#6B7280',
               fontFamily: 'inherit', fontSize: 12, fontWeight: 600, cursor: 'pointer',
             }}>{t}</button>
@@ -460,7 +460,7 @@ function AdminAIAnnounce({ schoolId: _ }: { schoolId: string }) {
           disabled={generating || !topic.trim()}
           style={{
             width: '100%', padding: '10px 14px', borderRadius: 8, border: 'none',
-            background: !topic.trim() || generating ? '#171D2D' : 'linear-gradient(135deg, #7C6BF6, #7C6BF6)',
+            background: !topic.trim() || generating ? '#171D2D' : 'linear-gradient(135deg, #7C5CFF, #7C5CFF)',
             color: !topic.trim() || generating ? '#6B7280' : '#fff',
             fontFamily: 'inherit', fontSize: 13, fontWeight: 600,
             cursor: !topic.trim() || generating ? 'not-allowed' : 'pointer',
@@ -562,7 +562,7 @@ function AdminOverview({ schoolId }: { schoolId: string }) {
   return (
     <div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(190px, 1fr))', gap: 12 }}>
-        <StatCard label="Active Users"      value={stats.total_active_users}   icon={Users}     color="#7C6BF6" />
+        <StatCard label="Active Users"      value={stats.total_active_users}   icon={Users}     color="#7C5CFF" />
         <StatCard label="Students"          value={stats.total_students}        icon={GraduationCap} color="#A5B4FC" />
         <StatCard label="Teachers"          value={stats.total_teachers}        icon={Shield}    color="#A5B4FC" />
         <StatCard label="Pending Approval"  value={stats.pending_students}      icon={Clock}     color="#A5B4FC"
@@ -740,8 +740,8 @@ function AdminHealthMonitor() {
             <div key={t.id} style={{
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
               padding: '6px 10px', marginBottom: 4,
-              background: t.tasks >= 8 ? 'rgba(124, 107, 246, 0.06)' : '#141A2A',
-              border: `1px solid ${t.tasks >= 8 ? 'rgba(124, 107, 246, 0.25)' : '#171D2D'}`,
+              background: t.tasks >= 8 ? 'rgba(124, 92, 255, 0.06)' : '#141A2A',
+              border: `1px solid ${t.tasks >= 8 ? 'rgba(124, 92, 255, 0.25)' : '#171D2D'}`,
               borderRadius: 6,
             }}>
               <span style={{ fontSize: 12, color: '#d4d4d8' }}>{t.name}</span>
@@ -914,9 +914,9 @@ function AdminMembers({ schoolId, selfId }: { schoolId: string; selfId: string }
         {filterBtns.map(f => (
           <button key={f.id} onClick={() => setFilter(f.id)} style={{
             padding: '5px 12px', borderRadius: 6, fontSize: 12, fontWeight: 600,
-            background: filter === f.id ? 'rgba(124, 107, 246, 0.15)' : '#1C2233',
+            background: filter === f.id ? 'rgba(124, 92, 255, 0.15)' : '#1C2233',
             color: filter === f.id ? '#A5B4FC' : '#9CA3AF',
-            border: filter === f.id ? '1px solid rgba(124, 107, 246, 0.3)' : '1px solid #1f2532',
+            border: filter === f.id ? '1px solid rgba(124, 92, 255, 0.3)' : '1px solid #1f2532',
             cursor: 'pointer', fontFamily: 'inherit',
           }}>{f.label}</button>
         ))}
@@ -1066,9 +1066,9 @@ function AdminNetwork({ schoolId: _schoolId }: { schoolId: string }) {
       {success && <SuccessBanner msg={success} onDismiss={() => setSuccess('')} />}
 
       <Card style={{ marginBottom: 16, padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
-        <Globe size={16} color="#7C6BF6" />
+        <Globe size={16} color="#7C5CFF" />
         <span style={{ fontSize: 13, color: '#9CA3AF' }}>Your current IP:</span>
-        <code style={{ fontSize: 13, color: '#A5B4FC', background: 'rgba(124, 107, 246, 0.08)',
+        <code style={{ fontSize: 13, color: '#A5B4FC', background: 'rgba(124, 92, 255, 0.08)',
           padding: '2px 8px', borderRadius: 5 }}>{yourIp || '…'}</code>
         {rules.length > 0 && (
           <span style={{ marginLeft: 'auto', fontSize: 12, color: '#6B7280' }}>
@@ -1113,7 +1113,7 @@ function AdminNetwork({ schoolId: _schoolId }: { schoolId: string }) {
               <Card key={r.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px',
                 opacity: r.enabled ? 1 : 0.55 }}>
                 <div style={{ width: 36, height: 36, borderRadius: 8,
-                  background: r.enabled ? 'rgba(165, 180, 252, 0.12)' : 'rgba(124, 107, 246, 0.1)',
+                  background: r.enabled ? 'rgba(165, 180, 252, 0.12)' : 'rgba(124, 92, 255, 0.1)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   {r.enabled ? <Wifi size={16} color="#A5B4FC" /> : <WifiOff size={16} color="#A5B4FC" />}
                 </div>
@@ -1179,9 +1179,9 @@ function AdminLogs({ schoolId }: { schoolId: string }) {
         <div style={{ display: 'flex', gap: 8 }}>
           <button onClick={() => setFailOnly(f => !f)} style={{
             padding: '5px 12px', borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: 'pointer',
-            background: failOnly ? 'rgba(124, 107, 246, 0.15)' : '#1C2233',
+            background: failOnly ? 'rgba(124, 92, 255, 0.15)' : '#1C2233',
             color: failOnly ? '#A5B4FC' : '#9CA3AF',
-            border: failOnly ? '1px solid rgba(124, 107, 246, 0.3)' : '1px solid #1f2532',
+            border: failOnly ? '1px solid rgba(124, 92, 255, 0.3)' : '1px solid #1f2532',
             fontFamily: 'inherit',
           }}>
             <AlertTriangle size={11} style={{ marginRight: 4 }} />
@@ -1201,7 +1201,7 @@ function AdminLogs({ schoolId }: { schoolId: string }) {
             {logs.map(l => (
               <Card key={l.id} style={{ padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 12 }}>
                 <div style={{ width: 30, height: 30, borderRadius: 8, flexShrink: 0,
-                  background: l.success ? 'rgba(165, 180, 252, 0.12)' : 'rgba(124, 107, 246, 0.12)',
+                  background: l.success ? 'rgba(165, 180, 252, 0.12)' : 'rgba(124, 92, 255, 0.12)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   {l.success
                     ? <CheckCircle size={14} color="#A5B4FC" />
@@ -1321,7 +1321,7 @@ function AdminSettings({ schoolId, profile }: { schoolId: string; profile: AuthP
 
       <Card style={{ marginBottom: 16 }}>
         <div style={{ fontSize: 14, fontWeight: 700, color: '#fafafa', marginBottom: 16, display: 'flex', gap: 8 }}>
-          <Building2 size={16} color="#7C6BF6" /> School Information
+          <Building2 size={16} color="#7C5CFF" /> School Information
         </div>
         <Input label="School Name"  value={schoolName}  onChange={setSchoolName}  required />
         <Input label="School Email" value={schoolEmail} onChange={setSchoolEmail} type="email" required />
@@ -1512,7 +1512,7 @@ function CreateTask({ schoolId: _schoolId, onCreated }: { schoolId: string; onCr
           style={{ width: '100%', padding: '9px 12px', background: '#141A2A', border: '1px solid #2a2a2a',
             borderRadius: 8, color: '#fafafa', fontSize: 13, fontFamily: 'inherit', outline: 'none',
             resize: 'vertical', boxSizing: 'border-box' }}
-          onFocus={e => { (e.currentTarget as HTMLTextAreaElement).style.borderColor = '#7C6BF6' }}
+          onFocus={e => { (e.currentTarget as HTMLTextAreaElement).style.borderColor = '#7C5CFF' }}
           onBlur={e => { (e.currentTarget as HTMLTextAreaElement).style.borderColor = '#2a2a2a' }}
         />
       </div>
@@ -1692,7 +1692,7 @@ function StudentTasks({ profile }: { profile: AuthProfile }) {
                 style={{ width: '100%', padding: '9px 12px', background: '#141A2A', border: '1px solid #2a2a2a',
                   borderRadius: 8, color: '#fafafa', fontSize: 13, fontFamily: 'inherit', outline: 'none',
                   resize: 'vertical', boxSizing: 'border-box' }}
-                onFocus={e => { (e.currentTarget as HTMLTextAreaElement).style.borderColor = '#7C6BF6' }}
+                onFocus={e => { (e.currentTarget as HTMLTextAreaElement).style.borderColor = '#7C5CFF' }}
                 onBlur={e => { (e.currentTarget as HTMLTextAreaElement).style.borderColor = '#2a2a2a' }}
               />
             </div>
@@ -1764,7 +1764,7 @@ function NotifPanel({ schoolId, profile, canSend }: { schoolId: string; profile:
               style={{ width: '100%', padding: '9px 12px', background: '#141A2A', border: '1px solid #2a2a2a',
                 borderRadius: 8, color: '#fafafa', fontSize: 13, fontFamily: 'inherit', outline: 'none',
                 resize: 'vertical', boxSizing: 'border-box' }}
-              onFocus={e => { (e.currentTarget as HTMLTextAreaElement).style.borderColor = '#7C6BF6' }}
+              onFocus={e => { (e.currentTarget as HTMLTextAreaElement).style.borderColor = '#7C5CFF' }}
               onBlur={e => { (e.currentTarget as HTMLTextAreaElement).style.borderColor = '#2a2a2a' }}
             />
           </div>
@@ -2056,7 +2056,7 @@ function StudentMarks({ profile, schoolId }: { profile: AuthProfile; schoolId: s
         {code ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
             <code style={{ fontSize: 20, fontWeight: 800, letterSpacing: 3, color: '#A5B4FC',
-              background: 'rgba(124, 107, 246, 0.08)', border: '1px solid rgba(124, 107, 246, 0.2)',
+              background: 'rgba(124, 92, 255, 0.08)', border: '1px solid rgba(124, 92, 255, 0.2)',
               borderRadius: 8, padding: '8px 14px', fontFamily: 'monospace' }}>
               {code}
             </code>
@@ -2161,7 +2161,7 @@ function AdminMarksAudit({ schoolId }: { schoolId: string }) {
     <div>
       <Card style={{ marginBottom: 16 }}>
         <div style={{ fontSize: 14, fontWeight: 700, color: '#fafafa', marginBottom: 10, display: 'flex', gap: 8 }}>
-          <Users size={16} color="#7C6BF6" /> Parent Links ({links.length})
+          <Users size={16} color="#7C5CFF" /> Parent Links ({links.length})
         </div>
         {links.length === 0
           ? <div style={{ fontSize: 13, color: '#6B7280' }}>No parents linked yet. Students generate codes from their Marks tab.</div>
@@ -2169,7 +2169,7 @@ function AdminMarksAudit({ schoolId }: { schoolId: string }) {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               {links.map(l => (
                 <div key={l.id} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, color: '#d4d4d8' }}>
-                  <span style={{ fontSize: 11, background: 'rgba(124, 107, 246, 0.12)', color: '#A5B4FC',
+                  <span style={{ fontSize: 11, background: 'rgba(124, 92, 255, 0.12)', color: '#A5B4FC',
                     borderRadius: 5, padding: '2px 7px', fontWeight: 600 }}>Parent</span>
                   {l.parent?.name} →
                   <span style={{ fontSize: 11, background: 'rgba(165, 180, 252, 0.12)', color: '#A5B4FC',

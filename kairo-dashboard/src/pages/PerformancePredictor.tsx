@@ -194,8 +194,8 @@ Keep it under 200 words. No fluff.` },
 
       {predictions && predictions.length === 0 && (
         <div style={{ ...card, padding: '60px 32px', textAlign: 'center' }}>
-          <div style={{ width: 56, height: 56, borderRadius: 15, margin: '0 auto 16px', background: 'rgba(124,107,246,0.10)', border: '1px solid rgba(124,107,246,0.28)', display: 'grid', placeItems: 'center' }}>
-            <TrendingUp size={26} color="#7C6BF6" />
+          <div style={{ width: 56, height: 56, borderRadius: 15, margin: '0 auto 16px', background: 'rgba(124, 92, 255,0.10)', border: '1px solid rgba(124, 92, 255,0.28)', display: 'grid', placeItems: 'center' }}>
+            <TrendingUp size={26} color="#7C5CFF" />
           </div>
           <h3 style={{ fontSize: 17, fontWeight: 800, color: '#fafafa', margin: 0, marginBottom: 8 }}>No exam history yet</h3>
           <p style={{ fontSize: 13, color: '#9CA3AF', maxWidth: 460, margin: '0 auto', lineHeight: 1.6 }}>
@@ -210,18 +210,18 @@ Keep it under 200 words. No fluff.` },
             <div style={{
               position: 'absolute', top: -50, right: -50, width: 220, height: 220,
               borderRadius: '50%',
-              background: overall >= 75 ? 'rgba(52,211,153,0.20)' : overall >= 60 ? 'rgba(255,176,32,0.20)' : 'rgba(255,92,92,0.20)',
+              background: overall >= 75 ? 'rgba(52,211,153,0.20)' : overall >= 60 ? 'rgba(255,176,32,0.20)' : 'rgba(255, 90, 110,0.20)',
               filter: 'blur(60px)',
             }} />
             <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 24 }}>
               <div style={{
                 width: 110, height: 110, borderRadius: '50%',
-                background: '#141A2A', border: `3px solid ${overall >= 75 ? '#34D399' : overall >= 60 ? '#FFB020' : '#FF5C5C'}`,
+                background: '#141A2A', border: `3px solid ${overall >= 75 ? '#34D399' : overall >= 60 ? '#FFB020' : '#FF5A6E'}`,
                 display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
               }}>
                 <div style={{
                   fontSize: 30, fontWeight: 800, lineHeight: 1,
-                  color: overall >= 75 ? '#34D399' : overall >= 60 ? '#FFB020' : '#FF5C5C',
+                  color: overall >= 75 ? '#34D399' : overall >= 60 ? '#FFB020' : '#FF5A6E',
                 }}>{overall}%</div>
                 <div style={{ fontSize: 10, color: '#9CA3AF', marginTop: 4, textTransform: 'uppercase', letterSpacing: 1 }}>predicted</div>
               </div>
@@ -257,7 +257,7 @@ Keep it under 200 words. No fluff.` },
               <button onClick={generateInsight} disabled={insightBusy}
                 style={{
                   padding: '8px 16px', borderRadius: 8, border: 'none',
-                  background: insightBusy ? '#171D2D' : 'linear-gradient(135deg,#7C6BF6,#7C6BF6)',
+                  background: insightBusy ? '#171D2D' : 'linear-gradient(135deg,#7C5CFF,#7C5CFF)',
                   color: insightBusy ? '#6B7280' : '#fff',
                   fontFamily: 'inherit', fontSize: 12, fontWeight: 600,
                   cursor: insightBusy ? 'not-allowed' : 'pointer',

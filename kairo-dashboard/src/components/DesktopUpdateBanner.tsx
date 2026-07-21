@@ -109,7 +109,7 @@ export default function DesktopUpdateBanner() {
           background: 'rgba(10, 12, 18, 0.92)',
           backdropFilter: 'blur(20px) saturate(150%)',
           WebkitBackdropFilter: 'blur(20px) saturate(150%)',
-          border: '1px solid rgba(124, 107, 246, 0.18)',
+          border: '1px solid rgba(124, 92, 255, 0.18)',
           borderRadius: 14,
           overflow: 'hidden',
           fontFamily: "'Inter', -apple-system, system-ui, sans-serif",
@@ -125,13 +125,13 @@ export default function DesktopUpdateBanner() {
                 transition={{ repeat: Infinity, duration: 1.4, ease: 'easeInOut' }}
                 style={{
                   width: 32, height: 32, borderRadius: 9,
-                  background: 'linear-gradient(135deg, rgba(124, 107, 246, 0.15), rgba(124, 107, 246, 0.06))',
-                  border: '1px solid rgba(124, 107, 246, 0.12)',
+                  background: 'linear-gradient(135deg, rgba(124, 92, 255, 0.15), rgba(124, 92, 255, 0.06))',
+                  border: '1px solid rgba(124, 92, 255, 0.12)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   flexShrink: 0,
                 }}
               >
-                <ArrowDownToLine size={14} color="#7C6BF6" />
+                <ArrowDownToLine size={14} color="#7C5CFF" />
               </motion.div>
 
               <div style={{ flex: 1, minWidth: 0 }}>
@@ -170,8 +170,8 @@ export default function DesktopUpdateBanner() {
                 transition={{ ease: 'easeOut', duration: 0.4 }}
                 style={{
                   height: '100%', borderRadius: 2,
-                  background: 'linear-gradient(90deg, #7C6BF6, #A5B4FC)',
-                  boxShadow: '0 0 8px rgba(124, 107, 246, 0.3)',
+                  background: 'linear-gradient(90deg, #7C5CFF, #A5B4FC)',
+                  boxShadow: '0 0 8px rgba(124, 92, 255, 0.3)',
                 }}
               />
             </div>
@@ -183,9 +183,9 @@ export default function DesktopUpdateBanner() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <div style={{
                 width: 36, height: 36, borderRadius: 10,
-                background: 'linear-gradient(135deg, #7C6BF6 0%, #4A2FA8 100%)',
+                background: 'linear-gradient(135deg, #7C5CFF 0%, #4A2FA8 100%)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                boxShadow: '0 0 20px rgba(124, 107, 246, 0.15)',
+                boxShadow: '0 0 20px rgba(124, 92, 255, 0.15)',
                 flexShrink: 0,
               }}>
                 <Download size={16} color="#fff" />
@@ -210,8 +210,8 @@ export default function DesktopUpdateBanner() {
                   display: 'inline-flex', alignItems: 'center', gap: 6,
                   padding: '8px 16px', borderRadius: 9,
                   background: busy
-                    ? 'rgba(124, 107, 246, 0.25)'
-                    : 'linear-gradient(135deg, #7C6BF6 0%, #4A2FA8 100%)',
+                    ? 'rgba(124, 92, 255, 0.25)'
+                    : 'linear-gradient(135deg, #7C5CFF 0%, #4A2FA8 100%)',
                   color: '#fff', border: 'none',
                   fontFamily: 'inherit', fontSize: 12.5, fontWeight: 700,
                   cursor: busy ? 'wait' : 'pointer',

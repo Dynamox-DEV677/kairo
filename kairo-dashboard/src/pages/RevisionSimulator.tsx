@@ -461,7 +461,7 @@ function LiveView({ q, idx, total, secsLeft, maxSecs, picked, onPick, mode, reve
           <div style={{ height: 4, background: '#171D2D', borderRadius: 2, overflow: 'hidden' }}>
             <motion.div
               animate={{ width: `${((idx + 1) / total) * 100}%` }}
-              style={{ height: '100%', background: 'linear-gradient(90deg, #7C6BF6, #7C6BF6)' }} />
+              style={{ height: '100%', background: 'linear-gradient(90deg, #7C5CFF, #7C5CFF)' }} />
           </div>
         </div>
         {isExam && (
@@ -506,9 +506,9 @@ function LiveView({ q, idx, total, secsLeft, maxSecs, picked, onPick, mode, reve
           // Practice mode reveals correctness after a pick; exam mode only shows the choice.
           const showRight = revealed && i === q.answer
           const showWrong = revealed && isPicked && i !== q.answer
-          const borderCol = showRight ? GREEN : showWrong ? RED : isPicked ? '#7C6BF6' : '#1f2532'
-          const bgCol = showRight ? 'rgba(52,211,153,0.10)' : showWrong ? 'rgba(251,113,133,0.10)' : isPicked ? 'rgba(124, 107, 246, 0.1)' : '#141A2A'
-          const badgeBg = showRight ? GREEN : showWrong ? RED : isPicked ? '#7C6BF6' : '#171D2D'
+          const borderCol = showRight ? GREEN : showWrong ? RED : isPicked ? '#7C5CFF' : '#1f2532'
+          const bgCol = showRight ? 'rgba(52,211,153,0.10)' : showWrong ? 'rgba(251,113,133,0.10)' : isPicked ? 'rgba(124, 92, 255, 0.1)' : '#141A2A'
+          const badgeBg = showRight ? GREEN : showWrong ? RED : isPicked ? '#7C5CFF' : '#171D2D'
           const badgeFg = (showRight || showWrong || isPicked) ? '#fff' : '#9CA3AF'
           return (
             <motion.button key={i}
@@ -558,7 +558,7 @@ function LiveView({ q, idx, total, secsLeft, maxSecs, picked, onPick, mode, reve
           <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={onNext}
             style={{
               marginTop: 16, width: '100%', padding: '12px 16px', borderRadius: 10, border: 'none', cursor: 'pointer',
-              background: 'linear-gradient(135deg, #7C6BF6, #A5B4FC)', color: '#fff', fontFamily: 'inherit',
+              background: 'linear-gradient(135deg, #7C5CFF, #A5B4FC)', color: '#fff', fontFamily: 'inherit',
               fontSize: 14, fontWeight: 800, letterSpacing: 0.3,
             }}>
             {lastQ ? 'See results →' : 'Next question →'}

@@ -42,7 +42,7 @@ export function DecoratedAvatar({
   const core: ReactNode = (
     <div style={{
       width: size, height: size, borderRadius: rounded, overflow: 'hidden',
-      background: pic ? 'transparent' : 'linear-gradient(135deg,#7C6BF6,#4A2FA8)',
+      background: pic ? 'transparent' : 'linear-gradient(135deg,#7C5CFF,#4A2FA8)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       fontSize: size * 0.42, fontWeight: 800, color: '#fff', flexShrink: 0,
     }}>
@@ -69,7 +69,7 @@ export function DecoratedAvatar({
         <div style={{
           position: 'absolute', inset: 0, borderRadius: '50%',
           border: '2.5px solid transparent',
-          borderTopColor: '#A5B4FC', borderRightColor: '#7C6BF6',
+          borderTopColor: '#A5B4FC', borderRightColor: '#7C5CFF',
           animation: 'kdSpin 1.4s linear infinite',
         }} />
       )}

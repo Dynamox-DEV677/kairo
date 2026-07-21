@@ -150,8 +150,8 @@ export function QuickTile({ icon, label, onClick }: { icon: ReactNode; label: st
       style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, padding: '14px 8px', color: 'var(--c-text)', fontFamily: 'inherit', width: '100%' }}>
       <span style={{
         width: 40, height: 40, borderRadius: 12, display: 'grid', placeItems: 'center',
-        background: 'rgba(124,107,246,0.16)', color: 'var(--c-purple-lite)',
-        border: '1px solid rgba(124,107,246,0.30)',
+        background: 'rgba(124, 92, 255,0.16)', color: 'var(--c-purple-lite)',
+        border: '1px solid rgba(124, 92, 255,0.30)',
       }}>{icon}</span>
       <span style={{ fontSize: 12, fontWeight: 700 }}>{label}</span>
     </button>

@@ -30,9 +30,9 @@ export default function ResetShell({
       <div style={{
         position: 'absolute', inset: 0, pointerEvents: 'none',
         background: `
-          radial-gradient(at 50% -10%, rgba(124, 107, 246, 0.30) 0%, transparent 45%),
+          radial-gradient(at 50% -10%, rgba(124, 92, 255, 0.30) 0%, transparent 45%),
           radial-gradient(at 0% 100%, rgba(165, 180, 252, 0.10) 0%, transparent 50%),
-          radial-gradient(at 100% 100%, rgba(124, 107, 246, 0.12) 0%, transparent 45%)
+          radial-gradient(at 100% 100%, rgba(124, 92, 255, 0.12) 0%, transparent 45%)
         `,
         animation: 'rs-aura 10s ease-in-out infinite alternate',
       }} />
@@ -192,14 +192,14 @@ export function PrimaryButton({ children, onClick, disabled, busy, type = 'butto
         border: 'none',
         background: isOff
           ? 'rgba(165, 180, 252, 0.12)'
-          : 'linear-gradient(135deg, #A5B4FC 0%, #7C6BF6 100%)',
+          : 'linear-gradient(135deg, #A5B4FC 0%, #7C5CFF 100%)',
         color: isOff ? RC.textGhost : '#000',
         fontFamily: FONT,
         fontSize: 16,
         fontWeight: 800,
         letterSpacing: 0.2,
         cursor: isOff ? 'not-allowed' : 'pointer',
-        boxShadow: isOff ? 'none' : '0 14px 32px rgba(124, 107, 246, 0.42)',
+        boxShadow: isOff ? 'none' : '0 14px 32px rgba(124, 92, 255, 0.42)',
         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
         WebkitTapHighlightColor: 'transparent',
         transition: 'background 0.2s, box-shadow 0.2s',
@@ -257,8 +257,8 @@ export function KairoBadge() {
     }}>
       <div style={{
         width: 22, height: 22, borderRadius: 7,
-        background: 'linear-gradient(135deg, #A5B4FC, #7C6BF6)',
-        boxShadow: '0 0 12px rgba(124, 107, 246, 0.03)',
+        background: 'linear-gradient(135deg, #A5B4FC, #7C5CFF)',
+        boxShadow: '0 0 12px rgba(124, 92, 255, 0.03)',
       }} />
       <span style={{
         fontFamily: FONT,
@@ -272,4 +272,4 @@ export function KairoBadge() {
   )
 }
 
-const GRADIENT_TEXT = 'linear-gradient(135deg, #DBE7FF 0%, #A5B4FC 50%, #7C6BF6 100%)'
+const GRADIENT_TEXT = 'linear-gradient(135deg, #DBE7FF 0%, #A5B4FC 50%, #7C5CFF 100%)'

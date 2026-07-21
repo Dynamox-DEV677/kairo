@@ -45,7 +45,7 @@ const lbl: React.CSSProperties = {
 }
 // Layout + gradient face only — .kyno-chunky adds the 3D edge, radius and press.
 const btnPrimary: React.CSSProperties = {
-  background: 'linear-gradient(135deg, #7C6BF6 0%, #A5B4FC 100%)', color: '#fff',
+  background: 'linear-gradient(135deg, #7C5CFF 0%, #A5B4FC 100%)', color: '#fff',
   border: 'none', padding: '12px 24px', fontSize: 14, fontWeight: 700,
   display: 'inline-flex', alignItems: 'center', gap: 8,
 }
@@ -121,10 +121,10 @@ export default function TopicArchitect() {
               {EXAMS.map(e => (
                 <button key={e.id} onClick={() => setExam(e.id)} style={{
                   padding: '8px 16px', fontSize: 13, fontWeight: 700, borderRadius: 8, cursor: 'pointer',
-                  background: exam === e.id ? 'rgba(124,107,246,0.22)' : '#141A2A',
+                  background: exam === e.id ? 'rgba(124, 92, 255,0.22)' : '#141A2A',
                   color: exam === e.id ? '#fff' : '#A1A1AA',
-                  border: '1.5px solid ' + (exam === e.id ? '#7C6BF6' : '#1f2532'),
-                  boxShadow: exam === e.id ? '0 2px 10px rgba(124,107,246,0.28)' : 'none',
+                  border: '1.5px solid ' + (exam === e.id ? '#7C5CFF' : '#1f2532'),
+                  boxShadow: exam === e.id ? '0 2px 10px rgba(124, 92, 255,0.28)' : 'none',
                   transition: 'all 0.15s',
                 }}>{e.label}</button>
               ))}
@@ -137,10 +137,10 @@ export default function TopicArchitect() {
                 <button key={d} onClick={() => setDepth(d)} style={{
                   padding: '8px 16px', fontSize: 13, fontWeight: 700, borderRadius: 8, cursor: 'pointer',
                   textTransform: 'capitalize',
-                  background: depth === d ? 'rgba(124,107,246,0.22)' : '#141A2A',
+                  background: depth === d ? 'rgba(124, 92, 255,0.22)' : '#141A2A',
                   color: depth === d ? '#fff' : '#A1A1AA',
-                  border: '1.5px solid ' + (depth === d ? '#7C6BF6' : '#1f2532'),
-                  boxShadow: depth === d ? '0 2px 10px rgba(124,107,246,0.28)' : 'none',
+                  border: '1.5px solid ' + (depth === d ? '#7C5CFF' : '#1f2532'),
+                  boxShadow: depth === d ? '0 2px 10px rgba(124, 92, 255,0.28)' : 'none',
                   transition: 'all 0.15s',
                 }}>{d}</button>
               ))}
@@ -209,7 +209,7 @@ export default function TopicArchitect() {
                 {plan.mustKnowConcepts?.map((c, i) => (
                   <span key={i} style={{
                     fontSize: 13, fontWeight: 600, padding: '7px 14px', borderRadius: 999,
-                    background: 'rgba(124,107,246,0.14)', color: '#A5B4FC',
+                    background: 'rgba(124, 92, 255,0.14)', color: '#A5B4FC',
                     border: '1px solid rgba(165,180,252,0.25)',
                   }}>{c}</span>
                 ))}
@@ -290,7 +290,7 @@ export default function TopicArchitect() {
                 <h3 style={h3}><ListOrdered size={14} /> Study order</h3>
                 {plan.studyOrder?.map((step, i) => (
                   <div key={i} style={{ display: 'flex', gap: 10, marginBottom: 10, alignItems: 'flex-start' }}>
-                    <span style={{ flexShrink: 0, width: 24, height: 24, borderRadius: '50%', background: 'rgba(124,107,246,0.22)', color: '#A5B4FC', fontSize: 12, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{i + 1}</span>
+                    <span style={{ flexShrink: 0, width: 24, height: 24, borderRadius: '50%', background: 'rgba(124, 92, 255,0.22)', color: '#A5B4FC', fontSize: 12, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{i + 1}</span>
                     <span style={{ fontSize: 13, color: '#fafafa', lineHeight: 1.4 }}>{step}</span>
                   </div>
                 ))}

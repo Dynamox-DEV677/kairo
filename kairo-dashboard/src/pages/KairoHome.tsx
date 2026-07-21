@@ -267,7 +267,7 @@ export default function KairoHome({ onNavigate }: Props) {
                 <span style={{ fontSize: 12, color: '#9CA3AF', marginLeft: 4 }}>/ {brief.scoreScale}</span>
               </div>
               <div style={{ height: 8, background: '#141A2A', borderRadius: 4, marginTop: 12, overflow: 'hidden', position: 'relative' }}>
-                <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${Math.min(100, brief.predictedScore / +brief.scoreScale * 100)}%`, background: '#7C6BF6' }} />
+                <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${Math.min(100, brief.predictedScore / +brief.scoreScale * 100)}%`, background: '#7C5CFF' }} />
                 <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${Math.min(100, brief.potentialScore / +brief.scoreScale * 100)}%`, background: 'rgba(102,255,154,0.25)', zIndex: -0 }} />
               </div>
               <div style={{ fontSize: 12, color: '#ff8aa0', marginTop: 10 }}>

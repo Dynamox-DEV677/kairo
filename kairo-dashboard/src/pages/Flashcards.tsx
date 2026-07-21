@@ -28,7 +28,7 @@ const C = {
   textFaint: '#9CA3AF',
   textGhost: '#6B7280',
   purple:    '#A5B4FC',
-  purpleHi:  '#7C6BF6',
+  purpleHi:  '#7C5CFF',
   purpleDeep:'#4A2FA8',
   purpleLite:'#A5B4FC',
   purpleSoft:'#DBE7FF',
@@ -36,9 +36,9 @@ const C = {
 }
 
 const GRAD = {
-  pill:      'linear-gradient(135deg, #A5B4FC 0%, #7C6BF6 60%, #0B1530 100%)',
-  pillSoft:  'linear-gradient(135deg, #7C6BF6 0%, #4A2FA8 100%)',
-  text:      'linear-gradient(90deg, #A5B4FC 0%, #A5B4FC 50%, #7C6BF6 100%)',
+  pill:      'linear-gradient(135deg, #A5B4FC 0%, #7C5CFF 60%, #0B1530 100%)',
+  pillSoft:  'linear-gradient(135deg, #7C5CFF 0%, #4A2FA8 100%)',
+  text:      'linear-gradient(90deg, #A5B4FC 0%, #A5B4FC 50%, #7C5CFF 100%)',
 }
 
 interface Card { front: string; back: string }
@@ -142,7 +142,7 @@ export default function Flashcards() {
       width: '100%', height: '100%', overflowY: 'auto',
       background: C.bg,
       backgroundImage:
-        `radial-gradient(at 12% 0%, rgba(124, 107, 246, 0.10) 0%, transparent 36%),
+        `radial-gradient(at 12% 0%, rgba(124, 92, 255, 0.10) 0%, transparent 36%),
          radial-gradient(at 88% 100%, rgba(74, 47, 168, 0.10) 0%, transparent 42%)`,
       padding: 'clamp(14px, 4vw, 24px) clamp(14px, 4vw, 32px) 60px',
     }}>
@@ -168,7 +168,7 @@ export default function Flashcards() {
               <div style={{
                 position: 'absolute', top: -40, right: -40,
                 width: 220, height: 220, borderRadius: '50%',
-                background: 'radial-gradient(closest-side, rgba(124, 107, 246, 0.32), transparent 70%)',
+                background: 'radial-gradient(closest-side, rgba(124, 92, 255, 0.32), transparent 70%)',
                 filter: 'blur(40px)', animation: 'fc-glow 6s ease-in-out infinite',
                 pointerEvents: 'none',
               }} />
@@ -201,7 +201,7 @@ export default function Flashcards() {
                       color: topic.trim() ? '#000' : C.textGhost,
                       fontFamily: 'inherit', fontSize: 14, fontWeight: 800,
                       cursor: topic.trim() ? 'pointer' : 'not-allowed',
-                      boxShadow: topic.trim() ? '0 8px 24px rgba(124, 107, 246, 0.32)' : 'none',
+                      boxShadow: topic.trim() ? '0 8px 24px rgba(124, 92, 255, 0.32)' : 'none',
                       flexShrink: 0, transition: 'all 0.2s', letterSpacing: 0.2,
                     }}>
                     {loading ? <RotateCcw size={15} className="fc-spin" /> : <Sparkles size={15} />}
@@ -280,7 +280,7 @@ function Header({ mode, setMode, stats }: { mode: 'generate' | 'review'; setMode
         <div style={{
           width: 52, height: 52, borderRadius: 14,
           background: GRAD.pill, display: 'grid', placeItems: 'center',
-          boxShadow: '0 14px 38px rgba(124, 107, 246, 0.03)',
+          boxShadow: '0 14px 38px rgba(124, 92, 255, 0.03)',
         }}>
           <BookMarked size={24} color="#000" />
         </div>
@@ -327,7 +327,7 @@ function ModeBtn({ active, onClick, children }: { active: boolean; onClick: () =
       color: active ? '#fff' : C.textDim,
       fontFamily: 'inherit', fontSize: 12, fontWeight: 700,
       cursor: 'pointer', letterSpacing: 0.3,
-      boxShadow: active ? '0 4px 14px rgba(124, 107, 246, 0.35)' : 'none',
+      boxShadow: active ? '0 4px 14px rgba(124, 92, 255, 0.35)' : 'none',
       transition: 'all 0.18s',
     }}>{children}</button>
   )
@@ -337,7 +337,7 @@ function StatsRow({ stats }: { stats: { total: number; today: number; mastered: 
   return (
     <div className="fc-stats-row" style={{ marginTop: 22, display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
       <StatTile icon={<Layers size={13} />}  label="Total cards"  value={stats.total}    accent={C.purpleLite} />
-      <StatTile icon={<Zap size={13} />}     label="Added today"   value={stats.today}    accent="#22d3ee" />
+      <StatTile icon={<Zap size={13} />}     label="Added today"   value={stats.today}    accent="#4FD8E8" />
       <StatTile icon={<Brain size={13} />}   label="Mastered"      value={stats.mastered} accent="#34d399" />
       <StatTile icon={<Flame size={13} />}   label="Due for review" value={stats.due}     accent="#ffb020" />
     </div>
@@ -390,7 +390,7 @@ function SuggestedDeckCard({ title, subject, severity, count, onClick }: { title
   return (
     <motion.button
       onClick={onClick}
-      whileHover={{ y: -4, boxShadow: `0 14px 34px rgba(124, 107, 246, 0.03)` }}
+      whileHover={{ y: -4, boxShadow: `0 14px 34px rgba(124, 92, 255, 0.03)` }}
       whileTap={{ scale: 0.97 }}
       style={{
         textAlign: 'left', padding: '16px 18px', borderRadius: 14,
@@ -503,7 +503,7 @@ function Face({ side, text, active }: { side: 'front' | 'back'; text: string; ac
         ? `linear-gradient(135deg, ${C.panel} 0%, ${C.bg} 100%)`
         : `linear-gradient(135deg, ${C.purpleDark} 0%, ${C.bg} 100%)`,
       border: `1px solid ${side === 'front' ? 'rgba(165, 180, 252, 0.3)' : 'rgba(165, 180, 252, 0.5)'}`,
-      boxShadow: '0 24px 60px rgba(124, 107, 246, 0.01), inset 0 0 60px rgba(124, 107, 246, 0.01)',
+      boxShadow: '0 24px 60px rgba(124, 92, 255, 0.01), inset 0 0 60px rgba(124, 92, 255, 0.01)',
       padding: '40px 38px',
       display: 'grid', placeItems: 'center', textAlign: 'center',
       color: C.text,
@@ -572,7 +572,7 @@ function RecentDecks({ deck }: { deck: TwinCard[] }) {
       {byTopic.map(([topic, cards]) => (
         <motion.div
           key={topic}
-          whileHover={{ y: -3, borderColor: 'rgba(165, 180, 252, 0.14)', boxShadow: '0 10px 28px rgba(124, 107, 246, 0.01)' }}
+          whileHover={{ y: -3, borderColor: 'rgba(165, 180, 252, 0.14)', boxShadow: '0 10px 28px rgba(124, 92, 255, 0.01)' }}
           style={{
             padding: '14px 16px', borderRadius: 12,
             background: C.panel, border: `1px solid ${C.borderSoft}`,

@@ -103,7 +103,7 @@ function LoaderChip() {
   return (
     <Html center>
       <div style={{
-        background: 'rgba(13,13,13,0.85)', border: '1px solid rgba(124, 107, 246, 0.14)',
+        background: 'rgba(13,13,13,0.85)', border: '1px solid rgba(124, 92, 255, 0.14)',
         borderRadius: 10, padding: '8px 14px', fontFamily: 'inherit',
         fontSize: 11, color: '#A5B4FC', whiteSpace: 'nowrap',
       }}>
@@ -298,7 +298,7 @@ function LiveHUD({ params, playing }: SimProps) {
       position: 'absolute', top: 12, left: 12, zIndex: 5,
       padding: '10px 14px', borderRadius: 9,
       background: 'rgba(13,13,13,0.85)', backdropFilter: 'blur(10px)',
-      border: '1px solid rgba(124, 107, 246, 0.3)',
+      border: '1px solid rgba(124, 92, 255, 0.3)',
       fontFamily: 'Consolas, monospace', fontSize: 11,
       color: '#A5B4FC', minWidth: 130,
     }}>

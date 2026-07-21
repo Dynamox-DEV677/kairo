@@ -8,7 +8,7 @@ const SCHOOL_ID = 'demo_school'
 const card  = { background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(14px) saturate(140%)', WebkitBackdropFilter: 'blur(14px) saturate(140%)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14, padding: 20 } as React.CSSProperties
 const inp   = { background: '#141A2A', border: '1px solid #1f2532', borderRadius: 8, padding: '9px 12px', fontSize: 13, color: '#fafafa', fontFamily: 'inherit', outline: 'none', width: '100%' } as React.CSSProperties
 const lbl   = { fontSize: 11, color: '#9CA3AF', display: 'block', marginBottom: 5, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.8 } as React.CSSProperties
-const btn   = (active = true) => ({ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', borderRadius: 9, border: 'none', background: active ? 'linear-gradient(135deg,#7C6BF6,#7C6BF6)' : '#171D2D', color: active ? '#fff' : '#6B7280', fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: active ? 'pointer' : 'not-allowed' } as React.CSSProperties)
+const btn   = (active = true) => ({ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', borderRadius: 9, border: 'none', background: active ? 'linear-gradient(135deg,#7C5CFF,#7C5CFF)' : '#171D2D', color: active ? '#fff' : '#6B7280', fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: active ? 'pointer' : 'not-allowed' } as React.CSSProperties)
 
 const TYPES = ['general','exam','holiday','event','fee','result','emergency']
 const TYPE_COLORS: Record<string, string> = { general: '#A5B4FC', exam: '#A5B4FC', holiday: '#A5B4FC', event: '#8FA0FA', fee: '#A5B4FC', result: '#A5B4FC', emergency: '#A5B4FC' }
@@ -96,7 +96,7 @@ export default function Announcement() {
             <div key={a.id || a._id} onClick={() => setSelected(a)}
               style={{ padding: '10px', borderRadius: 8, marginBottom: 4, cursor: 'pointer',
                 background: selected?.id === a.id || selected?._id === a._id ? '#1f2532' : 'transparent',
-                border: `1px solid ${selected?.id === a.id || selected?._id === a._id ? '#7C6BF630' : 'transparent'}` }}>
+                border: `1px solid ${selected?.id === a.id || selected?._id === a._id ? '#7C5CFF30' : 'transparent'}` }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
                 <div style={{ width: 7, height: 7, borderRadius: '50%', background: TYPE_COLORS[a.type] || '#A5B4FC', flexShrink: 0 }} />
                 <div style={{ fontSize: 12, fontWeight: 600, color: '#e4e4e7', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.title || a.topic}</div>

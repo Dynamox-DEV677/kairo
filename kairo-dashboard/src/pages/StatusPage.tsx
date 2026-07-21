@@ -19,7 +19,7 @@ const C = {
   textFaint: '#9CA3AF',
   textVery:  '#6B7280',
   purple:    '#A5B4FC',
-  purpleHi:  '#7C6BF6',
+  purpleHi:  '#7C5CFF',
   purpleSoft:'#A5B4FC',
   purpleLite:'#DBE7FF',
   ok:    '#A5B4FC',
@@ -153,7 +153,7 @@ export default function StatusPage({ onExit }: Props) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 28 }}>
           <img src="/kairo_logo.png" alt="Kyno"
             style={{ width: 38, height: 38, borderRadius: 10, objectFit: 'contain',
-                     filter: 'drop-shadow(0 0 18px rgba(124, 107, 246, 0.03))' }} />
+                     filter: 'drop-shadow(0 0 18px rgba(124, 92, 255, 0.03))' }} />
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 14, fontWeight: 800, letterSpacing: -0.2, color: C.text }}>
               Kyno Status
@@ -407,7 +407,7 @@ function StatTile({ icon: Icon, label, value, accent = false }: {
   return (
     <div style={{
       background: accent
-        ? 'linear-gradient(135deg, rgba(165, 180, 252, 0.12), rgba(124, 107, 246, 0.05))'
+        ? 'linear-gradient(135deg, rgba(165, 180, 252, 0.12), rgba(124, 92, 255, 0.05))'
         : C.panel,
       border: `1px solid ${accent ? C.borderHi : C.border}`,
       borderRadius: 14,

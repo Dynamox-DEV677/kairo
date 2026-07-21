@@ -15,7 +15,7 @@ const TABS = [
 const card = { background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(14px) saturate(140%)', WebkitBackdropFilter: 'blur(14px) saturate(140%)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14, padding: 20 } as React.CSSProperties
 const inp  = { background: '#141A2A', border: '1px solid #1f2532', borderRadius: 8, padding: '9px 12px', fontSize: 13, color: '#fafafa', fontFamily: 'inherit', outline: 'none', width: '100%' } as React.CSSProperties
 const lbl  = { fontSize: 11, color: '#9CA3AF', display: 'block', marginBottom: 5, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.8 } as React.CSSProperties
-const btn  = (active = true) => ({ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', borderRadius: 9, border: 'none', background: active ? 'linear-gradient(135deg,#7C6BF6,#7C6BF6)' : '#171D2D', color: active ? '#fff' : '#6B7280', fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: active ? 'pointer' : 'not-allowed' } as React.CSSProperties)
+const btn  = (active = true) => ({ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', borderRadius: 9, border: 'none', background: active ? 'linear-gradient(135deg,#7C5CFF,#7C5CFF)' : '#171D2D', color: active ? '#fff' : '#6B7280', fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: active ? 'pointer' : 'not-allowed' } as React.CSSProperties)
 
 export default function Analytics() {
   const [tab, setTab] = useState('today')
@@ -59,7 +59,7 @@ function StudyTodayTab() {
 
   return (
     <div>
-      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ ...card, background: 'linear-gradient(135deg,#1f2532,#141A2A)', borderColor: '#7C6BF630', marginBottom: 16 }}>
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ ...card, background: 'linear-gradient(135deg,#1f2532,#141A2A)', borderColor: '#7C5CFF30', marginBottom: 16 }}>
         <div style={{ fontSize: 11, fontWeight: 700, color: '#A5B4FC', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>
           {card2.day} · {card2.date}
         </div>
@@ -84,7 +84,7 @@ function StudyTodayTab() {
           <div style={{ fontSize: 11, fontWeight: 700, color: '#A5B4FC', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 }}>Priority Tasks</div>
           {card2.priority_tasks.map((t: any, i: number) => (
             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '8px 0', borderBottom: i < card2.priority_tasks.length - 1 ? '1px solid #1f2532' : 'none' }}>
-              <div style={{ width: 32, height: 32, borderRadius: 8, background: '#7C6BF615', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: '#A5B4FC', flexShrink: 0 }}>{i + 1}</div>
+              <div style={{ width: 32, height: 32, borderRadius: 8, background: '#7C5CFF15', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: '#A5B4FC', flexShrink: 0 }}>{i + 1}</div>
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: 13, color: '#e4e4e7' }}>{t.task}</div>
                 <div style={{ fontSize: 11, color: '#6B7280' }}>{t.duration} · {t.type}</div>
@@ -336,7 +336,7 @@ function RankTab() {
 }
 
 function Spinner() {
-  return <div style={{ display: 'flex', justifyContent: 'center', padding: 60 }}><div style={{ width: 28, height: 28, borderRadius: '50%', border: '2px solid #1f2532', borderTopColor: '#7C6BF6', animation: 'spin 0.8s linear infinite' }} /></div>
+  return <div style={{ display: 'flex', justifyContent: 'center', padding: 60 }}><div style={{ width: 28, height: 28, borderRadius: '50%', border: '2px solid #1f2532', borderTopColor: '#7C5CFF', animation: 'spin 0.8s linear infinite' }} /></div>
 }
 function Err({ msg }: { msg: string }) {
   return <div style={{ textAlign: 'center', padding: 60, color: '#A5B4FC', fontSize: 13 }}>{msg}</div>

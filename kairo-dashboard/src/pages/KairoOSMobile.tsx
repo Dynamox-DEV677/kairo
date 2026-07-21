@@ -21,7 +21,7 @@ const C = {
   textFaint: '#9CA3AF',
   textGhost: '#6B7280',
   purple:    '#A5B4FC',
-  purpleHi:  '#7C6BF6',
+  purpleHi:  '#7C5CFF',
   purpleDeep:'#4A2FA8',
   purpleLite:'#A5B4FC',
   purpleSoft:'#DBE7FF',
@@ -81,7 +81,7 @@ export default function KairoOSMobile({ onNavigate, onOpenBackup }: Props) {
       WebkitOverflowScrolling: 'touch',
       background: C.bg,
       backgroundImage:
-        `radial-gradient(at 50% -10%, rgba(124, 107, 246, 0.18) 0%, transparent 40%),
+        `radial-gradient(at 50% -10%, rgba(124, 92, 255, 0.18) 0%, transparent 40%),
          radial-gradient(at 50% 110%, rgba(74, 47, 168, 0.10) 0%, transparent 40%)`,
     }}>
       <style>{`
@@ -137,10 +137,10 @@ export default function KairoOSMobile({ onNavigate, onOpenBackup }: Props) {
         <section style={{ padding: '0 18px' }}>
           <SectionLabel inline>Vitals today</SectionLabel>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
-            <VitalChip title="Burnout"     pct={Math.round(twin.burnoutRisk * 100)}     tone={twin.burnoutRisk > 0.55 ? 'danger' : twin.burnoutRisk > 0.3 ? 'warn' : 'good'} icon={Activity} />
-            <VitalChip title="Consistency" pct={Math.round(twin.consistencyScore * 100)} tone={twin.consistencyScore > 0.6 ? 'good' : twin.consistencyScore > 0.3 ? 'warn' : 'danger'} icon={Flame} />
-            <VitalChip title="Confidence"  pct={Math.round(twin.confidence * 100)}      tone={twin.confidence > 0.6 ? 'good' : twin.confidence > 0.4 ? 'warn' : 'danger'} icon={Zap} />
-            <VitalChip title="Retention"   pct={Math.round(twin.retentionScore * 100)}  tone={twin.retentionScore > 0.6 ? 'good' : twin.retentionScore > 0.3 ? 'warn' : 'danger'} icon={Brain} />
+            <VitalChip title="Burnout"     pct={Math.round(twin.burnoutRisk * 100)}     accent="var(--c-cyan)"    icon={Activity} />
+            <VitalChip title="Consistency" pct={Math.round(twin.consistencyScore * 100)} accent="var(--c-error)"   icon={Flame} />
+            <VitalChip title="Confidence"  pct={Math.round(twin.confidence * 100)}      accent="var(--c-error)"   icon={Zap} />
+            <VitalChip title="Retention"   pct={Math.round(twin.retentionScore * 100)}  accent="var(--c-magenta)" icon={Brain} />
           </div>
         </section>
 
@@ -197,14 +197,14 @@ function PulseHero({ pct, label, twin, pulsing, onRecompute }: {
         position: 'relative', padding: 22, borderRadius: 22,
         ...GLASS,
         border: '1px solid rgba(165, 180, 252, 0.22)',
-        boxShadow: '0 6px 0 0 rgba(0,0,0,0.34), 0 16px 34px rgba(124, 107, 246, 0.14), inset 0 1px 0 rgba(255,255,255,0.06)',
+        boxShadow: '0 6px 0 0 rgba(0,0,0,0.34), 0 16px 34px rgba(124, 92, 255, 0.14), inset 0 1px 0 rgba(255,255,255,0.06)',
         overflow: 'hidden',
       }}
     >
       <div style={{
         position: 'absolute', top: '-30%', left: '50%', transform: 'translateX(-50%)',
         width: 280, height: 280, borderRadius: '50%',
-        background: 'radial-gradient(closest-side, rgba(124, 107, 246, 0.42), transparent 70%)',
+        background: 'radial-gradient(closest-side, rgba(124, 92, 255, 0.42), transparent 70%)',
         filter: 'blur(40px)', animation: 'km-glow 5s ease-in-out infinite',
         pointerEvents: 'none',
       }} />
@@ -318,8 +318,8 @@ function QuickAction({ label, icon: Icon, onClick }: { label: string; icon: any;
     >
       <div className="kyno-ichip" style={{
         width: 38, height: 38,
-        background: 'rgba(124,107,246,0.20)',
-        border: '1px solid rgba(124,107,246,0.30)',
+        background: 'rgba(124, 92, 255,0.20)',
+        border: '1px solid rgba(124, 92, 255,0.30)',
         color: 'var(--c-purple-lite)',
       }}>
         <Icon size={18} strokeWidth={2.2} />
@@ -346,18 +346,18 @@ function TopRecommendation({ rec, onClick }: { rec: any; onClick: () => void }) 
         width: '100%',
         textAlign: 'left',
         padding: '16px 16px',
-        background: 'linear-gradient(135deg, rgba(124, 107, 246, 0.14), rgba(165, 180, 252, 0.06))',
+        background: 'linear-gradient(135deg, rgba(124, 92, 255, 0.14), rgba(165, 180, 252, 0.06))',
         border: '1px solid rgba(165, 180, 252, 0.32)',
         borderRadius: 18,
         cursor: 'pointer', fontFamily: 'inherit',
         WebkitTapHighlightColor: 'transparent',
         display: 'flex', alignItems: 'center', gap: 12,
-        boxShadow: '0 4px 0 0 rgba(74,47,168,0.5), 0 10px 24px rgba(124, 107, 246, 0.14)',
+        boxShadow: '0 4px 0 0 rgba(74,47,168,0.5), 0 10px 24px rgba(124, 92, 255, 0.14)',
       }}
     >
       <div className="kyno-ichip" style={{
         width: 44, height: 44, flexShrink: 0,
-        background: 'linear-gradient(135deg, #A5B4FC, #7C6BF6)',
+        background: 'linear-gradient(135deg, #A5B4FC, #7C5CFF)',
       }}>
         <Icon size={20} color="#000" strokeWidth={2.2} />
       </div>
@@ -374,9 +374,7 @@ function TopRecommendation({ rec, onClick }: { rec: any; onClick: () => void }) 
   )
 }
 
-function VitalChip({ title, pct, unit = '%', tone, icon: Icon }: { title: string; pct: number; unit?: string; tone: 'good' | 'warn' | 'danger' | 'neutral'; icon: any }) {
-  // Health-coded accent: good = cyan, watch = gold, risk = error, else purple.
-  const accent = tone === 'good' ? 'var(--c-cyan)' : tone === 'warn' ? 'var(--c-gold)' : tone === 'danger' ? 'var(--c-error)' : 'var(--c-purple-lite)'
+function VitalChip({ title, pct, unit = '%', accent, icon: Icon }: { title: string; pct: number; unit?: string; accent: string; icon: any }) {
   const p = Math.max(0, Math.min(100, pct))
   return (
     <div className="kyno-stat" style={{
@@ -411,7 +409,7 @@ function TrajectoryCard({ trend, predicted, band, mastered, tracked }: {
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
         <div className="kyno-ichip" style={{
           width: 44, height: 44,
-          background: 'linear-gradient(135deg, #A5B4FC, #7C6BF6)',
+          background: 'linear-gradient(135deg, #A5B4FC, #7C5CFF)',
           flexShrink: 0,
         }}>
           <TrendingUp size={20} color="#000" />
@@ -512,9 +510,9 @@ function EmptyState({ onSeed }: { onSeed?: () => void }) {
     }}>
       <div style={{
         width: 72, height: 72, borderRadius: 20,
-        background: 'linear-gradient(135deg, #A5B4FC, #7C6BF6)',
+        background: 'linear-gradient(135deg, #A5B4FC, #7C5CFF)',
         display: 'grid', placeItems: 'center',
-        boxShadow: '0 14px 38px rgba(124, 107, 246, 0.03)',
+        boxShadow: '0 14px 38px rgba(124, 92, 255, 0.03)',
       }}>
         <Brain size={32} color="#000" />
       </div>
@@ -529,10 +527,10 @@ function EmptyState({ onSeed }: { onSeed?: () => void }) {
             marginTop: 8,
             display: 'inline-flex', alignItems: 'center', gap: 8,
             padding: '12px 22px', borderRadius: 12, border: 'none',
-            background: 'linear-gradient(135deg, #7C6BF6 0%, #4A2FA8 100%)',
+            background: 'linear-gradient(135deg, #7C5CFF 0%, #4A2FA8 100%)',
             color: '#fff', fontFamily: 'inherit', fontSize: 14, fontWeight: 700,
             letterSpacing: 0.2, cursor: 'pointer',
-            boxShadow: '0 6px 18px rgba(124, 107, 246, 0.18)',
+            boxShadow: '0 6px 18px rgba(124, 92, 255, 0.18)',
             minHeight: 44,
           }}
         >

@@ -217,7 +217,7 @@ export default function Settings() {
             <p style={{ fontSize: 14, fontWeight: 600, color: '#fafafa', marginBottom: 4 }}>{name || 'Your Name'}</p>
             <button
               onClick={() => fileRef.current?.click()}
-              style={{ fontSize: 12, color: '#7C6BF6', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', padding: 0, display: 'flex', alignItems: 'center', gap: 5 }}
+              style={{ fontSize: 12, color: '#7C5CFF', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', padding: 0, display: 'flex', alignItems: 'center', gap: 5 }}
             >
               <Camera size={11} /> Change photo
             </button>
@@ -251,7 +251,7 @@ export default function Settings() {
           onClick={save}
           style={{
             marginTop: 18, padding: '10px 22px', borderRadius: 9, border: 'none',
-            background: saved ? '#7C6BF6' : 'linear-gradient(135deg, #7C6BF6, #7C6BF6)',
+            background: saved ? '#7C5CFF' : 'linear-gradient(135deg, #7C5CFF, #7C5CFF)',
             color: '#fff', fontFamily: 'inherit', fontSize: 13, fontWeight: 600,
             cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 7,
             transition: 'background 0.2s',
@@ -294,7 +294,7 @@ export default function Settings() {
                 disabled={!newEmail.includes('@') || emailStep === 'sending' || emailStep === 'verifying'}
                 style={{
                   padding: '9px 16px', borderRadius: 9, border: 'none', cursor: 'pointer',
-                  background: '#7C6BF6', color: '#fff', fontFamily: 'inherit',
+                  background: '#7C5CFF', color: '#fff', fontFamily: 'inherit',
                   fontSize: 12.5, fontWeight: 700, whiteSpace: 'nowrap',
                   opacity: !newEmail.includes('@') || emailStep === 'sending' ? 0.55 : 1,
                 }}
@@ -347,8 +347,8 @@ export default function Settings() {
               style={{
                 display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
                 padding: '10px 8px 8px', borderRadius: 14, cursor: 'pointer',
-                background: decor === d.id ? 'rgba(124, 107, 246, 0.14)' : 'rgba(255,255,255,0.03)',
-                border: decor === d.id ? '1.5px solid #7C6BF6' : '1.5px solid rgba(255,255,255,0.08)',
+                background: decor === d.id ? 'rgba(124, 92, 255, 0.14)' : 'rgba(255,255,255,0.03)',
+                border: decor === d.id ? '1.5px solid #7C5CFF' : '1.5px solid rgba(255,255,255,0.08)',
                 width: 84, fontFamily: 'inherit',
               }}
             >
@@ -411,10 +411,10 @@ export default function Settings() {
             style={{
               display: 'flex', alignItems: 'center', gap: 7,
               padding: '10px 18px', borderRadius: 10, cursor: syncing ? 'default' : 'pointer',
-              background: 'linear-gradient(135deg, #A5B4FC, #7C6BF6)',
+              background: 'linear-gradient(135deg, #A5B4FC, #7C5CFF)',
               border: 'none', opacity: syncing ? 0.7 : 1,
               color: '#000', fontFamily: 'inherit', fontSize: 13, fontWeight: 800,
-              boxShadow: '0 6px 18px rgba(124, 107, 246, 0.03)',
+              boxShadow: '0 6px 18px rgba(124, 92, 255, 0.03)',
             }}
           >
             {syncing
@@ -454,7 +454,7 @@ export default function Settings() {
           style={{
             width: '100%', marginTop: 12, padding: '12px 16px', borderRadius: 12, cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-            background: 'linear-gradient(135deg, rgba(124,107,246,0.16), rgba(52,211,153,0.12))',
+            background: 'linear-gradient(135deg, rgba(124, 92, 255,0.16), rgba(52,211,153,0.12))',
             border: '1px solid rgba(165,180,252,0.35)', color: '#A5B4FC',
             fontFamily: 'inherit', fontSize: 13.5, fontWeight: 800,
           }}
@@ -481,7 +481,7 @@ export default function Settings() {
           style={{
             display: 'flex', alignItems: 'center', gap: 8,
             padding: '11px 18px', borderRadius: 12, cursor: 'pointer',
-            background: 'linear-gradient(135deg, rgba(165, 180, 252, 0.15), rgba(124, 107, 246, 0.10))',
+            background: 'linear-gradient(135deg, rgba(165, 180, 252, 0.15), rgba(124, 92, 255, 0.10))',
             border: '1px solid rgba(165, 180, 252, 0.40)',
             color: '#A5B4FC',
             fontFamily: 'inherit', fontSize: 13, fontWeight: 700,
@@ -503,9 +503,9 @@ export default function Settings() {
             style={{
               display: 'flex', alignItems: 'center', gap: 7,
               padding: '11px 18px', borderRadius: 10, cursor: 'pointer', border: 'none',
-              background: 'linear-gradient(135deg, #7C6BF6 0%, #4A2FA8 100%)',
+              background: 'linear-gradient(135deg, #7C5CFF 0%, #4A2FA8 100%)',
               color: '#fff', fontFamily: 'inherit', fontSize: 13, fontWeight: 700,
-              boxShadow: '0 6px 18px rgba(124, 107, 246, 0.18)',
+              boxShadow: '0 6px 18px rgba(124, 92, 255, 0.18)',
             }}
           >
             <Sparkles size={13} /> Load Demo Profile
@@ -595,7 +595,7 @@ function ToggleRow({ label, desc, value, onChange }: { label: string; desc: stri
         onClick={() => onChange(!value)}
         style={{
           width: 42, height: 24, borderRadius: 12, border: 'none', cursor: 'pointer',
-          background: value ? '#7C6BF6' : '#171D2D',
+          background: value ? '#7C5CFF' : '#171D2D',
           position: 'relative', transition: 'background 0.2s', flexShrink: 0,
         }}
       >

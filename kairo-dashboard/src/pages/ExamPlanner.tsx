@@ -55,7 +55,7 @@ const lbl: React.CSSProperties = {
 }
 // Layout + gradient face only — .kyno-chunky adds the 3D edge, radius and press.
 const btnPrimary: React.CSSProperties = {
-  background: 'linear-gradient(135deg, #7C6BF6 0%, #A5B4FC 100%)',
+  background: 'linear-gradient(135deg, #7C5CFF 0%, #A5B4FC 100%)',
   color: '#fff', border: 'none',
   padding: '11px 22px', fontSize: 13, fontWeight: 700, letterSpacing: 0.5,
   display: 'inline-flex', alignItems: 'center', gap: 8,
@@ -351,7 +351,7 @@ export default function ExamPlanner() {
             <label style={lbl}><Clock size={11} style={{ verticalAlign: 'middle', marginRight: 4 }} />Hours per day · {hoursPerDay}h</label>
             <input type="range" min={1} max={12} step={0.5}
               value={hoursPerDay} onChange={e => setHoursPerDay(parseFloat(e.target.value))}
-              style={{ width: '100%', accentColor: '#7C6BF6', height: 6, cursor: 'pointer' }}
+              style={{ width: '100%', accentColor: '#7C5CFF', height: 6, cursor: 'pointer' }}
             />
           </div>
           <div>
@@ -361,10 +361,10 @@ export default function ExamPlanner() {
                 <button key={L} onClick={() => setCurrentLevel(L)}
                   style={{
                     flex: 1, padding: '9px 0', fontSize: 12, fontWeight: 700,
-                    background: currentLevel === L ? 'rgba(124,107,246,0.22)' : '#141A2A',
+                    background: currentLevel === L ? 'rgba(124, 92, 255,0.22)' : '#141A2A',
                     color: currentLevel === L ? '#fff' : '#A1A1AA',
-                    border: '1.5px solid ' + (currentLevel === L ? '#7C6BF6' : '#1f2532'),
-                    boxShadow: currentLevel === L ? '0 2px 10px rgba(124,107,246,0.28)' : 'none',
+                    border: '1.5px solid ' + (currentLevel === L ? '#7C5CFF' : '#1f2532'),
+                    boxShadow: currentLevel === L ? '0 2px 10px rgba(124, 92, 255,0.28)' : 'none',
                     borderRadius: 8, cursor: 'pointer', textTransform: 'capitalize', letterSpacing: 0.5,
                     transition: 'all 0.15s',
                   }}
@@ -496,7 +496,7 @@ export default function ExamPlanner() {
               {plan.weeklySchedule?.map(wk => (
                 <div key={wk.week} style={{ marginBottom: 18 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
-                    <div style={{ fontSize: 11, fontWeight: 800, padding: '3px 10px', borderRadius: 999, background: 'rgba(124,107,246,0.22)', color: '#A5B4FC', letterSpacing: 1 }}>
+                    <div style={{ fontSize: 11, fontWeight: 800, padding: '3px 10px', borderRadius: 999, background: 'rgba(124, 92, 255,0.22)', color: '#A5B4FC', letterSpacing: 1 }}>
                       WEEK {wk.week}
                     </div>
                     <div style={{ fontSize: 13, color: '#fafafa', fontWeight: 600 }}>{wk.focus}</div>

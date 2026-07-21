@@ -18,15 +18,15 @@ const C = {
   textVery:  '#6B7280',
   purpleSoft:'#A5B4FC',
   purple:    '#A5B4FC',
-  purpleHi:  '#7C6BF6',
+  purpleHi:  '#7C5CFF',
   purpleDeep:'#4A2FA8',
 }
 const FONT = "'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif"
 
 const KIND_META: Record<HistoryEntry['kind'], { icon: any; label: string; color: string }> = {
   event:     { icon: Activity,       label: 'Activity', color: '#a5b4fc' },
-  doubt:     { icon: MessageCircle,  label: 'Doubt',    color: '#22d3ee' },
-  concept:   { icon: Network,        label: 'Concept',  color: '#7c6bf6' },
+  doubt:     { icon: MessageCircle,  label: 'Doubt',    color: '#4FD8E8' },
+  concept:   { icon: Network,        label: 'Concept',  color: '#7C5CFF' },
   formula:   { icon: FunctionSquare, label: 'Formula',  color: '#ffb020' },
   flashcard: { icon: Layers,         label: 'Card',     color: '#34d399' },
 }
@@ -75,7 +75,7 @@ export default function KnowledgeGraph() {
       width: '100%', height: '100%', overflowY: 'auto', WebkitOverflowScrolling: 'touch',
       background: C.bg,
       backgroundImage:
-        `radial-gradient(at 8% 0%,  rgba(124, 107, 246, 0.08) 0%, transparent 40%),
+        `radial-gradient(at 8% 0%,  rgba(124, 92, 255, 0.08) 0%, transparent 40%),
          radial-gradient(at 92% 100%, rgba(74, 47, 168, 0.10) 0%, transparent 45%)`,
       color: C.text, fontFamily: FONT, padding: '24px 28px 80px',
     }}>
@@ -85,9 +85,9 @@ export default function KnowledgeGraph() {
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
             <div style={{
               width: 46, height: 46, borderRadius: 13, flexShrink: 0,
-              background: 'linear-gradient(135deg, #7C6BF6 0%, #4A2FA8 100%)',
+              background: 'linear-gradient(135deg, #7C5CFF 0%, #4A2FA8 100%)',
               display: 'grid', placeItems: 'center',
-              boxShadow: '0 10px 30px rgba(124, 107, 246, 0.03)',
+              boxShadow: '0 10px 30px rgba(124, 92, 255, 0.03)',
             }}>
               <Share2 size={22} color="#fff" />
             </div>
@@ -120,7 +120,7 @@ export default function KnowledgeGraph() {
             {subjectSummary.map(([subj, n]) => (
               <span key={subj} style={{
                 padding: '5px 12px', borderRadius: 999,
-                background: 'rgba(124, 107, 246, 0.08)',
+                background: 'rgba(124, 92, 255, 0.08)',
                 border: '1px solid rgba(165, 180, 252, 0.3)',
                 fontSize: 12, color: C.text, fontWeight: 600,
               }}>
@@ -155,7 +155,7 @@ export default function KnowledgeGraph() {
   )
 }
 
-function FilterChip({ active, label, onClick, color = '#7c6bf6' }: { active: boolean; label: React.ReactNode; onClick: () => void; color?: string }) {
+function FilterChip({ active, label, onClick, color = '#7C5CFF' }: { active: boolean; label: React.ReactNode; onClick: () => void; color?: string }) {
   return (
     <button onClick={onClick} style={{
       display: 'inline-flex', alignItems: 'center', gap: 5,

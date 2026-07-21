@@ -12,7 +12,7 @@ interface KairoLoaderProps {
 
 const C = {
   bg:        '#0A0D16',
-  primary:   '#7C6BF6',
+  primary:   '#7C5CFF',
   secondary: '#A5B4FC',
   highlight: '#A5B4FC',
   text:      '#FFFFFF',
@@ -239,7 +239,7 @@ function LogoAssemble({ reduce }: { reduce: boolean | null }) {
           }}
           style={{
             position: 'absolute', inset: '-22%',
-            background: `radial-gradient(circle, rgba(124, 107, 246, 0.28) 0%, rgba(165, 180, 252, 0.10) 38%, transparent 70%)`,
+            background: `radial-gradient(circle, rgba(124, 92, 255, 0.28) 0%, rgba(165, 180, 252, 0.10) 38%, transparent 70%)`,
             filter: 'blur(18px)',
             pointerEvents: 'none',
           }}
@@ -273,7 +273,7 @@ function LogoAssemble({ reduce }: { reduce: boolean | null }) {
             width: '100%',
             height: '100%',
             objectFit: 'contain',
-            filter: 'drop-shadow(0 0 20px rgba(124, 107, 246, 0.30))',
+            filter: 'drop-shadow(0 0 20px rgba(124, 92, 255, 0.30))',
             userSelect: 'none',
             WebkitUserDrag: 'none',
           } as React.CSSProperties}
@@ -349,7 +349,7 @@ function CaptionReveal({
           letterSpacing: '0.32em',
           textTransform: 'uppercase',
           color: 'rgba(255, 255, 255, 0.85)',
-          textShadow: '0 0 12px rgba(124, 107, 246, 0.18)',
+          textShadow: '0 0 12px rgba(124, 92, 255, 0.18)',
         }}
       >
         {tagline}

@@ -85,7 +85,7 @@ const PARTS: PartCatalog = {
     related: ['Olympus Mons', 'Polar caps', 'Mars rovers'],
   },
   jupiter: {
-    id: 'jupiter', label: 'Jupiter', color: '#7C6BF6',
+    id: 'jupiter', label: 'Jupiter', color: '#7C5CFF',
     function: 'The largest planet — a gas giant of hydrogen and helium with a 350-year-old storm.',
     whyItMatters: 'Jupiter\'s gravity acts as the solar system\'s "vacuum cleaner", deflecting comets that might hit Earth.',
     analogy: 'Solar system bodyguard + king of the gas giants.',

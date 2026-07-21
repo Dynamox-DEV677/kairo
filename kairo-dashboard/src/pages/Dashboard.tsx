@@ -249,7 +249,7 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
                     padding: isMobile ? '6px 12px' : '6px 14px', borderRadius: 999, cursor: 'pointer',
                     background: 'rgba(13,16,25,0.9)', backdropFilter: 'blur(10px)',
                     WebkitBackdropFilter: 'blur(10px)',
-                    border: '1px solid rgba(124,107,246,0.4)',
+                    border: '1px solid rgba(124, 92, 255,0.4)',
                     color: 'var(--c-purple-lite)', fontSize: isMobile ? 10 : 11, fontWeight: 700,
                     letterSpacing: 0.5, textTransform: 'uppercase', fontFamily: 'inherit',
                     whiteSpace: 'nowrap', maxWidth: 'calc(100vw - 24px)',

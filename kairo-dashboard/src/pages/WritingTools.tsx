@@ -17,7 +17,7 @@ const TABS = [
 const card  = { background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(14px) saturate(140%)', WebkitBackdropFilter: 'blur(14px) saturate(140%)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14, padding: 20 } as React.CSSProperties
 const inp   = { background: '#141A2A', border: '1px solid #1f2532', borderRadius: 8, padding: '9px 12px', fontSize: 13, color: '#fafafa', fontFamily: 'inherit', outline: 'none', width: '100%' } as React.CSSProperties
 const label = { fontSize: 11, color: '#9CA3AF', display: 'block', marginBottom: 5, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.8 } as React.CSSProperties
-const btn   = (active = true) => ({ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', borderRadius: 9, border: 'none', background: active ? 'linear-gradient(135deg,#7C6BF6,#7C6BF6)' : '#171D2D', color: active ? '#fff' : '#6B7280', fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: active ? 'pointer' : 'not-allowed' } as React.CSSProperties)
+const btn   = (active = true) => ({ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', borderRadius: 9, border: 'none', background: active ? 'linear-gradient(135deg,#7C5CFF,#7C5CFF)' : '#171D2D', color: active ? '#fff' : '#6B7280', fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: active ? 'pointer' : 'not-allowed' } as React.CSSProperties)
 
 export default function WritingTools() {
   const [tab, setTab] = useState('editor')
@@ -36,9 +36,9 @@ export default function WritingTools() {
             padding: '8px 12px', borderRadius: 7, border: 'none', fontFamily: 'inherit',
             fontSize: 12, fontWeight: tab === t.id ? 700 : 500, cursor: 'pointer',
             whiteSpace: 'nowrap',
-            background: tab === t.id ? 'linear-gradient(135deg,#7C6BF6,#6455e0)' : 'transparent',
+            background: tab === t.id ? 'linear-gradient(135deg,#7C5CFF,#6455e0)' : 'transparent',
             color: tab === t.id ? '#fff' : '#6B7280', transition: 'all 0.15s',
-            boxShadow: tab === t.id ? '0 4px 12px rgba(124,107,246,0.35)' : 'none',
+            boxShadow: tab === t.id ? '0 4px 12px rgba(124, 92, 255,0.35)' : 'none',
           }}>
             <t.icon size={12} /> {t.label}
           </button>
@@ -228,7 +228,7 @@ Rules:
         <button onClick={askKyno} disabled={loading}
           style={{
             marginTop: 12, width: '100%', padding: '13px', borderRadius: 10, border: 'none',
-            background: loading ? '#171D2D' : 'linear-gradient(135deg, #A5B4FC, #7C6BF6)',
+            background: loading ? '#171D2D' : 'linear-gradient(135deg, #A5B4FC, #7C5CFF)',
             color: loading ? '#9CA3AF' : '#000',
             fontFamily: 'inherit', fontSize: 14, fontWeight: 700,
             cursor: loading ? 'not-allowed' : 'pointer',
@@ -242,7 +242,7 @@ Rules:
             <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
               style={{ ...card, marginTop: 12, borderColor: 'rgba(165, 180, 252, 0.3)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
-                <div style={{ width: 28, height: 28, borderRadius: 8, background: 'linear-gradient(135deg, #A5B4FC, #7C6BF6)', display: 'grid', placeItems: 'center' }}>
+                <div style={{ width: 28, height: 28, borderRadius: 8, background: 'linear-gradient(135deg, #A5B4FC, #7C5CFF)', display: 'grid', placeItems: 'center' }}>
                   <Sparkles size={13} color="#000" />
                 </div>
                 <span style={{ fontSize: 11, color: '#A5B4FC', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.4 }}>Kyno's verdict</span>
@@ -472,7 +472,7 @@ function TopperTool() {
 
   return (
     <div>
-      <div style={{ ...card, marginBottom: 16, background: '#1a1a2e', border: '1px solid #7C6BF630' }}>
+      <div style={{ ...card, marginBottom: 16, background: '#1a1a2e', border: '1px solid #7C5CFF30' }}>
         <p style={{ fontSize: 12, color: '#A5B4FC', margin: 0 }}>⭐ This tool rewrites your answer the way a top-scorer would write it — with precise vocabulary, strong structure, and exam keywords.</p>
       </div>
       <div style={{ marginBottom: 12 }}>
@@ -484,7 +484,7 @@ function TopperTool() {
         <textarea style={{ ...inp, height: 160, resize: 'vertical' }} value={text} onChange={e => setText(e.target.value)} placeholder="Write your current answer — any quality is fine…" />
       </div>
       {err && <p style={{ color: '#4A2FA8', fontSize: 12, marginBottom: 10 }}>{err}</p>}
-      <button onClick={run} disabled={loading} style={{ ...btn(!loading), background: loading ? '#171D2D' : 'linear-gradient(135deg,#A5B4FC,#7C6BF6)' }}>
+      <button onClick={run} disabled={loading} style={{ ...btn(!loading), background: loading ? '#171D2D' : 'linear-gradient(135deg,#A5B4FC,#7C5CFF)' }}>
         <Star size={13} /> {loading ? 'Rewriting…' : 'Make it Topper-Level ✦'}
       </button>
       {result?.rewritten && (

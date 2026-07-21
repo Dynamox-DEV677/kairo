@@ -47,7 +47,7 @@ const PARTS: PartCatalog = {
     related: ['Motor coordination', 'Procedural memory', 'Balance'],
   },
   brain_stem: {
-    id: 'brain_stem', label: 'Brain Stem', color: '#7C6BF6',
+    id: 'brain_stem', label: 'Brain Stem', color: '#7C5CFF',
     function: 'Controls automatic life-support: heart rate, breathing, blood pressure, sleep cycles, and reflexes.',
     whyItMatters: 'You can lose huge parts of your cortex and survive, but damage to the brain stem is usually fatal — it runs the body 24/7.',
     analogy: 'The autopilot that keeps the plane flying while the pilot sleeps.',

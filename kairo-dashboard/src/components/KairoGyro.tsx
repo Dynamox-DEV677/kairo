@@ -50,7 +50,7 @@ export default function KairoGyro({
         <div style={{
           position: 'absolute', inset: '16%', borderRadius: '50%',
           border: '2px solid transparent',
-          borderTopColor: '#7C6BF6', borderRightColor: 'rgba(124,107,246,0.33)',
+          borderTopColor: '#7C5CFF', borderRightColor: 'rgba(124, 92, 255,0.33)',
           animation: 'kgSpin 2.3s linear infinite reverse',
         }} />
       </div>

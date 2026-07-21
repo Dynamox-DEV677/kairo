@@ -30,7 +30,7 @@ export default function PinDots({ filled, length = 6, shake = false, large = fal
             style={{
               width: size, height: size, borderRadius: '50%',
               background: active
-                ? 'radial-gradient(circle at 30% 30%, #DBE7FF, #7C6BF6 80%)'
+                ? 'radial-gradient(circle at 30% 30%, #DBE7FF, #7C5CFF 80%)'
                 : 'transparent',
               border: active
                 ? '1px solid rgba(165, 180, 252, 0.7)'

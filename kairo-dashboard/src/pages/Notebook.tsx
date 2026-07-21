@@ -35,8 +35,8 @@ interface Note {
 const KIND_META: Record<Kind, { label: string; icon: any; color: string }> = {
   flashcards:  { label: 'Flashcards',  icon: BookMarked,    color: '#ffb020' },  // gold — review
   summary:     { label: 'Summary',     icon: FileText,      color: '#a5b4fc' },  // light purple
-  doubt:       { label: 'Doubt',       icon: MessageCircle, color: '#22d3ee' },  // cyan — questions
-  concept_map: { label: 'Concept Map', icon: Network,       color: '#7c6bf6' },  // purple — concepts
+  doubt:       { label: 'Doubt',       icon: MessageCircle, color: '#4FD8E8' },  // cyan — questions
+  concept_map: { label: 'Concept Map', icon: Network,       color: '#7C5CFF' },  // purple — concepts
   note:        { label: 'Note',        icon: StickyNote,    color: '#a5b4fc' },  // light purple
   plan:        { label: 'Study Plan',  icon: Calendar,      color: '#34d399' },  // green — plans
   grade:       { label: 'Graded',      icon: CheckCircle2,  color: '#ffb020' },  // gold
@@ -126,9 +126,9 @@ export default function Notebook() {
       <div className="nb-header" style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 20, flexShrink: 0 }}>
         <div style={{
           width: 44, height: 44, borderRadius: 11,
-          background: 'linear-gradient(135deg, #7C6BF6, #4A2FA8)',
+          background: 'linear-gradient(135deg, #7C5CFF, #4A2FA8)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 0 18px rgba(124, 107, 246, 0.03)', flexShrink: 0,
+          boxShadow: '0 0 18px rgba(124, 92, 255, 0.03)', flexShrink: 0,
         }}>
           <BookOpen size={22} color="#fff" />
         </div>
@@ -140,7 +140,7 @@ export default function Notebook() {
         </div>
         <button className="nb-newbtn-inline" onClick={() => setCreating(true)} style={{
           padding: '9px 14px', borderRadius: 9, border: 'none',
-          background: 'linear-gradient(135deg, #7C6BF6, #4A2FA8)', color: '#fff',
+          background: 'linear-gradient(135deg, #7C5CFF, #4A2FA8)', color: '#fff',
           fontFamily: 'inherit', fontSize: 12, fontWeight: 600, cursor: 'pointer',
           display: 'flex', alignItems: 'center', gap: 6,
         }}>
@@ -348,7 +348,7 @@ function AutoCollectedStrip({ onBuilt }: { onBuilt?: (id: string) => void }) {
   return (
     <div style={{
       marginBottom: 14, padding: 14,
-      background: 'rgba(124, 107, 246, 0.04)',
+      background: 'rgba(124, 92, 255, 0.04)',
       border: '1px solid rgba(165, 180, 252, 0.22)',
       borderRadius: 12,
       flexShrink: 0,
@@ -404,7 +404,7 @@ function AutoCollectedStrip({ onBuilt }: { onBuilt?: (id: string) => void }) {
               style={chipBtn(isBusy)}>
               {isBusy ? 'Building…' : <>
                 <span style={{ textTransform: 'capitalize' }}>{c.name}</span>
-                <span style={{ marginLeft: 5, color: '#7C6BF6', fontSize: 10 }}>×{c.visits}</span>
+                <span style={{ marginLeft: 5, color: '#7C5CFF', fontSize: 10 }}>×{c.visits}</span>
               </>}
             </button>
           )
@@ -450,7 +450,7 @@ function AutoCollectedStrip({ onBuilt }: { onBuilt?: (id: string) => void }) {
               padding: '8px 14px', borderRadius: 10,
               background: 'rgba(13,13,21,0.95)',
               border: '1px solid rgba(165, 180, 252, 0.18)',
-              boxShadow: '0 14px 32px rgba(124, 107, 246, 0.03)',
+              boxShadow: '0 14px 32px rgba(124, 92, 255, 0.03)',
               fontSize: 12, color: '#e4e4e7', fontWeight: 500,
               zIndex: 5,
             }}>
@@ -466,7 +466,7 @@ function AutoCollectedStrip({ onBuilt }: { onBuilt?: (id: string) => void }) {
 function chipBtn(busy: boolean): React.CSSProperties {
   return {
     padding: '4px 9px', borderRadius: 6,
-    background: busy ? 'rgba(165, 180, 252, 0.22)' : 'rgba(124, 107, 246, 0.08)',
+    background: busy ? 'rgba(165, 180, 252, 0.22)' : 'rgba(124, 92, 255, 0.08)',
     border: `1px solid ${busy ? 'rgba(165, 180, 252, 0.55)' : 'rgba(165, 180, 252, 0.32)'}`,
     fontSize: 11.5, color: '#e4e4e7', fontWeight: 500,
     whiteSpace: 'nowrap',
@@ -588,7 +588,7 @@ function NoteDetail({ note, editing, onClose, onTogglePin, onDelete, onEdit, onS
           <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
             <button onClick={save} disabled={saving} style={{
               padding: '8px 16px', borderRadius: 8, border: 'none',
-              background: saving ? '#171D2D' : 'linear-gradient(135deg,#7C6BF6,#7C6BF6)',
+              background: saving ? '#171D2D' : 'linear-gradient(135deg,#7C5CFF,#7C5CFF)',
               color: saving ? '#6B7280' : '#fff',
               fontFamily: 'inherit', fontSize: 12, fontWeight: 600,
               cursor: saving ? 'not-allowed' : 'pointer',
@@ -608,7 +608,7 @@ function NoteDetail({ note, editing, onClose, onTogglePin, onDelete, onEdit, onS
               {note.tags.map(t => (
                 <span key={t} style={{
                   padding: '3px 10px', borderRadius: 999, fontSize: 10.5, fontWeight: 600,
-                  background: 'rgba(124,107,246,0.12)', color: '#A5B4FC',
+                  background: 'rgba(124, 92, 255,0.12)', color: '#A5B4FC',
                   border: '1px solid rgba(165,180,252,0.22)',
                 }}>#{t}</span>
               ))}
@@ -681,7 +681,7 @@ function CreateModal({ onClose, onCreated }: { onClose: () => void; onCreated: (
         <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
           <button type="button" onClick={formatWithAI} disabled={formatting || !content.trim()} style={{
             padding: '6px 11px', borderRadius: 7, border: '1px solid rgba(165, 180, 252, 0.32)',
-            background: formatting ? 'rgba(165, 180, 252, 0.22)' : 'rgba(124, 107, 246, 0.08)',
+            background: formatting ? 'rgba(165, 180, 252, 0.22)' : 'rgba(124, 92, 255, 0.08)',
             color: '#A5B4FC', fontFamily: 'inherit', fontSize: 11.5, fontWeight: 600,
             cursor: formatting || !content.trim() ? 'not-allowed' : 'pointer',
             display: 'flex', alignItems: 'center', gap: 6,
@@ -721,7 +721,7 @@ function CreateModal({ onClose, onCreated }: { onClose: () => void; onCreated: (
           }}>Cancel</button>
           <button onClick={save} disabled={saving || !title.trim() || !content.trim()} style={{
             padding: '8px 14px', borderRadius: 7, border: 'none',
-            background: saving || !title.trim() || !content.trim() ? '#171D2D' : 'linear-gradient(135deg,#7C6BF6,#7C6BF6)',
+            background: saving || !title.trim() || !content.trim() ? '#171D2D' : 'linear-gradient(135deg,#7C5CFF,#7C5CFF)',
             color: '#fff', fontFamily: 'inherit', fontSize: 12, fontWeight: 600,
             cursor: saving || !title.trim() || !content.trim() ? 'not-allowed' : 'pointer',
             display: 'flex', alignItems: 'center', gap: 6,

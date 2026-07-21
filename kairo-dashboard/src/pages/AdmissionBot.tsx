@@ -228,7 +228,7 @@ function ChatTab({ ctx }: { ctx: SchoolCtx }) {
     <div className="mob-stack" style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 20, minHeight: 540 }}>
       <div style={{ ...card, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         <div style={{ padding: '14px 18px', borderBottom: '1px solid #171D2D', display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{ width: 36, height: 36, borderRadius: 10, background: 'linear-gradient(135deg,#7C6BF6,#7C6BF6)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+          <div style={{ width: 36, height: 36, borderRadius: 10, background: 'linear-gradient(135deg,#7C5CFF,#7C5CFF)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
             {ctx.school_logo
               ? <img src={ctx.school_logo} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               : <Bot size={18} color="#fff" />}
@@ -248,14 +248,14 @@ function ChatTab({ ctx }: { ctx: SchoolCtx }) {
               <div style={{
                 width: 28, height: 28, borderRadius: 7, flexShrink: 0,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                background: m.role === 'user' ? '#7C6BF6' : '#1f2532',
+                background: m.role === 'user' ? '#7C5CFF' : '#1f2532',
               }}>
                 {m.role === 'user' ? <User size={13} color="#fff" /> : <Bot size={13} color="#A5B4FC" />}
               </div>
               <div style={{
                 maxWidth: '75%', padding: '9px 13px',
                 borderRadius: m.role === 'user' ? '12px 4px 12px 12px' : '4px 12px 12px 12px',
-                background: m.role === 'user' ? 'linear-gradient(135deg,#7C6BF6,#7C6BF6)' : '#171D2D',
+                background: m.role === 'user' ? 'linear-gradient(135deg,#7C5CFF,#7C5CFF)' : '#171D2D',
                 fontSize: 13, color: '#fafafa', lineHeight: 1.55, whiteSpace: 'pre-wrap',
               }}>
                 {m.content}
@@ -269,7 +269,7 @@ function ChatTab({ ctx }: { ctx: SchoolCtx }) {
               </div>
               <div style={{ padding: '10px 14px', background: '#171D2D', borderRadius: '4px 12px 12px 12px', display: 'flex', gap: 5 }}>
                 {[0, 1, 2].map(i => (
-                  <div key={i} style={{ width: 6, height: 6, borderRadius: '50%', background: '#7C6BF6', animation: `dot-bounce 1.2s ease-in-out ${i * 0.2}s infinite` }} />
+                  <div key={i} style={{ width: 6, height: 6, borderRadius: '50%', background: '#7C5CFF', animation: `dot-bounce 1.2s ease-in-out ${i * 0.2}s infinite` }} />
                 ))}
               </div>
             </div>
@@ -288,7 +288,7 @@ function ChatTab({ ctx }: { ctx: SchoolCtx }) {
           <button onClick={send} disabled={!input.trim() || loading} style={{
             width: 38, height: 38, borderRadius: 9, border: 'none',
             cursor: input.trim() ? 'pointer' : 'not-allowed',
-            background: input.trim() ? 'linear-gradient(135deg,#7C6BF6,#7C6BF6)' : '#171D2D',
+            background: input.trim() ? 'linear-gradient(135deg,#7C5CFF,#7C5CFF)' : '#171D2D',
             display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
           }}>
             <Send size={14} color={input.trim() ? '#fff' : '#6B7280'} />
@@ -317,7 +317,7 @@ function ChatTab({ ctx }: { ctx: SchoolCtx }) {
               ))}
               <button onClick={saveLead} style={{
                 width: '100%', padding: '9px', borderRadius: 8, border: 'none',
-                background: 'linear-gradient(135deg,#7C6BF6,#7C6BF6)', color: '#fff',
+                background: 'linear-gradient(135deg,#7C5CFF,#7C5CFF)', color: '#fff',
                 fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: 'pointer',
               }}>
                 Submit Enquiry
@@ -337,7 +337,7 @@ function ChatTab({ ctx }: { ctx: SchoolCtx }) {
               fontFamily: 'inherit', fontSize: 12, cursor: 'pointer', marginBottom: 6,
               transition: 'all 0.1s',
             }}
-              onMouseEnter={e => { (e.currentTarget).style.borderColor = '#7C6BF6'; (e.currentTarget).style.color = '#A5B4FC' }}
+              onMouseEnter={e => { (e.currentTarget).style.borderColor = '#7C5CFF'; (e.currentTarget).style.color = '#A5B4FC' }}
               onMouseLeave={e => { (e.currentTarget).style.borderColor = '#1f2532'; (e.currentTarget).style.color = '#9CA3AF' }}
             >
               {q}
@@ -534,7 +534,7 @@ function SettingsTab({ ctx, onSaved }: { ctx: SchoolCtx; onSaved: () => void }) 
     <div>
       <div style={{ ...card, padding: 18, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 12 }}>
         <div style={{
-          width: 36, height: 36, borderRadius: 9, background: 'rgba(124, 107, 246, 0.12)',
+          width: 36, height: 36, borderRadius: 9, background: 'rgba(124, 92, 255, 0.12)',
           display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
         }}>
           <Sparkles size={16} color="#A5B4FC" />
@@ -581,7 +581,7 @@ function SettingsTab({ ctx, onSaved }: { ctx: SchoolCtx; onSaved: () => void }) 
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 18 }}>
           <button onClick={save} disabled={saving} style={{
             padding: '10px 18px', borderRadius: 8, border: 'none',
-            background: saving ? '#171D2D' : 'linear-gradient(135deg,#7C6BF6,#7C6BF6)',
+            background: saving ? '#171D2D' : 'linear-gradient(135deg,#7C5CFF,#7C5CFF)',
             color: saving ? '#6B7280' : '#fff',
             fontFamily: 'inherit', fontSize: 13, fontWeight: 600,
             cursor: saving ? 'not-allowed' : 'pointer',

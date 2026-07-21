@@ -52,7 +52,7 @@ const C = {
   glass:     'rgba(20, 24, 35, 0.65)',
   border:    'rgba(255, 255, 255, 0.08)',
   borderHi:  'rgba(165, 180, 252, 0.35)',
-  primary:   '#7C6BF6',
+  primary:   '#7C5CFF',
   secondary: '#A5B4FC',
   text:      '#FFFFFF',
   textDim:   '#CBD5E1',
@@ -180,7 +180,7 @@ export default function GeoVisualMode({
           border: none !important;
         }
         .ks-geo-map .leaflet-control-zoom a:hover {
-          background: rgba(124, 107, 246, 0.18) !important;
+          background: rgba(124, 92, 255, 0.18) !important;
         }
         .ks-geo-map .leaflet-tooltip {
           background: rgba(8, 9, 12, 0.92) !important;
@@ -248,14 +248,14 @@ function MapPanel({ name, kind, lat, lng, zoom, pageUrl, located }: MapPanelProp
         padding: '12px 14px',
         borderBottom: `1px solid ${C.border}`,
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        background: 'linear-gradient(180deg, rgba(124, 107, 246, 0.06) 0%, transparent 100%)',
+        background: 'linear-gradient(180deg, rgba(124, 92, 255, 0.06) 0%, transparent 100%)',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <div style={{
             width: 30, height: 30, borderRadius: 8,
-            background: 'linear-gradient(135deg, #7C6BF6, #4A2FA8)',
+            background: 'linear-gradient(135deg, #7C5CFF, #4A2FA8)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: '0 0 16px rgba(124, 107, 246, 0.3)',
+            boxShadow: '0 0 16px rgba(124, 92, 255, 0.3)',
           }}>
             <Globe size={14} color="#fff" />
           </div>
@@ -522,7 +522,7 @@ function ExplanationPanel({
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
         <div style={{
           width: 26, height: 26, borderRadius: 7,
-          background: 'linear-gradient(135deg, #A5B4FC, #7C6BF6)',
+          background: 'linear-gradient(135deg, #A5B4FC, #7C5CFF)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}>
           <Sparkles size={12} color="#0a0a0a" />
@@ -627,7 +627,7 @@ function ConceptGraphPanel({
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <div style={{
             width: 26, height: 26, borderRadius: 7,
-            background: 'rgba(124, 107, 246, 0.12)',
+            background: 'rgba(124, 92, 255, 0.12)',
             border: `1px solid ${C.borderHi}`,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>

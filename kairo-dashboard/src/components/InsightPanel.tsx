@@ -13,7 +13,7 @@ const MOCK_SUBJECTS = [
   { name: 'Chemistry', progress: 55, color: '#34d399' },
   { name: 'Mathematics', progress: 88, color: '#C7D2E8' },
   { name: 'Biology', progress: 41, color: '#f472b6' },
-  { name: 'History', progress: 63, color: '#7C6BF6' },
+  { name: 'History', progress: 63, color: '#7C5CFF' },
 ]
 
 const INSIGHT_SYSTEM = `You analyze student questions and return educational insights as JSON.
@@ -163,7 +163,7 @@ export default function InsightPanel({ hasContent, lastQuestion }: InsightPanelP
                     {loadingInsights ? (
                       <div style={{ textAlign: 'center', paddingTop: 40 }}>
                         <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: 'linear' }} style={{ display: 'inline-block', marginBottom: 12 }}>
-                          <Loader size={20} color="#7C6BF6" />
+                          <Loader size={20} color="#7C5CFF" />
                         </motion.div>
                         <p style={{ fontSize: 11, color: '#6B7280' }}>Analysing your question…</p>
                       </div>
@@ -177,7 +177,7 @@ export default function InsightPanel({ hasContent, lastQuestion }: InsightPanelP
                             </div>
                             {keyPoints.map((pt: string, i: number) => (
                               <div key={i} style={{ display: 'flex', gap: 6, marginBottom: 5, alignItems: 'flex-start' }}>
-                                <span style={{ width: 4, height: 4, borderRadius: '50%', background: '#7C6BF6', marginTop: 5, flexShrink: 0 }} />
+                                <span style={{ width: 4, height: 4, borderRadius: '50%', background: '#7C5CFF', marginTop: 5, flexShrink: 0 }} />
                                 <span style={{ fontSize: 11, color: '#9CA3AF', lineHeight: 1.5 }}>{pt}</span>
                               </div>
                             ))}
@@ -197,7 +197,7 @@ export default function InsightPanel({ hasContent, lastQuestion }: InsightPanelP
                                   initial={{ width: 0 }}
                                   animate={{ width: `${examProbability}%` }}
                                   transition={{ delay: 0.1, duration: 0.6 }}
-                                  style={{ height: '100%', background: 'linear-gradient(90deg, #7C6BF6, #ec4899)', borderRadius: 3 }}
+                                  style={{ height: '100%', background: 'linear-gradient(90deg, #7C5CFF, #ec4899)', borderRadius: 3 }}
                                 />
                               </div>
                               <span style={{ fontSize: 12, fontWeight: 700, color: '#f472b6' }}>{examProbability}%</span>
@@ -237,7 +237,7 @@ export default function InsightPanel({ hasContent, lastQuestion }: InsightPanelP
                                   background: '#1C2233', border: '1px solid #1f2532',
                                   color: '#9CA3AF', cursor: 'pointer', transition: 'all 0.1s',
                                 }}
-                                  onMouseEnter={e => { (e.currentTarget as HTMLSpanElement).style.borderColor = '#7C6BF6'; (e.currentTarget as HTMLSpanElement).style.color = '#A5B4FC' }}
+                                  onMouseEnter={e => { (e.currentTarget as HTMLSpanElement).style.borderColor = '#7C5CFF'; (e.currentTarget as HTMLSpanElement).style.color = '#A5B4FC' }}
                                   onMouseLeave={e => { (e.currentTarget as HTMLSpanElement).style.borderColor = '#1f2532'; (e.currentTarget as HTMLSpanElement).style.color = '#9CA3AF' }}
                                 >
                                   {tag}

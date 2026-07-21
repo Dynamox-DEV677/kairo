@@ -23,7 +23,7 @@ const C = {
   textFaint: '#9CA3AF',
   textGhost: '#6B7280',
   purple:    '#A5B4FC',
-  purpleHi:  '#7C6BF6',
+  purpleHi:  '#7C5CFF',
   purpleDeep:'#4A2FA8',
   purpleLite:'#A5B4FC',
   purpleSoft:'#DBE7FF',
@@ -178,11 +178,11 @@ export default function TwinBackupModal({ open, onClose, onChange }: Props) {
           padding: '14px 18px',
           borderBottom: `1px solid ${C.border}`,
           display: 'flex', alignItems: 'center', gap: 12,
-          background: `linear-gradient(180deg, rgba(124, 107, 246, 0.08), transparent)`,
+          background: `linear-gradient(180deg, rgba(124, 92, 255, 0.08), transparent)`,
         }}>
           <div style={{
             width: 32, height: 32, borderRadius: 9, flexShrink: 0,
-            background: 'linear-gradient(135deg, #A5B4FC, #7C6BF6)',
+            background: 'linear-gradient(135deg, #A5B4FC, #7C5CFF)',
             display: 'grid', placeItems: 'center',
           }}>
             <FileJson size={15} color="#141A2A" />
@@ -260,17 +260,17 @@ export default function TwinBackupModal({ open, onClose, onChange }: Props) {
 
               <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
                 <motion.button
-                  whileHover={{ y: -2, boxShadow: '0 12px 30px rgba(124, 107, 246, 0.03)' }}
+                  whileHover={{ y: -2, boxShadow: '0 12px 30px rgba(124, 92, 255, 0.03)' }}
                   whileTap={{ scale: 0.97 }}
                   onClick={downloadFile}
                   style={{
                     flex: 1, minWidth: 200,
                     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
                     padding: '13px 20px', borderRadius: 12, border: 'none',
-                    background: 'linear-gradient(135deg, #A5B4FC, #7C6BF6)',
+                    background: 'linear-gradient(135deg, #A5B4FC, #7C5CFF)',
                     color: '#000', fontFamily: 'inherit', fontSize: 14, fontWeight: 800,
                     cursor: 'pointer',
-                    boxShadow: '0 8px 24px rgba(124, 107, 246, 0.04)',
+                    boxShadow: '0 8px 24px rgba(124, 92, 255, 0.04)',
                   }}>
                   <Download size={15} /> Download JSON
                 </motion.button>
@@ -376,7 +376,7 @@ export default function TwinBackupModal({ open, onClose, onChange }: Props) {
                   marginTop: 12, width: '100%',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
                   padding: '13px', borderRadius: 12, border: 'none',
-                  background: importText.trim() ? 'linear-gradient(135deg, #A5B4FC, #7C6BF6)' : C.panel2,
+                  background: importText.trim() ? 'linear-gradient(135deg, #A5B4FC, #7C5CFF)' : C.panel2,
                   color: importText.trim() ? '#000' : C.textGhost,
                   fontFamily: 'inherit', fontSize: 14, fontWeight: 800,
                   cursor: importText.trim() ? 'pointer' : 'not-allowed',
@@ -457,7 +457,7 @@ function ResultPanel({ result }: { result: ImportResult }) {
     return (
       <div style={{
         marginTop: 14, padding: '12px 14px', borderRadius: 10,
-        background: 'rgba(124, 107, 246, 0.06)', border: '1px solid rgba(124, 107, 246, 0.32)',
+        background: 'rgba(124, 92, 255, 0.06)', border: '1px solid rgba(124, 92, 255, 0.32)',
         display: 'flex', alignItems: 'flex-start', gap: 10,
       }}>
         <AlertTriangle size={14} color="#A5B4FC" style={{ marginTop: 1, flexShrink: 0 }} />

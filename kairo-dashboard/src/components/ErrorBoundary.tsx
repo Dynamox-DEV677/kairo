@@ -49,7 +49,7 @@ export default class ErrorBoundary extends Component<Props, State> {
         <div style={{
           width: 64, height: 64, borderRadius: 18,
           display: 'grid', placeItems: 'center',
-          background: 'rgba(124,107,246,0.12)',
+          background: 'rgba(124, 92, 255,0.12)',
           border: '1px solid rgba(165,180,252,0.25)',
           fontSize: 30,
         }}>⚠️</div>
@@ -63,9 +63,9 @@ export default class ErrorBoundary extends Component<Props, State> {
             onClick={this.goHome}
             style={{
               padding: '11px 20px', borderRadius: 12, border: 'none', cursor: 'pointer',
-              background: 'linear-gradient(135deg, #7C6BF6 0%, #4A2FA8 100%)',
+              background: 'linear-gradient(135deg, #7C5CFF 0%, #4A2FA8 100%)',
               color: '#fff', fontFamily: 'inherit', fontSize: 14, fontWeight: 700,
-              boxShadow: '0 6px 18px rgba(124,107,246,0.28)',
+              boxShadow: '0 6px 18px rgba(124, 92, 255,0.28)',
             }}
           >Back to Home</button>
           <button

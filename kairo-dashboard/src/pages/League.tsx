@@ -8,7 +8,7 @@ type Range = 'week' | 'month' | 'all'
 const C = {
   bg: '#0A0D16', panel: '#141A2A', border: '#1f2532',
   text: '#fafafa', dim: '#9CA3AF', faint: '#6B7280',
-  accent: '#A5B4FC', blue: '#7C6BF6', gold: '#FFB44A',
+  accent: '#A5B4FC', blue: '#7C5CFF', gold: '#FFB44A',
 }
 
 const TABS: { id: Range; label: string; icon: any }[] = [
@@ -22,7 +22,7 @@ const RANK_COLOR = ['#FFD700', '#C0C7D0', '#CD7F32']
 // XP tiers (all-time) — badge in the rank hero. Ordered high→low.
 const TIERS: { name: string; min: number; color: string }[] = [
   { name: 'Diamond',  min: 10000, color: '#A5B4FC' },
-  { name: 'Platinum', min: 4000,  color: '#22D3EE' },
+  { name: 'Platinum', min: 4000,  color: '#4FD8E8' },
   { name: 'Gold',     min: 1500,  color: '#FFD700' },
   { name: 'Silver',   min: 500,   color: '#C0C7D0' },
   { name: 'Bronze',   min: 0,     color: '#CD7F32' },
@@ -90,7 +90,7 @@ export default function League() {
 
       <div style={{
         display: 'flex', alignItems: 'center', gap: 16, marginBottom: 18,
-        background: `linear-gradient(135deg, rgba(124,107,246,0.14), rgba(165,180,252,0.06))`,
+        background: `linear-gradient(135deg, rgba(124, 92, 255,0.14), rgba(165,180,252,0.06))`,
         border: `1px solid rgba(165,180,252,0.28)`, borderRadius: 14, padding: '16px 18px',
       }}>
         <div style={{ textAlign: 'center', minWidth: 66 }}>

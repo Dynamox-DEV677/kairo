@@ -29,7 +29,7 @@ const C = {
   textDim:   '#B1B5BA',
   textFaint: '#9CA3AF',
   purple:    '#A5B4FC',
-  purpleHi:  '#7C6BF6',
+  purpleHi:  '#7C5CFF',
   amber:     '#FFB44A',
 }
 
@@ -79,9 +79,9 @@ export default function CloudRestorePrompt({ open, stats, busy, onConfirm, onDis
           >
             <div style={{
               width: 52, height: 52, borderRadius: 14, margin: '0 auto 16px',
-              background: 'linear-gradient(135deg, #A5B4FC, #7C6BF6)',
+              background: 'linear-gradient(135deg, #A5B4FC, #7C5CFF)',
               display: 'grid', placeItems: 'center',
-              boxShadow: '0 8px 28px rgba(124,107,246,0.35)',
+              boxShadow: '0 8px 28px rgba(124, 92, 255,0.35)',
             }}>
               <CloudDownload size={26} color="#0A0D16" />
             </div>
@@ -122,11 +122,11 @@ export default function CloudRestorePrompt({ open, stats, busy, onConfirm, onDis
               disabled={busy}
               style={{
                 width: '100%', padding: '13px', borderRadius: 12, border: 'none',
-                background: 'linear-gradient(135deg, #A5B4FC, #7C6BF6)',
+                background: 'linear-gradient(135deg, #A5B4FC, #7C5CFF)',
                 color: '#0A0D16', fontFamily: 'inherit', fontSize: 15, fontWeight: 800,
                 cursor: busy ? 'default' : 'pointer', opacity: busy ? 0.7 : 1,
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                boxShadow: '0 8px 24px rgba(124,107,246,0.3)',
+                boxShadow: '0 8px 24px rgba(124, 92, 255,0.3)',
               }}
             >
               {busy
