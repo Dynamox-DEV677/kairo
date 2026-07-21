@@ -219,13 +219,9 @@ export default function FocusMode() {
 
       <div style={{ display: 'flex', gap: 8, marginBottom: 28, zIndex: 1 }}>
         {PRESETS.map(p => (
-          <button key={p.mins} onClick={() => pickPreset(p.mins)} style={{
-            padding: '8px 16px', borderRadius: 8,
-            border: `1px solid ${duration === p.mins * 60 ? '#7C5CFF' : '#1f2532'}`,
-            background: duration === p.mins * 60 ? 'rgba(124, 92, 255, 0.12)' : 'transparent',
-            color: duration === p.mins * 60 ? '#A5B4FC' : '#9CA3AF',
-            fontFamily: 'inherit', fontSize: 12, fontWeight: 600, cursor: 'pointer',
-          }}>{p.label}</button>
+          <button key={p.mins} onClick={() => pickPreset(p.mins)}
+            className={`kyno-chip${duration === p.mins * 60 ? ' on' : ''}`}
+            style={{ padding: '8px 16px', fontSize: 12 }}>{p.label}</button>
         ))}
       </div>
 

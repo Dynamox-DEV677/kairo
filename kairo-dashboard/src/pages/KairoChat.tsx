@@ -380,7 +380,7 @@ export default function KairoChat() {
         )}
       </div>
 
-      <div style={{
+      <div className="kc-composer" style={{
         padding: isMobile
           ? '8px 10px calc(100px + env(safe-area-inset-bottom, 0px))'
           : '10px clamp(14px, 6vw, 90px) 18px',

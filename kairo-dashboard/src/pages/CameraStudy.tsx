@@ -272,18 +272,14 @@ export default function CameraStudy() {
             JPG / PNG / HEIC up to 6 MB · works best with clear, in-focus shots
           </p>
           <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
-            <button onClick={() => fileInputRef.current?.click()} style={{
-              padding: '10px 18px', borderRadius: 9, border: 'none',
-              background: 'linear-gradient(135deg, #7C5CFF, #7C5CFF)', color: '#fff',
-              fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: 'pointer',
+            <button onClick={() => fileInputRef.current?.click()} className="kyno-chunky" style={{
+              padding: '11px 18px', fontSize: 13,
               display: 'flex', alignItems: 'center', gap: 7,
             }}>
               <Upload size={13} /> Upload Image
             </button>
-            <button onClick={openCamera} style={{
-              padding: '10px 18px', borderRadius: 9,
-              border: '1px solid #1f2532', background: '#1C2233', color: '#B1B5BA',
-              fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: 'pointer',
+            <button onClick={openCamera} className="kyno-ghost" style={{
+              padding: '11px 18px', fontSize: 13,
               display: 'flex', alignItems: 'center', gap: 7,
             }}>
               <Camera size={13} /> Use Camera

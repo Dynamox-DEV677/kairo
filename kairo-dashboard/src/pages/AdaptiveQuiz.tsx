@@ -107,29 +107,33 @@ function SetupScreen({ form, setForm, onStart, loading, err }: any) {
           <label style={lbl}>Topic (optional)</label>
           <input style={inp} value={form.topic} onChange={e => setForm((f: any) => ({ ...f, topic: e.target.value }))} placeholder="e.g. Trigonometry, Photosynthesis…" />
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 12 }}>
-          <div>
-            <label style={lbl}>Class</label>
-            <select style={inp} value={form.class} onChange={e => setForm((f: any) => ({ ...f, class: e.target.value }))}>
-              {['8','9','10','11','12'].map(c => <option key={c}>{c}</option>)}
-            </select>
+        <div style={{ marginBottom: 12 }}>
+          <label style={lbl}>Class</label>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+            {['8','9','10','11','12'].map(c => (
+              <button key={c} type="button" onClick={() => setForm((f: any) => ({ ...f, class: c }))}
+                className={`kyno-chip${String(form.class) === c ? ' on' : ''}`}
+                style={{ padding: '7px 14px', fontSize: 12 }}>Class {c}</button>
+            ))}
           </div>
-          <div>
-            <label style={lbl}>Questions</label>
-            <select style={inp} value={form.total_questions} onChange={e => setForm((f: any) => ({ ...f, total_questions: Number(e.target.value) }))}>
-              {[5,10,15,20].map(n => <option key={n} value={n}>{n} Questions</option>)}
-            </select>
+        </div>
+        <div style={{ marginBottom: 12 }}>
+          <label style={lbl}>Questions</label>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+            {[5,10,15,20].map(n => (
+              <button key={n} type="button" onClick={() => setForm((f: any) => ({ ...f, total_questions: n }))}
+                className={`kyno-chip${form.total_questions === n ? ' on' : ''}`}
+                style={{ padding: '7px 14px', fontSize: 12 }}>{n}</button>
+            ))}
           </div>
         </div>
         <div style={{ marginBottom: 16 }}>
           <label style={lbl}>Starting Difficulty</label>
           <div style={{ display: 'flex', gap: 6 }}>
-            {[['easy','Easy','#A5B4FC'],['medium','Medium','#A5B4FC'],['hard','Hard','#A5B4FC']].map(([v, l, c]) => (
-              <button key={v} onClick={() => setForm((f: any) => ({ ...f, difficulty: v }))} style={{
-                flex: 1, padding: '7px', borderRadius: 7, border: `1px solid ${form.difficulty === v ? c : '#1f2532'}`,
-                background: form.difficulty === v ? `${c}15` : 'transparent',
-                color: form.difficulty === v ? c : '#9CA3AF', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
-              }}>{l}</button>
+            {[['easy','Easy'],['medium','Medium'],['hard','Hard']].map(([v, l]) => (
+              <button key={v} onClick={() => setForm((f: any) => ({ ...f, difficulty: v }))}
+                className={`kyno-chip${form.difficulty === v ? ' on' : ''}`}
+                style={{ flex: 1, padding: '8px', fontSize: 12, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>{l}</button>
             ))}
           </div>
         </div>

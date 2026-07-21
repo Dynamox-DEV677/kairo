@@ -424,6 +424,12 @@ button, [role="button"], a, .kyno-tile, .kyno-chip {
   .ks-composer:focus-within {
     margin-bottom: calc(12px + env(safe-area-inset-bottom)) !important;
   }
+  /* KairoChat (the default Solve UI) composer: it reserves 100px for the dock,
+     so when the input is focused (dock auto-hides) drop it flush to the bottom. */
+  .kc-composer { transition: padding-bottom .2s cubic-bezier(0.4, 0, 0.2, 1); }
+  .kc-composer:focus-within {
+    padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px)) !important;
+  }
 }
 
 /* Concept Map on phones: it's a wide landscape layout that "meet"-scales to a
