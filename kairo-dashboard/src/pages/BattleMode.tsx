@@ -666,14 +666,15 @@ Tips: each tip is one specific actionable line (max 18 words) — reference the 
               const Icon = p.icon
               const selected = aiLevel === lvl
               return (
-                <motion.button key={lvl} whileHover={{ y: -2 }} whileTap={{ scale: 0.97 }}
+                <button key={lvl}
                   onClick={() => setAiLevel(lvl)}
+                  className="kyno-tile"
                   style={{
-                    padding: '12px 10px', borderRadius: 10,
-                    border: `1px solid ${selected ? p.color : '#1f2532'}`,
-                    background: selected ? `${p.color}14` : '#141A2A',
-                    cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left',
-                    transition: 'all 0.18s ease',
+                    padding: '12px 10px', borderRadius: 12, textAlign: 'left',
+                    border: `1.5px solid ${selected ? p.color : 'var(--c-line)'}`,
+                    background: selected ? `${p.color}1f` : undefined,
+                    transform: selected ? 'translateY(3px)' : undefined,
+                    boxShadow: selected ? `0 1px 0 0 ${p.color}` : undefined,
                   }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 6 }}>
                     <Icon size={13} color={p.color} />
@@ -685,20 +686,15 @@ Tips: each tip is one specific actionable line (max 18 words) — reference the 
                   <div style={{ fontSize: 10, color: '#6B7280', marginTop: 4 }}>
                     {Math.round(p.accuracy * 100)}% · ~{Math.round((p.speedMs[0] + p.speedMs[1]) / 2000)}s
                   </div>
-                </motion.button>
+                </button>
               )
             })}
           </div>
 
-          <button onClick={startSparring}
+          <button onClick={startSparring} className="kyno-chunky"
             style={{
-              width: '100%', padding: '13px', borderRadius: 10, border: 'none',
-              background: `linear-gradient(135deg, ${AI_PROFILES[aiLevel].color}, #7C5CFF)`,
-              color: '#000',
-              fontFamily: 'inherit', fontSize: 14, fontWeight: 700,
-              cursor: 'pointer',
+              width: '100%', padding: '14px', fontSize: 14,
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-              boxShadow: `0 0 22px ${AI_PROFILES[aiLevel].color}55`,
             }}>
             <Swords size={14} /> Spar with {AI_PROFILES[aiLevel].name}
           </button>
