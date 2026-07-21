@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react'
 import { motion } from 'framer-motion'
-import { Camera, User, Bell, Shield, Trash2, Check, FileJson, Smartphone, Laptop, ChevronsRight, KeyRound, Sparkles, RotateCcw, Mail, RefreshCw, CloudOff, Loader2 } from 'lucide-react'
+import { Camera, User, Bell, Shield, Trash2, Check, FileJson, Smartphone, Laptop, ChevronsRight, KeyRound, Sparkles, RotateCcw, Mail, RefreshCw, CloudOff, Loader2, Terminal, ExternalLink } from 'lucide-react'
 import { confirmDialog } from '../components/ConfirmModal'
 import TwinBackupModal from '../components/TwinBackupModal'
 import DeviceTransferModal from '../components/DeviceTransferModal'
@@ -9,6 +9,7 @@ import { seedDemo, resetAllData, reconcileWithCloud, deleteCloudSnapshot } from 
 import { loadGame } from '../lib/game'
 import { getRaw, setRaw, activeBackend } from '../lib/storage'
 import { DecoratedAvatar, DECORATIONS, getDecor, setDecor } from '../components/AvatarDecor'
+import { isDevMode, setDevMode, getDevKeyRaw, setDevKey, looksLikeGroqKey } from '../lib/devKey'
 
 const BOARDS = ['CBSE', 'ICSE', 'Maharashtra', 'Tamil Nadu', 'Karnataka', 'UP Board', 'Bihar Board']
 const CLASSES = ['6', '7', '8', '9', '10', '11', '12']
@@ -35,6 +36,55 @@ export default function Settings() {
   const [syncing, setSyncing] = useState(false)
   const [syncMsg, setSyncMsg] = useState('')
   const fileRef = useRef<HTMLInputElement>(null)
+
+  // ── Developer Mode (bring-your-own Groq key) ──────────────────────────────
+  const [devMode, setDevModeState] = useState(isDevMode())
+  const [devKeyInput, setDevKeyInput] = useState(getDevKeyRaw())
+  const [showKey, setShowKey] = useState(false)
+  const [devMsg, setDevMsg] = useState('')
+  const [devTesting, setDevTesting] = useState(false)
+
+  function toggleDevMode(on: boolean) {
+    setDevModeState(on)
+    setDevMode(on)
+    setDevMsg(on
+      ? (looksLikeGroqKey(getDevKeyRaw()) ? 'Developer mode on — Kyno is using your key.' : 'Developer mode on — add your Groq key below to start using it.')
+      : 'Developer mode off — back to Kyno\'s built-in AI.')
+  }
+
+  function saveDevKey() {
+    const k = devKeyInput.trim()
+    setDevKey(k)
+    setDevKeyInput(k)
+    if (!k) { setDevMsg('Key cleared.'); return }
+    setDevMsg(looksLikeGroqKey(k)
+      ? 'Saved ✓ Stored on this device only.'
+      : '⚠ That doesn\'t look like a Groq key (they start with "gsk_"). Saved anyway — double-check it.')
+  }
+
+  async function testDevKey() {
+    const k = devKeyInput.trim()
+    if (!looksLikeGroqKey(k)) { setDevMsg('Enter a valid gsk_… key first.'); return }
+    setDevKey(k)
+    setDevTesting(true); setDevMsg('Testing your key…')
+    try {
+      const res = await fetch('/api/ai/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-groq-key': k },
+        body: JSON.stringify({ messages: [{ role: 'user', content: 'Reply with only the word: ok' }] }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (res.ok && !data?._fallback && data?.choices?.[0]?.message?.content) {
+        setDevMsg('Key works ✓ Kyno is now running on your Groq account.')
+      } else {
+        setDevMsg('Key failed: ' + String(data?.error || `HTTP ${res.status}`).slice(0, 160))
+      }
+    } catch (e: any) {
+      setDevMsg('Key test failed: ' + String(e?.message || e).slice(0, 160))
+    } finally {
+      setDevTesting(false)
+    }
+  }
 
   async function syncNow() {
     if (syncing) return
@@ -535,6 +585,80 @@ export default function Settings() {
         >
           <Trash2 size={13} /> Clear all data &amp; reset
         </button>
+      </Section>
+
+      <Section icon={<Terminal size={14} />} title="Developer Mode">
+        <ToggleRow
+          label="Use my own Groq API key"
+          desc="Run all of Kyno's AI on your personal Groq account. While this is on, Kyno's shared keys are never used."
+          value={devMode}
+          onChange={toggleDevMode}
+        />
+
+        {devMode && (
+          <div style={{ marginTop: 18 }}>
+            <Field label="Groq API key">
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <input
+                  className="kyno-input"
+                  type={showKey ? 'text' : 'password'}
+                  value={devKeyInput}
+                  onChange={e => { setDevKeyInput(e.target.value); setDevMsg('') }}
+                  placeholder="gsk_…"
+                  autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck={false}
+                  style={{ flex: 1, fontFamily: 'ui-monospace, SFMono-Regular, monospace', fontSize: 13 }}
+                />
+                <button
+                  onClick={() => setShowKey(s => !s)}
+                  className="kyno-ghost"
+                  style={{ padding: '10px 13px', fontSize: 12, flexShrink: 0 }}
+                >
+                  {showKey ? 'Hide' : 'Show'}
+                </button>
+              </div>
+            </Field>
+
+            <div style={{ display: 'flex', gap: 10, marginTop: 12, flexWrap: 'wrap' }}>
+              <button
+                onClick={saveDevKey}
+                className="kyno-chunky"
+                style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '11px 18px', fontSize: 13 }}
+              >
+                <Check size={13} /> Save key
+              </button>
+              <button
+                onClick={testDevKey}
+                disabled={devTesting}
+                className="kyno-chunky cyan"
+                style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '11px 18px', fontSize: 13 }}
+              >
+                {devTesting
+                  ? <motion.span animate={{ rotate: 360 }} transition={{ duration: 0.9, repeat: Infinity, ease: 'linear' }} style={{ display: 'inline-flex' }}><Loader2 size={13} /></motion.span>
+                  : <Sparkles size={13} />}
+                {devTesting ? 'Testing…' : 'Test key'}
+              </button>
+            </div>
+
+            {devMsg && (
+              <div style={{
+                marginTop: 12, fontSize: 12.5, fontWeight: 600, lineHeight: 1.5,
+                color: /works|Saved|✓/.test(devMsg) ? 'var(--c-cyan)'
+                  : /fail|⚠/.test(devMsg) ? 'var(--c-error)'
+                  : '#A5B4FC',
+              }}>
+                {devMsg}
+              </div>
+            )}
+
+            <p style={{ fontSize: 11, color: '#6B7280', marginTop: 16, lineHeight: 1.65 }}>
+              Get a free key at{' '}
+              <a href="https://console.groq.com/keys" target="_blank" rel="noreferrer"
+                 style={{ color: '#A5B4FC', fontWeight: 700, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+                console.groq.com/keys <ExternalLink size={10} />
+              </a>. Your key stays only in this browser — never uploaded, synced, or shared. Turn this off any time to switch back to Kyno's built-in AI.
+            </p>
+          </div>
+        )}
       </Section>
 
       <div style={{ padding: '20px 0', borderTop: '1px solid #171D2D', marginTop: 8 }}>

@@ -1,3 +1,4 @@
+import { aiHeaders } from './devKey'
 
 const PROXY_URL = '/api/ai/chat'
 
@@ -34,7 +35,7 @@ async function callModel(
   const res = await fetch(PROXY_URL, {
     method: 'POST',
     signal,
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...aiHeaders() },
     body: JSON.stringify({ model, messages, stream: !!onChunk }),
   })
 

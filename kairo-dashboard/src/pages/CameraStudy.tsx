@@ -9,6 +9,7 @@ import {
   Lightbulb, RotateCcw, Loader2, CheckCircle2,
 } from 'lucide-react'
 import { saveRecentChat, makeTitle } from '../lib/recentChats'
+import { aiHeaders } from '../lib/devKey'
 
 const VISION_MODELS = [
   {
@@ -163,7 +164,7 @@ export default function CameraStudy() {
       ]
       const res = await fetch('/api/ai/chat', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...aiHeaders() },
         body: JSON.stringify({ model, messages }),
       })
       const raw = await res.text()

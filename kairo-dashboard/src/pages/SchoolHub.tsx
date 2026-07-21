@@ -392,7 +392,7 @@ function AdminAIAnnounce({ schoolId: _ }: { schoolId: string }) {
     try {
       const res = await fetch('/api/ai/chat', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...aiHeaders() },
         body: JSON.stringify({
           messages: [{
             role: 'user',

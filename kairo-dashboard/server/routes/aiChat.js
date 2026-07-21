@@ -143,6 +143,16 @@ const CHAT_MODELS_VISION = ['meta-llama/llama-4-scout-17b-16e-instruct', 'meta-l
 const messagesHaveImages = (messages) =>
   messages.some(m => Array.isArray(m?.content) && m.content.some(p => p?.type === 'image_url'))
 
+// Developer Mode (BYOK): a well-formed `gsk_...` key in the `x-groq-key` header
+// means "use ONLY this key, never Kyno's shared pool". We validate the shape so
+// junk headers fall through to the pool instead of forcing a hard failure. The
+// key is used in-memory for this one request and never stored or logged.
+function readDevKey(req) {
+  const h = req.headers['x-groq-key']
+  const k = (typeof h === 'string' ? h : '').trim()
+  return /^gsk_[A-Za-z0-9]{20,}$/.test(k) ? k : ''
+}
+
 router.post('/chat', async (req, res) => {
   const { messages, model, stream = false } = req.body
 
@@ -150,6 +160,7 @@ router.post('/chat', async (req, res) => {
     return res.status(400).json({ error: 'messages array required' })
   }
 
+  const devKey = readDevKey(req)
   const wantVision = messagesHaveImages(messages)
   let order = wantVision ? [...CHAT_MODELS_VISION] : [...CHAT_MODELS_TEXT]
   if (typeof model === 'string' && model && !model.endsWith(':free')) {
@@ -162,7 +173,7 @@ router.post('/chat', async (req, res) => {
     let upstream = null
     let lastErr  = null
     for (const m of order) {
-      const key = groqPool.next()
+      const key = devKey || groqPool.next()
       if (!key) { lastErr = new Error('no live Groq keys (all cooling or none configured)'); break }
       try {
         const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -171,7 +182,8 @@ router.post('/chat', async (req, res) => {
           body: JSON.stringify({ model: m, messages, stream, max_tokens: 2048 }),
         })
         if (!r.ok) {
-          if (r.status === 429 || r.status >= 500) {
+          // Never cool the user's own BYOK key — only pool keys get marked bad.
+          if (!devKey && (r.status === 429 || r.status >= 500)) {
             try { groqPool.markBad(key, r.status) } catch {  }
           }
           const text = await r.text().catch(() => '')
@@ -211,6 +223,15 @@ router.post('/chat', async (req, res) => {
 
     if (res.headersSent) {
       return res.end()
+    }
+
+    // Developer Mode: the student is on their OWN key — surface the real error
+    // (bad key, rate limit, no model access) rather than a generic "busy"
+    // message that would hide why their key isn't working.
+    if (devKey) {
+      return res.status(502).json({
+        error: 'Your Groq key could not complete this request — ' + (err.message || 'unknown error').slice(0, 220),
+      })
     }
 
     // A text "busy" message is meaningless for an IMAGE request — surface the
@@ -447,7 +468,8 @@ async function callGroqOne(model, question, apiKey, timeout = 7000) {
       body: JSON.stringify(payload),
     })
     if (!resp.ok) {
-      if (resp.status === 429 || resp.status >= 500) {
+      // Only cool POOL keys — a caller-supplied (BYOK) key is never marked bad.
+      if (!apiKey && (resp.status === 429 || resp.status >= 500)) {
         try { groqPool.markBad(key, resp.status) } catch {  }
       }
       const t = await resp.text()
@@ -473,7 +495,7 @@ function callGroqAll(question, apiKey, timeout = 7000) {
   return GROQ_MODELS.map(m => callGroqOne(m, question, apiKey, timeout))
 }
 
-async function getSolverPlan(question) {
+async function getSolverPlan(question, devKey = null) {
   const qKey       = normalizeKey(question)
   const cacheKey   = 'plan:' + qKey
 
@@ -488,13 +510,14 @@ async function getSolverPlan(question) {
   }
 
   const groqStatus = groqPool.status()
-  if (groqStatus.live === 0) {
+  // With a BYOK key we don't depend on the pool at all, so don't block on it.
+  if (!devKey && groqStatus.live === 0) {
     throw new Error('No live Groq keys — set GROQ_API_KEYS in env (pool: ' + groqStatus.hint + ')')
   }
   // Fire the smart models AND a fast safety net together (so the fallback stays warm),
   // but PREFER the smartest model that succeeds — never just take whoever's fastest.
-  const smartTasks = SOLVER_SMART_MODELS.map(m => callGroqOne(m, question, null, 7000))
-  const fastTask   = callGroqOne(SOLVER_FAST_MODEL, question, null, 6000)
+  const smartTasks = SOLVER_SMART_MODELS.map(m => callGroqOne(m, question, devKey, 7000))
+  const fastTask   = callGroqOne(SOLVER_FAST_MODEL, question, devKey, 6000)
   ;[...smartTasks, fastTask].forEach(t => t.catch(() => {}))  // avoid unhandled rejections
   console.log(`[solver] smart-first: ${SOLVER_SMART_MODELS.join(' → ')} → ${SOLVER_FAST_MODEL} (pool: ${groqStatus.hint})`)
 
@@ -735,7 +758,7 @@ router.post('/solver/text', async (req, res) => {
   const mistakes = Array.isArray(req.body?.mistakes) ? req.body.mistakes.slice(0, 10) : []
 
   try {
-    const plan = await getSolverPlan(composeQuestion(question, history, student, mistakes))
+    const plan = await getSolverPlan(composeQuestion(question, history, student, mistakes), readDevKey(req))
     res.json(plan)
   } catch (e) {
     console.error('[solver/text]', e.message)
@@ -759,7 +782,7 @@ router.post('/solver/images', async (req, res) => {
     if (cachedSlides) return res.json({ imageSlides: cachedSlides, cached: true })
 
     try {
-      const plan = await getSolverPlan(topic)
+      const plan = await getSolverPlan(topic, readDevKey(req))
       const slides = await searchManyParallel(plan.imageQueries, topic)
       cacheSet(fullCacheKey, slides)
       return res.json({ imageSlides: slides, cached: false })
@@ -832,7 +855,7 @@ router.post('/solver', async (req, res) => {
   if (question.length > 4000) return res.status(400).json({ error: 'Question too long (max 4000 characters) — trim it down a bit.' })
 
   try {
-    const plan = await getSolverPlan(question)
+    const plan = await getSolverPlan(question, readDevKey(req))
     const slides = await searchManyParallel(plan.imageQueries)
     const { imageQueries, ...publicFields } = plan
     res.json({ ...publicFields, imageSlides: slides, cached: false })

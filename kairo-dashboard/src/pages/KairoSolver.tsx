@@ -14,6 +14,7 @@ import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
 import { recordDoubt, recordFormula, recordConcept, getStudentMemory, getMistakes } from '../lib/twin'
 import { lookupNcert } from '../lib/ncertCacheLookup'
+import { aiHeaders } from '../lib/devKey'
 
 interface ImageSlide {
   url:         string
@@ -172,7 +173,7 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
     const ctrl = new AbortController()
     abortRef.current = ctrl
 
-    const headers = { 'Content-Type': 'application/json' }
+    const headers = { 'Content-Type': 'application/json', ...aiHeaders() }
 
     async function fetchTextWithRetry(attempt = 0): Promise<TextPlan> {
       const MAX_ATTEMPTS = 4
