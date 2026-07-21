@@ -241,11 +241,7 @@ function ChooseMode({ setMode }: { setMode: (m: Mode) => void }) {
       <ChoiceCard onClick={() => setMode('signin')} icon={Mail}
         title="Sign In" desc="Email + password — already a member" />
       <ChoiceCard onClick={() => setMode('personal')} icon={GraduationCap}
-        title="Create your Kyno Account" desc="I'm a student, no school code needed" highlight />
-      <ChoiceCard onClick={() => setMode('join')} icon={Building2}
-        title="Join School" desc="I have a school join code" />
-      <ChoiceCard onClick={() => setMode('create')} icon={Sparkles}
-        title="Create School" desc="Start a new school on Kyno" />
+        title="Create your Kyno Account" desc="Free — takes 30 seconds" highlight />
     </div>
   )
 }
@@ -425,7 +421,7 @@ function PersonalSignup({ onLogin, onBack }: any) {
   const [err, setErr]           = useState('')
   const [exists, setExists]     = useState(false)
   const [resetSent, setResetSent] = useState(false)
-  const [role, setRole] = useState<'student' | 'teacher'>('student')
+  const role = 'student' as const
 
   async function sendPasswordReset() {
     setBusy(true); setErr('')
@@ -543,42 +539,8 @@ function PersonalSignup({ onLogin, onBack }: any) {
           </button>
         </div>
       </Field>
-      <Field label="I am a..." icon={Users}>
-        <div style={{ display: 'flex', gap: 8 }}>
-          {([
-            { id: 'student', label: 'Student', icon: GraduationCap, desc: 'I want to learn' },
-            { id: 'teacher', label: 'Teacher', icon: BookOpen,      desc: 'I want to teach' },
-          ] as const).map(opt => {
-            const active = role === opt.id
-            const Icon = opt.icon
-            return (
-              <button key={opt.id} type="button" onClick={() => setRole(opt.id)}
-                style={{
-                  flex: 1,
-                  padding: '12px 14px', borderRadius: 11,
-                  background: active ? 'rgba(124, 92, 255, 0.12)' : '#141A2A',
-                  border: `1px solid ${active ? '#7C5CFF' : '#1f2532'}`,
-                  cursor: 'pointer', fontFamily: 'inherit',
-                  display: 'flex', alignItems: 'center', gap: 10,
-                  transition: 'all 0.15s',
-                }}>
-                <div style={{
-                  width: 32, height: 32, borderRadius: 8, flexShrink: 0,
-                  background: active ? 'linear-gradient(135deg,#7C5CFF,#4A2FA8)' : '#171D2D',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                }}>
-                  <Icon size={14} color={active ? '#fff' : '#B1B5BA'} />
-                </div>
-                <div style={{ textAlign: 'left' }}>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: active ? '#A5B4FC' : '#fafafa' }}>{opt.label}</div>
-                  <div style={{ fontSize: 10.5, color: '#9CA3AF', marginTop: 1 }}>{opt.desc}</div>
-                </div>
-              </button>
-            )
-          })}
-        </div>
-      </Field>
-      <Field label="Class / Grade" icon={GraduationCap} hint={role === 'teacher' ? 'Optional — class you teach' : 'Optional — helps tailor content'}>
+      {/* Role picker removed — Kyno is student-only for fast signup. */}
+      <Field label="Class / Grade" icon={GraduationCap} hint="Optional — helps tailor content">
         <input value={cls} onChange={e => setCls(e.target.value)} placeholder="e.g. 9, 10A, Class 11" style={inp} />
       </Field>
       <Field label="Board" icon={BookOpen} hint="Optional — for syllabus matching">
