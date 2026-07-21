@@ -271,7 +271,7 @@ export default function KairoChat() {
 
   return (
     <div style={{
-      width: '100%', height: '100%', display: 'flex', flexDirection: 'column',
+      width: '100%', flex: 1, minHeight: 0, height: '100%', display: 'flex', flexDirection: 'column',
       background: C.bg, position: 'relative',
       backgroundImage: `radial-gradient(at 15% 0%, rgba(124, 92, 255,0.10) 0%, transparent 38%),
                         radial-gradient(at 85% 100%, rgba(74,47,168,0.10) 0%, transparent 42%)`,

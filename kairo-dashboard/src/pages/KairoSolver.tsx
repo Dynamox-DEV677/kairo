@@ -375,7 +375,15 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
         }} />
       )}
 
-      {!showResult && <Hero onPick={ask} />}
+      {!showResult && (
+        <div style={{
+          flex: 1, minHeight: 0, position: 'relative', zIndex: 1,
+          display: 'flex', flexDirection: 'column', justifyContent: 'center',
+          overflowY: 'auto',
+        }}>
+          <Hero onPick={ask} />
+        </div>
+      )}
 
       {showResult && (
         <div className="ks-result-wrap" style={{
