@@ -464,32 +464,23 @@ function MobileDrawer({
                 textTransform: 'uppercase', letterSpacing: 1.6,
                 padding: '4px 12px 6px',
               }}>{group.title}</div>
-              <div style={{
-                borderRadius: 14, overflow: 'hidden',
-                background: 'rgba(255,255,255,0.035)',
-                border: '1px solid rgba(255,255,255,0.07)',
-              }}>
-                {group.items.map((item, idx) => {
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {group.items.map((item) => {
                   const isActive = active === item.to
                   const Icon = item.icon
                   return (
-                    <motion.button key={item.to}
-                      whileTap={{ scale: 0.98 }}
+                    <button key={item.to}
                       onClick={() => go(item.to)}
+                      className={`kyno-nav${isActive ? ' on' : ''}`}
                       style={{
                         width: '100%', padding: '11px 12px',
-                        background: isActive ? 'rgba(124, 92, 255, 0.14)' : 'transparent',
-                        border: 'none', cursor: 'pointer',
                         display: 'flex', alignItems: 'center', gap: 12,
-                        color: isActive ? '#A5B4FC' : '#d4d4d8',
+                        color: isActive ? '#fff' : '#d4d4d8',
                         fontFamily: 'inherit', fontSize: 14, fontWeight: isActive ? 700 : 500,
-                        borderBottom: idx < group.items.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none',
-                        WebkitTapHighlightColor: 'transparent',
                         minHeight: 46,
                       }}>
-                      <span style={{
-                        width: 28, height: 28, borderRadius: 8, flexShrink: 0,
-                        display: 'grid', placeItems: 'center',
+                      <span className="kyno-ichip" style={{
+                        width: 28, height: 28,
                         background: isActive
                           ? 'linear-gradient(135deg, #7C5CFF, #4A2FA8)'
                           : 'rgba(165,180,252,0.08)',
@@ -499,8 +490,8 @@ function MobileDrawer({
                         <Icon size={15} />
                       </span>
                       <span style={{ flex: 1, textAlign: 'left' }}>{item.label}</span>
-                      <ChevronRight size={14} style={{ color: isActive ? '#A5B4FC' : '#3a3f4a' }} />
-                    </motion.button>
+                      <ChevronRight size={14} style={{ color: isActive ? '#fff' : '#3a3f4a' }} />
+                    </button>
                   )
                 })}
               </div>
