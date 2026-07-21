@@ -150,16 +150,9 @@ export default function FormulaSheet() {
 
 function TabBtn({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
-    <button onClick={onClick} style={{
+    <button onClick={onClick} className={`kyno-chip${active ? ' on' : ''}`} style={{
       display: 'inline-flex', alignItems: 'center', gap: 6,
-      padding: '9px 16px', borderRadius: 9,
-      background: active ? 'linear-gradient(135deg,#7C5CFF,#4A2FA8)' : 'transparent',
-      border: 'none',
-      color: active ? '#fff' : C.textDim,
-      fontFamily: 'inherit', fontSize: 12, fontWeight: 700,
-      cursor: 'pointer', letterSpacing: 0.3,
-      boxShadow: active ? '0 4px 14px rgba(124, 92, 255, 0.35)' : 'none',
-      transition: 'all 0.18s',
+      padding: '9px 16px', fontSize: 12, letterSpacing: 0.3,
     }}>{children}</button>
   )
 }
