@@ -1,15 +1,15 @@
 """
 Google Play listing assets for Kyno (icon + feature graphic).
 
-Icon = the real main logo (tools/_assets/kyno_main_logo.png — white grad-cap +
-orbit mark on solid black) with curved square corners. Nothing fancy, per brand:
-black + rounded square.
+Icon = the user's Canva design (tools/_assets/kyno_icon_canva.png — the mark on a
+black rounded square, exported on a white canvas). We crop the white canvas away
+and re-round the corners cleanly, then emit every required size.
 
 Feature graphic = the mark + Kyno wordmark + tagline on a deep-purple banner.
 
 OUTPUT -> kairo-repo/play-store-assets/
     app-icon-512.png             512x512 curved-square icon (upload to Play)
-    icon-preview-squircle.png    same, kept for reference
+    icon-preview-squircle.png    same, for reference
     feature-graphic-1024x500.png 1024x500 banner (no alpha)
   and (in-app, same look):
     kairo_icon_192 / _512 / _512_maskable / apple-touch-icon
@@ -17,51 +17,54 @@ OUTPUT -> kairo-repo/play-store-assets/
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 from pathlib import Path
 
-REPO = Path(__file__).resolve().parents[1]
-PUB  = REPO / 'kairo-dashboard' / 'public'
-OUT  = REPO / 'play-store-assets'
-SRC  = REPO / 'tools' / '_assets' / 'kyno_main_logo.png'   # white mark on solid black
-MARK = PUB / 'kyno-logo.png'                               # transparent mark (feature graphic)
+REPO  = Path(__file__).resolve().parents[1]
+PUB   = REPO / 'kairo-dashboard' / 'public'
+OUT   = REPO / 'play-store-assets'
+CANVA = REPO / 'tools' / '_assets' / 'kyno_icon_canva.png'   # black icon on white canvas
+MARK  = PUB / 'kyno-logo.png'                                # transparent mark (feature graphic)
 
-RADIUS = 0.2237   # iOS-spec curved-square corner
+RADIUS = 0.20   # curved-square corner (≈ the Canva design's rounding)
 
-# brand palette (feature graphic only)
 DEEP, PURPLE, BRIGHT, LITE = (0x0B,0x08,0x18), (0x4A,0x2F,0xA8), (0x8B,0x7A,0xFF), (0xA5,0xB4,0xFC)
 SUBTX, DIMTX = (0xC7,0xD2,0xFE), (0x9C,0xA3,0xAF)
 
 
-# ── icon: the logo on a black square with curved corners ─────────────────────
-def _mark_cropped():
-    """Crop the source logo down to just the white mark (drop its wide black margin)."""
-    src = Image.open(SRC).convert('RGBA')
-    bright = src.convert('L').point(lambda p: 255 if p > 24 else 0)
-    bbox = bright.getbbox()
-    return src.crop(bbox) if bbox else src
+# ── icon (from the Canva design) ─────────────────────────────────────────────
+def _canva_square():
+    """Crop the white canvas away, leaving the black icon as a tight square."""
+    im = Image.open(CANVA).convert('RGBA')
+    bbox = im.convert('L').point(lambda p: 255 if p < 235 else 0).getbbox()
+    crop = im.crop(bbox) if bbox else im
+    w, h = crop.size
+    s = max(w, h)
+    fill = crop.getpixel((2, h // 2))            # sample the black square edge colour
+    sq = Image.new('RGBA', (s, s), fill)
+    sq.paste(crop, ((s - w) // 2, (s - h) // 2))
+    return sq
 
 
-def icon(size, margin_px, do_round=True):
-    """The mark scaled to leave `margin_px` padding, centered on a black square."""
-    mark = _mark_cropped()
-    avail = size - 2 * margin_px
-    mw, mh = mark.size
-    scale = avail / max(mw, mh)
-    nw, nh = max(1, int(mw * scale)), max(1, int(mh * scale))
-    mark_r = mark.resize((nw, nh), Image.LANCZOS)
-    base = Image.new('RGBA', (size, size), (0, 0, 0, 255))
-    base.alpha_composite(mark_r, ((size - nw) // 2, (size - nh) // 2))
-    return rounded(base) if do_round else base
+def _round_mask(size, frac=RADIUS):
+    m = Image.new('L', (size, size), 0)
+    ImageDraw.Draw(m).rounded_rectangle([0, 0, size, size], radius=int(size * frac), fill=255)
+    return m
 
 
-def rounded(img, frac=RADIUS):
-    size = img.size[0]
-    mask = Image.new('L', (size, size), 0)
-    ImageDraw.Draw(mask).rounded_rectangle([0, 0, size, size], radius=int(size * frac), fill=255)
+def icon(size):
+    """Rounded ('curved square') icon, transparent corners."""
+    base = _canva_square().resize((size, size), Image.LANCZOS)
     out = Image.new('RGBA', (size, size), (0, 0, 0, 0))
-    out.paste(img, (0, 0), mask)
+    out.paste(base, (0, 0), _round_mask(size))
     return out
 
 
-# ── feature graphic (purple banner) ──────────────────────────────────────────
+def icon_full(size):
+    """Full-bleed black square (maskable) — the OS applies its own mask."""
+    bg = Image.new('RGBA', (size, size), (0, 0, 0, 255))
+    bg.alpha_composite(icon(size))
+    return bg
+
+
+# ── feature graphic (deep-purple banner) ─────────────────────────────────────
 def diagonal(size, tl, br):
     mid = tuple((a + b) // 2 for a, b in zip(tl, br))
     g = Image.new('RGB', (2, 2))
@@ -118,22 +121,19 @@ def save(img, path, rgb=False):
 
 
 def main():
-    if not SRC.exists():
-        raise SystemExit(f'missing logo: {SRC}')
+    if not CANVA.exists():
+        raise SystemExit(f'missing icon: {CANVA}')
     OUT.mkdir(parents=True, exist_ok=True)
-    print('Building Kyno Play assets (black logo, curved square)...')
+    print('Building Kyno Play assets from the Canva icon...')
 
-    m = lambda s: max(3, round(s * 10 / 512))    # ~10px edge at 512, scaled per size
+    save(icon(512),        OUT / 'app-icon-512.png')
+    save(icon(512),        OUT / 'icon-preview-squircle.png')
+    save(build_feature(),  OUT / 'feature-graphic-1024x500.png', rgb=True)
 
-    save(icon(512, m(512)),                  OUT / 'app-icon-512.png')
-    save(icon(512, m(512)),                  OUT / 'icon-preview-squircle.png')
-    save(build_feature(),                    OUT / 'feature-graphic-1024x500.png', rgb=True)
-
-    save(icon(192, m(192)),                  PUB / 'kairo_icon_192.png')
-    save(icon(512, m(512)),                  PUB / 'kairo_icon_512.png')
-    # Maskable keeps a safe margin so the OS circle-mask never clips the mark.
-    save(icon(512, round(512 * 0.20), do_round=False), PUB / 'kairo_icon_512_maskable.png')
-    save(icon(180, m(180)),                  PUB / 'apple-touch-icon.png')
+    save(icon(192),        PUB / 'kairo_icon_192.png')
+    save(icon(512),        PUB / 'kairo_icon_512.png')
+    save(icon_full(512),   PUB / 'kairo_icon_512_maskable.png')
+    save(icon(180),        PUB / 'apple-touch-icon.png')
     print('done.')
 
 
