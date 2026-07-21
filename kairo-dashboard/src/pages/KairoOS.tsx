@@ -390,8 +390,8 @@ function Header({ twin, onRefresh, onWipe, pulse, onBackup }: { twin: Twin; onRe
       display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14, flexWrap: 'wrap',
       padding: '18px 20px', borderRadius: 22,
       background: 'linear-gradient(150deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%)',
-      backdropFilter: 'blur(18px) saturate(150%)',
-      WebkitBackdropFilter: 'blur(18px) saturate(150%)',
+
+
       border: '1px solid rgba(165, 180, 252, 0.18)',
       boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.07), 0 14px 44px rgba(124, 92, 255,0.10)',
     }}>
@@ -1160,8 +1160,8 @@ function DetailDrawer({ kind, twin, mastery, onClose }: {
         onClick={onClose}
         style={{
           position: 'fixed', inset: 0, zIndex: 9998,
-          background: 'rgba(6,6,10,0.72)', backdropFilter: 'blur(10px)',
-          WebkitBackdropFilter: 'blur(10px)',
+          background: 'rgba(6,6,10,0.72)',
+
         }}
       />
       <motion.div

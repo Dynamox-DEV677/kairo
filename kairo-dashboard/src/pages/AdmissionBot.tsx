@@ -57,7 +57,7 @@ const STATUS_META: Record<string, { color: string; icon: any; label: string }> =
   not_interested: { color: '#9CA3AF', icon: XCircle,       label: 'Not Interested' },
 }
 
-const card = { background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(14px) saturate(140%)', WebkitBackdropFilter: 'blur(14px) saturate(140%)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14 }
+const card = { background: '#141A2A', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14 }
 const inp: React.CSSProperties = {
   background: '#141A2A', border: '1px solid #1f2532', borderRadius: 8,
   padding: '9px 12px', fontSize: 13, color: '#fafafa',

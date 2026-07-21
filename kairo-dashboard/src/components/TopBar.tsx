@@ -119,8 +119,8 @@ export default function TopBar({ title, onModelChange, profile, modelLocked, mod
       background: isAdmin
         ? 'linear-gradient(90deg, rgba(124, 92, 255, 0.06) 0%, rgba(20, 24, 35, 0.55) 60%)'
         : 'rgba(255, 255, 255, 0.035)',
-      backdropFilter: 'blur(24px) saturate(160%)',
-      WebkitBackdropFilter: 'blur(24px) saturate(160%)',
+
+
       boxShadow: '0 12px 32px rgba(0, 0, 0, 0.28), 0 0 0 1px rgba(255, 255, 255, 0.025) inset',
       zIndex: 200,
       position: 'relative',
@@ -263,8 +263,8 @@ export default function TopBar({ title, onModelChange, profile, modelLocked, mod
               padding: '7px 13px', borderRadius: 999,
               background: 'rgba(255, 255, 255, 0.025)',
               border: `1px solid ${modelLocked ? 'rgba(199, 210, 232, 0.35)' : 'rgba(255, 255, 255, 0.08)'}`,
-              backdropFilter: 'blur(10px)',
-              WebkitBackdropFilter: 'blur(10px)',
+
+
               cursor: modelLocked ? 'not-allowed' : 'pointer',
               fontFamily: 'inherit', fontSize: 12,
               opacity: modelLocked ? 0.72 : 1,
@@ -344,8 +344,8 @@ export default function TopBar({ title, onModelChange, profile, modelLocked, mod
           padding: '6px 12px', borderRadius: 999,
           background: 'rgba(124, 92, 255, 0.08)',
           border: '1px solid rgba(124, 92, 255, 0.22)',
-          backdropFilter: 'blur(10px)',
-          WebkitBackdropFilter: 'blur(10px)',
+
+
           transition: 'transform 0.22s cubic-bezier(0.22, 1, 0.36, 1)',
         }}>
           <Flame size={13} color="#7C5CFF" />
@@ -358,8 +358,8 @@ export default function TopBar({ title, onModelChange, profile, modelLocked, mod
           padding: '6px 12px', borderRadius: 999,
           background: 'rgba(199, 210, 232, 0.06)',
           border: '1px solid rgba(199, 210, 232, 0.18)',
-          backdropFilter: 'blur(10px)',
-          WebkitBackdropFilter: 'blur(10px)',
+
+
           transition: 'transform 0.22s cubic-bezier(0.22, 1, 0.36, 1)',
         }}>
           <Star size={12} color="#C7D2E8" />

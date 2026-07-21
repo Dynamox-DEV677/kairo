@@ -56,8 +56,8 @@ export default function CloudRestorePrompt({ open, stats, busy, onConfirm, onDis
             style={{
               position: 'fixed', inset: 0, zIndex: 10000,
               background: 'rgba(5,6,10,0.9)',
-              backdropFilter: 'blur(12px) saturate(140%)',
-              WebkitBackdropFilter: 'blur(12px) saturate(140%)',
+
+
             }}
           />
           <motion.div

@@ -247,8 +247,8 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
                     position: 'absolute', top: isMobile ? 8 : 10, zIndex: 20,
                     right: isMobile ? 'max(12px, env(safe-area-inset-right))' : 16,
                     padding: isMobile ? '6px 12px' : '6px 14px', borderRadius: 999, cursor: 'pointer',
-                    background: 'rgba(13,16,25,0.9)', backdropFilter: 'blur(10px)',
-                    WebkitBackdropFilter: 'blur(10px)',
+                    background: 'rgba(13,16,25,0.9)',
+
                     border: '1px solid rgba(124, 92, 255,0.4)',
                     color: 'var(--c-purple-lite)', fontSize: isMobile ? 10 : 11, fontWeight: 700,
                     letterSpacing: 0.5, textTransform: 'uppercase', fontFamily: 'inherit',

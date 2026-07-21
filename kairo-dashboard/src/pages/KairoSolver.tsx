@@ -486,7 +486,7 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
             style={{
               display: 'inline-flex', alignItems: 'center', gap: 6,
               padding: '8px 14px', borderRadius: 999,
-              background: 'rgba(255,255,255,0.03)',
+              background: '#141A2A',
               border: '1px solid rgba(255,255,255,0.08)',
               color: '#B1B5BA', fontFamily: 'inherit', fontSize: 12, fontWeight: 600,
               cursor: 'pointer',

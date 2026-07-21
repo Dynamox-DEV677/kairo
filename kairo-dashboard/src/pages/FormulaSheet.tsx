@@ -257,9 +257,9 @@ function TwinFormulaCard({ f }: { f: TwinFormula }) {
         fontSize: 17, color: C.text,
         padding: '14px 14px',
         borderRadius: 10,
-        background: 'rgba(255, 255, 255, 0.03)',
-        backdropFilter: 'blur(10px) saturate(140%)',
-        WebkitBackdropFilter: 'blur(10px) saturate(140%)',
+        background: '#141A2A',
+
+
         border: '1px solid rgba(255, 255, 255, 0.06)',
         wordBreak: 'break-word', overflowX: 'auto',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -471,9 +471,9 @@ function FormulaRow({ formula }: { formula: any }) {
       <div style={{
         fontSize: 17, color: C.text, marginBottom: 10,
         padding: '12px 14px',
-        background: 'rgba(255, 255, 255, 0.03)',
-        backdropFilter: 'blur(10px) saturate(140%)',
-        WebkitBackdropFilter: 'blur(10px) saturate(140%)',
+        background: '#141A2A',
+
+
         border: '1px solid rgba(255, 255, 255, 0.06)', borderRadius: 9,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         minHeight: 46, overflowX: 'auto', lineHeight: 1.4,

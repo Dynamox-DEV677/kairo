@@ -212,8 +212,8 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
         boxShadow: isDark
           ? '0 24px 60px rgba(0, 0, 0, 0.38), 0 0 0 1px rgba(255, 255, 255, 0.025) inset'
           : '0 18px 48px rgba(0, 0, 0, 0.08)',
-        backdropFilter: 'blur(24px) saturate(160%)',
-        WebkitBackdropFilter: 'blur(24px) saturate(160%)',
+
+
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden',
@@ -230,8 +230,8 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
           padding: expanded ? '8px 10px' : '10px 6px',
           borderRadius: 16,
           background: 'linear-gradient(150deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%)',
-          backdropFilter: 'blur(16px) saturate(150%)',
-          WebkitBackdropFilter: 'blur(16px) saturate(150%)',
+
+
           border: '1px solid rgba(165, 180, 252, 0.16)',
           boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06)',
         }}>
@@ -328,8 +328,8 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
                 color: '#6B7280', fontSize: 12, cursor: 'pointer',
                 fontFamily: 'inherit',
                 transition: 'all 0.22s cubic-bezier(0.22, 1, 0.36, 1)',
-                backdropFilter: 'blur(10px)',
-                WebkitBackdropFilter: 'blur(10px)',
+
+
                 marginTop: 4,
               }}
               onMouseEnter={e => {

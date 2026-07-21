@@ -25,7 +25,7 @@ const colorFor = (s: string) => SUBJECT_COLORS[s] || '#7C5CFF'
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
-const card: React.CSSProperties = { background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(14px) saturate(140%)', WebkitBackdropFilter: 'blur(14px) saturate(140%)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14 }
+const card: React.CSSProperties = { background: '#141A2A', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14 }
 const inp: React.CSSProperties = {
   background: '#141A2A', border: '1px solid #1f2532', borderRadius: 8,
   padding: '9px 12px', fontSize: 13, color: '#fafafa',

@@ -213,8 +213,8 @@ function MobileTopBar({
       height: 'calc(52px + env(safe-area-inset-top))',
       paddingTop: 'env(safe-area-inset-top)',
       background: 'rgba(10, 13, 20, 0.9)',
-      backdropFilter: 'blur(10px)',
-      WebkitBackdropFilter: 'blur(10px)',
+
+
       borderBottom: '1px solid rgba(165,180,252,0.12)',
       display: 'flex', alignItems: 'center', gap: 8,
       padding: '0 14px',
@@ -312,8 +312,8 @@ function BottomNav({
         display: 'flex', alignItems: 'stretch', gap: 4,
         padding: '6px 8px',
         background: 'rgba(14, 14, 22, 0.9)',
-        backdropFilter: 'blur(10px)',
-        WebkitBackdropFilter: 'blur(10px)',
+
+
         border: '1px solid rgba(165, 180, 252, 0.22)',
         borderRadius: 22,
         boxShadow: '0 6px 0 0 rgba(0,0,0,0.45), 0 18px 38px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06)',

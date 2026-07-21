@@ -341,7 +341,7 @@ export default function App() {
           display: 'flex', alignItems: 'stretch', borderRadius: 999, overflow: 'hidden',
           background: 'rgba(13,16,25,0.92)', border: '1px solid rgba(165,180,252,0.4)',
           boxShadow: '0 10px 30px rgba(0,0,0,0.5), 0 0 20px rgba(124, 92, 255,0.25)',
-          backdropFilter: 'blur(10px)', fontFamily: "'Inter', system-ui, sans-serif",
+ fontFamily: "'Inter', system-ui, sans-serif",
         }}>
           <button
             onClick={() => setOnboard('open')}

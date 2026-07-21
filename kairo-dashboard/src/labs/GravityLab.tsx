@@ -297,7 +297,7 @@ function LiveHUD({ params, playing }: SimProps) {
     <div style={{
       position: 'absolute', top: 12, left: 12, zIndex: 5,
       padding: '10px 14px', borderRadius: 9,
-      background: 'rgba(13,13,13,0.85)', backdropFilter: 'blur(10px)',
+      background: 'rgba(13,13,13,0.85)',
       border: '1px solid rgba(124, 92, 255, 0.3)',
       fontFamily: 'Consolas, monospace', fontSize: 11,
       color: '#A5B4FC', minWidth: 130,

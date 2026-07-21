@@ -168,7 +168,7 @@ Keep total length 180-280 words. Tone: friendly, specific, exam-aware.` },
       <div style={{
         padding: '14px 24px', borderBottom: '1px solid #171D2D',
         display: 'flex', alignItems: 'center', gap: 14, flexShrink: 0, flexWrap: 'wrap',
-        background: 'rgba(13,13,13,0.7)', backdropFilter: 'blur(12px)',
+        background: 'rgba(13,13,13,0.7)',
       }}>
         {onBack && (
           <button onClick={onBack} style={{

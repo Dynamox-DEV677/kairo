@@ -106,8 +106,8 @@ export default function ConfirmModal({
           style={{
             position: 'fixed', inset: 0, zIndex: 9999,
             background: 'rgba(6, 6, 10, 0.78)',
-            backdropFilter: 'blur(10px)',
-            WebkitBackdropFilter: 'blur(10px)',
+
+
             display: 'grid', placeItems: 'center',
             padding: 16,
           }}

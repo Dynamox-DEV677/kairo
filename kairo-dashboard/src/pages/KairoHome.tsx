@@ -70,8 +70,8 @@ interface Brief {
 }
 
 const card: React.CSSProperties = {
-  background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(14px) saturate(140%)',
-  WebkitBackdropFilter: 'blur(14px) saturate(140%)', border: '1px solid rgba(255,255,255,0.06)',
+  background: '#141A2A',
+ border: '1px solid rgba(255,255,255,0.06)',
   borderRadius: 16,
 }
 const lbl: React.CSSProperties = {

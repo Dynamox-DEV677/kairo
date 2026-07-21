@@ -60,8 +60,8 @@ export default function ResetShell({
           padding: 'calc(env(safe-area-inset-top) + 14px) 18px 8px',
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           background: 'linear-gradient(180deg, rgba(5,5,5,0.85) 0%, transparent 100%)',
-          backdropFilter: 'blur(14px)',
-          WebkitBackdropFilter: 'blur(14px)',
+
+
         }}
       >
         {onBack ? (

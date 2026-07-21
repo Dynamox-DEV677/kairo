@@ -19,7 +19,7 @@ Avoid markdown, lists, or headings — use natural spoken language.
 For math, say expressions in words (e.g. "x squared plus three x").
 End with one quick question to keep the dialog flowing.`
 
-const card: React.CSSProperties = { background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(14px) saturate(140%)', WebkitBackdropFilter: 'blur(14px) saturate(140%)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14 }
+const card: React.CSSProperties = { background: '#141A2A', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14 }
 
 const SpeechRecognitionCtor: any =
   (typeof window !== 'undefined' && ((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition)) || null

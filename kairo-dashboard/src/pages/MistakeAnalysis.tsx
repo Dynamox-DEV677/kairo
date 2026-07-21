@@ -293,7 +293,7 @@ function AiResultModal({ title, body, loading, onClose }: {
       onClick={onClose}
       style={{
         position: 'fixed', inset: 0, zIndex: 999,
-        background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)',
+        background: 'rgba(0,0,0,0.7)',
         display: 'grid', placeItems: 'center', padding: 16,
         overflowY: 'auto',
       }}>
@@ -383,7 +383,7 @@ function AddMistakeModal({ onClose, onSaved }: { onClose: () => void; onSaved: (
       onClick={onClose}
       style={{
         position: 'fixed', inset: 0, zIndex: 999,
-        background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)',
+        background: 'rgba(0,0,0,0.7)',
         display: 'grid', placeItems: 'center', padding: 16,
       }}>
       <motion.div

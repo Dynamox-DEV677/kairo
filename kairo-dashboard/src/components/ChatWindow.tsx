@@ -366,7 +366,7 @@ export default function ChatWindow({ onNewMessage, onNavigate, model = DEFAULT_M
         padding: '14px 20px 18px',
         borderTop: '1px solid #171D2D',
         background: 'rgba(10,10,10,0.9)',
-        backdropFilter: 'blur(8px)',
+
         flexShrink: 0,
       }}>
         <div style={{

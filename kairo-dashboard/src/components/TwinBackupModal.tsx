@@ -149,8 +149,8 @@ export default function TwinBackupModal({ open, onClose, onChange }: Props) {
         style={{
           position: 'fixed', inset: 0, zIndex: 9998,
           background: 'rgba(5, 5, 5, 0.92)',
-          backdropFilter: 'blur(14px) saturate(140%)',
-          WebkitBackdropFilter: 'blur(14px) saturate(140%)',
+
+
           isolation: 'isolate',
         }}
       />

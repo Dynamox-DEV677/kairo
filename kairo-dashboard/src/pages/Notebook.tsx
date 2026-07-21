@@ -42,7 +42,7 @@ const KIND_META: Record<Kind, { label: string; icon: any; color: string }> = {
   grade:       { label: 'Graded',      icon: CheckCircle2,  color: '#ffb020' },  // gold
 }
 
-const card: React.CSSProperties = { background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(14px) saturate(140%)', WebkitBackdropFilter: 'blur(14px) saturate(140%)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14 }
+const card: React.CSSProperties = { background: '#141A2A', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14 }
 const inp: React.CSSProperties = {
   background: 'var(--c-bg-elev1)', border: '1px solid #2a3352', borderRadius: 11,
   padding: '10px 13px', fontSize: 13, color: '#fafafa',

@@ -69,7 +69,7 @@ export default function SprintOverlay({ open, phaseIdx, fullscreen = true, banne
         inset: 0,
         zIndex: fullscreen ? 9999 : 5,
         background: `linear-gradient(180deg, rgba(14,14,22,0.97) 0%, rgba(6,6,10,0.99) 100%)`,
-        backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
+
         display: 'flex', flexDirection: 'column',
         alignItems: 'center', justifyContent: 'center',
         padding: '32px 28px',

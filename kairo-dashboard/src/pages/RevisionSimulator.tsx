@@ -23,7 +23,7 @@ interface Question {
   subject?: string
 }
 
-const card: React.CSSProperties = { background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(14px) saturate(140%)', WebkitBackdropFilter: 'blur(14px) saturate(140%)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14 }
+const card: React.CSSProperties = { background: '#141A2A', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14 }
 
 const DIFFICULTIES = [
   { id: 'easy',   label: 'Easy',   color: '#A5B4FC', secs: 90, count: 8  },

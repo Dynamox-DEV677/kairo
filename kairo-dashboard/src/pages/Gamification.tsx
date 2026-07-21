@@ -6,7 +6,7 @@ import { get, post } from '../lib/api'
 const SCHOOL_ID = 'demo_school'
 const USER_ID   = 'default'
 
-const card = { background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(14px) saturate(140%)', WebkitBackdropFilter: 'blur(14px) saturate(140%)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14, padding: 20 } as React.CSSProperties
+const card = { background: '#141A2A', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14, padding: 20 } as React.CSSProperties
 
 export default function Gamification() {
   const [profile, setProfile]   = useState<any>(null)

@@ -126,7 +126,7 @@ function TermsSheet({ tab, setTab, onClose }: {
       style={{
         position: 'fixed', inset: 0, zIndex: 9998,
         background: 'rgba(2,2,5,0.86)',
-        backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
+
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         padding: 'env(safe-area-inset-top) 0 env(safe-area-inset-bottom)',
         fontFamily: FONT,

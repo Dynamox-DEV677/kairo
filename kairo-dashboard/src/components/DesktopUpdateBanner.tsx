@@ -107,8 +107,8 @@ export default function DesktopUpdateBanner() {
           minWidth: isDownloading ? 280 : 340,
           maxWidth: 'calc(100vw - 32px)',
           background: 'rgba(10, 12, 18, 0.92)',
-          backdropFilter: 'blur(20px) saturate(150%)',
-          WebkitBackdropFilter: 'blur(20px) saturate(150%)',
+
+
           border: '1px solid rgba(124, 92, 255, 0.18)',
           borderRadius: 14,
           overflow: 'hidden',

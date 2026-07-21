@@ -329,7 +329,7 @@ export default function ConceptMap() {
                 <button key={b.label} onClick={b.act} title={b.title} aria-label={b.title}
                   style={{
                     width: 40, height: 40, borderRadius: 11, cursor: 'pointer',
-                    background: 'rgba(6,6,10,0.72)', backdropFilter: 'blur(10px)',
+                    background: 'rgba(6,6,10,0.72)',
                     border: `1px solid ${C.borderSoft}`, color: C.text,
                     fontSize: 22, fontWeight: 700, lineHeight: 1,
                     display: 'grid', placeItems: 'center', fontFamily: FONT,
@@ -338,7 +338,7 @@ export default function ConceptMap() {
               <button onClick={resetView} title="Reset view" aria-label="Reset view"
                 style={{
                   width: 40, height: 40, borderRadius: 11, cursor: 'pointer',
-                  background: 'rgba(6,6,10,0.72)', backdropFilter: 'blur(10px)',
+                  background: 'rgba(6,6,10,0.72)',
                   border: `1px solid ${C.borderSoft}`, color: C.textFaint,
                   display: 'grid', placeItems: 'center',
                 }}>
@@ -351,7 +351,7 @@ export default function ConceptMap() {
             <div style={{
               position: 'absolute', bottom: 12, left: 12,
               padding: '8px 12px', borderRadius: 10,
-              background: 'rgba(6,6,10,0.65)', backdropFilter: 'blur(10px)',
+              background: 'rgba(6,6,10,0.65)',
               border: `1px solid ${C.borderSoft}`,
               display: 'flex', gap: 14, fontSize: 11, color: C.textFaint, alignItems: 'center',
             }}>
@@ -526,7 +526,7 @@ const emptyCtaPrimary: React.CSSProperties = {
 const emptyCtaSecondary: React.CSSProperties = {
   display: 'inline-flex', alignItems: 'center', gap: 6,
   padding: '11px 16px', borderRadius: 10, cursor: 'pointer',
-  background: 'rgba(255, 255, 255, 0.03)',
+  background: '#141A2A',
   border: '1px solid rgba(255, 255, 255, 0.08)',
   color: '#B1B5BA', fontFamily: 'inherit', fontSize: 13, fontWeight: 600,
 }

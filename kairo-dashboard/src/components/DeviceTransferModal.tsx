@@ -37,7 +37,7 @@ export default function DeviceTransferModal({ open, onClose }: { open: boolean; 
           transition={{ duration: 0.2 }} onClick={onClose}
           style={{
             position: 'fixed', inset: 0, zIndex: 9998,
-            background: 'rgba(4,5,8,0.92)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
+            background: 'rgba(4,5,8,0.92)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             padding: '16px 14px', boxSizing: 'border-box', overflowY: 'auto',
           }}>

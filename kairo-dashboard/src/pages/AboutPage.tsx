@@ -51,7 +51,7 @@ export default function AboutPage({ onExit }: Props) {
 
       <header style={{
         position: 'sticky', top: 0, zIndex: 50,
-        backdropFilter: 'blur(18px)', WebkitBackdropFilter: 'blur(18px)',
+
         background: 'rgba(6,6,10,0.72)',
         borderBottom: `1px solid ${C.line}`,
       }}>

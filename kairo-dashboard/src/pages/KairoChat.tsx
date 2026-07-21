@@ -63,8 +63,8 @@ const C = {
 }
 const GLASS: React.CSSProperties = {
   background: 'linear-gradient(150deg, rgba(255,255,255,0.055) 0%, rgba(255,255,255,0.018) 100%)',
-  backdropFilter: 'blur(16px) saturate(150%)',
-  WebkitBackdropFilter: 'blur(16px) saturate(150%)',
+
+
 }
 
 let _id = 1
@@ -557,7 +557,7 @@ function MediaStrip({ turn, onPatch }: { turn: Turn; onPatch: (id: number, p: Pa
             onClick={() => onPatch(turn.id, { lightbox: null })}
             style={{
               position: 'fixed', inset: 0, zIndex: 999,
-              background: 'rgba(4,4,6,0.88)', backdropFilter: 'blur(10px)',
+              background: 'rgba(4,4,6,0.88)',
               display: 'flex', flexDirection: 'column',
               alignItems: 'center', justifyContent: 'center', gap: 12,
               cursor: 'zoom-out', padding: 24,

@@ -438,7 +438,7 @@ function ImageCarousel({ slides, busy }: { slides: GeoImageSlide[]; busy: boolea
           position: 'absolute', top: 12, right: 12,
           display: 'flex', gap: 5,
           padding: '5px 9px', borderRadius: 999,
-          background: 'rgba(5, 5, 5, 0.5)', backdropFilter: 'blur(10px)',
+          background: 'rgba(5, 5, 5, 0.5)',
           border: `1px solid ${C.border}`,
         }}>
           {slides.map((_, i) => (
@@ -473,7 +473,7 @@ function CarouselArrow({ side, onClick }: { side: 'left' | 'right'; onClick: () 
         [side]: 10,
         width: 34, height: 34, borderRadius: '50%',
         background: 'rgba(5, 5, 5, 0.55)',
-        backdropFilter: 'blur(12px)',
+
         border: `1px solid ${C.border}`,
         color: C.text, cursor: 'pointer',
         display: 'flex', alignItems: 'center', justifyContent: 'center',

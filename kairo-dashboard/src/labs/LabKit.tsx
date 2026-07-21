@@ -253,7 +253,7 @@ function HoverChip({ hovered, selected, catalog }: any) {
           style={{
             position: 'absolute', top: 14, left: 14, zIndex: 10,
             padding: '7px 13px', borderRadius: 8,
-            background: 'rgba(13,13,13,0.85)', backdropFilter: 'blur(10px)',
+            background: 'rgba(13,13,13,0.85)',
             border: `1px solid ${catalog[hovered]?.color || '#444'}44`,
             fontSize: 11, color: '#fafafa', fontWeight: 700, letterSpacing: 0.4,
             pointerEvents: 'none',
@@ -272,7 +272,7 @@ function IdleHint({ hovered, selected, hint }: any) {
     <div style={{
       position: 'absolute', top: 14, left: 14, zIndex: 5,
       padding: '6px 12px', borderRadius: 7,
-      background: 'rgba(13,13,13,0.55)', backdropFilter: 'blur(8px)',
+      background: 'rgba(13,13,13,0.55)',
       border: '1px solid rgba(124, 92, 255, 0.25)',
       fontSize: 10.5, color: '#A5B4FC', fontWeight: 600,
       textTransform: 'uppercase', letterSpacing: 1.5,
@@ -292,7 +292,7 @@ function PartInfoCard({ part, onClose }: { part: LabPart; onClose: () => void })
       style={{
         position: 'absolute', left: 16, bottom: 16, zIndex: 10,
         width: 'min(340px, calc(100% - 32px))',
-        background: 'rgba(13,13,13,0.92)', backdropFilter: 'blur(14px)',
+        background: 'rgba(13,13,13,0.92)',
         border: `1px solid ${part.color}55`,
         borderRadius: 14,
         boxShadow: `0 12px 40px rgba(0,0,0,0.5), 0 0 24px ${part.color}22`,

@@ -73,8 +73,8 @@ export default function DemoModePrompt({ delayMs = 1400 }: Props) {
             zIndex: 9000,
             maxWidth: 'min(360px, calc(100vw - 40px))',
             background: 'rgba(14, 17, 23, 0.86)',
-            backdropFilter: 'blur(14px) saturate(140%)',
-            WebkitBackdropFilter: 'blur(14px) saturate(140%)',
+
+
             border: '1px solid rgba(124, 92, 255, 0.22)',
             borderRadius: 14,
             padding: 18,
