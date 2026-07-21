@@ -585,15 +585,18 @@ function ToggleRow({ label, desc, value, onChange }: { label: string; desc: stri
       <button
         onClick={() => onChange(!value)}
         style={{
-          width: 42, height: 24, borderRadius: 12, border: 'none', cursor: 'pointer',
-          background: value ? '#7C5CFF' : '#171D2D',
-          position: 'relative', transition: 'background 0.2s', flexShrink: 0,
+          width: 44, height: 26, borderRadius: 13, border: 'none', cursor: 'pointer',
+          background: value ? 'var(--c-purple)' : '#171D2D',
+          boxShadow: value
+            ? 'inset 0 2px 5px rgba(0,0,0,0.28), 0 2px 0 0 var(--c-purple-deep)'
+            : 'inset 0 2px 5px rgba(0,0,0,0.40)',
+          position: 'relative', transition: 'background 0.2s, box-shadow 0.2s', flexShrink: 0,
         }}
       >
         <motion.div
-          animate={{ x: value ? 18 : 2 }}
+          animate={{ x: value ? 20 : 2 }}
           transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-          style={{ position: 'absolute', top: 2, width: 20, height: 20, borderRadius: '50%', background: '#fff' }}
+          style={{ position: 'absolute', top: 3, width: 20, height: 20, borderRadius: '50%', background: '#fff', boxShadow: '0 2px 4px rgba(0,0,0,0.5)' }}
         />
       </button>
     </div>

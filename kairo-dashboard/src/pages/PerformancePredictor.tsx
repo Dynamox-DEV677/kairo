@@ -172,10 +172,8 @@ Keep it under 200 words. No fluff.` },
             Where your scores are heading · risk areas · improvement potential
           </p>
         </div>
-        <button onClick={compute} disabled={loading} style={{
-          padding: '8px 14px', borderRadius: 8, border: '1px solid #1f2532',
-          background: '#1C2233', color: '#9CA3AF', cursor: 'pointer',
-          fontFamily: 'inherit', fontSize: 12, display: 'flex', alignItems: 'center', gap: 6,
+        <button onClick={compute} disabled={loading} className="kyno-ghost" style={{
+          padding: '9px 14px', fontSize: 12, display: 'flex', alignItems: 'center', gap: 6,
         }}>
           <RefreshCw size={12} style={{ animation: loading ? 'spin 0.8s linear infinite' : 'none' }} />
           Refresh
@@ -255,12 +253,9 @@ Keep it under 200 words. No fluff.` },
                 <div style={{ fontSize: 11, color: '#6B7280' }}>What to do this week — biggest opportunity, biggest risk, action plan</div>
               </div>
               <button onClick={generateInsight} disabled={insightBusy}
+                className="kyno-chunky"
                 style={{
-                  padding: '8px 16px', borderRadius: 8, border: 'none',
-                  background: insightBusy ? '#171D2D' : 'linear-gradient(135deg,#7C5CFF,#7C5CFF)',
-                  color: insightBusy ? '#6B7280' : '#fff',
-                  fontFamily: 'inherit', fontSize: 12, fontWeight: 600,
-                  cursor: insightBusy ? 'not-allowed' : 'pointer',
+                  padding: '9px 16px', fontSize: 12,
                   display: 'flex', alignItems: 'center', gap: 6,
                 }}>
                 <Sparkles size={12} />{insightBusy ? 'Reading…' : insight ? 'Regenerate' : 'Generate'}
