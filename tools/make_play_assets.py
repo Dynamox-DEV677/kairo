@@ -31,18 +31,25 @@ SUBTX, DIMTX = (0xC7,0xD2,0xFE), (0x9C,0xA3,0xAF)
 
 
 # ── icon: the logo on a black square with curved corners ─────────────────────
-def square_logo(size, content=1.0):
-    """Black square with the logo centered. content<1 adds extra black margin."""
+def _mark_cropped():
+    """Crop the source logo down to just the white mark (drop its wide black margin)."""
     src = Image.open(SRC).convert('RGBA')
-    w, h = src.size
-    s = max(w, h)
-    base = Image.new('RGBA', (s, s), (0, 0, 0, 255))
-    if content < 1.0:
-        cw, ch = int(w * content), int(h * content)
-        base.paste(src.resize((cw, ch), Image.LANCZOS), ((s - cw) // 2, (s - ch) // 2))
-    else:
-        base.paste(src, ((s - w) // 2, (s - h) // 2))
-    return base.resize((size, size), Image.LANCZOS)
+    bright = src.convert('L').point(lambda p: 255 if p > 24 else 0)
+    bbox = bright.getbbox()
+    return src.crop(bbox) if bbox else src
+
+
+def icon(size, margin_px, do_round=True):
+    """The mark scaled to leave `margin_px` padding, centered on a black square."""
+    mark = _mark_cropped()
+    avail = size - 2 * margin_px
+    mw, mh = mark.size
+    scale = avail / max(mw, mh)
+    nw, nh = max(1, int(mw * scale)), max(1, int(mh * scale))
+    mark_r = mark.resize((nw, nh), Image.LANCZOS)
+    base = Image.new('RGBA', (size, size), (0, 0, 0, 255))
+    base.alpha_composite(mark_r, ((size - nw) // 2, (size - nh) // 2))
+    return rounded(base) if do_round else base
 
 
 def rounded(img, frac=RADIUS):
@@ -116,14 +123,17 @@ def main():
     OUT.mkdir(parents=True, exist_ok=True)
     print('Building Kyno Play assets (black logo, curved square)...')
 
-    save(rounded(square_logo(512)),          OUT / 'app-icon-512.png')
-    save(rounded(square_logo(512)),          OUT / 'icon-preview-squircle.png')
+    m = lambda s: max(3, round(s * 10 / 512))    # ~10px edge at 512, scaled per size
+
+    save(icon(512, m(512)),                  OUT / 'app-icon-512.png')
+    save(icon(512, m(512)),                  OUT / 'icon-preview-squircle.png')
     save(build_feature(),                    OUT / 'feature-graphic-1024x500.png', rgb=True)
 
-    save(rounded(square_logo(192)),          PUB / 'kairo_icon_192.png')
-    save(rounded(square_logo(512)),          PUB / 'kairo_icon_512.png')
-    save(square_logo(512, content=0.82),     PUB / 'kairo_icon_512_maskable.png')  # OS masks; safe margin
-    save(rounded(square_logo(180)),          PUB / 'apple-touch-icon.png')
+    save(icon(192, m(192)),                  PUB / 'kairo_icon_192.png')
+    save(icon(512, m(512)),                  PUB / 'kairo_icon_512.png')
+    # Maskable keeps a safe margin so the OS circle-mask never clips the mark.
+    save(icon(512, round(512 * 0.20), do_round=False), PUB / 'kairo_icon_512_maskable.png')
+    save(icon(180, m(180)),                  PUB / 'apple-touch-icon.png')
     print('done.')
 
 
