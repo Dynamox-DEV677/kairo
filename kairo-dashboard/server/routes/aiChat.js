@@ -138,7 +138,7 @@ async function chatWikipediaFallback(question) {
 }
 
 const CHAT_MODELS_TEXT   = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant']
-const CHAT_MODELS_VISION = ['meta-llama/llama-4-scout-17b-16e-instruct', 'meta-llama/llama-4-maverick-17b-128e-instruct']
+const CHAT_MODELS_VISION = ['qwen/qwen3.6-27b']
 
 const messagesHaveImages = (messages) =>
   messages.some(m => Array.isArray(m?.content) && m.content.some(p => p?.type === 'image_url'))

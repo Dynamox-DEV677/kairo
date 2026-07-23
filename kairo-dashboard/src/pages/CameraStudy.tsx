@@ -13,14 +13,9 @@ import { aiHeaders } from '../lib/devKey'
 
 const VISION_MODELS = [
   {
-    id: 'meta-llama/llama-4-scout-17b-16e-instruct',
-    label: 'Llama 4 Scout',
-    desc:  'Fast image understanding · best for diagrams, handwriting + homework shots',
-  },
-  {
-    id: 'meta-llama/llama-4-maverick-17b-128e-instruct',
-    label: 'Llama 4 Maverick',
-    desc:  'Deeper multimodal reasoning · solid for tricky math + science problems',
+    id: 'qwen/qwen3.6-27b',
+    label: 'Kyno Vision',
+    desc:  'Reads diagrams, handwriting & homework photos, then solves them step-by-step',
   },
 ]
 
