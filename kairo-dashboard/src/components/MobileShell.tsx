@@ -207,11 +207,23 @@ function MobileTopBar({
       .catch(() => {})
   }, [isAdmin, profile?.school_id])
 
+  // In the installed app (TWA runs immersive/fullscreen) there is no status bar,
+  // but the WebView still reports a small safe-area-inset-top — which inflates the
+  // header and shows as a ~10px gap. Zero it for the installed app; keep it in browsers.
+  const isInstalledApp = typeof window !== 'undefined' && (
+    (typeof document !== 'undefined' && document.referrer.startsWith('android-app://')) ||
+    (!!window.matchMedia && (
+      window.matchMedia('(display-mode: standalone)').matches ||
+      window.matchMedia('(display-mode: fullscreen)').matches
+    ))
+  )
+  const safeTop = isInstalledApp ? '0px' : 'env(safe-area-inset-top)'
+
   return (
     <div style={{
       position: 'sticky', top: 0, zIndex: 90,
-      height: 'calc(52px + env(safe-area-inset-top))',
-      paddingTop: 'env(safe-area-inset-top)',
+      height: `calc(52px + ${safeTop})`,
+      paddingTop: safeTop,
       background: 'rgba(10, 13, 20, 0.9)',
 
 
