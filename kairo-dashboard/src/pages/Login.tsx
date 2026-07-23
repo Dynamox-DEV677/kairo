@@ -8,6 +8,9 @@ import {
 import { post } from '../lib/api'
 import { supabase, supabaseReady } from '../lib/supabase'
 import { TermsAcceptLine } from '../components/Terms'
+import { Capacitor } from '@capacitor/core'
+import { App as CapApp } from '@capacitor/app'
+import { Browser } from '@capacitor/browser'
 
 export interface AuthProfile {
   id:               string
@@ -189,6 +192,40 @@ function ChooseMode({ setMode }: { setMode: (m: Mode) => void }) {
     setGErr('')
     setGBusy(true)
     try {
+      // Native app (Capacitor WebView): Google blocks OAuth inside a WebView, so
+      // open it in a system tab and catch the redirect back via a deep link.
+      if (Capacitor.isNativePlatform()) {
+        const redirectTo = 'app.kairo.kyno://login-callback'
+        const { data, error } = await supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: { redirectTo, skipBrowserRedirect: true },
+        })
+        if (error) throw new Error(error.message)
+        if (!data?.url) throw new Error('Could not start Google sign-in.')
+
+        const sub = await CapApp.addListener('appUrlOpen', async ({ url }) => {
+          try {
+            if (!url || url.indexOf('login-callback') === -1) return
+            const code = new URLSearchParams(url.split('?')[1] || '').get('code')
+            if (code) {
+              const { error: exErr } = await supabase.auth.exchangeCodeForSession(code)
+              if (exErr) throw new Error(exErr.message)
+            }
+            try { await Browser.close() } catch {  }
+            window.location.href = '/'      // reload app with the new session
+          } catch (e: any) {
+            setGErr(e?.message || 'Google sign-in failed — try again.')
+            setGBusy(false)
+          } finally {
+            sub.remove()
+          }
+        })
+
+        await Browser.open({ url: data.url })
+        return
+      }
+
+      // Normal web browser: standard redirect flow.
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: { redirectTo: window.location.origin },
