@@ -81,6 +81,20 @@ export async function saveToNotebook(payload: {
   tags?:    string[]
   source?:  string
 }): Promise<{ id: string }> {
+  const arr = readAll()
+  // De-dupe: if a note with the same kind + normalized title already exists,
+  // update it in place instead of piling on identical copies.
+  const norm = (s: string) => (s || '').trim().toLowerCase().replace(/\s+/g, ' ')
+  const dupe = arr.find(e => e.kind === payload.kind && norm(e.title) === norm(payload.title))
+  if (dupe) {
+    dupe.content   = payload.content
+    dupe.subject   = payload.subject ?? dupe.subject
+    dupe.tags      = payload.tags    ?? dupe.tags
+    dupe.updatedAt = Date.now()
+    writeAll(arr)
+    return { id: dupe.id }
+  }
+
   const entry: NoteEntry = {
     id:        uid(),
     kind:      payload.kind,
@@ -92,7 +106,6 @@ export async function saveToNotebook(payload: {
     createdAt: Date.now(),
     updatedAt: Date.now(),
   }
-  const arr = readAll()
   arr.unshift(entry)
   writeAll(arr)
 

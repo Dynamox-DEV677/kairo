@@ -247,7 +247,7 @@ function PulseHero({ pct, label, twin, pulsing, onRecompute }: {
             {label}
           </div>
           <div style={{ fontSize: 11.5, color: C.textFaint, marginTop: 8, lineHeight: 1.45 }}>
-            Retention × consistency × confidence — refreshed live.
+            A live blend of your retention, consistency, confidence &amp; burnout.
           </div>
 
           <button onClick={onRecompute} className="kyno-chunky"

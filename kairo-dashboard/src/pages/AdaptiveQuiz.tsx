@@ -30,7 +30,8 @@ export default function AdaptiveQuiz() {
     setLoading(true); setErr('')
     try {
       const r = await post('/quiz/start', { school_id: SCHOOL_ID, ...form })
-      setQuestions(r.questions || [])
+      const wanted = Number(form.total_questions) || 10
+      setQuestions((r.questions || []).slice(0, wanted))
       setSessionId(r.session_id || 'local')
       setScreen('quiz')
     } catch (e: any) { setErr(e.message) }

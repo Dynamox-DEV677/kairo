@@ -5,7 +5,7 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
-import { recordDoubt, recordMistake, recordFlashcard, recordConcept, getMistakes, getStudentMemory } from '../lib/twin'
+import { recordDoubt, recordMistake, recordFlashcard, recordConcept, recordFormula, getMistakes, getStudentMemory } from '../lib/twin'
 import { saveToNotebook } from '../lib/notebook'
 import { getRecentChats, saveRecentChat, makeTitle } from '../lib/recentChats'
 import { awardXP } from '../lib/game'
@@ -238,6 +238,17 @@ export default function KairoChat() {
           recordDoubt({ question: q, answer: kairoTurn.text, topic: text.topicKeyword || undefined, source: 'chat' })
         } catch {  }
         try { awardXP('chat_answer') } catch {  }
+        // Pin any formulas the Solver returned to the Formula Sheet (chat is the DEFAULT Solve UI).
+        try {
+          for (const raw of (text.formulas || [])) {
+            if (!raw || typeof raw !== 'string') continue
+            const parts = raw.split(/[:—–]\s+/, 2)
+            const fname = parts.length === 2 ? parts[0].trim() : (text.topicKeyword || 'Formula')
+            const expr  = (parts.length === 2 ? parts[1] : raw).trim()
+            if (expr.length < 2 || expr.length > 200) continue
+            recordFormula({ name: fname, expr, topic: text.topicKeyword || undefined, source: 'solver' })
+          }
+        } catch {  }
       }
 
       if (!casual) {
