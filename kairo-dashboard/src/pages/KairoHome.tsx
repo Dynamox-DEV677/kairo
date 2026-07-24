@@ -133,12 +133,22 @@ export default function KairoHome({ onNavigate }: Props) {
         data = await attempt()
       }
       setBrief(data)
+      try { localStorage.setItem('kairo_home_brief_v1', JSON.stringify({ data, ts: Date.now() })) } catch {  }
     } catch {
       setError("Couldn't reach your AI council just now. Tap “Refresh brief” to try again — everything else still works.")
     } finally { setLoading(false) }
   }, [profile])
 
-  useEffect(() => { fetchBrief() /* eslint-disable-next-line */ }, [])
+  useEffect(() => {
+    // Show the last brief so the prediction/motivation numbers don't drift on
+    // every reload. Only recompute on an explicit Refresh, or once it's stale (12h).
+    try {
+      const cached = JSON.parse(localStorage.getItem('kairo_home_brief_v1') || 'null')
+      if (cached?.data && Date.now() - (cached.ts || 0) < 12 * 3600 * 1000) { setBrief(cached.data); return }
+    } catch {  }
+    fetchBrief()
+    /* eslint-disable-next-line */
+  }, [])
 
   useEffect(() => {
     const onProfile = () => setProfile(loadProfile())

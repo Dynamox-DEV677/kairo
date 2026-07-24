@@ -167,7 +167,7 @@ Keep it under 200 words. No fluff.` },
           <TrendingUp size={22} color="#fff" />
         </div>
         <div style={{ flex: 1 }}>
-          <h1 style={{ fontSize: 20, fontWeight: 700, color: '#fafafa', margin: 0 }}>Performance Predictor</h1>
+          <h1 style={{ fontSize: 20, fontWeight: 700, color: '#fafafa', margin: 0, overflowWrap: 'normal', wordBreak: 'keep-all' }}>Performance Predictor</h1>
           <p style={{ fontSize: 13, color: '#6B7280', marginTop: 4 }}>
             Where your scores are heading · risk areas · improvement potential
           </p>
