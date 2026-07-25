@@ -4,7 +4,7 @@ import {
   MessageCircle, BookMarked, Brain, Swords, Mic, Network,
   BookOpen, Compass, Activity, Zap, Target, Camera, Star,
   Calendar, FileText, Edit3, Lightbulb, FunctionSquare, Timer,
-  TrendingUp, Megaphone, Bell, DollarSign, Bot, UserCheck, Grid3x3,
+  Megaphone, Bell, DollarSign, Bot, UserCheck, Grid3x3,
   Building2, GraduationCap, Shield, Sparkles, Settings, LogOut,
   Sun, Moon, Menu, X, MoreHorizontal, ChevronRight, Key, Copy, Check,
   AlertTriangle, Beaker, Trophy,
@@ -81,7 +81,6 @@ const DRAWER_STUDENT = [
     items: [
       { to: 'battle',          label: 'Battle Mode',       icon: Swords },
       { to: 'league',          label: 'League',            icon: Trophy },
-      { to: 'perf-predictor',  label: 'Performance Predictor', icon: TrendingUp },
       { to: 'notebook',        label: 'AI Notebook',       icon: BookOpen },
     ],
   },

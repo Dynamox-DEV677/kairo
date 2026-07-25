@@ -45,7 +45,6 @@ import KnowledgeGraph from './KnowledgeGraph'
 import League from './League'
 import TeacherAssistant from './TeacherAssistant'
 import ExplainMistake from './ExplainMistake'
-import PerformancePredictor from './PerformancePredictor'
 import KairoLabs from './KairoLabs'
 import KairoOS from './KairoOS'
 import { DEFAULT_MODEL } from '../lib/openrouter'
@@ -104,7 +103,6 @@ const PAGE_TITLES: Record<string, string> = {
   league:           'League',
   'teacher-ai':     'AI Teacher Assistant',
   'explain-mistake': 'Explain My Mistake',
-  'perf-predictor': 'Performance Predictor',
   labs:             'Kyno Labs',
   'kairo-os':       'Kyno',
   settings:         'Settings',
@@ -339,8 +337,6 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
             <div style={pageStyle('teacher-ai')}>{mounted('teacher-ai') && <TeacherAssistant />}</div>
 
             <div style={pageStyle('explain-mistake')}>{mounted('explain-mistake') && <ExplainMistake />}</div>
-
-            <div style={pageStyle('perf-predictor')}>{mounted('perf-predictor') && <PerformancePredictor />}</div>
 
             <div style={pageStyle('labs')}>{mounted('labs') && <KairoLabs active={active === 'labs'} />}</div>
 
