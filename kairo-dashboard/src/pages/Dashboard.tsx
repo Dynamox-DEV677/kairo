@@ -18,6 +18,7 @@ import { XPToast } from '../components/GameBar'
 import ErrorBoundary from '../components/ErrorBoundary'
 import EssayGrader from './EssayGrader'
 import ExamPredictor from './ExamPredictor'
+import TeachBack from './TeachBack'
 import QuestionPaper from './QuestionPaper'
 import LessonPlan from './LessonPlan'
 import ParentMessage from './ParentMessage'
@@ -103,6 +104,7 @@ const PAGE_TITLES: Record<string, string> = {
   league:           'League',
   'teacher-ai':     'AI Teacher Assistant',
   'explain-mistake': 'Explain My Mistake',
+  'teach-back':     'Teach Back',
   labs:             'Kyno Labs',
   'kairo-os':       'Kyno',
   settings:         'Settings',
@@ -337,6 +339,8 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
             <div style={pageStyle('teacher-ai')}>{mounted('teacher-ai') && <TeacherAssistant />}</div>
 
             <div style={pageStyle('explain-mistake')}>{mounted('explain-mistake') && <ExplainMistake />}</div>
+
+            <div style={pageStyle('teach-back')}>{mounted('teach-back') && <TeachBack />}</div>
 
             <div style={pageStyle('labs')}>{mounted('labs') && <KairoLabs active={active === 'labs'} />}</div>
 

@@ -51,6 +51,7 @@ const DRAWER_STUDENT = [
       { to: 'doubt',          label: "Kyno's Solver",     icon: MessageCircle },
       { to: 'mistakes',       label: 'Mistake Analysis',   icon: Activity },
       { to: 'explain-mistake',label: 'Explain Mistake',    icon: AlertTriangle },
+      { to: 'teach-back',     label: 'Teach Back',         icon: GraduationCap },
       { to: 'simulator',      label: 'Revision Simulator', icon: Zap },
     ],
   },
