@@ -62,10 +62,28 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,ico,woff2}'],
-        globIgnores: ['**/models/**', '**/*.glb'],
+        // Don't PRECACHE the giant lazy-route vendors (3D labs ~1.3MB, markdown
+        // ~0.4MB). Precaching them made the service worker pull ~1.7MB in the
+        // background on first visit, which is exactly what lazy-loading them was
+        // meant to avoid. They're runtime-cached below after first real use.
+        globIgnores: [
+          '**/models/**', '**/*.glb',
+          '**/assets/r3f-*.js', '**/assets/three-*.js', '**/assets/markdown-*.js',
+        ],
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         navigateFallbackDenylist: [/^\/api/],
         runtimeCaching: [
+          {
+            // The heavy lazy chunks we deliberately excluded from precache:
+            // cache them the first time they're actually needed, then serve local.
+            urlPattern: /\/assets\/(r3f|three|markdown)-[A-Za-z0-9_-]+\.js$/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'kyno-heavy-chunks',
+              expiration: { maxEntries: 12, maxAgeSeconds: 60 * 60 * 24 * 30 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
           {
             urlPattern: /^https:\/\/fonts\.(?:googleapis|gstatic)\.com\/.*/i,
             handler: 'CacheFirst',
