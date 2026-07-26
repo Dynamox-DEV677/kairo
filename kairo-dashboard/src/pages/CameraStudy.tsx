@@ -10,6 +10,8 @@ import {
 } from 'lucide-react'
 import { saveRecentChat, makeTitle } from '../lib/recentChats'
 import { aiHeaders } from '../lib/devKey'
+import { recordMistake } from '../lib/twin'
+import { awardXP } from '../lib/game'
 
 const VISION_MODELS = [
   {
@@ -29,14 +31,51 @@ Format your response in clean markdown:
 - No code fences around prose
 - No <think> tags`
 
+const CHECK_PROMPT = `This image contains a student's OWN handwritten working for a problem. Your job is to audit their working line by line and find the EXACT step where it first goes wrong.
+
+Work through it silently first: solve the problem correctly yourself, then compare the student's work against your solution step by step.
+
+Respond in EXACTLY this structure:
+
+## Verdict
+One line: either "Correct — your working holds up." or "First error is in Step N."
+
+## Step-by-step check
+A markdown table with columns: Step | What you wrote | Status | Comment
+- Number the student's steps as they appear in the image (Step 1, Step 2, …).
+- Status must be exactly ✅, ⚠️ or ❌ (❌ = wrong, ⚠️ = works but risky/unclear, ✅ = correct).
+- Transcribe "What you wrote" faithfully but briefly.
+- Keep each Comment to one short sentence.
+
+## The exact slip
+Only describe the FIRST ❌ step. Say precisely what went wrong (sign error, wrong formula, dropped term, arithmetic slip, wrong unit…) and why it's wrong. If everything is correct, write: No slip — well done.
+
+## From that step, corrected
+Redo the solution from the first wrong step onward, showing correct working to the final answer. If the student was fully correct, restate their final answer and confirm it.
+
+## Right answer
+State the correct final answer on its own line, with units.
+
+## Stop this repeating
+Two specific checks the student can run on similar problems to catch this class of error.
+
+Be precise and never invent steps the student didn't write. If the handwriting is unreadable in places, say so in the Comment for that step instead of guessing.` + MD_RULES
+
 const ACTIONS = [
+  { id: 'check',     label: 'Check my work', icon: CheckCircle2, color: '#4FD8E8',
+    hint: 'Photo of YOUR working — finds the exact wrong step',
+    prompt: CHECK_PROMPT },
   { id: 'solve',     label: 'Solve',         icon: Sparkles,     color: '#7C5CFF',
+    hint: 'Solves the question step by step',
     prompt: 'Read the question(s) in this image carefully. Solve each one step-by-step with clear working.' + MD_RULES },
   { id: 'explain',   label: 'Explain',       icon: Lightbulb,    color: '#A5B4FC',
+    hint: 'Breaks the concept down simply',
     prompt: 'Explain the concept(s) shown in this image as if teaching a Class 10 student in India. Use simple language, give an analogy, end with a 3-line summary under "## Summary".' + MD_RULES },
   { id: 'flashcards', label: 'Flashcards',   icon: BookmarkPlus, color: '#A5B4FC',
+    hint: 'Turns the page into revision cards',
     prompt: 'Create 8-10 high-quality flashcards from the content in this image. Return ONLY a JSON array: [{"front":"question","back":"answer"}]. No other text, no markdown, no explanation.' },
   { id: 'summarize', label: 'Summarize',     icon: FileText,     color: '#A5B4FC',
+    hint: 'Condenses notes into key points',
     prompt: 'Summarize the content in this image into clear bullet points organized under "## Section Name" headings. Capture all key facts, formulas, and definitions. Keep it tight.' + MD_RULES },
 ]
 
@@ -191,6 +230,26 @@ export default function CameraStudy() {
           }
         } catch {  }
       }
+
+      // "Check my work" feeds the twin: a real slip becomes a tracked mistake so it
+      // shows up in Mistake Analysis / weak spots; a clean check just earns XP.
+      if (action.id === 'check') {
+        try {
+          const md = typeof text === 'string' ? text : ''
+          const verdict = (md.match(/##\s*Verdict\s*\n+([^\n]+)/i)?.[1] || '').trim()
+          const slip    = (md.match(/##\s*The exact slip\s*\n+([\s\S]*?)(?=\n##\s|$)/i)?.[1] || '').trim()
+          const wrong   = /step\s*\d+/i.test(verdict) || /❌/.test(md)
+          if (wrong && !/^no slip/i.test(slip)) {
+            const topic = (md.match(/##\s*Right answer\s*\n+([^\n]+)/i)?.[1] || 'Camera Study problem').trim().slice(0, 60)
+            recordMistake({
+              topic,
+              detail: (verdict + ' — ' + slip).replace(/\s+/g, ' ').slice(0, 300),
+            })
+          } else {
+            try { awardXP('chat_answer') } catch {  }
+          }
+        } catch {  }
+      }
     } catch (e: any) {
       setErr(e.message)
     } finally {
@@ -216,7 +275,8 @@ export default function CameraStudy() {
         <div style={{ flex: 1 }}>
           <h1 style={{ fontSize: 20, fontWeight: 700, color: '#fafafa', margin: 0 }}>Camera Study Mode</h1>
           <p style={{ fontSize: 13, color: '#6B7280', marginTop: 4 }}>
-            Snap a photo of homework, textbook, or notes — AI explains, solves, or turns it into flashcards.
+            Snap your own working and Kyno finds the exact step you got wrong — or photograph a
+            textbook page to solve, explain, or turn it into flashcards.
           </p>
         </div>
       </div>
@@ -370,6 +430,11 @@ export default function CameraStudy() {
                   <div style={{ fontSize: 13, fontWeight: 700, color: '#fafafa' }}>
                     {isActive ? `${a.label}…` : a.label}
                   </div>
+                  {a.hint && (
+                    <div style={{ fontSize: 11, color: '#6B7280', lineHeight: 1.4, marginTop: -2 }}>
+                      {a.hint}
+                    </div>
+                  )}
                 </motion.button>
               )
             })}
