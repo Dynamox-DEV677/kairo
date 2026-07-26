@@ -19,6 +19,7 @@ import ErrorBoundary from '../components/ErrorBoundary'
 import EssayGrader from './EssayGrader'
 import ExamPredictor from './ExamPredictor'
 import TeachBack from './TeachBack'
+import CameraLive from './CameraLive'
 import QuestionPaper from './QuestionPaper'
 import LessonPlan from './LessonPlan'
 import ParentMessage from './ParentMessage'
@@ -105,6 +106,7 @@ const PAGE_TITLES: Record<string, string> = {
   'teacher-ai':     'AI Teacher Assistant',
   'explain-mistake': 'Explain My Mistake',
   'teach-back':     'Teach Back',
+  'camera-live':    'Study Mode',
   labs:             'Kyno Labs',
   'kairo-os':       'Kyno',
   settings:         'Settings',
@@ -341,6 +343,9 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
             <div style={pageStyle('explain-mistake')}>{mounted('explain-mistake') && <ExplainMistake />}</div>
 
             <div style={pageStyle('teach-back')}>{mounted('teach-back') && <TeachBack />}</div>
+
+            {/* Rendered ONLY while active — unmounting is what releases the camera + torch. */}
+            {active === 'camera-live' && <CameraLive onExit={() => setActive('kairo-os')} />}
 
             <div style={pageStyle('labs')}>{mounted('labs') && <KairoLabs active={active === 'labs'} />}</div>
 

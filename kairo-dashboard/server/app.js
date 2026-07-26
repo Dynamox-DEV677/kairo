@@ -3,6 +3,7 @@ import express from 'express'
 import { apiLimiter, aiLimiter } from './middleware/rateLimit.js'
 
 import aiChatRoutes from './routes/aiChat.js'
+import cameraLiveRoutes from './routes/cameraLive.js'
 
 import opsRoutes from './routes/ops.js'
 import cronRoutes from './routes/cron.js'
@@ -98,13 +99,14 @@ app.use((req, res, next) => {
 })
 
 app.use([
-  '/api/ai', '/api/council', '/api/quiz', '/api/notebook', '/api/essay',
+  '/api/ai', '/api/camera', '/api/council', '/api/quiz', '/api/notebook', '/api/essay',
   '/api/grading', '/api/exam', '/api/writing', '/api/concept', '/api/knowledge',
   '/api/topic-architect', '/api/exam-planner', '/api/study-plan', '/api/lesson-plan',
   '/api/question-paper', '/api/formula', '/api/parent-message', '/api/admission',
 ], aiLimiter)
 
 app.use('/api/ai',             aiChatRoutes)
+app.use('/api/camera',         cameraLiveRoutes)
 app.use('/api/ops',            opsRoutes)
 app.use('/api/cron',           cronRoutes)
 app.use('/api/credentials',    credentialRoutes)

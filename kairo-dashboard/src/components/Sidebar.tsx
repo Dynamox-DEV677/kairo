@@ -37,6 +37,7 @@ const STUDENT_NAV: NavItem[] = [
   { label: 'Explain Mistake', icon: AlertTriangle,   to: 'explain-mistake',  color: '#A5B4FC' },
   { label: 'Teach Back',      icon: GraduationCap,   to: 'teach-back',       color: '#4FD8E8' },
   { label: 'Knowledge Graph', icon: Share2,          to: 'knowledge',        color: '#A5B4FC' },
+  { label: 'Study Mode · Live', icon: Camera,        to: 'camera-live',      color: '#4FD8E8' },
   { label: 'Camera Study',    icon: Camera,          to: 'camera',           color: '#A5B4FC' },
   { label: 'Focus Mode',      icon: Target,          to: 'focus',            color: '#A5B4FC' },
   { label: 'Flashcards',      icon: BookMarked,      to: 'flashcards',       color: '#A5B4FC' },

@@ -59,6 +59,7 @@ const DRAWER_STUDENT = [
     title: 'Tools',
     items: [
       { to: 'flashcards',   label: 'Flashcards',     icon: BookMarked },
+      { to: 'camera-live',  label: 'Study Mode · Live', icon: Camera },
       { to: 'camera',       label: 'Camera Study',   icon: Camera },
       { to: 'concept-map',  label: 'Concept Map',    icon: Network },
       { to: 'knowledge',    label: 'Knowledge Graph', icon: Network },
