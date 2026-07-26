@@ -95,6 +95,14 @@ export default defineConfig({
   build: {
     chunkSizeWarningLimit: 1500,
     sourcemap: false,
+    // These vendor chunks belong to lazily-loaded routes (3D labs, markdown
+    // rendering). Without this they still get <link rel="modulepreload">'d and
+    // downloaded on the login screen — ~1.7MB nobody needs yet. They still load
+    // on demand when the lazy route that needs them is opened.
+    modulePreload: {
+      resolveDependencies: (_url: string, deps: string[]) =>
+        deps.filter(d => !/\b(three|r3f|markdown)-[A-Za-z0-9_-]+\.js$/.test(d)),
+    },
     // Aggressive code-splitting keeps Rolldown's per-chunk peak memory low.
     rollupOptions: {
       output: {
