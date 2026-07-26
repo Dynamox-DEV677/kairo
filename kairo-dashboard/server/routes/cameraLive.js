@@ -279,6 +279,35 @@ router.post('/transcribe', async (req, res) => {
   }
 })
 
+// Voice out: real TTS (Orpheus) instead of the phone's robotic default voice.
+const TTS_VOICES = ['troy', 'hannah', 'austin']
+router.post('/speak', async (req, res) => {
+  const { text, voice } = req.body || {}
+  if (!text || typeof text !== 'string') return res.status(400).json({ error: 'text required' })
+  const v = TTS_VOICES.includes(voice) ? voice : 'hannah'
+  const key = readDevKey(req) || groqPool.next()
+  if (!key) return res.status(503).json({ error: 'no live Groq keys' })
+
+  try {
+    const r = await fetch('https://api.groq.com/openai/v1/audio/speech', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'canopylabs/orpheus-v1-english',
+        voice: v,
+        input: text.slice(0, 600),
+        response_format: 'wav',
+      }),
+    })
+    if (!r.ok) throw new Error(`tts ${r.status}: ${(await r.text()).slice(0, 160)}`)
+    const buf = Buffer.from(await r.arrayBuffer())
+    res.json({ audio: 'data:audio/wav;base64,' + buf.toString('base64'), voice: v })
+  } catch (e) {
+    console.warn('[camera/speak]', e.message)
+    res.status(502).json({ error: (e.message || 'tts failed').slice(0, 200) })
+  }
+})
+
 router.get('/status', (_req, res) => {
   const pool = groqPool.status()
   res.json({

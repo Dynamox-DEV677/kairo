@@ -66,6 +66,7 @@ export default function CameraLive({ onExit }: { onExit?: () => void }) {
   const busyRef    = useRef(false)
   const startedRef = useRef(Date.now())
   const recRef     = useRef<MediaRecorder | null>(null)
+  const audioRef   = useRef<HTMLAudioElement | null>(null)
 
   const [ready, setReady]     = useState(false)
   const [camErr, setCamErr]   = useState('')
@@ -107,6 +108,7 @@ export default function CameraLive({ onExit }: { onExit?: () => void }) {
     return () => {
       dead = true
       streamRef.current?.getTracks().forEach(t => t.stop())
+      try { audioRef.current?.pause(); audioRef.current = null } catch {  }
       try { window.speechSynthesis?.cancel() } catch {  }
     }
   }, [])
@@ -245,13 +247,52 @@ export default function CameraLive({ onExit }: { onExit?: () => void }) {
     }
   }
 
-  /* ── voice ── */
-  function speak(text: string) {
+  /* ── voice out ── */
+  // Real TTS (Orpheus) first — the phone's built-in voice is robotic. Falls back
+  // to the best-sounding system voice only if the API call fails.
+  function systemSpeak(text: string) {
     try {
+      const synth = window.speechSynthesis
+      if (!synth) return
+      const vs = synth.getVoices() || []
+      const pick =
+        vs.find(v => /natural|neural/i.test(v.name) && /^en/i.test(v.lang)) ||
+        vs.find(v => /google/i.test(v.name) && /^en-(GB|IN|US)/i.test(v.lang)) ||
+        vs.find(v => /^en-IN/i.test(v.lang)) ||
+        vs.find(v => /^en-GB/i.test(v.lang)) ||
+        vs.find(v => /^en/i.test(v.lang)) || null
       const u = new SpeechSynthesisUtterance(text)
-      u.rate = 1.02; u.pitch = 1
-      window.speechSynthesis.cancel(); window.speechSynthesis.speak(u)
+      if (pick) u.voice = pick
+      u.rate = 1.0; u.pitch = 1.02
+      synth.cancel(); synth.speak(u)
     } catch {  }
+  }
+
+  async function speak(text: string) {
+    stopAudio()
+    const voice = (() => { try { return localStorage.getItem('kyno_tts_voice') || 'hannah' } catch { return 'hannah' } })()
+    try {
+      const r = await fetch('/api/camera/speak', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...aiHeaders() },
+        body: JSON.stringify({ text, voice }),
+      })
+      if (r.ok) {
+        const j = await r.json()
+        if (j?.audio) {
+          const a = new Audio(j.audio)
+          audioRef.current = a
+          await a.play()
+          return
+        }
+      }
+    } catch {  }
+    systemSpeak(text)
+  }
+
+  function stopAudio() {
+    try { audioRef.current?.pause(); audioRef.current = null } catch {  }
+    try { window.speechSynthesis?.cancel() } catch {  }
   }
 
   async function toggleMic() {
