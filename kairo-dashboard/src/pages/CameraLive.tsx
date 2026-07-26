@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
-  ArrowLeft, Zap, ZapOff, Camera, Lightbulb, BookmarkPlus,
+  ArrowLeft, Zap, ZapOff, Camera, Lightbulb, BookmarkPlus, Menu,
   Sparkles, StopCircle, Loader2, Mic, Square, Volume2, X, Check, AlertTriangle,
 } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
@@ -421,7 +421,8 @@ export default function CameraLive({ onExit }: { onExit?: () => void }) {
       {/* ── BOTTOM FLOATING DOCK ── */}
       <div style={{ position: 'absolute', left: 12, right: 12, bottom: 'calc(14px + env(safe-area-inset-bottom))', zIndex: 3,
         ...glass({ padding: '10px 8px', borderRadius: 26 }) }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
+          <Dock icon={Menu}         label="Menu"     onClick={() => window.dispatchEvent(new CustomEvent('kyno:open-drawer'))} />
           <Dock icon={Camera}       label="Capture"  onClick={() => { const f = grabFrame(1200, 0.85); if (f) { setToast('Frame captured'); setTimeout(() => setToast(''), 1600) } }} />
           <Dock icon={BookmarkPlus} label="Cards"    onClick={makeFlashcards} />
           <Dock icon={listening ? Square : Mic} label={listening ? 'Stop' : 'Ask'} onClick={toggleMic} tone={listening ? 'var(--c-error)' : undefined} pulse={listening} />
@@ -492,17 +493,17 @@ function Metric({ label, value, tone }: { label: string; value: string; tone?: s
 function Dock({ icon: Icon, label, onClick, tone, pulse }: { icon: any; label: string; onClick: () => void; tone?: string; pulse?: boolean }) {
   return (
     <motion.button whileTap={{ scale: 0.9 }} onClick={onClick}
-      style={{ flex: 1, background: 'none', border: 'none', cursor: 'pointer', padding: '4px 2px',
-        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, fontFamily: 'inherit', minWidth: 0 }}>
+      style={{ flex: 1, background: 'none', border: 'none', cursor: 'pointer', padding: '3px 0',
+        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, fontFamily: 'inherit', minWidth: 0 }}>
       <motion.span
         animate={pulse ? { scale: [1, 1.16, 1] } : {}}
         transition={pulse ? { duration: 1.1, repeat: Infinity } : {}}
-        style={{ width: 34, height: 34, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center',
+        style={{ width: 32, height: 32, borderRadius: 11, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
           background: tone ? `${tone}22` : 'rgba(255,255,255,0.10)', border: `1px solid ${tone ? tone + '66' : 'rgba(255,255,255,0.14)'}` }}>
-        <Icon size={16} color={tone || '#fff'} />
+        <Icon size={15} color={tone || '#fff'} />
       </motion.span>
-      <span style={{ fontSize: 9.5, color: 'rgba(255,255,255,0.82)', fontWeight: 700, whiteSpace: 'nowrap',
-        overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%' }}>{label}</span>
+      <span style={{ fontSize: 8.5, color: 'rgba(255,255,255,0.82)', fontWeight: 700, whiteSpace: 'nowrap',
+        overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%', letterSpacing: -0.1 }}>{label}</span>
     </motion.button>
   )
 }

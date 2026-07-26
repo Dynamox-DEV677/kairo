@@ -49,6 +49,7 @@ const DRAWER_STUDENT = [
     items: [
       { to: 'kairo-os',       label: 'Kyno',           icon: Brain },
       { to: 'doubt',          label: "Kyno's Solver",     icon: MessageCircle },
+      { to: 'camera-live',    label: 'Study Mode · Live',  icon: Camera },
       { to: 'mistakes',       label: 'Mistake Analysis',   icon: Activity },
       { to: 'explain-mistake',label: 'Explain Mistake',    icon: AlertTriangle },
       { to: 'teach-back',     label: 'Teach Back',         icon: GraduationCap },
@@ -59,7 +60,6 @@ const DRAWER_STUDENT = [
     title: 'Tools',
     items: [
       { to: 'flashcards',   label: 'Flashcards',     icon: BookMarked },
-      { to: 'camera-live',  label: 'Study Mode · Live', icon: Camera },
       { to: 'camera',       label: 'Camera Study',   icon: Camera },
       { to: 'concept-map',  label: 'Concept Map',    icon: Network },
       { to: 'knowledge',    label: 'Knowledge Graph', icon: Network },
@@ -169,19 +169,32 @@ interface MobileShellProps {
   onLogout?:   () => void
 }
 
+// Pages that take over the whole screen and supply their own chrome.
+const IMMERSIVE_PAGES = new Set(['camera-live'])
+
 export default function MobileShell(props: MobileShellProps) {
   const [drawerOpen, setDrawerOpen] = useState(false)
+  const immersive = IMMERSIVE_PAGES.has(props.active)
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setDrawerOpen(false) }
+    // immersive pages (Study Mode) open this drawer from their own floating dock
+    const onOpen = () => setDrawerOpen(true)
     window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
+    window.addEventListener('kyno:open-drawer', onOpen)
+    return () => {
+      window.removeEventListener('keydown', onKey)
+      window.removeEventListener('kyno:open-drawer', onOpen)
+    }
   }, [])
+
+  // close the drawer when navigating away
+  useEffect(() => { setDrawerOpen(false) }, [props.active])
 
   return (
     <>
-      <MobileTopBar {...props} onOpenDrawer={() => setDrawerOpen(true)} />
-      <BottomNav {...props} onOpenMore={() => setDrawerOpen(true)} />
+      {!immersive && <MobileTopBar {...props} onOpenDrawer={() => setDrawerOpen(true)} />}
+      {!immersive && <BottomNav {...props} onOpenMore={() => setDrawerOpen(true)} />}
       <AnimatePresence>
         {drawerOpen && (
           <MobileDrawer {...props} onClose={() => setDrawerOpen(false)} />
