@@ -279,33 +279,73 @@ router.post('/transcribe', async (req, res) => {
   }
 })
 
-// Voice out: real TTS (Orpheus) instead of the phone's robotic default voice.
-const TTS_VOICES = ['troy', 'hannah', 'austin']
-router.post('/speak', async (req, res) => {
-  const { text, voice } = req.body || {}
-  if (!text || typeof text !== 'string') return res.status(400).json({ error: 'text required' })
-  const v = TTS_VOICES.includes(voice) ? voice : 'hannah'
-  const key = readDevKey(req) || groqPool.next()
-  if (!key) return res.status(503).json({ error: 'no live Groq keys' })
+// ── Voice out ──────────────────────────────────────────────────────────────
+// The phone's built-in voice sounds robotic, so we try real TTS services in
+// order. All are free and keyless except Groq (which needs a one-time terms
+// acceptance). If every provider fails the client falls back to the system voice.
+const TTS_TIMEOUT = 9000
 
+async function fetchAudio(url, init = {}) {
+  const ctrl = new AbortController()
+  const t = setTimeout(() => ctrl.abort(), TTS_TIMEOUT)
   try {
-    const r = await fetch('https://api.groq.com/openai/v1/audio/speech', {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'canopylabs/orpheus-v1-english',
-        voice: v,
-        input: text.slice(0, 600),
-        response_format: 'wav',
-      }),
-    })
-    if (!r.ok) throw new Error(`tts ${r.status}: ${(await r.text()).slice(0, 160)}`)
+    const r = await fetch(url, { ...init, signal: ctrl.signal })
+    if (!r.ok) throw new Error(`${r.status}`)
+    const mime = (r.headers.get('content-type') || '').toLowerCase()
     const buf = Buffer.from(await r.arrayBuffer())
-    res.json({ audio: 'data:audio/wav;base64,' + buf.toString('base64'), voice: v })
-  } catch (e) {
-    console.warn('[camera/speak]', e.message)
-    res.status(502).json({ error: (e.message || 'tts failed').slice(0, 200) })
+    // guard: these endpoints return a text/JSON error body on failure
+    if (!/audio|mpeg|wav|ogg/.test(mime) || buf.length < 1200) throw new Error(`not audio (${mime || 'none'}, ${buf.length}b)`)
+    return { buf, mime: mime.split(';')[0] }
+  } finally { clearTimeout(t) }
+}
+
+// Amazon Polly voices — includes real Indian-English speakers
+const SE_VOICE = { indian_f: 'Raveena', indian_m: 'Aditi', uk_m: 'Brian', us_f: 'Joanna', us_m: 'Matthew' }
+// Pollinations (OpenAI voices)
+const POLLI_VOICE = { indian_f: 'nova', indian_m: 'onyx', uk_m: 'fable', us_f: 'shimmer', us_m: 'echo' }
+
+const TTS_PROVIDERS = [
+  {
+    name: 'streamelements',
+    run: (text, key) => fetchAudio(
+      `https://api.streamelements.com/kappa/v2/speech?voice=${encodeURIComponent(SE_VOICE[key] || 'Raveena')}&text=${encodeURIComponent(text.slice(0, 480))}`),
+  },
+  {
+    name: 'pollinations',
+    run: (text, key) => fetchAudio(
+      `https://text.pollinations.ai/${encodeURIComponent(text.slice(0, 480))}?model=openai-audio&voice=${POLLI_VOICE[key] || 'nova'}`),
+  },
+  {
+    name: 'groq-orpheus',
+    run: async (text, _key, groqKey) => {
+      if (!groqKey) throw new Error('no groq key')
+      const r = await fetch('https://api.groq.com/openai/v1/audio/speech', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${groqKey}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ model: 'canopylabs/orpheus-v1-english', voice: 'hannah', input: text.slice(0, 600), response_format: 'wav' }),
+      })
+      if (!r.ok) throw new Error(`${r.status}: ${(await r.text()).slice(0, 90)}`)
+      return { buf: Buffer.from(await r.arrayBuffer()), mime: 'audio/wav' }
+    },
+  },
+]
+
+router.post('/speak', async (req, res) => {
+  const { text, voice = 'indian_f' } = req.body || {}
+  if (!text || typeof text !== 'string') return res.status(400).json({ error: 'text required' })
+  const groqKey = readDevKey(req) || groqPool.next()
+
+  const tried = []
+  for (const p of TTS_PROVIDERS) {
+    try {
+      const { buf, mime } = await p.run(text, voice, groqKey)
+      return res.json({ audio: `data:${mime};base64,` + buf.toString('base64'), provider: p.name, voice })
+    } catch (e) {
+      tried.push(`${p.name}: ${(e.message || 'fail').slice(0, 60)}`)
+    }
   }
+  console.warn('[camera/speak] all TTS failed —', tried.join(' | '))
+  res.status(502).json({ error: 'no tts provider available', tried })
 })
 
 router.get('/status', (_req, res) => {
