@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, memo } from 'react'
+import { useState, useEffect, useCallback, memo, lazy, Suspense } from 'react'
 import Sidebar from '../components/Sidebar'
 import TopBar from '../components/TopBar'
 import MobileShell from '../components/MobileShell'
@@ -47,7 +47,9 @@ import KnowledgeGraph from './KnowledgeGraph'
 import League from './League'
 import TeacherAssistant from './TeacherAssistant'
 import ExplainMistake from './ExplainMistake'
-import KairoLabs from './KairoLabs'
+// Lazy: KairoLabs drags in three.js + @react-three (~1.3MB). Only load it
+// when a lab is actually opened.
+const KairoLabs = lazy(() => import('./KairoLabs'))
 import KairoOS from './KairoOS'
 import { DEFAULT_MODEL } from '../lib/openrouter'
 
@@ -347,7 +349,11 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
             {/* Rendered ONLY while active — unmounting is what releases the camera + torch. */}
             {active === 'camera-live' && <CameraLive onExit={() => setActive('kairo-os')} />}
 
-            <div style={pageStyle('labs')}>{mounted('labs') && <KairoLabs active={active === 'labs'} />}</div>
+            <div style={pageStyle('labs')}>{mounted('labs') && (
+              <Suspense fallback={<div style={{ padding: 28, color: '#9CA3AF', fontSize: 13 }}>Loading labs…</div>}>
+                <KairoLabs active={active === 'labs'} />
+              </Suspense>
+            )}</div>
 
             <div style={pageStyle('kairo-os')}>{mounted('kairo-os') && <KairoOSM />}</div>
 

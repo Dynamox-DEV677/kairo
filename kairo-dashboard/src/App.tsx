@@ -1,6 +1,8 @@
-﻿import { useState, useEffect } from 'react'
+﻿import { useState, useEffect, lazy, Suspense } from 'react'
 import './index.css'
-import Dashboard from './pages/Dashboard'
+// Lazy: the dashboard pulls in every page (plus three.js and the markdown stack).
+// Loading it eagerly meant ~3MB of JS before a user could even sign in.
+const Dashboard = lazy(() => import('./pages/Dashboard'))
 import Login, { type AuthProfile } from './pages/Login'
 import { GenerationProvider } from './lib/generationContext'
 import { supabase } from './lib/supabase'
@@ -326,7 +328,9 @@ export default function App() {
 
   return (
     <GenerationProvider>
-      <Dashboard profile={profile} onLogout={handleLogout} />
+      <Suspense fallback={<SplashScreen />}>
+        <Dashboard profile={profile} onLogout={handleLogout} />
+      </Suspense>
       {onboard === 'open' && (
         <Onboarding
           profile={profile}
