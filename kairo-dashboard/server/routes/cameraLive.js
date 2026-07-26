@@ -299,21 +299,40 @@ async function fetchAudio(url, init = {}) {
   } finally { clearTimeout(t) }
 }
 
-// Amazon Polly voices — includes real Indian-English speakers
-const SE_VOICE = { indian_f: 'Raveena', indian_m: 'Aditi', uk_m: 'Brian', us_f: 'Joanna', us_m: 'Matthew' }
-// Pollinations (OpenAI voices)
-const POLLI_VOICE = { indian_f: 'nova', indian_m: 'onyx', uk_m: 'fable', us_f: 'shimmer', us_m: 'echo' }
+// Accent codes for the Google TTS voice (verified working, free, no key).
+const GT_LANG = { indian_f: 'en-IN', indian_m: 'en-IN', uk_m: 'en-GB', us_f: 'en-US', us_m: 'en-US', au: 'en-AU' }
+
+// That endpoint caps at ~200 chars, so split on sentence boundaries and
+// concatenate the MP3 chunks (MP3 frames join cleanly for playback).
+function chunkText(text, max = 185) {
+  const parts = []
+  let cur = ''
+  for (const piece of String(text).split(/(?<=[.!?,;:])\s+/)) {
+    for (const seg of (piece.length > max ? piece.match(new RegExp(`.{1,${max}}(\\s|$)`, 'g')) || [piece] : [piece])) {
+      if ((cur + ' ' + seg).trim().length > max) { if (cur.trim()) parts.push(cur.trim()); cur = seg }
+      else cur = (cur + ' ' + seg).trim()
+    }
+  }
+  if (cur.trim()) parts.push(cur.trim())
+  return parts.slice(0, 6)
+}
 
 const TTS_PROVIDERS = [
   {
-    name: 'streamelements',
-    run: (text, key) => fetchAudio(
-      `https://api.streamelements.com/kappa/v2/speech?voice=${encodeURIComponent(SE_VOICE[key] || 'Raveena')}&text=${encodeURIComponent(text.slice(0, 480))}`),
-  },
-  {
-    name: 'pollinations',
-    run: (text, key) => fetchAudio(
-      `https://text.pollinations.ai/${encodeURIComponent(text.slice(0, 480))}?model=openai-audio&voice=${POLLI_VOICE[key] || 'nova'}`),
+    name: 'google',
+    run: async (text, key) => {
+      const tl = GT_LANG[key] || 'en-IN'
+      const chunks = chunkText(text)
+      const bufs = []
+      for (const c of chunks) {
+        const { buf } = await fetchAudio(
+          `https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=${tl}&q=${encodeURIComponent(c)}`,
+          { headers: { 'User-Agent': 'Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 Chrome/120 Mobile Safari/537.36', 'Referer': 'https://translate.google.com/' } })
+        bufs.push(buf)
+      }
+      if (!bufs.length) throw new Error('no chunks')
+      return { buf: Buffer.concat(bufs), mime: 'audio/mpeg' }
+    },
   },
   {
     name: 'groq-orpheus',
