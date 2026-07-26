@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
+import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   ArrowLeft, Zap, ZapOff, Camera, Lightbulb, BookmarkPlus, Menu,
@@ -333,7 +334,10 @@ export default function CameraLive({ onExit }: { onExit?: () => void }) {
   const statusTone = grade?.status === 'correct' ? '#34d399'
     : grade?.status === 'mistake' ? 'var(--c-error)' : 'var(--c-cyan)'
 
-  return (
+  // Portalled to <body>: an ancestor page wrapper sets `will-change: transform`,
+  // which would otherwise become the containing block and clip this fixed overlay
+  // to the content column instead of the whole screen.
+  return createPortal(
     <div style={{ position: 'fixed', inset: 0, background: '#000', overflow: 'hidden', zIndex: 60 }}>
       <video ref={videoRef} playsInline muted autoPlay
         style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -517,7 +521,8 @@ export default function CameraLive({ onExit }: { onExit?: () => void }) {
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+    </div>,
+    document.body,
   )
 }
 
