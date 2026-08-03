@@ -5,8 +5,12 @@
 // handwriting. Frames are analysed in memory and never stored or logged.
 import express from 'express'
 import groqPool from '../services/groqPool.js'
+import { withSlot } from '../utils/ai.js'
 
 const router = express.Router()
+
+// Vercel Hobby kills the function at 10s — bail first so we own the error.
+const CAMERA_TIMEOUT_MS = Number(process.env.AI_TIMEOUT_MS || 8500)
 
 const GROQ_VISION   = 'qwen/qwen3.6-27b'
 const GEMINI_MODEL  = 'gemini-2.5-flash'
@@ -81,8 +85,11 @@ async function callGemini(prompt, image, wantJson) {
 async function callGroqVision(prompt, image, devKey) {
   const key = devKey || groqPool.next()
   if (!key) throw new Error('no live Groq keys')
-  const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+  // Camera frames are the heaviest payloads we send; share the global gate and
+  // never let one hang past Vercel's function ceiling.
+  const r = await withSlot(() => fetch('https://api.groq.com/openai/v1/chat/completions', {
     method: 'POST',
+    signal: AbortSignal.timeout(CAMERA_TIMEOUT_MS),
     headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({
       model: GROQ_VISION,
@@ -93,7 +100,7 @@ async function callGroqVision(prompt, image, devKey) {
         { type: 'image_url', image_url: { url: image } },
       ] }],
     }),
-  })
+  }))
   if (!r.ok) {
     if (!devKey && (r.status === 429 || r.status >= 500)) { try { groqPool.markBad(key, r.status) } catch {  } }
     throw new Error(`groq/${GROQ_VISION} ${r.status}: ${(await r.text()).slice(0, 160)}`)

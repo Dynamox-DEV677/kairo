@@ -2,8 +2,13 @@ import express from 'express'
 import { searchManyParallel } from '../services/imageSearch.js'
 import { supabaseAdmin } from '../services/supabase.js'
 import groqPool from '../services/groqPool.js'
+import { withSlot, loadLevel } from '../utils/ai.js'
 
 const router = express.Router()
+
+// Vercel Hobby kills the function at 10s. Bail at 8.5s so we own the failure
+// and can return a readable message instead of a platform-level timeout.
+const UPSTREAM_TIMEOUT_MS = Number(process.env.AI_TIMEOUT_MS || 8500)
 
 const SOLVER_CACHE = new Map()
 const SOLVER_CACHE_TTL_MS = 24 * 60 * 60 * 1000
@@ -172,15 +177,24 @@ router.post('/chat', async (req, res) => {
   try {
     let upstream = null
     let lastErr  = null
-    for (const m of order) {
+    // Two passes over the model list: a 429 is usually transient, and rotating
+    // to a fresh pool key on the second pass recovers most of them.
+    const attempts = [...order, ...order]
+    for (let i = 0; i < attempts.length; i++) {
+      const m = attempts[i]
       const key = devKey || groqPool.next()
       if (!key) { lastErr = new Error('no live Groq keys (all cooling or none configured)'); break }
       try {
-        const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        // Hold one global upstream slot so 50 students don't fire 50 concurrent
+        // requests and 429 each other. Released as soon as Groq accepts.
+        const r = await withSlot(() => fetch('https://api.groq.com/openai/v1/chat/completions', {
           method: 'POST',
           headers: { 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json' },
           body: JSON.stringify({ model: m, messages, stream, max_tokens: 2048 }),
-        })
+          // Vercel Hobby hard-kills the function at 10s; fail before that so we
+          // can still return a readable error instead of a platform timeout.
+          signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS),
+        }))
         if (!r.ok) {
           // Never cool the user's own BYOK key — only pool keys get marked bad.
           if (!devKey && (r.status === 429 || r.status >= 500)) {
@@ -194,6 +208,7 @@ router.post('/chat', async (req, res) => {
       } catch (e) {
         lastErr = e
         console.warn('[aiChat/chat] model failed, trying next:', e.message)
+        if (i < attempts.length - 1) await new Promise(r => setTimeout(r, 120 * (i + 1)))
       }
     }
     if (!upstream) {
@@ -458,7 +473,8 @@ async function callGroqOne(model, question, apiKey, timeout = 7000) {
     }
     // gpt-oss reasoning models take an explicit effort knob; llama models reject it.
     if (model.includes('gpt-oss')) payload.reasoning_effort = 'medium'
-    const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    // Share the global upstream gate with every other AI route.
+    const resp = await withSlot(() => fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       signal: ctrl.signal,
       headers: {
@@ -466,7 +482,7 @@ async function callGroqOne(model, question, apiKey, timeout = 7000) {
         'Content-Type':  'application/json',
       },
       body: JSON.stringify(payload),
-    })
+    }))
     if (!resp.ok) {
       // Only cool POOL keys — a caller-supplied (BYOK) key is never marked bad.
       if (!apiKey && (resp.status === 429 || resp.status >= 500)) {
@@ -514,22 +530,36 @@ async function getSolverPlan(question, devKey = null) {
   if (!devKey && groqStatus.live === 0) {
     throw new Error('No live Groq keys — set GROQ_API_KEYS in env (pool: ' + groqStatus.hint + ')')
   }
-  // Fire the smart models AND a fast safety net together (so the fallback stays warm),
-  // but PREFER the smartest model that succeeds — never just take whoever's fastest.
-  const smartTasks = SOLVER_SMART_MODELS.map(m => callGroqOne(m, question, devKey, 7000))
-  const fastTask   = callGroqOne(SOLVER_FAST_MODEL, question, devKey, 6000)
-  ;[...smartTasks, fastTask].forEach(t => t.catch(() => {}))  // avoid unhandled rejections
-  console.log(`[solver] smart-first: ${SOLVER_SMART_MODELS.join(' → ')} → ${SOLVER_FAST_MODEL} (pool: ${groqStatus.hint})`)
-
+  // Firing every model at once costs 3 upstream requests per question. That's a
+  // fine trade for latency when the server is quiet, but with a classroom online
+  // it multiplies load 3x and rate-limits everyone. So: race when idle, go
+  // strictly sequential when busy (1 request per question, same final quality).
+  const load = loadLevel()
   let winner = null
   const errs = []
-  for (const t of smartTasks) {
-    try { winner = await t; break }
-    catch (e) { errs.push(e.message) }
-  }
-  if (!winner) {
-    try { winner = await fastTask }
-    catch (e) { errs.push(e.message) }
+
+  if (load.busy) {
+    console.log(`[solver] busy (${load.active} active / ${load.queued} queued) → sequential`)
+    for (const m of [...SOLVER_SMART_MODELS, SOLVER_FAST_MODEL]) {
+      try { winner = await callGroqOne(m, question, devKey, 7000); break }
+      catch (e) { errs.push(e.message) }
+    }
+  } else {
+    // Fire the smart models AND a fast safety net together (so the fallback stays warm),
+    // but PREFER the smartest model that succeeds — never just take whoever's fastest.
+    const smartTasks = SOLVER_SMART_MODELS.map(m => callGroqOne(m, question, devKey, 7000))
+    const fastTask   = callGroqOne(SOLVER_FAST_MODEL, question, devKey, 6000)
+    ;[...smartTasks, fastTask].forEach(t => t.catch(() => {}))  // avoid unhandled rejections
+    console.log(`[solver] smart-first: ${SOLVER_SMART_MODELS.join(' → ')} → ${SOLVER_FAST_MODEL} (pool: ${groqStatus.hint})`)
+
+    for (const t of smartTasks) {
+      try { winner = await t; break }
+      catch (e) { errs.push(e.message) }
+    }
+    if (!winner) {
+      try { winner = await fastTask }
+      catch (e) { errs.push(e.message) }
+    }
   }
 
   if (!winner) {

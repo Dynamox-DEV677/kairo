@@ -30,13 +30,37 @@ function next() {
     const until = _deadUntil.get(k) || 0
     if (until <= now) return k
   }
-  return null
+  // everything is cooling — better to retry the least-recently-benched key
+  // than to hand the caller nothing
+  return reviveIfAllDead()
 }
 
 function markBad(key, statusCode) {
   if (!key) return
-  const ms = statusCode === 429 ? COOLDOWN_MS_DEFAULT : COOLDOWN_MS_5XX
+  let ms = statusCode === 429 ? COOLDOWN_MS_DEFAULT : COOLDOWN_MS_5XX
+
+  // With a small pool, benching a key for a full minute is self-inflicted
+  // downtime: one 429 can take the whole service offline. Scale the cooldown
+  // to how much slack we actually have.
+  const poolSize = loadKeys().length
+  if (poolSize <= 1)      ms = Math.min(ms, 4_000)
+  else if (poolSize <= 3) ms = Math.min(ms, 12_000)
+
   _deadUntil.set(key, Date.now() + ms)
+}
+
+/** Emergency valve: if every key is cooling, revive the one free soonest. */
+function reviveIfAllDead() {
+  const keys = loadKeys()
+  if (!keys.length) return null
+  const now = Date.now()
+  if (keys.some(k => (_deadUntil.get(k) || 0) <= now)) return null
+  let best = keys[0]
+  for (const k of keys) {
+    if ((_deadUntil.get(k) || 0) < (_deadUntil.get(best) || 0)) best = k
+  }
+  _deadUntil.delete(best)
+  return best
 }
 
 function status() {
@@ -56,4 +80,4 @@ function status() {
 }
 
 export default { next, markBad, status }
-export { next, markBad, status }
+export { next, markBad, status, reviveIfAllDead }
