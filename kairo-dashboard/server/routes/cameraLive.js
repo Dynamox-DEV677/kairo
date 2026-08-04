@@ -250,11 +250,31 @@ router.post('/analyze', async (req, res) => {
     if (!wantJson) return res.json({ mode, provider, markdown: stripThinking(text) })
 
     const data = parseJsonLoose(text)
-    if (!data) return res.status(502).json({ error: 'Could not read that frame clearly — try again.', mode })
+    if (!data) {
+      // The model answered but not with usable JSON. That is a model/prompt
+      // problem, not a lighting problem — say so, and log the actual reply so
+      // this is diagnosable instead of guesswork.
+      console.error('[camera/analyze] unparseable reply', mode, provider, JSON.stringify(String(text || '').slice(0, 300)))
+      return res.status(502).json({
+        error: text
+          ? `The ${provider} vision model returned an unreadable response. It may be overloaded — try again.`
+          : `The ${provider} vision model returned nothing. It may be down or rate limited.`,
+        mode, provider,
+      })
+    }
     return res.json({ mode, provider, ...data })
   } catch (e) {
     console.error('[camera/analyze]', mode, e.message)
-    return res.status(502).json({ error: (e.message || 'vision failed').slice(0, 200), mode })
+    // Turn the common upstream failures into something a student can act on.
+    const raw = String(e.message || 'vision failed')
+    const friendly =
+      /no live groq keys/i.test(raw) ? 'Vision service is not configured (no AI key on the server).'
+      : /\b429\b|rate limit/i.test(raw) ? 'Too many requests right now — wait a few seconds and try again.'
+      : /\b(404|decommissioned|does not exist|not found)\b/i.test(raw) ? 'The vision model is no longer available — this needs a server update.'
+      : /\b(500|502|503|529)\b|overload/i.test(raw) ? 'The vision service is overloaded — try again in a moment.'
+      : /abort|timeout/i.test(raw) ? 'The vision service timed out — try again.'
+      : raw.slice(0, 160)
+    return res.status(502).json({ error: friendly, mode, detail: raw.slice(0, 200) })
   }
 })
 

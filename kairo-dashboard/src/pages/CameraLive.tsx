@@ -65,6 +65,7 @@ export default function CameraLive({ onExit }: { onExit?: () => void }) {
   const sigRef     = useRef<number[] | null>(null)
   const lastCallRef= useRef(0)
   const busyRef    = useRef(false)
+  const lastErrRef = useRef('')   // real reason the last analyse failed
   const startedRef = useRef(Date.now())
   const recRef     = useRef<MediaRecorder | null>(null)
   const audioRef   = useRef<HTMLAudioElement | null>(null)
@@ -165,11 +166,31 @@ export default function CameraLive({ onExit }: { onExit?: () => void }) {
       })
       setCalls(c => c + 1)
       const j = await r.json().catch(() => null)
-      if (!r.ok) { if (j?.rateLimited) { setToast('Easy — too many frames. Pausing a moment.'); setTimeout(() => setToast(''), 2200) } return null }
+      if (!r.ok) {
+        if (j?.rateLimited) {
+          setToast('Easy — too many frames. Pausing a moment.')
+          setTimeout(() => setToast(''), 2200)
+        }
+        // Remember WHY it failed. Collapsing every failure to null made the UI
+        // blame the user's lighting for dead models, 502s and network drops.
+        lastErrRef.current = j?.error || `Vision service error (${r.status}).`
+        return null
+      }
+      lastErrRef.current = ''
       return j
-    } catch { return null }
+    } catch (e: any) {
+      lastErrRef.current = navigator.onLine
+        ? `Could not reach the vision service. ${String(e?.message || '').slice(0, 80)}`
+        : 'You appear to be offline.'
+      return null
+    }
     finally { busyRef.current = false; setThink(false) }
   }, [grabFrame])
+
+  /** Real reason the last analyse failed, or a lighting hint if there wasn't one. */
+  function failReason(fallback: string) {
+    return lastErrRef.current ? `⚠️ ${lastErrRef.current}` : fallback
+  }
 
   /* ── the live loop ── */
   useEffect(() => {
@@ -211,13 +232,13 @@ export default function CameraLive({ onExit }: { onExit?: () => void }) {
     const lvl = Math.min(4, hintLevel + 1)
     setHintLevel(lvl); setSheet('hint'); setHint('')
     const j = await analyze('hint', { question: detected?.question, level: lvl })
-    setHint(j?.hint || 'Could not read your working clearly — try steadying the camera.')
+    setHint(j?.hint || failReason('Could not read your working clearly — try steadying the camera.'))
   }
 
   async function doExplain() {
     setSheet('explain'); setExplain('')
     const j = await analyze('explain', { question: detected?.question })
-    setExplain(j?.markdown || '_Could not read that clearly — try again with better light._')
+    setExplain(j?.markdown || failReason('_Could not read that clearly — try again with better light._'))
   }
 
   async function makeFlashcards() {
