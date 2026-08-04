@@ -465,6 +465,56 @@ button, [role="button"], a, .kyno-tile, .kyno-chip {
   font-size: 16px !important;
 }
 
+/* ── Native form controls must not look like the OS default ─────────────
+   The dropdown POPUP is drawn by the operating system, not by us, so CSS on
+   `select` alone cannot restyle it — it rendered as a light-grey Android list
+   in the middle of a dark app. `color-scheme: dark` is the one property the
+   OS honours: it tells the platform to draw its native popup, scrollbars and
+   pickers in dark mode. Applied globally so every <select> in the app is
+   covered, not just the ones we remember to fix.                          */
+:root { color-scheme: dark; }
+
+select,
+input[type="date"],
+input[type="time"],
+input[type="datetime-local"],
+input[type="month"],
+input[type="week"] {
+  color-scheme: dark;
+}
+
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-color: rgba(255, 255, 255, 0.05);
+  color: #e7e9ee;
+  border: 1px solid rgba(165, 180, 252, 0.18);
+  border-radius: 12px;
+  padding: 10px 34px 10px 12px;
+  font-family: inherit;
+  cursor: pointer;
+  /* chevron drawn inline so there is no asset to load */
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none'%3E%3Cpath d='M1 1.5 6 6.5l5-5' stroke='%23A5B4FC' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  transition: border-color .18s ease, background-color .18s ease;
+}
+select:hover { border-color: rgba(165, 180, 252, 0.34); }
+select:focus-visible {
+  outline: none;
+  border-color: #7C5CFF;
+  box-shadow: 0 0 0 3px rgba(124, 92, 255, 0.22);
+}
+select:disabled { opacity: .5; cursor: default; }
+
+/* Android/Chrome do honour colours set directly on the options. */
+select option,
+select optgroup {
+  background-color: #12151f;
+  color: #e7e9ee;
+}
+select option:checked { background-color: #2a2450; color: #fff; }
+
 /* Headings on mobile a touch smaller to feel app-like */
 .kairo-mobile h1 { font-size: 18px !important; }
 
@@ -474,6 +524,21 @@ button, [role="button"], a, .kyno-tile, .kyno-chip {
 .kairo-mobile [style*="overflowY: 'auto'"],
 .kairo-mobile [style*="overflow: 'auto'"] {
   -webkit-overflow-scrolling: touch;
+}
+
+/* ── Reserve space for the floating bottom nav ───────────────────────────
+   The nav is position:fixed and paints over the page, so any scroll panel
+   that ends flush with the viewport hides its own last element behind it
+   (e.g. Battle Mode's final answer option was unreachable). Every scrollable
+   panel gets bottom clearance; scroll-padding keeps focused/scrolled-to
+   elements out from under it too.                                        */
+.kairo-mobile [style*="overflow-y: auto"],
+.kairo-mobile [style*="overflow: auto"],
+.kairo-mobile [style*="overflowY: 'auto'"],
+.kairo-mobile [style*="overflow: 'auto'"],
+.kairo-mobile [style*="overflow-y: scroll"] {
+  padding-bottom: calc(92px + env(safe-area-inset-bottom, 0px)) !important;
+  scroll-padding-bottom: calc(92px + env(safe-area-inset-bottom, 0px));
 }
 
 /* ── Hard universal mobile responsive layer ──────────────────────────────

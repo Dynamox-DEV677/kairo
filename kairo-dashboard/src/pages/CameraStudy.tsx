@@ -170,15 +170,25 @@ export default function CameraStudy() {
       setErr('Please upload an image file.')
       return
     }
-    if (file.size > 6 * 1024 * 1024) {
-      setErr('Image too large (max 6 MB). Try a smaller photo.')
+    // Do NOT reject on the raw file size: every image is downscaled to 1024px
+    // (a few hundred KB) before it is sent, so a normal 8-12 MB phone photo is
+    // perfectly fine. Only guard against something absurd that would stall the
+    // reader on a low-end device.
+    if (file.size > 40 * 1024 * 1024) {
+      setErr('That file is unusually large (over 40 MB). Try a photo instead.')
       return
     }
+    setErr('')
     const reader = new FileReader()
+    reader.onerror = () => setErr('Could not read that file. Try another photo.')
     reader.onload = async ev => {
-      const small = await downscaleImage(ev.target?.result as string)
-      setImageData(small)
-      setErr('')
+      try {
+        const small = await downscaleImage(ev.target?.result as string)
+        setImageData(small)
+        setErr('')
+      } catch {
+        setErr('Could not process that image. Try another photo.')
+      }
     }
     reader.readAsDataURL(file)
   }
