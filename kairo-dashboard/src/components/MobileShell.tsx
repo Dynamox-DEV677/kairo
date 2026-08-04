@@ -221,29 +221,28 @@ function MobileTopBar({
       .catch(() => {})
   }, [isAdmin, profile?.school_id])
 
-  // In the installed app (TWA runs immersive/fullscreen) there is no status bar,
-  // but the WebView still reports a small safe-area-inset-top — which inflates the
-  // header and shows as a ~10px gap. Zero it for the installed app; keep it in browsers.
-  const isInstalledApp = typeof window !== 'undefined' && (
-    (typeof document !== 'undefined' && document.referrer.startsWith('android-app://')) ||
-    (!!window.matchMedia && (
-      window.matchMedia('(display-mode: standalone)').matches ||
-      window.matchMedia('(display-mode: fullscreen)').matches
-    ))
-  )
-  const safeTop = isInstalledApp ? '0px' : 'env(safe-area-inset-top)'
+  // Status-bar handling differs by wrapper:
+  //  - old TWA build ran immersive (no status bar) so the reported inset was
+  //    spurious and we zeroed it,
+  //  - the current Capacitor build draws the OS status bar OVER the WebView,
+  //    so the inset is real and zeroing it hides the header behind the clock.
+  // Default to honouring the inset: a few px of extra padding is a far smaller
+  // problem than an unreachable menu button.
+  const isCapacitor = typeof window !== 'undefined' && !!(window as any).Capacitor
+  const isTwa = typeof document !== 'undefined' && document.referrer.startsWith('android-app://')
+  const safeTop = (isTwa && !isCapacitor) ? '0px' : 'env(safe-area-inset-top, 0px)'
 
   return (
     <div style={{
       position: 'sticky', top: 0, zIndex: 90,
       height: `calc(52px + ${safeTop})`,
-      paddingTop: safeTop,
       background: 'rgba(10, 13, 20, 0.9)',
-
-
       borderBottom: '1px solid rgba(165,180,252,0.12)',
       display: 'flex', alignItems: 'center', gap: 8,
+      // NOTE: the `padding` shorthand must come BEFORE paddingTop, or it
+      // silently wipes the safe-area inset out again.
       padding: '0 14px',
+      paddingTop: safeTop,
     }}>
       <button onClick={onOpenDrawer} aria-label="Menu" style={{
         width: 38, height: 38, borderRadius: 12,
