@@ -4,6 +4,7 @@ import { apiLimiter, aiLimiter } from './middleware/rateLimit.js'
 
 import aiChatRoutes from './routes/aiChat.js'
 import cameraLiveRoutes from './routes/cameraLive.js'
+import documentRoutes from './routes/document.js'
 
 import opsRoutes from './routes/ops.js'
 import cronRoutes from './routes/cron.js'
@@ -107,6 +108,7 @@ app.use([
 
 app.use('/api/ai',             aiChatRoutes)
 app.use('/api/camera',         cameraLiveRoutes)
+app.use('/api/document',       documentRoutes)
 app.use('/api/ops',            opsRoutes)
 app.use('/api/cron',           cronRoutes)
 app.use('/api/credentials',    credentialRoutes)

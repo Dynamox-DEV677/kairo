@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
   Send, StopCircle, Sparkles, Image as ImageIcon, Loader2,
   ChevronLeft, ChevronRight, Beaker, ExternalLink, BookOpen, Atom,
-  Mic, MicOff, Calendar, X,
+  Mic, MicOff, Calendar, X, Paperclip,
   FileText as TextIcon, MapPin as MapPinIcon,
   Box as Box3DIcon, LayoutPanelTop as BothIcon, Wand2,
 } from 'lucide-react'
@@ -112,6 +112,43 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
   const [autoSwitched, setAutoSwitched] = useState(false)
   const abortRef = useRef<AbortController | null>(null)
   const taRef = useRef<HTMLTextAreaElement>(null)
+
+  /* ── attached document: read once, then answer questions from it ── */
+  const docInputRef = useRef<HTMLInputElement>(null)
+  const [docBusy, setDocBusy] = useState(false)
+  const [docName, setDocName] = useState('')
+  const [docText, setDocText] = useState('')   // Kyno's reading of the document
+
+  async function readDocument(file: File) {
+    setDocBusy(true)
+    try {
+      const b64 = await new Promise<string>((resolve, reject) => {
+        const fr = new FileReader()
+        fr.onerror = () => reject(new Error('read failed'))
+        fr.onloadend = () => resolve(String(fr.result).split(',')[1] || '')
+        fr.readAsDataURL(file)
+      })
+      const r = await fetch('/api/document/read', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...aiHeaders() },
+        body: JSON.stringify({ file: b64, mime: file.type, name: file.name, mode: 'notes' }),
+      })
+      const j = await r.json().catch(() => null)
+      if (!r.ok || !j?.markdown) {
+        setDocName('')
+        setDocText('')
+        alert(j?.error || `Could not read that document (${r.status}).`)
+        return
+      }
+      setDocName(file.name)
+      setDocText(j.markdown)
+      setInput(prev => prev || `Explain the key ideas in ${file.name}`)
+    } catch (e: any) {
+      alert(`Could not read that document. ${String(e?.message || '').slice(0, 80)}`)
+    } finally {
+      setDocBusy(false)
+    }
+  }
   const recogRef = useRef<any>(null)
 
   useEffect(() => {
@@ -157,14 +194,19 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
     }
   }
 
-  async function ask(q: string) {
-    const question = q.trim()
-    if (!question || busy) return
+  async function ask(qRaw: string) {
+    const asked = qRaw.trim()
+    if (!asked || busy) return
+    // When a document is attached, ground the answer in it rather than in
+    // whatever the model happens to remember about the topic.
+    const question = docText
+      ? `${asked}\n\n--- Use this document the student attached ("${docName}") as the source of truth. If the answer is not in it, say so. ---\n${docText.slice(0, 12_000)}`
+      : asked
 
     setError('')
     setRetryHint('')
     setResp(null)
-    setTopic(question)
+    setTopic(asked)
     setInput('')
     setBusy(true)
     if (taRef.current) taRef.current.style.height = 'auto'
@@ -454,6 +496,26 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
 
 
       }}>
+        {docName && (
+          <span
+            title="Answers will be grounded in this document"
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: 6,
+              padding: '5px 10px', borderRadius: 999, flexShrink: 0,
+              background: 'rgba(124,92,255,0.14)',
+              border: '1px solid rgba(165,180,252,0.32)',
+              color: '#c7d2fe', fontSize: 11.5, fontWeight: 600,
+              maxWidth: 170, overflow: 'hidden',
+            }}>
+            <Paperclip size={12} />
+            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{docName}</span>
+            <X
+              size={12}
+              style={{ cursor: 'pointer', flexShrink: 0 }}
+              onClick={() => { setDocName(''); setDocText('') }}
+            />
+          </span>
+        )}
         <textarea
           ref={taRef}
           value={input}
@@ -470,6 +532,34 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
             padding: '8px 6px', lineHeight: 1.5, maxHeight: 140,
           }}
         />
+        {!busy && (
+          <>
+            <button
+              onClick={() => docInputRef.current?.click()}
+              title="Attach a PDF or notes — Kyno will read it and answer from it"
+              className="kr-tactile"
+              disabled={docBusy}
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 6,
+                padding: '8px 14px', borderRadius: 999,
+                background: 'rgba(255,255,255,0.03)',
+                border: '1px solid rgba(255,255,255,0.08)',
+                color: docBusy ? '#6B7280' : '#B1B5BA',
+                fontFamily: 'inherit', fontSize: 12, fontWeight: 600,
+                cursor: docBusy ? 'default' : 'pointer',
+              }}>
+              <Paperclip size={14} />
+              {docBusy ? 'Reading…' : (docName ? 'Change' : 'Document')}
+            </button>
+            <input
+              ref={docInputRef}
+              type="file"
+              accept="application/pdf,.pdf,.txt,.md,image/*"
+              style={{ display: 'none' }}
+              onChange={e => { const f = e.target.files?.[0]; if (f) readDocument(f); e.currentTarget.value = '' }}
+            />
+          </>
+        )}
         {voiceSupported && !busy && (
           <button
             onClick={toggleVoice}

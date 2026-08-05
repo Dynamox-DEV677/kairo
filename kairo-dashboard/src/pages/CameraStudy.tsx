@@ -94,6 +94,9 @@ export default function CameraStudy() {
   const [activeAction, setActiveAction] = useState<string | null>(null)
   const [result, setResult]       = useState('')
   const [err, setErr]             = useState('')
+  const [docBusy, setDocBusy]     = useState(false)
+  const [docResult, setDocResult] = useState('')
+  const [docMeta, setDocMeta]     = useState('')
   const [showCamera, setShowCamera] = useState(false)
   const [streamRef, setStreamRef] = useState<MediaStream | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -165,9 +168,51 @@ export default function CameraStudy() {
     if (f) handleFile(f)
   }
 
+  /** PDFs / text files go to the document reader, not the vision pipeline. */
+  async function handleDocument(file: File) {
+    setErr('')
+    setDocBusy(true)
+    setDocResult('')
+    try {
+      const b64 = await new Promise<string>((resolve, reject) => {
+        const fr = new FileReader()
+        fr.onerror = () => reject(new Error('read failed'))
+        fr.onloadend = () => resolve(String(fr.result).split(',')[1] || '')
+        fr.readAsDataURL(file)
+      })
+      const r = await fetch('/api/document/read', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...aiHeaders() },
+        body: JSON.stringify({
+          file: b64,
+          mime: file.type || 'application/pdf',
+          name: file.name,
+          mode: 'explain',
+        }),
+      })
+      const j = await r.json().catch(() => null)
+      if (!r.ok || !j?.markdown) {
+        setErr(j?.error || `Could not read that document (${r.status}).`)
+        return
+      }
+      setDocResult(j.markdown)
+      setDocMeta(
+        j.source === 'text-pdf' ? `Read ${j.pages || '?'} pages of text directly from the PDF`
+        : j.source === 'vision' ? 'Read the pages visually'
+        : 'Read the file'
+      )
+    } catch (e: any) {
+      setErr(`Could not read that document. ${String(e?.message || '').slice(0, 80)}`)
+    } finally {
+      setDocBusy(false)
+    }
+  }
+
   function handleFile(file: File) {
+    const isDoc = /pdf|text\/|markdown/i.test(file.type) || /\.(pdf|txt|md)$/i.test(file.name)
+    if (isDoc) { handleDocument(file); return }
     if (!file.type.startsWith('image/')) {
-      setErr('Please upload an image file.')
+      setErr('Upload a photo, a PDF, or a .txt / .md file.')
       return
     }
     // Do NOT reject on the raw file size: every image is downscaled to 1024px
@@ -336,14 +381,14 @@ export default function CameraStudy() {
             Drag a photo here, or pick a source
           </p>
           <p style={{ fontSize: 12, color: '#6B7280', margin: '0 0 18px' }}>
-            JPG / PNG / HEIC up to 6 MB · works best with clear, in-focus shots
+            Photo (JPG / PNG / HEIC) or a PDF · works best with clear, in-focus shots
           </p>
           <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
             <button onClick={() => fileInputRef.current?.click()} className="kyno-chunky" style={{
               padding: '11px 18px', fontSize: 13,
               display: 'flex', alignItems: 'center', gap: 7,
             }}>
-              <Upload size={13} /> Upload Image
+              <Upload size={13} /> Upload Image or PDF
             </button>
             <button onClick={openCamera} className="kyno-ghost" style={{
               padding: '11px 18px', fontSize: 13,
@@ -355,10 +400,48 @@ export default function CameraStudy() {
           <input
             ref={fileInputRef}
             type="file"
-            accept="image/*"
+            accept="image/*,application/pdf,.pdf,.txt,.md"
             style={{ display: 'none' }}
             onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f) }}
           />
+        </div>
+      )}
+
+      {/* ── document reading (PDF / txt) ── */}
+      {docBusy && (
+        <div style={{
+          margin: '0 auto 18px', maxWidth: 720, padding: '14px 16px',
+          border: '1px solid rgba(165,180,252,0.18)', borderRadius: 14,
+          background: 'rgba(124,92,255,0.06)', color: '#c7d2fe', fontSize: 13,
+        }}>
+          Reading your document…
+        </div>
+      )}
+
+      {docResult && !docBusy && (
+        <div style={{
+          margin: '0 auto 18px', maxWidth: 720, padding: '18px 20px',
+          border: '1px solid rgba(165,180,252,0.18)', borderRadius: 16,
+          background: 'rgba(255,255,255,0.03)',
+        }}>
+          <div style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            gap: 10, marginBottom: 10,
+          }}>
+            <span style={{ fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#8b8b93' }}>
+              {docMeta || 'Document'}
+            </span>
+            <button
+              onClick={() => { setDocResult(''); setDocMeta('') }}
+              className="kyno-ghost"
+              style={{ padding: '5px 12px', fontSize: 12 }}
+            >
+              Clear
+            </button>
+          </div>
+          <div style={{ fontSize: 14, lineHeight: 1.75, color: '#e7e9ee', whiteSpace: 'pre-wrap' }}>
+            {docResult}
+          </div>
         </div>
       )}
 
