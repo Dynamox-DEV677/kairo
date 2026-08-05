@@ -1,13 +1,25 @@
 import { Router } from 'express'
 import { supabaseAdmin, SUPABASE_CONFIGURED } from '../services/supabase.js'
+import { optionalAuth } from '../middleware/auth.js'
 
 const router = Router()
 
-router.post('/xp', async (req, res) => {
+// SECURITY: the score row is keyed by user_id, so taking that id from the
+// request body let anyone rewrite any student's leaderboard XP. Signed-in
+// callers are pinned to their own token identity. Anonymous/device-id players
+// are still allowed (the app works logged-out) but can only write a device
+// row, never a real account's.
+router.post('/xp', optionalAuth, async (req, res) => {
   if (!SUPABASE_CONFIGURED) return res.json({ ok: false, offline: true })
-  const { user_id, name = 'Student', week, xp } = req.body || {}
-  if (!user_id || !week || typeof xp !== 'number') {
-    return res.status(400).json({ error: 'user_id, week, xp required' })
+  const { name = 'Student', week, xp } = req.body || {}
+  const bodyId = (req.body?.user_id || '').toString()
+  const tokenId = (req.user?.id || req.user?.sub || '').toString()
+
+  // Signed in -> always the token's id. Signed out -> only a device- id.
+  const user_id = tokenId || (/^dev-[a-z0-9]{4,}$/i.test(bodyId) ? bodyId : '')
+  if (!user_id) return res.status(401).json({ error: 'Sign in to appear on the leaderboard.' })
+  if (!week || typeof xp !== 'number') {
+    return res.status(400).json({ error: 'week and xp required' })
   }
   try {
     const { error } = await supabaseAdmin

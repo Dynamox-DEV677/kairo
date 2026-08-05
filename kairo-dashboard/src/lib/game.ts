@@ -1,5 +1,6 @@
 import { getRaw, setRaw } from './storage'
 import { addNotification } from './notifications'
+import { post } from './api'
 
 const KEY = 'kairo:game:v1'
 const STREAK_MILESTONES = [3, 7, 14, 30, 50, 100, 200, 365]
@@ -276,10 +277,10 @@ function syncLeague(s: GameState) {
   clearTimeout(_syncTimer)
   _syncTimer = setTimeout(() => {
     const { id, name } = userIdentity()
-    fetch('/api/league/xp', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ user_id: id, name, week: s.weekKey, xp: s.weekXP }),
-    }).catch(() => {  })
+    // Use the api helper so the auth token is attached — the server now takes
+    // the identity from the token, not from a body field anyone could forge.
+    post('/league/xp', { user_id: id, name, week: s.weekKey, xp: s.weekXP })
+      .catch(() => {  })   // leaderboard sync is best-effort, never blocks play
   }, 1500)
 }
 

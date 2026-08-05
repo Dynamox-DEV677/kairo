@@ -54,16 +54,29 @@ router.get('/email-status', async (req, res) => {
   const transport = getTransporter()
   const transportReady = !!transport
 
+  // SECURITY: this used to send mail to ANY address supplied in the query
+  // string, unauthenticated, over GET — an open relay on our Gmail account
+  // (spam abuse, and Google suspends the sending account). The probe now only
+  // ever mails the configured account itself, and only when an operator token
+  // is supplied, so it stays useful as a diagnostic without being a weapon.
   const to = (req.query.to || '').toString().trim()
   let probe = null
   if (to) {
-    if (!hasFrom || !hasPwd || !transportReady) {
+    const opsToken = process.env.OPS_TOKEN || ''
+    const supplied = (req.headers['x-ops-token'] || '').toString()
+    const selfOnly = to.toLowerCase() === String(process.env.KAIRO_EMAIL || '').toLowerCase()
+
+    if (!opsToken || supplied !== opsToken) {
+      probe = { ok: false, reason: 'probe-requires-ops-token' }
+    } else if (!selfOnly) {
+      probe = { ok: false, reason: 'probe-can-only-mail-the-configured-account' }
+    } else if (!hasFrom || !hasPwd || !transportReady) {
       probe = { ok: false, reason: 'transport-not-configured' }
     } else {
       try {
         const info = await transport.sendMail({
           from:    process.env.KAIRO_EMAIL,
-          to,
+          to:      process.env.KAIRO_EMAIL,
           subject: 'Kyno · email diagnostic test',
           text:    'If you got this, KAIRO_EMAIL + KAIRO_EMAIL_APP_PASSWORD are working.',
         })
