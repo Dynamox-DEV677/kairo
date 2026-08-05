@@ -6,6 +6,26 @@ import { initPwa } from './lib/pwa'
 
 try { localStorage.removeItem('kairo:font') } catch {  }
 
+/* ── Portrait lock (phones only) ──────────────────────────────────────────
+   The layout is designed for a tall phone screen; rotating to landscape
+   squashes it. Tablets and desktops are left alone — they have the room.
+   Done in JS rather than the Android manifest so it ships with a normal
+   deploy instead of needing a new Play release.                            */
+function lockPortraitOnPhones() {
+  const isPhone = Math.min(window.screen.width, window.screen.height) < 600
+    && /Android|iPhone|iPod/i.test(navigator.userAgent)
+  if (!isPhone) return
+
+  const orientation: any = (screen as any)?.orientation
+  orientation?.lock?.('portrait').catch(() => {
+    // Browsers only allow lock() in fullscreen/installed contexts. When it is
+    // refused, fall back to a CSS overlay so the squashed layout is never what
+    // the student sees.
+    document.documentElement.classList.add('kyno-needs-portrait')
+  })
+}
+try { lockPortraitOnPhones() } catch {  }
+
 const REPORT_THROTTLE_MS = 5000
 let lastReportTs = 0
 function reportError(msg: string, extras: Record<string, any> = {}) {

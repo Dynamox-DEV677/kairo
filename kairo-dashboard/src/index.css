@@ -526,6 +526,22 @@ select option:checked { background-color: #2a2450; color: #fff; }
   -webkit-overflow-scrolling: touch;
 }
 
+/* ── Landscape fallback when the OS refuses an orientation lock ──────────
+   Only reached on short phone-height landscape screens, and only when JS
+   could not lock the orientation (lock() needs a fullscreen/installed
+   context, so browsers may refuse it).                                    */
+@media (orientation: landscape) and (max-height: 520px) {
+  html.kyno-needs-portrait body > #root { display: none; }
+  html.kyno-needs-portrait body::after {
+    content: "Turn your phone upright ↻";
+    position: fixed; inset: 0; z-index: 999998;
+    display: flex; align-items: center; justify-content: center;
+    background: #0A0D16; color: #c7d2fe;
+    font-family: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+    font-size: 15px; letter-spacing: 0.04em; text-align: center; padding: 24px;
+  }
+}
+
 /* ── Reserve space for the floating bottom nav ───────────────────────────
    The nav is position:fixed and paints over the page, so any scroll panel
    that ends flush with the viewport hides its own last element behind it

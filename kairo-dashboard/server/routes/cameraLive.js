@@ -12,11 +12,21 @@ const router = express.Router()
 // Vercel Hobby kills the function at 10s — bail first so we own the error.
 const CAMERA_TIMEOUT_MS = Number(process.env.AI_TIMEOUT_MS || 8500)
 
-const GROQ_VISION   = 'qwen/qwen3.6-27b'
-const GEMINI_MODEL  = 'gemini-2.5-flash'
+const GROQ_VISION   = process.env.GROQ_VISION_MODEL || 'qwen/qwen3.6-27b'
 const GEMINI_URL    = (m, k) => `https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${k}`
 
-const geminiKey = () => process.env.GEMINI_CAMERA_KEY || process.env.GEMINI_API_KEY || ''
+// Model choice is per-mode, because the live loop and a full explanation want
+// opposite things. Verified working 2026-08-04; gemini-2.5-flash (the previous
+// default here) is RETIRED and answers 404, which is why Camera Study broke.
+//   detect/grade — fire every few seconds, so latency dominates
+//   hint/explain/ask/report — occasional, so quality dominates
+const GEMINI_FAST = process.env.GEMINI_CAMERA_FAST || 'gemini-3.5-flash-lite'  // ~1.5s
+const GEMINI_DEEP = process.env.GEMINI_CAMERA_DEEP || 'gemini-3.6-flash'       // ~4.9s
+const FAST_MODES  = new Set(['detect', 'grade'])
+const geminiModelFor = (mode) => (FAST_MODES.has(mode) ? GEMINI_FAST : GEMINI_DEEP)
+
+const geminiKey = () =>
+  process.env.GEMINI_CAMERA_KEY || process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || ''
 
 // ── quota guard ────────────────────────────────────────────────────────────
 // Protects the free tier from a runaway client loop. Per-IP sliding window.
@@ -66,20 +76,34 @@ function parseJsonLoose(text) {
   return null
 }
 
-async function callGemini(prompt, image, wantJson) {
+async function callGemini(prompt, image, wantJson, mode = 'detect') {
   const key = geminiKey()
+  const model = geminiModelFor(mode)
   const { mime, b64 } = splitDataUrl(image)
   const body = {
     contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: mime, data: b64 } }] }],
-    generationConfig: { temperature: 0.2, maxOutputTokens: 1800,
-      ...(wantJson ? { responseMimeType: 'application/json' } : {}) },
+    generationConfig: {
+      temperature: 0.2,
+      // Live-loop calls stay small so they come back fast; explanations get room.
+      maxOutputTokens: FAST_MODES.has(mode) ? 700 : 1800,
+      ...(wantJson ? { responseMimeType: 'application/json' } : {}),
+    },
   }
-  const r = await fetch(GEMINI_URL(GEMINI_MODEL, key), {
-    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
-  })
-  if (!r.ok) throw new Error(`gemini ${r.status}: ${(await r.text()).slice(0, 160)}`)
+  const r = await withSlot(() => fetch(GEMINI_URL(model, key), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+    signal: AbortSignal.timeout(CAMERA_TIMEOUT_MS),
+  }))
+  if (!r.ok) throw new Error(`gemini/${model} ${r.status}: ${(await r.text()).slice(0, 160)}`)
   const d = await r.json()
-  return d?.candidates?.[0]?.content?.parts?.map(p => p.text).filter(Boolean).join('') || ''
+  const out = d?.candidates?.[0]?.content?.parts?.map(p => p.text).filter(Boolean).join('') || ''
+  if (!out) {
+    // Usually a safety block or a truncated reply — surface it, don't return ''.
+    const why = d?.candidates?.[0]?.finishReason || d?.promptFeedback?.blockReason || 'no content'
+    throw new Error(`gemini/${model} returned nothing (${why})`)
+  }
+  return out
 }
 
 async function callGroqVision(prompt, image, devKey) {
@@ -115,12 +139,32 @@ function readDevKey(req) {
   return /^gsk_[A-Za-z0-9]{20,}$/.test(k) ? k : ''
 }
 
-async function vision(prompt, image, { wantJson = true, devKey = '' } = {}) {
+/**
+ * Try Gemini first (stronger on handwriting), fall back to Groq.
+ * Both failing must report BOTH reasons — the old version threw away the
+ * Gemini error, so a dead Gemini model looked like a Groq problem.
+ */
+async function vision(prompt, image, { wantJson = true, devKey = '', mode = 'detect' } = {}) {
+  const errors = []
+
   if (geminiKey()) {
-    try { return { text: await callGemini(prompt, image, wantJson), provider: 'gemini' } }
-    catch (e) { console.warn('[camera] gemini failed, falling back to groq:', e.message) }
+    try { return { text: await callGemini(prompt, image, wantJson, mode), provider: 'gemini' } }
+    catch (e) {
+      errors.push(`gemini: ${e.message}`)
+      console.warn('[camera] gemini failed, falling back to groq:', e.message)
+    }
+  } else {
+    errors.push('gemini: no key configured')
   }
-  return { text: await callGroqVision(prompt, image, devKey), provider: 'groq' }
+
+  try {
+    return { text: await callGroqVision(prompt, image, devKey), provider: 'groq' }
+  } catch (e) {
+    errors.push(`groq: ${e.message}`)
+    const err = new Error(errors.join(' | '))
+    err.allProvidersFailed = true
+    throw err
+  }
 }
 
 // ── prompts ────────────────────────────────────────────────────────────────
@@ -246,7 +290,7 @@ router.post('/analyze', async (req, res) => {
 
   const wantJson = mode !== 'explain'
   try {
-    const { text, provider } = await vision(build(context), image, { wantJson, devKey: readDevKey(req) })
+    const { text, provider } = await vision(build(context), image, { wantJson, devKey: readDevKey(req), mode })
     if (!wantJson) return res.json({ mode, provider, markdown: stripThinking(text) })
 
     const data = parseJsonLoose(text)
