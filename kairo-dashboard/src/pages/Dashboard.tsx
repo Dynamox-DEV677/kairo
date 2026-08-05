@@ -190,7 +190,9 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
     <div className={isMobile ? 'kairo-mobile' : 'kairo-desktop'} style={{
       display: 'flex',
       flexDirection: isMobile ? 'column' : 'row',
-      height: '100vh',
+      // dvh shrinks when the Android keyboard opens; vh does not, which pushed
+      // the chat composer and bottom nav underneath it.
+      height: '100dvh',
       overflow: 'hidden',
       background: isDark ? '#0A0D16' : '#f4f4f5',
       color:      isDark ? '#fafafa' : '#18181b',
@@ -234,7 +236,10 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
 
             <XPToast />
 
-            <ErrorBoundary>
+            {/* Re-keyed on the active page: without this, one page throwing
+                leaves EVERY tab showing the error screen until a full reload,
+                because the boundary's hasError never clears on navigation. */}
+            <ErrorBoundary key={active}>
 
             <div style={pageStyle('home')}>{mounted('home') && <KairoHomeM onNavigate={setActive} />}</div>
 

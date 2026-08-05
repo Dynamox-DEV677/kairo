@@ -26,7 +26,17 @@ function loadProfile(): Profile {
   try {
     const raw = localStorage.getItem(PROFILE_KEY)
     if (raw) {
-      const saved = { ...defaultProfile(), ...JSON.parse(raw) }
+      // A spread lets a stored null/string OVERWRITE a default array, so an
+      // older saved profile made `profile.examDates.map(...)` throw on the home
+      // screen. Merge first, then force the list fields back to real arrays.
+      const base = defaultProfile()
+      const merged = { ...base, ...JSON.parse(raw) }
+      const saved = {
+        ...merged,
+        examDates:    Array.isArray(merged.examDates)    ? merged.examDates    : base.examDates,
+        weakTopics:   Array.isArray(merged.weakTopics)   ? merged.weakTopics   : base.weakTopics,
+        strongTopics: Array.isArray(merged.strongTopics) ? merged.strongTopics : base.strongTopics,
+      }
       try {
         const p = JSON.parse(localStorage.getItem('kairo_profile') || '{}')
         if (p.name) saved.name = p.name

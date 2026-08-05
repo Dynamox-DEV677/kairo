@@ -100,9 +100,13 @@ export default function GeoVisualMode({
   }, [geography.name, geography.lat, topic])
 
   const located = geography.lat != null || resolved != null
-  const effectiveLat = geography.lat ?? resolved?.lat ?? FALLBACK_COORDS[geography.kind].lat
-  const effectiveLng = geography.lng ?? resolved?.lng ?? FALLBACK_COORDS[geography.kind].lng
-  const effectiveZoom = geography.zoom || FALLBACK_COORDS[geography.kind].zoom
+  // `kind` is produced by the model, so it is NOT guaranteed to be one of the
+  // keys above — "lake", "valley", "plateau" all appear in real answers. An
+  // unknown kind used to throw on `.lat` and take the whole app down with it.
+  const fallback = FALLBACK_COORDS[geography.kind] ?? FALLBACK_COORDS.other
+  const effectiveLat = geography.lat ?? resolved?.lat ?? fallback.lat
+  const effectiveLng = geography.lng ?? resolved?.lng ?? fallback.lng
+  const effectiveZoom = geography.zoom || fallback.zoom
 
   return (
     <div style={{

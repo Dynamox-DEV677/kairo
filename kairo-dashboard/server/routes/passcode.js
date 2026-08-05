@@ -141,8 +141,11 @@ router.post('/send-otp', async (req, res) => {
     console.warn('[passcode/send-otp] email send failed:', e?.message)
   }
 
-  const isDev = (req.hostname || '').includes('localhost') ||
-                (req.headers['x-forwarded-for'] || '').includes('127.0.0.1')
+  // SECURITY: this previously trusted `x-forwarded-for` — a header the CLIENT
+  // sends. Anyone could set it to 127.0.0.1, request a code for any email, and
+  // read that account's login OTP straight out of the response. The only safe
+  // signal is server-side configuration, never anything from the request.
+  const isDev = process.env.NODE_ENV !== 'production' && process.env.ALLOW_DEV_OTP === '1'
 
   res.status(200).json({
     ok:        true,
