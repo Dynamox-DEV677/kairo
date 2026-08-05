@@ -1,20 +1,22 @@
 // Document reading for Kyno Solver and Camera Study.
 //
+// Groq only — no other providers.
+//
 // Strategy, cheapest-first so it works on the free tier with no extra keys:
 //   1. Text PDF  -> extract locally with node:zlib (no API, no cost) and answer
-//                   with the normal Groq pipeline.
-//   2. Scanned PDF (no extractable text) -> Gemini if a key is configured,
-//      otherwise tell the student to photograph the page instead.
-//   3. Plain text / markdown -> straight to the model.
+//                   through the normal Groq pipeline.
+//   2. Scanned PDF (no extractable text) -> Groq's vision model reads images,
+//      not PDF containers, so we tell the student to photograph the page.
+//   3. Image -> Groq vision.
+//   4. Plain text / markdown -> straight to the model.
 import express from 'express';
-import { aiCall } from '../utils/ai.js';
+import groqPool from '../services/groqPool.js';
+import { aiCall, withSlot } from '../utils/ai.js';
 import { extractPdfText, countPdfPages } from '../utils/pdf.js';
 
 const router = express.Router();
 
 const MAX_B64 = 22_000_000;              // ~16 MB file
-const geminiKey = () => process.env.GEMINI_CAMERA_KEY || process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || '';
-const GEMINI_URL = (m, k) => `https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${k}`;
 
 const MODES = {
   explain: 'Explain this document to a CBSE student in clear, simple language. Cover the key ideas in order.',
@@ -24,22 +26,36 @@ const MODES = {
   doubt:   'The student is stuck on something in this document. Identify the hard part and teach it step by step.',
 };
 
-/** Ask Gemini to read a document it can see (used for scanned/image PDFs). */
-async function geminiRead(b64, mime, instruction) {
-  const key = geminiKey();
-  if (!key) return null;
-  const r = await fetch(GEMINI_URL(process.env.GEMINI_DOC_MODEL || 'gemini-2.5-flash', key), {
+/**
+ * Read a page image with Groq's vision model (same one Camera Study uses).
+ * Used for scanned PDFs and image uploads, where there is no text to extract.
+ */
+async function visionRead(b64, mime, instruction) {
+  const key = groqPool.next();
+  if (!key) throw new Error('no live Groq keys');
+  const r = await withSlot(() => fetch('https://api.groq.com/openai/v1/chat/completions', {
     method: 'POST',
-    headers: { 'content-type': 'application/json' },
+    headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
+    signal: AbortSignal.timeout(Number(process.env.AI_TIMEOUT_MS || 8500)),
     body: JSON.stringify({
-      contents: [{ parts: [{ text: instruction }, { inline_data: { mime_type: mime, data: b64 } }] }],
-      generationConfig: { temperature: 0.3, maxOutputTokens: 2048 },
+      model: process.env.GROQ_VISION_MODEL || 'qwen/qwen3.6-27b',
+      temperature: 0.3,
+      max_tokens: 4000,   // reasoning model: needs room to think AND answer
+      messages: [{ role: 'user', content: [
+        { type: 'text', text: instruction },
+        { type: 'image_url', image_url: { url: `data:${mime};base64,${b64}` } },
+      ] }],
     }),
-    signal: AbortSignal.timeout(45_000),
-  });
-  if (!r.ok) throw new Error(`gemini ${r.status}: ${(await r.text()).slice(0, 140)}`);
+  }));
+  if (!r.ok) {
+    if (r.status === 429 || r.status >= 500) { try { groqPool.markBad(key, r.status) } catch {} }
+    throw new Error(`groq ${r.status}: ${(await r.text()).slice(0, 140)}`);
+  }
   const j = await r.json();
-  return (j?.candidates?.[0]?.content?.parts || []).map(p => p.text).filter(Boolean).join('').trim() || null;
+  const out = (j?.choices?.[0]?.message?.content || '')
+    .replace(/<think>[\s\S]*?<\/think>/gi, '')
+    .trim();
+  return out || null;
 }
 
 /**
@@ -84,13 +100,10 @@ router.post('/read', async (req, res) => {
         return res.json({ ok: true, markdown, source: 'text-pdf', chars: text.length, pages });
       }
 
-      // ── 2. scanned PDF: needs eyes ──
-      try {
-        const md = await geminiRead(file, 'application/pdf', instruction);
-        if (md) return res.json({ ok: true, markdown: md, source: 'vision', pages });
-      } catch (e) {
-        console.warn('[document] gemini pdf failed:', e.message);
-      }
+      // ── 2. scanned PDF ──
+      // Groq's vision model accepts images, not PDF containers, so there is
+      // nothing useful to try here — say so plainly instead of burning a call.
+      console.warn(`[document] no extractable text in ${name} (${pages} pages) — likely scanned`);
       return res.status(422).json({
         error: 'This looks like a scanned PDF (pictures of pages, not text). Photograph the page with Camera Study instead — it reads handwriting and printed pages.',
         pages,
@@ -100,10 +113,10 @@ router.post('/read', async (req, res) => {
     // ── image: vision ──
     if (isImage) {
       try {
-        const md = await geminiRead(file, mime, instruction);
+        const md = await visionRead(file, mime, instruction);
         if (md) return res.json({ ok: true, markdown: md, source: 'vision' });
       } catch (e) {
-        console.warn('[document] gemini image failed:', e.message);
+        console.warn('[document] vision image failed:', e.message);
       }
       return res.status(422).json({ error: 'Image reading is unavailable right now — try Camera Study for photos of your work.' });
     }

@@ -155,9 +155,15 @@ export default function Settings() {
     setEmailErr('')
     setEmailStep('verifying')
     try {
+      // The server now identifies the account from this token — it no longer
+      // accepts a user_id from the body (that allowed account takeover).
       const r = await fetch('/api/account/email-change/verify', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ new_email: newEmail, code: emailCode, user_id: stored.id || '' }),
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('kairo_token') || ''}`,
+        },
+        body: JSON.stringify({ new_email: newEmail, code: emailCode }),
       })
       const j = await r.json().catch(() => ({}))
       if (!r.ok) throw new Error(j.error || 'Verification failed.')
