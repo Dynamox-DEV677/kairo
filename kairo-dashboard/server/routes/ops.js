@@ -1,5 +1,6 @@
 import { Router } from 'express'
 import { supabaseAdmin } from '../services/supabase.js'
+import { requireOpsToken } from '../middleware/opsAuth.js'
 
 const router = Router()
 
@@ -44,7 +45,9 @@ const FEATURES = [
   { id: 'health',         label: 'School Health Monitor',  route: 'health',        audience: 'admin' },
 ]
 
-router.get('/status', async (_req, res) => {
+// Operator-only. This aggregates user counts, database reachability and the
+// recent error log — none of it is safe to serve to the public, and it used to.
+router.get('/status', requireOpsToken, async (_req, res) => {
   const snapshot = {
     project:        'kairo-dashboard',
     timestamp:      new Date().toISOString(),
@@ -61,16 +64,10 @@ router.get('/status', async (_req, res) => {
       list:     FEATURES,
       byAudience: countByAudience(FEATURES),
     },
-    env: {
-      hasGroq:         !!(process.env.GROQ_API_KEYS || process.env.GROQ_API_KEY),
-      hasGemini:       !!process.env.GEMINI_API_KEY,
-      hasPexels:       !!process.env.PEXELS_API_KEY,
-      hasUnsplash:     !!process.env.UNSPLASH_ACCESS_KEY,
-      hasSupabase:     !!process.env.SUPABASE_URL || !!process.env.VITE_SUPABASE_URL,
-      hasServiceRole:  !!process.env.SUPABASE_SERVICE_ROLE_KEY,
-      hasRazorpay:     !!process.env.RAZORPAY_KEY_ID,
-      pwaEnabled:      process.env.ENABLE_PWA === 'true',
-    },
+    // `env` deliberately removed. Publishing which secrets this deployment
+    // holds tells an attacker which integrations are worth attacking and which
+    // are dead ends. It answered no operational question that /diagnose
+    // doesn't answer better.
   }
 
   try {
@@ -121,7 +118,12 @@ router.get('/health', (_req, res) => {
   res.json({ ok: true, ts: Date.now() })
 })
 
-router.get('/diagnose', async (_req, res) => {
+// Operator-only, and not only for the env-presence leak: an unauthenticated
+// caller could make this box fire a live Groq completion plus five outbound
+// fetches per request, which is a free way to burn the AI quota and the
+// function budget. The brief didn't flag this one — it leaks the same class of
+// information as /status did.
+router.get('/diagnose', requireOpsToken, async (_req, res) => {
   const start = Date.now()
   const checks = []
   const push = (name, status, details = '', latencyMs) =>
@@ -254,15 +256,20 @@ router.post('/error', (req, res) => {
   res.json({ ok: true, queueSize: ERROR_LOG.length })
 })
 
+/**
+ * commitMessage, repo, owner and deploymentId are gone on purpose.
+ *
+ * commitMessage was the worst of them: this repo's messages describe the
+ * vulnerabilities each commit closes ("Fix OTP login bypass…"), so the field
+ * published a running list of what had recently been exploitable — and, by
+ * omission, what had not been fixed yet. Nothing operational needed it; the
+ * SHA identifies the build.
+ */
 function readDeployInfo() {
   return {
     commit:        process.env.VERCEL_GIT_COMMIT_SHA || null,
     commitShort:   (process.env.VERCEL_GIT_COMMIT_SHA || '').slice(0, 7) || null,
-    commitMessage: process.env.VERCEL_GIT_COMMIT_MESSAGE || null,
     branch:        process.env.VERCEL_GIT_COMMIT_REF || null,
-    repo:          process.env.VERCEL_GIT_REPO_SLUG || null,
-    owner:         process.env.VERCEL_GIT_REPO_OWNER || null,
-    deploymentId:  process.env.VERCEL_DEPLOYMENT_ID || null,
     region:        process.env.VERCEL_REGION || null,
     env:           process.env.VERCEL_ENV || 'development',
     url:           process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null,

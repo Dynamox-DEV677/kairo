@@ -80,6 +80,15 @@ if (!process.env.GROQ_API_KEYS && !process.env.GROQ_API_KEY) {
 const app = express()
 
 app.use(express.json({ limit: '10mb' }))
+
+// Liveness probe. Exactly `{ ok: true }` — no version, no feature list, no
+// build info. Registered ahead of the rate limiter so uptime pings can't
+// exhaust the window and lock real users out.
+app.get('/api/health', (_req, res) => {
+  res.set('Cache-Control', 'no-store')
+  res.json({ ok: true })
+})
+
 app.use(apiLimiter)
 
 app.use((req, res, next) => {
@@ -171,98 +180,18 @@ app.use('/api/payments',       paymentRoutes)
 
 app.use('/api/twin',           twinRoutes)
 
+// Bare root probe for local dev. In production Vercel rewrites everything
+// that isn't /api/* to index.html, so this is unreachable there anyway — it
+// used to answer with the full feature inventory regardless.
 app.get('/health', (_req, res) => {
-  res.json({
-    status:    'ok',
-    version:   '3.0.0',
-    service:   'Kyno Education Platform Backend',
-    serverless: !!process.env.VERCEL,
-    features: [
-      'fee-reminders', 'auth', 'flashcards-srs', 'study-plans',
-      'essay-grader', 'exam-predictor', 'mock-tests', 'question-paper',
-      'lesson-plan', 'parent-message', 'admission-bot',
-      'attendance-alerts', 'timetable',
-      'schools-multitenant', 'users-v2', 'notes-pdf', 'notifications-rbac',
-      'tasks-homework', 'network-rules-wifi', 'school-admin-rbac',
-    ],
-    timestamp: new Date().toISOString(),
-  })
+  res.json({ ok: true })
 })
 
-app.get('/api', (_req, res) => {
-  res.json({
-    version: '3.0.0',
-    endpoints: {
-      auth:           ['POST /api/auth/register', 'POST /api/auth/login', 'GET /api/auth/me'],
-      flashcards:     ['POST /api/flashcards/generate', 'GET /api/flashcards', 'GET /api/flashcards/due', 'POST /api/flashcards/:id/review'],
-      study_plan:     ['POST /api/study-plan/create', 'GET /api/study-plan', 'PUT /api/study-plan/:id/progress'],
-      essay:          ['POST /api/essay/grade', 'GET /api/essay'],
-      exam:           ['POST /api/exam/predict', 'POST /api/exam/mock'],
-      question_paper: ['POST /api/question-paper/generate'],
-      lesson_plan:    ['POST /api/lesson-plan/generate'],
-      parent_message: ['POST /api/parent-message/generate', 'POST /api/parent-message/bulk'],
-      admission:      ['POST /api/admission/chat', 'POST /api/admission/lead', 'GET /api/admission/leads'],
-      attendance:     ['POST /api/attendance/log', 'POST /api/attendance/bulk', 'GET /api/attendance/at-risk'],
-      timetable:      ['POST /api/timetable', 'GET /api/timetable', 'GET /api/timetable/clashes', 'POST /api/timetable/generate'],
-      fees:           ['GET /api/fees', 'POST /api/fees', 'PUT /api/fees/:id'],
-      emails:         ['POST /api/emails/send-one', 'POST /api/emails/send-bulk', 'GET /api/emails/stats'],
-      schools: [
-        'POST /api/schools/register',
-        'GET  /api/schools/:id',
-        'GET  /api/schools/by-name/:name',
-        'GET  /api/schools/:id/members',
-        'GET  /api/schools/:id/stats',
-        'POST /api/schools/:id/regenerate-passcode',
-        'POST /api/schools/:id/teachers',
-        'POST /api/schools/:id/approve/:userId',
-        'POST /api/schools/:id/suspend/:userId',
-        'POST /api/schools/:id/reinstate/:userId',
-        'DELETE /api/schools/:id/members/:userId',
-        'POST /api/schools/:id/upload-logo',
-      ],
-      users_v2: [
-        'POST /api/users/register',
-        'POST /api/users/register-personal',
-        'POST /api/users/login',
-        'POST /api/users/forgot-password',
-        'POST /api/users/reset-password',
-        'GET  /api/users/profile',
-        'PUT  /api/users/profile',
-        'POST /api/users/join-school',
-        'GET  /api/users/school-members',
-        'POST /api/users/logout',
-      ],
-      dev_emails: [
-        'GET /api/dev/emails',
-        'GET /api/dev/emails/:id',
-        'GET /api/dev/emails/:id?fmt=text',
-        'GET /api/dev/emails/:id?raw=1',
-      ],
-      notes:  ['POST /api/notes', 'GET /api/notes', 'GET /api/notes/:id', 'PUT /api/notes/:id', 'DELETE /api/notes/:id', 'GET /api/notes/:id/pdf', 'GET /api/notes/subjects'],
-      notifications: ['POST /api/notifications', 'GET /api/notifications', 'GET /api/notifications/all', 'DELETE /api/notifications/:id'],
-      tasks: [
-        'POST /api/tasks',
-        'GET  /api/tasks',
-        'GET  /api/tasks/:id',
-        'PUT  /api/tasks/:id',
-        'DELETE /api/tasks/:id',
-        'POST /api/tasks/:id/submit',
-        'GET  /api/tasks/:id/submissions',
-        'PUT  /api/tasks/:id/submissions/:sid/grade',
-      ],
-      network_rules: [
-        'POST /api/network-rules',
-        'GET  /api/network-rules',
-        'GET  /api/network-rules/check',
-        'PUT  /api/network-rules/:id',
-        'DELETE /api/network-rules/:id',
-      ],
-    },
-  })
-})
-
+// Body must stay byte-identical to the 404 in middleware/opsAuth.js, so a
+// token-gated route is indistinguishable from one that doesn't exist. The old
+// message pointed at GET /api, which served the entire route inventory.
 app.use((_req, res) => {
-  res.status(404).json({ error: 'Route not found. Visit /api for full endpoint list.' })
+  res.status(404).json({ error: 'Route not found.' })
 })
 
 app.use((err, _req, res, _next) => {
