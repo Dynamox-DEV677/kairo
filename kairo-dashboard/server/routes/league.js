@@ -41,7 +41,7 @@ router.post('/xp', optionalSupabaseAuth, async (req, res) => {
       return res.json({ ok: false, offline: true, hint: 'run server/db/league_schema.sql in Supabase' })
     }
     console.error('[league] xp:', e)
-    res.status(500).json({ error: msg })
+    res.status(500).json({ error: { code: 'INTERNAL', message: 'Could not save your XP.' } })
   }
 })
 
@@ -57,7 +57,14 @@ router.get('/board', async (req, res) => {
       q = q.gte('week', `${month}-01`).lte('week', `${month}-31`)
     } else if (range !== 'all') {
       const week = String(req.query.week || '')
-      if (!week) return res.status(400).json({ error: 'week required' })
+      // Validate at the boundary. 'week' goes into a date column, so an
+      // ISO-week string like 2026-W33 reached Postgres, failed to parse, and
+      // the raw "invalid input syntax for type date" came back to the client.
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(week)) {
+        return res.status(400).json({
+          error: { code: 'BAD_INPUT', message: 'week must be a date (YYYY-MM-DD).', fields: ['week'] },
+        })
+      }
       q = q.eq('week', week)
     }
     const { data, error } = await q.limit(5000)
@@ -85,7 +92,8 @@ router.get('/board', async (req, res) => {
       return res.json({ offline: true, rows: [], rank: 0, hint: 'run server/db/league_schema.sql in Supabase' })
     }
     console.error('[league] board:', e)
-    res.status(500).json({ error: msg })
+    // Never hand a raw database message to the client.
+    res.status(500).json({ error: { code: 'INTERNAL', message: 'Could not load the leaderboard.' } })
   }
 })
 

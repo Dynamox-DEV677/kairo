@@ -2,7 +2,14 @@ import { Router } from 'express'
 import { db } from '../db/index.js'
 import { aiCall, parseJSON } from '../utils/ai.js'
 
+import { requireSupabaseAuth } from '../middleware/supabaseAuth.js'
+
 const router = Router()
+
+// PR1: these three served every row to anyone with no token at all, scoped
+// only by a school_id the CALLER supplied. Identity now comes from the
+// verified JWT and nothing else.
+router.use(requireSupabaseAuth)
 
 router.post('/create', async (req, res) => {
   const {
@@ -69,7 +76,7 @@ Rules:
     const plan = parseJSON(raw)
 
     const doc = await db.studyPlans.insertAsync({
-      school_id: req.body?.school_id || req.query?.school_id || 'demo_school',
+      school_id: req.schoolId || ('user:' + req.user.id),
       created_by: 'system',
       student_id: student_id || null,
       student_name: student_name || null,
@@ -92,7 +99,7 @@ Rules:
 router.get('/', async (req, res) => {
   try {
     const plans = await db.studyPlans
-      .findAsync({ school_id: req.body?.school_id || req.query?.school_id || 'demo_school' })
+      .findAsync({ school_id: req.schoolId || ('user:' + req.user.id) })
       .sort({ created_at: -1 })
     res.json(plans)
   } catch (e) {
@@ -102,7 +109,7 @@ router.get('/', async (req, res) => {
 
 router.get('/:id', async (req, res) => {
   try {
-    const plan = await db.studyPlans.findOneAsync({ _id: req.params.id, school_id: req.body?.school_id || req.query?.school_id || 'demo_school' })
+    const plan = await db.studyPlans.findOneAsync({ _id: req.params.id, school_id: req.schoolId || ('user:' + req.user.id) })
     if (!plan) return res.status(404).json({ error: 'Plan not found.' })
     res.json(plan)
   } catch (e) {
@@ -115,7 +122,7 @@ router.put('/:id/progress', async (req, res) => {
   if (!date || !subject || !topic) return res.status(400).json({ error: 'date, subject, topic required.' })
 
   try {
-    const plan = await db.studyPlans.findOneAsync({ _id: req.params.id, school_id: req.body?.school_id || req.query?.school_id || 'demo_school' })
+    const plan = await db.studyPlans.findOneAsync({ _id: req.params.id, school_id: req.schoolId || ('user:' + req.user.id) })
     if (!plan) return res.status(404).json({ error: 'Plan not found.' })
 
     const key = `${date}|${subject}|${topic}`
@@ -132,7 +139,7 @@ router.put('/:id/progress', async (req, res) => {
 })
 
 router.delete('/:id', async (req, res) => {
-  await db.studyPlans.removeAsync({ _id: req.params.id, school_id: req.body?.school_id || req.query?.school_id || 'demo_school' }, {})
+  await db.studyPlans.removeAsync({ _id: req.params.id, school_id: req.schoolId || ('user:' + req.user.id) }, {})
   res.json({ message: 'Plan deleted.' })
 })
 

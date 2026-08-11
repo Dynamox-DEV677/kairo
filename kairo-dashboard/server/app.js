@@ -158,7 +158,12 @@ app.use('/api/passcode',       passcodeRoutes)
 app.use('/api/notes',          notesRoutes)
 app.use('/api/notifications',  notificationsRoutes)
 
-app.use('/api/dev/emails',     devEmailPreviewRoutes)
+// Conditional registration, not a runtime guard: in production the handlers
+// are never mounted, so there is no code path to reach and nothing to bypass.
+// The dev email inbox shows OTPs and reset links in plaintext.
+if (process.env.NODE_ENV !== 'production') {
+  app.use('/api/dev/emails',   devEmailPreviewRoutes)
+}
 
 app.use('/api/tasks',          tasksRoutes)
 app.use('/api/network-rules',  networkRulesRoutes)

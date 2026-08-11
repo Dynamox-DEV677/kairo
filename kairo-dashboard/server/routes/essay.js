@@ -2,7 +2,14 @@ import { Router } from 'express'
 import { db } from '../db/index.js'
 import { aiCall, parseJSON } from '../utils/ai.js'
 
+import { requireSupabaseAuth } from '../middleware/supabaseAuth.js'
+
 const router = Router()
+
+// PR1: these three served every row to anyone with no token at all, scoped
+// only by a school_id the CALLER supplied. Identity now comes from the
+// verified JWT and nothing else.
+router.use(requireSupabaseAuth)
 
 router.post('/grade', async (req, res) => {
   const {
@@ -59,7 +66,7 @@ Be fair but exam-standard strict. No markdown.`
     const result = parseJSON(raw)
 
     const doc = await db.essays.insertAsync({
-      school_id: req.body?.school_id || req.query?.school_id || 'demo_school',
+      school_id: req.schoolId || ('user:' + req.user.id),
       graded_by: 'system',
       student_id: student_id || null,
       student_name: student_name || null,
@@ -81,7 +88,7 @@ Be fair but exam-standard strict. No markdown.`
 
 router.get('/', async (req, res) => {
   const { student_id, subject } = req.query
-  const q = { school_id: req.body?.school_id || req.query?.school_id || 'demo_school' }
+  const q = { school_id: req.schoolId || ('user:' + req.user.id) }
   if (student_id) q.student_id = student_id
   if (subject)    q.subject    = subject
   try {
@@ -94,7 +101,7 @@ router.get('/', async (req, res) => {
 
 router.get('/:id', async (req, res) => {
   try {
-    const essay = await db.essays.findOneAsync({ _id: req.params.id, school_id: req.body?.school_id || req.query?.school_id || 'demo_school' })
+    const essay = await db.essays.findOneAsync({ _id: req.params.id, school_id: req.schoolId || ('user:' + req.user.id) })
     if (!essay) return res.status(404).json({ error: 'Essay not found.' })
     res.json(essay)
   } catch (e) {
