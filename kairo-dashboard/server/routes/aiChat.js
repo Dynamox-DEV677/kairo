@@ -4,7 +4,13 @@ import { supabaseAdmin } from '../services/supabase.js'
 import groqPool from '../services/groqPool.js'
 import { withSlot, loadLevel } from '../utils/ai.js'
 
+import { requireSupabaseAuth } from '../middleware/supabaseAuth.js'
+
 const router = express.Router()
+
+// Phase 0: was reachable with no token at all. These call Groq on every
+// request, so an open endpoint is an open tab on the quota as well as the data.
+router.use(requireSupabaseAuth)
 
 // Vercel Hobby kills the function at 10s. Bail at 8.5s so we own the failure
 // and can return a readable message instead of a platform-level timeout.

@@ -1,7 +1,13 @@
 import { Router } from 'express'
 import { aiCall, parseJSON } from '../utils/ai.js'
 
+import { requireSupabaseAuth } from '../middleware/supabaseAuth.js'
+
 const router = Router()
+
+// Phase 0: was reachable with no token. These burn the Groq quota and touch
+// student data; identity comes from the verified JWT only.
+router.use(requireSupabaseAuth)
 
 router.post('/brief', async (req, res) => {
   const {

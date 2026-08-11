@@ -1,7 +1,14 @@
 import { Router } from 'express'
 import { db } from '../db/index.js'
 
+import { requireSupabaseAuth, requireRole } from '../middleware/supabaseAuth.js'
+
 const router = Router()
+
+// Phase 0: served school data to anyone who guessed an integer school_id.
+// No UI ships for these in v1, so the role check is the only guard.
+router.use(requireSupabaseAuth)
+router.use(requireRole('teacher', 'admin'))
 
 router.get('/', async (req, res) => {
   const { school_id } = req.query

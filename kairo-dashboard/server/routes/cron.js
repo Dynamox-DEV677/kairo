@@ -5,7 +5,10 @@ const router = express.Router()
 
 router.get('/cleanup', async (req, res) => {
   const secret = process.env.CRON_SECRET
-  if (secret && (req.headers.authorization || '') !== `Bearer ${secret}`) {
+  // Fails CLOSED. `if (secret && ...)` meant that forgetting the env var left
+  // the cron endpoints open to anyone, which is the opposite of what a guard
+  // is for -- and a missing env var is exactly when you least notice.
+  if (!secret || (req.headers.authorization || '') !== `Bearer ${secret}`) {
     return res.status(401).json({ error: 'unauthorized' })
   }
   try {

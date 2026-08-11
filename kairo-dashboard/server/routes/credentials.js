@@ -3,7 +3,14 @@ import { credentialLimiter } from '../middleware/rateLimit.js'
 import { saveCredentials, testSmtp, getGmail, deleteCredentials } from '../services/credentialService.js'
 import { isAppPassword, cleanAppPassword } from '../config/crypto.js'
 
+import { requireSupabaseAuth, requireRole } from '../middleware/supabaseAuth.js'
+
 const router = Router()
+
+// Phase 0: served school data to anyone who guessed an integer school_id.
+// No UI ships for these in v1, so the role check is the only guard.
+router.use(requireSupabaseAuth)
+router.use(requireRole('teacher', 'admin'))
 
 router.post('/save', credentialLimiter, async (req, res) => {
   const { school_id, gmail, app_password } = req.body

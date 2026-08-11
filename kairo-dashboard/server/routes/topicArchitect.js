@@ -1,7 +1,13 @@
 import { Router } from 'express'
 import { aiCall, parseJSON } from '../utils/ai.js'
 
+import { requireSupabaseAuth } from '../middleware/supabaseAuth.js'
+
 const router = Router()
+
+// Phase 0: was reachable with no token. These burn the Groq quota and touch
+// student data; identity comes from the verified JWT only.
+router.use(requireSupabaseAuth)
 
 const EXAM_CONTEXT = {
   neet: 'NEET (Indian medical entrance) — NCERT-rooted, single-correct MCQs, heavy Biology weight, no negative-marking surprises beyond standard -1.',

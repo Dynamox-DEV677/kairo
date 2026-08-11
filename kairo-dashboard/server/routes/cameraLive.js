@@ -7,7 +7,13 @@ import express from 'express'
 import groqPool from '../services/groqPool.js'
 import { withSlot } from '../utils/ai.js'
 
+import { requireSupabaseAuth } from '../middleware/supabaseAuth.js'
+
 const router = express.Router()
+
+// Phase 0: was reachable with no token at all. These call Groq on every
+// request, so an open endpoint is an open tab on the quota as well as the data.
+router.use(requireSupabaseAuth)
 
 // Vercel Hobby kills the function at 10s — bail first so we own the error.
 const CAMERA_TIMEOUT_MS = Number(process.env.AI_TIMEOUT_MS || 8500)

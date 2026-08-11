@@ -14,7 +14,13 @@ import groqPool from '../services/groqPool.js';
 import { aiCall, withSlot } from '../utils/ai.js';
 import { extractPdfText, countPdfPages } from '../utils/pdf.js';
 
-const router = express.Router();
+import { requireSupabaseAuth } from '../middleware/supabaseAuth.js'
+
+const router = express.Router()
+
+// Phase 0: was reachable with no token at all. These call Groq on every
+// request, so an open endpoint is an open tab on the quota as well as the data.
+router.use(requireSupabaseAuth)
 
 const MAX_B64 = 22_000_000;              // ~16 MB file
 
