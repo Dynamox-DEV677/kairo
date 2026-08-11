@@ -1,6 +1,11 @@
 import { Router } from 'express'
 import { supabaseAdmin, SUPABASE_CONFIGURED } from '../services/supabase.js'
-import { optionalAuth } from '../middleware/auth.js'
+// Must be the Supabase verifier, not the self-signed one in middleware/auth.js.
+// The client sends a Supabase access token; jwt.verify() against JWT_SECRET
+// cannot validate it, threw, and the swallowed catch left req.user undefined --
+// so a fully signed-in student fell through to the anonymous branch and got a
+// 401 on every single XP write. That is why XP never persisted.
+import { optionalSupabaseAuth } from '../middleware/supabaseAuth.js'
 
 const router = Router()
 
@@ -9,7 +14,7 @@ const router = Router()
 // callers are pinned to their own token identity. Anonymous/device-id players
 // are still allowed (the app works logged-out) but can only write a device
 // row, never a real account's.
-router.post('/xp', optionalAuth, async (req, res) => {
+router.post('/xp', optionalSupabaseAuth, async (req, res) => {
   if (!SUPABASE_CONFIGURED) return res.json({ ok: false, offline: true })
   const { name = 'Student', week, xp } = req.body || {}
   const bodyId = (req.body?.user_id || '').toString()

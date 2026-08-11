@@ -8,6 +8,24 @@ router.use(requireSupabaseAuth)
 
 const KINDS = ['flashcards', 'summary', 'doubt', 'concept_map', 'note', 'plan', 'grade']
 
+/**
+ * Every route here answered a missing `notebooks` table with a bare 500, which
+ * the client swallowed -- so chat could report "Created 6 flashcards" while
+ * nothing was written anywhere. A missing table is a deployment problem, not a
+ * request problem: say so, with the fix.
+ */
+function fail(res, e) {
+  const msg = e?.message || 'Unknown error'
+  if (msg.includes('does not exist') || msg.includes('schema cache')) {
+    return res.status(503).json({
+      error: 'The notebook store is not set up on this project yet.',
+      hint:  'Run server/db/notebook_schema.sql in the Supabase SQL editor.',
+    })
+  }
+  console.error('[notebook]', msg)
+  return res.status(500).json({ error: msg })
+}
+
 router.get('/', async (req, res) => {
   const { kind, subject, q, limit = 50 } = req.query
   try {
@@ -27,7 +45,7 @@ router.get('/', async (req, res) => {
     if (error) throw new Error(error.message)
     res.json(data || [])
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, e)
   }
 })
 
@@ -55,7 +73,7 @@ router.post('/', async (req, res) => {
     if (error) throw new Error(error.message)
     res.status(201).json({ id: data.id, message: 'Saved to notebook.' })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, e)
   }
 })
 
@@ -69,7 +87,7 @@ router.get('/:id', async (req, res) => {
       .single()
     if (error || !data) return res.status(404).json({ error: 'Not found.' })
     res.json(data)
-  } catch (e) { res.status(500).json({ error: e.message }) }
+  } catch (e) { fail(res, e) }
 })
 
 router.put('/:id', async (req, res) => {
@@ -90,7 +108,7 @@ router.put('/:id', async (req, res) => {
       .from('notebooks').update(u).eq('id', req.params.id)
     if (error) throw new Error(error.message)
     res.json({ message: 'Updated' })
-  } catch (e) { res.status(500).json({ error: e.message }) }
+  } catch (e) { fail(res, e) }
 })
 
 router.delete('/:id', async (req, res) => {
@@ -103,7 +121,7 @@ router.delete('/:id', async (req, res) => {
       .from('notebooks').delete().eq('id', req.params.id)
     if (error) throw new Error(error.message)
     res.json({ message: 'Deleted' })
-  } catch (e) { res.status(500).json({ error: e.message }) }
+  } catch (e) { fail(res, e) }
 })
 
 router.get('/meta/stats', async (req, res) => {
@@ -121,7 +139,7 @@ router.get('/meta/stats', async (req, res) => {
       if (n.subject) bySubject[n.subject] = (bySubject[n.subject] || 0) + 1
     }
     res.json({ total: data.length, byKind, bySubject })
-  } catch (e) { res.status(500).json({ error: e.message }) }
+  } catch (e) { fail(res, e) }
 })
 
 export default router
