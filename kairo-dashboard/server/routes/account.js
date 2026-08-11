@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import { sendPasscodeOtpEmail } from '../email/index.js'
 import { supabaseAdmin, SUPABASE_CONFIGURED } from '../services/supabase.js'
-import { requireAuth } from '../middleware/auth.js'
+import { requireSupabaseAuth } from '../middleware/supabaseAuth.js'
 
 const router = Router()
 
@@ -40,7 +40,7 @@ router.post('/email-change/request', async (req, res) => {
 // and it must act on the CALLER. It previously took `user_id` from the request
 // body with no auth at all: an attacker could request a code to their own
 // address, verify it, pass a victim's user_id, and take over that account.
-router.post('/email-change/verify', requireAuth, async (req, res) => {
+router.post('/email-change/verify', requireSupabaseAuth, async (req, res) => {
   const email = (req.body?.new_email || '').toString().trim().toLowerCase()
   const code  = (req.body?.code || '').toString().trim()
   // Identity comes from the verified token only — never from the body.

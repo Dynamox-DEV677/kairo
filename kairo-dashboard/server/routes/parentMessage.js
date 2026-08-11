@@ -1,9 +1,12 @@
 import { Router } from 'express'
-import { requireAuth } from '../middleware/auth.js'
+import { requireSupabaseAuth, requireRole } from '../middleware/supabaseAuth.js'
 import { aiCall, parseJSON } from '../utils/ai.js'
 
 const router = Router()
-router.use(requireAuth)
+router.use(requireSupabaseAuth)
+// Sec 3.5: no UI ships for these in v1, so the role check is the only thing
+// standing in front of them. A student token must not reach a teacher tool.
+router.use(requireRole('teacher', 'admin'))
 
 router.post('/generate', async (req, res) => {
   const {

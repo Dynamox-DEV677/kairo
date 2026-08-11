@@ -2,6 +2,10 @@ import { Router } from 'express'
 import { aiCall, parseJSON } from '../utils/ai.js'
 import { supabaseAdmin, SUPABASE_CONFIGURED } from '../services/supabase.js'
 import groqPool from '../services/groqPool.js'
+// Supabase verifier, not the self-signed one — same defect that broke league
+// XP: ownerId() below reads req.user.id, and the self-signed jwt.verify() can
+// never populate it from a Supabase token, so every save/list/open 401'd.
+import { optionalSupabaseAuth } from '../middleware/supabaseAuth.js'
 
 const router = Router()
 
@@ -316,10 +320,49 @@ router.get('/exams', (req, res) => {
     .concat([{ id: 'custom', label: 'Custom (define subjects yourself)', subjects: [], durationHrs: null }]))
 })
 
-router.post('/save', requireDB, async (req, res) => {
-  const { user_id, exam, exam_date, hours_per_day, plan_json } = req.body || {}
-  if (!user_id || !exam || !exam_date || !plan_json) {
-    return res.status(400).json({ error: 'user_id, exam, exam_date, plan_json required' })
+/**
+ * Whose plans is this request allowed to touch?
+ * Signed in -> always the token's id, never a client-supplied one.
+ * Signed out -> only their own device- id (the app works logged-out).
+ * This is what stops one student reading or editing another's plan.
+ */
+function ownerId(req) {
+  const tokenId = (req.user?.id || req.user?.sub || '').toString()
+  if (tokenId) return tokenId
+  const claimed = (req.body?.user_id || req.query?.user_id || '').toString()
+  return /^dev-[a-z0-9]{4,}$/i.test(claimed) ? claimed : ''
+}
+
+/**
+ * Gate for every /:id route. Confirms the plan belongs to the caller BEFORE
+ * the handler runs, so no individual query can forget its ownership filter.
+ */
+async function requireOwnPlan(req, res, next) {
+  const user_id = ownerId(req)
+  if (!user_id) return res.status(401).json({ error: 'Sign in to open a plan.' })
+  try {
+    const { data, error } = await supabaseAdmin
+      .from('exam_plans')
+      .select('id')
+      .eq('id', req.params.id)
+      .eq('user_id', user_id)
+      .maybeSingle()
+    if (error) throw error
+    if (!data) return res.status(404).json({ error: 'Plan not found.' })
+    req.planOwnerId = user_id
+    next()
+  } catch (e) {
+    console.error('[examPlanner] ownership check failed:', e.message)
+    res.status(500).json({ error: 'Could not verify that plan.' })
+  }
+}
+
+router.post('/save', requireDB, optionalSupabaseAuth, async (req, res) => {
+  const { exam, exam_date, hours_per_day, plan_json } = req.body || {}
+  const user_id = ownerId(req)
+  if (!user_id) return res.status(401).json({ error: 'Sign in to save a plan.' })
+  if (!exam || !exam_date || !plan_json) {
+    return res.status(400).json({ error: 'exam, exam_date and plan_json required' })
   }
   try {
     const { data, error } = await supabaseAdmin
@@ -335,9 +378,9 @@ router.post('/save', requireDB, async (req, res) => {
   }
 })
 
-router.get('/list', requireDB, async (req, res) => {
-  const { user_id } = req.query
-  if (!user_id) return res.status(400).json({ error: 'user_id required' })
+router.get('/list', requireDB, optionalSupabaseAuth, async (req, res) => {
+  const user_id = ownerId(req)
+  if (!user_id) return res.status(401).json({ error: 'Sign in to see your plans.' })
   try {
     const { data, error } = await supabaseAdmin
       .from('exam_plans')
@@ -358,21 +401,24 @@ router.get('/list', requireDB, async (req, res) => {
   }
 })
 
-router.get('/:id', requireDB, async (req, res) => {
+router.get('/:id', requireDB, optionalSupabaseAuth, async (req, res) => {
+  const user_id = ownerId(req)
+  if (!user_id) return res.status(401).json({ error: 'Sign in to open a plan.' })
   try {
     const { data, error } = await supabaseAdmin
       .from('exam_plans')
       .select('*')
       .eq('id', req.params.id)
+      .eq('user_id', user_id)      // ownership check — not just the id
       .single()
     if (error) throw error
     res.json(data)
   } catch (e) {
-    res.status(404).json({ error: e.message })
+    res.status(404).json({ error: 'Plan not found.' })
   }
 })
 
-router.patch('/:id/checkin', requireDB, async (req, res) => {
+router.patch('/:id/checkin', requireDB, optionalSupabaseAuth, requireOwnPlan, async (req, res) => {
   const { block_key, done } = req.body || {}
   if (!block_key) return res.status(400).json({ error: 'block_key required' })
   try {
@@ -398,7 +444,7 @@ router.patch('/:id/checkin', requireDB, async (req, res) => {
   }
 })
 
-router.patch('/:id/mock', requireDB, async (req, res) => {
+router.patch('/:id/mock', requireDB, optionalSupabaseAuth, requireOwnPlan, async (req, res) => {
   const { score, note = '' } = req.body || {}
   if (typeof score !== 'number') return res.status(400).json({ error: 'score (number) required' })
   try {
@@ -423,7 +469,7 @@ router.patch('/:id/mock', requireDB, async (req, res) => {
   }
 })
 
-router.patch('/:id', requireDB, async (req, res) => {
+router.patch('/:id', requireDB, optionalSupabaseAuth, requireOwnPlan, async (req, res) => {
   const { plan_json, hours_per_day } = req.body || {}
   if (!plan_json) return res.status(400).json({ error: 'plan_json required' })
   try {
@@ -442,7 +488,7 @@ router.patch('/:id', requireDB, async (req, res) => {
   }
 })
 
-router.delete('/:id', requireDB, async (req, res) => {
+router.delete('/:id', requireDB, optionalSupabaseAuth, requireOwnPlan, async (req, res) => {
   try {
     const { error } = await supabaseAdmin
       .from('exam_plans')

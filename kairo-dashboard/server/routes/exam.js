@@ -1,9 +1,9 @@
 import { Router } from 'express'
-import { requireAuth } from '../middleware/auth.js'
+import { requireSupabaseAuth } from '../middleware/supabaseAuth.js'
 import { aiCall, parseJSON } from '../utils/ai.js'
 
 const router = Router()
-router.use(requireAuth)
+router.use(requireSupabaseAuth)
 
 router.post('/predict', async (req, res) => {
   const {
