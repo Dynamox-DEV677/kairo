@@ -1,0 +1,257 @@
+{
+  "board": "cbse",
+  "label": "CBSE",
+  "version": "2025-26",
+  "note": "topicId is a stable contract. Never renumber or reword an existing id — mastery rows, memory events and SM-2 schedules are keyed to it. Add new ids; retire old ones with retired:true.",
+  "classes": {
+    "9": {
+      "Science": {
+        "Matter in Our Surroundings": [
+          { "topicId": "cbse.9.sci.matter.states", "name": "States of matter" },
+          { "topicId": "cbse.9.sci.matter.change-of-state", "name": "Change of state" },
+          { "topicId": "cbse.9.sci.matter.evaporation", "name": "Evaporation and cooling" }
+        ],
+        "Is Matter Around Us Pure": [
+          { "topicId": "cbse.9.sci.pure.mixtures", "name": "Mixtures and solutions" },
+          { "topicId": "cbse.9.sci.pure.concentration", "name": "Concentration of a solution" },
+          { "topicId": "cbse.9.sci.pure.colloids", "name": "Suspensions and colloids" },
+          { "topicId": "cbse.9.sci.pure.separation", "name": "Separation techniques" },
+          { "topicId": "cbse.9.sci.pure.elements-compounds", "name": "Elements and compounds" }
+        ],
+        "Atoms and Molecules": [
+          { "topicId": "cbse.9.sci.atoms.laws", "name": "Laws of chemical combination" },
+          { "topicId": "cbse.9.sci.atoms.mass", "name": "Atomic and molecular mass" },
+          { "topicId": "cbse.9.sci.atoms.mole", "name": "Mole concept" },
+          { "topicId": "cbse.9.sci.atoms.formulae", "name": "Writing chemical formulae" }
+        ],
+        "Structure of the Atom": [
+          { "topicId": "cbse.9.sci.structure.models", "name": "Atomic models" },
+          { "topicId": "cbse.9.sci.structure.particles", "name": "Electrons, protons, neutrons" },
+          { "topicId": "cbse.9.sci.structure.configuration", "name": "Electronic configuration" },
+          { "topicId": "cbse.9.sci.structure.isotopes", "name": "Isotopes and isobars" }
+        ],
+        "The Fundamental Unit of Life": [
+          { "topicId": "cbse.9.sci.cell.structure", "name": "Cell structure" },
+          { "topicId": "cbse.9.sci.cell.organelles", "name": "Cell organelles" },
+          { "topicId": "cbse.9.sci.cell.membrane", "name": "Plasma membrane and osmosis" },
+          { "topicId": "cbse.9.sci.cell.division", "name": "Cell division: mitosis and meiosis" }
+        ],
+        "Tissues": [
+          { "topicId": "cbse.9.sci.tissues.plant", "name": "Plant tissues" },
+          { "topicId": "cbse.9.sci.tissues.animal", "name": "Animal tissues" }
+        ],
+        "Motion": [
+          { "topicId": "cbse.9.sci.motion.distance-displacement", "name": "Distance and displacement" },
+          { "topicId": "cbse.9.sci.motion.velocity", "name": "Speed, velocity and acceleration" },
+          { "topicId": "cbse.9.sci.motion.equations", "name": "Equations of motion" },
+          { "topicId": "cbse.9.sci.motion.graphs", "name": "Motion graphs" },
+          { "topicId": "cbse.9.sci.motion.circular", "name": "Uniform circular motion" }
+        ],
+        "Force and Laws of Motion": [
+          { "topicId": "cbse.9.sci.force.newton-laws", "name": "Newton's three laws" },
+          { "topicId": "cbse.9.sci.force.inertia", "name": "Inertia and mass" },
+          { "topicId": "cbse.9.sci.force.momentum", "name": "Momentum and conservation" }
+        ],
+        "Gravitation": [
+          { "topicId": "cbse.9.sci.grav.universal-law", "name": "Universal law of gravitation" },
+          { "topicId": "cbse.9.sci.grav.free-fall", "name": "Free fall and g" },
+          { "topicId": "cbse.9.sci.grav.thrust-pressure", "name": "Thrust and pressure" },
+          { "topicId": "cbse.9.sci.grav.buoyancy", "name": "Buoyancy and Archimedes' principle" }
+        ],
+        "Work and Energy": [
+          { "topicId": "cbse.9.sci.work.work", "name": "Work done by a force" },
+          { "topicId": "cbse.9.sci.work.energy-forms", "name": "Kinetic and potential energy" },
+          { "topicId": "cbse.9.sci.work.conservation", "name": "Conservation of energy" },
+          { "topicId": "cbse.9.sci.work.power", "name": "Power" }
+        ],
+        "Sound": [
+          { "topicId": "cbse.9.sci.sound.propagation", "name": "Production and propagation" },
+          { "topicId": "cbse.9.sci.sound.characteristics", "name": "Pitch, loudness, quality" },
+          { "topicId": "cbse.9.sci.sound.reflection", "name": "Reflection, echo, reverberation" }
+        ]
+      },
+      "Mathematics": {
+        "Number Systems": [
+          { "topicId": "cbse.9.math.numbers.rational-irrational", "name": "Rational and irrational numbers" },
+          { "topicId": "cbse.9.math.numbers.real-line", "name": "Real numbers on the number line" },
+          { "topicId": "cbse.9.math.numbers.laws-exponents", "name": "Laws of exponents" }
+        ],
+        "Polynomials": [
+          { "topicId": "cbse.9.math.poly.definitions", "name": "Degree, zeroes and types" },
+          { "topicId": "cbse.9.math.poly.remainder-factor", "name": "Remainder and factor theorems" },
+          { "topicId": "cbse.9.math.poly.identities", "name": "Algebraic identities" }
+        ],
+        "Coordinate Geometry": [
+          { "topicId": "cbse.9.math.coord.cartesian", "name": "Cartesian plane and plotting" }
+        ],
+        "Linear Equations in Two Variables": [
+          { "topicId": "cbse.9.math.linear.solutions", "name": "Solutions of a linear equation" },
+          { "topicId": "cbse.9.math.linear.graph", "name": "Graph of a linear equation" }
+        ],
+        "Lines and Angles": [
+          { "topicId": "cbse.9.math.lines.pairs", "name": "Pairs of angles" },
+          { "topicId": "cbse.9.math.lines.parallel", "name": "Parallel lines and transversal" },
+          { "topicId": "cbse.9.math.lines.triangle-sum", "name": "Angle sum property" }
+        ],
+        "Triangles": [
+          { "topicId": "cbse.9.math.tri.congruence", "name": "Congruence criteria" },
+          { "topicId": "cbse.9.math.tri.properties", "name": "Properties of triangles" },
+          { "topicId": "cbse.9.math.tri.inequalities", "name": "Inequalities in a triangle" }
+        ],
+        "Quadrilaterals": [
+          { "topicId": "cbse.9.math.quad.properties", "name": "Properties of a parallelogram" },
+          { "topicId": "cbse.9.math.quad.midpoint", "name": "Mid-point theorem" }
+        ],
+        "Circles": [
+          { "topicId": "cbse.9.math.circle.chords", "name": "Chords and their properties" },
+          { "topicId": "cbse.9.math.circle.angles", "name": "Angles subtended by a chord" },
+          { "topicId": "cbse.9.math.circle.cyclic", "name": "Cyclic quadrilaterals" }
+        ],
+        "Heron's Formula": [
+          { "topicId": "cbse.9.math.heron.triangle-area", "name": "Area of a triangle by Heron's formula" }
+        ],
+        "Surface Areas and Volumes": [
+          { "topicId": "cbse.9.math.mensuration.solids", "name": "Cuboid, cylinder, cone, sphere" }
+        ],
+        "Statistics": [
+          { "topicId": "cbse.9.math.stats.representation", "name": "Data representation" },
+          { "topicId": "cbse.9.math.stats.central-tendency", "name": "Mean, median, mode" }
+        ]
+      }
+    },
+    "10": {
+      "Science": {
+        "Chemical Reactions and Equations": [
+          { "topicId": "cbse.10.sci.reactions.balancing", "name": "Writing and balancing equations" },
+          { "topicId": "cbse.10.sci.reactions.types", "name": "Types of chemical reactions" },
+          { "topicId": "cbse.10.sci.reactions.redox", "name": "Oxidation and reduction" },
+          { "topicId": "cbse.10.sci.reactions.corrosion", "name": "Corrosion and rancidity" }
+        ],
+        "Acids, Bases and Salts": [
+          { "topicId": "cbse.10.sci.acids.properties", "name": "Properties of acids and bases" },
+          { "topicId": "cbse.10.sci.acids.ph", "name": "pH scale" },
+          { "topicId": "cbse.10.sci.acids.salts", "name": "Common salts and their uses" }
+        ],
+        "Metals and Non-metals": [
+          { "topicId": "cbse.10.sci.metals.properties", "name": "Physical and chemical properties" },
+          { "topicId": "cbse.10.sci.metals.reactivity", "name": "Reactivity series" },
+          { "topicId": "cbse.10.sci.metals.extraction", "name": "Extraction of metals" },
+          { "topicId": "cbse.10.sci.metals.ionic", "name": "Ionic compounds" }
+        ],
+        "Carbon and its Compounds": [
+          { "topicId": "cbse.10.sci.carbon.bonding", "name": "Covalent bonding in carbon" },
+          { "topicId": "cbse.10.sci.carbon.homologous", "name": "Homologous series" },
+          { "topicId": "cbse.10.sci.carbon.nomenclature", "name": "Nomenclature" },
+          { "topicId": "cbse.10.sci.carbon.reactions", "name": "Chemical properties of carbon compounds" }
+        ],
+        "Life Processes": [
+          { "topicId": "cbse.10.sci.life.nutrition", "name": "Nutrition" },
+          { "topicId": "cbse.10.sci.life.respiration", "name": "Respiration" },
+          { "topicId": "cbse.10.sci.life.transportation", "name": "Transportation" },
+          { "topicId": "cbse.10.sci.life.excretion", "name": "Excretion" }
+        ],
+        "Control and Coordination": [
+          { "topicId": "cbse.10.sci.control.nervous", "name": "Nervous system and reflex arc" },
+          { "topicId": "cbse.10.sci.control.hormones", "name": "Hormones in animals" },
+          { "topicId": "cbse.10.sci.control.plant-hormones", "name": "Coordination in plants" }
+        ],
+        "How do Organisms Reproduce": [
+          { "topicId": "cbse.10.sci.repro.asexual", "name": "Asexual reproduction" },
+          { "topicId": "cbse.10.sci.repro.sexual-plants", "name": "Sexual reproduction in plants" },
+          { "topicId": "cbse.10.sci.repro.human", "name": "Human reproductive system" }
+        ],
+        "Heredity": [
+          { "topicId": "cbse.10.sci.heredity.mendel", "name": "Mendel's laws" },
+          { "topicId": "cbse.10.sci.heredity.sex-determination", "name": "Sex determination" }
+        ],
+        "Light — Reflection and Refraction": [
+          { "topicId": "cbse.10.sci.light.mirrors", "name": "Spherical mirrors" },
+          { "topicId": "cbse.10.sci.light.mirror-formula", "name": "Mirror formula and magnification" },
+          { "topicId": "cbse.10.sci.light.refraction", "name": "Refraction and Snell's law" },
+          { "topicId": "cbse.10.sci.light.lenses", "name": "Lenses and lens formula" }
+        ],
+        "The Human Eye and the Colourful World": [
+          { "topicId": "cbse.10.sci.eye.structure", "name": "Structure and accommodation" },
+          { "topicId": "cbse.10.sci.eye.defects", "name": "Defects of vision" },
+          { "topicId": "cbse.10.sci.eye.dispersion", "name": "Dispersion and scattering" }
+        ],
+        "Electricity": [
+          { "topicId": "cbse.10.sci.elec.current", "name": "Electric current and potential difference" },
+          { "topicId": "cbse.10.sci.elec.ohms-law", "name": "Ohm's law" },
+          { "topicId": "cbse.10.sci.elec.resistance", "name": "Resistance and resistivity" },
+          { "topicId": "cbse.10.sci.elec.combinations", "name": "Series and parallel combinations" },
+          { "topicId": "cbse.10.sci.elec.heating-power", "name": "Heating effect and electric power" }
+        ],
+        "Magnetic Effects of Electric Current": [
+          { "topicId": "cbse.10.sci.mag.field-lines", "name": "Magnetic field and field lines" },
+          { "topicId": "cbse.10.sci.mag.force-conductor", "name": "Force on a current-carrying conductor" },
+          { "topicId": "cbse.10.sci.mag.induction", "name": "Electromagnetic induction" },
+          { "topicId": "cbse.10.sci.mag.domestic-circuits", "name": "Domestic electric circuits" }
+        ],
+        "Our Environment": [
+          { "topicId": "cbse.10.sci.env.ecosystem", "name": "Ecosystem and food chains" },
+          { "topicId": "cbse.10.sci.env.ozone-waste", "name": "Ozone depletion and waste management" }
+        ]
+      },
+      "Mathematics": {
+        "Real Numbers": [
+          { "topicId": "cbse.10.math.real.euclid", "name": "Euclid's division lemma" },
+          { "topicId": "cbse.10.math.real.fundamental-theorem", "name": "Fundamental theorem of arithmetic" },
+          { "topicId": "cbse.10.math.real.irrationality", "name": "Proving irrationality" }
+        ],
+        "Polynomials": [
+          { "topicId": "cbse.10.math.poly.zeroes", "name": "Zeroes and coefficients" },
+          { "topicId": "cbse.10.math.poly.division", "name": "Division algorithm" }
+        ],
+        "Pair of Linear Equations in Two Variables": [
+          { "topicId": "cbse.10.math.pair.graphical", "name": "Graphical method" },
+          { "topicId": "cbse.10.math.pair.substitution-elimination", "name": "Substitution and elimination" },
+          { "topicId": "cbse.10.math.pair.word-problems", "name": "Word problems" }
+        ],
+        "Quadratic Equations": [
+          { "topicId": "cbse.10.math.quadratic.factorisation", "name": "Solving by factorisation" },
+          { "topicId": "cbse.10.math.quadratic.formula", "name": "Quadratic formula" },
+          { "topicId": "cbse.10.math.quadratic.discriminant", "name": "Nature of roots" }
+        ],
+        "Arithmetic Progressions": [
+          { "topicId": "cbse.10.math.ap.nth-term", "name": "nth term of an AP" },
+          { "topicId": "cbse.10.math.ap.sum", "name": "Sum of n terms" }
+        ],
+        "Triangles": [
+          { "topicId": "cbse.10.math.tri.similarity", "name": "Similarity criteria" },
+          { "topicId": "cbse.10.math.tri.thales", "name": "Basic proportionality theorem" },
+          { "topicId": "cbse.10.math.tri.pythagoras", "name": "Pythagoras theorem" }
+        ],
+        "Coordinate Geometry": [
+          { "topicId": "cbse.10.math.coord.distance", "name": "Distance formula" },
+          { "topicId": "cbse.10.math.coord.section", "name": "Section formula" }
+        ],
+        "Introduction to Trigonometry": [
+          { "topicId": "cbse.10.math.trig.ratios", "name": "Trigonometric ratios" },
+          { "topicId": "cbse.10.math.trig.specific-angles", "name": "Ratios of specific angles" },
+          { "topicId": "cbse.10.math.trig.identities", "name": "Trigonometric identities" }
+        ],
+        "Some Applications of Trigonometry": [
+          { "topicId": "cbse.10.math.trig.heights-distances", "name": "Heights and distances" }
+        ],
+        "Circles": [
+          { "topicId": "cbse.10.math.circle.tangents", "name": "Tangent to a circle" }
+        ],
+        "Areas Related to Circles": [
+          { "topicId": "cbse.10.math.circle.sector-segment", "name": "Areas of sectors and segments" }
+        ],
+        "Surface Areas and Volumes": [
+          { "topicId": "cbse.10.math.mensuration.combinations", "name": "Combinations of solids" },
+          { "topicId": "cbse.10.math.mensuration.conversion", "name": "Conversion of solids" }
+        ],
+        "Statistics": [
+          { "topicId": "cbse.10.math.stats.grouped-mean", "name": "Mean of grouped data" },
+          { "topicId": "cbse.10.math.stats.median-mode", "name": "Median and mode of grouped data" }
+        ],
+        "Probability": [
+          { "topicId": "cbse.10.math.prob.classical", "name": "Classical probability" }
+        ]
+      }
+    }
+  }
+}
