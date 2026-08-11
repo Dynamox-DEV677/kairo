@@ -3,8 +3,16 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
 import { initPwa } from './lib/pwa'
+import { migrateStorage, removeRaw } from './lib/storage'
 
-try { localStorage.removeItem('kairo:font') } catch {  }
+/* Runs before anything reads storage. Renames the legacy kairo:* / kairo_*
+   keys to kyno:*, strips the access_token and refresh_token that were being
+   kept inside the profile blob, drops the dead second Supabase project's key,
+   and frees the two oversized chat caches. Idempotent — real work happens
+   once per device. */
+migrateStorage()
+
+removeRaw('kairo:font')
 
 /* ── Portrait lock (phones only) ──────────────────────────────────────────
    The layout is designed for a tall phone screen; rotating to landscape
