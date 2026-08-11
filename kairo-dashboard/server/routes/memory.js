@@ -2,6 +2,51 @@ import { Router } from 'express'
 import { supabaseAdmin, requireSupabase } from '../services/supabase.js'
 import { requireSupabaseAuth } from '../middleware/supabaseAuth.js'
 import { resolveTopic, isInScope } from '../utils/syllabus.js'
+import { updateMastery, decayMastery, daysBetween, weightFor, sm2, band } from '../utils/mastery.js'
+
+/**
+ * Read-modify-write of one mastery row.
+ *
+ * Decay is applied on read rather than by a scheduled job: the score is only
+ * ever observed through this path or the context endpoint, so aging it lazily
+ * gives the same answer as a nightly sweep and costs nothing to run.
+ *
+ * Failures here must not fail the caller. The memory event is already written;
+ * losing the mastery update degrades the recommendation, it does not lose data.
+ */
+async function applyMastery(userId, topicId, correct, signalType) {
+  try {
+    const { data: row, error: readErr } = await supabaseAdmin
+      .from('topic_mastery')
+      .select('mastery, attempts, correct, ease, interval, reps, lapses, last_seen')
+      .eq('user_id', userId).eq('topic_id', topicId)
+      .maybeSingle()
+    if (readErr && !isMissingTable(readErr)) throw readErr
+
+    const aged = row ? decayMastery(row.mastery, daysBetween(row.last_seen)) : undefined
+    const next = updateMastery(aged, correct, weightFor(signalType))
+    const sched = sm2(row || {}, correct ? 4 : 2)
+    const now = new Date().toISOString()
+
+    const { error: writeErr } = await supabaseAdmin
+      .from('topic_mastery')
+      .upsert({
+        user_id: userId, topic_id: topicId,
+        mastery: next,
+        attempts: (row?.attempts || 0) + 1,
+        correct: (row?.correct || 0) + (correct ? 1 : 0),
+        ease: sched.ease, interval: sched.interval,
+        reps: sched.reps, lapses: sched.lapses, due_at: sched.dueAt,
+        last_seen: now, updated_at: now,
+      }, { onConflict: 'user_id,topic_id' })
+    if (writeErr && !isMissingTable(writeErr)) throw writeErr
+
+    return { mastery: next, band: band(next), dueAt: sched.dueAt }
+  } catch (e) {
+    console.warn('[memory] mastery update failed (event still recorded):', e.message)
+    return null
+  }
+}
 
 const router = Router()
 router.use(requireSupabase)
@@ -71,7 +116,16 @@ router.post('/track', async (req, res) => {
       if (isMissingTable(error)) return res.json({ message: 'no-op (table missing)' })
       throw new Error(error.message)
     }
-    res.status(201).json({ message: 'Tracked', id: data.id })
+
+    // Update the mastery estimate for this topic. Only graded events carry a
+    // correct/incorrect verdict; a doubt or a note is evidence of interest,
+    // not of knowledge, so it moves last_seen but not mastery.
+    let mastery = null
+    if (resolved && typeof req.body?.correct === 'boolean') {
+      mastery = await applyMastery(req.user.id, resolved.topicId, req.body.correct, type)
+    }
+
+    res.status(201).json({ message: 'Tracked', id: data.id, topicId: resolved?.topicId || null, mastery })
   } catch (e) {
     if (isMissingTable(e)) return res.json({ message: 'no-op (table missing)' })
     res.status(500).json({ error: e.message })
