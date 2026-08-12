@@ -30,4 +30,4 @@ alter table public.study_sessions enable row level security;
 
 drop policy if exists study_sessions_own on public.study_sessions;
 create policy study_sessions_own on public.study_sessions
-  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+  for all using ((select auth.uid()) = user_id) with check ((select auth.uid()) = user_id);

@@ -51,16 +51,16 @@ alter table public.notebooks enable row level security;
 -- or after some future refactor -- still cannot read another student's notes.
 drop policy if exists notebooks_select_own on public.notebooks;
 create policy notebooks_select_own on public.notebooks
-  for select using (auth.uid() = user_id);
+  for select using ((select auth.uid()) = user_id);
 
 drop policy if exists notebooks_insert_own on public.notebooks;
 create policy notebooks_insert_own on public.notebooks
-  for insert with check (auth.uid() = user_id);
+  for insert with check ((select auth.uid()) = user_id);
 
 drop policy if exists notebooks_update_own on public.notebooks;
 create policy notebooks_update_own on public.notebooks
-  for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
+  for update using ((select auth.uid()) = user_id) with check ((select auth.uid()) = user_id);
 
 drop policy if exists notebooks_delete_own on public.notebooks;
 create policy notebooks_delete_own on public.notebooks
-  for delete using (auth.uid() = user_id);
+  for delete using ((select auth.uid()) = user_id);
