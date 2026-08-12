@@ -70,3 +70,15 @@ test('errors do not leak database internals', async () => {
     assert.ok(!body.includes(leak), `response leaked "${leak}"`)
   }
 })
+
+// --- Study Engine ---------------------------------------------------------
+
+test('GET /api/study/today requires a token', async () => {
+  const res = await get('/api/study/today')
+  assert.equal(res.status, 401)
+})
+
+test('POST /api/study/session requires a token', async () => {
+  const res = await fetch(`${base}/api/study/session`, { method: 'POST' })
+  assert.equal(res.status, 401)
+})

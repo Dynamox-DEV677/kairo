@@ -68,6 +68,7 @@ import knowledgeRoutes     from './routes/knowledge.js'
 import paymentRoutes       from './routes/payments.js'
 
 import twinRoutes          from './routes/twin.js'
+import studyRoutes         from './routes/study.js'
 
 if (!process.env.ENCRYPTION_SECRET || process.env.ENCRYPTION_SECRET.length < 32) {
   process.env.ENCRYPTION_SECRET = 'kairo-default-secret-key-change-in-production-please-set-env-var-now'
@@ -184,6 +185,7 @@ app.use('/api/knowledge',      knowledgeRoutes)
 app.use('/api/payments',       paymentRoutes)
 
 app.use('/api/twin',           twinRoutes)
+app.use('/api/study',          studyRoutes)
 
 // Bare root probe for local dev. In production Vercel rewrites everything
 // that isn't /api/* to index.html, so this is unreachable there anyway — it
