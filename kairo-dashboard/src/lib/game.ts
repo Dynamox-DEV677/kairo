@@ -2,6 +2,8 @@ import { getRaw, setRaw } from './storage'
 import { addNotification } from './notifications'
 import { post } from './api'
 
+import { FLAGS, type FlagName } from '../config/flags'
+
 const KEY = 'kairo:game:v1'
 const STREAK_MILESTONES = [3, 7, 14, 30, 50, 100, 200, 365]
 
@@ -16,16 +18,33 @@ export const XP_ACTIONS: Record<string, { xp: number; label: string }> = {
   note_built:     { xp: 8,  label: 'Built a note' },
 }
 
-interface QuestDef { id: string; label: string; action: string; target: number; bonus: number }
+/**
+ * `requires` names the flag that has to be on for this quest to have somewhere
+ * to go. A quest whose destination does not exist is worse than no quest: the
+ * student cannot clear it, so the day's list never completes and the streak
+ * they are chasing looks broken through no fault of theirs.
+ */
+interface QuestDef {
+  id: string; label: string; action: string; target: number; bonus: number
+  requires?: FlagName
+}
+
 const QUEST_POOL: QuestDef[] = [
   { id: 'ask3',    label: 'Ask Kyno 3 questions',   action: 'chat_answer',   target: 3,  bonus: 30 },
   { id: 'rev10',   label: 'Review 10 flashcards',    action: 'flashcard_rev', target: 10, bonus: 40 },
   { id: 'plan1',   label: 'Plan 1 topic',            action: 'topic_plan',    target: 1,  bonus: 25 },
   { id: 'quiz1',   label: 'Complete a quiz',         action: 'quiz_done',     target: 1,  bonus: 30 },
-  { id: 'lab1',    label: 'Open a 3D lab',           action: 'lab_open',      target: 1,  bonus: 20 },
+  // LABS_3D is off for v1, so this one is filtered out rather than deleted --
+  // turning the flag back on should restore the quest without an edit here.
+  { id: 'lab1',    label: 'Open a 3D lab',           action: 'lab_open',      target: 1,  bonus: 20, requires: 'LABS_3D' },
   { id: 'ask5',    label: 'Ask Kyno 5 questions',   action: 'chat_answer',   target: 5,  bonus: 50 },
   { id: 'note2',   label: 'Build 2 notebook notes',  action: 'note_built',    target: 2,  bonus: 25 },
 ]
+
+/** Only quests the student can actually reach today. */
+export function availableQuests(): QuestDef[] {
+  return QUEST_POOL.filter(q => !q.requires || FLAGS[q.requires])
+}
 
 interface GameState {
   totalXP: number
@@ -158,7 +177,7 @@ export function questsForToday(): QuestDef[] {
   let h = 0
   for (let i = 0; i < seedStr.length; i++) h = (h * 31 + seedStr.charCodeAt(i)) >>> 0
   const picked: QuestDef[] = []
-  const pool = [...QUEST_POOL]
+  const pool = availableQuests()
   while (picked.length < 3 && pool.length) {
     h = (h * 1664525 + 1013904223) >>> 0
     picked.push(pool.splice(h % pool.length, 1)[0])
