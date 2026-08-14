@@ -123,3 +123,57 @@ function shape(t, confidence) {
     confidence,
   }
 }
+
+/* ── Phase A.2/A.3: chapter provenance ─────────────────────────────────────
+   Every answer, quiz, card and mistake has to be able to say which chapter it
+   came from. resolveTopic() already returns the chapter; these turn that into
+   a citation and attach the exam weightage the optimiser needs.            */
+
+let _weightage = null
+
+function loadWeightage(board = 'cbse') {
+  if (_weightage) return _weightage
+  try {
+    _weightage = JSON.parse(readFileSync(join(DATA_DIR, `weightage.${board}.json`), 'utf8'))
+  } catch (e) {
+    // Only CBSE has verified numbers. A board without a weightage file must
+    // degrade to "unknown marks", never to a guess -- a wrong mark total makes
+    // every "+22 marks" projection wrong.
+    console.warn(`[syllabus] no weightage for board "${board}":`, e.message)
+    _weightage = { chapters: {}, papers: {} }
+  }
+  return _weightage
+}
+
+/**
+ * "Class 10 Science · Electricity" — the reference that opens a grounded
+ * answer. Returns null rather than a partial string when the topic does not
+ * resolve, so a caller never prints a half-citation.
+ */
+export function chapterRef(topicIdOrText, board = 'cbse', cls) {
+  const t = resolveTopic(topicIdOrText, board, cls)
+  if (!t) return null
+  const c = t.topicId.split('.')[1]
+  return { label: `Class ${c} ${t.subject} · ${t.chapter}`, class: c, subject: t.subject, chapter: t.chapter, topicId: t.topicId }
+}
+
+/**
+ * Marks and difficulty for whichever chapter a topic belongs to.
+ * `marks: null` means "not published for this board yet" and must be rendered
+ * as unknown, not as zero — zero would make the optimiser tell a student to
+ * skip a chapter that might be worth 8 marks.
+ */
+export function weightageFor(topicIdOrText, board = 'cbse', cls) {
+  const ref = chapterRef(topicIdOrText, board, cls)
+  if (!ref) return null
+  const w = loadWeightage(board)
+  const paper = `${ref.class}.${ref.subject}`
+  const entry = w.chapters?.[paper]?.[ref.chapter]
+  return {
+    ...ref,
+    marks: entry?.marks ?? null,
+    difficulty: entry?.difficulty ?? null,
+    unit: entry?.unit ?? null,
+    paperTotal: w.papers?.[paper]?.theoryMarks ?? null,
+  }
+}

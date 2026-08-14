@@ -52,3 +52,33 @@ test('the two files stay in step: no topic chapter is left unweighted', () => {
   }
   assert.deepEqual(missing, [], `unweighted chapters:\n  ${missing.join('\n  ')}`)
 })
+
+// --- Phase A.2/A.3: provenance -------------------------------------------
+import { chapterRef, weightageFor } from '../utils/syllabus.js'
+
+test('an answer can cite the chapter it came from', () => {
+  const ref = chapterRef('ohms law')
+  assert.ok(ref, 'ohms law did not resolve')
+  assert.equal(ref.chapter, 'Electricity')
+  assert.match(ref.label, /^Class 10 Science · Electricity$/)
+})
+
+test('weightage rides along with the citation', () => {
+  const w = weightageFor('ohms law')
+  assert.equal(w.marks, 8)
+  assert.equal(w.paperTotal, 80)
+  assert.equal(w.unit, 'Effects of Current')
+})
+
+test('an unresolvable topic yields no citation rather than a partial one', () => {
+  assert.equal(chapterRef('wat is ur name'), null)
+  assert.equal(weightageFor('wat is ur name'), null)
+})
+
+test('a chapter with no published marks reads unknown, never zero', () => {
+  // Zero would make the optimiser tell a student to skip a chapter that may
+  // be worth 8 marks. Class 9 has topics but no weightage file yet.
+  const w = weightageFor('cbse.9.sci.motion.equations')
+  assert.ok(w, 'class 9 topic should still resolve')
+  assert.equal(w.marks, null, 'unpublished marks must be null, not 0')
+})
