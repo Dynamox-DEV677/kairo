@@ -7,7 +7,7 @@ import {
 import KairoGyro from '../components/KairoGyro'
 import { GameBar } from '../components/GameBar'
 import { getProfile, getMistakes } from '../lib/twin'
-import { loadGame } from '../lib/game'
+import { selectStreak, selectRetention } from '../lib/selectors'
 
 interface ExamDate { name: string; date: string }
 interface Profile {
@@ -229,8 +229,20 @@ export default function KairoHome({ onNavigate }: Props) {
             </div>
             <div><div style={lbl}>Goal</div><input style={inp} value={profile.goal} onChange={e => saveProfile({ ...profile, goal: e.target.value })} /></div>
             <div><div style={lbl}>Study hours/day</div><input style={inp} type="number" value={profile.studyHours} onChange={e => saveProfile({ ...profile, studyHours: +e.target.value })} /></div>
-            <div><div style={lbl}>Streak (days)</div><input style={inp} type="number" value={profile.streak} onChange={e => saveProfile({ ...profile, streak: +e.target.value })} /></div>
-            <div><div style={lbl}>Recent accuracy %</div><input style={inp} type="number" value={profile.recentAccuracy ?? ''} onChange={e => saveProfile({ ...profile, recentAccuracy: e.target.value === '' ? null : +e.target.value })} /></div>
+            {/* Streak and accuracy are derived from the activity log, not typed.
+                They were editable fields, which is a third source of truth on
+                top of the game counter and the event-log computation — and the
+                one a student could set to any number they liked. */}
+            <div><div style={lbl}>Streak (days)</div>
+              <div style={{ ...inp, display: 'flex', alignItems: 'center', color: '#9CA3AF' }}>
+                {selectStreak()} <span style={{ fontSize: 10, marginLeft: 8 }}>from your activity</span>
+              </div>
+            </div>
+            <div><div style={lbl}>Recent accuracy %</div>
+              <div style={{ ...inp, display: 'flex', alignItems: 'center', color: '#9CA3AF' }}>
+                {selectRetention() ?? '—'} <span style={{ fontSize: 10, marginLeft: 8 }}>from your answers</span>
+              </div>
+            </div>
             <div style={{ gridColumn: '1 / -1' }}><div style={lbl}>Weak topics (comma-sep)</div><input style={inp} value={profile.weakTopics.join(', ')} onChange={e => saveProfile({ ...profile, weakTopics: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })} /></div>
             <div style={{ gridColumn: '1 / -1' }}><div style={lbl}>Strong topics (comma-sep)</div><input style={inp} value={profile.strongTopics.join(', ')} onChange={e => saveProfile({ ...profile, strongTopics: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })} /></div>
             <div style={{ gridColumn: '1 / -1' }}><div style={lbl}>Exam dates</div>
@@ -305,7 +317,7 @@ export default function KairoHome({ onNavigate }: Props) {
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 14, paddingTop: 12, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
             <Flame size={20} style={{ color: '#ff7a4a' }} />
-            <span><b style={{ fontSize: 22, fontWeight: 900 }}>{loadGame().streak}</b> <span style={{ fontSize: 11, color: '#9CA3AF' }}>day streak</span></span>
+            <span><b style={{ fontSize: 22, fontWeight: 900 }}>{selectStreak()}</b> <span style={{ fontSize: 11, color: '#9CA3AF' }}>day streak</span></span>
           </div>
         </div>
       </div>

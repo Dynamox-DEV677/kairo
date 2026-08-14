@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Flame, Trophy, CheckCircle2, Circle, Zap, Medal } from 'lucide-react'
-import { loadGame, levelFromXP, questsForToday, badges, fetchLeaderboard } from '../lib/game'
+import { loadGame, questsForToday, badges, fetchLeaderboard } from '../lib/game'
+import { selectLevel, selectStreak } from '../lib/selectors'
 import { KYNO } from '../theme/tokens'
 
 const GLASS: React.CSSProperties = {
@@ -29,13 +30,17 @@ export function GameBar() {
     fetchLeaderboard().then(b => { if (b && !('offline' in b && (b as any).offline)) setBoard(b) })
   }, [tick])
 
+  // loadGame() still supplies badge/quest bookkeeping, but every number the
+  // student SEES comes from the selectors so this bar cannot disagree with
+  // Home or the Kyno tab about the same figure.
   const s = loadGame()
-  const { level, into, need } = levelFromXP(s.totalXP)
+  const { level, into, need } = selectLevel()
+  const streak = selectStreak()
   const quests = questsForToday()
   const earned = badges(s).filter(b => b.earned)
   const pct = Math.max(0, Math.min(100, (into / need) * 100))
-  const flameSize = 15 + Math.min(s.streak, 30) * 0.4
-  const flameGlow = Math.min(s.streak, 18)
+  const flameSize = 15 + Math.min(streak, 30) * 0.4
+  const flameGlow = Math.min(streak, 18)
 
   const R = 28, CIRC = 2 * Math.PI * R
 
@@ -96,10 +101,10 @@ export function GameBar() {
             style={{
               color: KYNO.gold,
               filter: `drop-shadow(0 0 ${flameGlow}px rgba(255,176,32,0.6))`,
-              animation: s.streak >= 3 ? 'kyno-flame 1.6s ease-in-out infinite' : undefined,
+              animation: streak >= 3 ? 'kyno-flame 1.6s ease-in-out infinite' : undefined,
             }}
           />
-          <span style={{ ...bigNum, fontSize: 20, color: KYNO.gold }}>{s.streak}</span>
+          <span style={{ ...bigNum, fontSize: 20, color: KYNO.gold }}>{streak}</span>
           <span style={{ fontSize: 10.5, color: KYNO.textMuted }}>day streak</span>
         </div>
         {earned.length > 0 && (

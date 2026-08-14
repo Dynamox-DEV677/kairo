@@ -13,7 +13,7 @@ import {
 import { useGeneration } from '../lib/generationContext'
 import { getRecentChats, deleteRecentChat, timeAgo } from '../lib/recentChats'
 import type { RecentChat } from '../lib/recentChats'
-import { loadGame } from '../lib/game'
+import { selectXP } from '../lib/selectors'
 import { DecoratedAvatar } from './AvatarDecor'
 
 interface NavItem {
@@ -175,7 +175,7 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
     deleteRecentChat(id)
     setRecents(getRecentChats())
   }
-  const totalXP = (() => { try { return loadGame().totalXP } catch { return 0 } })()
+  const totalXP = selectXP().total
   const displayName = profile?.name || 'Arjun Sharma'
   const displaySub  = profile?.school_name
     ? `🏫 ${profile.school_name}`
