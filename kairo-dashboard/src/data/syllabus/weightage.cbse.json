@@ -1,0 +1,52 @@
+{
+  "board": "cbse",
+  "version": "2025-26",
+  "note": "Marks per chapter, kept SEPARATE from the topic tree on purpose. CBSE republishes weightage every session while the chapter list stays put; merging them would force a migration of every topicId each year. `marks` is the chapter's share of the 80-mark theory paper. `difficulty` is 1-5, how hard students find it, not how hard the board marks it.",
+  "papers": {
+    "10.Science": { "theoryMarks": 80, "internalMarks": 20 },
+    "10.Mathematics": { "theoryMarks": 80, "internalMarks": 20 }
+  },
+  "chapters": {
+    "10.Science": {
+      "Chemical Reactions and Equations": { "marks": 6, "difficulty": 2, "unit": "Chemical Substances" },
+      "Acids, Bases and Salts": { "marks": 7, "difficulty": 3, "unit": "Chemical Substances" },
+      "Metals and Non-metals": { "marks": 6, "difficulty": 3, "unit": "Chemical Substances" },
+      "Carbon and its Compounds": { "marks": 6, "difficulty": 4, "unit": "Chemical Substances" },
+
+      "Life Processes": { "marks": 8, "difficulty": 3, "unit": "World of Living" },
+      "Control and Coordination": { "marks": 6, "difficulty": 3, "unit": "World of Living" },
+      "How do Organisms Reproduce": { "marks": 6, "difficulty": 2, "unit": "World of Living" },
+      "Heredity": { "marks": 5, "difficulty": 3, "unit": "World of Living" },
+
+      "Light — Reflection and Refraction": { "marks": 7, "difficulty": 4, "unit": "Natural Phenomena" },
+      "The Human Eye and the Colourful World": { "marks": 5, "difficulty": 2, "unit": "Natural Phenomena" },
+
+      "Electricity": { "marks": 8, "difficulty": 4, "unit": "Effects of Current" },
+      "Magnetic Effects of Electric Current": { "marks": 5, "difficulty": 3, "unit": "Effects of Current" },
+
+      "Our Environment": { "marks": 5, "difficulty": 1, "unit": "Environment" }
+    },
+    "10.Mathematics": {
+      "Real Numbers": { "marks": 6, "difficulty": 2, "unit": "Number Systems" },
+
+      "Polynomials": { "marks": 4, "difficulty": 2, "unit": "Algebra" },
+      "Pair of Linear Equations in Two Variables": { "marks": 5, "difficulty": 3, "unit": "Algebra" },
+      "Quadratic Equations": { "marks": 5, "difficulty": 3, "unit": "Algebra" },
+      "Arithmetic Progressions": { "marks": 6, "difficulty": 2, "unit": "Algebra" },
+
+      "Coordinate Geometry": { "marks": 6, "difficulty": 2, "unit": "Coordinate Geometry" },
+
+      "Triangles": { "marks": 9, "difficulty": 4, "unit": "Geometry" },
+      "Circles": { "marks": 6, "difficulty": 3, "unit": "Geometry" },
+
+      "Introduction to Trigonometry": { "marks": 7, "difficulty": 4, "unit": "Trigonometry" },
+      "Some Applications of Trigonometry": { "marks": 5, "difficulty": 3, "unit": "Trigonometry" },
+
+      "Areas Related to Circles": { "marks": 4, "difficulty": 3, "unit": "Mensuration" },
+      "Surface Areas and Volumes": { "marks": 6, "difficulty": 3, "unit": "Mensuration" },
+
+      "Statistics": { "marks": 6, "difficulty": 2, "unit": "Statistics and Probability" },
+      "Probability": { "marks": 5, "difficulty": 2, "unit": "Statistics and Probability" }
+    }
+  }
+}
