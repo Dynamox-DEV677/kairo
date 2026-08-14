@@ -8,6 +8,16 @@ import KairoGyro from '../components/KairoGyro'
 import { GameBar } from '../components/GameBar'
 import { getProfile, getMistakes } from '../lib/twin'
 import { selectStreak, selectRetention } from '../lib/selectors'
+import { get as getStored, set as setStored } from '../lib/storage'
+
+/** Local calendar day. Deliberately not UTC — a student in IST at 11pm is
+ *  still on today, and a UTC rollover would swap their plan mid-evening. */
+function localDay(): string {
+  const d = new Date()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${d.getFullYear()}-${m}-${day}`
+}
 
 interface ExamDate { name: string; date: string }
 interface Profile {
@@ -143,19 +153,32 @@ export default function KairoHome({ onNavigate }: Props) {
         data = await attempt()
       }
       setBrief(data)
-      try { localStorage.setItem('kairo_home_brief_v1', JSON.stringify({ data, ts: Date.now() })) } catch {  }
+      // Keyed by LOCAL CALENDAR DAY, not a TTL. A 12-hour window meant a
+      // student who opened the app at 8am and again at 9pm got a different
+      // prediction and a different focus list on the same day, with no new
+      // activity to justify it.
+      try { setStored('homeBrief', { data, day: localDay() }) }
+      catch (e) { console.warn('[home] could not cache brief:', e) }
     } catch {
       setError("Couldn't reach your AI council just now. Tap “Refresh brief” to try again — everything else still works.")
     } finally { setLoading(false) }
   }, [profile])
 
   useEffect(() => {
-    // Show the last brief so the prediction/motivation numbers don't drift on
-    // every reload. Only recompute on an explicit Refresh, or once it's stale (12h).
+    // Today's brief is generated ONCE per calendar day and reloaded unchanged.
+    // Reloading the page must never move the prediction or reshuffle the focus
+    // list — that teaches a student the numbers are arbitrary.
+    //
+    // This read used to hit localStorage directly with the legacy key
+    // 'kairo_home_brief_v1'. The kyno: storage migration renames that key, so
+    // the direct read would have missed on every load and refetched a new
+    // brief each time — making the drift permanent.
     try {
-      const cached = JSON.parse(localStorage.getItem('kairo_home_brief_v1') || 'null')
-      if (cached?.data && Date.now() - (cached.ts || 0) < 12 * 3600 * 1000) { setBrief(cached.data); return }
-    } catch {  }
+      const cached = getStored<{ data: Brief; day: string }>('homeBrief')
+      if (cached?.data && cached.day === localDay()) { setBrief(cached.data); return }
+    } catch (e) {
+      console.warn('[home] cached brief unreadable, regenerating:', e)
+    }
     fetchBrief()
     /* eslint-disable-next-line */
   }, [])
