@@ -7,6 +7,16 @@ import {
 import KairoGyro from '../components/KairoGyro'
 import { awardXP } from '../lib/game'
 
+// Plans are now scoped to the signed-in user server-side, so every call to a
+// plan route has to carry the token or it will (correctly) 401.
+const authFetch = (url: string, init: RequestInit = {}) => fetch(url, {
+  ...init,
+  headers: {
+    ...(init.headers as Record<string, string> | undefined),
+    Authorization: `Bearer ${localStorage.getItem('kairo_token') || ''}`,
+  },
+})
+
 interface ExamMeta { id: string; label: string; subjects: string[]; durationHrs: number | null }
 interface TopicPriority { subject: string; topic: string; weight: 'HIGH' | 'MED' | 'LOW'; reason: string }
 interface ScheduleBlock { time: string; subject: string; topic: string; type: 'concept'|'practice'|'PYQ'|'revision'|'mock'|'rest' }
@@ -141,7 +151,7 @@ export default function ExamPlanner() {
     }
 
     if (userId) {
-      fetch(`/api/exam-planner/list?user_id=${encodeURIComponent(userId)}`)
+      authFetch(`/api/exam-planner/list`)
         .then(r => r.ok ? r.json() : [])
         .then(d => { if (Array.isArray(d)) setSavedPlans(d) })
         .catch(() => {})
@@ -178,7 +188,7 @@ export default function ExamPlanner() {
       return
     }
     try {
-      const r = await fetch('/api/exam-planner/save', {
+      const r = await authFetch('/api/exam-planner/save', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -196,7 +206,7 @@ export default function ExamPlanner() {
   const loadPlan = useCallback(async (id: string) => {
     setLoading(true); setError(null)
     try {
-      const r = await fetch(`/api/exam-planner/${id}`)
+      const r = await authFetch(`/api/exam-planner/${id}`)
       if (!r.ok) throw new Error('Load failed')
       const row = await r.json()
       setPlan(row.plan_json)
@@ -219,7 +229,7 @@ export default function ExamPlanner() {
     })
     if (!planId) return
     try {
-      await fetch(`/api/exam-planner/${planId}/checkin`, {
+      await authFetch(`/api/exam-planner/${planId}/checkin`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ block_key: key, done: nextDone }),
@@ -232,7 +242,7 @@ export default function ExamPlanner() {
     setShowMockForm(false); setLoading(true); setError(null)
     try {
       if (planId) {
-        await fetch(`/api/exam-planner/${planId}/mock`, {
+        await authFetch(`/api/exam-planner/${planId}/mock`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ score: mockScore, note: mockNote }),
@@ -257,7 +267,7 @@ export default function ExamPlanner() {
       const newPlan = await r.json()
       setPlan(newPlan); setCompletion({})
       if (planId) {
-        await fetch(`/api/exam-planner/${planId}`, {
+        await authFetch(`/api/exam-planner/${planId}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ plan_json: newPlan, hours_per_day: hoursPerDay }),
@@ -267,9 +277,12 @@ export default function ExamPlanner() {
     finally { setLoading(false) }
   }, [plan, planId, mockScore, mockNote, completion, weakAreas, hoursPerDay, examDate])
 
-  const daysLeft = Math.max(0, Math.round(
-    (new Date(examDate).getTime() - new Date().getTime()) / 86400000
-  ))
+  // Clearing the date input gives new Date('') -> NaN, and Math.max(0, NaN) is
+  // NaN, so the header used to read "NaN days until your exam".
+  const examTime = new Date(examDate).getTime()
+  const daysLeft = Number.isFinite(examTime)
+    ? Math.max(0, Math.round((examTime - Date.now()) / 86400000))
+    : 0
 
   return (
     <div style={{ padding: 24, maxWidth: 1100, margin: '0 auto', color: '#fafafa', height: '100%', overflowY: 'auto', boxSizing: 'border-box', width: '100%' }}>
@@ -350,7 +363,13 @@ export default function ExamPlanner() {
           <div>
             <label style={lbl}><Clock size={11} style={{ verticalAlign: 'middle', marginRight: 4 }} />Hours per day · {hoursPerDay}h</label>
             <input type="range" min={1} max={12} step={0.5}
-              value={hoursPerDay} onChange={e => setHoursPerDay(parseFloat(e.target.value))}
+              value={hoursPerDay}
+              onChange={e => {
+                // An emptied number input parses to NaN, which then poisoned
+                // every "hours × days" figure on the page.
+                const v = parseFloat(e.target.value)
+                setHoursPerDay(Number.isFinite(v) ? Math.min(24, Math.max(0, v)) : 0)
+              }}
               style={{ width: '100%', accentColor: '#7C5CFF', height: 6, cursor: 'pointer' }}
             />
           </div>

@@ -14,6 +14,9 @@
   --kyno-nav-h: 66px;
   --kyno-nav-clearance: calc(var(--kyno-nav-h) + env(safe-area-inset-bottom) + 16px);
 
+  /* Reading width for page content on a docked-sidebar desktop layout. */
+  --kyno-content-max: 1200px;
+
   /* ── Kyno gamified theme tokens (mirror of src/theme/tokens.ts) ──────────── */
   --kyno-bg:            #0A0D16;   /* deep navy-black base                    */
   --kyno-surface:       #141A2B;   /* elevated cards / surfaces               */
@@ -484,6 +487,22 @@ button, [role="button"], a, .kyno-tile, .kyno-chip {
    OS honours: it tells the platform to draw its native popup, scrollbars and
    pickers in dark mode. Applied globally so every <select> in the app is
    covered, not just the ones we remember to fix.                          */
+/* ── Desktop: keep content to a readable column beside the docked sidebar ──
+   The shell is already flex-row with a permanent sidebar above 768px, so the
+   structure was never the problem. What was missing is an upper bound: on a
+   1400px+ monitor every page stretched the full remaining width, which reads
+   as a wall of text and is what makes a desktop layout feel unfinished.
+
+   Applied to the page wrapper so individual pages keep whatever narrower
+   max-width they already set — this is a ceiling, not an override. */
+@media (min-width: 1024px) {
+  .kairo-desktop .kyno-page {
+    max-width: var(--kyno-content-max);
+    margin-inline: auto;
+    width: 100%;
+  }
+}
+
 :root { color-scheme: dark; }
 
 select,

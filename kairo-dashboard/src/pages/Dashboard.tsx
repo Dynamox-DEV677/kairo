@@ -121,6 +121,23 @@ interface DashboardProps {
 
 export default function Dashboard({ profile, onLogout }: DashboardProps) {
   const [active, setActive]           = useState(profile?.role === 'admin' ? 'school' : 'home')
+
+  /**
+   * Phase 0.6 — one dashboard.
+   *
+   * Home and the Kyno tab both showed streak, XP, weak topics and focus tasks,
+   * with different framing and (before the selectors landed) different numbers.
+   * Two dashboards that disagree is worse than either alone: the student cannot
+   * tell which is real, so neither is trusted.
+   *
+   * Home wins because it is where every quest, notification and deep link
+   * already points. The Kyno route redirects rather than being deleted — the
+   * screen has work in it worth reusing when it becomes a tutor entry point,
+   * and a hard delete would strand anything still navigating there.
+   */
+  useEffect(() => {
+    if (active === 'kairo-os') setActive('home')
+  }, [active])
   const [visited, setVisited] = useState<Set<string>>(() => new Set([profile?.role === 'admin' ? 'school' : 'home']))
   useEffect(() => {
     setVisited(prev => (prev.has(active) ? prev : new Set(prev).add(active)))
@@ -199,6 +216,9 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
     ...(isMobile ? { paddingBottom: 'var(--kyno-nav-clearance)' } : null),
   })
 
+  /** `.kyno-page` is what the desktop max-width rule in index.css hangs off. */
+  const pageClass = 'kyno-page'
+
   return (
     <div className={isMobile ? 'kairo-mobile' : 'kairo-desktop'} style={{
       display: 'flex',
@@ -254,9 +274,9 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
                 because the boundary's hasError never clears on navigation. */}
             <ErrorBoundary key={active}>
 
-            <div style={pageStyle('home')}>{mounted('home') && <KairoHomeM onNavigate={setActive} />}</div>
+            <div className={pageClass} style={pageStyle('home')}>{mounted('home') && <KairoHomeM onNavigate={setActive} />}</div>
 
-            <div style={pageStyle('doubt')}>
+            <div className={pageClass} style={pageStyle('doubt')}>
               {mounted('doubt') && (
               <div style={{ flex: 1, minHeight: 0, position: 'relative', display: 'flex', flexDirection: 'column' }}>
                 <button
@@ -296,84 +316,84 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
               )}
             </div>
 
-            <div style={pageStyle('flashcards')}>{mounted('flashcards') && <FlashcardsM />}</div>
+            <div className={pageClass} style={pageStyle('flashcards')}>{mounted('flashcards') && <FlashcardsM />}</div>
 
-            <div style={pageStyle('study-plan')}>{mounted('study-plan') && <StudyPlan />}</div>
+            <div className={pageClass} style={pageStyle('study-plan')}>{mounted('study-plan') && <StudyPlan />}</div>
 
-            <div style={pageStyle('exam-planner')}>{mounted('exam-planner') && <ExamPlanner />}</div>
+            <div className={pageClass} style={pageStyle('exam-planner')}>{mounted('exam-planner') && <ExamPlanner />}</div>
 
-            <div style={pageStyle('topic-architect')}>{mounted('topic-architect') && <TopicArchitect />}</div>
+            <div className={pageClass} style={pageStyle('topic-architect')}>{mounted('topic-architect') && <TopicArchitect />}</div>
 
-            <div style={pageStyle('essay')}>{mounted('essay') && <EssayGrader />}</div>
+            <div className={pageClass} style={pageStyle('essay')}>{mounted('essay') && <EssayGrader />}</div>
 
-            <div style={pageStyle('predictor')}>{mounted('predictor') && <ExamPredictor />}</div>
+            <div className={pageClass} style={pageStyle('predictor')}>{mounted('predictor') && <ExamPredictor />}</div>
 
-            <div style={pageStyle('question-paper')}>{mounted('question-paper') && <QuestionPaper />}</div>
+            <div className={pageClass} style={pageStyle('question-paper')}>{mounted('question-paper') && <QuestionPaper />}</div>
 
-            <div style={pageStyle('lesson-plan')}>{mounted('lesson-plan') && <LessonPlan />}</div>
+            <div className={pageClass} style={pageStyle('lesson-plan')}>{mounted('lesson-plan') && <LessonPlan />}</div>
 
-            <div style={pageStyle('parent-message')}>{mounted('parent-message') && <ParentMessage />}</div>
+            <div className={pageClass} style={pageStyle('parent-message')}>{mounted('parent-message') && <ParentMessage />}</div>
 
-            <div style={pageStyle('settings')}>{mounted('settings') && <Settings />}</div>
+            <div className={pageClass} style={pageStyle('settings')}>{mounted('settings') && <Settings />}</div>
 
-            <div style={pageStyle('fee-reminder')}>{mounted('fee-reminder') && <FeeReminder />}</div>
+            <div className={pageClass} style={pageStyle('fee-reminder')}>{mounted('fee-reminder') && <FeeReminder />}</div>
 
-            <div style={pageStyle('admission')}>{mounted('admission') && <AdmissionBot />}</div>
+            <div className={pageClass} style={pageStyle('admission')}>{mounted('admission') && <AdmissionBot />}</div>
 
-            <div style={pageStyle('attendance')}>{mounted('attendance') && <Attendance />}</div>
+            <div className={pageClass} style={pageStyle('attendance')}>{mounted('attendance') && <Attendance />}</div>
 
-            <div style={pageStyle('timetable')}>{mounted('timetable') && <Timetable />}</div>
+            <div className={pageClass} style={pageStyle('timetable')}>{mounted('timetable') && <Timetable />}</div>
 
-            <div style={pageStyle('writing')}>{mounted('writing') && <WritingTools />}</div>
+            <div className={pageClass} style={pageStyle('writing')}>{mounted('writing') && <WritingTools />}</div>
 
-            <div style={pageStyle('concept')}>{mounted('concept') && <ConceptTools />}</div>
+            <div className={pageClass} style={pageStyle('concept')}>{mounted('concept') && <ConceptTools />}</div>
 
-            <div style={pageStyle('formula')}>{mounted('formula') && <FormulaSheet />}</div>
+            <div className={pageClass} style={pageStyle('formula')}>{mounted('formula') && <FormulaSheet />}</div>
 
-            <div style={pageStyle('quiz')}>{mounted('quiz') && <AdaptiveQuiz />}</div>
+            <div className={pageClass} style={pageStyle('quiz')}>{mounted('quiz') && <AdaptiveQuiz />}</div>
 
-            <div style={pageStyle('pomodoro')}>{mounted('pomodoro') && <Pomodoro />}</div>
+            <div className={pageClass} style={pageStyle('pomodoro')}>{mounted('pomodoro') && <Pomodoro />}</div>
 
-            <div style={pageStyle('announcement')}>{mounted('announcement') && <Announcement />}</div>
+            <div className={pageClass} style={pageStyle('announcement')}>{mounted('announcement') && <Announcement />}</div>
 
-            <div style={pageStyle('school')}>{mounted('school') && profile && <SchoolHub profile={profile} />}</div>
+            <div className={pageClass} style={pageStyle('school')}>{mounted('school') && profile && <SchoolHub profile={profile} />}</div>
 
-            <div style={pageStyle('focus')}>{mounted('focus') && <FocusMode />}</div>
+            <div className={pageClass} style={pageStyle('focus')}>{mounted('focus') && <FocusMode />}</div>
 
-            <div style={pageStyle('camera')}>{mounted('camera') && <CameraStudy />}</div>
+            <div className={pageClass} style={pageStyle('camera')}>{mounted('camera') && <CameraStudy />}</div>
 
-            <div style={pageStyle('mistakes')}>{mounted('mistakes') && <MistakeAnalysisM />}</div>
+            <div className={pageClass} style={pageStyle('mistakes')}>{mounted('mistakes') && <MistakeAnalysisM />}</div>
 
-            <div style={pageStyle('simulator')}>{mounted('simulator') && <RevisionSimulatorM />}</div>
+            <div className={pageClass} style={pageStyle('simulator')}>{mounted('simulator') && <RevisionSimulatorM />}</div>
 
-            <div style={pageStyle('notebook')}>{mounted('notebook') && <NotebookM />}</div>
+            <div className={pageClass} style={pageStyle('notebook')}>{mounted('notebook') && <NotebookM />}</div>
 
-            <div style={pageStyle('concept-map')}>{mounted('concept-map') && <ConceptMapM />}</div>
+            <div className={pageClass} style={pageStyle('concept-map')}>{mounted('concept-map') && <ConceptMapM />}</div>
 
-            <div style={pageStyle('battle')}>{mounted('battle') && <BattleModeM />}</div>
+            <div className={pageClass} style={pageStyle('battle')}>{mounted('battle') && <BattleModeM />}</div>
 
-            <div style={pageStyle('league')}>{mounted('league') && <LeagueM />}</div>
+            <div className={pageClass} style={pageStyle('league')}>{mounted('league') && <LeagueM />}</div>
 
-            <div style={pageStyle('knowledge')}>{mounted('knowledge') && <KnowledgeGraphM />}</div>
+            <div className={pageClass} style={pageStyle('knowledge')}>{mounted('knowledge') && <KnowledgeGraphM />}</div>
 
-            <div style={pageStyle('ops')}>{mounted('ops') && <Ops />}</div>
+            <div className={pageClass} style={pageStyle('ops')}>{mounted('ops') && <Ops />}</div>
 
-            <div style={pageStyle('teacher-ai')}>{mounted('teacher-ai') && <TeacherAssistant />}</div>
+            <div className={pageClass} style={pageStyle('teacher-ai')}>{mounted('teacher-ai') && <TeacherAssistant />}</div>
 
-            <div style={pageStyle('explain-mistake')}>{mounted('explain-mistake') && <ExplainMistake />}</div>
+            <div className={pageClass} style={pageStyle('explain-mistake')}>{mounted('explain-mistake') && <ExplainMistake />}</div>
 
-            <div style={pageStyle('teach-back')}>{mounted('teach-back') && <TeachBack />}</div>
+            <div className={pageClass} style={pageStyle('teach-back')}>{mounted('teach-back') && <TeachBack />}</div>
 
             {/* Rendered ONLY while active — unmounting is what releases the camera + torch. */}
             {active === 'camera-live' && <CameraLive onExit={() => setActive('kairo-os')} />}
 
-            <div style={pageStyle('labs')}>{mounted('labs') && (
+            <div className={pageClass} style={pageStyle('labs')}>{mounted('labs') && (
               <Suspense fallback={<div style={{ padding: 28, color: '#9CA3AF', fontSize: 13 }}>Loading labs…</div>}>
                 <KairoLabs active={active === 'labs'} />
               </Suspense>
             )}</div>
 
-            <div style={pageStyle('kairo-os')}>{mounted('kairo-os') && <KairoOSM />}</div>
+            <div className={pageClass} style={pageStyle('kairo-os')}>{mounted('kairo-os') && <KairoOSM />}</div>
 
             </ErrorBoundary>
 

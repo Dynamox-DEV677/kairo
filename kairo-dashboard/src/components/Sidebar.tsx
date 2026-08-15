@@ -60,8 +60,10 @@ const STUDENT_NAV: NavItem[] = [
   { label: 'Writing Tools',   icon: Edit3,           to: 'writing',          color: '#A5B4FC' },
 
   // ── beta: real screens, but not finished enough to present as done ───────
-  { label: 'Kyno',            icon: Cpu,             to: 'kairo-os',         color: '#A5B4FC',
-    beta: 'Duplicates Home — the two are being merged' },
+  // 'Kyno' (kairo-os) removed: it was a second dashboard showing the same
+  // streak/XP/weak-topics as Home. Dashboard.tsx now redirects that route home,
+  // so listing it would be a nav entry that visibly bounces. Code retained for
+  // when it becomes a tutor entry point rather than a dashboard.
   { label: 'Study Mode · Live', icon: Camera,        to: 'camera-live',      color: '#4FD8E8',
     beta: 'Camera hang fixed; the live session flow still needs a pass' },
   { label: 'Concept Map',     icon: Network,         to: 'concept-map',      color: '#A5B4FC',
