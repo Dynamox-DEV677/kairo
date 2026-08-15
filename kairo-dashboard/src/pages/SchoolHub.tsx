@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
+import { aiHeaders } from '../lib/devKey'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Users, BookOpen, Bell, TrendingUp, Plus, Check, X, Clock,
@@ -292,19 +293,90 @@ function fmtDateShort(s: string) {
   return new Date(s).toLocaleString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })
 }
 
+/**
+ * The empty state used to read "Register or join a school from the login
+ * screen" — which a signed-in student cannot reach without logging out, so it
+ * was a dead end that named a door with no handle. The join flow lives here
+ * now, using the same POST /api/users/join-school the login screen calls.
+ */
 function NoSchoolView() {
+  const [name, setName] = useState('')
+  const [code, setCode] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [msg, setMsg] = useState('')
+  const [ok, setOk] = useState(false)
+
+  async function join(e: React.FormEvent) {
+    e.preventDefault()
+    if (!name.trim() || !code.trim() || busy) return
+    setBusy(true); setMsg('')
+    try {
+      const r = await fetch('/api/users/join-school', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...aiHeaders() },
+        body: JSON.stringify({ school_name: name.trim(), school_passcode: code.trim() }),
+      })
+      const j = await r.json().catch(() => ({}))
+      if (!r.ok) throw new Error(j.error || `Could not join (HTTP ${r.status})`)
+      setOk(true)
+      setMsg('Joined. Reloading School Hub…')
+      setTimeout(() => window.location.reload(), 1200)
+    } catch (err: any) {
+      // The server's messages are already specific — "School X not found",
+      // "Incorrect school passcode" — so pass them through rather than
+      // flattening everything into "something went wrong".
+      setMsg(err?.message || 'Could not join that school.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-      minHeight: '60vh', color: '#6B7280', gap: 12 }}>
+      minHeight: '60vh', color: '#6B7280', gap: 12, padding: 20 }}>
       <div style={{ width: 72, height: 72, borderRadius: 20, background: 'rgba(124, 92, 255,0.10)', border: '1px solid rgba(124, 92, 255,0.24)', display: 'grid', placeItems: 'center', marginBottom: 4 }}>
         <Building2 size={34} color="#7C5CFF" />
       </div>
       <div style={{ fontSize: 18, fontWeight: 800, color: '#e4e4e7' }}>Not in a school yet</div>
-      <div style={{ fontSize: 13, maxWidth: 320, textAlign: 'center', lineHeight: 1.55 }}>
-        Register or join a school from the login screen to access School Hub.
+      <div style={{ fontSize: 13, maxWidth: 340, textAlign: 'center', lineHeight: 1.55 }}>
+        Ask your teacher for the school name and passcode, then join here.
+        Everything else in Kyno works without a school.
       </div>
+
+      <form onSubmit={join} style={{ display: 'grid', gap: 9, width: '100%', maxWidth: 320, marginTop: 8 }}>
+        <input
+          value={name} onChange={e => setName(e.target.value)}
+          placeholder="School name" autoComplete="organization"
+          style={joinInput}
+        />
+        <input
+          value={code} onChange={e => setCode(e.target.value)}
+          placeholder="School passcode" type="password" autoComplete="one-time-code"
+          inputMode="text" enterKeyHint="go"
+          style={joinInput}
+        />
+        <button
+          type="submit" className="kyno-chunky" disabled={busy || !name.trim() || !code.trim()}
+          style={{ padding: '11px 16px', fontSize: 13, opacity: busy ? 0.6 : 1 }}
+        >
+          {busy ? 'Joining…' : 'Join school'}
+        </button>
+      </form>
+
+      {msg && (
+        <div style={{ fontSize: 12.5, marginTop: 4, maxWidth: 320, textAlign: 'center',
+          color: ok ? '#4FD8E8' : '#E2585C' }}>
+          {msg}
+        </div>
+      )}
     </div>
   )
+}
+
+const joinInput: React.CSSProperties = {
+  background: '#141A2A', border: '1px solid #1f2532', borderRadius: 9,
+  padding: '10px 12px', fontSize: 13.5, color: '#fafafa', fontFamily: 'inherit',
+  outline: 'none', width: '100%', boxSizing: 'border-box',
 }
 
 function SchoolHeader({ profile }: { profile: AuthProfile }) {

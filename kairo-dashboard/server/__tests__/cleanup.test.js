@@ -180,3 +180,39 @@ test('quality reflects difficulty, so a hard correct answer counts for more', ()
   assert.ok(qualityFrom(true, 0.9) > qualityFrom(true, 0.2))
   assert.ok(qualityFrom(false, 0.9) < qualityFrom(true, 0.2))
 })
+
+// --- Bug 3: a wrong-but-real subject is corrected, not just junk ----------
+
+test('Quadratic Equations filed under Chemistry is moved to Mathematics', () => {
+  const { state } = cleanupLocalData({
+    ...dirtyState(),
+    concepts: [{ topic: 'Quadratic Equations', subject: 'Chemistry' }],
+    formulas: [{ ts: NOW, expr: 'x = (-b ± √(b²-4ac))/2a', topic: 'Quadratic Equations', subject: 'Chemistry', name: 'Quadratic formula' }],
+  })
+  assert.equal(state.concepts[0].subject, 'Mathematics')
+  assert.equal(state.formulas.find(f => /Quadratic/i.test(f.topic)).subject, 'Mathematics')
+})
+
+test('Math / Maths / Mathematics are not treated as a mismatch', () => {
+  // Rewriting these would churn every record on every run for no gain.
+  const { state, report } = cleanupLocalData({
+    ...dirtyState(),
+    doubts: [], formulas: [], flashcards: [], mastery: [], events: [],
+    concepts: [
+      { topic: 'Trigonometry', subject: 'Math' },
+      { topic: 'Quadratic Equations', subject: 'Maths' },
+    ],
+  })
+  assert.equal(report.subjectsRetagged, 0, 'a synonym was counted as a mismatch')
+  assert.equal(state.concepts[0].subject, 'Math')
+})
+
+test('a subject that cannot be inferred is left alone', () => {
+  // Overriding what we cannot infer is the same mistake in reverse.
+  const { state } = cleanupLocalData({
+    ...dirtyState(),
+    doubts: [], formulas: [], flashcards: [], mastery: [], events: [],
+    concepts: [{ topic: 'Indian Constitution', subject: 'History' }],
+  })
+  assert.equal(state.concepts[0].subject, 'History')
+})

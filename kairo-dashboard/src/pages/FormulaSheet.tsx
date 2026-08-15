@@ -260,6 +260,34 @@ function TwinFormulaCard({ f }: { f: TwinFormula }) {
       }}>
         <MathExpr expr={f.expr} displayMode />
       </div>
+
+      {/* Rearrangements of the same law, nested rather than filed as separate
+          cards. V=IR, R=V/I and I=V/R are one relation solved for different
+          terms — three top-level cards made the sheet look like the student
+          had learned three things when they had learned one. */}
+      {f.variants && f.variants.length > 0 && (
+        <div style={{ marginTop: 10, paddingTop: 10, borderTop: `1px solid ${C.border}` }}>
+          <div style={{
+            fontSize: 9, color: C.textGhost, textTransform: 'uppercase',
+            letterSpacing: 1, fontWeight: 700, marginBottom: 7,
+          }}>
+            Also written as
+          </div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            {f.variants.map((v: string) => (
+              <div key={v} style={{
+                padding: '5px 10px', borderRadius: 8,
+                background: 'rgba(255,255,255,0.03)',
+                border: '1px solid rgba(255,255,255,0.05)',
+                fontSize: 12,
+              }}>
+                <MathExpr expr={v} />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div style={{ fontSize: 9.5, color: C.textGhost, marginTop: 8, textTransform: 'uppercase', letterSpacing: 1, fontWeight: 700 }}>
         {f.source} · {formatRelative(f.ts)}
       </div>

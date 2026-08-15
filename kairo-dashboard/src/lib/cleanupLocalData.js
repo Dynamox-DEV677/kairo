@@ -16,17 +16,56 @@ import { canonicalTopic, classifyChatTurn, isSameFormula, sameText } from './kno
 
 /** Subject inferred from a topic, so "General" can be replaced where the topic
  *  actually tells us. Only clear cases — a wrong subject is worse than none. */
+/**
+ * Order matters: the first match wins, so the most specific subject goes first.
+ *
+ * Mathematics leads because maths topic names collide with science vocabulary
+ * far more than the reverse — "equations", "series", "functions", "vectors".
+ * The Chemistry pattern used to contain a bare `equation`, which matched
+ * "Quadratic Equations" and filed it under Chemistry. That is almost certainly
+ * how the live app got it wrong, and a test now pins it.
+ *
+ * Every pattern here has to be a term that belongs to ONE subject. A word that
+ * appears in two syllabuses does not belong in this list at all — leaving a
+ * subject untagged is recoverable; tagging it wrongly hides the topic where the
+ * student will never look for it.
+ */
 const SUBJECT_HINTS = [
-  [/ohm|current|circuit|resist|magnet|electric|light|refract|lens|mirror|force|motion|energy|sound|gravit/i, 'Physics'],
-  [/acid|base|salt|metal|carbon|reaction|equation|periodic|mole|atom|bond|electrolys/i, 'Chemistry'],
-  [/cell|mitosis|meiosis|tissue|life process|respirat|reproduc|heredity|gene|photosynth|ecosystem|organism/i, 'Biology'],
-  [/trigonom|algebra|quadratic|polynomial|geometry|triangle|circle|probabilit|statistic|arithmetic progress|coordinate/i, 'Mathematics'],
+  [/trigonom|algebra|quadratic|polynomial|geometry|triangle|circle|probabilit|statistic|arithmetic progress|coordinate|calculus|logarithm|matri(x|ces)/i, 'Mathematics'],
+  [/ohm|circuit|resist|magnet|refract|lens|mirror|newton|momentum|gravit|friction|electric current/i, 'Physics'],
+  [/acid|alkali|salt|metal|carbon|chemical (reaction|equation)|periodic table|mole concept|electrolys|valenc|isotope|covalent|ionic bond/i, 'Chemistry'],
+  [/cell|mitosis|meiosis|tissue|life process|respirat|reproduc|heredity|gene|photosynth|ecosystem|organism|nutrition|excretion/i, 'Biology'],
 ]
 
 function inferSubject(topic) {
   const t = String(topic || '')
   for (const [re, subject] of SUBJECT_HINTS) if (re.test(t)) return subject
   return null
+}
+
+/**
+ * The subject a record SHOULD carry, given its topic.
+ *
+ * Junk tags ("General") were already handled. This also overrides a tag that is
+ * confidently WRONG — Quadratic Equations filed under Chemistry, which is what
+ * the live app shows. The AI picks the subject at capture time and sometimes
+ * picks badly, and a wrong subject is not a cosmetic problem: it puts the topic
+ * in the wrong place in every browser, search and study plan, so the student
+ * cannot find it where they'd look.
+ *
+ * Only overrides when the topic text is unambiguous. `null` means leave it
+ * alone — guessing over a subject we cannot infer would be the same mistake in
+ * the other direction.
+ */
+function correctSubject(topic, current) {
+  const inferred = inferSubject(topic)
+  if (!inferred) return null
+  const cur = String(current || '').trim().toLowerCase()
+  if (!cur) return inferred
+  // 'Math' / 'Maths' / 'Mathematics' are the same answer, not a mismatch.
+  const same = inferred.toLowerCase().startsWith(cur.slice(0, 4))
+    || cur.startsWith(inferred.toLowerCase().slice(0, 4))
+  return same ? null : inferred
 }
 
 const isJunkSubject = (s) => {
@@ -82,6 +121,10 @@ export function cleanupLocalData(state) {
       const inferred = inferSubject(item.topic)
       if (inferred) { item.subject = inferred; report.subjectsRetagged++ }
       else delete item.subject       // better absent than falsely "General"
+    } else {
+      // Real but wrong — Quadratic Equations under Chemistry.
+      const fixed = correctSubject(item.topic, item.subject)
+      if (fixed) { item.subject = fixed; report.subjectsRetagged++ }
     }
     return true
   })
@@ -100,6 +143,9 @@ export function cleanupLocalData(state) {
         const inferred = inferSubject(d.topic)
         if (inferred) { d.subject = inferred; report.subjectsRetagged++ }
         else delete d.subject
+      } else {
+        const fixed = correctSubject(d.topic, d.subject)
+        if (fixed) { d.subject = fixed; report.subjectsRetagged++ }
       }
       return true
     }
@@ -172,6 +218,9 @@ export function cleanupLocalData(state) {
       const inferred = inferSubject(e.topic)
       if (inferred) { e.subject = inferred; report.subjectsRetagged++ }
       else delete e.subject
+    } else {
+      const fixed = correctSubject(e.topic, e.subject)
+      if (fixed) { e.subject = fixed; report.subjectsRetagged++ }
     }
     return true
   })
