@@ -6,7 +6,7 @@ import {
   ChevronLeft, ChevronRight, Beaker, ExternalLink, BookOpen, Atom,
   Mic, MicOff, Calendar, X, Paperclip,
   FileText as TextIcon, MapPin as MapPinIcon,
-  Box as Box3DIcon, LayoutPanelTop as BothIcon, Wand2,
+  Box as Box3DIcon, LayoutPanelTop as BothIcon, Wand2, Camera,
 } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
@@ -118,6 +118,64 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
   const [docBusy, setDocBusy] = useState(false)
   const [docName, setDocName] = useState('')
   const [docText, setDocText] = useState('')   // Kyno's reading of the document
+
+  // Snap-and-Solve. `snapNote` carries the honesty message — how sure the
+  // transcription is — because the student is about to send it as their own
+  // question and deserves to know whether to read it twice.
+  const [snapBusy, setSnapBusy] = useState(false)
+  const [snapNote, setSnapNote] = useState('')
+  const snapInputRef = useRef<HTMLInputElement>(null)
+
+  /**
+   * Photograph a problem, get an EDITABLE transcription in the composer.
+   *
+   * Deliberately does not answer the question. The transcription lands in the
+   * normal input box, so the student reads it, fixes whatever the model
+   * misread, and presses send — after which it is an ordinary question going
+   * through the ordinary pipeline. Auto-solving from the photo would mean
+   * answering a question they never confirmed, and a single misread digit
+   * produces a confident answer to the wrong problem.
+   */
+  async function snapSolve(file: File) {
+    setSnapBusy(true)
+    setSnapNote('')
+    try {
+      const dataUrl = await new Promise<string>((resolve, reject) => {
+        const fr = new FileReader()
+        fr.onerror = () => reject(new Error('read failed'))
+        fr.onloadend = () => resolve(String(fr.result))
+        fr.readAsDataURL(file)
+      })
+
+      const r = await fetch('/api/camera/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...aiHeaders() },
+        body: JSON.stringify({ image: dataUrl, mode: 'transcribe' }),
+      })
+      const j = await r.json().catch(() => null)
+
+      if (!r.ok || !j || j.readable === false || !j.text) {
+        // Never a dead end — the student still has a keyboard.
+        setSnapNote("Couldn't read that photo. Try better light, or just type the question.")
+        taRef.current?.focus()
+        return
+      }
+
+      setInput(j.text)
+      const conf = Number(j.confidence)
+      setSnapNote(
+        Number.isFinite(conf) && conf < 70
+          ? 'Read it, and fix anything wrong before you send — the photo was hard to make out.'
+          : 'Check it looks right, then send.',
+      )
+      // Focus the box so correcting is the obvious next move, not sending.
+      setTimeout(() => taRef.current?.focus(), 50)
+    } catch (e: any) {
+      setSnapNote(`Couldn't read that photo. ${String(e?.message || '').slice(0, 60)} — try typing it instead.`)
+    } finally {
+      setSnapBusy(false)
+    }
+  }
 
   async function readDocument(file: File) {
     setDocBusy(true)
@@ -516,6 +574,14 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
             />
           </span>
         )}
+        {snapNote && (
+          <span style={{
+            width: '100%', fontSize: 11.5, color: '#9CA3AF',
+            padding: '0 4px 6px', lineHeight: 1.45,
+          }}>
+            {snapNote}
+          </span>
+        )}
         <textarea
           ref={taRef}
           value={input}
@@ -534,6 +600,41 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
         />
         {!busy && (
           <>
+            {/* Snap-and-Solve. capture="environment" opens the rear camera
+                directly on a phone; on desktop it is an ordinary file picker,
+                so the same control works everywhere. */}
+            <input
+              ref={snapInputRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              style={{ display: 'none' }}
+              onChange={e => {
+                const f = e.target.files?.[0]
+                if (f) snapSolve(f)
+                e.target.value = ''   // same photo twice in a row must re-fire
+              }}
+            />
+            <button
+              onClick={() => snapInputRef.current?.click()}
+              title="Photograph a question — Kyno types it out for you to check"
+              className="kr-tactile"
+              disabled={snapBusy}
+              aria-label="Photograph a question"
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 6,
+                padding: '8px 14px', borderRadius: 999,
+                background: 'rgba(255,255,255,0.03)',
+                border: '1px solid rgba(255,255,255,0.08)',
+                color: '#9CA3AF', fontSize: 12.5, fontFamily: 'inherit',
+                cursor: snapBusy ? 'default' : 'pointer', flexShrink: 0,
+                opacity: snapBusy ? 0.6 : 1,
+              }}
+            >
+              <Camera size={14} />
+              {snapBusy ? 'Reading…' : 'Snap'}
+            </button>
+
             <button
               onClick={() => docInputRef.current?.click()}
               title="Attach a PDF or notes — Kyno will read it and answer from it"

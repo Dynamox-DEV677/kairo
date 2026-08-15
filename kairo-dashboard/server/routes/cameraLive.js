@@ -27,7 +27,7 @@ const GROQ_VISION = process.env.GROQ_VISION_MODEL || 'qwen/qwen3.6-27b'
 // truncated mid-thought and returns nothing usable. detect/grade ask for a
 // small JSON object; explain asks for eight markdown sections and needs room
 // for both the reasoning and the answer.
-const FAST_MODES  = new Set(['detect', 'grade'])
+const FAST_MODES  = new Set(['detect', 'grade', 'transcribe'])
 const LONG_MODES  = new Set(['explain', 'report'])
 const tokensFor = (mode) => (FAST_MODES.has(mode) ? 900 : LONG_MODES.has(mode) ? 5000 : 2000)
 
@@ -149,6 +149,37 @@ async function vision(prompt, image, { devKey = '', mode = 'detect' } = {}) {
 const JSON_ONLY = 'Return ONLY a single valid JSON object. No prose, no markdown fences, no commentary.'
 
 const PROMPTS = {
+  /**
+   * Snap-and-Solve: transcribe, do not interpret.
+   *
+   * `detect` summarises a question into 300 chars and guesses subject/topic —
+   * useful for the live camera, wrong here. The student is going to READ this
+   * back and correct it before it becomes their question, so it has to be a
+   * faithful transcription including every number, unit and sub-part. A
+   * paraphrase is worse than useless: the student cannot tell what the model
+   * dropped, and they end up asking about a problem that is not the one on
+   * their page.
+   */
+  transcribe: () => `You are transcribing a problem from a photo of a student's textbook, worksheet or notebook.
+
+Transcribe the question EXACTLY as printed. Do not solve it. Do not summarise it. Do not fix what looks like a mistake — if the page says 12 cm, write 12 cm.
+
+Rules:
+- Keep every number, unit, symbol and sub-part label ((a), (i), etc.).
+- Write mathematics in plain readable notation, e.g. "x^2", "sqrt(3)", "1/2", "≥".
+- If several questions are visible, transcribe only the one that is most clearly the subject of the photo (largest, centred, or circled).
+- If the image is too blurry or dark to read confidently, say so via low confidence rather than guessing at the characters.
+
+${JSON_ONLY}
+Schema:
+{
+  "readable": boolean,
+  "text": <the transcribed question, or null if unreadable>,
+  "subject": <"Mathematics"|"Physics"|"Chemistry"|"Biology"|"English"|"History"|"Geography"|"Economics"|"Computer Science"|null>,
+  "topic": <specific topic if obvious, else null>,
+  "confidence": <0-100 how sure you are the transcription is character-accurate>
+}`,
+
   detect: () => `You are looking through a student's phone camera at their study material.
 
 First decide if this frame actually contains readable study content (a printed question, textbook page, worksheet, handwritten work, diagram or graph). If it is blurry, dark, empty, or just a random scene, set "hasContent": false and leave the other fields null.
