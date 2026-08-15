@@ -1,0 +1,27 @@
+[
+  {
+    "n": 1,
+    "title": "Kyno Update 1",
+    "date": "2026-08-15",
+    "changes": [
+      "Point your camera at a question and Kyno reads it, checks it, and sends it to the Solver.",
+      "Camera Study now answers the way your NCERT textbook does — same terms, same steps, with the chapter it came from.",
+      "Chemical equations are balanced by actually solving them, so the coefficients are right every time.",
+      "The Formula Reader matches what it sees against your own formula sheet.",
+      "Your streak now survives one missed day a week instead of resetting to zero.",
+      "Your streak, XP and level read the same number everywhere in the app.",
+      "Topics you study get filed under the right subject — Quadratic Equations is Maths again, not Chemistry.",
+      "Tools that were not finished yet are no longer shown as if they were.",
+      "Notification settings actually apply now, and split by the kind of reminder."
+    ]
+  },
+  {
+    "n": 2,
+    "title": "Kyno Update 2",
+    "date": "2026-08-15",
+    "changes": [
+      "Every button in Kyno now looks and presses the same way, so the main action on a screen is obvious.",
+      "You will see this card after logging in whenever there is something new — including anything you missed."
+    ]
+  }
+]

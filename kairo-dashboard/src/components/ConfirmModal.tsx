@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { AlertTriangle, Sparkles, X } from 'lucide-react'
+import { PrimaryButton } from './PrimaryButton'
 
 export interface ConfirmOptions {
   title:         string
@@ -90,10 +91,6 @@ export default function ConfirmModal({
   const danger = tone === 'danger'
   const accentColor = danger ? '#FB7185' : '#A5B4FC'
   const glowColor   = danger ? 'rgba(251,113,133,0.32)' : 'rgba(124, 92, 255, 0.35)'
-  const confirmGradient = danger
-    ? 'linear-gradient(135deg, #FB7185 0%, #E11D48 100%)'
-    : 'linear-gradient(135deg, #7C5CFF 0%, #4f46e5 50%, #6B4EE0 100%)'
-
   const DefaultIcon = danger ? AlertTriangle : Sparkles
 
   return createPortal(
@@ -180,30 +177,23 @@ export default function ConfirmModal({
             )}
 
             <div style={{ display: 'flex', gap: 10, marginTop: 22, justifyContent: 'flex-end' }}>
-              <button
+              {/* Cancel stays visually quiet and Confirm carries the weight —
+                  except when tone="danger", where the *destructive* action is
+                  deliberately NOT the glowing one. A student should not have to
+                  read the label to know which button is the safe one. */}
+              <PrimaryButton
                 ref={cancelRef}
                 onClick={onClose}
-                style={{
-                  padding: '10px 18px', borderRadius: 10,
-                  background: 'transparent', border: '1px solid #2a2a36',
-                  color: '#d4d4d8', fontFamily: 'inherit', fontWeight: 600, fontSize: 13,
-                  cursor: 'pointer',
-                }}
+                variant={danger ? 'primary' : 'secondary'}
               >
                 {cancelLabel}
-              </button>
-              <button
+              </PrimaryButton>
+              <PrimaryButton
                 onClick={onConfirm}
-                style={{
-                  padding: '10px 20px', borderRadius: 10,
-                  background: confirmGradient, border: 'none',
-                  color: '#ffffff', fontFamily: 'inherit', fontWeight: 700, fontSize: 13,
-                  cursor: 'pointer',
-                  boxShadow: `0 10px 28px ${glowColor}`,
-                }}
+                variant={danger ? 'danger' : 'primary'}
               >
                 {confirmLabel}
-              </button>
+              </PrimaryButton>
             </div>
           </motion.div>
         </motion.div>

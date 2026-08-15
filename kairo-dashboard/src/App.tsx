@@ -14,6 +14,7 @@ import CloudRestorePrompt from './components/CloudRestorePrompt'
 import SplashScreen from './components/SplashScreen'
 import { TermsHost } from './components/Terms'
 import DesktopUpdateBanner from './components/DesktopUpdateBanner'
+import UpdatesHost from './components/UpdatesModal'
 import DemoModePrompt from './components/DemoModePrompt'
 import ResetPasswordPage from './pages/ResetPasswordPage'
 import StatusPage from './pages/StatusPage'
@@ -387,6 +388,9 @@ export default function App() {
       />
       <TermsHost />
       <DesktopUpdateBanner />
+      {/* Only in the signed-in branch: "what's new since you were last here" is
+          meaningless on the login screen, and the seen-state is per student. */}
+      <UpdatesHost uid={profile.id} />
       {splash}
     </GenerationProvider>
   )

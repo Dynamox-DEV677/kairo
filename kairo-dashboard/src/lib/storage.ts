@@ -251,6 +251,11 @@ export const userKey = {
   onboarded: (uid: string) => `kyno:onboarded:${uid}`,
   onboardHide: (uid: string) => `kyno:onboard:hide:${uid}`,
   twin:      (uid: string) => `kyno:twin:${uid}`,
+  /** Highest "Kyno Update N" this student has dismissed. Per-uid on purpose:
+   *  scopeLocalToUser() in App.tsx only clears `kairo:`-prefixed keys, so a
+   *  single un-scoped `kyno:` key would survive a user switch and hide the
+   *  updates from the next student to log in on the same device. */
+  updatesSeen: (uid: string) => `kyno:updates:seen:${uid}`,
 }
 
 /**

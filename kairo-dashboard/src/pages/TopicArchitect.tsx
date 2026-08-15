@@ -44,10 +44,11 @@ const lbl: React.CSSProperties = {
   fontSize: 11, color: '#9CA3AF', display: 'block', marginBottom: 5,
   fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.8,
 }
-// Layout + gradient face only — .kyno-chunky adds the 3D edge, radius and press.
+// Layout ONLY — .kyno-chunky supplies the gradient, radius, edge and press.
+// See the same note in ExamPlanner.tsx: hard-coding a second gradient here is
+// how the button system drifted apart to begin with.
 const btnPrimary: React.CSSProperties = {
-  background: 'linear-gradient(135deg, #7C5CFF 0%, #A5B4FC 100%)', color: '#fff',
-  border: 'none', padding: '12px 24px', fontSize: 14, fontWeight: 700,
+  padding: '12px 24px', fontSize: 14,
   display: 'inline-flex', alignItems: 'center', gap: 8,
 }
 const h3: React.CSSProperties = {

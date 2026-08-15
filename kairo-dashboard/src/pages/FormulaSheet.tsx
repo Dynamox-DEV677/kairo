@@ -2,10 +2,11 @@ import { useState, useEffect, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   BookOpen, Plus, Trash2, ChevronDown, ChevronRight, Copy, Check,
-  Sparkles, Sigma, Archive, FlaskConical,
+  Sparkles, Sigma, Archive, FlaskConical, RotateCw,
 } from 'lucide-react'
 import { post, get, del } from '../lib/api'
 import { listFormulas, type Formula as TwinFormula } from '../lib/twin'
+import { PrimaryButton } from '../components/PrimaryButton'
 import MathExpr from '../components/MathExpr'
 
 const SCHOOL_ID = 'demo_school'
@@ -195,11 +196,15 @@ function CollectedFormulas({ formulas, onReload }: { formulas: TwinFormula[]; on
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
       <div style={{ fontSize: 11, color: C.textFaint }}>
         {formulas.length} formula{formulas.length === 1 ? '' : 's'} pinned from your study sessions · grouped by subject
-        <button onClick={onReload} title="Reload" style={{
-          marginLeft: 8, padding: '3px 8px', borderRadius: 6,
-          background: 'transparent', border: `1px solid ${C.border}`, color: C.textDim,
-          fontSize: 10, cursor: 'pointer',
-        }}>refresh</button>
+        {/* Was a 10px lowercase "refresh" with a hairline border — it read as
+            body text, not a control, so it was effectively invisible. */}
+        <PrimaryButton
+          variant="secondary" size="sm" onClick={onReload}
+          title="Reload your collected formulas"
+          style={{ marginLeft: 10, padding: '5px 12px', fontSize: 11 }}
+        >
+          <RotateCw size={11} /> Refresh
+        </PrimaryButton>
       </div>
       {bySubject.map(([subject, items]) => (
         <div key={subject} style={{ ...card, padding: 18 }}>
@@ -307,9 +312,9 @@ function SheetsView({ sheets, loading, selected, setSelected, showForm, setShowF
           <div style={{ fontSize: 11, fontWeight: 700, color: C.purple, textTransform: 'uppercase', letterSpacing: 1.4, marginBottom: 10 }}>
             AI chapter sheets
           </div>
-          <button onClick={() => setShowForm(!showForm)} style={{ ...btn(), width: '100%', justifyContent: 'center', padding: '8px 12px' }}>
+          <PrimaryButton onClick={() => setShowForm(!showForm)} full size="sm">
             <Plus size={13} /> New sheet
-          </button>
+          </PrimaryButton>
         </div>
 
         <AnimatePresence>

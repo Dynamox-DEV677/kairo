@@ -6,6 +6,7 @@ import {
   Cpu, Gavel, Brain, Skull,
 } from 'lucide-react'
 import { api } from '../lib/api'
+import { PrimaryButton } from '../components/PrimaryButton'
 import { chat } from '../lib/openrouter'
 import { track } from '../lib/twin'
 import { awardXPAmount } from '../lib/game'
@@ -581,14 +582,11 @@ Tips: each tip is one specific actionable line (max 18 words) — reference the 
             Daily challenge · school leaderboard · streaks & XP
           </p>
         </div>
-        <button onClick={load} title="Refresh"
-          style={{
-            padding: '8px 12px', borderRadius: 8, border: '1px solid #1f2532',
-            background: '#1C2233', color: '#9CA3AF', cursor: 'pointer',
-            fontFamily: 'inherit', fontSize: 12, display: 'flex', alignItems: 'center', gap: 5,
-          }}>
-          <RefreshCw size={12} />
-        </button>
+        {/* Secondary, not primary: refreshing is not what a student came to
+            this screen to do — the daily challenge below is. */}
+        <PrimaryButton onClick={load} title="Refresh" aria-label="Refresh" variant="secondary" iconOnly>
+          <RefreshCw size={13} />
+        </PrimaryButton>
       </div>
 
       {err && (

@@ -64,11 +64,12 @@ const lbl: React.CSSProperties = {
   fontSize: 11, color: '#9CA3AF', display: 'block', marginBottom: 5,
   fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.8,
 }
-// Layout + gradient face only — .kyno-chunky adds the 3D edge, radius and press.
+// Layout ONLY. The gradient, radius, 3D edge and press all come from
+// .kyno-chunky so this button matches every other primary button in the app.
+// It used to hard-code its own 135deg gradient here, which is precisely how the
+// button system drifted apart in the first place.
 const btnPrimary: React.CSSProperties = {
-  background: 'linear-gradient(135deg, #7C5CFF 0%, #A5B4FC 100%)',
-  color: '#fff', border: 'none',
-  padding: '11px 22px', fontSize: 13, fontWeight: 700, letterSpacing: 0.5,
+  padding: '11px 22px', fontSize: 13, letterSpacing: 0.5,
   display: 'inline-flex', alignItems: 'center', gap: 8,
 }
 const btnGhost: React.CSSProperties = {

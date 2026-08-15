@@ -8,6 +8,7 @@ import ResetPasscode from './ResetPasscode'
 import { seedDemo, resetAllData, reconcileWithCloud, deleteCloudSnapshot } from '../lib/twin'
 import { loadGame } from '../lib/game'
 import { getNotificationPrefs, setNotificationPref } from '../lib/notifications'
+import { PrimaryButton, ToggleChip } from '../components/PrimaryButton'
 import { getRaw, setRaw, activeBackend } from '../lib/storage'
 import { DecoratedAvatar, DECORATIONS, getDecor, setDecor } from '../components/AvatarDecor'
 import { isDevMode, setDevMode, getDevKeyRaw, setDevKey, looksLikeGroqKey, aiHeaders } from '../lib/devKey'
@@ -226,7 +227,7 @@ export default function Settings() {
       body:         'Adds two weeks of realistic activity for a Class 10 CBSE student — flashcards, mistakes, concept graph nodes, and pinned formulas. Stacks on top of your existing data; use "Reset to fresh state" first to start clean.',
       confirmLabel: 'Load demo data',
       cancelLabel:  'Cancel',
-      tone:         'normal',
+      tone:         'primary',
     })
     if (!ok) return
     seedDemo()
@@ -293,18 +294,14 @@ export default function Settings() {
               <Field label="Board">
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                   {BOARDS.map(b => (
-                    <button key={b} type="button" onClick={() => setBoard(b)}
-                      className={`kyno-chip${board === b ? ' on' : ''}`}
-                      style={{ padding: '6px 12px', fontSize: 12 }}>{b}</button>
+                    <ToggleChip key={b} type="button" selected={board === b} onClick={() => setBoard(b)}>{b}</ToggleChip>
                   ))}
                 </div>
               </Field>
               <Field label="Class">
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                   {CLASSES.map(c => (
-                    <button key={c} type="button" onClick={() => setCls(`Class ${c}`)}
-                      className={`kyno-chip${cls === `Class ${c}` ? ' on' : ''}`}
-                      style={{ padding: '6px 12px', fontSize: 12 }}>Class {c}</button>
+                    <ToggleChip key={c} type="button" selected={cls === `Class ${c}`} onClick={() => setCls(`Class ${c}`)}>Class {c}</ToggleChip>
                   ))}
                 </div>
               </Field>
@@ -312,16 +309,9 @@ export default function Settings() {
           )}
         </div>
 
-        <button
-          onClick={save}
-          className={`kyno-chunky${saved ? ' cyan' : ''}`}
-          style={{
-            marginTop: 18, padding: '11px 22px', fontSize: 13,
-            display: 'flex', alignItems: 'center', gap: 7,
-          }}
-        >
+        <PrimaryButton onClick={save} style={{ marginTop: 18 }}>
           {saved ? <><Check size={14} /> Saved!</> : 'Save changes'}
-        </button>
+        </PrimaryButton>
       </Section>
 
       <Section icon={<Mail size={14} />} title="Email">
@@ -511,18 +501,9 @@ export default function Settings() {
           </button>
         </div>
 
-        <button
-          onClick={() => setTransferOpen(true)}
-          style={{
-            width: '100%', marginTop: 12, padding: '12px 16px', borderRadius: 12, cursor: 'pointer',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-            background: 'linear-gradient(135deg, rgba(124, 92, 255,0.16), rgba(52,211,153,0.12))',
-            border: '1px solid rgba(165,180,252,0.35)', color: '#A5B4FC',
-            fontFamily: 'inherit', fontSize: 13.5, fontWeight: 800,
-          }}
-        >
+        <PrimaryButton onClick={() => setTransferOpen(true)} full style={{ marginTop: 12 }}>
           <Smartphone size={15} /> Transfer to a new device
-        </button>
+        </PrimaryButton>
         <p style={{ fontSize: 11, color: '#6B7280', marginTop: 8, lineHeight: 1.5 }}>
           Move your whole profile to another phone or laptop — encrypted end-to-end, nothing uploaded to Kyno.
         </p>
@@ -538,19 +519,9 @@ export default function Settings() {
         <p style={{ fontSize: 13, color: '#9CA3AF', marginBottom: 14, lineHeight: 1.6 }}>
           Your 6-digit Kyno passcode locks the app on this device. Forgot it? Reset it via email below.
         </p>
-        <button
-          onClick={() => setResetOpen(true)}
-          style={{
-            display: 'flex', alignItems: 'center', gap: 8,
-            padding: '11px 18px', borderRadius: 12, cursor: 'pointer',
-            background: 'linear-gradient(135deg, rgba(165, 180, 252, 0.15), rgba(124, 92, 255, 0.10))',
-            border: '1px solid rgba(165, 180, 252, 0.40)',
-            color: '#A5B4FC',
-            fontFamily: 'inherit', fontSize: 13, fontWeight: 700,
-          }}
-        >
+        <PrimaryButton variant="secondary" onClick={() => setResetOpen(true)}>
           <KeyRound size={13} /> Reset Passcode
-        </button>
+        </PrimaryButton>
       </Section>
 
       <Section icon={<Sparkles size={14} />} title="Demo & Data">
@@ -560,18 +531,9 @@ export default function Settings() {
           Use "Reset" to wipe and start clean.
         </p>
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-          <button
-            onClick={loadDemoProfile}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 7,
-              padding: '11px 18px', borderRadius: 10, cursor: 'pointer', border: 'none',
-              background: 'linear-gradient(135deg, #7C5CFF 0%, #4A2FA8 100%)',
-              color: '#fff', fontFamily: 'inherit', fontSize: 13, fontWeight: 700,
-              boxShadow: '0 6px 18px rgba(124, 92, 255, 0.18)',
-            }}
-          >
+          <PrimaryButton onClick={loadDemoProfile}>
             <Sparkles size={13} /> Load Demo Profile
-          </button>
+          </PrimaryButton>
           <button
             onClick={resetToFresh}
             style={{
@@ -640,13 +602,9 @@ export default function Settings() {
             </Field>
 
             <div style={{ display: 'flex', gap: 10, marginTop: 12, flexWrap: 'wrap' }}>
-              <button
-                onClick={saveDevKey}
-                className="kyno-chunky"
-                style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '11px 18px', fontSize: 13 }}
-              >
+              <PrimaryButton onClick={saveDevKey}>
                 <Check size={13} /> Save key
-              </button>
+              </PrimaryButton>
               <button
                 onClick={testDevKey}
                 disabled={devTesting}
