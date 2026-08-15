@@ -41,6 +41,10 @@ interface NavItem {
 const STUDENT_NAV: NavItem[] = [
   // ── working, in rough order of daily usefulness ──────────────────────────
   { label: 'Home',            icon: Sparkles,        to: 'home',             color: '#A5B4FC' },
+  // Kyno OS is a separate destination from Home by design. They used to show
+  // different numbers for the same things; both read the shared selectors now,
+  // so they show one truth in two views.
+  { label: 'Kyno OS',         icon: Cpu,             to: 'kairo-os',         color: '#A5B4FC' },
   { label: "Kyno's Solver",  icon: MessageCircle,   to: 'doubt',            color: '#A5B4FC' },
   { label: 'Adaptive Quiz',   icon: Brain,           to: 'quiz',             color: '#A5B4FC' },
   { label: 'Flashcards',      icon: BookMarked,      to: 'flashcards',       color: '#A5B4FC' },
@@ -60,10 +64,6 @@ const STUDENT_NAV: NavItem[] = [
   { label: 'Writing Tools',   icon: Edit3,           to: 'writing',          color: '#A5B4FC' },
 
   // ── beta: real screens, but not finished enough to present as done ───────
-  // 'Kyno' (kairo-os) removed: it was a second dashboard showing the same
-  // streak/XP/weak-topics as Home. Dashboard.tsx now redirects that route home,
-  // so listing it would be a nav entry that visibly bounces. Code retained for
-  // when it becomes a tutor entry point rather than a dashboard.
   { label: 'Study Mode · Live', icon: Camera,        to: 'camera-live',      color: '#4FD8E8',
     beta: 'Camera hang fixed; the live session flow still needs a pass' },
   { label: 'Concept Map',     icon: Network,         to: 'concept-map',      color: '#A5B4FC',

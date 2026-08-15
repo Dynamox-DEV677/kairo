@@ -59,12 +59,44 @@ export function aiHeaders(): Record<string, string> {
   const k = activeDevGroqKey()
   if (k) h['x-groq-key'] = k
 
-  try {
-    const token = localStorage.getItem('kairo_token')
-    if (token) h.Authorization = `Bearer ${token}`
-  } catch (e) {
-    console.warn('[ai] could not read the session token:', e)
-  }
+  const token = sessionToken()
+  if (token) h.Authorization = `Bearer ${token}`
 
   return h
+}
+
+/**
+ * The current Supabase access token, synchronously.
+ *
+ * kairo_token alone is not enough. It is written by the login paths in
+ * Login.tsx, so a session the Supabase SDK restored on its own — a returning
+ * user who never re-logged-in — has no kairo_token at all, and every AI route
+ * 401s. That is exactly what happened in production.
+ *
+ * The SDK's own storage key is the real source of truth, so fall back to it.
+ * Reading it directly rather than calling getSession() because that is async
+ * and this is used inline in header objects.
+ */
+export function sessionToken(): string | null {
+  try {
+    const direct = localStorage.getItem('kairo_token')
+    if (direct) return direct
+  } catch { /* storage blocked; try the SDK key below */ }
+
+  try {
+    // supabase-js v2 stores under sb-<project-ref>-auth-token.
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i)
+      if (!k || !k.startsWith('sb-') || !k.endsWith('-auth-token')) continue
+      const raw = localStorage.getItem(k)
+      if (!raw) continue
+      const parsed = JSON.parse(raw)
+      const t = parsed?.access_token || parsed?.currentSession?.access_token
+      if (t) return t
+    }
+  } catch (e) {
+    console.warn('[ai] could not read the Supabase session:', e)
+  }
+
+  return null
 }

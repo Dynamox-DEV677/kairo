@@ -122,22 +122,13 @@ interface DashboardProps {
 export default function Dashboard({ profile, onLogout }: DashboardProps) {
   const [active, setActive]           = useState(profile?.role === 'admin' ? 'school' : 'home')
 
-  /**
-   * Phase 0.6 — one dashboard.
-   *
-   * Home and the Kyno tab both showed streak, XP, weak topics and focus tasks,
-   * with different framing and (before the selectors landed) different numbers.
-   * Two dashboards that disagree is worse than either alone: the student cannot
-   * tell which is real, so neither is trusted.
-   *
-   * Home wins because it is where every quest, notification and deep link
-   * already points. The Kyno route redirects rather than being deleted — the
-   * screen has work in it worth reusing when it becomes a tutor entry point,
-   * and a hard delete would strand anything still navigating there.
-   */
-  useEffect(() => {
-    if (active === 'kairo-os') setActive('home')
-  }, [active])
+  // Home and Kyno OS are deliberately two separate screens.
+  //
+  // They were briefly merged because they showed DIFFERENT numbers for the same
+  // things — streak, XP, weak topics — and a student could not tell which was
+  // real. That was the actual bug, and it is fixed: both now read the same
+  // selectors (selectors.core.js), so they cannot disagree. Two views of one
+  // truth is a design choice; two truths was not.
   const [visited, setVisited] = useState<Set<string>>(() => new Set([profile?.role === 'admin' ? 'school' : 'home']))
   useEffect(() => {
     setVisited(prev => (prev.has(active) ? prev : new Set(prev).add(active)))
