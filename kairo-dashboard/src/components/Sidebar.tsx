@@ -42,7 +42,9 @@ const STUDENT_NAV: NavItem[] = [
   { label: 'Focus Mode',      icon: Target,          to: 'focus',            color: '#A5B4FC' },
   { label: 'Flashcards',      icon: BookMarked,      to: 'flashcards',       color: '#A5B4FC' },
   { label: 'Grader',          icon: FileText,        to: 'essay',            color: '#A5B4FC' },
-  { label: 'My Tasks',        icon: BookOpen,        to: 'school',           color: '#A5B4FC' },
+  // Was labelled "My Tasks" but routed to 'school', so tapping it opened
+  // School Hub saying "Not in a school yet". Named for where it actually goes.
+  { label: 'School Hub',      icon: BookOpen,        to: 'school',           color: '#A5B4FC' },
   { label: 'Study Plan',      icon: Calendar,        to: 'study-plan',       color: '#A5B4FC' },
   { label: 'Exam Planner',    icon: Target,          to: 'exam-planner',     color: '#A5B4FC' },
   { label: 'Topic Architect', icon: Brain,           to: 'topic-architect',  color: '#A5B4FC' },

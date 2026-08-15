@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
   ArrowLeft, Zap, ZapOff, Camera, Lightbulb, BookmarkPlus, Menu,
   Sparkles, StopCircle, Loader2, Mic, Square, Volume2, X, Check, AlertTriangle,
+  Image as ImageIcon,
 } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
@@ -92,19 +93,49 @@ export default function CameraLive({ onExit }: { onExit?: () => void }) {
   useEffect(() => {
     let dead = false
     ;(async () => {
+      // getUserMedia does NOT reject when the permission prompt is dismissed or
+      // simply never answered — the promise just never settles. The catch below
+      // only ever fired on an explicit rejection, which is why this screen sat
+      // on "Starting camera…" forever with no error and no way out.
+      const TIMEOUT_MS = 6000
+      let settled = false
+
+      const timer = setTimeout(() => {
+        if (settled || dead) return
+        setCamErr(
+          'Camera blocked — your browser is waiting for permission, or it was ' +
+          'dismissed. Allow camera access and reload, or upload a photo instead.',
+        )
+      }, TIMEOUT_MS)
+
+      if (!navigator.mediaDevices?.getUserMedia) {
+        clearTimeout(timer)
+        setCamErr('This browser cannot open a camera. Upload a photo of the question instead.')
+        return
+      }
+
       try {
         const s = await navigator.mediaDevices.getUserMedia({
           video: { facingMode: { ideal: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1440 } },
           audio: false,
         })
+        settled = true
+        clearTimeout(timer)
         if (dead) { s.getTracks().forEach(t => t.stop()); return }
         streamRef.current = s
         if (videoRef.current) { videoRef.current.srcObject = s; await videoRef.current.play().catch(() => {}) }
         setReady(true)
+        setCamErr('')
       } catch (e: any) {
-        setCamErr(e?.name === 'NotAllowedError'
-          ? 'Camera permission denied. Allow camera access to use Study Mode.'
-          : 'Could not open the camera on this device.')
+        settled = true
+        clearTimeout(timer)
+        setCamErr(
+          e?.name === 'NotAllowedError'
+            ? 'Camera permission denied. Allow camera access in your browser settings, or upload a photo instead.'
+            : e?.name === 'NotFoundError'
+            ? 'No camera found on this device. Upload a photo of the question instead.'
+            : 'Could not open the camera on this device. Upload a photo instead.',
+        )
       }
     })()
     return () => {
@@ -374,7 +405,42 @@ export default function CameraLive({ onExit }: { onExit?: () => void }) {
           <div style={glass({ padding: 24, maxWidth: 340, textAlign: 'center' })}>
             <AlertTriangle size={26} color="var(--c-error)" style={{ marginBottom: 10 }} />
             <p style={{ color: '#fff', fontSize: 14, lineHeight: 1.6, margin: 0 }}>{camErr}</p>
-            <button onClick={onExit} className="kyno-chunky" style={{ marginTop: 16, padding: '10px 18px', fontSize: 13 }}>Go back</button>
+
+            {/* Upload fallback. A blocked camera used to be a dead end with a
+                "Go back" button — the student came here with a question and
+                left without an answer. analyze() already accepts an image, so
+                this reuses the whole existing pipeline. */}
+            <label className="kyno-chunky" style={{
+              marginTop: 16, padding: '10px 18px', fontSize: 13, display: 'inline-flex',
+              alignItems: 'center', gap: 8, cursor: 'pointer',
+            }}>
+              <ImageIcon size={15} /> Upload a photo instead
+              <input
+                type="file" accept="image/*" capture="environment"
+                style={{ display: 'none' }}
+                onChange={async e => {
+                  const f = e.target.files?.[0]
+                  if (!f) return
+                  try {
+                    const dataUrl = await new Promise<string>((resolve, reject) => {
+                      const fr = new FileReader()
+                      fr.onload = () => resolve(String(fr.result))
+                      fr.onerror = () => reject(fr.error)
+                      fr.readAsDataURL(f)
+                    })
+                    setCamErr('')
+                    const d = await analyze('detect', {}, dataUrl)
+                    if (d?.question) { setDet(d); setPhase('question') }
+                    else setCamErr("Couldn't find a question in that photo. Try a clearer shot of the page.")
+                  } catch (err) {
+                    setCamErr('Could not read that image. Try a different photo.')
+                    console.warn('[camera] upload failed:', err)
+                  }
+                }}
+              />
+            </label>
+
+            <button onClick={onExit} className="kyno-ghost" style={{ marginTop: 10, padding: '9px 18px', fontSize: 12.5, display: 'block', width: '100%' }}>Go back</button>
           </div>
         </div>
       )}

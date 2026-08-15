@@ -50,10 +50,18 @@ export default function League() {
   const offline = board?.offline || (!loading && rows.length === 0)
   const youRank = board?.rank || 0
   const youXp = board?.youXp ?? localXp
-  const tier = tierFor(g.totalXP)
+  // Tier must come from the SAME number shown beside it. It used to read local
+  // game XP while the figure next to it read the board, so a student with 520
+  // local XP and no server presence saw "Silver tier · 980 XP to Gold" sitting
+  // next to "0 XP" and a rank of "—".
+  const tier = tierFor(youXp)
   const tierIdx = TIERS.indexOf(tier)
   const nextTier = tierIdx > 0 ? TIERS[tierIdx - 1] : null
-  const toNext = nextTier ? nextTier.min - g.totalXP : 0
+  const toNext = nextTier ? Math.max(0, nextTier.min - youXp) : 0
+
+  // Not on the board yet: no rank, no XP counted. Showing a tier here claims a
+  // standing the student has not got.
+  const inLeague = youRank > 0 || youXp > 0
 
   return (
     <div style={{ padding: 'clamp(16px, 5vw, 28px) clamp(14px, 4vw, 32px)', maxWidth: 720, margin: '0 auto', height: '100%', overflowY: 'auto', color: C.text }}>
@@ -104,11 +112,17 @@ export default function League() {
             {range === 'week' ? 'earned this week' : range === 'month' ? 'earned this month' : 'earned all-time'}
             {board && board.total > 0 && ` · ${board.total} student${board.total === 1 ? '' : 's'} competing`}
           </div>
-          <div style={{ marginTop: 9, display: 'inline-flex', alignItems: 'center', gap: 6, padding: '5px 11px', borderRadius: 999, background: tier.color + '1e', border: `1px solid ${tier.color}55` }}>
-            <Gem size={13} color={tier.color} />
-            <span style={{ fontSize: 11.5, fontWeight: 800, color: tier.color }}>{tier.name} tier</span>
-            {nextTier && <span style={{ fontSize: 10.5, color: C.faint, fontWeight: 600 }}>· {toNext.toLocaleString()} XP to {nextTier.name}</span>}
-          </div>
+          {inLeague ? (
+            <div style={{ marginTop: 9, display: 'inline-flex', alignItems: 'center', gap: 6, padding: '5px 11px', borderRadius: 999, background: tier.color + '1e', border: `1px solid ${tier.color}55` }}>
+              <Gem size={13} color={tier.color} />
+              <span style={{ fontSize: 11.5, fontWeight: 800, color: tier.color }}>{tier.name} tier</span>
+              {nextTier && <span style={{ fontSize: 10.5, color: C.faint, fontWeight: 600 }}>· {toNext.toLocaleString()} XP to {nextTier.name}</span>}
+            </div>
+          ) : (
+            <div style={{ marginTop: 9, fontSize: 11.5, color: C.dim }}>
+              Not in this week's league yet — earn any XP and you're in.
+            </div>
+          )}
         </div>
       </div>
 

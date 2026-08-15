@@ -69,6 +69,7 @@ export default function BattleMode() {
   const [judging, setJudging] = useState(false)
   const intervalRef = useRef<number | null>(null)
   const aiTimerRef  = useRef<number | null>(null)
+  const advanceTimer = useRef<number | null>(null)   // question auto-advance
   const liveStartedAtRef = useRef<number>(0)
 
   const load = useCallback(async () => {
@@ -127,6 +128,9 @@ export default function BattleMode() {
     return () => {
       if (intervalRef.current) window.clearInterval(intervalRef.current)
       if (aiTimerRef.current)  window.clearTimeout(aiTimerRef.current)
+      // Without this the auto-advance still fires after the student leaves,
+      // advancing a component that is no longer mounted.
+      if (advanceTimer.current) window.clearTimeout(advanceTimer.current)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase, idx])
@@ -307,7 +311,9 @@ Tips: each tip is one specific actionable line (max 18 words) — reference the 
         })
       }
     } catch {  }
-    setTimeout(() => advance(i), 250)
+    // Tracked so leaving mid-question cannot advance an unmounted component.
+    if (advanceTimer.current) clearTimeout(advanceTimer.current)
+    advanceTimer.current = window.setTimeout(() => advance(i), 250)
   }
 
   function backToLobby() {
@@ -720,8 +726,19 @@ Tips: each tip is one specific actionable line (max 18 words) — reference the 
         </div>
 
         {leaders.length === 0 && (
-          <div style={{ textAlign: 'center', padding: '40px 0', color: '#4B5563', fontSize: 13 }}>
-            No battles yet — be the first to claim the top spot.
+          // An empty state with nothing to press reads as a broken feature. The
+          // daily challenge and the bot sparring below both work — this points
+          // at them instead of leaving the student staring at a dead board.
+          <div style={{ textAlign: 'center', padding: '32px 0 40px', color: '#4B5563', fontSize: 13 }}>
+            <div style={{ marginBottom: 14 }}>No battles yet — be the first to claim the top spot.</div>
+            <button
+              onClick={startDaily}
+              disabled={!daily || daily.already_played}
+              className="kyno-chunky"
+              style={{ padding: '11px 20px', fontSize: 13 }}
+            >
+              {daily?.already_played ? "Today's challenge done — come back tomorrow" : "Play today's challenge"}
+            </button>
           </div>
         )}
 
