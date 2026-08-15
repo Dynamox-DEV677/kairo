@@ -177,14 +177,27 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
     }
   }, [])
 
+  const isMobile = useIsMobile()
+
+  /**
+   * Every page gets its bottom clear of the floating nav.
+   *
+   * The nav is position:fixed, so it sits over whatever is beneath it — it was
+   * covering the Motivation card on Home, the difficulty buttons on Adaptive
+   * Quiz, and the note list in AI Notebook. 48 pages own their own scroll
+   * container, so padding them individually would mean 48 edits and a 49th
+   * page shipping broken. This is the one wrapper they all sit inside.
+   *
+   * Padding rather than margin: the pages scroll internally, and margin here
+   * would leave the scrollbar running under the nav.
+   */
   const pageStyle = (id: string) => ({
     position: 'absolute' as const,
     inset: 0,
     display: active === id ? 'flex' : 'none',
     flexDirection: 'column' as const,
+    ...(isMobile ? { paddingBottom: 'var(--kyno-nav-clearance)' } : null),
   })
-
-  const isMobile = useIsMobile()
 
   return (
     <div className={isMobile ? 'kairo-mobile' : 'kairo-desktop'} style={{

@@ -6,6 +6,14 @@
   /* App-wide font — user-selectable in Settings ("kairo:font"). */
   --kairo-font: 'Space Grotesk', 'Inter', system-ui, sans-serif;
 
+  /* Height of the floating bottom nav pill, including its own bottom offset.
+     Kept here because the nav is position:fixed and therefore covers page
+     content — every scrollable page reserves this much space at the bottom
+     via pageStyle() in Dashboard.tsx. If the nav's padding or icon size
+     changes, change this with it. 56px pill + 10px lift + 16px breathing. */
+  --kyno-nav-h: 66px;
+  --kyno-nav-clearance: calc(var(--kyno-nav-h) + env(safe-area-inset-bottom) + 16px);
+
   /* ── Kyno gamified theme tokens (mirror of src/theme/tokens.ts) ──────────── */
   --kyno-bg:            #0A0D16;   /* deep navy-black base                    */
   --kyno-surface:       #141A2B;   /* elevated cards / surfaces               */
@@ -325,23 +333,27 @@ button, [role="button"], a, .kyno-tile, .kyno-chip {
   ::-webkit-scrollbar { width: 0; height: 0; }
 }
 
-/* Re-pad every page when the shell is in mobile mode.
+/* Tighten the generous desktop page padding on mobile.
    React serialises inline `style={{ padding: '28px 36px' }}` to
-   `style="padding: 28px 36px"` (no quotes, with space). */
+   `style="padding: 28px 36px"` (no quotes, with space).
+
+   NOTE: these no longer set padding-bottom. Nav clearance used to live here,
+   which meant a page only cleared the nav if its inline padding happened to
+   match one of these exact strings — Home, Adaptive Quiz and AI Notebook did
+   not, which is precisely why the nav covered the Motivation card, the
+   difficulty buttons and the note list. It is now reserved once on the page
+   wrapper in Dashboard.tsx (--kyno-nav-clearance), so it applies to all 48
+   pages and to the 49th nobody has written yet. */
 .kairo-mobile [style*="padding: 28px 36px"],
 .kairo-mobile [style*="padding:28px 36px"],
 .kairo-mobile [style*="padding: '28px 36px'"] {
-  padding: 14px 16px calc(116px + env(safe-area-inset-bottom)) !important;
+  padding: 14px 16px !important;
 }
 
 /* Pages with vertical padding only — catches '28px 0', '24px 0 80px', etc. */
 .kairo-mobile [style*="padding: 28px"] {
-  padding-bottom: calc(116px + env(safe-area-inset-bottom)) !important;
   padding-left: 14px !important;
   padding-right: 14px !important;
-}
-.kairo-mobile [style*="padding: 24px"] {
-  padding-bottom: calc(116px + env(safe-area-inset-bottom)) !important;
 }
 
 /* Fix max-width clamping on mobile so we use the full width.
