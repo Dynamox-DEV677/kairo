@@ -268,8 +268,22 @@ const OVERSIZED_LEGACY = ['kairo:chat:last', 'kairo:recent_chats']
  *  old deploy still sitting in users' browsers. */
 const DEAD_SUPABASE_KEY = 'sb-lbnrexqbxrokxlhoepcb-auth-token'
 
-/** Legacy token duplicates. Supabase's SDK storage replaces all of these. */
-const LEGACY_TOKEN_KEYS = ['kairo_token', 'kairo_refresh']
+/**
+ * DELIBERATELY EMPTY — do not put kairo_token / kairo_refresh back here until
+ * their readers are migrated.
+ *
+ * These were being deleted on the grounds that Supabase's SDK storage is the
+ * single source of truth for tokens. That is the right end state, but 28 files
+ * still read them directly — including src/lib/api.ts, which puts kairo_token
+ * in the Authorization header of every API call, and its refresh path which
+ * reads and rewrites kairo_refresh.
+ *
+ * Deleting the keys without migrating those readers signs out every existing
+ * user the first time they load the new build, with no way back: the token is
+ * gone from the device. The keys stay until api.ts, App.tsx, MobileShell,
+ * Sidebar, TopBar and ChatWindow read the session from Supabase instead.
+ */
+const LEGACY_TOKEN_KEYS: string[] = []
 
 export interface MigrationReport {
   ran:       boolean
@@ -304,8 +318,10 @@ export function migrateStorage(): MigrationReport {
       removeRaw(k)
     }
 
-    // 2. Strip the access_token / refresh_token that were being kept inside
-    //    the profile blob alongside ordinary display fields.
+    // 2. Strip the access_token / refresh_token out of the profile blob.
+    //    The KEY stays — App.tsx reads 'kairo_profile' to know who is signed
+    //    in, so removing it signs the user out. Rewriting it in place without
+    //    the tokens gets the security win with no breakage.
     const legacyProfile = getJSON<Record<string, unknown>>('kairo_profile')
     if (legacyProfile) {
       const clean: StoredProfile = {
@@ -318,30 +334,39 @@ export function migrateStorage(): MigrationReport {
       report.strippedProfileTokens =
         'access_token' in legacyProfile || 'refresh_token' in legacyProfile
       setJSON(KEYS.profile, clean)
-      removeRaw('kairo_profile')
+      setJSON('kairo_profile', clean)   // same object, tokens gone
       report.renamed++
     }
 
-    // 3. Rename everything else. kairo:foo:bar and kairo_foo both become
-    //    kyno:foo:bar / kyno:foo — one namespace, one prefix.
+    // 3. COPY, don't move. kairo:foo -> kyno:foo, legacy key left in place.
+    //
+    //    28 files still read the legacy keys directly — App.tsx for the signed-in
+    //    profile and onboarding flags, Sidebar for its expanded/showAll state,
+    //    api.ts for the auth header. Moving the keys silently breaks every one
+    //    of those readers, and the failure looks like "the app forgot me"
+    //    rather than like a migration bug.
+    //
+    //    Dual-write is the safe shape for a transition: new code can read kyno:
+    //    today, old code keeps working, and a later migration drops the legacy
+    //    copies once nothing reads them. The duplication costs a few KB.
     for (const k of listKeys()) {
       if (!(k.startsWith('kairo:') || k.startsWith('kairo_'))) continue
       if (k === 'kairo:storage:migrated:v1') continue
 
       // 'kairo:' and 'kairo_' are both 6 characters, so one slice covers both.
       const next = `kyno:${k.slice(6)}`
-      if (getRaw(next) !== null) { removeRaw(k); continue }  // already migrated
+      if (getRaw(next) !== null) continue   // already copied
 
       const v = getRaw(k)
       if (v === null) continue
       setRaw(next, v)
-      removeRaw(k)
+      // Legacy key intentionally NOT removed — see the note above.
       report.renamed++
     }
 
     setRaw(SCHEMA_KEY, String(SCHEMA_VERSION))
     console.info(
-      `[kyno:storage] migrated — ${report.renamed} keys renamed, ` +
+      `[kyno:storage] migrated — ${report.renamed} keys copied to kyno:, ` +
       `${report.dropped.length} dropped, ${(report.bytesFreed / 1024).toFixed(1)}KB freed`,
     )
   } catch (e) {
