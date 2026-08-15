@@ -117,6 +117,9 @@ export interface Formula {
   subject?:  string
   topic?:    string
   source:    'solver' | 'manual' | 'lab'
+  /** Rearrangements of the same relation — R=V/I under V=IR — kept nested
+   *  rather than saved as separate cards. */
+  variants?: string[]
 }
 
 export interface Flashcard {
@@ -170,6 +173,8 @@ import { exportGameState, importGameState } from './game'
 // Shared arithmetic — see selectors.core.js. Imported here so the twin cannot
 // disagree with Home about a number they both display.
 import { selectStreak, selectPrediction, selectWeakTopics, selectStrongTopics } from './selectors.core.js'
+// Phase 2: nothing reaches the graph without passing through these.
+import { canonicalTopic, classifyChatTurn, isSameFormula, findRecentDuplicate } from './knowledgeHygiene.js'
 
 const STORAGE_PREFIX = 'kairo:twin:'
 const MAX_EVENTS     = 800
@@ -1480,14 +1485,26 @@ export function recordDoubt(args: {
   topic?:    string
   subject?:  string
   source?:   Doubt['source']
-}): Doubt {
+}): Doubt | null {
+  // Not every chat turn is a doubt. The live log holds "Make Flashcard Abt
+  // This" and "No Create It In Flashcards" as doubts, so the app believed the
+  // student was confused about flashcards; and "R = V X I = 12 X 3 = 36 Ohms"
+  // -- the student's own wrong answer -- as a doubt, so it believed they had
+  // ASKED that. Both then fed the AI as context and became weaknesses.
+  //
+  // A false doubt is worse than a missing one: it is permanent, and it makes
+  // the app confidently wrong about what the student struggles with.
+  const kind = classifyChatTurn(args.question)
+  if (kind !== 'question') return null
+
   const state = loadState()
+  const canon = canonicalTopic(args.topic)
   const doubt: Doubt = {
     id:        uid(),
     ts:        Date.now(),
     question:  args.question,
     answer:    args.answer,
-    topic:     normalizeTopic(args.topic),
+    topic:     canon?.display ?? normalizeTopic(args.topic),
     subject:   args.subject,
     source:    args.source || 'solver',
   }
@@ -1669,10 +1686,30 @@ export interface ConceptEdge { from: string; to: string }
 
 export function recordFormula(args: { name: string; expr: string; subject?: string; topic?: string; source?: Formula['source'] }): Formula {
   const state = loadState()
+  const canon = canonicalTopic(args.topic)
+
+  // V=IR, V=I×R, R=V/I and I=V/R are one law written four ways. Comparing the
+  // expression text treated them as four formulas, which is how the Formula
+  // Sheet ended up with six Ohm's Law cards saved inside two minutes.
+  const dup = findRecentDuplicate(
+    state.formulas,
+    { expr: args.expr, topic: args.topic },
+    isSameFormula,
+  ) as Formula | null
+
+  if (dup) {
+    // Keep the variant rather than dropping it, nested under the entry that
+    // already exists — a student who wrote R=V/I should still see that form.
+    const variants = new Set([...(dup.variants || []), args.expr])
+    dup.variants = [...variants].filter(v => v !== dup.expr).slice(0, 6)
+    saveState(state)
+    return dup
+  }
+
   const f: Formula = {
     id: uid(), ts: Date.now(),
     name: args.name, expr: args.expr,
-    subject: args.subject, topic: normalizeTopic(args.topic),
+    subject: args.subject, topic: canon?.display ?? normalizeTopic(args.topic),
     source: args.source || 'solver',
   }
   state.formulas.unshift(f)
