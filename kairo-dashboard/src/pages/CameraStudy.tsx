@@ -6,11 +6,12 @@ import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
 import {
   Camera, Upload, X, Sparkles, FileText, BookmarkPlus,
-  Lightbulb, RotateCcw, Loader2, CheckCircle2,
+  Lightbulb, RotateCcw, Loader2, CheckCircle2, Scale,
 } from 'lucide-react'
 import { saveRecentChat, makeTitle } from '../lib/recentChats'
 import { aiHeaders } from '../lib/devKey'
 import { recordMistake, recordFlashcard } from '../lib/twin'
+import { balance } from '../lib/balanceEquation.js'
 import { awardXP } from '../lib/game'
 
 const VISION_MODELS = [
@@ -74,6 +75,15 @@ const ACTIONS = [
   { id: 'flashcards', label: 'Flashcards',   icon: BookmarkPlus, color: '#A5B4FC',
     hint: 'Turns the page into revision cards',
     prompt: 'Create 8-10 high-quality flashcards from the content in this image. Return ONLY a JSON array: [{"front":"question","back":"answer"}]. No other text, no markdown, no explanation.' },
+  /**
+   * The model only READS the equation. The balancing is done in code by
+   * src/lib/balanceEquation.js, because balancing is linear algebra with one
+   * right answer — asking a language model to do arithmetic it could compute
+   * exactly is how a student ends up memorising a wrong coefficient.
+   */
+  { id: 'balance',   label: 'Balance',       icon: Scale,        color: '#4FD8E8',
+    hint: 'Photo of an unbalanced equation — balances it with the working',
+    prompt: 'Read the chemical equation in this image. Transcribe it EXACTLY as written, including any existing coefficients, using -> for the arrow. Do NOT balance it. Do not solve anything.\n\nReturn ONLY a JSON object: {"equation":"<the equation as written>","readable":true|false}' },
   { id: 'summarize', label: 'Summarize',     icon: FileText,     color: '#A5B4FC',
     hint: 'Condenses notes into key points',
     prompt: 'Summarize the content in this image into clear bullet points organized under "## Section Name" headings. Capture all key facts, formulas, and definitions. Keep it tight.' + MD_RULES },
@@ -279,6 +289,32 @@ export default function CameraStudy() {
         ],
         updated: Date.now(),
       })
+
+      if (action.id === 'balance') {
+        const md = typeof text === 'string' ? text : ''
+        const obj = md.match(/\{[\s\S]*\}/)
+        let eqText = ''
+        try { eqText = obj ? (JSON.parse(obj[0]).equation || '') : '' }
+        catch (e) { console.warn('[camera] balance JSON did not parse:', e) }
+
+        if (!eqText) {
+          setResult('')
+          setErr("Couldn't read an equation in that photo. Try a closer, sharper shot of just the equation.")
+        } else {
+          const r = balance(eqText)
+          if (r.ok) {
+            // Rendered as markdown so the existing renderer handles it; the
+            // CONTENT is computed, not generated.
+            setResult(
+              `## Balanced\n\n**${r.balanced}**\n\n## Read from your page\n\n\`${eqText}\`\n\n## How it balances\n\n` +
+              r.steps.map(s => `- ${s}`).join('\n'),
+            )
+          } else {
+            // Honest failure rather than a plausible-looking wrong balance.
+            setResult(`## Read from your page\n\n\`${eqText}\`\n\n## Couldn't balance it\n\n${r.reason}`)
+          }
+        }
+      }
 
       if (action.id === 'flashcards') {
         /**
