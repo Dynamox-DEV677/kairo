@@ -10,7 +10,7 @@ import {
 } from 'lucide-react'
 import { saveRecentChat, makeTitle } from '../lib/recentChats'
 import { aiHeaders } from '../lib/devKey'
-import { recordMistake } from '../lib/twin'
+import { recordMistake, recordFlashcard } from '../lib/twin'
 import { awardXP } from '../lib/game'
 
 const VISION_MODELS = [
@@ -93,6 +93,9 @@ export default function CameraStudy() {
   const [busy, setBusy]           = useState(false)
   const [activeAction, setActiveAction] = useState<string | null>(null)
   const [result, setResult]       = useState('')
+  // Parsed flashcards, rendered as cards rather than dumped as JSON.
+  const [cards, setCards]         = useState<{ front: string; back: string }[]>([])
+  const [savedNote, setSavedNote] = useState('')
   const [err, setErr]             = useState('')
   const [docBusy, setDocBusy]     = useState(false)
   const [docResult, setDocResult] = useState('')
@@ -241,6 +244,7 @@ export default function CameraStudy() {
   const run = useCallback(async (action: typeof ACTIONS[0]) => {
     if (!imageData) return
     setBusy(true); setActiveAction(action.id); setErr(''); setResult('')
+    setCards([]); setSavedNote('')
     try {
       const messages: VisionMsg[] = [
         {
@@ -277,13 +281,63 @@ export default function CameraStudy() {
       })
 
       if (action.id === 'flashcards') {
+        /**
+         * Three bugs lived here.
+         *
+         * 1. The raw JSON array was passed to setResult() and rendered as
+         *    markdown, so the student saw a code block instead of cards.
+         * 2. The parsed cards were written to 'kairo_camera_flashcards' — a key
+         *    written in this one place and read nowhere. That is why chat could
+         *    say "created 10 flashcards" and the Flashcards screen stayed empty.
+         *    They now go through recordFlashcard(), the real store, which also
+         *    canonicalises the topic and skips same-hour duplicates.
+         * 3. A parse failure was swallowed by `catch {}`, so a malformed
+         *    response looked identical to success.
+         */
+        const md = typeof text === 'string' ? text : ''
+        const match = md.match(/\[[\s\S]*\]/)
+        let parsed: { front: string; back: string }[] = []
         try {
-          const match = (typeof text === 'string' ? text : '').match(/\[[\s\S]*\]/)
-          if (match) {
-            const cards = JSON.parse(match[0])
-            localStorage.setItem('kairo_camera_flashcards', JSON.stringify(cards))
+          if (match) parsed = JSON.parse(match[0])
+        } catch (e) {
+          console.warn('[camera] flashcard JSON did not parse:', e)
+        }
+
+        const good = (Array.isArray(parsed) ? parsed : []).filter(
+          c => c && typeof c.front === 'string' && typeof c.back === 'string' && c.front.trim() && c.back.trim(),
+        )
+
+        if (good.length) {
+          let saved = 0
+          for (const c of good) {
+            try {
+              // No topic passed: this screen does not detect one, and
+              // canonicalTopic() rejects a guess anyway. Better untagged than
+              // filed under something invented.
+              recordFlashcard({
+                front: c.front.trim(),
+                back: c.back.trim(),
+                source: 'camera' as any,
+              })
+              saved++
+            } catch (e) {
+              console.warn('[camera] could not save a card:', e)
+            }
           }
-        } catch {  }
+          setCards(good)
+          // Replaces the JSON dump. The cards below ARE the result.
+          setResult('')
+          setSavedNote(
+            saved === good.length
+              ? `${saved} card${saved === 1 ? '' : 's'} saved to Flashcards.`
+              : `${saved} of ${good.length} cards saved — the rest could not be stored.`,
+          )
+        } else {
+          // Honest failure instead of a code block the student cannot use.
+          setCards([])
+          setResult('')
+          setErr("Kyno couldn't turn that image into flashcards. Try a clearer photo of a textbook or notes page.")
+        }
       }
 
       // "Check my work" feeds the twin: a real slip becomes a tracked mistake so it
@@ -314,6 +368,7 @@ export default function CameraStudy() {
 
   const reset = () => {
     setImageData(null); setResult(''); setActiveAction(null); setErr('')
+    setCards([]); setSavedNote('')
   }
 
   return (
@@ -542,7 +597,7 @@ export default function CameraStudy() {
       )}
 
       <AnimatePresence>
-        {result && (
+        {(result || cards.length > 0) && (
           <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
             style={{
               background: '#141A2A', border: '1px solid #2d2b55', borderRadius: 14,
@@ -557,11 +612,40 @@ export default function CameraStudy() {
                 Saved to recent chats
               </span>
             </div>
-            <div className="prose-ai" style={{ fontSize: 14, color: '#e4e4e7', lineHeight: 1.7 }}>
-              <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>
-                {cleanMarkdown(result)}
-              </ReactMarkdown>
-            </div>
+            {/* Flashcards render AS cards. The JSON array used to go straight
+                into the markdown renderer, so the student got a code block
+                they could not revise from. */}
+            {cards.length > 0 ? (
+              <div style={{ display: 'grid', gap: 10 }}>
+                {savedNote && (
+                  <div style={{ fontSize: 12, color: '#4FD8E8', marginBottom: 2 }}>
+                    {savedNote}
+                  </div>
+                )}
+                {cards.map((c, i) => (
+                  <div key={i} style={{
+                    background: '#1C2233', border: '1px solid #2d2b55',
+                    borderRadius: 10, padding: '12px 14px',
+                  }}>
+                    <div style={{ fontSize: 13.5, fontWeight: 700, color: '#fafafa', lineHeight: 1.5 }}>
+                      {c.front}
+                    </div>
+                    <div style={{
+                      fontSize: 13, color: '#B1B5BA', marginTop: 7, paddingTop: 7,
+                      borderTop: '1px solid #2d2b55', lineHeight: 1.55,
+                    }}>
+                      {c.back}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="prose-ai" style={{ fontSize: 14, color: '#e4e4e7', lineHeight: 1.7 }}>
+                <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>
+                  {cleanMarkdown(result)}
+                </ReactMarkdown>
+              </div>
+            )}
             <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
               <button onClick={() => navigator.clipboard.writeText(result)} style={{
                 padding: '6px 12px', borderRadius: 7, border: '1px solid #1f2532',
