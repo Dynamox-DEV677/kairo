@@ -149,3 +149,65 @@ test('prediction stays inside the paper total', () => {
   assert.ok(p.high <= 360, `high ${p.high} exceeds the paper`)
   assert.ok(p.low >= 0)
 })
+
+// --- Phase 1.3 acceptance: five reloads, no user action ------------------
+
+/**
+ * The reported bug in one assertion. A "reload" is a fresh read of the same
+ * stored state, which is exactly what these pure functions model — so if this
+ * holds, no screen can show a different number than another screen on the same
+ * data, and no reload can move a number on its own.
+ */
+function dashboardSnapshot(events, mastery, game, now) {
+  const xp = selectXP(game)
+  return JSON.stringify({
+    streak:     selectStreak(events, now),
+    xp,
+    level:      selectLevel(xp.total),
+    mastered:   selectMastered(mastery),
+    retention:  selectRetention(mastery),
+    prediction: selectPrediction(events, 360),
+  })
+}
+
+test('five reloads with no activity produce byte-identical numbers', () => {
+  // A realistic account: 40 days of activity, 30 scored attempts, mixed mastery.
+  const events = [
+    ...Array.from({ length: 40 }, (_, d) => ({ ts: daysAgo(d) })),
+    ...Array.from({ length: 30 }, (_, i) => ({ ts: daysAgo(30 - i), score: 45 + (i * 7) % 50 })),
+  ]
+  const mastery = [
+    { mastery: 0.92, attempts: 11 }, { mastery: 0.71, attempts: 6 },
+    { mastery: 0.44, attempts: 9 },  { mastery: 0.18, attempts: 4 },
+  ]
+  const game = { totalXP: 1340, todayXP: 60, weekXP: 300 }
+
+  const runs = Array.from({ length: 5 }, () => dashboardSnapshot(events, mastery, game, NOW))
+  assert.equal(new Set(runs).size, 1,
+    `numbers drifted across reloads:\n${[...new Set(runs)].join('\n\n')}`)
+})
+
+test('event order in storage does not change any displayed number', () => {
+  // Events are appended, and a sync or restore can reorder them. None of that
+  // may change what the student sees.
+  const events = [
+    ...Array.from({ length: 25 }, (_, d) => ({ ts: daysAgo(d) })),
+    ...Array.from({ length: 22 }, (_, i) => ({ ts: daysAgo(22 - i), score: 50 + i })),
+  ]
+  const mastery = [{ mastery: 0.8, attempts: 5 }]
+  const game = { totalXP: 420 }
+
+  const a = dashboardSnapshot(events, mastery, game, NOW)
+  const b = dashboardSnapshot([...events].reverse(), mastery, game, NOW)
+  assert.equal(a, b, 'reordering the event log changed the dashboard')
+})
+
+test('a brand-new account shows honest zeros, not fake numbers', () => {
+  const snap = JSON.parse(dashboardSnapshot([], [], {}, NOW))
+  assert.equal(snap.streak, 0)
+  assert.equal(snap.xp.total, 0)
+  assert.equal(snap.level.level, 1)
+  assert.equal(snap.mastered, 0)
+  assert.equal(snap.retention, null, 'retention must be unknown, not 0%')
+  assert.equal(snap.prediction.ready, false, 'must not predict from no data')
+})

@@ -167,6 +167,9 @@ export interface TwinState {
 
 import * as storage from './storage'
 import { exportGameState, importGameState } from './game'
+// Shared arithmetic — see selectors.core.js. Imported here so the twin cannot
+// disagree with Home about a number they both display.
+import { selectStreak, selectPrediction } from './selectors.core.js'
 
 const STORAGE_PREFIX = 'kairo:twin:'
 const MAX_EVENTS     = 800
@@ -1111,20 +1114,6 @@ function computeConfidence(mastery: MasteryRow[], events: TwinEvent[]) {
   return clamp01(0.45 * masteryFactor + 0.55 * accFactor)
 }
 
-function computeStreak(events: TwinEvent[]) {
-  if (!events.length) return 0
-  const today = new Date(); today.setHours(0,0,0,0)
-  const dayKey = (ms: number) => { const x = new Date(ms); x.setHours(0,0,0,0); return x.getTime() }
-  const days = new Set(events.map(e => dayKey(e.ts)))
-  let streak = 0
-  for (let i = 0; i < 365; i++) {
-    const target = today.getTime() - i * 86_400_000
-    if (days.has(target)) streak++
-    else if (i > 0) break
-  }
-  return streak
-}
-
 function topTopics(mastery: MasteryRow[], { weak, max }: { weak: boolean; max: number }): WeakTopic[] {
   const sorted = [...mastery].sort((a, b) => weak ? a.mastery - b.mastery : b.mastery - a.mastery)
   return sorted.slice(0, max).map(m => ({
@@ -1388,16 +1377,18 @@ export function recompute(state: TwinState) {
   const weak        = topTopics(state.mastery, { weak: true,  max: 6 })
   const strong      = topTopics(state.mastery, { weak: false, max: 5 })
   const forgetSoon  = forgettingSoon(state.mastery, 8)
-  const streak      = computeStreak(events)
+  // Streak and prediction come from the shared selectors, so the Kyno tab
+  // cannot disagree with Home about the same number. Both read the FULL event
+  // log, not the 60-day `events` window used for the trend metrics above --
+  // that window is why a 90-day streak displayed as 60.
+  const streak = selectStreak(state.events)
 
-  const recentScored = events
-    .filter(e => typeof e.score === 'number')
-    .slice(0, 20)
-    .map(e => e.score!)
-  const avgRecent = recentScored.length ? avg(recentScored) : null
-  const predExam  = avgRecent != null
-    ? Math.round(clamp01((avgRecent / 100) + perfTrend * 0.15) * 100)
-    : null
+  // The old prediction sliced an unsorted array to take "the last 20 scores",
+  // so a plain reload could pick a different 20 and move the number with no new
+  // activity. selectPrediction sorts by timestamp and refuses to answer below
+  // 20 scored attempts rather than guessing from three.
+  const pred     = selectPrediction(state.events, 100)
+  const predExam = pred.ready ? pred.mid! : null
   const predBand = predExam == null ? null
     : predExam >= 90 ? 'A+' : predExam >= 80 ? 'A' : predExam >= 70 ? 'B+'
     : predExam >= 60 ? 'B'  : predExam >= 50 ? 'C' : predExam >= 40 ? 'D' : 'F'
