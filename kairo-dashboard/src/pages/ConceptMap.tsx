@@ -335,7 +335,7 @@ export default function ConceptMap() {
                     display: 'grid', placeItems: 'center', fontFamily: FONT,
                   }}>{b.label}</button>
               ))}
-              <button onClick={resetView} title="Reset view" aria-label="Reset view"
+              <button className="kyno-ghost" onClick={resetView} title="Reset view" aria-label="Reset view"
                 style={{
                   width: 40, height: 40, borderRadius: 11, cursor: 'pointer',
                   background: 'rgba(6,6,10,0.72)',
@@ -429,7 +429,7 @@ function Header({ onRefresh, nodeCount, edgeCount, mode, setMode }: {
           />
         </div>
 
-        <button onClick={onRefresh} style={{
+        <button className="kyno-ghost" onClick={onRefresh} style={{
           display: 'inline-flex', alignItems: 'center', gap: 8,
           padding: '9px 14px', borderRadius: 10,
           background: 'transparent', border: `1px solid ${C.border}`,
@@ -450,7 +450,7 @@ function ModeChip({ active, onClick, icon: Icon, label }: {
   label: string
 }) {
   return (
-    <button onClick={onClick} style={{
+    <button className="kyno-ghost" onClick={onClick} style={{
       display: 'inline-flex', alignItems: 'center', gap: 6,
       padding: '6px 11px', borderRadius: 7, border: 'none',
       background: active ? 'rgba(124, 92, 255, 0.15)' : 'transparent',
@@ -500,11 +500,11 @@ function Empty() {
         connected automatically. Start anywhere below.
       </p>
       <div style={{ display: 'flex', gap: 10, marginTop: 6, flexWrap: 'wrap', justifyContent: 'center' }}>
-        <button
+        <button className="kyno-chunky"
           onClick={go('quiz')}
           style={emptyCtaPrimary}
         >Start a Quiz</button>
-        <button
+        <button className="kyno-chunky"
           onClick={go('doubt')}
           style={emptyCtaSecondary}
         >Ask the Solver</button>
@@ -565,7 +565,7 @@ function AddConceptCard({ onSaved }: { onSaved: () => void }) {
         <Input value={name} onChange={setName} placeholder="Concept (e.g. quadratic equations)" />
         <Input value={subject} onChange={setSubject} placeholder="Subject" />
         <Input value={related} onChange={setRelated} placeholder="Related (comma-separated)" />
-        <button onClick={save} disabled={!name.trim()}
+        <button className="kyno-chunky" onClick={save} disabled={!name.trim()}
           style={{
             padding: '10px 16px', borderRadius: 10,
             background: 'linear-gradient(135deg, #7C5CFF, #4A2FA8)',

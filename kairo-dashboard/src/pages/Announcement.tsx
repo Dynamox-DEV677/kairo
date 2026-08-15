@@ -53,7 +53,7 @@ export default function Announcement() {
       <div style={{ width: 270, borderRight: '1px solid #171D2D', display: 'flex', flexDirection: 'column', overflow: 'hidden', background: '#141A2A' }}>
         <div style={{ padding: '16px 12px', borderBottom: '1px solid #171D2D' }}>
           <div style={{ fontSize: 13, fontWeight: 700, color: '#fafafa', marginBottom: 10 }}>Announcements</div>
-          <button onClick={() => setShowForm(f => !f)} style={{ ...btn(), width: '100%', justifyContent: 'center', padding: '7px 12px' }}>
+          <button className="kyno-ghost" onClick={() => setShowForm(f => !f)} style={{ ...btn(), width: '100%', justifyContent: 'center', padding: '7px 12px' }}>
             <Plus size={13} /> New Announcement
           </button>
         </div>
@@ -81,7 +81,7 @@ export default function Announcement() {
                 <label style={lbl}>Additional Details</label>
                 <textarea style={{ ...inp, height: 70, resize: 'none', marginBottom: 8 }} value={form.details} onChange={e => setForm(f => ({ ...f, details: e.target.value }))} placeholder="Date, venue, action needed…" />
                 {err && <p style={{ color: '#A5B4FC', fontSize: 11, marginBottom: 8 }}>{err}</p>}
-                <button onClick={generate} disabled={generating} style={{ ...btn(!generating), width: '100%', justifyContent: 'center', padding: '7px' }}>
+                <button className="kyno-ghost" onClick={generate} disabled={generating} style={{ ...btn(!generating), width: '100%', justifyContent: 'center', padding: '7px' }}>
                   {generating ? 'Generating…' : 'Generate'}
                 </button>
               </div>

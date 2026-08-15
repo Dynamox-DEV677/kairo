@@ -557,7 +557,7 @@ export default function CameraStudy() {
         </label>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
           {VISION_MODELS.map(m => (
-            <button key={m.id} onClick={() => setModel(m.id)} style={{
+            <button className="kyno-chip" key={m.id} onClick={() => setModel(m.id)} style={{
               padding: '10px 14px', borderRadius: 9,
               border: `1.5px solid ${model === m.id ? '#7C5CFF' : '#1f2532'}`,
               background: model === m.id ? 'rgba(124, 92, 255, 0.20)' : '#141A2A',
@@ -671,7 +671,7 @@ export default function CameraStudy() {
               style={{ width: '100%', maxHeight: 400, borderRadius: 8, objectFit: 'cover' }} />
             <canvas ref={canvasRef} style={{ display: 'none' }} />
             <div style={{ display: 'flex', gap: 10, justifyContent: 'center', marginTop: 10 }}>
-              <button onClick={snap} style={{
+              <button className="kyno-chunky" onClick={snap} style={{
                 padding: '11px 22px', borderRadius: 9, border: 'none',
                 background: 'linear-gradient(135deg,#7C5CFF,#7C5CFF)', color: '#fff',
                 fontFamily: 'inherit', fontSize: 13, fontWeight: 700, cursor: 'pointer',
@@ -679,7 +679,7 @@ export default function CameraStudy() {
               }}>
                 <Camera size={14} /> Capture
               </button>
-              <button onClick={stopCamera} style={{
+              <button className="kyno-ghost" onClick={stopCamera} style={{
                 padding: '11px 18px', borderRadius: 9, border: '1px solid #1f2532',
                 background: '#1C2233', color: '#B1B5BA',
                 fontFamily: 'inherit', fontSize: 13, cursor: 'pointer',
@@ -698,7 +698,7 @@ export default function CameraStudy() {
           }}>
             <img src={imageData} alt="Captured"
               style={{ width: '100%', borderRadius: 8, display: 'block', maxHeight: 400, objectFit: 'contain', background: '#000' }} />
-            <button onClick={reset} title="Remove" style={{
+            <button className="kyno-ghost" onClick={reset} title="Remove" style={{
               position: 'absolute', top: 18, right: 18, width: 28, height: 28, borderRadius: 7,
               background: 'rgba(0,0,0,0.6)', border: '1px solid #2d2d4d', color: '#fff',
               cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -711,7 +711,7 @@ export default function CameraStudy() {
             {ACTIONS.map(a => {
               const isActive = activeAction === a.id && busy
               return (
-                <motion.button key={a.id}
+                <motion.button className="kyno-chip" key={a.id}
                   whileHover={{ y: busy ? 0 : -2 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => run(a)}
@@ -807,14 +807,14 @@ export default function CameraStudy() {
               </div>
             )}
             <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
-              <button onClick={() => navigator.clipboard.writeText(result)} style={{
+              <button className="kyno-ghost" onClick={() => navigator.clipboard.writeText(result)} style={{
                 padding: '6px 12px', borderRadius: 7, border: '1px solid #1f2532',
                 background: '#1C2233', color: '#B1B5BA', cursor: 'pointer',
                 fontFamily: 'inherit', fontSize: 11, display: 'flex', alignItems: 'center', gap: 5,
               }}>
                 Copy
               </button>
-              <button onClick={reset} style={{
+              <button className="kyno-ghost" onClick={reset} style={{
                 padding: '6px 12px', borderRadius: 7, border: '1px solid #1f2532',
                 background: '#1C2233', color: '#B1B5BA', cursor: 'pointer',
                 fontFamily: 'inherit', fontSize: 11, display: 'flex', alignItems: 'center', gap: 5,

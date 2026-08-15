@@ -190,7 +190,7 @@ export default function Flashcards() {
                     onFocus={e => { (e.target as HTMLInputElement).style.borderColor = C.purple; (e.target as HTMLInputElement).style.boxShadow = `0 0 0 3px rgba(165, 180, 252, 0.01)` }}
                     onBlur={e =>  { (e.target as HTMLInputElement).style.borderColor = C.borderSoft; (e.target as HTMLInputElement).style.boxShadow = 'none' }}
                   />
-                  <motion.button
+                  <motion.button className="kyno-ghost"
                     whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
                     onClick={() => generate()}
                     disabled={loading || !topic.trim()}
@@ -443,10 +443,10 @@ function DeckViewer({ cards, idx, flipped, onFlip, onPrev, onNext }: {
       </div>
       <FlipCard front={card.front} back={card.back} flipped={flipped} onFlip={onFlip} />
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, marginTop: 14 }}>
-        <button onClick={onPrev} disabled={idx === 0} style={{ ...navBtn, opacity: idx === 0 ? 0.35 : 1 }}>
+        <button className="kyno-ghost" onClick={onPrev} disabled={idx === 0} style={{ ...navBtn, opacity: idx === 0 ? 0.35 : 1 }}>
           <ChevronLeft size={14} /> Previous
         </button>
-        <button onClick={onNext} disabled={idx >= cards.length - 1} style={{ ...navBtn, opacity: idx >= cards.length - 1 ? 0.35 : 1, borderColor: 'rgba(165, 180, 252, 0.14)', color: C.purpleLite }}>
+        <button className="kyno-ghost" onClick={onNext} disabled={idx >= cards.length - 1} style={{ ...navBtn, opacity: idx >= cards.length - 1 ? 0.35 : 1, borderColor: 'rgba(165, 180, 252, 0.14)', color: C.purpleLite }}>
           Next <ChevronRight size={14} />
         </button>
       </div>
@@ -464,7 +464,7 @@ function normalizeMath(s: string): string {
 function FlipCard({ front, back, flipped, onFlip }: { front: string; back: string; flipped: boolean; onFlip: () => void }) {
   return (
     <div style={{ perspective: 1400 }}>
-      <motion.button
+      <motion.button className="kyno-ghost"
         type="button"
         onClick={onFlip}
         animate={{ rotateY: flipped ? 180 : 0 }}
@@ -642,7 +642,7 @@ function ReviewDeck({ deck, onReload }: { deck: TwinCard[]; onReload: () => void
           <span style={{ margin: '0 8px', color: C.textGhost }}>·</span>
           <span style={{ color: C.purpleSoft }}>✗ {reviewed.forgot}</span>
         </div>
-        <button onClick={onReload} title="Reload deck" style={{
+        <button className="kyno-ghost" onClick={onReload} title="Reload deck" style={{
           padding: 7, borderRadius: 8, background: 'transparent',
           border: `1px solid ${C.border}`, color: C.textDim, cursor: 'pointer',
         }}>
@@ -659,9 +659,9 @@ function ReviewDeck({ deck, onReload }: { deck: TwinCard[]; onReload: () => void
       <FlipCard front={c.front} back={c.back} flipped={flipped} onFlip={() => setFlipped(f => !f)} />
 
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, marginTop: 14, flexWrap: 'wrap' }}>
-        <button onClick={() => go(-1)} style={navBtn}><ChevronLeft size={14} /> Previous</button>
+        <button className="kyno-ghost" onClick={() => go(-1)} style={navBtn}><ChevronLeft size={14} /> Previous</button>
         <div style={{ display: 'flex', gap: 8 }}>
-          <motion.button whileTap={{ scale: 0.94 }} onClick={() => go(1, 'forgot')} style={{
+          <motion.button className="kyno-ghost" whileTap={{ scale: 0.94 }} onClick={() => go(1, 'forgot')} style={{
             ...navBtn,
             borderColor: 'rgba(165, 180, 252, 0.4)',
             color: C.purpleSoft,
@@ -669,7 +669,7 @@ function ReviewDeck({ deck, onReload }: { deck: TwinCard[]; onReload: () => void
           }}>
             <X size={13} /> Forgot
           </motion.button>
-          <motion.button whileTap={{ scale: 0.94 }} onClick={() => go(1, 'got')} style={{
+          <motion.button className="kyno-ghost" whileTap={{ scale: 0.94 }} onClick={() => go(1, 'got')} style={{
             ...navBtn,
             borderColor: C.purple,
             color: '#000',
@@ -679,7 +679,7 @@ function ReviewDeck({ deck, onReload }: { deck: TwinCard[]; onReload: () => void
             <Check size={13} /> Got it
           </motion.button>
         </div>
-        <button onClick={() => go(1)} style={navBtn}>Next <ChevronRight size={14} /></button>
+        <button className="kyno-ghost" onClick={() => go(1)} style={navBtn}>Next <ChevronRight size={14} /></button>
       </div>
     </div>
   )

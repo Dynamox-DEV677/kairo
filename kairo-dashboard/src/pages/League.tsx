@@ -82,7 +82,7 @@ export default function League() {
         {TABS.map(t => {
           const active = range === t.id
           return (
-            <button key={t.id} onClick={() => setRange(t.id)}
+            <button className="kyno-chip" key={t.id} onClick={() => setRange(t.id)}
               style={{
                 flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
                 padding: '9px 6px', borderRadius: 9, border: 'none', cursor: 'pointer',

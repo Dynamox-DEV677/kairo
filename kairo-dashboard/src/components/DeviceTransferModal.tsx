@@ -51,14 +51,14 @@ export default function DeviceTransferModal({ open, onClose }: { open: boolean; 
             }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
               {mode !== 'home' && (
-                <button onClick={() => setMode('home')} aria-label="Back" style={iconBtn}>
+                <button className="kyno-ghost" onClick={() => setMode('home')} aria-label="Back" style={iconBtn}>
                   <ArrowLeft size={16} color={C.dim} />
                 </button>
               )}
               <div style={{ flex: 1, fontSize: 15, fontWeight: 800, color: C.text, letterSpacing: -0.2 }}>
                 {mode === 'home' ? 'Transfer to a new device' : mode === 'send' ? 'Send your data' : 'Receive your data'}
               </div>
-              <button onClick={onClose} aria-label="Close" style={iconBtn}><X size={16} color={C.dim} /></button>
+              <button className="kyno-ghost" onClick={onClose} aria-label="Close" style={iconBtn}><X size={16} color={C.dim} /></button>
             </div>
 
             <AnimatePresence mode="wait">
@@ -139,10 +139,10 @@ function SendFlow() {
       </div>
 
       <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
-        <button onClick={() => downloadTransferFile(exp.fileText, exp.fileName)} style={{ ...primaryBtn, flex: 1 }}>
+        <button className="kyno-chunky" onClick={() => downloadTransferFile(exp.fileText, exp.fileName)} style={{ ...primaryBtn, flex: 1 }}>
           <FileDown size={15} /> Download .kyno file
         </button>
-        <button onClick={async () => { const ok = await shareTransferFile(exp.fileText, exp.fileName); if (ok) setShared('ok') }} style={secondaryBtn}>
+        <button className="kyno-ghost" onClick={async () => { const ok = await shareTransferFile(exp.fileText, exp.fileName); if (ok) setShared('ok') }} style={secondaryBtn}>
           {shared === 'ok' ? <Check size={15} color={C.green} /> : <Share2 size={15} />}
         </button>
       </div>
@@ -200,7 +200,7 @@ function ReceiveFlow() {
         • Once you've confirmed everything's here, you can wipe the old device from its <b style={{ color: C.text }}>Settings → Clear all data</b>.<br />
         • Or keep both — they stay independent, and you can re-sync anytime from <b style={{ color: C.text }}>Settings → Sync now</b>.
       </div>
-      <button onClick={() => window.location.reload()} style={{ ...primaryBtn, width: '100%', marginTop: 16, justifyContent: 'center' }}>
+      <button className="kyno-chunky" onClick={() => window.location.reload()} style={{ ...primaryBtn, width: '100%', marginTop: 16, justifyContent: 'center' }}>
         <RefreshCw size={15} /> Reload to finish
       </button>
     </motion.div>
@@ -219,7 +219,7 @@ function ReceiveFlow() {
         <AlertTriangle size={13} style={{ flexShrink: 0, marginTop: 1 }} />
         This replaces the data currently on this device with the incoming profile.
       </div>
-      <button onClick={restore} disabled={!key.trim()} style={{ ...primaryBtn, width: '100%', marginTop: 14, justifyContent: 'center', opacity: key.trim() ? 1 : 0.5, cursor: key.trim() ? 'pointer' : 'not-allowed' }}>
+      <button className="kyno-chunky" onClick={restore} disabled={!key.trim()} style={{ ...primaryBtn, width: '100%', marginTop: 14, justifyContent: 'center', opacity: key.trim() ? 1 : 0.5, cursor: key.trim() ? 'pointer' : 'not-allowed' }}>
         <ShieldCheck size={15} /> Unlock & restore
       </button>
     </motion.div>
@@ -230,7 +230,7 @@ function ReceiveFlow() {
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
       <Radar tint={C.green} />
       <input ref={fileRef} type="file" accept=".kyno,application/json,application/octet-stream" onChange={onPick} style={{ display: 'none' }} />
-      <button onClick={() => fileRef.current?.click()} style={{ ...dashedBtn, marginTop: 4 }}>
+      <button className="kyno-ghost" onClick={() => fileRef.current?.click()} style={{ ...dashedBtn, marginTop: 4 }}>
         <Upload size={18} color={C.green} />
         Choose the .kyno file
       </button>
@@ -321,7 +321,7 @@ function ErrorBox({ message, onRetry }: { message: string; onRetry?: () => void 
       </div>
       <div style={{ fontSize: 14, fontWeight: 700, color: C.text }}>Something went wrong</div>
       <div style={{ fontSize: 12.5, color: C.dim, marginTop: 6, lineHeight: 1.5 }}>{message}</div>
-      {onRetry && <button onClick={onRetry} style={{ ...primaryBtn, marginTop: 14 }}>Try again</button>}
+      {onRetry && <button className="kyno-chunky" onClick={onRetry} style={{ ...primaryBtn, marginTop: 14 }}>Try again</button>}
     </motion.div>
   )
 }

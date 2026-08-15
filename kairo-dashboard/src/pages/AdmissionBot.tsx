@@ -134,7 +134,7 @@ export default function AdmissionBot() {
 
       <div style={{ display: 'flex', gap: 4, marginBottom: 22, background: '#141A2A', border: '1px solid #1f2532', borderRadius: 10, padding: 4, width: 'fit-content' }}>
         {TABS.map(t => (
-          <button key={t.id} onClick={() => setTab(t.id)} style={{
+          <button className="kyno-chip" key={t.id} onClick={() => setTab(t.id)} style={{
             display: 'flex', alignItems: 'center', gap: 6, padding: '7px 18px',
             borderRadius: 7, border: 'none', fontFamily: 'inherit',
             fontSize: 12, fontWeight: tab === t.id ? 600 : 400, cursor: 'pointer',
@@ -285,7 +285,7 @@ function ChatTab({ ctx }: { ctx: SchoolCtx }) {
             onChange={e => setInput(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && send()}
           />
-          <button onClick={send} disabled={!input.trim() || loading} style={{
+          <button className="kyno-chunky" onClick={send} disabled={!input.trim() || loading} style={{
             width: 38, height: 38, borderRadius: 9, border: 'none',
             cursor: input.trim() ? 'pointer' : 'not-allowed',
             background: input.trim() ? 'linear-gradient(135deg,#7C5CFF,#7C5CFF)' : '#171D2D',
@@ -315,7 +315,7 @@ function ChatTab({ ctx }: { ctx: SchoolCtx }) {
                   <input style={inp} value={(leadForm as any)[k]} onChange={e => setLeadForm(f => ({ ...f, [k]: e.target.value }))} />
                 </div>
               ))}
-              <button onClick={saveLead} style={{
+              <button className="kyno-chunky" onClick={saveLead} style={{
                 width: '100%', padding: '9px', borderRadius: 8, border: 'none',
                 background: 'linear-gradient(135deg,#7C5CFF,#7C5CFF)', color: '#fff',
                 fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: 'pointer',
@@ -382,7 +382,7 @@ function LeadsTab() {
     <div>
       <div style={{ display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' }}>
         {allStatuses.map(s => (
-          <button key={s} onClick={() => setFilter(s)} style={{
+          <button className="kyno-chip" key={s} onClick={() => setFilter(s)} style={{
             padding: '5px 12px', borderRadius: 6, border: '1px solid #1f2532',
             fontFamily: 'inherit', fontSize: 11, fontWeight: filter === s ? 600 : 400,
             cursor: 'pointer',
@@ -431,7 +431,7 @@ function LeadsTab() {
                   <option key={s} value={s}>{s.replace('_', ' ')}</option>
                 ))}
               </select>
-              <button onClick={() => remove(l.id)} title="Delete"
+              <button className="kyno-ghost" onClick={() => remove(l.id)} title="Delete"
                 style={{
                   background: 'none', border: 'none', cursor: 'pointer',
                   color: '#4B5563', padding: 4, display: 'flex',
@@ -549,7 +549,7 @@ function SettingsTab({ ctx, onSaved }: { ctx: SchoolCtx; onSaved: () => void }) 
           fontSize: 11, padding: '5px 10px', background: '#141A2A',
           border: '1px solid #1f2532', borderRadius: 6, color: '#A5B4FC',
         }}>{shareUrl}</code>
-        <button onClick={() => { navigator.clipboard.writeText(shareUrl); setMsg('Link copied') }}
+        <button className="kyno-ghost" onClick={() => { navigator.clipboard.writeText(shareUrl); setMsg('Link copied') }}
           style={{
             padding: '6px 10px', borderRadius: 7, border: '1px solid #1f2532',
             background: '#1C2233', color: '#9CA3AF', cursor: 'pointer',
@@ -579,7 +579,7 @@ function SettingsTab({ ctx, onSaved }: { ctx: SchoolCtx; onSaved: () => void }) 
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 18 }}>
-          <button onClick={save} disabled={saving} style={{
+          <button className="kyno-chunky" onClick={save} disabled={saving} style={{
             padding: '10px 18px', borderRadius: 8, border: 'none',
             background: saving ? '#171D2D' : 'linear-gradient(135deg,#7C5CFF,#7C5CFF)',
             color: saving ? '#6B7280' : '#fff',

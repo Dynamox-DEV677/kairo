@@ -480,7 +480,7 @@ function ReviseRow({ topic, subject, hours, onClick }: { topic: string; subject:
 function TopicChip({ row, onClick }: { row: MasteryRow & { retentionNow?: number }; onClick: () => void }) {
   const color = row.mastery < 0.4 ? C.purpleHi : row.mastery < 0.7 ? C.purple : C.purpleLite
   return (
-    <motion.button
+    <motion.button className="kyno-ghost"
       whileTap={{ scale: 0.95 }}
       onClick={onClick}
       style={{
@@ -521,7 +521,7 @@ function EmptyState({ onSeed }: { onSeed?: () => void }) {
         Take a quiz, open a lab, or ask the Solver. Your dashboard fills itself in as Kyno learns how you study.
       </p>
       {onSeed && (
-        <button
+        <button className="kyno-chunky"
           onClick={onSeed}
           style={{
             marginTop: 8,

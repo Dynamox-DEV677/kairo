@@ -72,7 +72,7 @@ export default function AdaptiveQuiz() {
           <h1 style={{ fontSize: 20, fontWeight: 700, color: '#fafafa', margin: 0 }}>Adaptive Quiz</h1>
           <p style={{ fontSize: 13, color: '#6B7280', marginTop: 4 }}>MCQ quiz that adapts to your difficulty level</p>
         </div>
-        <button onClick={() => { if (screen !== 'history') { loadHistory(); setScreen('history') } else setScreen('setup') }}
+        <button className="kyno-ghost" onClick={() => { if (screen !== 'history') { loadHistory(); setScreen('history') } else setScreen('setup') }}
           style={{ ...btn(true, '#141A2A'), border: '1px solid #1f2532', color: '#9CA3AF', whiteSpace: 'nowrap', flexShrink: 0 }}>
           <History size={13} /> History
         </button>
@@ -297,7 +297,7 @@ function QuizScreen({ questions, onComplete }: any) {
         )}
 
         {revealed && (
-          <button onClick={handleNext} style={{ ...btn(), width: '100%', justifyContent: 'center' }}>
+          <button className="kyno-ghost" onClick={handleNext} style={{ ...btn(), width: '100%', justifyContent: 'center' }}>
             {index + 1 >= questions.length ? (<><BarChart3 size={13} /> See Results</>) : (<>Next Question <ArrowRight size={13} /></>)}
           </button>
         )}
@@ -332,7 +332,7 @@ function ResultScreen({ result, onRetry }: any) {
         ))}
       </div>
 
-      <button onClick={onRetry} style={{ ...btn(), width: '100%', justifyContent: 'center' }}>
+      <button className="kyno-ghost" onClick={onRetry} style={{ ...btn(), width: '100%', justifyContent: 'center' }}>
         <RotateCcw size={13} /> Take Another Quiz
       </button>
     </div>
@@ -342,7 +342,7 @@ function ResultScreen({ result, onRetry }: any) {
 function HistoryScreen({ history, onBack }: any) {
   return (
     <div>
-      <button onClick={onBack} style={{ ...btn(true, '#171D2D'), color: '#9CA3AF', marginBottom: 16, border: '1px solid #1f2532' }}>← Back to Setup</button>
+      <button className="kyno-ghost" onClick={onBack} style={{ ...btn(true, '#171D2D'), color: '#9CA3AF', marginBottom: 16, border: '1px solid #1f2532' }}>← Back to Setup</button>
 
       {history.length === 0 && (
         <div style={{ textAlign: 'center', padding: 60, color: '#4B5563', fontSize: 13 }}>No completed quizzes yet.</div>

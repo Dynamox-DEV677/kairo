@@ -36,7 +36,7 @@ export default function Timetable() {
 
       <div style={{ display: 'flex', gap: 4, marginBottom: 24, background: '#141A2A', border: '1px solid #1f2532', borderRadius: 10, padding: 4, width: 'fit-content' }}>
         {TABS.map(t => (
-          <button key={t.id} onClick={() => setTab(t.id)} style={{
+          <button className="kyno-chip" key={t.id} onClick={() => setTab(t.id)} style={{
             display: 'flex', alignItems: 'center', gap: 6, padding: '7px 18px',
             borderRadius: 7, border: 'none', fontFamily: 'inherit',
             fontSize: 12, fontWeight: tab === t.id ? 600 : 400, cursor: 'pointer',
@@ -117,7 +117,7 @@ function GridTab() {
             {classes.map(c => <option key={c} value={c}>Class {c}</option>)}
           </select>
         </div>
-        <button onClick={() => setAdding(a => !a)} style={{
+        <button className="kyno-chunky" onClick={() => setAdding(a => !a)} style={{
           marginTop: 18, display: 'flex', alignItems: 'center', gap: 7,
           padding: '9px 18px', borderRadius: 9, border: 'none',
           background: 'linear-gradient(135deg,#7C5CFF,#6455e0)', color: '#fff',
@@ -171,17 +171,17 @@ function GridTab() {
               <div style={{ marginBottom: 10 }}>
                 <p style={{ fontSize: 12, color: '#A5B4FC' }}>{err}</p>
                 {err.includes('anyway') && (
-                  <button onClick={addForce} style={{ padding: '5px 14px', borderRadius: 7, border: 'none', background: '#A5B4FC20', color: '#A5B4FC', fontFamily: 'inherit', fontSize: 12, cursor: 'pointer' }}>
+                  <button className="kyno-ghost" onClick={addForce} style={{ padding: '5px 14px', borderRadius: 7, border: 'none', background: '#A5B4FC20', color: '#A5B4FC', fontFamily: 'inherit', fontSize: 12, cursor: 'pointer' }}>
                     Save Anyway (Override Clash)
                   </button>
                 )}
               </div>
             )}
             <div style={{ display: 'flex', gap: 8 }}>
-              <button onClick={addSlot} disabled={saving} style={{ padding: '8px 20px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg,#7C5CFF,#6455e0)', color: '#fff', fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+              <button className="kyno-chunky" onClick={addSlot} disabled={saving} style={{ padding: '8px 20px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg,#7C5CFF,#6455e0)', color: '#fff', fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
                 {saving ? 'Saving…' : 'Add'}
               </button>
-              <button onClick={() => { setAdding(false); setErr('') }} style={{ padding: '8px 14px', borderRadius: 8, border: '1px solid #1f2532', background: 'transparent', color: '#6B7280', fontFamily: 'inherit', fontSize: 13, cursor: 'pointer' }}>Cancel</button>
+              <button className="kyno-ghost" onClick={() => { setAdding(false); setErr('') }} style={{ padding: '8px 14px', borderRadius: 8, border: '1px solid #1f2532', background: 'transparent', color: '#6B7280', fontFamily: 'inherit', fontSize: 13, cursor: 'pointer' }}>Cancel</button>
             </div>
           </motion.div>
         )}
@@ -333,14 +333,14 @@ function GenerateTab() {
                 <input style={inp} type="number" placeholder="Periods/wk" value={s.periods_per_week} onChange={e => updateSubject(i, 'periods_per_week', Number(e.target.value))} />
               </div>
             ))}
-            <button onClick={() => setSubjects(s => [...s, { name: '', teacher: '', periods_per_week: 3 }])} style={{ fontSize: 11, color: '#A5B4FC', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+            <button className="kyno-ghost" onClick={() => setSubjects(s => [...s, { name: '', teacher: '', periods_per_week: 3 }])} style={{ fontSize: 11, color: '#A5B4FC', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
               + Add Subject
             </button>
           </div>
 
           {err && <p style={{ fontSize: 12, color: '#A5B4FC', marginBottom: 12 }}>{err}</p>}
 
-          <button onClick={generate} disabled={loading} style={{
+          <button className="kyno-chunky" onClick={generate} disabled={loading} style={{
             width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
             padding: '10px', borderRadius: 9, border: 'none',
             background: 'linear-gradient(135deg,#7C5CFF,#6455e0)', color: '#fff',

@@ -28,7 +28,7 @@ export default function Analytics() {
       </div>
       <div style={{ display: 'flex', gap: 4, marginBottom: 24, background: '#141A2A', border: '1px solid #1f2532', borderRadius: 10, padding: 4 }}>
         {TABS.map(t => (
-          <button key={t.id} onClick={() => setTab(t.id)} style={{
+          <button className="kyno-chip" key={t.id} onClick={() => setTab(t.id)} style={{
             flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
             padding: '7px 8px', borderRadius: 7, border: 'none', fontFamily: 'inherit',
             fontSize: 12, fontWeight: tab === t.id ? 600 : 400, cursor: 'pointer',
@@ -299,7 +299,7 @@ function RankTab() {
           </div>
         ))}
         {err && <p style={{ color: '#A5B4FC', fontSize: 12, margin: '8px 0' }}>{err}</p>}
-        <button onClick={predict} disabled={loading} style={{ ...btn(!loading), width: '100%', justifyContent: 'center', marginTop: 8 }}>
+        <button className="kyno-ghost" onClick={predict} disabled={loading} style={{ ...btn(!loading), width: '100%', justifyContent: 'center', marginTop: 8 }}>
           <Trophy size={13} /> {loading ? 'Predicting…' : 'Predict My Rank'}
         </button>
       </div>

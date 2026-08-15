@@ -303,7 +303,7 @@ export default function ExamPlanner() {
           </p>
         </div>
         {savedPlans.length > 0 && (
-          <button onClick={() => setShowSavedList(s => !s)} style={btnGhost}>
+          <button className="kyno-ghost" onClick={() => setShowSavedList(s => !s)} style={btnGhost}>
             <Folder size={13} /> Saved plans ({savedPlans.length})
           </button>
         )}
@@ -379,7 +379,7 @@ export default function ExamPlanner() {
             <label style={lbl}>Your current level</label>
             <div style={{ display: 'flex', gap: 6 }}>
               {(['beginner', 'mid', 'strong'] as const).map(L => (
-                <button key={L} onClick={() => setCurrentLevel(L)}
+                <button className="kyno-chip" key={L} onClick={() => setCurrentLevel(L)}
                   style={{
                     flex: 1, padding: '9px 0', fontSize: 12, fontWeight: 700,
                     background: currentLevel === L ? 'rgba(124, 92, 255,0.22)' : '#141A2A',
@@ -436,13 +436,13 @@ export default function ExamPlanner() {
             transition={{ duration: 0.32 }}
           >
             <div id="exam-planner-actions" style={{ display: 'flex', gap: 8, marginBottom: 14, flexWrap: 'wrap' }}>
-              <button onClick={savePlan} style={btnGhost}>
+              <button className="kyno-ghost" onClick={savePlan} style={btnGhost}>
                 <Save size={13} /> {planId ? 'Saved' : 'Save plan'}
               </button>
-              <button onClick={() => window.print()} style={btnGhost}>
+              <button className="kyno-ghost" onClick={() => window.print()} style={btnGhost}>
                 <Printer size={13} /> Export PDF
               </button>
-              <button onClick={() => setShowMockForm(s => !s)} style={btnGhost}>
+              <button className="kyno-ghost" onClick={() => setShowMockForm(s => !s)} style={btnGhost}>
                 <RefreshCw size={13} /> Log mock + re-plan
               </button>
             </div>
@@ -476,7 +476,7 @@ export default function ExamPlanner() {
                     <button onClick={submitMock} disabled={loading} className="kyno-chunky" style={btnPrimary}>
                       <Sparkles size={13} /> Re-plan based on this
                     </button>
-                    <button onClick={() => setShowMockForm(false)} style={btnGhost}>
+                    <button className="kyno-ghost" onClick={() => setShowMockForm(false)} style={btnGhost}>
                       <X size={13} /> Cancel
                     </button>
                   </div>

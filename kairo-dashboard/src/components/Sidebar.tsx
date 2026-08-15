@@ -640,7 +640,7 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
                 <div style={{ fontSize: 12, fontWeight: 600, color: isDark ? '#fafafa' : '#18181b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{displayName}</div>
                 <div style={{ fontSize: 10, color: isDark ? '#4B5563' : '#B1B5BA' }}>{displaySub}</div>
               </div>
-              <button
+              <button className="kyno-danger"
                 title="Log out"
                 onClick={() => {
                   localStorage.removeItem('kairo_token')

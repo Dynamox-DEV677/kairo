@@ -65,7 +65,7 @@ export default function ResetShell({
         }}
       >
         {onBack ? (
-          <button
+          <button className="kyno-ghost"
             onClick={onBack}
             aria-label="Back"
             style={{
@@ -179,7 +179,7 @@ export function PrimaryButton({ children, onClick, disabled, busy, type = 'butto
 }) {
   const isOff = disabled || busy
   return (
-    <motion.button
+    <motion.button className="kyno-chunky"
       type={type}
       onClick={onClick}
       disabled={isOff}

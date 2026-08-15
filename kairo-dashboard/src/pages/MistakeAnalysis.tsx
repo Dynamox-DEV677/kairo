@@ -309,7 +309,7 @@ function AiResultModal({ title, body, loading, onClose }: {
           boxShadow: '0 24px 60px rgba(124, 92, 255, 0.03)',
           position: 'relative', maxHeight: '88vh', overflowY: 'auto',
         }}>
-        <button onClick={onClose} aria-label="Close" style={{
+        <button className="kyno-ghost" onClick={onClose} aria-label="Close" style={{
           position: 'absolute', top: 14, right: 14,
           width: 30, height: 30, borderRadius: 8,
           background: 'transparent', border: `1px solid ${C.border}`,
@@ -409,7 +409,7 @@ function AddMistakeModal({ onClose, onSaved }: { onClose: () => void; onSaved: (
         <Input value={detail} onChange={setDetail} placeholder="forgot the discriminant formula" multiline />
         <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 18 }}>
           <button onClick={onClose} style={chipBtn(C.textDim, 'outline')}>Cancel</button>
-          <button onClick={save} disabled={!topic.trim()} style={{
+          <button className="kyno-ghost" onClick={save} disabled={!topic.trim()} style={{
             padding: '9px 18px', borderRadius: 10,
             background: GRAD_PILL,
             color: '#fff', fontFamily: 'inherit', fontWeight: 700, fontSize: 13,

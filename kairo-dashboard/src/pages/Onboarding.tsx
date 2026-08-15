@@ -77,7 +77,7 @@ export default function Onboarding({ profile, onDone, onSkip }: Props) {
             <img src="/kyno-logo.png" alt="" style={{ width: 34, height: 34, objectFit: 'contain', filter: 'drop-shadow(0 0 12px rgba(165,180,252,0.4))' }} />
             <span style={{ fontWeight: 800, letterSpacing: -0.3 }}>Set up your Kyno</span>
           </div>
-          <button onClick={onSkip} style={{ background: 'none', border: 'none', color: A.mut, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: FONT }}>Skip for now</button>
+          <button className="kyno-ghost" onClick={onSkip} style={{ background: 'none', border: 'none', color: A.mut, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: FONT }}>Skip for now</button>
         </div>
 
         <div style={{ height: 4, background: 'rgba(255,255,255,0.08)', borderRadius: 999, overflow: 'hidden', marginBottom: 6 }}>
@@ -102,7 +102,7 @@ export default function Onboarding({ profile, onDone, onSkip }: Props) {
               <Section title="Your studies" sub="So Kyno matches your syllabus.">
                 <div style={{ display: 'flex', gap: 10, marginBottom: 18 }}>
                   {(['personal', 'school'] as const).map(m => (
-                    <button key={m} onClick={() => setMode(m)} style={pillBtn(mode === m)}>
+                    <button className="kyno-ghost" key={m} onClick={() => setMode(m)} style={pillBtn(mode === m)}>
                       {m === 'personal' ? 'Just me' : 'My school'}
                     </button>
                   ))}
@@ -159,11 +159,11 @@ export default function Onboarding({ profile, onDone, onSkip }: Props) {
 
         <div style={{ display: 'flex', gap: 12, marginTop: 30 }}>
           {step > 0 && (
-            <button onClick={() => setStep(step - 1)} style={{ ...navBtn, background: 'transparent', border: `1px solid ${A.border}`, color: A.text, flex: '0 0 auto', padding: '14px 20px' }}>
+            <button className="kyno-ghost" onClick={() => setStep(step - 1)} style={{ ...navBtn, background: 'transparent', border: `1px solid ${A.border}`, color: A.text, flex: '0 0 auto', padding: '14px 20px' }}>
               <ArrowLeft size={16} />
             </button>
           )}
-          <button onClick={() => (step === last ? finish() : setStep(step + 1))} style={{ ...navBtn, flex: 1 }}>
+          <button className="kyno-ghost" onClick={() => (step === last ? finish() : setStep(step + 1))} style={{ ...navBtn, flex: 1 }}>
             {step === last ? <>Finish setup <Check size={17} /></> : <>Continue <ArrowRight size={17} /></>}
           </button>
         </div>
@@ -194,7 +194,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 function Chip({ on, onClick, children, tone }: { on: boolean; onClick: () => void; children: React.ReactNode; tone?: 'warn' }) {
   const c = tone === 'warn' ? '#ffb454' : A.accent
   return (
-    <button onClick={onClick} style={{
+    <button className="kyno-ghost" onClick={onClick} style={{
       padding: '9px 15px', borderRadius: 999, cursor: 'pointer', fontFamily: FONT, fontSize: 14, fontWeight: 600,
       background: on ? `${c}22` : '#151a24', color: on ? '#fff' : A.mut,
       border: `1px solid ${on ? c : A.border}`, transition: 'all 0.15s',

@@ -470,7 +470,7 @@ function ImageCarousel({ slides, busy }: { slides: GeoImageSlide[]; busy: boolea
 function CarouselArrow({ side, onClick }: { side: 'left' | 'right'; onClick: () => void }) {
   const Icon = side === 'left' ? ChevronLeft : ChevronRight
   return (
-    <button onClick={onClick} aria-label={side}
+    <button className="kyno-ghost" onClick={onClick} aria-label={side}
       style={{
         position: 'absolute',
         top: '50%', transform: 'translateY(-50%)',
@@ -620,7 +620,7 @@ function ConceptGraphPanel({
         overflow: 'hidden',
       }}
     >
-      <button onClick={() => setOpen(o => !o)}
+      <button className="kyno-ghost" onClick={() => setOpen(o => !o)}
         style={{
           width: '100%', padding: '11px 14px',
           background: 'transparent', border: 'none', cursor: 'pointer',

@@ -73,14 +73,29 @@ button, [role="button"], a, .kyno-tile, .kyno-chip {
 
    If you change the gradient or the shadow, change it in BOTH this block and
    src/components/PrimaryButton.tsx, or the split reopens. */
+/* ── Why !important on the paint ─────────────────────────────────────────────
+   ~240 buttons across the app carry their own inline `background` / `border` /
+   `borderRadius`, and an inline style beats any stylesheet rule. Putting these
+   buttons on the system therefore meant one of two things: rewriting 240 inline
+   style objects with a regex, or letting the class win.
+
+   The class wins. Only PAINT is forced — background, border, radius, shadow,
+   typography. Layout (padding, width, display, gap, position) is left entirely
+   to the call site, so nothing moves; only the skin changes. That also makes the
+   system enforceable going forward: a new button cannot quietly reinvent the
+   look by adding an inline gradient.
+
+   .kyno-chip is deliberately NOT forced this way — see its block below. */
 .kyno-chunky {
-  position: relative; border: none; border-radius: 999px;
-  background: linear-gradient(145deg, #9B82FF 0%, var(--c-purple) 55%, var(--c-purple-deep) 100%);
-  color: #fff;
-  font-family: var(--kyno-display); font-weight: 800; letter-spacing: 0.2px;
+  position: relative;
+  border: none !important;
+  border-radius: 999px !important;
+  background: linear-gradient(145deg, #9B82FF 0%, var(--c-purple) 55%, var(--c-purple-deep) 100%) !important;
+  color: #fff !important;
+  font-family: var(--kyno-display) !important; font-weight: 800 !important; letter-spacing: 0.2px;
   /* Tight dark shadow = the raised edge. Wide violet = the glow. Both collapse
      on press so the button reads as physically pushed in. */
-  box-shadow: 0 3px 0 0 var(--c-purple-deep), 0 6px 18px rgba(124, 92, 255, 0.42);
+  box-shadow: 0 3px 0 0 var(--c-purple-deep), 0 6px 18px rgba(124, 92, 255, 0.42) !important;
   transition: transform .07s ease, box-shadow .07s ease, filter .12s ease;
   cursor: pointer; will-change: transform;
   -webkit-user-select: none; user-select: none;
@@ -88,18 +103,23 @@ button, [role="button"], a, .kyno-tile, .kyno-chip {
 .kyno-chunky:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 0 0 0 var(--c-purple-deep), 0 2px 8px rgba(124, 92, 255, 0.30); }
 /* Semantic hues keep their meaning (cyan = focus/time, gold = XP/reward) but
    now share the pill shape and glow, so they read as the same component. */
-.kyno-chunky.cyan  { background: linear-gradient(145deg, #7FE9F5 0%, var(--c-cyan) 55%, var(--c-cyan-deep) 100%); color: #062B31; box-shadow: 0 3px 0 0 var(--c-cyan-deep), 0 6px 18px rgba(79, 216, 232, 0.38); }
+.kyno-chunky.cyan  { background: linear-gradient(145deg, #7FE9F5 0%, var(--c-cyan) 55%, var(--c-cyan-deep) 100%) !important; color: #062B31 !important; box-shadow: 0 3px 0 0 var(--c-cyan-deep), 0 6px 18px rgba(79, 216, 232, 0.38) !important; }
 .kyno-chunky.cyan:active:not(:disabled) { box-shadow: 0 0 0 0 var(--c-cyan-deep), 0 2px 8px rgba(79, 216, 232, 0.28); }
-.kyno-chunky.gold  { background: linear-gradient(145deg, #FFD37A 0%, var(--c-gold) 55%, var(--c-gold-deep) 100%); color: #2A1A00; box-shadow: 0 3px 0 0 var(--c-gold-deep), 0 6px 18px rgba(255, 176, 32, 0.38); }
+.kyno-chunky.gold  { background: linear-gradient(145deg, #FFD37A 0%, var(--c-gold) 55%, var(--c-gold-deep) 100%) !important; color: #2A1A00 !important; box-shadow: 0 3px 0 0 var(--c-gold-deep), 0 6px 18px rgba(255, 176, 32, 0.38) !important; }
 .kyno-chunky.gold:active:not(:disabled) { box-shadow: 0 0 0 0 var(--c-gold-deep), 0 2px 8px rgba(255, 176, 32, 0.28); }
-.kyno-chunky:disabled { opacity: 0.55; cursor: not-allowed; transform: none; box-shadow: none; }
+.kyno-chunky:disabled { opacity: 0.55; cursor: not-allowed; transform: none; box-shadow: none !important; }
 
 /* Outline (ghost) variant — matches PrimaryButton variant="secondary".
    Deliberately NOT glowing: if every control glows, none of them reads as the
    main action on the screen. */
 .kyno-ghost {
-  border: 1.5px solid rgba(124, 92, 255, 0.45); background: rgba(124, 92, 255, 0.08); color: #C7BAFF;
-  border-radius: 999px; font-family: var(--kyno-display); font-weight: 800; cursor: pointer;
+  border: 1.5px solid rgba(124, 92, 255, 0.45) !important;
+  background: rgba(124, 92, 255, 0.08) !important;
+  color: #C7BAFF !important;
+  border-radius: 999px !important;
+  font-family: var(--kyno-display) !important; font-weight: 800 !important;
+  box-shadow: none !important;
+  cursor: pointer;
   transition: transform .07s ease, background .14s ease;
   -webkit-user-select: none; user-select: none;
 }
@@ -109,8 +129,13 @@ button, [role="button"], a, .kyno-tile, .kyno-chip {
 /* Destructive variant — outline only, never the glow. "Clear all data" must
    never look like the thing you are being invited to press. */
 .kyno-danger {
-  border: 1.5px solid rgba(226, 88, 92, 0.45); background: rgba(226, 88, 92, 0.07); color: #E2585C;
-  border-radius: 999px; font-family: var(--kyno-display); font-weight: 800; cursor: pointer;
+  border: 1.5px solid rgba(226, 88, 92, 0.45) !important;
+  background: rgba(226, 88, 92, 0.07) !important;
+  color: #E2585C !important;
+  border-radius: 999px !important;
+  font-family: var(--kyno-display) !important; font-weight: 800 !important;
+  box-shadow: none !important;
+  cursor: pointer;
   transition: transform .07s ease, background .14s ease;
   -webkit-user-select: none; user-select: none;
 }
@@ -153,10 +178,14 @@ button, [role="button"], a, .kyno-tile, .kyno-chip {
 }
 
 /* Raised 3D chip / mode toggle / tab — selected shows a pressed-in purple fill */
+/* Shape and typography are forced; background and colour are NOT.
+   A converted toggle group carries its selected state as an inline background —
+   forcing the paint here would make every tab look unselected. */
 .kyno-chip {
-  position: relative; border: 1.5px solid var(--c-line); border-radius: 999px;
+  position: relative; border: 1.5px solid var(--c-line);
+  border-radius: 999px !important;
+  font-family: var(--kyno-display) !important; font-weight: 700 !important;
   background: var(--c-bg-elev2); color: var(--c-faint);
-  font-family: var(--kyno-display); font-weight: 700;
   box-shadow: 0 3px 0 0 rgba(0,0,0,0.26);
   transition: transform .07s ease, box-shadow .07s ease, background .12s ease, color .12s ease, border-color .12s ease;
   cursor: pointer; will-change: transform;

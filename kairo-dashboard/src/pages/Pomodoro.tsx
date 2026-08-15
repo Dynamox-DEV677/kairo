@@ -83,7 +83,7 @@ export default function Pomodoro() {
         <div style={{ background: '#141A2A', border: '1px solid #1f2532', borderRadius: 20, padding: 28, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           <div style={{ display: 'flex', gap: 4, marginBottom: 24, background: '#141A2A', border: '1px solid #1f2532', borderRadius: 9, padding: 3 }}>
             {(['focus', 'short', 'long'] as Mode[]).map(m => (
-              <button key={m} onClick={() => switchMode(m)} style={{
+              <button className="kyno-chip" key={m} onClick={() => switchMode(m)} style={{
                 padding: '6px 12px', borderRadius: 7, border: `1px solid ${mode === m ? MODE_COLORS[m] : 'transparent'}`, fontFamily: 'inherit',
                 fontSize: 11, fontWeight: mode === m ? 800 : 500, cursor: 'pointer',
                 background: mode === m ? `${MODE_COLORS[m]}26` : 'transparent',

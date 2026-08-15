@@ -31,7 +31,7 @@ export default function WritingTools() {
 
       <div style={{ display: 'flex', gap: 4, marginBottom: 24, background: '#141A2A', border: '1px solid #1f2532', borderRadius: 10, padding: 4, overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
         {TABS.map(t => (
-          <button key={t.id} onClick={() => setTab(t.id)} style={{
+          <button className="kyno-chunky" key={t.id} onClick={() => setTab(t.id)} style={{
             flex: '1 0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
             padding: '8px 12px', borderRadius: 7, border: 'none', fontFamily: 'inherit',
             fontSize: 12, fontWeight: tab === t.id ? 700 : 500, cursor: 'pointer',
@@ -225,7 +225,7 @@ Rules:
           </div>
         )}
 
-        <button onClick={askKyno} disabled={loading}
+        <button className="kyno-chunky" onClick={askKyno} disabled={loading}
           style={{
             marginTop: 12, width: '100%', padding: '13px', borderRadius: 10, border: 'none',
             background: loading ? '#171D2D' : 'linear-gradient(135deg, #A5B4FC, #7C5CFF)',
@@ -402,7 +402,7 @@ function ToneImprover() {
         <textarea style={{ ...inp, height: 160, resize: 'vertical' }} value={text} onChange={e => setText(e.target.value)} placeholder="Paste your answer or paragraph here…" />
       </div>
       {err && <p style={{ color: '#4A2FA8', fontSize: 12, marginBottom: 10 }}>{err}</p>}
-      <button onClick={run} disabled={loading} style={btn(!loading)}>
+      <button className="kyno-ghost" onClick={run} disabled={loading} style={btn(!loading)}>
         <ArrowRight size={13} /> {loading ? 'Improving…' : 'Improve Tone'}
       </button>
       {result?.improved && <ResultBox title={`✓ ${tone.charAt(0).toUpperCase() + tone.slice(1)} Version`} text={result.improved} />}
@@ -447,7 +447,7 @@ function ExpandTool() {
         <textarea style={{ ...inp, height: 140, resize: 'vertical' }} value={text} onChange={e => setText(e.target.value)} placeholder="Write a short 2-3 sentence answer…" />
       </div>
       {err && <p style={{ color: '#4A2FA8', fontSize: 12, marginBottom: 10 }}>{err}</p>}
-      <button onClick={run} disabled={loading} style={btn(!loading)}>
+      <button className="kyno-ghost" onClick={run} disabled={loading} style={btn(!loading)}>
         <Expand size={13} /> {loading ? 'Expanding…' : `Expand to ${words} words`}
       </button>
       {result?.expanded && <ResultBox title="✓ Expanded Answer" text={result.expanded} color="#A5B4FC" />}
@@ -484,7 +484,7 @@ function TopperTool() {
         <textarea style={{ ...inp, height: 160, resize: 'vertical' }} value={text} onChange={e => setText(e.target.value)} placeholder="Write your current answer — any quality is fine…" />
       </div>
       {err && <p style={{ color: '#4A2FA8', fontSize: 12, marginBottom: 10 }}>{err}</p>}
-      <button onClick={run} disabled={loading} style={{ ...btn(!loading), background: loading ? '#171D2D' : 'linear-gradient(135deg,#A5B4FC,#7C5CFF)' }}>
+      <button className="kyno-chunky" onClick={run} disabled={loading} style={{ ...btn(!loading), background: loading ? '#171D2D' : 'linear-gradient(135deg,#A5B4FC,#7C5CFF)' }}>
         <Star size={13} /> {loading ? 'Rewriting…' : 'Make it Topper-Level ✦'}
       </button>
       {result?.rewritten && (
@@ -525,7 +525,7 @@ function PlagiarismTool() {
         <textarea style={{ ...inp, height: 180, resize: 'vertical' }} value={text} onChange={e => setText(e.target.value)} placeholder="Paste the essay or answer to check…" />
       </div>
       {err && <p style={{ color: '#4A2FA8', fontSize: 12, marginBottom: 10 }}>{err}</p>}
-      <button onClick={run} disabled={loading} style={btn(!loading)}>
+      <button className="kyno-ghost" onClick={run} disabled={loading} style={btn(!loading)}>
         <Shield size={13} /> {loading ? 'Checking…' : 'Check Now'}
       </button>
 

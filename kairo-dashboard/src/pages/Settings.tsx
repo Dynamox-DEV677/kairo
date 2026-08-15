@@ -279,7 +279,7 @@ export default function Settings() {
           </motion.div>
           <div>
             <p style={{ fontSize: 14, fontWeight: 600, color: '#fafafa', marginBottom: 4 }}>{name || 'Your Name'}</p>
-            <button
+            <button className="kyno-ghost"
               onClick={() => fileRef.current?.click()}
               style={{ fontSize: 12, color: '#7C5CFF', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', padding: 0, display: 'flex', alignItems: 'center', gap: 5 }}
             >
@@ -480,7 +480,7 @@ export default function Settings() {
             {syncing ? 'Syncing…' : 'Sync now'}
           </button>
 
-          <button
+          <button className="kyno-ghost"
             onClick={() => setBackupOpen(true)}
             style={{
               display: 'flex', alignItems: 'center', gap: 7,
@@ -492,7 +492,7 @@ export default function Settings() {
             <FileJson size={13} /> Manual file backup
           </button>
 
-          <button
+          <button className="kyno-danger"
             onClick={deleteCloud}
             style={{
               display: 'flex', alignItems: 'center', gap: 6,
@@ -539,7 +539,7 @@ export default function Settings() {
           <PrimaryButton onClick={loadDemoProfile}>
             <Sparkles size={13} /> Load Demo Profile
           </PrimaryButton>
-          <button
+          <button className="kyno-ghost"
             onClick={resetToFresh}
             style={{
               display: 'flex', alignItems: 'center', gap: 7,
@@ -562,7 +562,7 @@ export default function Settings() {
         <p style={{ fontSize: 13, color: '#9CA3AF', marginBottom: 14, lineHeight: 1.6 }}>
           All your data is stored locally on your device. Nothing is sent to our servers. You can clear everything below.
         </p>
-        <button
+        <button className="kyno-danger"
           onClick={clearData}
           style={{
             display: 'flex', alignItems: 'center', gap: 7,

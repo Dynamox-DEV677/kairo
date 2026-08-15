@@ -427,7 +427,7 @@ export default function VoiceTutor() {
           padding: '16px 18px', borderTop: '1px solid #171D2D',
           display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0,
         }}>
-          <motion.button
+          <motion.button className="kyno-chunky"
             whileTap={{ scale: 0.92 }}
             onClick={listening ? stopListening : startListening}
             disabled={thinking || !SpeechRecognitionCtor}
@@ -486,7 +486,7 @@ export default function VoiceTutor() {
             />
           </div>
 
-          <button onClick={submitText} disabled={!textInput.trim() || listening || thinking}
+          <button className="kyno-chunky" onClick={submitText} disabled={!textInput.trim() || listening || thinking}
             style={{
               width: 38, height: 38, borderRadius: 9, flexShrink: 0,
               background: textInput.trim() ? 'linear-gradient(135deg,#7C5CFF,#7C5CFF)' : '#171D2D',
@@ -498,7 +498,7 @@ export default function VoiceTutor() {
           </button>
 
           {speaking && (
-            <button onClick={stopSpeaking} title="Stop AI voice"
+            <button className="kyno-ghost" onClick={stopSpeaking} title="Stop AI voice"
               style={{
                 width: 38, height: 38, borderRadius: 9, flexShrink: 0,
                 background: 'rgba(165, 180, 252, 0.1)', border: '1px solid rgba(165, 180, 252, 0.14)',
@@ -516,7 +516,7 @@ export default function VoiceTutor() {
       }}>
         {turns.length > 0 && (
           <>
-            <button onClick={saveSession}
+            <button className="kyno-ghost" onClick={saveSession}
               style={{
                 padding: '7px 13px', borderRadius: 7,
                 border: '1px solid rgba(165, 180, 252, 0.3)',
@@ -526,7 +526,7 @@ export default function VoiceTutor() {
               }}>
               Save to Notebook
             </button>
-            <button onClick={clearAll}
+            <button className="kyno-ghost" onClick={clearAll}
               style={{
                 padding: '7px 13px', borderRadius: 7, border: '1px solid #1f2532',
                 background: '#1C2233', color: '#9CA3AF', cursor: 'pointer',

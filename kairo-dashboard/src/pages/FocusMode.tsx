@@ -183,7 +183,7 @@ export default function FocusMode() {
 
       <div style={{ display: 'flex', gap: 10, marginBottom: 32, zIndex: 1 }}>
         {!running ? (
-          <motion.button
+          <motion.button className="kyno-chunky"
             whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}
             onClick={start}
             style={{
@@ -196,7 +196,7 @@ export default function FocusMode() {
             <Play size={14} />{done ? 'Start Again' : 'Start Focus'}
           </motion.button>
         ) : (
-          <motion.button
+          <motion.button className="kyno-ghost"
             whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}
             onClick={pause}
             style={{
@@ -208,7 +208,7 @@ export default function FocusMode() {
             <Pause size={14} />Pause
           </motion.button>
         )}
-        <button onClick={reset} style={{
+        <button className="kyno-ghost" onClick={reset} style={{
           padding: '12px 18px', borderRadius: 10, border: '1px solid #1f2532',
           background: '#1C2233', color: '#9CA3AF', cursor: 'pointer',
           fontFamily: 'inherit', fontSize: 13, display: 'flex', alignItems: 'center', gap: 6,

@@ -403,12 +403,12 @@ function SignIn({ onLogin, onBack }: any) {
           <input type={show ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && submit()}
             placeholder="••••••••" style={{ ...inp, paddingRight: 40 }} />
-          <button onClick={() => setShow(s => !s)} type="button" style={eyeBtn}>
+          <button className="kyno-ghost" onClick={() => setShow(s => !s)} type="button" style={eyeBtn}>
             {show ? <EyeOff size={14} color="#6B7280" /> : <Eye size={14} color="#6B7280" />}
           </button>
         </div>
         <div style={{ marginTop: 6, display: 'flex', justifyContent: 'flex-end' }}>
-          <button
+          <button className="kyno-ghost"
             type="button"
             onClick={sendPasswordReset}
             disabled={busy}
@@ -571,7 +571,7 @@ function PersonalSignup({ onLogin, onBack }: any) {
         <div style={{ position: 'relative' }}>
           <input type={show ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)}
             placeholder="min 8 characters" style={{ ...inp, paddingRight: 40 }} />
-          <button onClick={() => setShow(s => !s)} type="button" style={eyeBtn}>
+          <button className="kyno-ghost" onClick={() => setShow(s => !s)} type="button" style={eyeBtn}>
             {show ? <EyeOff size={14} color="#6B7280" /> : <Eye size={14} color="#6B7280" />}
           </button>
         </div>
@@ -586,7 +586,7 @@ function PersonalSignup({ onLogin, onBack }: any) {
             const b = o.value
             const active = board === b
             return (
-              <button key={b} type="button" title={o.hint}
+              <button className="kyno-chip" key={b} type="button" title={o.hint}
                 onClick={() => setBoard(active ? '' : b)}
                 style={{
                   padding: '7px 13px', borderRadius: 8,
@@ -618,7 +618,7 @@ function PersonalSignup({ onLogin, onBack }: any) {
         <>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             <PrimaryBtn busy={busy} onClick={sendPasswordReset} icon={Mail}>Reset password via email</PrimaryBtn>
-            <button onClick={onBack} type="button" style={{
+            <button className="kyno-ghost" onClick={onBack} type="button" style={{
               padding: '11px 16px', borderRadius: 10,
               background: 'transparent', border: '1px solid rgba(255,255,255,0.08)',
               color: '#B1B5BA', fontFamily: 'inherit', fontSize: 13, fontWeight: 600,
@@ -637,7 +637,7 @@ function PersonalSignup({ onLogin, onBack }: any) {
       )}
       <p style={{ fontSize: 11, color: '#6B7280', textAlign: 'center', marginTop: 12, lineHeight: 1.5 }}>
         Already have an account?{' '}
-        <button onClick={onBack} style={{
+        <button className="kyno-ghost" onClick={onBack} style={{
           background: 'none', border: 'none', color: '#A5B4FC',
           fontFamily: 'inherit', fontSize: 11, fontWeight: 600, cursor: 'pointer', padding: 0,
         }}>Sign in instead</button>
@@ -758,7 +758,7 @@ function JoinSchool({ onLogin, onBack }: any) {
         <div style={{ position: 'relative' }}>
           <input type={show ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)}
             placeholder="min 8 characters" style={{ ...inp, paddingRight: 40 }} />
-          <button onClick={() => setShow(s => !s)} type="button" style={eyeBtn}>
+          <button className="kyno-ghost" onClick={() => setShow(s => !s)} type="button" style={eyeBtn}>
             {show ? <EyeOff size={14} color="#6B7280" /> : <Eye size={14} color="#6B7280" />}
           </button>
         </div>
@@ -787,7 +787,7 @@ function JoinSchool({ onLogin, onBack }: any) {
           const Icon = r.icon
           const active = role === r.id
           return (
-            <motion.button key={r.id}
+            <motion.button className="kyno-chip" key={r.id}
               whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}
               onClick={() => setRole(r.id as any)}
               style={{
@@ -959,7 +959,7 @@ function CreateSchool({ onLogin, onBack }: any) {
         <div style={{ position: 'relative' }}>
           <input type={show ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)}
             placeholder="min 8 characters" style={{ ...inp, paddingRight: 40 }} />
-          <button onClick={() => setShow(s => !s)} type="button" style={eyeBtn}>
+          <button className="kyno-ghost" onClick={() => setShow(s => !s)} type="button" style={eyeBtn}>
             {show ? <EyeOff size={14} color="#6B7280" /> : <Eye size={14} color="#6B7280" />}
           </button>
         </div>
@@ -991,7 +991,7 @@ function CreateSchool({ onLogin, onBack }: any) {
         }}>
           {result.passcode}
         </code>
-        <button onClick={() => navigator.clipboard.writeText(result.passcode)}
+        <button className="kyno-ghost" onClick={() => navigator.clipboard.writeText(result.passcode)}
           style={{
             padding: '6px 14px', borderRadius: 6, fontSize: 11,
             background: 'rgba(124, 92, 255, 0.15)', border: '1px solid rgba(124, 92, 255, 0.3)',
@@ -1100,7 +1100,7 @@ function Field({ icon: Icon, label, hint, children }: any) {
 
 function PrimaryBtn({ busy, onClick, icon: Icon, children }: any) {
   return (
-    <motion.button whileHover={{ scale: busy ? 1 : 1.02 }} whileTap={{ scale: busy ? 1 : 0.97 }}
+    <motion.button className="kyno-chunky" whileHover={{ scale: busy ? 1 : 1.02 }} whileTap={{ scale: busy ? 1 : 0.97 }}
       onClick={onClick} disabled={busy}
       style={{
         width: '100%', marginTop: 6, padding: '13px', borderRadius: 11, border: 'none',
@@ -1171,13 +1171,13 @@ function AvatarPicker({ avatar, onPick, fallback }: {
         onChange={e => onPick(e.target.files?.[0] || null)} />
 
       <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-        <button type="button" onClick={() => inputRef.current?.click()} style={{
+        <button className="kyno-ghost" type="button" onClick={() => inputRef.current?.click()} style={{
           padding: '5px 11px', borderRadius: 6, border: '1px solid #1f2532',
           background: '#1C2233', color: '#B1B5BA', cursor: 'pointer',
           fontFamily: 'inherit', fontSize: 11, fontWeight: 600,
         }}>{avatar ? 'Change' : 'Upload photo'}</button>
         {avatar && (
-          <button type="button" onClick={() => onPick(null)} style={{
+          <button className="kyno-ghost" type="button" onClick={() => onPick(null)} style={{
             padding: '5px 11px', borderRadius: 6, border: '1px solid #1f2532',
             background: '#1C2233', color: '#9CA3AF', cursor: 'pointer',
             fontFamily: 'inherit', fontSize: 11,

@@ -123,7 +123,7 @@ export default function TopicArchitect() {
             <label style={lbl}>Exam</label>
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
               {EXAMS.map(e => (
-                <button key={e.id} onClick={() => setExam(e.id)} style={{
+                <button className="kyno-chip" key={e.id} onClick={() => setExam(e.id)} style={{
                   padding: '8px 16px', fontSize: 13, fontWeight: 700, borderRadius: 8, cursor: 'pointer',
                   background: exam === e.id ? 'rgba(124, 92, 255,0.22)' : '#141A2A',
                   color: exam === e.id ? '#fff' : '#A1A1AA',
@@ -138,7 +138,7 @@ export default function TopicArchitect() {
             <label style={lbl}>Depth</label>
             <div style={{ display: 'flex', gap: 6 }}>
               {(['standard', 'deep'] as const).map(d => (
-                <button key={d} onClick={() => setDepth(d)} style={{
+                <button className="kyno-chip" key={d} onClick={() => setDepth(d)} style={{
                   padding: '8px 16px', fontSize: 13, fontWeight: 700, borderRadius: 8, cursor: 'pointer',
                   textTransform: 'capitalize',
                   background: depth === d ? 'rgba(124, 92, 255,0.22)' : '#141A2A',

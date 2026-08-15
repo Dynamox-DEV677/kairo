@@ -146,7 +146,7 @@ export default function DesktopUpdateBanner() {
                 </div>
               </div>
 
-              <button
+              <button className="kyno-ghost"
                 onClick={() => setDismissed(true)}
                 aria-label="Dismiss"
                 style={{
@@ -203,7 +203,7 @@ export default function DesktopUpdateBanner() {
                 </div>
               </div>
 
-              <button
+              <button className="kyno-chunky"
                 onClick={onRestart}
                 disabled={busy}
                 style={{
@@ -224,7 +224,7 @@ export default function DesktopUpdateBanner() {
                 {busy ? 'Restarting…' : <><RotateCcw size={12} /> Restart</>}
               </button>
 
-              <button
+              <button className="kyno-ghost"
                 onClick={() => setDismissed(true)}
                 aria-label="Dismiss"
                 style={{

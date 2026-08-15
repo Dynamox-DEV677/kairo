@@ -39,11 +39,11 @@ export function TermsAcceptLine({ action = 'continuing' }: { action?: string }) 
       fontFamily: FONT,
     }}>
       By {action}, you agree to Kyno's{' '}
-      <button onClick={() => openTerms('terms')} style={linkBtn}>
+      <button className="kyno-ghost" onClick={() => openTerms('terms')} style={linkBtn}>
         Terms &amp; Conditions
       </button>
       {' '}and{' '}
-      <button onClick={() => openTerms('privacy')} style={linkBtn}>
+      <button className="kyno-ghost" onClick={() => openTerms('privacy')} style={linkBtn}>
         Privacy Policy
       </button>.
     </p>
@@ -52,7 +52,7 @@ export function TermsAcceptLine({ action = 'continuing' }: { action?: string }) 
 
 export function TermsInlineLink({ tab = 'terms', children }: { tab?: Tab; children: React.ReactNode }) {
   return (
-    <button onClick={() => openTerms(tab)} style={{
+    <button className="kyno-ghost" onClick={() => openTerms(tab)} style={{
       ...linkBtn, fontSize: 'inherit', color: 'inherit',
     }}>
       {children}
@@ -187,7 +187,7 @@ function TermsSheet({ tab, setTab, onClose }: {
                 Kyno · Effective {EFFECTIVE_DATE}
               </div>
             </div>
-            <button
+            <button className="kyno-ghost"
               onClick={onClose}
               aria-label="Close"
               style={{
@@ -253,7 +253,7 @@ function TermsSheet({ tab, setTab, onClose }: {
                 {CONTACT_PHONE}
               </a>
             </div>
-            <button
+            <button className="kyno-ghost"
               onClick={() => scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' })}
               style={{
                 ...linkBtn, display: 'inline-flex', alignItems: 'center', gap: 4,
@@ -273,7 +273,7 @@ function TermsSheet({ tab, setTab, onClose }: {
           background: 'rgba(6,6,10,0.4)',
           display: 'flex', justifyContent: 'flex-end',
         }}>
-          <button
+          <button className="kyno-chunky"
             onClick={onClose}
             style={{
               padding: '11px 22px', borderRadius: 11, border: 'none',
@@ -297,7 +297,7 @@ function TabBtn({ active, onClick, children }: {
   children: React.ReactNode
 }) {
   return (
-    <button
+    <button className="kyno-ghost"
       onClick={onClick}
       style={{
         flex: 1, padding: '8px 12px', borderRadius: 8, border: 'none',

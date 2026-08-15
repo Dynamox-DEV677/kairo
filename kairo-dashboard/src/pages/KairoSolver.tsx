@@ -696,11 +696,11 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
           </button>
         )}
         {busy ? (
-          <button onClick={stop} style={btnStop}>
+          <button className="kyno-ghost" onClick={stop} style={btnStop}>
             <StopCircle size={14} /> Stop
           </button>
         ) : (
-          <button onClick={() => ask(input)} disabled={!input.trim()} style={{
+          <button className="kyno-ghost" onClick={() => ask(input)} disabled={!input.trim()} style={{
             ...btnSend, opacity: input.trim() ? 1 : 0.45,
             cursor: input.trim() ? 'pointer' : 'not-allowed',
           }}>
@@ -770,7 +770,7 @@ function ExamPlanModal({ onClose }: { onClose: () => void }) {
           boxShadow: '0 24px 60px rgba(124, 92, 255, 0.03)',
           position: 'relative',
         }}>
-        <button onClick={onClose} aria-label="Close" style={{
+        <button className="kyno-ghost" onClick={onClose} aria-label="Close" style={{
           position: 'absolute', top: 14, right: 14,
           width: 30, height: 30, borderRadius: 8,
           background: 'transparent', border: '1px solid rgba(255,255,255,0.08)',
@@ -800,12 +800,12 @@ function ExamPlanModal({ onClose }: { onClose: () => void }) {
         <ExamLabel>Topics to focus on (optional)</ExamLabel>
         <ExamInput value={topics} onChange={setTopics} placeholder="comma-separated, e.g. vectors, optics" />
         <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 18 }}>
-          <button onClick={onClose} style={{
+          <button className="kyno-ghost" onClick={onClose} style={{
             padding: '9px 16px', borderRadius: 9,
             background: 'transparent', border: '1px solid rgba(255,255,255,0.08)',
             color: '#B1B5BA', fontFamily: 'inherit', fontSize: 12.5, fontWeight: 600, cursor: 'pointer',
           }}>Cancel</button>
-          <button onClick={save} disabled={!subject.trim() || !date} style={{
+          <button className="kyno-chunky" onClick={save} disabled={!subject.trim() || !date} style={{
             padding: '9px 20px', borderRadius: 9,
             background: 'linear-gradient(135deg, #7C5CFF, #4A2FA8)',
             color: '#fff', fontFamily: 'inherit', fontSize: 13, fontWeight: 700,
@@ -1307,7 +1307,7 @@ function ExplanationPanel({ resp, busy, error, retryHint, onOpenLab, onAskRelate
             </div>
           </div>
           {topic && !busy && (
-            <button
+            <button className="kyno-chunky"
               onClick={() => ask(topic)}
               style={{
                 padding: '8px 14px', borderRadius: 9,
@@ -1535,7 +1535,7 @@ function ModeChipBar({
         {chips.map(c => {
           const active = mode === c.id || (mode === 'auto' && c.id === (hasGeography ? 'map' : 'visual'))
           return (
-            <button
+            <button className="kyno-chip"
               key={c.id}
               onClick={() => c.available && setMode(c.id)}
               disabled={!c.available}

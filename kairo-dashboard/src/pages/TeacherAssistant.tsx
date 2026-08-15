@@ -273,7 +273,7 @@ Markdown structure:
 
           {err && <p style={{ fontSize: 12, color: '#A5B4FC', marginBottom: 12 }}>{err}</p>}
 
-          <motion.button
+          <motion.button className="kyno-chunky"
             whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
             onClick={generate} disabled={busy || !topic.trim()}
             style={{
@@ -316,7 +316,7 @@ Markdown structure:
                 {board} Class {pack.meta.grade} · {pack.meta.subject} · {pack.meta.duration} min
               </div>
             </div>
-            <button onClick={() => { setPack(null); setTopic('') }}
+            <button className="kyno-ghost" onClick={() => { setPack(null); setTopic('') }}
               style={{
                 padding: '7px 12px', borderRadius: 7, border: '1px solid #1f2532',
                 background: '#1C2233', color: '#9CA3AF', cursor: 'pointer',
@@ -334,7 +334,7 @@ Markdown structure:
               const isActive = activeTab === a.id
               const isSaved = savedTabs.has(a.id)
               return (
-                <button key={a.id} onClick={() => setActiveTab(a.id)}
+                <button className="kyno-chip" key={a.id} onClick={() => setActiveTab(a.id)}
                   style={{
                     display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px',
                     borderRadius: 7, border: 'none', fontFamily: 'inherit',
@@ -354,10 +354,10 @@ Markdown structure:
               display: 'flex', justifyContent: 'flex-end', gap: 6, marginBottom: 14,
               paddingBottom: 12, borderBottom: '1px solid #171D2D',
             }}>
-              <button onClick={saveCurrentTab} disabled={savedTabs.has(activeTab)} style={toolBtn(savedTabs.has(activeTab) ? '#A5B4FC' : '#A5B4FC')}>
+              <button className="kyno-ghost" onClick={saveCurrentTab} disabled={savedTabs.has(activeTab)} style={toolBtn(savedTabs.has(activeTab) ? '#A5B4FC' : '#A5B4FC')}>
                 <Save size={11} />{savedTabs.has(activeTab) ? 'Saved' : 'Save to Notebook'}
               </button>
-              <button onClick={() => {
+              <button className="kyno-ghost" onClick={() => {
                 let c = ''
                 if (activeTab === 'lesson_plan')    c = pack.lesson_plan
                 if (activeTab === 'homework')       c = pack.homework
@@ -368,7 +368,7 @@ Markdown structure:
               }} style={toolBtn('#9CA3AF')}>
                 <Copy size={11} /> Copy
               </button>
-              <button onClick={() => {
+              <button className="kyno-ghost" onClick={() => {
                 let c = ''
                 if (activeTab === 'lesson_plan')    c = pack.lesson_plan
                 if (activeTab === 'homework')       c = pack.homework
@@ -435,7 +435,7 @@ function QuizView({ items }: { items: QuizItem[] }) {
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 10 }}>
-        <button onClick={() => setShowAnswers(s => !s)} style={{
+        <button className="kyno-ghost" onClick={() => setShowAnswers(s => !s)} style={{
           padding: '5px 12px', borderRadius: 6,
           border: `1px solid ${showAnswers ? '#A5B4FC' : '#1f2532'}`,
           background: showAnswers ? 'rgba(165, 180, 252, 0.1)' : '#1C2233',

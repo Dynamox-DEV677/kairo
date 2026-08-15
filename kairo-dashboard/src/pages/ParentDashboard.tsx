@@ -172,7 +172,7 @@ export default function ParentDashboard({ profile, onLogout }: ParentDashboardPr
           <div style={{ fontSize: 12, color: '#9CA3AF' }}>
             {profile.name}
           </div>
-          <button
+          <button className="kyno-ghost"
             onClick={() => {
               localStorage.removeItem('kairo_token')
               localStorage.removeItem('kairo_refresh')
@@ -206,7 +206,7 @@ export default function ParentDashboard({ profile, onLogout }: ParentDashboardPr
                 {' · '}Your linked child
               </div>
             </div>
-            <button onClick={load} style={{ marginLeft: 'auto', background: 'none', border: '1px solid rgba(124, 92, 255, 0.3)',
+            <button className="kyno-ghost" onClick={load} style={{ marginLeft: 'auto', background: 'none', border: '1px solid rgba(124, 92, 255, 0.3)',
               borderRadius: 8, padding: '6px 10px', color: '#A5B4FC', cursor: 'pointer' }}>
               <RefreshCw size={13} />
             </button>
@@ -252,7 +252,7 @@ export default function ParentDashboard({ profile, onLogout }: ParentDashboardPr
 
             <div style={{ display: 'flex', gap: 6, marginBottom: 20 }}>
               {(['overview', 'details'] as const).map(t => (
-                <button key={t} onClick={() => setTab(t)} style={{
+                <button className="kyno-chip" key={t} onClick={() => setTab(t)} style={{
                   padding: '7px 16px', borderRadius: 8, fontSize: 13, fontWeight: tab === t ? 600 : 400,
                   border: tab === t ? '1px solid rgba(124, 92, 255, 0.14)' : '1px solid #1f2532',
                   background: tab === t ? 'rgba(124, 92, 255, 0.12)' : '#141A2A',
@@ -310,14 +310,14 @@ export default function ParentDashboard({ profile, onLogout }: ParentDashboardPr
                   initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
 
                   <div style={{ display: 'flex', gap: 6, marginBottom: 14, flexWrap: 'wrap' }}>
-                    <button onClick={() => setSortSubject('')} style={{
+                    <button className="kyno-ghost" onClick={() => setSortSubject('')} style={{
                       padding: '4px 10px', borderRadius: 6, fontSize: 12, cursor: 'pointer',
                       border: !sortSubject ? '1px solid #7C5CFF' : '1px solid #1f2532',
                       background: !sortSubject ? 'rgba(124, 92, 255, 0.12)' : '#1C2233',
                       color: !sortSubject ? '#A5B4FC' : '#9CA3AF', fontFamily: 'inherit',
                     }}>All</button>
                     {[...new Set(marks.map(m => m.subject))].map(s => (
-                      <button key={s} onClick={() => setSortSubject(s === sortSubject ? '' : s)} style={{
+                      <button className="kyno-chip" key={s} onClick={() => setSortSubject(s === sortSubject ? '' : s)} style={{
                         padding: '4px 10px', borderRadius: 6, fontSize: 12, cursor: 'pointer',
                         border: sortSubject === s ? '1px solid #7C5CFF' : '1px solid #1f2532',
                         background: sortSubject === s ? 'rgba(124, 92, 255, 0.12)' : '#1C2233',

@@ -548,23 +548,23 @@ function NoteDetail({ note, editing, onClose, onTogglePin, onDelete, onEdit, onS
           </div>
         </div>
         <div style={{ display: 'flex', gap: 4, marginLeft: 'auto' }}>
-          <button onClick={onTogglePin} title={note.pinned ? 'Unpin' : 'Pin'}
+          <button className="kyno-ghost" onClick={onTogglePin} title={note.pinned ? 'Unpin' : 'Pin'}
             style={{ padding: 6, borderRadius: 7, border: '1px solid #1f2532', background: '#1C2233', cursor: 'pointer', color: note.pinned ? '#A5B4FC' : '#9CA3AF' }}>
             {note.pinned ? <Pin size={12} /> : <PinOff size={12} />}
           </button>
           {!editing && (
-            <button onClick={onEdit} title="Edit"
+            <button className="kyno-ghost" onClick={onEdit} title="Edit"
               style={{ padding: 6, borderRadius: 7, border: '1px solid #1f2532', background: '#1C2233', cursor: 'pointer', color: '#9CA3AF' }}>
               <Edit3 size={12} />
             </button>
           )}
-          <button onClick={onDelete} title="Delete"
+          <button className="kyno-ghost" onClick={onDelete} title="Delete"
             style={{ padding: 6, borderRadius: 7, border: '1px solid #1f2532', background: '#1C2233', cursor: 'pointer', color: '#9CA3AF' }}
             onMouseEnter={e => (e.currentTarget.style.color = '#A5B4FC')}
             onMouseLeave={e => (e.currentTarget.style.color = '#9CA3AF')}>
             <Trash2 size={12} />
           </button>
-          <button onClick={onClose} title="Close"
+          <button className="kyno-ghost" onClick={onClose} title="Close"
             style={{ padding: 6, borderRadius: 7, border: '1px solid #1f2532', background: '#1C2233', cursor: 'pointer', color: '#9CA3AF' }}>
             <X size={12} />
           </button>
@@ -584,7 +584,7 @@ function NoteDetail({ note, editing, onClose, onTogglePin, onDelete, onEdit, onS
           <textarea value={content} onChange={e => setContent(e.target.value)} rows={16}
             style={{ ...inp, resize: 'vertical', lineHeight: 1.6 }} />
           <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
-            <button onClick={save} disabled={saving} style={{
+            <button className="kyno-chunky" onClick={save} disabled={saving} style={{
               padding: '8px 16px', borderRadius: 8, border: 'none',
               background: saving ? '#171D2D' : 'linear-gradient(135deg,#7C5CFF,#7C5CFF)',
               color: saving ? '#6B7280' : '#fff',
@@ -592,7 +592,7 @@ function NoteDetail({ note, editing, onClose, onTogglePin, onDelete, onEdit, onS
               cursor: saving ? 'not-allowed' : 'pointer',
               display: 'flex', alignItems: 'center', gap: 6,
             }}><Save size={12} />{saving ? 'Saving…' : 'Save'}</button>
-            <button onClick={onCancelEdit} style={{
+            <button className="kyno-ghost" onClick={onCancelEdit} style={{
               padding: '8px 16px', borderRadius: 8, border: '1px solid #1f2532',
               background: '#1C2233', color: '#9CA3AF', cursor: 'pointer',
               fontFamily: 'inherit', fontSize: 12,
@@ -677,7 +677,7 @@ function CreateModal({ onClose, onCreated }: { onClose: () => void; onCreated: (
         <input value={subject} onChange={e => setSubject(e.target.value)}
           placeholder="Subject (optional)" style={{ ...inp, marginBottom: 10 }} />
         <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
-          <button type="button" onClick={formatWithAI} disabled={formatting || !content.trim()} style={{
+          <button className="kyno-ghost" type="button" onClick={formatWithAI} disabled={formatting || !content.trim()} style={{
             padding: '6px 11px', borderRadius: 7, border: '1px solid rgba(165, 180, 252, 0.32)',
             background: formatting ? 'rgba(165, 180, 252, 0.22)' : 'rgba(124, 92, 255, 0.08)',
             color: '#A5B4FC', fontFamily: 'inherit', fontSize: 11.5, fontWeight: 600,
@@ -686,7 +686,7 @@ function CreateModal({ onClose, onCreated }: { onClose: () => void; onCreated: (
           }}>
             <Sparkles size={12} />{formatting ? 'Formatting…' : 'Format math with AI'}
           </button>
-          <button type="button" onClick={() => setPreview(p => !p)} disabled={!content.trim()} style={{
+          <button className="kyno-ghost" type="button" onClick={() => setPreview(p => !p)} disabled={!content.trim()} style={{
             padding: '6px 11px', borderRadius: 7, border: '1px solid #1f2532',
             background: '#1C2233', color: preview ? '#A5B4FC' : '#9CA3AF',
             fontFamily: 'inherit', fontSize: 11.5, fontWeight: 600,
@@ -712,12 +712,12 @@ function CreateModal({ onClose, onCreated }: { onClose: () => void; onCreated: (
             style={{ ...inp, resize: 'vertical', lineHeight: 1.6 }} />
         )}
         <div style={{ display: 'flex', gap: 8, marginTop: 14, justifyContent: 'flex-end' }}>
-          <button onClick={onClose} style={{
+          <button className="kyno-ghost" onClick={onClose} style={{
             padding: '8px 14px', borderRadius: 7, border: '1px solid #1f2532',
             background: '#1C2233', color: '#9CA3AF', cursor: 'pointer',
             fontFamily: 'inherit', fontSize: 12,
           }}>Cancel</button>
-          <button onClick={save} disabled={saving || !title.trim() || !content.trim()} style={{
+          <button className="kyno-chunky" onClick={save} disabled={saving || !title.trim() || !content.trim()} style={{
             padding: '8px 14px', borderRadius: 7, border: 'none',
             background: saving || !title.trim() || !content.trim() ? '#171D2D' : 'linear-gradient(135deg,#7C5CFF,#7C5CFF)',
             color: '#fff', fontFamily: 'inherit', fontSize: 12, fontWeight: 600,

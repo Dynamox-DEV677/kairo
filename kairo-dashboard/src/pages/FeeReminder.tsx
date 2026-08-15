@@ -30,7 +30,7 @@ export default function FeeReminder() {
 
       <div style={{ display: 'flex', gap: 4, marginBottom: 24, background: '#141A2A', border: '1px solid #1f2532', borderRadius: 10, padding: 4 }}>
         {TABS.map(t => (
-          <button key={t.id} onClick={() => setTab(t.id)} style={{
+          <button className="kyno-chip" key={t.id} onClick={() => setTab(t.id)} style={{
             flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
             padding: '7px 10px', borderRadius: 7, border: 'none', fontFamily: 'inherit',
             fontSize: 12, fontWeight: tab === t.id ? 600 : 400, cursor: 'pointer',
@@ -129,7 +129,7 @@ function StudentsTab() {
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
         <span style={{ fontSize: 13, color: '#9CA3AF' }}>{students.length} active students</span>
-        <button onClick={() => setAdding(a => !a)} style={btn()}>
+        <button className="kyno-ghost" onClick={() => setAdding(a => !a)} style={btn()}>
           <Plus size={13} /> Add Student
         </button>
       </div>
@@ -148,8 +148,8 @@ function StudentsTab() {
             </div>
             {err && <p style={{ fontSize: 12, color: '#A5B4FC', marginBottom: 10 }}>{err}</p>}
             <div style={{ display: 'flex', gap: 8 }}>
-              <button onClick={addStudent} disabled={saving} style={btn(!saving)}><Plus size={13} />{saving ? 'Saving…' : 'Save'}</button>
-              <button onClick={() => setAdding(false)} style={btn(false)}>Cancel</button>
+              <button className="kyno-ghost" onClick={addStudent} disabled={saving} style={btn(!saving)}><Plus size={13} />{saving ? 'Saving…' : 'Save'}</button>
+              <button className="kyno-ghost" onClick={() => setAdding(false)} style={btn(false)}>Cancel</button>
             </div>
           </motion.div>
         )}
@@ -171,7 +171,7 @@ function StudentsTab() {
                   ₹{s.pending_amount} due
                 </span>
               )}
-              <button onClick={() => remove(s._id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#4B5563', padding: 4 }}
+              <button className="kyno-ghost" onClick={() => remove(s._id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#4B5563', padding: 4 }}
                 onMouseEnter={e => (e.currentTarget.style.color = '#A5B4FC')} onMouseLeave={e => (e.currentTarget.style.color = '#4B5563')}>
                 <Trash2 size={13} />
               </button>
@@ -227,7 +227,7 @@ function FeesTab() {
       <div style={{ display: 'flex', gap: 8, justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
         <div style={{ display: 'flex', gap: 6 }}>
           {['all','pending','paid','waived'].map(s => (
-            <button key={s} onClick={() => setFilter(s)} style={{
+            <button className="kyno-chip" key={s} onClick={() => setFilter(s)} style={{
               padding: '5px 12px', borderRadius: 6, border: '1px solid #1f2532', fontFamily: 'inherit',
               fontSize: 11, fontWeight: filter === s ? 600 : 400, cursor: 'pointer',
               background: filter === s ? '#1f2532' : 'transparent',
@@ -235,7 +235,7 @@ function FeesTab() {
             }}>{s}</button>
           ))}
         </div>
-        <button onClick={() => setAdding(a => !a)} style={btn()}><Plus size={13} /> Add Fee</button>
+        <button className="kyno-ghost" onClick={() => setAdding(a => !a)} style={btn()}><Plus size={13} /> Add Fee</button>
       </div>
 
       <AnimatePresence>
@@ -265,8 +265,8 @@ function FeesTab() {
             </div>
             {err && <p style={{ fontSize: 12, color: '#A5B4FC', marginBottom: 10 }}>{err}</p>}
             <div style={{ display: 'flex', gap: 8 }}>
-              <button onClick={addFee} disabled={saving} style={btn(!saving)}>{saving ? 'Saving…' : 'Save Fee'}</button>
-              <button onClick={() => setAdding(false)} style={btn(false)}>Cancel</button>
+              <button className="kyno-ghost" onClick={addFee} disabled={saving} style={btn(!saving)}>{saving ? 'Saving…' : 'Save Fee'}</button>
+              <button className="kyno-ghost" onClick={() => setAdding(false)} style={btn(false)}>Cancel</button>
             </div>
           </motion.div>
         )}
@@ -282,7 +282,7 @@ function FeesTab() {
             <span style={{ fontSize: 14, fontWeight: 700, color: '#fafafa' }}>₹{f.amount?.toLocaleString()}</span>
             <StatusBadge status={f.status} />
             {f.status === 'pending' && (
-              <button onClick={() => markPaid(f._id)} style={{ ...btn(), padding: '5px 12px', fontSize: 11 }}>Mark Paid</button>
+              <button className="kyno-ghost" onClick={() => markPaid(f._id)} style={{ ...btn(), padding: '5px 12px', fontSize: 11 }}>Mark Paid</button>
             )}
           </div>
         ))}
@@ -359,7 +359,7 @@ function SendTab() {
           <label style={label}>Message Mode</label>
           <div style={{ display: 'flex', gap: 6 }}>
             {(['ai', 'manual'] as const).map(m => (
-              <button key={m} onClick={() => setMode(m)} style={{
+              <button className="kyno-chip" key={m} onClick={() => setMode(m)} style={{
                 flex: 1, padding: '8px 0', borderRadius: 8, border: `1px solid ${mode === m ? '#7C5CFF' : '#1f2532'}`,
                 background: mode === m ? 'rgba(124, 92, 255, 0.12)' : '#141A2A',
                 color: mode === m ? '#A5B4FC' : '#6B7280',
@@ -391,7 +391,7 @@ function SendTab() {
               value={message}
               onChange={e => setMessage(e.target.value)}
             />
-            <button
+            <button className="kyno-ghost"
               onClick={polishWithAI}
               disabled={polishing || !message.trim()}
               style={{
@@ -414,10 +414,10 @@ function SendTab() {
 
         {err && <p style={{ fontSize: 12, color: '#A5B4FC', marginBottom: 12 }}>{err}</p>}
 
-        <button onClick={send} disabled={sending} style={{ ...btn(!sending), width: '100%', justifyContent: 'center' }}>
+        <button className="kyno-ghost" onClick={send} disabled={sending} style={{ ...btn(!sending), width: '100%', justifyContent: 'center' }}>
           <Send size={13} />{sending ? 'Sending…' : 'Send Now'}
         </button>
-        <button onClick={retry} disabled={sending} style={{ ...btn(false), width: '100%', justifyContent: 'center', marginTop: 8 }}>
+        <button className="kyno-ghost" onClick={retry} disabled={sending} style={{ ...btn(false), width: '100%', justifyContent: 'center', marginTop: 8 }}>
           <RefreshCw size={13} /> Retry Failed
         </button>
       </div>
@@ -506,8 +506,8 @@ function SetupTab() {
         {err && <p style={{ fontSize: 12, color: '#A5B4FC', marginBottom: 10 }}>{err}</p>}
         {msg && <p style={{ fontSize: 12, color: '#A5B4FC', marginBottom: 10 }}>{msg}</p>}
         <div style={{ display: 'flex', gap: 8 }}>
-          <button onClick={test} disabled={testing} style={btn(!testing)}>{testing ? 'Testing…' : 'Test SMTP'}</button>
-          <button onClick={save} disabled={saving} style={btn(!saving)}>{saving ? 'Saving…' : 'Save'}</button>
+          <button className="kyno-ghost" onClick={test} disabled={testing} style={btn(!testing)}>{testing ? 'Testing…' : 'Test SMTP'}</button>
+          <button className="kyno-ghost" onClick={save} disabled={saving} style={btn(!saving)}>{saving ? 'Saving…' : 'Save'}</button>
         </div>
       </div>
 

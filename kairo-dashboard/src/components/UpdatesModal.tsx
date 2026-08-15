@@ -102,7 +102,7 @@ export default function UpdatesHost({ uid }: { uid?: string | null }) {
               pointerEvents: 'none',
             }} />
 
-            <button
+            <button className="kyno-ghost"
               onClick={dismiss}
               aria-label="Close"
               style={{

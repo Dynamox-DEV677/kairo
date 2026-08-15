@@ -83,7 +83,7 @@ export default function DemoModePrompt({ delayMs = 1400 }: Props) {
             boxShadow: '0 18px 48px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(124, 92, 255, 0.06)',
           }}
         >
-          <button
+          <button className="kyno-ghost"
             onClick={dismiss}
             aria-label="Dismiss"
             style={{
@@ -120,7 +120,7 @@ export default function DemoModePrompt({ delayMs = 1400 }: Props) {
           </div>
 
           <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
-            <button
+            <button className="kyno-chunky"
               onClick={accept}
               disabled={busy}
               style={{
@@ -136,7 +136,7 @@ export default function DemoModePrompt({ delayMs = 1400 }: Props) {
             >
               {busy ? 'Loading…' : 'Load demo data'}
             </button>
-            <button
+            <button className="kyno-ghost"
               onClick={dismiss}
               style={{
                 padding: '9px 14px', borderRadius: 9,

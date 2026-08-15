@@ -94,7 +94,7 @@ function ErrBanner({ msg, onDismiss }: { msg: string; onDismiss?: () => void }) 
         padding: '10px 14px', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, color: '#A5B4FC' }}>
       <AlertCircle size={14} style={{ flexShrink: 0 }} />
       <span style={{ flex: 1 }}>{msg}</span>
-      {onDismiss && <button onClick={onDismiss} style={{ background: 'none', border: 'none', color: '#A5B4FC', cursor: 'pointer', padding: 0 }}><X size={13} /></button>}
+      {onDismiss && <button className="kyno-ghost" onClick={onDismiss} style={{ background: 'none', border: 'none', color: '#A5B4FC', cursor: 'pointer', padding: 0 }}><X size={13} /></button>}
     </motion.div>
   )
 }
@@ -106,7 +106,7 @@ function SuccessBanner({ msg, onDismiss }: { msg: string; onDismiss?: () => void
         padding: '10px 14px', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, color: '#A5B4FC' }}>
       <CheckCircle size={14} style={{ flexShrink: 0 }} />
       <span style={{ flex: 1 }}>{msg}</span>
-      {onDismiss && <button onClick={onDismiss} style={{ background: 'none', border: 'none', color: '#A5B4FC', cursor: 'pointer', padding: 0 }}><X size={13} /></button>}
+      {onDismiss && <button className="kyno-ghost" onClick={onDismiss} style={{ background: 'none', border: 'none', color: '#A5B4FC', cursor: 'pointer', padding: 0 }}><X size={13} /></button>}
     </motion.div>
   )
 }
@@ -118,7 +118,7 @@ function TabBar({ tabs, active, setActive }: {
   return (
     <div style={{ display: 'flex', gap: 4, marginBottom: 20, flexWrap: 'wrap' }}>
       {tabs.map(t => (
-        <button key={t.id} onClick={() => setActive(t.id)} style={{
+        <button className="kyno-chip" key={t.id} onClick={() => setActive(t.id)} style={{
           display: 'flex', alignItems: 'center', gap: 6,
           padding: '7px 14px', borderRadius: 8, fontSize: 13, fontWeight: active === t.id ? 600 : 400,
           border: active === t.id ? '1px solid rgba(124, 92, 255, 0.14)' : '1px solid #1f2532',
@@ -225,7 +225,7 @@ function Modal({ open, onClose, title, children, width = 480 }: {
               width: '100%', maxWidth: width, padding: 24, maxHeight: '90vh', overflowY: 'auto' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
               <span style={{ fontWeight: 700, color: '#fafafa', fontSize: 16 }}>{title}</span>
-              <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6B7280', padding: 2 }}>
+              <button className="kyno-ghost" onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6B7280', padding: 2 }}>
                 <X size={16} />
               </button>
             </div>
@@ -252,7 +252,7 @@ function Btn({ children, onClick, variant = 'primary', size = 'md', disabled = f
   const pad = size === 'sm' ? '5px 10px' : '8px 16px'
   const fs  = size === 'sm' ? 12 : 13
   return (
-    <button onClick={onClick} disabled={disabled} style={{
+    <button className="kyno-ghost" onClick={onClick} disabled={disabled} style={{
       padding: pad, borderRadius: 7, fontSize: fs, fontWeight: 600,
       background: cfg.bg, color: cfg.color, border: 'none', cursor: disabled ? 'not-allowed' : 'pointer',
       fontFamily: 'inherit', opacity: disabled ? 0.5 : 1, transition: 'all 0.12s', ...style,
@@ -517,7 +517,7 @@ function AdminAIAnnounce({ schoolId: _ }: { schoolId: string }) {
         <label style={{ fontSize: 11, fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: 0.8, display: 'block', marginBottom: 6 }}>Tone</label>
         <div style={{ display: 'flex', gap: 6, marginBottom: 14 }}>
           {(['friendly', 'formal', 'urgent'] as const).map(t => (
-            <button key={t} onClick={() => setTone(t)} style={{
+            <button className="kyno-chip" key={t} onClick={() => setTone(t)} style={{
               flex: 1, padding: '7px 0', borderRadius: 7,
               border: `1px solid ${tone === t ? '#7C5CFF' : '#1f2532'}`,
               background: tone === t ? 'rgba(124, 92, 255, 0.12)' : '#0A0D16',
@@ -527,7 +527,7 @@ function AdminAIAnnounce({ schoolId: _ }: { schoolId: string }) {
           ))}
         </div>
 
-        <button
+        <button className="kyno-chunky"
           onClick={generate}
           disabled={generating || !topic.trim()}
           style={{
@@ -565,7 +565,7 @@ function AdminAIAnnounce({ schoolId: _ }: { schoolId: string }) {
         <label style={{ fontSize: 11, fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: 0.8, display: 'block', marginBottom: 6 }}>Send to</label>
         <div style={{ display: 'flex', gap: 6, marginBottom: 12 }}>
           {([['all', 'Everyone'], ['student', 'Students'], ['teacher', 'Teachers']] as const).map(([id, label]) => (
-            <button key={id} onClick={() => setAudience(id)} style={{
+            <button className="kyno-chip" key={id} onClick={() => setAudience(id)} style={{
               flex: 1, padding: '7px 0', borderRadius: 7,
               border: `1px solid ${audience === id ? '#A5B4FC' : '#1f2532'}`,
               background: audience === id ? 'rgba(165, 180, 252, 0.1)' : '#0A0D16',
@@ -597,7 +597,7 @@ function AdminAIAnnounce({ schoolId: _ }: { schoolId: string }) {
         {err     && <p style={{ fontSize: 12, color: '#A5B4FC', marginBottom: 10 }}>{err}</p>}
         {success && <p style={{ fontSize: 12, color: '#A5B4FC', marginBottom: 10 }}>{success}</p>}
 
-        <button
+        <button className="kyno-chunky"
           onClick={send}
           disabled={sending || !draft.trim()}
           style={{
@@ -722,7 +722,7 @@ function AdminHealthMonitor() {
                 : `${data.alerts.length} active alert${data.alerts.length === 1 ? '' : 's'} below.`}
             </div>
           </div>
-          <button onClick={load} style={{
+          <button className="kyno-ghost" onClick={load} style={{
             padding: '8px 14px', borderRadius: 8, border: '1px solid #1f2532',
             background: '#1C2233', color: '#9CA3AF', cursor: 'pointer',
             fontFamily: 'inherit', fontSize: 12, display: 'flex', alignItems: 'center', gap: 6,
@@ -984,7 +984,7 @@ function AdminMembers({ schoolId, selfId }: { schoolId: string; selfId: string }
 
       <div style={{ display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' }}>
         {filterBtns.map(f => (
-          <button key={f.id} onClick={() => setFilter(f.id)} style={{
+          <button className="kyno-chip" key={f.id} onClick={() => setFilter(f.id)} style={{
             padding: '5px 12px', borderRadius: 6, fontSize: 12, fontWeight: 600,
             background: filter === f.id ? 'rgba(124, 92, 255, 0.15)' : '#1C2233',
             color: filter === f.id ? '#A5B4FC' : '#9CA3AF',
@@ -992,7 +992,7 @@ function AdminMembers({ schoolId, selfId }: { schoolId: string; selfId: string }
             cursor: 'pointer', fontFamily: 'inherit',
           }}>{f.label}</button>
         ))}
-        <button onClick={load} style={{ marginLeft: 'auto', background: 'none', border: '1px solid #1f2532',
+        <button className="kyno-ghost" onClick={load} style={{ marginLeft: 'auto', background: 'none', border: '1px solid #1f2532',
           borderRadius: 6, padding: '5px 10px', color: '#6B7280', cursor: 'pointer' }}>
           <RefreshCw size={12} />
         </button>
@@ -1198,12 +1198,12 @@ function AdminNetwork({ schoolId: _schoolId }: { schoolId: string }) {
                 </div>
                 <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                   <StatusBadge status={r.enabled ? 'active' : 'suspended'} />
-                  <button onClick={() => toggle(r)} disabled={!!busy} title={r.enabled ? 'Disable' : 'Enable'}
+                  <button className="kyno-ghost" onClick={() => toggle(r)} disabled={!!busy} title={r.enabled ? 'Disable' : 'Enable'}
                     style={{ background: 'none', border: '1px solid #1f2532', borderRadius: 6, padding: '4px 8px',
                       cursor: 'pointer', color: r.enabled ? '#A5B4FC' : '#A5B4FC' }}>
                     {r.enabled ? <ToggleRight size={14} /> : <ToggleLeft size={14} />}
                   </button>
-                  <button onClick={() => del(r)} disabled={!!busy} title="Delete"
+                  <button className="kyno-ghost" onClick={() => del(r)} disabled={!!busy} title="Delete"
                     style={{ background: 'none', border: '1px solid #1f2532', borderRadius: 6, padding: '4px 8px',
                       cursor: 'pointer', color: '#A5B4FC' }}>
                     <Trash2 size={13} />
@@ -1249,7 +1249,7 @@ function AdminLogs({ schoolId }: { schoolId: string }) {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
         <span style={{ fontSize: 14, fontWeight: 600, color: '#fafafa' }}>Recent Login Activity</span>
         <div style={{ display: 'flex', gap: 8 }}>
-          <button onClick={() => setFailOnly(f => !f)} style={{
+          <button className="kyno-ghost" onClick={() => setFailOnly(f => !f)} style={{
             padding: '5px 12px', borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: 'pointer',
             background: failOnly ? 'rgba(124, 92, 255, 0.15)' : '#1C2233',
             color: failOnly ? '#A5B4FC' : '#9CA3AF',
@@ -1259,7 +1259,7 @@ function AdminLogs({ schoolId }: { schoolId: string }) {
             <AlertTriangle size={11} style={{ marginRight: 4 }} />
             Failed only
           </button>
-          <button onClick={load} style={{ background: 'none', border: '1px solid #1f2532',
+          <button className="kyno-ghost" onClick={load} style={{ background: 'none', border: '1px solid #1f2532',
             borderRadius: 6, padding: '5px 8px', color: '#6B7280', cursor: 'pointer' }}>
             <RefreshCw size={12} />
           </button>
@@ -2049,7 +2049,7 @@ function TeacherMarks({ schoolId, profile }: { schoolId: string; profile: AuthPr
                       </div>
                       <div style={{ fontSize: 11, color: '#6B7280' }}>{pct}%</div>
                     </div>
-                    <button onClick={() => deleteMark(m.id)} title="Delete"
+                    <button className="kyno-ghost" onClick={() => deleteMark(m.id)} title="Delete"
                       style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6B7280', padding: 4 }}
                       onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = '#A5B4FC' }}
                       onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = '#6B7280' }}>

@@ -104,7 +104,7 @@ export default function KnowledgeGraph() {
             </div>
           </div>
 
-          <button onClick={reload} style={{
+          <button className="kyno-ghost" onClick={reload} style={{
             display: 'inline-flex', alignItems: 'center', gap: 8,
             padding: '9px 14px', borderRadius: 10,
             background: 'transparent', border: `1px solid ${C.border}`,
@@ -157,7 +157,7 @@ export default function KnowledgeGraph() {
 
 function FilterChip({ active, label, onClick, color = '#7C5CFF' }: { active: boolean; label: React.ReactNode; onClick: () => void; color?: string }) {
   return (
-    <button onClick={onClick} style={{
+    <button className="kyno-ghost" onClick={onClick} style={{
       display: 'inline-flex', alignItems: 'center', gap: 5,
       padding: '6px 12px', borderRadius: 999,
       background: active ? color + '22' : 'transparent',

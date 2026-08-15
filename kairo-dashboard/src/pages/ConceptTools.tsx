@@ -34,7 +34,7 @@ export default function ConceptTools() {
 
       <div className="seg-scroll" style={{ display: 'flex', gap: 4, marginBottom: 24, background: '#141A2A', border: '1px solid #1f2532', borderRadius: 10, padding: 4 }}>
         {TABS.map(t => (
-          <button key={t.id} onClick={() => setTab(t.id)} style={{
+          <button className="kyno-chunky" key={t.id} onClick={() => setTab(t.id)} style={{
             flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
             padding: '8px 8px', borderRadius: 7, border: 'none', fontFamily: 'inherit',
             fontSize: 12, fontWeight: tab === t.id ? 700 : 500, cursor: 'pointer',
@@ -99,7 +99,7 @@ function SimplifyTab() {
             <label style={lbl}>Explain Like I'm in…</label>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6 }}>
               {[['class5','Class 5'],['class8','Class 8'],['class12','Class 12']].map(([v, l]) => (
-                <button key={v} onClick={() => setLevel(v)} style={{
+                <button className="kyno-chip" key={v} onClick={() => setLevel(v)} style={{
                   padding: '8px 7px', borderRadius: 8, border: `1.5px solid ${level === v ? '#7C5CFF' : '#1f2532'}`,
                   background: level === v ? 'rgba(124, 92, 255,0.16)' : 'transparent',
                   color: level === v ? '#fff' : '#9CA3AF', fontSize: 11, fontWeight: level === v ? 800 : 600, cursor: 'pointer', fontFamily: 'inherit',
@@ -113,7 +113,7 @@ function SimplifyTab() {
             <input style={inp} value={concept} onChange={e => setConcept(e.target.value)} placeholder="e.g. Photosynthesis, Newton's Second Law…" />
           </div>
           {err && <p style={{ color: '#A5B4FC', fontSize: 12, marginBottom: 8 }}>{err}</p>}
-          <button onClick={simplify} disabled={loading} style={{ ...btn(!loading), width: '100%', justifyContent: 'center' }}>
+          <button className="kyno-ghost" onClick={simplify} disabled={loading} style={{ ...btn(!loading), width: '100%', justifyContent: 'center' }}>
             <Lightbulb size={13} /> {loading ? 'Simplifying…' : 'Simplify'}
           </button>
 
@@ -122,7 +122,7 @@ function SimplifyTab() {
             <input style={{ ...inp, marginBottom: 8 }} value={question} onChange={e => setQuestion(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && askDoubt()}
               placeholder="What is the difference between…?" />
-            <button onClick={askDoubt} disabled={loading || !question.trim()} style={{ ...btn(!loading && !!question.trim(), 'linear-gradient(135deg,#A5B4FC,#0284c7)'), width: '100%', justifyContent: 'center' }}>
+            <button className="kyno-chunky" onClick={askDoubt} disabled={loading || !question.trim()} style={{ ...btn(!loading && !!question.trim(), 'linear-gradient(135deg,#A5B4FC,#0284c7)'), width: '100%', justifyContent: 'center' }}>
               <HelpCircle size={13} /> Ask Doubt
             </button>
           </div>
@@ -203,7 +203,7 @@ function MindmapTab() {
               onKeyDown={e => e.key === 'Enter' && generate()}
               placeholder="e.g. Laws of Motion, Cell Biology…" />
           </div>
-          <button onClick={generate} disabled={loading} style={{ ...btn(!loading), justifyContent: 'center' }}>
+          <button className="kyno-ghost" onClick={generate} disabled={loading} style={{ ...btn(!loading), justifyContent: 'center' }}>
             <GitBranch size={13} /> {loading ? 'Generating…' : 'Create Mindmap'}
           </button>
         </div>

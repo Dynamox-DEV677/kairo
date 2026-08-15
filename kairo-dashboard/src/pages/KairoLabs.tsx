@@ -234,7 +234,7 @@ export default function KairoLabs({ active = true }: { active?: boolean }) {
         ] as const).map(t => {
           const active = filter === t.id
           return (
-            <button key={t.id} onClick={() => setFilter(t.id as any)}
+            <button className="kyno-chip" key={t.id} onClick={() => setFilter(t.id as any)}
               style={{
                 padding: '7px 14px', borderRadius: 8,
                 border: `1px solid ${active ? t.color : '#1f2532'}`,

@@ -59,7 +59,7 @@ export default class ErrorBoundary extends Component<Props, State> {
           this device. Head back home, or reload if it keeps happening.
         </p>
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'center', marginTop: 4 }}>
-          <button
+          <button className="kyno-chunky"
             onClick={this.goHome}
             style={{
               padding: '11px 20px', borderRadius: 12, border: 'none', cursor: 'pointer',
@@ -68,7 +68,7 @@ export default class ErrorBoundary extends Component<Props, State> {
               boxShadow: '0 6px 18px rgba(124, 92, 255,0.28)',
             }}
           >Back to Home</button>
-          <button
+          <button className="kyno-ghost"
             onClick={() => location.reload()}
             style={{
               padding: '11px 20px', borderRadius: 12, cursor: 'pointer',

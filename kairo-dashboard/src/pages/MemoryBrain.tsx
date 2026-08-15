@@ -129,7 +129,7 @@ export default function MemoryBrain() {
             Kyno remembers your weak topics, mistakes, and wins — and personalizes every AI response with this context.
           </p>
         </div>
-        <button
+        <button className="kyno-ghost"
           onClick={load}
           disabled={loading}
           style={{
@@ -226,7 +226,7 @@ export default function MemoryBrain() {
                   Reset Kyno's memory of you. Future AI responses won't be personalized until new data is collected.
                 </div>
               </div>
-              <button onClick={wipeAll} disabled={busy === 'all'} style={{
+              <button className="kyno-ghost" onClick={wipeAll} disabled={busy === 'all'} style={{
                 padding: '7px 14px', borderRadius: 7,
                 border: '1px solid rgba(165, 180, 252, 0.14)',
                 background: 'rgba(165, 180, 252, 0.1)', color: '#A5B4FC',
@@ -311,7 +311,7 @@ function EntryList({ items, accent, empty, onForget, busy }: {
                 </span>
               </div>
             </div>
-            <button onClick={() => onForget(m.id)} disabled={busy === m.id} title="Forget this"
+            <button className="kyno-ghost" onClick={() => onForget(m.id)} disabled={busy === m.id} title="Forget this"
               style={{
                 background: 'none', border: 'none', cursor: 'pointer', padding: 4,
                 color: '#4B5563', display: 'flex',

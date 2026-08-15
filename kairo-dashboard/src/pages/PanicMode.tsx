@@ -265,7 +265,7 @@ Be direct. Indian exam context. Under 200 words total.` },
 
           {err && <p style={{ fontSize: 12, color: '#A5B4FC', marginBottom: 12 }}>{err}</p>}
 
-          <motion.button
+          <motion.button className="kyno-chunky"
             whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
             onClick={generate} disabled={busy}
             style={{
@@ -302,7 +302,7 @@ Be direct. Indian exam context. Under 200 words total.` },
                 {pack.meta.weak.length > 0 ? `Weighted by ${pack.meta.weak.length} weak topic${pack.meta.weak.length === 1 ? '' : 's'}` : 'Pure curriculum priority'}
               </div>
             </div>
-            <button onClick={() => setPack(null)} style={{
+            <button className="kyno-ghost" onClick={() => setPack(null)} style={{
               padding: '7px 12px', borderRadius: 7, border: '1px solid #1f2532',
               background: '#1C2233', color: '#9CA3AF', cursor: 'pointer',
               fontFamily: 'inherit', fontSize: 11, display: 'flex', alignItems: 'center', gap: 5,
@@ -320,7 +320,7 @@ Be direct. Indian exam context. Under 200 words total.` },
               const isActive = activeTab === t.id
               const isSaved = savedTabs.has(t.id)
               return (
-                <button key={t.id} onClick={() => setTab(t.id)}
+                <button className="kyno-chip" key={t.id} onClick={() => setTab(t.id)}
                   style={{
                     display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px',
                     borderRadius: 7, border: 'none', fontFamily: 'inherit',
@@ -340,7 +340,7 @@ Be direct. Indian exam context. Under 200 words total.` },
               <div style={{ flex: 1, fontSize: 13, fontWeight: 700, color: '#fafafa' }}>
                 {STAGE_TITLES[activeTab]}
               </div>
-              <button onClick={() => saveTab(activeTab as keyof PanicPack)}
+              <button className="kyno-ghost" onClick={() => saveTab(activeTab as keyof PanicPack)}
                 disabled={savedTabs.has(activeTab)} style={{
                 padding: '6px 12px', borderRadius: 6,
                 border: `1px solid ${savedTabs.has(activeTab) ? 'rgba(165, 180, 252, 0.4)' : 'rgba(124, 92, 255, 0.3)'}`,

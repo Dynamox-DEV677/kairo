@@ -127,7 +127,7 @@ export default function QuestionPaper() {
             <label style={{ fontSize: 11, fontWeight: 600, color: '#9CA3AF', display: 'block', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.8 }}>Difficulty</label>
             <div style={{ display: 'flex', gap: 8 }}>
               {['Easy','Medium','Hard','Mixed'].map(d => (
-                <motion.button key={d} whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }} onClick={() => setDifficulty(d)}
+                <motion.button className="kyno-chip" key={d} whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }} onClick={() => setDifficulty(d)}
                   style={{ padding: '6px 16px', borderRadius: 7, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit',
                     background: difficulty === d ? 'rgba(124, 92, 255, 0.15)' : '#1C2233',
                     border: `1px solid ${difficulty === d ? '#7C5CFF' : '#1f2532'}`,
@@ -140,7 +140,7 @@ export default function QuestionPaper() {
 
           {error && <p style={{ fontSize: 12, color: '#A5B4FC', marginBottom: 14 }}>{error}</p>}
 
-          <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} onClick={generate}
+          <motion.button className="kyno-chunky" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} onClick={generate}
             style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '11px 22px', borderRadius: 10, border: 'none',
               background: 'linear-gradient(135deg, #7C5CFF, #7C5CFF)', color: '#fff', fontFamily: 'inherit', fontSize: 14, fontWeight: 600,
               cursor: 'pointer', boxShadow: '0 0 20px rgba(124, 92, 255, 0.03)' }}>
@@ -162,10 +162,10 @@ export default function QuestionPaper() {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
             <p style={{ fontSize: 13, color: '#6B7280' }}>Your question paper is ready</p>
             <div style={{ display: 'flex', gap: 8 }}>
-              <button onClick={() => setPaper('')} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 7, fontSize: 12, background: '#1C2233', border: '1px solid #1f2532', color: '#9CA3AF', cursor: 'pointer', fontFamily: 'inherit' }}>
+              <button className="kyno-ghost" onClick={() => setPaper('')} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 7, fontSize: 12, background: '#1C2233', border: '1px solid #1f2532', color: '#9CA3AF', cursor: 'pointer', fontFamily: 'inherit' }}>
                 <RotateCcw size={12} /> Regenerate
               </button>
-              <button onClick={printPaper} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 7, fontSize: 12, background: '#7C5CFF', border: 'none', color: '#fff', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600 }}>
+              <button className="kyno-chunky" onClick={printPaper} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 7, fontSize: 12, background: '#7C5CFF', border: 'none', color: '#fff', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600 }}>
                 <Printer size={12} /> Print / PDF
               </button>
             </div>

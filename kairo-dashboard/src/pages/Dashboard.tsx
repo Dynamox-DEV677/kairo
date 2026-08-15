@@ -270,7 +270,7 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
             <div className={pageClass} style={pageStyle('doubt')}>
               {mounted('doubt') && (
               <div style={{ flex: 1, minHeight: 0, position: 'relative', display: 'flex', flexDirection: 'column' }}>
-                <button
+                <button className="kyno-ghost"
                   onClick={() => {
                     const next = solverUi === 'chat' ? 'classic' : 'chat'
                     setSolverUi(next)

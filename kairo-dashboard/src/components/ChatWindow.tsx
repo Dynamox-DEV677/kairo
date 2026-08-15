@@ -427,7 +427,7 @@ export default function ChatWindow({ onNewMessage, onNavigate, model = DEFAULT_M
               <StopCircle size={16} color="#9CA3AF" />
             </motion.button>
           ) : (
-            <motion.button
+            <motion.button className="kyno-chunky"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => send()}

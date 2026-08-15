@@ -552,7 +552,7 @@ Tips: each tip is one specific actionable line (max 18 words) — reference the 
           ) : null}
         </motion.div>
 
-        <button onClick={backToLobby}
+        <button className="kyno-chunky" onClick={backToLobby}
           style={{
             width: '100%', padding: '12px', borderRadius: 10, border: 'none',
             background: 'linear-gradient(135deg, #A5B4FC, #7C5CFF)',
@@ -711,7 +711,7 @@ Tips: each tip is one specific actionable line (max 18 words) — reference the 
           <h3 style={{ fontSize: 14, fontWeight: 700, color: '#fafafa', margin: 0, flex: 1, minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>School Leaderboard</h3>
           <div style={{ display: 'flex', gap: 4, background: '#141A2A', border: '1px solid #1f2532', borderRadius: 8, padding: 3, flexShrink: 0 }}>
             {(['today', 'week', 'all'] as const).map(r => (
-              <button key={r} onClick={() => setTab(r)}
+              <button className="kyno-chip" key={r} onClick={() => setTab(r)}
                 style={{
                   padding: '5px 12px', borderRadius: 6, border: 'none',
                   background: tab === r ? '#1f2532' : 'transparent',

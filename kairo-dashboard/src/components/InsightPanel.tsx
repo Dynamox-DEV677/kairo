@@ -130,7 +130,7 @@ export default function InsightPanel({ hasContent, lastQuestion }: InsightPanelP
 
               <div style={{ display: 'flex', gap: 2, background: '#141A2A', borderRadius: 8, padding: 3, border: '1px solid #1f2532' }}>
                 {TABS.map(t => (
-                  <button
+                  <button className="kyno-chip"
                     key={t.id}
                     onClick={() => setTab(t.id)}
                     style={{

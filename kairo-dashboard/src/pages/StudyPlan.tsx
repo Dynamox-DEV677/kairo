@@ -202,7 +202,7 @@ Generate the JSON schedule and markdown plan as instructed.`
                 ? <>No memory data yet — schedule will be balanced. Use Kyno's Solver, Grader, or quizzes to teach Kyno your weak spots.</>
                 : <>Memory has {memoryCount} entries but no weak topics flagged yet.</>}
           </span>
-          <button onClick={loadMemory} style={{
+          <button className="kyno-ghost" onClick={loadMemory} style={{
             marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer',
             color: '#6B7280', display: 'flex', alignItems: 'center', gap: 4, fontSize: 11,
           }}>
@@ -239,7 +239,7 @@ Generate the JSON schedule and markdown plan as instructed.`
               {SUBJECTS.map(s => {
                 const selected = subjects.includes(s)
                 return (
-                  <button key={s} onClick={() => toggleSubject(s)} style={{
+                  <button className="kyno-chip" key={s} onClick={() => toggleSubject(s)} style={{
                     padding: '6px 12px', borderRadius: 7, cursor: 'pointer',
                     border: `1px solid ${selected ? colorFor(s) : '#1f2532'}`,
                     background: selected ? `${colorFor(s)}15` : '#141A2A',
@@ -254,7 +254,7 @@ Generate the JSON schedule and markdown plan as instructed.`
           <div style={{ marginBottom: 18 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
               <label style={lbl}>Exam dates (optional — sharpens AI priorities)</label>
-              <button onClick={addExamDate} disabled={subjects.length === 0} style={{
+              <button className="kyno-ghost" onClick={addExamDate} disabled={subjects.length === 0} style={{
                 padding: '5px 10px', borderRadius: 6, border: '1px solid #1f2532',
                 background: '#1C2233', color: '#B1B5BA',
                 fontFamily: 'inherit', fontSize: 11, cursor: subjects.length === 0 ? 'not-allowed' : 'pointer',
@@ -301,7 +301,7 @@ Generate the JSON schedule and markdown plan as instructed.`
 
           {err && <p style={{ fontSize: 12, color: '#A5B4FC', marginBottom: 12 }}>{err}</p>}
 
-          <motion.button
+          <motion.button className="kyno-chunky"
             whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
             onClick={generate} disabled={busy || subjects.length === 0}
             style={{
@@ -343,14 +343,14 @@ Generate the JSON schedule and markdown plan as instructed.`
             </div>
 
             <div style={{ display: 'flex', gap: 8, marginTop: 18 }}>
-              <button onClick={() => { setPlan(null); }} style={{
+              <button className="kyno-ghost" onClick={() => { setPlan(null); }} style={{
                 padding: '8px 14px', borderRadius: 8, border: '1px solid #1f2532',
                 background: '#1C2233', color: '#B1B5BA', cursor: 'pointer',
                 fontFamily: 'inherit', fontSize: 12, display: 'flex', alignItems: 'center', gap: 6,
               }}>
                 <Plus size={12} /> Edit Setup
               </button>
-              <button onClick={generate} disabled={busy} style={{
+              <button className="kyno-ghost" onClick={generate} disabled={busy} style={{
                 padding: '8px 14px', borderRadius: 8, border: '1px solid rgba(124, 92, 255, 0.3)',
                 background: 'rgba(124, 92, 255, 0.08)', color: '#A5B4FC', cursor: 'pointer',
                 fontFamily: 'inherit', fontSize: 12, display: 'flex', alignItems: 'center', gap: 6,

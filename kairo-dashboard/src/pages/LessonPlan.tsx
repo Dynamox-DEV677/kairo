@@ -68,7 +68,7 @@ export default function LessonPlan() {
             style={{ width: '100%', background: '#141A2A', border: '1px solid #1f2532', borderRadius: 8, padding: '9px 12px', fontSize: 13, color: '#fafafa', fontFamily: 'inherit', outline: 'none' }} />
         </div>
         {error && <p style={{ fontSize: 12, color: '#A5B4FC', marginBottom: 14 }}>{error}</p>}
-        <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} onClick={generate} disabled={loading || !topic.trim()}
+        <motion.button className="kyno-chunky" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} onClick={generate} disabled={loading || !topic.trim()}
           style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '11px 22px', borderRadius: 10, border: 'none',
             background: 'linear-gradient(135deg, #7C5CFF, #7C5CFF)', color: '#fff', fontFamily: 'inherit', fontSize: 14, fontWeight: 600,
             cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.6 : 1, boxShadow: '0 0 20px rgba(124, 92, 255, 0.03)' }}>
@@ -88,7 +88,7 @@ export default function LessonPlan() {
       {plan && !loading && (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
-            <button onClick={() => setPlan('')} style={{ fontSize: 12, padding: '6px 14px', borderRadius: 7, background: '#1C2233', border: '1px solid #1f2532', color: '#9CA3AF', cursor: 'pointer', fontFamily: 'inherit' }}>New plan</button>
+            <button className="kyno-ghost" onClick={() => setPlan('')} style={{ fontSize: 12, padding: '6px 14px', borderRadius: 7, background: '#1C2233', border: '1px solid #1f2532', color: '#9CA3AF', cursor: 'pointer', fontFamily: 'inherit' }}>New plan</button>
           </div>
           <div style={{ background: '#141A2A', border: '1px solid #1f2532', borderRadius: 14, padding: '28px 32px' }}>
             <div className="prose-ai"><ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>{plan}</ReactMarkdown></div>

@@ -570,7 +570,7 @@ function Ring({ score }: { score: number }) {
 
 function SubMetric({ label, value, unit, onClick }: { label: string; value: number; unit: string; onClick?: () => void }) {
   return (
-    <motion.button
+    <motion.button className="kyno-ghost"
       type="button"
       onClick={onClick}
       whileHover={{ y: -2, borderColor: 'rgba(165, 180, 252, 0.18)', boxShadow: '0 6px 16px rgba(124, 92, 255, 0.01)' }}
@@ -970,7 +970,7 @@ function RecommendationsCard({ recs, onAct, onDismiss }: { recs: Recommendation[
                 </div>
                 <div style={{ fontSize: 13, color: C.text, lineHeight: 1.5, marginTop: 2 }}>{r.reason}</div>
               </div>
-              <button
+              <button className="kyno-ghost"
                 type="button"
                 onClick={(e) => { e.preventDefault(); e.stopPropagation(); onAct(r.id) }}
                 title="Mark done"
@@ -979,7 +979,7 @@ function RecommendationsCard({ recs, onAct, onDismiss }: { recs: Recommendation[
               >
                 <Check size={13} color={C.green} />
               </button>
-              <button
+              <button className="kyno-ghost"
                 type="button"
                 onClick={(e) => { e.preventDefault(); e.stopPropagation(); onDismiss(r.id) }}
                 title="Dismiss"
@@ -1203,7 +1203,7 @@ function DetailDrawer({ kind, twin, mastery, onClose }: {
               <div style={{ fontSize: 12, color: C.textFaint, marginTop: 4 }}>{content.subtitle}</div>
             )}
           </div>
-          <button onClick={onClose} title="Close" style={{
+          <button className="kyno-ghost" onClick={onClose} title="Close" style={{
             ...iconBtnStyle(), width: 32, height: 32, flexShrink: 0,
           }}>
             <X size={14} color={C.textDim} />
@@ -1767,7 +1767,7 @@ function EmptyState({ onRefresh, onSeed }: { onRefresh: () => void; onSeed: () =
         which lives entirely on this device, never on our servers.
       </p>
       <div style={{ display: 'flex', gap: 10, marginTop: 6 }}>
-        <button onClick={onRefresh} style={{
+        <button className="kyno-ghost" onClick={onRefresh} style={{
           padding: '10px 18px', borderRadius: 10,
           background: GRAD.pill, color: '#fff', fontWeight: 700, fontSize: 13,
           border: 'none', cursor: 'pointer',

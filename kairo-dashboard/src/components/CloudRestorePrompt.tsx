@@ -117,7 +117,7 @@ export default function CloudRestorePrompt({ open, stats, busy, onConfirm, onDis
               Private — stored in your account, only you can read it.
             </div>
 
-            <button
+            <button className="kyno-chunky"
               onClick={onConfirm}
               disabled={busy}
               style={{
@@ -134,7 +134,7 @@ export default function CloudRestorePrompt({ open, stats, busy, onConfirm, onDis
                 : <CloudDownload size={16} />}
               {busy ? 'Restoring…' : 'Restore to this device'}
             </button>
-            <button
+            <button className="kyno-ghost"
               onClick={onDismiss}
               disabled={busy}
               style={{

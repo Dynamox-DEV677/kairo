@@ -348,7 +348,7 @@ export default function App() {
           boxShadow: '0 10px 30px rgba(0,0,0,0.5), 0 0 20px rgba(124, 92, 255,0.25)',
  fontFamily: "'Inter', system-ui, sans-serif",
         }}>
-          <button
+          <button className="kyno-ghost"
             onClick={() => setOnboard('open')}
             style={{
               display: 'flex', alignItems: 'center', gap: 8,
@@ -359,7 +359,7 @@ export default function App() {
           >
             ✨ Finish setting up Kyno →
           </button>
-          <button
+          <button className="kyno-ghost"
             onClick={() => { try { localStorage.setItem('kairo:onboard:hide:' + (profile.id || ''), '1') } catch {  }; setOnboard('done') }}
             title="Don't remind me again" aria-label="Dismiss"
             style={{

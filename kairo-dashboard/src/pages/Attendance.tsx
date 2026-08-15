@@ -31,7 +31,7 @@ export default function Attendance() {
 
       <div style={{ display: 'flex', gap: 4, marginBottom: 24, background: '#141A2A', border: '1px solid #1f2532', borderRadius: 10, padding: 4, width: 'fit-content' }}>
         {TABS.map(t => (
-          <button key={t.id} onClick={() => setTab(t.id)} style={{
+          <button className="kyno-chip" key={t.id} onClick={() => setTab(t.id)} style={{
             display: 'flex', alignItems: 'center', gap: 6, padding: '7px 18px',
             borderRadius: 7, border: 'none', fontFamily: 'inherit',
             fontSize: 12, fontWeight: tab === t.id ? 600 : 400, cursor: 'pointer',
@@ -125,7 +125,7 @@ function MarkTab() {
           <label style={label}>Date</label>
           <input type="date" style={{ ...inp, width: 'auto' }} value={date} onChange={e => setDate(e.target.value)} />
         </div>
-        <button onClick={save} disabled={saving} style={{
+        <button className="kyno-chunky" onClick={save} disabled={saving} style={{
           marginTop: 20, display: 'flex', alignItems: 'center', gap: 7,
           padding: '9px 20px', borderRadius: 9, border: 'none',
           background: saved ? '#A5B4FC' : 'linear-gradient(135deg,#7C5CFF,#7C5CFF)',
@@ -133,7 +133,7 @@ function MarkTab() {
         }}>
           {saving ? 'Saving…' : saved ? '✓ Saved!' : 'Save Attendance'}
         </button>
-        <button onClick={() => setAttendance(a => { const n = { ...a }; Object.keys(n).forEach(k => { n[k] = 'present' }); return n })}
+        <button className="kyno-ghost" onClick={() => setAttendance(a => { const n = { ...a }; Object.keys(n).forEach(k => { n[k] = 'present' }); return n })}
           style={{ marginTop: 20, padding: '9px 14px', borderRadius: 9, border: '1px solid #1f2532', background: 'transparent', color: '#6B7280', fontFamily: 'inherit', fontSize: 12, cursor: 'pointer' }}>
           All Present
         </button>

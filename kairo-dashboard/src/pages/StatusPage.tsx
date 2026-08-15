@@ -163,7 +163,7 @@ export default function StatusPage({ onExit }: Props) {
             </div>
           </div>
           {onExit && (
-            <button onClick={onExit} style={navBtn}>
+            <button className="kyno-ghost" onClick={onExit} style={navBtn}>
               ← Back to Kyno
             </button>
           )}
@@ -200,7 +200,7 @@ export default function StatusPage({ onExit }: Props) {
                   : overallBlurb}
             </div>
           </div>
-          <button onClick={fetchOnce} aria-label="Refresh now"
+          <button className="kyno-ghost" onClick={fetchOnce} aria-label="Refresh now"
             style={{
               width: 36, height: 36, borderRadius: 10,
               background: 'transparent', border: `1px solid ${C.border}`,

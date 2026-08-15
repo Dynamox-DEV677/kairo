@@ -60,7 +60,7 @@ export default function AboutPage({ onExit }: Props) {
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             padding: '14px 0', gap: 16,
           }}>
-            <button onClick={onExit} style={navBtn}>
+            <button className="kyno-ghost" onClick={onExit} style={navBtn}>
               <ArrowLeft size={14} /> Back to Kyno
             </button>
             <span style={{

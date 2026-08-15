@@ -141,7 +141,7 @@ export default function EssayGrader() {
 
           {error && <p style={{ fontSize: 12, color: '#A5B4FC', marginBottom: 14 }}>{error}</p>}
 
-          <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} onClick={grade} disabled={loading || !question.trim() || !answer.trim()}
+          <motion.button className="kyno-chunky" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} onClick={grade} disabled={loading || !question.trim() || !answer.trim()}
             style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '11px 22px', borderRadius: 10, border: 'none',
               background: 'linear-gradient(135deg, #7C5CFF, #6455e0)', color: '#fff', fontFamily: 'inherit', fontSize: 14, fontWeight: 600,
               cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.6 : 1, boxShadow: '0 0 20px rgba(124, 92, 255, 0.03)' }}>

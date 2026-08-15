@@ -199,7 +199,7 @@ Keep total length 180-280 words. Tone: friendly, specific, exam-aware.` },
             const Icon = t.Icon
             const active = mode === t.id
             return (
-              <button key={t.id} onClick={() => setMode(t.id as Mode)}
+              <button className="kyno-chip" key={t.id} onClick={() => setMode(t.id as Mode)}
                 style={{
                   display: 'flex', alignItems: 'center', gap: 5,
                   padding: '6px 11px', borderRadius: 6, border: 'none',
@@ -249,7 +249,7 @@ Keep total length 180-280 words. Tone: friendly, specific, exam-aware.` },
                         style={{ width: '100%', accentColor: '#7C5CFF' }} />
                     )}
                     {c.type === 'toggle' && (
-                      <button onClick={() => setParam(c.key, !params[c.key])}
+                      <button className="kyno-ghost" onClick={() => setParam(c.key, !params[c.key])}
                         style={{
                           padding: '4px 10px', borderRadius: 5,
                           border: `1px solid ${params[c.key] ? '#7C5CFF' : '#1f2532'}`,
@@ -277,11 +277,11 @@ Keep total length 180-280 words. Tone: friendly, specific, exam-aware.` },
               </div>
 
               <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
-                <button onClick={() => setPlaying(p => !p)} style={btn}>
+                <button className="kyno-ghost" onClick={() => setPlaying(p => !p)} style={btn}>
                   {playing ? <Pause size={11} /> : <Play size={11} />}
                   {playing ? 'Pause' : 'Play'}
                 </button>
-                <button onClick={reset} style={btn}>
+                <button className="kyno-ghost" onClick={reset} style={btn}>
                   <RotateCcw size={11} /> Reset
                 </button>
               </div>
@@ -334,7 +334,7 @@ Keep total length 180-280 words. Tone: friendly, specific, exam-aware.` },
 
             {explanation && (
               <div style={{ display: 'flex', gap: 8, marginTop: 18, paddingTop: 14, borderTop: '1px solid #171D2D' }}>
-                <button onClick={saveExplanation} disabled={savedNote} style={{
+                <button className="kyno-ghost" onClick={saveExplanation} disabled={savedNote} style={{
                   ...btn, color: savedNote ? '#34d399' : '#A5B4FC',
                   borderColor: savedNote ? 'rgba(52,211,153,0.4)' : 'rgba(124, 92, 255, 0.3)',
                   background: savedNote ? 'rgba(52,211,153,0.08)' : 'rgba(124, 92, 255, 0.08)',

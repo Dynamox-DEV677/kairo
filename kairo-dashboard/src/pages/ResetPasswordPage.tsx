@@ -100,7 +100,7 @@ export default function ResetPasswordPage({ onDone }: Props) {
                 <p style={{ margin: '10px 0 22px', fontSize: 13, color: '#B1B5BA', textAlign: 'center', lineHeight: 1.55 }}>
                   Your new password is active. Sign in below to continue learning.
                 </p>
-                <button
+                <button className="kyno-chunky"
                   onClick={onDone}
                   style={ctaStyle}>
                   Go to sign in
@@ -131,7 +131,7 @@ export default function ResetPasswordPage({ onDone }: Props) {
                       placeholder="min 8 characters"
                       style={{ ...inp, paddingRight: 40 }}
                     />
-                    <button type="button" onClick={() => setShow(s => !s)} style={eyeBtn}>
+                    <button className="kyno-ghost" type="button" onClick={() => setShow(s => !s)} style={eyeBtn}>
                       {show ? <EyeOff size={14} color="#6B7280" /> : <Eye size={14} color="#6B7280" />}
                     </button>
                   </div>
@@ -162,7 +162,7 @@ export default function ResetPasswordPage({ onDone }: Props) {
                   </div>
                 )}
 
-                <motion.button
+                <motion.button className="kyno-chunky"
                   whileHover={{ scale: busy ? 1 : 1.02 }}
                   whileTap={{ scale: busy ? 1 : 0.97 }}
                   onClick={submit}
@@ -175,7 +175,7 @@ export default function ResetPasswordPage({ onDone }: Props) {
 
                 <p style={{ fontSize: 11, color: '#6B7280', textAlign: 'center', marginTop: 16, lineHeight: 1.5 }}>
                   Changed your mind?{' '}
-                  <button onClick={onDone} style={{
+                  <button className="kyno-ghost" onClick={onDone} style={{
                     background: 'none', border: 'none', color: '#A5B4FC',
                     fontFamily: 'inherit', fontSize: 11, fontWeight: 600, cursor: 'pointer', padding: 0,
                   }}>Back to sign in</button>

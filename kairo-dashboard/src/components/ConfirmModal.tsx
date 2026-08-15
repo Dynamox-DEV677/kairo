@@ -135,7 +135,7 @@ export default function ConfirmModal({
               pointerEvents: 'none',
             }} />
 
-            <button
+            <button className="kyno-ghost"
               onClick={onClose}
               aria-label="Close"
               style={{

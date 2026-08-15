@@ -121,7 +121,7 @@ export default function Step2Verify({ devOtp, onBack, onContinue }: Props) {
       )}
 
       {lastDevOtp && (
-        <button
+        <button className="kyno-ghost"
           onClick={() => setCode(lastDevOtp)}
           style={{
             marginTop: 18, width: '100%',

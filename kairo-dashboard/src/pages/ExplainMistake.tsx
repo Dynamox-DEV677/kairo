@@ -229,7 +229,7 @@ Now teach me how to never make this mistake again, following your structure exac
                   </div>
 
                   <div style={{ display: 'flex', gap: 8, marginTop: 18, paddingTop: 16, borderTop: '1px solid #171D2D' }}>
-                    <button onClick={saveToBook} disabled={savedToBook} style={{
+                    <button className="kyno-ghost" onClick={saveToBook} disabled={savedToBook} style={{
                       padding: '8px 14px', borderRadius: 8,
                       border: `1px solid ${savedToBook ? 'rgba(165, 180, 252, 0.4)' : 'rgba(124, 92, 255, 0.3)'}`,
                       background: savedToBook ? 'rgba(165, 180, 252, 0.08)' : 'rgba(124, 92, 255, 0.08)',
@@ -240,7 +240,7 @@ Now teach me how to never make this mistake again, following your structure exac
                     }}>
                       <Save size={12} />{savedToBook ? 'Saved to Notebook' : 'Save to Notebook'}
                     </button>
-                    <button onClick={reset} style={{
+                    <button className="kyno-ghost" onClick={reset} style={{
                       padding: '8px 14px', borderRadius: 8, border: '1px solid #1f2532',
                       background: '#1C2233', color: '#9CA3AF', cursor: 'pointer',
                       fontFamily: 'inherit', fontSize: 12, display: 'flex', alignItems: 'center', gap: 6,

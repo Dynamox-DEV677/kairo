@@ -272,7 +272,7 @@ function SetupView({
             const active = mode === m.id
             const col = m.id === 'exam' ? '#FB7185' : '#A5B4FC'
             return (
-              <button key={m.id} onClick={() => setMode(m.id)} style={{
+              <button className="kyno-chip" key={m.id} onClick={() => setMode(m.id)} style={{
                 padding: '14px 14px', borderRadius: 10, cursor: 'pointer',
                 border: `1px solid ${active ? col : '#1f2532'}`,
                 background: active ? `${col}14` : '#141A2A',
@@ -301,7 +301,7 @@ function SetupView({
           {DIFFICULTIES.map(d => {
             const active = diff.id === d.id
             return (
-              <button key={d.id} onClick={() => setDiff(d)} style={{
+              <button className="kyno-chip" key={d.id} onClick={() => setDiff(d)} style={{
                 padding: '14px 12px', borderRadius: 10, cursor: 'pointer',
                 border: `1px solid ${active ? d.color : '#1f2532'}`,
                 background: active ? `${d.color}12` : '#141A2A',
@@ -390,7 +390,7 @@ function SetupView({
                 padding: '2px 8px', borderRadius: 4, background: '#171D2D', color: '#B1B5BA',
               }}>
                 {t}
-                <button onClick={() => setPicked((p: string[]) => p.filter(x => x !== t))}
+                <button className="kyno-ghost" onClick={() => setPicked((p: string[]) => p.filter(x => x !== t))}
                   style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9CA3AF', padding: 0 }}>×</button>
               </span>
             ))}
@@ -555,7 +555,7 @@ function LiveView({ q, idx, total, secsLeft, maxSecs, picked, onPick, mode, reve
               <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]} components={MD_INLINE}>{q.explain}</ReactMarkdown>
             </div>
           )}
-          <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={onNext}
+          <motion.button className="kyno-chunky" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={onNext}
             style={{
               marginTop: 16, width: '100%', padding: '12px 16px', borderRadius: 10, border: 'none', cursor: 'pointer',
               background: 'linear-gradient(135deg, #7C5CFF, #A5B4FC)', color: '#fff', fontFamily: 'inherit',
@@ -680,7 +680,7 @@ function ResultsView({ questions, answers, onReset }: any) {
       </div>
 
       <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
-        <motion.button whileHover={{ scale: 1.03 }} onClick={onReset}
+        <motion.button className="kyno-chunky" whileHover={{ scale: 1.03 }} onClick={onReset}
           style={{
             padding: '11px 24px', borderRadius: 10, border: 'none',
             background: 'linear-gradient(135deg, #A5B4FC, #A5B4FC)',

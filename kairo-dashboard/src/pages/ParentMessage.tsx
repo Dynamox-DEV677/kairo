@@ -86,12 +86,12 @@ function NamePicker({
           }}
         />
         {query && (
-          <button onClick={clear} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6B7280', padding: 0 }}>
+          <button className="kyno-ghost" onClick={clear} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6B7280', padding: 0 }}>
             <X size={13} />
           </button>
         )}
         {students.length > 0 && (
-          <button onClick={() => setOpen(o => !o)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6B7280', padding: 0 }}>
+          <button className="kyno-ghost" onClick={() => setOpen(o => !o)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6B7280', padding: 0 }}>
             <ChevronDown size={13} style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }} />
           </button>
         )}
@@ -231,7 +231,7 @@ export default function ParentMessage() {
               textTransform: 'uppercase', letterSpacing: 0.8 }}>Quick templates</label>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
               {TEMPLATES.map(t => (
-                <motion.button key={t.label} whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
+                <motion.button className="kyno-chip" key={t.label} whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
                   onClick={() => setSituation(t.prompt)}
                   style={{
                     padding: '5px 10px', borderRadius: 6, fontSize: 11, cursor: 'pointer', fontFamily: 'inherit',
@@ -277,7 +277,7 @@ export default function ParentMessage() {
               textTransform: 'uppercase', letterSpacing: 0.8 }}>Tone</label>
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
               {['Professional', 'Friendly', 'Urgent', 'Formal', 'Empathetic'].map(t => (
-                <motion.button key={t} whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }} onClick={() => setTone(t)}
+                <motion.button className="kyno-chip" key={t} whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }} onClick={() => setTone(t)}
                   style={{
                     padding: '5px 12px', borderRadius: 7, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit',
                     background: tone === t ? 'rgba(124, 92, 255, 0.15)' : '#1C2233',
@@ -304,7 +304,7 @@ export default function ParentMessage() {
             </div>
           )}
 
-          <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} onClick={generate}
+          <motion.button className="kyno-chunky" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} onClick={generate}
             disabled={loading || !situation.trim()}
             style={{
               display: 'flex', alignItems: 'center', gap: 7, padding: '11px 22px',
@@ -330,7 +330,7 @@ export default function ParentMessage() {
                 <span style={{ fontSize: 10, fontWeight: 700, color: '#4B5563', textTransform: 'uppercase', letterSpacing: 1 }}>
                   Generated message
                 </span>
-                <button onClick={() => setEditing(e => !e)}
+                <button className="kyno-ghost" onClick={() => setEditing(e => !e)}
                   style={{
                     display: 'flex', alignItems: 'center', gap: 5, fontSize: 11,
                     color: editing ? '#A5B4FC' : '#9CA3AF',
@@ -372,7 +372,7 @@ export default function ParentMessage() {
               </div>
 
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} onClick={copy}
+                <motion.button className="kyno-ghost" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} onClick={copy}
                   style={{
                     display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 600,
                     color: copied ? '#A5B4FC' : '#fafafa',
@@ -384,7 +384,7 @@ export default function ParentMessage() {
                   {copied ? <><Check size={12} /> Copied!</> : <><Copy size={12} /> Copy</>}
                 </motion.button>
 
-                <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} onClick={openGmail}
+                <motion.button className="kyno-ghost" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} onClick={openGmail}
                   style={{
                     display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 600,
                     color: '#ea4335', background: 'rgba(234,67,53,0.1)', border: '1px solid rgba(234,67,53,0.25)',
@@ -393,7 +393,7 @@ export default function ParentMessage() {
                   <Mail size={12} /> Open in Gmail
                 </motion.button>
 
-                <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} onClick={openMailto}
+                <motion.button className="kyno-ghost" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} onClick={openMailto}
                   style={{
                     display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 600,
                     color: '#9CA3AF', background: '#1C2233', border: '1px solid #1f2532',
@@ -402,7 +402,7 @@ export default function ParentMessage() {
                   <Mail size={12} /> Mail app
                 </motion.button>
 
-                <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
+                <motion.button className="kyno-ghost" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
                   onClick={generate} disabled={loading}
                   style={{
                     display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 600,

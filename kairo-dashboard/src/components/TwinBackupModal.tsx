@@ -195,7 +195,7 @@ export default function TwinBackupModal({ open, onClose, onChange }: Props) {
               Single JSON file. Nothing leaves your device.
             </div>
           </div>
-          <button onClick={onClose} aria-label="Close" style={{
+          <button className="kyno-ghost" onClick={onClose} aria-label="Close" style={{
             width: 30, height: 30, borderRadius: 8,
             background: 'transparent', border: `1px solid ${C.border}`,
             cursor: 'pointer', display: 'grid', placeItems: 'center', flexShrink: 0,
@@ -259,7 +259,7 @@ export default function TwinBackupModal({ open, onClose, onChange }: Props) {
               )}
 
               <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-                <motion.button
+                <motion.button className="kyno-chunky"
                   whileHover={{ y: -2, boxShadow: '0 12px 30px rgba(124, 92, 255, 0.03)' }}
                   whileTap={{ scale: 0.97 }}
                   onClick={downloadFile}
@@ -275,7 +275,7 @@ export default function TwinBackupModal({ open, onClose, onChange }: Props) {
                   <Download size={15} /> Download JSON
                 </motion.button>
 
-                <motion.button
+                <motion.button className="kyno-ghost"
                   whileTap={{ scale: 0.97 }}
                   onClick={copyToClipboard}
                   style={{
@@ -332,7 +332,7 @@ export default function TwinBackupModal({ open, onClose, onChange }: Props) {
                 style={{ display: 'none' }}
                 onChange={onPickFile}
               />
-              <motion.button
+              <motion.button className="kyno-ghost"
                 whileHover={{ y: -2 }}
                 whileTap={{ scale: 0.97 }}
                 onClick={() => fileInputRef.current?.click()}
@@ -367,7 +367,7 @@ export default function TwinBackupModal({ open, onClose, onChange }: Props) {
                 }}
               />
 
-              <motion.button
+              <motion.button className="kyno-chunky"
                 whileHover={{ y: -2 }}
                 whileTap={{ scale: 0.97 }}
                 onClick={() => runImport()}
@@ -396,7 +396,7 @@ export default function TwinBackupModal({ open, onClose, onChange }: Props) {
 
 function TabBtn({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
-    <button onClick={onClick} style={{
+    <button className="kyno-ghost" onClick={onClick} style={{
       display: 'inline-flex', alignItems: 'center', gap: 5,
       padding: '8px 14px', borderRadius: '8px 8px 0 0',
       background: 'transparent', border: 'none',

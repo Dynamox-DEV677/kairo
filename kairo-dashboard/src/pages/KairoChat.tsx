@@ -478,7 +478,7 @@ function MediaStrip({ turn, onPatch }: { turn: Turn; onPatch: (id: number, p: Pa
     <div style={{ marginTop: 12, borderTop: '1px solid rgba(255,255,255,0.07)', paddingTop: 10 }}>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
         {hasVideo && (
-          <button
+          <button className="kyno-ghost"
             onClick={() => onPatch(turn.id, { showVideo: !turn.showVideo })}
             style={{
               display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer',
