@@ -10,7 +10,8 @@ import {
 } from 'lucide-react'
 import { saveRecentChat, makeTitle } from '../lib/recentChats'
 import { aiHeaders } from '../lib/devKey'
-import { recordMistake, recordFlashcard, listFormulas } from '../lib/twin'
+import { recordMistake, recordFlashcard, listFormulas, getProfile } from '../lib/twin'
+import { curriculumDirective, resolveCurriculum } from '../lib/curriculum.core'
 import { formulaSignature } from '../lib/knowledgeHygiene.js'
 import { balance } from '../lib/balanceEquation.js'
 import { awardXP } from '../lib/game'
@@ -34,35 +35,43 @@ Format your response in clean markdown:
 - No <think> tags`
 
 /**
- * NCERT grounding.
+ * Curriculum grounding.
  *
  * Every prompt here used to say "explain simply for a Class 10 student", which
- * produces a technically correct answer in the wrong dialect. CBSE marks
- * against NCERT's own wording and NCERT's own method, so an answer that uses
- * different terminology or a shortcut the book does not teach can be right and
- * still lose marks. That is worse than useless to a student revising for the
- * board — it teaches them to write something an examiner will not reward.
+ * produces a technically correct answer in the wrong dialect. A board marks
+ * against its own wording and its own method, so an answer that uses different
+ * terminology or a shortcut the course does not teach can be right and still
+ * lose marks. That is worse than useless to a student revising for the exam —
+ * it teaches them to write something an examiner will not reward.
  *
- * These rules go on every content prompt in this file.
+ * This used to be an NCERT-only constant. It is now read from the student's
+ * board, because the same hard-coding that served a CBSE student well served a
+ * Cambridge student a syllabus they are not sitting.
  */
-const NCERT_RULES = `
-
-Follow the NCERT textbook, not a general or international treatment:
-- Use NCERT's own terminology and definitions. If NCERT calls it "displacement reaction", do not call it "single replacement".
-- Use the method NCERT teaches for this chapter, even if a faster method exists. If you mention a shortcut, mark it clearly as extra and show the NCERT method first.
-- Use SI units and the symbols as printed in NCERT.
-- Where NCERT gives a standard worked example for this idea, follow its structure.
-- Stay inside the CBSE Class 9-12 syllabus. Do not bring in higher-level material (calculus in a Class 10 answer, orbital hybridisation where NCERT only wants valency) unless the page itself does.
-- If you are not sure whether something is in the NCERT syllabus, say so plainly rather than presenting it as required knowledge.`
+function curriculumRules(): string {
+  const p = getProfile()
+  return '\n\n' + curriculumDirective(p?.board, p?.cls)
+}
 
 /**
- * CBSE awards marks per step, not for the final number. A correct answer with
- * no formula line loses the formula mark; the right method with an arithmetic
- * slip keeps most of them. Showing the answer in the shape the examiner marks
- * is the difference between a student who knows the physics and a student who
- * scores for it.
+ * How the answer must be laid out to earn the marks — which is board-specific.
+ *
+ * CBSE awards marks per step, so the formula line carries a mark of its own.
+ * Cambridge marks against a points-based scheme where the command word decides
+ * the shape. Giving either student the other's layout costs them marks.
  */
-const CBSE_STEP_RULES = `
+function stepRules(): string {
+  const p = resolveCurriculum(getProfile()?.board, getProfile()?.cls)
+  if (p.isCambridge) {
+    return `
+
+Lay the solution out the way a Cambridge examiner marks it:
+1. **What the question is asking** — name the quantity and the command word used.
+2. **Working** — formula, then substitution with units, one line each. Method marks are awarded separately from the answer.
+3. **Answer** — final value with its unit, and to a sensible number of significant figures.
+4. Aim for at least as many distinct creditable points as the question has marks.`
+  }
+  return `
 
 Write the solution the way it must be written to earn full marks in a CBSE paper:
 1. **Given** — list what the question provides, with units.
@@ -72,6 +81,7 @@ Write the solution the way it must be written to earn full marks in a CBSE paper
 5. **Answer** — final value on its own line, with the correct unit, boxed as **bold**.
 
 Never skip the formula line even if the arithmetic is trivial — it carries a mark on its own.`
+}
 
 const CHECK_PROMPT = `This image contains a student's OWN handwritten working for a problem. Your job is to audit their working line by line and find the EXACT step where it first goes wrong.
 
@@ -101,23 +111,23 @@ State the correct final answer on its own line, with units.
 ## Stop this repeating
 Two specific checks the student can run on similar problems to catch this class of error.
 
-Be precise and never invent steps the student didn't write. If the handwriting is unreadable in places, say so in the Comment for that step instead of guessing.` + NCERT_RULES + MD_RULES
+Be precise and never invent steps the student didn't write. If the handwriting is unreadable in places, say so in the Comment for that step instead of guessing.` + MD_RULES
 
 const ACTIONS = [
   { id: 'check',     label: 'Check my work', icon: CheckCircle2, color: '#4FD8E8',
     hint: 'Photo of YOUR working — finds the exact wrong step',
     prompt: CHECK_PROMPT },
   { id: 'solve',     label: 'Solve',         icon: Sparkles,     color: '#7C5CFF',
-    hint: 'Solves it the way CBSE marks it — formula, substitution, units',
+    hint: 'Solves it the way your board marks it — formula, substitution, units',
     prompt: 'Read the question(s) in this image carefully and solve each one.\n\nName the chapter this question comes from at the top, as "Class <n> <Subject> · <Chapter>". If you are not confident which chapter it is, write "Chapter: not identified" rather than guessing.'
-      + CBSE_STEP_RULES + NCERT_RULES + MD_RULES },
+      + MD_RULES, needsSteps: true },
   { id: 'explain',   label: 'Explain',       icon: Lightbulb,    color: '#A5B4FC',
-    hint: 'Explains it in NCERT’s own words',
-    prompt: 'Explain the concept(s) shown in this image to an Indian school student.\n\nStructure:\n## What the book calls it\nThe NCERT definition, in NCERT\'s wording.\n## In plain words\nThe same idea in everyday language, with one analogy.\n## Worked example\nA short example in NCERT\'s style.\n## Common mistake\nThe error students most often make here, and how to avoid it.\n## Quick check\nOne question the student can answer to test themselves.'
-      + NCERT_RULES + MD_RULES },
+    hint: 'Explains it in your curriculum’s own terms',
+    prompt: 'Explain the concept(s) shown in this image to a school student.\n\nStructure:\n## What your course calls it\nThe definition using the exact terms their curriculum uses — written in your own words, not copied from a book.\n## In plain words\nThe same idea in everyday language, with one analogy.\n## Worked example\nA short example in the style their curriculum uses.\n## Common mistake\nThe error students most often make here, and how to avoid it.\n## Quick check\nOne question the student can answer to test themselves.'
+      + MD_RULES },
   { id: 'flashcards', label: 'Flashcards',   icon: BookmarkPlus, color: '#A5B4FC',
-    hint: 'Board-exam style cards from the page',
-    prompt: 'Create 8-10 flashcards from the STUDY CONTENT in this image, in the style of CBSE board questions — definitions, formulas, reasons, differences, and one-mark recall the exam actually asks for.\n\nUse NCERT terminology. Do not ask about page numbers, exercise numbers, or anything that is not subject knowledge.\n\nIf the image is NOT study material (a receipt, a photo, a screenshot, a booking, a form), return exactly: {"notStudyMaterial": true}\n\nOtherwise return ONLY a JSON array: [{"front":"question","back":"answer"}]. No other text, no markdown, no explanation.' },
+    hint: 'Exam-style cards from the page',
+    prompt: 'Create 8-10 flashcards from the STUDY CONTENT in this image, in the style of the exam questions this student\'s own board sets — definitions, formulas, reasons, differences, and one-mark recall the exam actually asks for.\n\nUse the terminology their curriculum uses. Do not ask about page numbers, exercise numbers, or anything that is not subject knowledge.\n\nIf the image is NOT study material (a receipt, a photo, a screenshot, a booking, a form), return exactly: {"notStudyMaterial": true}\n\nOtherwise return ONLY a JSON array: [{"front":"question","back":"answer"}]. No other text, no markdown, no explanation.' },
   /**
    * The model only READS the equation. The balancing is done in code by
    * src/lib/balanceEquation.js, because balancing is linear algebra with one
@@ -144,7 +154,7 @@ const ACTIONS = [
     prompt: 'Read the single most prominent formula or equation in this image.\n\nReturn ONLY a JSON object:\n{"formula":"<the formula exactly as written, plain notation>","name":"<its usual name if you are confident, else null>","readable":true|false}\n\nDo not explain it. Do not solve it. If no formula is visible, set readable to false.' },
   { id: 'summarize', label: 'Summarize',     icon: FileText,     color: '#A5B4FC',
     hint: 'Condenses notes into key points',
-    prompt: 'Summarize the STUDY CONTENT in this image into clear bullet points under "## Section Name" headings. Capture every definition, formula, law and labelled diagram part exactly as the book states them — a summary that reworded NCERT would cost the student marks.' + NCERT_RULES + MD_RULES },
+    prompt: 'Summarize the STUDY CONTENT in this image into clear bullet points under "## Section Name" headings. Cover every definition, formula, law and labelled diagram part on the page, keeping the exact technical terms and symbols the student must reproduce in an exam. Write the surrounding explanation in your own words — do not copy the book\'s sentences.' + MD_RULES },
 ]
 
 interface VisionMsg {
@@ -318,7 +328,9 @@ export default function CameraStudy() {
         {
           role: 'user',
           content: [
-            { type: 'text',      text: action.prompt },
+            // Curriculum rules are appended here, not baked into ACTIONS, so the
+            // same button follows whichever board the student actually set.
+            { type: 'text',      text: action.prompt + ((action as any).needsSteps ? stepRules() : '') + curriculumRules() },
             { type: 'image_url', image_url: { url: imageData } },
           ],
         },

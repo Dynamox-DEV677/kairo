@@ -5,6 +5,10 @@ import groqPool from '../services/groqPool.js'
 import { withSlot, loadLevel } from '../utils/ai.js'
 
 import { requireSupabaseAuth } from '../middleware/supabaseAuth.js'
+import {
+  curriculumDirective, resolveCurriculum, detectCommandWord, commandWordDirective,
+} from '../../src/lib/curriculum.core.js'
+import { allTopics } from '../utils/syllabus.js'
 
 const router = express.Router()
 
@@ -458,7 +462,7 @@ const SOLVER_FAST_MODEL = 'llama-3.1-8b-instant'  // last-resort fast safety net
 // Union kept for the status probe / back-compat helpers.
 const GROQ_MODELS = [...SOLVER_SMART_MODELS, SOLVER_FAST_MODEL]
 
-async function callGroqOne(model, question, apiKey, timeout = 7000) {
+async function callGroqOne(model, question, apiKey, timeout = 7000, systemExtra = '') {
   const key = apiKey || groqPool.next()
   if (!key) {
     throw new Error(`groq/${model}: no live keys (all 429-cooling or none configured)`)
@@ -470,7 +474,10 @@ async function callGroqOne(model, question, apiKey, timeout = 7000) {
     const payload = {
       model,
       messages: [
-        { role: 'system', content: SOLVER_SYSTEM },
+        // The curriculum block goes in the SYSTEM message, not the question, so
+        // it governs the answer rather than reading as something the student
+        // said. Empty for a student with no board set — no invented curriculum.
+        { role: 'system', content: systemExtra ? `${SOLVER_SYSTEM}\n\n${systemExtra}` : SOLVER_SYSTEM },
         { role: 'user',   content: question },
       ],
       temperature: 0.3,
@@ -517,8 +524,51 @@ function callGroqAll(question, apiKey, timeout = 7000) {
   return GROQ_MODELS.map(m => callGroqOne(m, question, apiKey, timeout))
 }
 
-async function getSolverPlan(question, devKey = null) {
-  const qKey       = normalizeKey(question)
+/**
+ * Builds the curriculum block for a request, plus the string that has to enter
+ * the cache key alongside it.
+ *
+ * The cache key part is not optional. Plans are cached by normalised question
+ * text, so without this an NCERT student and a Cambridge student asking the
+ * same doubt would be served the SAME cached answer — which is precisely the
+ * behaviour this feature exists to remove.
+ */
+function curriculumContext(student, question = '') {
+  const board = student?.board
+  const cls   = student?.cls
+  if (!board) return { systemExtra: '', cacheTag: '' }
+
+  const p = resolveCurriculum(board, cls)
+
+  // Only pass a topic list when we actually have a verified map for this
+  // board+class. Sending an empty or borrowed list would teach the model a
+  // scope the student does not have.
+  const scope = p.syllabusBoard
+    ? allTopics(p.syllabusBoard, p.cls || undefined)
+        .filter(t => !student?.subject || t.subject === student.subject)
+        .map(t => `${t.name} (${t.chapter})`)
+    : []
+
+  const blocks = [curriculumDirective(board, cls, { scope })]
+
+  // Feature 3 — command words. Cambridge only: the words are Cambridge's
+  // marking vocabulary, and applying that structure to a CBSE answer would be
+  // coaching an Indian student for the wrong paper.
+  let cw = null
+  if (p.isCambridge) {
+    cw = detectCommandWord(question)
+    if (cw) blocks.push(commandWordDirective(cw))
+  }
+
+  return {
+    systemExtra: blocks.join('\n\n'),
+    cacheTag: `${p.id}|${p.cls || ''}|${cw || ''}|`,
+  }
+}
+
+async function getSolverPlan(question, devKey = null, student = null) {
+  const { systemExtra, cacheTag } = curriculumContext(student, question)
+  const qKey       = cacheTag + normalizeKey(question)
   const cacheKey   = 'plan:' + qKey
 
   const memHit = cacheGet(cacheKey)
@@ -547,14 +597,14 @@ async function getSolverPlan(question, devKey = null) {
   if (load.busy) {
     console.log(`[solver] busy (${load.active} active / ${load.queued} queued) → sequential`)
     for (const m of [...SOLVER_SMART_MODELS, SOLVER_FAST_MODEL]) {
-      try { winner = await callGroqOne(m, question, devKey, 7000); break }
+      try { winner = await callGroqOne(m, question, devKey, 7000, systemExtra); break }
       catch (e) { errs.push(e.message) }
     }
   } else {
     // Fire the smart models AND a fast safety net together (so the fallback stays warm),
     // but PREFER the smartest model that succeeds — never just take whoever's fastest.
-    const smartTasks = SOLVER_SMART_MODELS.map(m => callGroqOne(m, question, devKey, 7000))
-    const fastTask   = callGroqOne(SOLVER_FAST_MODEL, question, devKey, 6000)
+    const smartTasks = SOLVER_SMART_MODELS.map(m => callGroqOne(m, question, devKey, 7000, systemExtra))
+    const fastTask   = callGroqOne(SOLVER_FAST_MODEL, question, devKey, 6000, systemExtra)
     ;[...smartTasks, fastTask].forEach(t => t.catch(() => {}))  // avoid unhandled rejections
     console.log(`[solver] smart-first: ${SOLVER_SMART_MODELS.join(' → ')} → ${SOLVER_FAST_MODEL} (pool: ${groqStatus.hint})`)
 
@@ -794,7 +844,9 @@ router.post('/solver/text', async (req, res) => {
   const mistakes = Array.isArray(req.body?.mistakes) ? req.body.mistakes.slice(0, 10) : []
 
   try {
-    const plan = await getSolverPlan(composeQuestion(question, history, student, mistakes), readDevKey(req))
+    // `student` carries board + cls, which is what makes the answer follow the
+    // student's curriculum instead of a generic one.
+    const plan = await getSolverPlan(composeQuestion(question, history, student, mistakes), readDevKey(req), student)
     res.json(plan)
   } catch (e) {
     console.error('[solver/text]', e.message)
@@ -890,8 +942,10 @@ router.post('/solver', async (req, res) => {
   if (!question) return res.status(400).json({ error: 'question required' })
   if (question.length > 4000) return res.status(400).json({ error: 'Question too long (max 4000 characters) — trim it down a bit.' })
 
+  const student = (req.body?.student && typeof req.body.student === 'object') ? req.body.student : null
+
   try {
-    const plan = await getSolverPlan(question, readDevKey(req))
+    const plan = await getSolverPlan(question, readDevKey(req), student)
     const slides = await searchManyParallel(plan.imageQueries)
     const { imageQueries, ...publicFields } = plan
     res.json({ ...publicFields, imageSlides: slides, cached: false })

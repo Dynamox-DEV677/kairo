@@ -9,7 +9,7 @@ interface Props { profile: AuthProfile; onDone: () => void; onSkip: () => void }
 const A = { bg: '#0A0D16', card: '#141A2A', border: '#1f2532', accent: '#7C5CFF', cyan: '#A5B4FC', text: '#fafafa', mut: '#9CA3AF' }
 const FONT = "'Inter', system-ui, sans-serif"
 
-const BOARDS = ['CBSE', 'ICSE', 'State Board', 'IB', 'IGCSE', 'Other']
+import { BOARD_OPTIONS } from '../lib/curriculum.core'
 const TIMES = ['Morning', 'Afternoon', 'Evening', 'Late night']
 const SUBJECTS = ['Maths', 'Physics', 'Chemistry', 'Biology', 'English', 'Social', 'Computer', 'Hindi', 'Economics', 'Other']
 const GOALS = ['Score 90%+ in boards', 'Top my class', 'Crack JEE', 'Crack NEET', 'Build strong basics', 'Just learn better']
@@ -115,7 +115,7 @@ export default function Onboarding({ profile, onDone, onSkip }: Props) {
                   <Field label="School name"><input value={school} onChange={e => setSchool(e.target.value)} placeholder="Your school" style={inputSt} /></Field>
                 )}
                 <Field label="Board">
-                  <div style={chipWrap}>{BOARDS.map(b => <Chip key={b} on={board === b} onClick={() => setBoard(board === b ? '' : b)}>{b}</Chip>)}</div>
+                  <div style={chipWrap}>{BOARD_OPTIONS.map(b => <Chip key={b.value} on={board === b.value} onClick={() => setBoard(board === b.value ? '' : b.value)}>{b.label}</Chip>)}</div>
                 </Field>
               </Section>
             )}

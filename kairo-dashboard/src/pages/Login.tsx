@@ -444,7 +444,7 @@ function SignIn({ onLogin, onBack }: any) {
   )
 }
 
-const BOARDS = ['CBSE', 'ICSE', 'State', 'IB', 'Other'] as const
+import { BOARD_OPTIONS } from '../lib/curriculum.core'
 
 function PersonalSignup({ onLogin, onBack }: any) {
   const [name, setName]         = useState('')
@@ -582,10 +582,11 @@ function PersonalSignup({ onLogin, onBack }: any) {
       </Field>
       <Field label="Board" icon={BookOpen} hint="Optional — for syllabus matching">
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-          {BOARDS.map(b => {
+          {BOARD_OPTIONS.map(o => {
+            const b = o.value
             const active = board === b
             return (
-              <button key={b} type="button"
+              <button key={b} type="button" title={o.hint}
                 onClick={() => setBoard(active ? '' : b)}
                 style={{
                   padding: '7px 13px', borderRadius: 8,
@@ -594,7 +595,7 @@ function PersonalSignup({ onLogin, onBack }: any) {
                   color: active ? '#A5B4FC' : '#B1B5BA',
                   fontFamily: 'inherit', fontSize: 12, fontWeight: 600, cursor: 'pointer',
                 }}>
-                {b}
+                {o.label}
               </button>
             )
           })}

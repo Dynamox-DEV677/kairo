@@ -5,7 +5,7 @@ import {
   Sparkles, Sigma, Archive, FlaskConical, RotateCw,
 } from 'lucide-react'
 import { post, get, del } from '../lib/api'
-import { listFormulas, type Formula as TwinFormula } from '../lib/twin'
+import { listFormulas, getProfile, type Formula as TwinFormula } from '../lib/twin'
 import { PrimaryButton } from '../components/PrimaryButton'
 import MathExpr from '../components/MathExpr'
 
@@ -56,7 +56,16 @@ export default function FormulaSheet() {
   const [generating, setGen]    = useState(false)
   const [selected, setSelected] = useState<any>(null)
   const [showForm, setShowForm] = useState(false)
-  const [form, setForm]         = useState({ subject: 'Physics', chapter: '', class: '10', board: 'CBSE' })
+  // Seeded from the profile, not hard-coded to CBSE Class 10 — see the same
+  // note in AdaptiveQuiz.tsx.
+  const [form, setForm]         = useState(() => {
+    const p = getProfile()
+    return {
+      subject: 'Physics', chapter: '',
+      class: String(p?.cls || '10').replace(/\D/g, '') || '10',
+      board: p?.board || 'CBSE',
+    }
+  })
   const [err, setErr]           = useState('')
 
   function load() {

@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Send, StopCircle, GraduationCap, Sparkles, Layers, CheckCircle2, AlertTriangle } from 'lucide-react'
+import { getProfile } from '../lib/twin'
+import { curriculumDirective } from '../lib/curriculum.core'
 import MessageBubble from './MessageBubble'
 import { chat, DEFAULT_MODEL } from '../lib/openrouter'
 import { post } from '../lib/api'
@@ -21,11 +23,22 @@ const SUGGESTIONS = [
   { emoji: '📜', text: 'Summarise Chapter 1 History' },
 ]
 
-const SYSTEM = `You are Kyno, an expert AI tutor for Indian school students (CBSE, ICSE, and state boards, Class 6–12).
-Help students understand concepts clearly, solve problems step by step, and prepare for board exams.
+const SYSTEM_BASE = `You are Kyno, an expert AI tutor for school students (Class 6-12).
+Help students understand concepts clearly, solve problems step by step, and prepare for their exams.
 Be concise, encouraging, and use markdown for structure.
 For math use $...$ for inline and $$...$$ for display equations on their own line.
 Keep answers focused and student-friendly.`
+
+/**
+ * The base prompt used to open with "for Indian school students (CBSE, ICSE,
+ * and state boards)", which is a claim about who is reading. The curriculum
+ * block now comes from the student's own Board setting instead, so a Cambridge
+ * student is not taught as though they sit CBSE papers.
+ */
+function systemPrompt(): string {
+  const p = getProfile()
+  return SYSTEM_BASE + '\n\n' + curriculumDirective(p?.board, p?.cls)
+}
 
 interface ChatWindowProps {
   onNewMessage: (q: string) => void
@@ -119,7 +132,7 @@ export default function ChatWindow({ onNewMessage, onNavigate, model = DEFAULT_M
       await chat({
         model,
         messages: [
-          { role: 'system', content: SYSTEM + memoryContext },
+          { role: 'system', content: systemPrompt() + memoryContext },
           ...messages.map(m => ({ role: m.role as 'user' | 'assistant' | 'system', content: m.content })),
           { role: 'user', content: q },
         ],

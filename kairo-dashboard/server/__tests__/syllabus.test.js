@@ -42,14 +42,34 @@ test('every topicId is unique', () => {
   }
 })
 
-test('every topicId follows board.class.subject.chapter.topic', () => {
+test('every topicId follows the shape for its class', () => {
+  // Two shapes, on purpose.
+  //
+  // Classes 9-10 go to sub-topic level: board.class.subject.chapter.topic.
+  //
+  // Classes 6-8 stop at the chapter: board.class.subject.chapter. That is the
+  // granularity NCERT actually publishes for those books — the contents pages
+  // list chapters, not sub-topics — and inventing a sub-topic breakdown to make
+  // the id shape uniform would be fabricating curriculum structure.
   for (const t of topics) {
+    const deep = t.cls === '9' || t.cls === '10'
     assert.match(
       t.topicId,
-      /^cbse\.(9|10)\.[a-z]+\.[a-z0-9-]+\.[a-z0-9-]+$/,
+      deep
+        ? /^cbse\.(9|10)\.[a-z]+\.[a-z0-9-]+\.[a-z0-9-]+$/
+        : /^cbse\.[678]\.[a-z]+\.[a-z0-9-]+$/,
       `malformed topicId: ${t.topicId}`,
     )
     assert.ok(t.name && t.name.length > 2, `topic missing a name: ${t.topicId}`)
+  }
+})
+
+test('classes 6-8 are present, at chapter granularity', () => {
+  for (const cls of ['6', '7', '8']) {
+    const inClass = topics.filter(t => t.cls === cls)
+    assert.ok(inClass.length > 15, `class ${cls} has only ${inClass.length} entries`)
+    // One entry per chapter — the entry IS the chapter.
+    for (const t of inClass) assert.equal(t.name, t.chapter, `class ${cls}: ${t.topicId}`)
   }
 })
 

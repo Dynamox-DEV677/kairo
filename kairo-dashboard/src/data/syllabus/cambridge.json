@@ -1,0 +1,937 @@
+{
+  "board": "cambridge",
+  "label": "Cambridge IGCSE",
+  "version": "2026-2028",
+  "note": "Topic and sub-topic titles from the syllabuses Cambridge publishes for teachers. Structure only — no syllabus prose, learning-objective text or textbook content is reproduced. topicId is a stable contract: never renumber or reword an existing id.",
+  "singleStage": "igcse",
+  "sources": {
+    "Physics": "Cambridge IGCSE Physics 0625 syllabus for 2026, 2027 and 2028.",
+    "Chemistry": "Cambridge IGCSE Chemistry 0620 syllabus for 2026, 2027 and 2028.",
+    "Biology": "Cambridge IGCSE Biology 0610 syllabus for 2026, 2027 and 2028.",
+    "Mathematics": "Cambridge IGCSE Mathematics 0580 syllabus for 2025, 2026 and 2027."
+  },
+  "classes": {
+    "igcse": {
+      "Physics": {
+        "Motion, forces and energy": [
+          {
+            "topicId": "cam.phy.motion-forces-energy.physical-quantities-measurement-techniques",
+            "name": "Physical quantities and measurement techniques"
+          },
+          {
+            "topicId": "cam.phy.motion-forces-energy.motion",
+            "name": "Motion"
+          },
+          {
+            "topicId": "cam.phy.motion-forces-energy.mass-weight",
+            "name": "Mass and weight"
+          },
+          {
+            "topicId": "cam.phy.motion-forces-energy.density",
+            "name": "Density"
+          },
+          {
+            "topicId": "cam.phy.motion-forces-energy.forces",
+            "name": "Forces"
+          },
+          {
+            "topicId": "cam.phy.motion-forces-energy.momentum",
+            "name": "Momentum"
+          },
+          {
+            "topicId": "cam.phy.motion-forces-energy.energy-work-power",
+            "name": "Energy, work and power"
+          },
+          {
+            "topicId": "cam.phy.motion-forces-energy.pressure",
+            "name": "Pressure"
+          }
+        ],
+        "Thermal physics": [
+          {
+            "topicId": "cam.phy.thermal-physics.kinetic-particle-model-matter",
+            "name": "Kinetic particle model of matter"
+          },
+          {
+            "topicId": "cam.phy.thermal-physics.thermal-properties-temperature",
+            "name": "Thermal properties and temperature"
+          },
+          {
+            "topicId": "cam.phy.thermal-physics.transfer-thermal-energy",
+            "name": "Transfer of thermal energy"
+          }
+        ],
+        "Waves": [
+          {
+            "topicId": "cam.phy.waves.general-properties-waves",
+            "name": "General properties of waves"
+          },
+          {
+            "topicId": "cam.phy.waves.light",
+            "name": "Light"
+          },
+          {
+            "topicId": "cam.phy.waves.electromagnetic-spectrum",
+            "name": "Electromagnetic spectrum"
+          },
+          {
+            "topicId": "cam.phy.waves.sound",
+            "name": "Sound"
+          }
+        ],
+        "Electricity and magnetism": [
+          {
+            "topicId": "cam.phy.electricity-magnetism.simple-phenomena-magnetism",
+            "name": "Simple phenomena of magnetism"
+          },
+          {
+            "topicId": "cam.phy.electricity-magnetism.electrical-quantities",
+            "name": "Electrical quantities"
+          },
+          {
+            "topicId": "cam.phy.electricity-magnetism.electric-circuits",
+            "name": "Electric circuits"
+          },
+          {
+            "topicId": "cam.phy.electricity-magnetism.electrical-safety",
+            "name": "Electrical safety"
+          },
+          {
+            "topicId": "cam.phy.electricity-magnetism.electromagnetic-effects",
+            "name": "Electromagnetic effects"
+          }
+        ],
+        "Nuclear physics": [
+          {
+            "topicId": "cam.phy.nuclear-physics.nuclear-model-atom",
+            "name": "The nuclear model of the atom"
+          },
+          {
+            "topicId": "cam.phy.nuclear-physics.radioactivity",
+            "name": "Radioactivity"
+          }
+        ],
+        "Space physics": [
+          {
+            "topicId": "cam.phy.space-physics.earth-solar-system",
+            "name": "The Earth and the Solar System"
+          },
+          {
+            "topicId": "cam.phy.space-physics.stars-universe",
+            "name": "Stars and the Universe"
+          }
+        ]
+      },
+      "Chemistry": {
+        "States of matter": [
+          {
+            "topicId": "cam.chem.states-matter.solids-liquids-gases",
+            "name": "Solids, liquids and gases"
+          },
+          {
+            "topicId": "cam.chem.states-matter.diffusion",
+            "name": "Diffusion"
+          }
+        ],
+        "Atoms, elements and compounds": [
+          {
+            "topicId": "cam.chem.atoms-elements-compounds.elements-compounds-mixtures",
+            "name": "Elements, compounds and mixtures"
+          },
+          {
+            "topicId": "cam.chem.atoms-elements-compounds.atomic-structure-periodic-table",
+            "name": "Atomic structure and the Periodic Table"
+          },
+          {
+            "topicId": "cam.chem.atoms-elements-compounds.isotopes",
+            "name": "Isotopes"
+          },
+          {
+            "topicId": "cam.chem.atoms-elements-compounds.ions-ionic-bonds",
+            "name": "Ions and ionic bonds"
+          },
+          {
+            "topicId": "cam.chem.atoms-elements-compounds.simple-molecules-covalent-bonds",
+            "name": "Simple molecules and covalent bonds"
+          },
+          {
+            "topicId": "cam.chem.atoms-elements-compounds.giant-covalent-structures",
+            "name": "Giant covalent structures"
+          },
+          {
+            "topicId": "cam.chem.atoms-elements-compounds.metallic-bonding",
+            "name": "Metallic bonding"
+          }
+        ],
+        "Stoichiometry": [
+          {
+            "topicId": "cam.chem.stoichiometry.formulae",
+            "name": "Formulae"
+          },
+          {
+            "topicId": "cam.chem.stoichiometry.relative-masses-atoms-molecules",
+            "name": "Relative masses of atoms and molecules"
+          },
+          {
+            "topicId": "cam.chem.stoichiometry.mole-avogadro-constant",
+            "name": "The mole and the Avogadro constant"
+          }
+        ],
+        "Electrochemistry": [
+          {
+            "topicId": "cam.chem.electrochemistry.electrolysis",
+            "name": "Electrolysis"
+          }
+        ],
+        "Chemical energetics": [
+          {
+            "topicId": "cam.chem.chemical-energetics.exothermic-endothermic-reactions",
+            "name": "Exothermic and endothermic reactions"
+          }
+        ],
+        "Chemical reactions": [
+          {
+            "topicId": "cam.chem.chemical-reactions.physical-chemical-changes",
+            "name": "Physical and chemical changes"
+          },
+          {
+            "topicId": "cam.chem.chemical-reactions.rate-reaction",
+            "name": "Rate of reaction"
+          },
+          {
+            "topicId": "cam.chem.chemical-reactions.reversible-reactions-equilibrium",
+            "name": "Reversible reactions and equilibrium"
+          },
+          {
+            "topicId": "cam.chem.chemical-reactions.redox",
+            "name": "Redox"
+          }
+        ],
+        "Acids, bases and salts": [
+          {
+            "topicId": "cam.chem.acids-bases-salts.characteristic-properties-acids-bases",
+            "name": "The characteristic properties of acids and bases"
+          },
+          {
+            "topicId": "cam.chem.acids-bases-salts.oxides",
+            "name": "Oxides"
+          },
+          {
+            "topicId": "cam.chem.acids-bases-salts.preparation-salts",
+            "name": "Preparation of salts"
+          }
+        ],
+        "The Periodic Table": [
+          {
+            "topicId": "cam.chem.periodic-table.arrangement-elements",
+            "name": "Arrangement of elements"
+          },
+          {
+            "topicId": "cam.chem.periodic-table.group-i-properties",
+            "name": "Group I properties"
+          },
+          {
+            "topicId": "cam.chem.periodic-table.group-vii-properties",
+            "name": "Group VII properties"
+          },
+          {
+            "topicId": "cam.chem.periodic-table.transition-elements",
+            "name": "Transition elements"
+          },
+          {
+            "topicId": "cam.chem.periodic-table.noble-gases",
+            "name": "Noble gases"
+          }
+        ],
+        "Metals": [
+          {
+            "topicId": "cam.chem.metals.properties-metals",
+            "name": "Properties of metals"
+          },
+          {
+            "topicId": "cam.chem.metals.uses-metals",
+            "name": "Uses of metals"
+          },
+          {
+            "topicId": "cam.chem.metals.alloys-properties",
+            "name": "Alloys and their properties"
+          },
+          {
+            "topicId": "cam.chem.metals.reactivity-series",
+            "name": "Reactivity series"
+          },
+          {
+            "topicId": "cam.chem.metals.corrosion-metals",
+            "name": "Corrosion of metals"
+          },
+          {
+            "topicId": "cam.chem.metals.extraction-metals",
+            "name": "Extraction of metals"
+          }
+        ],
+        "Chemistry of the environment": [
+          {
+            "topicId": "cam.chem.chemistry-environment.water",
+            "name": "Water"
+          },
+          {
+            "topicId": "cam.chem.chemistry-environment.fertilisers",
+            "name": "Fertilisers"
+          },
+          {
+            "topicId": "cam.chem.chemistry-environment.air-quality-climate",
+            "name": "Air quality and climate"
+          }
+        ],
+        "Organic chemistry": [
+          {
+            "topicId": "cam.chem.organic-chemistry.formulae-functional-groups-terminology",
+            "name": "Formulae, functional groups and terminology"
+          },
+          {
+            "topicId": "cam.chem.organic-chemistry.naming-organic-compounds",
+            "name": "Naming organic compounds"
+          },
+          {
+            "topicId": "cam.chem.organic-chemistry.fuels",
+            "name": "Fuels"
+          },
+          {
+            "topicId": "cam.chem.organic-chemistry.alkanes",
+            "name": "Alkanes"
+          },
+          {
+            "topicId": "cam.chem.organic-chemistry.alkenes",
+            "name": "Alkenes"
+          },
+          {
+            "topicId": "cam.chem.organic-chemistry.alcohols",
+            "name": "Alcohols"
+          },
+          {
+            "topicId": "cam.chem.organic-chemistry.carboxylic-acids",
+            "name": "Carboxylic acids"
+          },
+          {
+            "topicId": "cam.chem.organic-chemistry.polymers",
+            "name": "Polymers"
+          }
+        ],
+        "Experimental techniques and chemical analysis": [
+          {
+            "topicId": "cam.chem.experimental-techniques-chemical-analysis.experimental-design",
+            "name": "Experimental design"
+          },
+          {
+            "topicId": "cam.chem.experimental-techniques-chemical-analysis.acid-base-titrations",
+            "name": "Acid-base titrations"
+          },
+          {
+            "topicId": "cam.chem.experimental-techniques-chemical-analysis.chromatography",
+            "name": "Chromatography"
+          },
+          {
+            "topicId": "cam.chem.experimental-techniques-chemical-analysis.separation-purification",
+            "name": "Separation and purification"
+          },
+          {
+            "topicId": "cam.chem.experimental-techniques-chemical-analysis.identification-ions-gases",
+            "name": "Identification of ions and gases"
+          }
+        ]
+      },
+      "Biology": {
+        "Characteristics and classification of living organisms": [
+          {
+            "topicId": "cam.bio.characteristics-classification-living-organisms.characteristics-living-organisms",
+            "name": "Characteristics of living organisms"
+          },
+          {
+            "topicId": "cam.bio.characteristics-classification-living-organisms.concept-uses-classification-systems",
+            "name": "Concept and uses of classification systems"
+          },
+          {
+            "topicId": "cam.bio.characteristics-classification-living-organisms.features-organisms",
+            "name": "Features of organisms"
+          }
+        ],
+        "Organisation of the organism": [
+          {
+            "topicId": "cam.bio.organisation-organism.cell-structure",
+            "name": "Cell structure"
+          },
+          {
+            "topicId": "cam.bio.organisation-organism.size-specimens",
+            "name": "Size of specimens"
+          }
+        ],
+        "Movement into and out of cells": [
+          {
+            "topicId": "cam.bio.movement-into-out-cells.diffusion",
+            "name": "Diffusion"
+          },
+          {
+            "topicId": "cam.bio.movement-into-out-cells.osmosis",
+            "name": "Osmosis"
+          },
+          {
+            "topicId": "cam.bio.movement-into-out-cells.active-transport",
+            "name": "Active transport"
+          }
+        ],
+        "Biological molecules": [
+          {
+            "topicId": "cam.bio.biological-molecules.biological-molecules",
+            "name": "Biological molecules"
+          }
+        ],
+        "Enzymes": [
+          {
+            "topicId": "cam.bio.enzymes.enzymes",
+            "name": "Enzymes"
+          }
+        ],
+        "Plant nutrition": [
+          {
+            "topicId": "cam.bio.plant-nutrition.photosynthesis",
+            "name": "Photosynthesis"
+          },
+          {
+            "topicId": "cam.bio.plant-nutrition.leaf-structure",
+            "name": "Leaf structure"
+          }
+        ],
+        "Human nutrition": [
+          {
+            "topicId": "cam.bio.human-nutrition.diet",
+            "name": "Diet"
+          },
+          {
+            "topicId": "cam.bio.human-nutrition.digestive-system",
+            "name": "Digestive system"
+          },
+          {
+            "topicId": "cam.bio.human-nutrition.physical-digestion",
+            "name": "Physical digestion"
+          },
+          {
+            "topicId": "cam.bio.human-nutrition.chemical-digestion",
+            "name": "Chemical digestion"
+          },
+          {
+            "topicId": "cam.bio.human-nutrition.absorption",
+            "name": "Absorption"
+          }
+        ],
+        "Transport in plants": [
+          {
+            "topicId": "cam.bio.transport-plants.xylem-phloem",
+            "name": "Xylem and phloem"
+          },
+          {
+            "topicId": "cam.bio.transport-plants.water-uptake",
+            "name": "Water uptake"
+          },
+          {
+            "topicId": "cam.bio.transport-plants.transpiration",
+            "name": "Transpiration"
+          },
+          {
+            "topicId": "cam.bio.transport-plants.translocation",
+            "name": "Translocation"
+          }
+        ],
+        "Transport in animals": [
+          {
+            "topicId": "cam.bio.transport-animals.circulatory-systems",
+            "name": "Circulatory systems"
+          },
+          {
+            "topicId": "cam.bio.transport-animals.heart",
+            "name": "Heart"
+          },
+          {
+            "topicId": "cam.bio.transport-animals.blood-vessels",
+            "name": "Blood vessels"
+          },
+          {
+            "topicId": "cam.bio.transport-animals.blood",
+            "name": "Blood"
+          }
+        ],
+        "Diseases and immunity": [
+          {
+            "topicId": "cam.bio.diseases-immunity.diseases-immunity",
+            "name": "Diseases and immunity"
+          }
+        ],
+        "Gas exchange in humans": [
+          {
+            "topicId": "cam.bio.gas-exchange-humans.gas-exchange-humans",
+            "name": "Gas exchange in humans"
+          }
+        ],
+        "Respiration": [
+          {
+            "topicId": "cam.bio.respiration.respiration",
+            "name": "Respiration"
+          },
+          {
+            "topicId": "cam.bio.respiration.aerobic-respiration",
+            "name": "Aerobic respiration"
+          },
+          {
+            "topicId": "cam.bio.respiration.anaerobic-respiration",
+            "name": "Anaerobic respiration"
+          }
+        ],
+        "Excretion in humans": [
+          {
+            "topicId": "cam.bio.excretion-humans.excretion-humans",
+            "name": "Excretion in humans"
+          }
+        ],
+        "Coordination and response": [
+          {
+            "topicId": "cam.bio.coordination-response.coordination-response",
+            "name": "Coordination and response"
+          },
+          {
+            "topicId": "cam.bio.coordination-response.sense-organs",
+            "name": "Sense organs"
+          },
+          {
+            "topicId": "cam.bio.coordination-response.hormones",
+            "name": "Hormones"
+          },
+          {
+            "topicId": "cam.bio.coordination-response.homeostasis",
+            "name": "Homeostasis"
+          },
+          {
+            "topicId": "cam.bio.coordination-response.tropic-responses",
+            "name": "Tropic responses"
+          }
+        ],
+        "Drugs": [
+          {
+            "topicId": "cam.bio.drugs.drugs",
+            "name": "Drugs"
+          }
+        ],
+        "Reproduction": [
+          {
+            "topicId": "cam.bio.reproduction.asexual-reproduction",
+            "name": "Asexual reproduction"
+          },
+          {
+            "topicId": "cam.bio.reproduction.sexual-reproduction",
+            "name": "Sexual reproduction"
+          },
+          {
+            "topicId": "cam.bio.reproduction.sexual-reproduction-plants",
+            "name": "Sexual reproduction in plants"
+          },
+          {
+            "topicId": "cam.bio.reproduction.sexual-reproduction-humans",
+            "name": "Sexual reproduction in humans"
+          },
+          {
+            "topicId": "cam.bio.reproduction.sex-hormones-humans",
+            "name": "Sex hormones in humans"
+          },
+          {
+            "topicId": "cam.bio.reproduction.sexually-transmitted-infections",
+            "name": "Sexually transmitted infections"
+          }
+        ],
+        "Inheritance": [
+          {
+            "topicId": "cam.bio.inheritance.chromosomes-genes-proteins",
+            "name": "Chromosomes, genes and proteins"
+          },
+          {
+            "topicId": "cam.bio.inheritance.mitosis",
+            "name": "Mitosis"
+          },
+          {
+            "topicId": "cam.bio.inheritance.meiosis",
+            "name": "Meiosis"
+          },
+          {
+            "topicId": "cam.bio.inheritance.monohybrid-inheritance",
+            "name": "Monohybrid inheritance"
+          }
+        ],
+        "Variation and selection": [
+          {
+            "topicId": "cam.bio.variation-selection.variation",
+            "name": "Variation"
+          },
+          {
+            "topicId": "cam.bio.variation-selection.adaptive-features",
+            "name": "Adaptive features"
+          },
+          {
+            "topicId": "cam.bio.variation-selection.selection",
+            "name": "Selection"
+          }
+        ],
+        "Organisms and their environment": [
+          {
+            "topicId": "cam.bio.organisms-environment.energy-flow",
+            "name": "Energy flow"
+          },
+          {
+            "topicId": "cam.bio.organisms-environment.food-chains-food-webs",
+            "name": "Food chains and food webs"
+          },
+          {
+            "topicId": "cam.bio.organisms-environment.nutrient-cycles",
+            "name": "Nutrient cycles"
+          },
+          {
+            "topicId": "cam.bio.organisms-environment.populations",
+            "name": "Populations"
+          }
+        ],
+        "Human influences on ecosystems": [
+          {
+            "topicId": "cam.bio.human-influences-on-ecosystems.food-supply",
+            "name": "Food supply"
+          },
+          {
+            "topicId": "cam.bio.human-influences-on-ecosystems.habitat-destruction",
+            "name": "Habitat destruction"
+          },
+          {
+            "topicId": "cam.bio.human-influences-on-ecosystems.pollution",
+            "name": "Pollution"
+          },
+          {
+            "topicId": "cam.bio.human-influences-on-ecosystems.conservation",
+            "name": "Conservation"
+          }
+        ],
+        "Biotechnology and genetic modification": [
+          {
+            "topicId": "cam.bio.biotechnology-genetic-modification.biotechnology-genetic-modification",
+            "name": "Biotechnology and genetic modification"
+          },
+          {
+            "topicId": "cam.bio.biotechnology-genetic-modification.biotechnology",
+            "name": "Biotechnology"
+          },
+          {
+            "topicId": "cam.bio.biotechnology-genetic-modification.genetic-modification",
+            "name": "Genetic modification"
+          }
+        ]
+      },
+      "Mathematics": {
+        "Number": [
+          {
+            "topicId": "cam.math.number.types-number",
+            "name": "Types of number"
+          },
+          {
+            "topicId": "cam.math.number.sets",
+            "name": "Sets"
+          },
+          {
+            "topicId": "cam.math.number.powers-roots",
+            "name": "Powers and roots"
+          },
+          {
+            "topicId": "cam.math.number.fractions-decimals-percentages",
+            "name": "Fractions, decimals and percentages"
+          },
+          {
+            "topicId": "cam.math.number.ordering",
+            "name": "Ordering"
+          },
+          {
+            "topicId": "cam.math.number.four-operations",
+            "name": "The four operations"
+          },
+          {
+            "topicId": "cam.math.number.indices-i",
+            "name": "Indices I"
+          },
+          {
+            "topicId": "cam.math.number.standard-form",
+            "name": "Standard form"
+          },
+          {
+            "topicId": "cam.math.number.estimation",
+            "name": "Estimation"
+          },
+          {
+            "topicId": "cam.math.number.limits-accuracy",
+            "name": "Limits of accuracy"
+          },
+          {
+            "topicId": "cam.math.number.ratio-proportion",
+            "name": "Ratio and proportion"
+          },
+          {
+            "topicId": "cam.math.number.rates",
+            "name": "Rates"
+          },
+          {
+            "topicId": "cam.math.number.percentages",
+            "name": "Percentages"
+          },
+          {
+            "topicId": "cam.math.number.using-calculator",
+            "name": "Using a calculator"
+          },
+          {
+            "topicId": "cam.math.number.time",
+            "name": "Time"
+          },
+          {
+            "topicId": "cam.math.number.money",
+            "name": "Money"
+          },
+          {
+            "topicId": "cam.math.number.exponential-growth-decay",
+            "name": "Exponential growth and decay"
+          },
+          {
+            "topicId": "cam.math.number.surds",
+            "name": "Surds"
+          }
+        ],
+        "Algebra and graphs": [
+          {
+            "topicId": "cam.math.algebra-graphs.introduction-algebra",
+            "name": "Introduction to algebra"
+          },
+          {
+            "topicId": "cam.math.algebra-graphs.algebraic-manipulation",
+            "name": "Algebraic manipulation"
+          },
+          {
+            "topicId": "cam.math.algebra-graphs.algebraic-fractions",
+            "name": "Algebraic fractions"
+          },
+          {
+            "topicId": "cam.math.algebra-graphs.indices-ii",
+            "name": "Indices II"
+          },
+          {
+            "topicId": "cam.math.algebra-graphs.equations",
+            "name": "Equations"
+          },
+          {
+            "topicId": "cam.math.algebra-graphs.inequalities",
+            "name": "Inequalities"
+          },
+          {
+            "topicId": "cam.math.algebra-graphs.sequences",
+            "name": "Sequences"
+          },
+          {
+            "topicId": "cam.math.algebra-graphs.proportion",
+            "name": "Proportion"
+          },
+          {
+            "topicId": "cam.math.algebra-graphs.graphs-practical-situations",
+            "name": "Graphs in practical situations"
+          },
+          {
+            "topicId": "cam.math.algebra-graphs.graphs-functions",
+            "name": "Graphs of functions"
+          },
+          {
+            "topicId": "cam.math.algebra-graphs.sketching-curves",
+            "name": "Sketching curves"
+          },
+          {
+            "topicId": "cam.math.algebra-graphs.differentiation",
+            "name": "Differentiation"
+          },
+          {
+            "topicId": "cam.math.algebra-graphs.functions",
+            "name": "Functions"
+          }
+        ],
+        "Coordinate geometry": [
+          {
+            "topicId": "cam.math.coordinate-geometry.coordinates",
+            "name": "Coordinates"
+          },
+          {
+            "topicId": "cam.math.coordinate-geometry.drawing-linear-graphs",
+            "name": "Drawing linear graphs"
+          },
+          {
+            "topicId": "cam.math.coordinate-geometry.gradient-linear-graphs",
+            "name": "Gradient of linear graphs"
+          },
+          {
+            "topicId": "cam.math.coordinate-geometry.length-midpoint",
+            "name": "Length and midpoint"
+          },
+          {
+            "topicId": "cam.math.coordinate-geometry.equations-linear-graphs",
+            "name": "Equations of linear graphs"
+          },
+          {
+            "topicId": "cam.math.coordinate-geometry.parallel-lines",
+            "name": "Parallel lines"
+          },
+          {
+            "topicId": "cam.math.coordinate-geometry.perpendicular-lines",
+            "name": "Perpendicular lines"
+          }
+        ],
+        "Geometry": [
+          {
+            "topicId": "cam.math.geometry.geometrical-terms",
+            "name": "Geometrical terms"
+          },
+          {
+            "topicId": "cam.math.geometry.geometrical-constructions",
+            "name": "Geometrical constructions"
+          },
+          {
+            "topicId": "cam.math.geometry.scale-drawings",
+            "name": "Scale drawings"
+          },
+          {
+            "topicId": "cam.math.geometry.similarity",
+            "name": "Similarity"
+          },
+          {
+            "topicId": "cam.math.geometry.symmetry",
+            "name": "Symmetry"
+          },
+          {
+            "topicId": "cam.math.geometry.angles",
+            "name": "Angles"
+          },
+          {
+            "topicId": "cam.math.geometry.circle-theorems-i",
+            "name": "Circle theorems I"
+          },
+          {
+            "topicId": "cam.math.geometry.circle-theorems-ii",
+            "name": "Circle theorems II"
+          }
+        ],
+        "Mensuration": [
+          {
+            "topicId": "cam.math.mensuration.units-measure",
+            "name": "Units of measure"
+          },
+          {
+            "topicId": "cam.math.mensuration.area-perimeter",
+            "name": "Area and perimeter"
+          },
+          {
+            "topicId": "cam.math.mensuration.circles-arcs-sectors",
+            "name": "Circles, arcs and sectors"
+          },
+          {
+            "topicId": "cam.math.mensuration.surface-area-volume",
+            "name": "Surface area and volume"
+          },
+          {
+            "topicId": "cam.math.mensuration.compound-shapes-parts-shapes",
+            "name": "Compound shapes and parts of shapes"
+          }
+        ],
+        "Trigonometry": [
+          {
+            "topicId": "cam.math.trigonometry.pythagoras-theorem",
+            "name": "Pythagoras theorem"
+          },
+          {
+            "topicId": "cam.math.trigonometry.right-angled-triangles",
+            "name": "Right-angled triangles"
+          },
+          {
+            "topicId": "cam.math.trigonometry.exact-trigonometric-values",
+            "name": "Exact trigonometric values"
+          },
+          {
+            "topicId": "cam.math.trigonometry.trigonometric-functions",
+            "name": "Trigonometric functions"
+          },
+          {
+            "topicId": "cam.math.trigonometry.non-right-angled-triangles",
+            "name": "Non-right-angled triangles"
+          }
+        ],
+        "Transformations and vectors": [
+          {
+            "topicId": "cam.math.transformations-vectors.transformations",
+            "name": "Transformations"
+          },
+          {
+            "topicId": "cam.math.transformations-vectors.vectors-two-dimensions",
+            "name": "Vectors in two dimensions"
+          },
+          {
+            "topicId": "cam.math.transformations-vectors.magnitude-vector",
+            "name": "Magnitude of a vector"
+          },
+          {
+            "topicId": "cam.math.transformations-vectors.vector-geometry",
+            "name": "Vector geometry"
+          }
+        ],
+        "Probability": [
+          {
+            "topicId": "cam.math.probability.introduction-probability",
+            "name": "Introduction to probability"
+          },
+          {
+            "topicId": "cam.math.probability.relative-expected-frequencies",
+            "name": "Relative and expected frequencies"
+          },
+          {
+            "topicId": "cam.math.probability.probability-combined-events",
+            "name": "Probability of combined events"
+          },
+          {
+            "topicId": "cam.math.probability.conditional-probability",
+            "name": "Conditional probability"
+          }
+        ],
+        "Statistics": [
+          {
+            "topicId": "cam.math.statistics.classifying-statistical-data",
+            "name": "Classifying statistical data"
+          },
+          {
+            "topicId": "cam.math.statistics.interpreting-statistical-data",
+            "name": "Interpreting statistical data"
+          },
+          {
+            "topicId": "cam.math.statistics.averages-range",
+            "name": "Averages and range"
+          },
+          {
+            "topicId": "cam.math.statistics.statistical-charts-diagrams",
+            "name": "Statistical charts and diagrams"
+          },
+          {
+            "topicId": "cam.math.statistics.scatter-diagrams",
+            "name": "Scatter diagrams"
+          },
+          {
+            "topicId": "cam.math.statistics.cumulative-frequency-diagrams",
+            "name": "Cumulative frequency diagrams"
+          },
+          {
+            "topicId": "cam.math.statistics.histograms",
+            "name": "Histograms"
+          }
+        ]
+      }
+    }
+  }
+}

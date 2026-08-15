@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Brain, CheckCircle, XCircle, Trophy, RotateCcw, History, Target, Zap, BarChart3, Award, ArrowRight } from 'lucide-react'
 import { post, get } from '../lib/api'
-import { track } from '../lib/twin'
+import { track, getProfile } from '../lib/twin'
 import { awardXP } from '../lib/game'
 
 const SCHOOL_ID = 'demo_school'
@@ -18,7 +18,18 @@ type Screen = 'setup' | 'quiz' | 'result' | 'history'
 
 export default function AdaptiveQuiz() {
   const [screen, setScreen] = useState<Screen>('setup')
-  const [form, setForm] = useState({ subject: 'Mathematics', topic: '', class: '10', board: 'CBSE', difficulty: 'medium', total_questions: 10 })
+  // Seed from the student's own profile. This used to hard-code CBSE Class 10,
+  // so a Cambridge student generating a quiz got CBSE questions no matter what
+  // they had set in Settings.
+  const [form, setForm] = useState(() => {
+    const p = getProfile()
+    return {
+      subject: 'Mathematics', topic: '',
+      class: String(p?.cls || '10').replace(/\D/g, '') || '10',
+      board: p?.board || 'CBSE',
+      difficulty: 'medium', total_questions: 10,
+    }
+  })
   const [questions, setQuestions] = useState<any[]>([])
   const [sessionId, setSessionId] = useState('local')
   const [loading, setLoading] = useState(false)

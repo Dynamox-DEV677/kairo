@@ -13,7 +13,11 @@ import { getRaw, setRaw, activeBackend } from '../lib/storage'
 import { DecoratedAvatar, DECORATIONS, getDecor, setDecor } from '../components/AvatarDecor'
 import { isDevMode, setDevMode, getDevKeyRaw, setDevKey, looksLikeGroqKey, aiHeaders } from '../lib/devKey'
 
-const BOARDS = ['CBSE', 'ICSE', 'Maharashtra', 'Tamil Nadu', 'Karnataka', 'UP Board', 'Bihar Board']
+// Board list lives in one place now — Settings, Onboarding and Login used to
+// carry three different ones, so a student could pick IGCSE at signup and find
+// Settings showing CBSE. This selector is also no longer cosmetic: it drives
+// the curriculum the AI teaches to. See src/lib/curriculum.core.js.
+import { BOARD_OPTIONS } from '../lib/curriculum.core'
 const CLASSES = ['6', '7', '8', '9', '10', '11', '12']
 
 function safeProfile(): any {
@@ -293,8 +297,9 @@ export default function Settings() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               <Field label="Board">
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                  {BOARDS.map(b => (
-                    <ToggleChip key={b} type="button" selected={board === b} onClick={() => setBoard(b)}>{b}</ToggleChip>
+                  {BOARD_OPTIONS.map(b => (
+                    <ToggleChip key={b.value} type="button" title={b.hint}
+                      selected={board === b.value} onClick={() => setBoard(b.value)}>{b.label}</ToggleChip>
                   ))}
                 </div>
               </Field>

@@ -1,4 +1,5 @@
 import cbse from './cbse.json'
+import cambridge from './cambridge.json'
 
 /**
  * The syllabus map, and the only sanctioned way to turn text into a topic.
@@ -30,15 +31,29 @@ export interface ResolvedTopic {
   confidence: number
 }
 
-export type BoardId = 'cbse' | 'icse' | 'jee' | 'neet'
+export type BoardId = 'cbse' | 'cambridge' | 'icse' | 'jee' | 'neet'
 
 /** Below this, a match is a guess, and a guessed weakness is worse than none. */
 export const CONFIDENCE_FLOOR = 0.55
 
-const BOARDS: Partial<Record<BoardId, typeof cbse>> = { cbse }
+const BOARDS: Partial<Record<BoardId, any>> = { cbse, cambridge }
 
 export function boardAvailable(board: BoardId): boolean {
   return !!BOARDS[board]
+}
+
+/**
+ * Which key inside `classes` to read for a given student class.
+ *
+ * IGCSE is a two-year course for roughly 14-16 year olds and Cambridge does not
+ * divide the syllabus by year, so cambridge.json declares `singleStage` and
+ * every class number resolves to it. Splitting IGCSE content across "class 9"
+ * and "class 10" would be a structure we invented, which is exactly what the
+ * board map exists to prevent.
+ */
+function stageKey(board: BoardId, cls?: string): string | undefined {
+  const single = (BOARDS[board] as any)?.singleStage
+  return single || cls
 }
 
 interface FlatTopic extends Topic {
@@ -52,7 +67,8 @@ const flatCache = new Map<string, FlatTopic[]>()
 
 /** Every topic for a board, optionally narrowed to one class. */
 export function allTopics(board: BoardId, cls?: string): FlatTopic[] {
-  const cacheKey = `${board}:${cls ?? '*'}`
+  const want = stageKey(board, cls)
+  const cacheKey = `${board}:${want ?? '*'}`
   const hit = flatCache.get(cacheKey)
   if (hit) return hit
 
@@ -60,7 +76,7 @@ export function allTopics(board: BoardId, cls?: string): FlatTopic[] {
   const out: FlatTopic[] = []
   if (data) {
     for (const [c, subjects] of Object.entries(data.classes)) {
-      if (cls && c !== cls) continue
+      if (want && c !== want) continue
       for (const [subject, chapters] of Object.entries(subjects as Record<string, Record<string, Topic[]>>)) {
         for (const [chapter, topics] of Object.entries(chapters)) {
           for (const t of topics) {

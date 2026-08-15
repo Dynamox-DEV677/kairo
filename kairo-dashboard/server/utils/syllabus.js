@@ -27,12 +27,24 @@ function load(board) {
   try {
     data = JSON.parse(readFileSync(join(DATA_DIR, `${board}.json`), 'utf8'))
   } catch (e) {
-    // Only cbse.json exists today. A missing board must degrade to "cannot
-    // classify" rather than throwing on every memory write.
+    // cbse.json and cambridge.json exist today. A board with no verified map
+    // must degrade to "cannot classify" rather than throwing on every memory
+    // write — and must never silently borrow another board's chapters.
     console.warn(`[syllabus] no map for board "${board}":`, e.message)
   }
   boards.set(board, data)
   return data
+}
+
+/**
+ * Which key inside `classes` to read. Mirrors stageKey() in
+ * src/data/syllabus/index.ts — cambridge.json sets `singleStage: "igcse"`
+ * because Cambridge does not split the IGCSE syllabus by year, so every class
+ * number resolves to the one stage.
+ */
+function stageKey(board, cls) {
+  const single = load(board)?.singleStage
+  return single || cls
 }
 
 const STOP = new Set([
@@ -53,14 +65,15 @@ function tokenise(s) {
 }
 
 export function allTopics(board = 'cbse', cls) {
-  const key = `${board}:${cls ?? '*'}`
+  const want = stageKey(board, cls)
+  const key = `${board}:${want ?? '*'}`
   if (flatCache.has(key)) return flatCache.get(key)
 
   const data = load(board)
   const out = []
   if (data) {
     for (const [c, subjects] of Object.entries(data.classes)) {
-      if (cls && String(c) !== String(cls)) continue
+      if (want && String(c) !== String(want)) continue
       for (const [subject, chapters] of Object.entries(subjects)) {
         for (const [chapter, topics] of Object.entries(chapters)) {
           for (const t of topics) {
