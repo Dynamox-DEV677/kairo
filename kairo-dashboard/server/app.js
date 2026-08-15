@@ -70,9 +70,17 @@ import paymentRoutes       from './routes/payments.js'
 import twinRoutes          from './routes/twin.js'
 import studyRoutes         from './routes/study.js'
 
+// ENCRYPTION_SECRET is NOT defaulted. It used to be overwritten here with a
+// fixed string that is in the repo, which meant a deploy missing the env var
+// silently encrypted stored credentials, and signed password-reset tokens,
+// with a key anyone could read. Consumers now fail closed on their own:
+// config/crypto.js throws, and routes/passwordReset.js refuses to issue.
 if (!process.env.ENCRYPTION_SECRET || process.env.ENCRYPTION_SECRET.length < 32) {
-  process.env.ENCRYPTION_SECRET = 'kairo-default-secret-key-change-in-production-please-set-env-var-now'
-  console.warn('⚠️  ENCRYPTION_SECRET not set — using insecure default. Set it in Vercel env vars.')
+  console.error(
+    '[boot] ENCRYPTION_SECRET is not set (needs 64 hex chars). Credential ' +
+    'storage and password reset are DISABLED until it is. Generate one with: ' +
+    'node -e "console.log(require(\'crypto\').randomBytes(32).toString(\'hex\'))"',
+  )
 }
 if (!process.env.GROQ_API_KEYS && !process.env.GROQ_API_KEY) {
   console.warn('⚠️   GROQ_API_KEYS not set — AI features will fail.')

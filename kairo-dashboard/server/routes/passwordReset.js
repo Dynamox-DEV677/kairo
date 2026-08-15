@@ -11,8 +11,39 @@ router.use(requireSupabase)
 
 const TOKEN_TTL_MIN = Math.max(5, parseInt(process.env.RESET_TOKEN_TTL_MINUTES || '30', 10) || 30)
 
+/**
+ * Password-reset tokens are signed with this. The old fallback,
+ * 'kairo-default-secret', is a literal string in the repository — with the env
+ * var unset, anyone who read the source could forge a reset token for any
+ * email address and take over the account. Account recovery is exactly the
+ * path that must never be guessable.
+ *
+ * Throws rather than defaulting. Callers turn it into a 503, so reset is
+ * unavailable instead of being available to everyone.
+ */
 function resetSecret() {
-  return `${process.env.ENCRYPTION_SECRET || 'kairo-default-secret'}::password-reset`
+  const s = process.env.ENCRYPTION_SECRET
+  if (!s || s.length < 32) {
+    throw new Error('ENCRYPTION_SECRET is not configured — refusing to sign a reset token.')
+  }
+  return `${s}::password-reset`
+}
+
+/** Wraps a handler so a missing secret is a clean 503, not a 500 stack. */
+function needsSecret(handler) {
+  return async (req, res, next) => {
+    try {
+      resetSecret()
+    } catch {
+      return res.status(503).json({
+        error: {
+          code: 'RESET_UNAVAILABLE',
+          message: 'Password reset is temporarily unavailable. Please contact support.',
+        },
+      })
+    }
+    return handler(req, res, next)
+  }
 }
 
 function signResetToken({ userId, email, passwordChangedAt }) {
@@ -51,7 +82,7 @@ async function findAuthUser(email) {
   }
 }
 
-router.post('/forgot-password', async (req, res) => {
+router.post('/forgot-password', needsSecret(async (req, res) => {
   const rawEmail = (req.body?.email || '').trim().toLowerCase()
   const clientIp  = getClientIp(req)
   const userAgent = req.headers['user-agent'] || ''
@@ -100,9 +131,9 @@ router.post('/forgot-password', async (req, res) => {
     console.error('[password-reset] error:', e.message)
     return res.json(genericOk)
   }
-})
+}))
 
-router.post('/reset-password', async (req, res) => {
+router.post('/reset-password', needsSecret(async (req, res) => {
   const { token, password } = req.body || {}
 
   if (!token)    return res.status(400).json({ error: 'Reset token is required.' })
@@ -135,6 +166,6 @@ router.post('/reset-password', async (req, res) => {
     console.error('[password-reset/reset] error:', e.message)
     return res.status(500).json({ error: 'Could not reset password. Try requesting a new link.' })
   }
-})
+}))
 
 export default router
