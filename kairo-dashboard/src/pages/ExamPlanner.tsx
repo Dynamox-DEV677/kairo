@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { aiHeaders } from '../lib/devKey'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Sparkles, Target, Calendar, Clock, AlertTriangle, Trophy, BookOpen,
@@ -163,7 +164,7 @@ export default function ExamPlanner() {
     try {
       const r = await fetch('/api/exam-planner/generate', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...aiHeaders() },
         body: JSON.stringify({
           exam, examDate, hoursPerDay,
           weakAreas: weakAreas.split(',').map(s => s.trim()).filter(Boolean),
@@ -190,7 +191,7 @@ export default function ExamPlanner() {
     try {
       const r = await authFetch('/api/exam-planner/save', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...aiHeaders() },
         body: JSON.stringify({
           user_id: userId, exam, exam_date: examDate,
           hours_per_day: hoursPerDay, plan_json: plan,
@@ -231,7 +232,7 @@ export default function ExamPlanner() {
     try {
       await authFetch(`/api/exam-planner/${planId}/checkin`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...aiHeaders() },
         body: JSON.stringify({ block_key: key, done: nextDone }),
       })
     } catch {  }
@@ -244,7 +245,7 @@ export default function ExamPlanner() {
       if (planId) {
         await authFetch(`/api/exam-planner/${planId}/mock`, {
           method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', ...aiHeaders() },
           body: JSON.stringify({ score: mockScore, note: mockNote }),
         })
       }
@@ -255,7 +256,7 @@ export default function ExamPlanner() {
         : 50
       const r = await fetch('/api/exam-planner/replan', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...aiHeaders() },
         body: JSON.stringify({
           previousPlan: plan,
           mockScore, completionPercent: completionPct,
@@ -269,7 +270,7 @@ export default function ExamPlanner() {
       if (planId) {
         await authFetch(`/api/exam-planner/${planId}`, {
           method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', ...aiHeaders() },
           body: JSON.stringify({ plan_json: newPlan, hours_per_day: hoursPerDay }),
         })
       }
