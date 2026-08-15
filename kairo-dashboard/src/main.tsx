@@ -4,6 +4,7 @@ import './index.css'
 import App from './App.tsx'
 import { initPwa } from './lib/pwa'
 import { migrateStorage, removeRaw } from './lib/storage'
+import { runKnowledgeCleanup } from './lib/twin'
 
 /* Runs before anything reads storage. Renames the legacy kairo:* / kairo_*
    keys to kyno:*, strips the access_token and refresh_token that were being
@@ -13,6 +14,12 @@ import { migrateStorage, removeRaw } from './lib/storage'
 migrateStorage()
 
 removeRaw('kairo:font')
+
+// Phase 2.4: repairs knowledge-graph data already on this device — the "Ai"
+// node, the "General" tags, split topic rows, duplicate formulas, and chat
+// commands stored as doubts. Guarded to run once, and it never throws: a failed
+// cleanup leaves the messy data in place, which beats an app that won't start.
+runKnowledgeCleanup()
 
 /* ── Portrait lock (phones only) ──────────────────────────────────────────
    The layout is designed for a tall phone screen; rotating to landscape

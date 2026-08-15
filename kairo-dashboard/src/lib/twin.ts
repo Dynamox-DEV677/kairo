@@ -39,7 +39,7 @@ export interface MasteryRow {
 }
 
 export interface WeakTopic   { subject: string; topic: string; mastery: number; severity: number; attempts: number; lastStudiedAt: number | null }
-export interface ForgetTopic { subject: string; topic: string; hoursUntilForget: number; mastery: number }
+export interface ForgetTopic { subject: string; topic: string; hoursUntilForget: number; mastery: number; overdue?: boolean; label?: string }
 
 export interface Twin {
   computedAt:          number
@@ -175,6 +175,8 @@ import { exportGameState, importGameState } from './game'
 import { selectStreak, selectPrediction, selectWeakTopics, selectStrongTopics } from './selectors.core.js'
 // Phase 2: nothing reaches the graph without passing through these.
 import { canonicalTopic, classifyChatTurn, isSameFormula, findRecentDuplicate } from './knowledgeHygiene.js'
+import { revisionQueue } from './srs.js'
+import { cleanupLocalData, summarise } from './cleanupLocalData.js'
 
 const STORAGE_PREFIX = 'kairo:twin:'
 const MAX_EVENTS     = 800
@@ -1119,17 +1121,27 @@ function computeConfidence(mastery: MasteryRow[], events: TwinEvent[]) {
   return clamp01(0.45 * masteryFactor + 0.55 * accFactor)
 }
 
-function forgettingSoon(mastery: MasteryRow[], max = 8): ForgetTopic[] {
+/**
+ * Revise Soon.
+ *
+ * Two things were wrong. The window was 7 days against a ~12 hour horizon, so
+ * every topic qualified and the panel told the student their whole syllabus was
+ * slipping at once. And `Math.max(0, …)` clamped anything already past due to
+ * zero, which is why every row read "forgetting in 0h" — including topics
+ * answered correctly minutes earlier.
+ *
+ * Now: only what is genuinely due inside 48h, and overdue says overdue.
+ */
+function forgettingSoon(mastery: MasteryRow[], max = 5): ForgetTopic[] {
   const now = Date.now()
-  return [...mastery]
-    .filter(m => m.forgetAt && m.forgetAt < now + 7 * 86_400_000)
-    .sort((a, b) => a.forgetAt - b.forgetAt)
-    .slice(0, max)
-    .map(m => ({
-      subject:           m.subject,
-      topic:             m.topic,
-      hoursUntilForget:  Math.max(0, +((m.forgetAt - now) / 3600_000).toFixed(1)),
-      mastery:           m.mastery,
+  return revisionQueue(mastery as unknown[], { now, withinHours: 48, max })
+    .map((r: any) => ({
+      subject:           r.subject,
+      topic:             r.topic,
+      hoursUntilForget:  +Math.max(0, r.hours ?? 0).toFixed(1),
+      mastery:           r.mastery,
+      overdue:           r.state === 'overdue',
+      label:             r.label,
     }))
 }
 
@@ -1773,4 +1785,37 @@ function labelEvent(e: TwinEvent): string {
   const verb = e.type.replace(/_/g, ' ')
   if (e.topic) return `${verb}: ${e.topic}`
   return verb
+}
+
+/**
+ * Phase 2.4 — one-time repair of data already on this device.
+ *
+ * knowledgeHygiene stops new junk; this fixes the existing "Ai" node, the
+ * "General" tags, the split Trigonometry rows and the six Ohm's Law formulas.
+ *
+ * Guarded so it runs once per device. The report is logged rather than
+ * swallowed: this deletes real records, and a student who loses history
+ * deserves to be able to see what went and why.
+ */
+const CLEANUP_KEY = 'kyno:cleanup:v1'
+
+export function runKnowledgeCleanup(force = false): string {
+  try {
+    if (!force && storage.getRaw(CLEANUP_KEY)) return 'already run'
+    const current = loadState()
+    const { state: cleaned, report } = cleanupLocalData(current)
+    const summary = summarise(report)
+    if (summary !== 'nothing to clean') {
+      saveState(cleaned as TwinState)
+      console.info('[kyno:cleanup]', summary)
+      for (const d of report.details.slice(0, 20)) console.info('  ·', d)
+    }
+    storage.setRaw(CLEANUP_KEY, String(Date.now()))
+    return summary
+  } catch (e) {
+    // Never block boot. A failed cleanup leaves the messy data in place, which
+    // is strictly better than an app that will not start.
+    console.error('[kyno:cleanup] failed, leaving data untouched:', e)
+    return 'failed'
+  }
 }
