@@ -17,8 +17,51 @@ export function unreadCount(): number {
   return listNotifications().filter(n => !n.read).length
 }
 
-export function addNotification(text: string, icon = '✨'): void {
+/**
+ * Notification kinds, kept separate so a student can silence one without
+ * silencing the others.
+ *
+ * `study` is what they signed up for — a nudge about their own plan. `product`
+ * is us talking about ourselves, so it defaults OFF: a 14-year-old should not
+ * have to opt out of being marketed to inside a study app. `achievement` is
+ * their own progress, which is the one kind that is always welcome.
+ */
+export type NotificationKind = 'study' | 'achievement' | 'product'
+
+export interface NotificationPrefs {
+  study: boolean
+  achievement: boolean
+  product: boolean
+}
+
+const PREFS_KEY = 'kyno:notifs:prefs'
+const DEFAULT_PREFS: NotificationPrefs = { study: true, achievement: true, product: false }
+
+export function getNotificationPrefs(): NotificationPrefs {
+  try {
+    const raw = getRaw(PREFS_KEY)
+    if (!raw) return { ...DEFAULT_PREFS }
+    return { ...DEFAULT_PREFS, ...JSON.parse(raw) }
+  } catch (e) {
+    console.warn('[notifications] prefs unreadable, using defaults:', e)
+    return { ...DEFAULT_PREFS }
+  }
+}
+
+export function setNotificationPref(kind: NotificationKind, on: boolean): NotificationPrefs {
+  const next = { ...getNotificationPrefs(), [kind]: on }
+  try { setRaw(PREFS_KEY, JSON.stringify(next)) }
+  catch (e) { console.warn('[notifications] could not save prefs:', e) }
+  try { window.dispatchEvent(new Event('kairo:notif')) } catch { /* no window in tests */ }
+  return next
+}
+
+export function addNotification(text: string, icon = '✨', kind: NotificationKind = 'study'): void {
   if (typeof window === 'undefined') return
+  // The Settings toggle used to be pure component state — nothing persisted it
+  // and nothing read it, so turning reminders off did nothing at all. This is
+  // the read that makes it real.
+  if (!getNotificationPrefs()[kind]) return
   const list = listNotifications()
   if (list[0] && list[0].text === text && Date.now() - list[0].ts < 60_000) return
   const n: KynoNotification = {

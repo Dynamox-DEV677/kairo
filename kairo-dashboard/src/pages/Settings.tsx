@@ -7,6 +7,7 @@ import DeviceTransferModal from '../components/DeviceTransferModal'
 import ResetPasscode from './ResetPasscode'
 import { seedDemo, resetAllData, reconcileWithCloud, deleteCloudSnapshot } from '../lib/twin'
 import { loadGame } from '../lib/game'
+import { getNotificationPrefs, setNotificationPref } from '../lib/notifications'
 import { getRaw, setRaw, activeBackend } from '../lib/storage'
 import { DecoratedAvatar, DECORATIONS, getDecor, setDecor } from '../components/AvatarDecor'
 import { isDevMode, setDevMode, getDevKeyRaw, setDevKey, looksLikeGroqKey } from '../lib/devKey'
@@ -28,7 +29,9 @@ export default function Settings() {
   const [pic, setPic] = useState<string | null>(
     () => getRaw('kairo_profile_pic') ?? localStorage.getItem('kairo_profile_pic'),
   )
-  const [notifs, setNotifs] = useState(true)
+  // Persisted per kind — the old single boolean was component state that
+  // nothing saved and nothing read.
+  const [notifPrefs, setNotifPrefs] = useState(getNotificationPrefs)
   const [saved, setSaved] = useState(false)
   const [backupOpen, setBackupOpen] = useState(false)
   const [transferOpen, setTransferOpen] = useState(false)
@@ -414,9 +417,21 @@ export default function Settings() {
       <Section icon={<Bell size={14} />} title="Notifications">
         <ToggleRow
           label="Study reminders"
-          desc="Get daily nudges to stay on track"
-          value={notifs}
-          onChange={setNotifs}
+          desc="One nudge a day about your own plan"
+          value={notifPrefs.study}
+          onChange={v => setNotifPrefs(setNotificationPref('study', v))}
+        />
+        <ToggleRow
+          label="Progress and streaks"
+          desc="When you hit a milestone or a streak"
+          value={notifPrefs.achievement}
+          onChange={v => setNotifPrefs(setNotificationPref('achievement', v))}
+        />
+        <ToggleRow
+          label="News about Kyno"
+          desc="New features and updates. Off by default."
+          value={notifPrefs.product}
+          onChange={v => setNotifPrefs(setNotificationPref('product', v))}
         />
       </Section>
 
