@@ -22,37 +22,64 @@ interface NavItem {
   badge?: number
   to: string
   color?: string
+  /**
+   * Known to be incomplete, duplicated, or dependent on something the student
+   * has not got. Sorted below the finished tools and rendered with a visible
+   * "beta" chip. The code stays; it just stops being presented as finished.
+   *
+   * `why` is the reason, kept next to the flag so the next person can tell
+   * whether it still applies rather than guessing.
+   */
+  beta?: string
 }
 
+/**
+ * Order matters: the first DEFAULT_VISIBLE entries are what a student sees
+ * before expanding, so everything above the beta block must genuinely work
+ * end to end.
+ */
 const STUDENT_NAV: NavItem[] = [
+  // ── working, in rough order of daily usefulness ──────────────────────────
   { label: 'Home',            icon: Sparkles,        to: 'home',             color: '#A5B4FC' },
-  { label: 'Kyno',        icon: Cpu,             to: 'kairo-os',         color: '#A5B4FC' },
   { label: "Kyno's Solver",  icon: MessageCircle,   to: 'doubt',            color: '#A5B4FC' },
-  { label: 'Study Mode · Live', icon: Camera,       to: 'camera-live',      color: '#4FD8E8' },
-  { label: 'Mistake Analysis',icon: Activity,        to: 'mistakes',         color: '#A5B4FC' },
-  { label: 'Revision Sim',    icon: Zap,             to: 'simulator',        color: '#A5B4FC' },
-  { label: 'Concept Map',     icon: Network,         to: 'concept-map',      color: '#A5B4FC' },
-  { label: 'AI Notebook',     icon: BookOpen,        to: 'notebook',         color: '#A5B4FC' },
-  { label: 'Battle Mode',     icon: Swords,          to: 'battle',           color: '#A5B4FC' },
-  { label: 'League',          icon: Trophy,          to: 'league',           color: '#FFB44A' },
-  { label: 'Explain Mistake', icon: AlertTriangle,   to: 'explain-mistake',  color: '#A5B4FC' },
-  { label: 'Teach Back',      icon: GraduationCap,   to: 'teach-back',       color: '#4FD8E8' },
-  { label: 'Knowledge Graph', icon: Share2,          to: 'knowledge',        color: '#A5B4FC' },
-  { label: 'Camera Study',    icon: Camera,          to: 'camera',           color: '#A5B4FC' },
-  { label: 'Focus Mode',      icon: Target,          to: 'focus',            color: '#A5B4FC' },
+  { label: 'Adaptive Quiz',   icon: Brain,           to: 'quiz',             color: '#A5B4FC' },
   { label: 'Flashcards',      icon: BookMarked,      to: 'flashcards',       color: '#A5B4FC' },
+  { label: 'Camera Study',    icon: Camera,          to: 'camera',           color: '#A5B4FC' },
+  { label: 'Mistake Analysis',icon: Activity,        to: 'mistakes',         color: '#A5B4FC' },
+  { label: 'AI Notebook',     icon: BookOpen,        to: 'notebook',         color: '#A5B4FC' },
+  { label: 'Exam Planner',    icon: Target,          to: 'exam-planner',     color: '#A5B4FC' },
+
+  { label: 'Focus Mode',      icon: Target,          to: 'focus',            color: '#A5B4FC' },
+  { label: 'Study Plan',      icon: Calendar,        to: 'study-plan',       color: '#A5B4FC' },
+  { label: 'Knowledge Graph', icon: Share2,          to: 'knowledge',        color: '#A5B4FC' },
+  { label: 'Formula Sheet',   icon: FunctionSquare,  to: 'formula',          color: '#A5B4FC' },
   { label: 'Grader',          icon: FileText,        to: 'essay',            color: '#A5B4FC' },
+  { label: 'Teach Back',      icon: GraduationCap,   to: 'teach-back',       color: '#4FD8E8' },
+  { label: 'League',          icon: Trophy,          to: 'league',           color: '#FFB44A' },
+  { label: 'Topic Architect', icon: Brain,           to: 'topic-architect',  color: '#A5B4FC' },
+  { label: 'Writing Tools',   icon: Edit3,           to: 'writing',          color: '#A5B4FC' },
+
+  // ── beta: real screens, but not finished enough to present as done ───────
+  { label: 'Kyno',            icon: Cpu,             to: 'kairo-os',         color: '#A5B4FC',
+    beta: 'Duplicates Home — the two are being merged' },
+  { label: 'Study Mode · Live', icon: Camera,        to: 'camera-live',      color: '#4FD8E8',
+    beta: 'Camera hang fixed; the live session flow still needs a pass' },
+  { label: 'Concept Map',     icon: Network,         to: 'concept-map',      color: '#A5B4FC',
+    beta: 'Canvas renders nothing — use Knowledge Graph' },
+  { label: 'Battle Mode',     icon: Swords,          to: 'battle',           color: '#A5B4FC',
+    beta: 'Daily challenge works; the leaderboard needs other players' },
+  { label: 'Revision Sim',    icon: Zap,             to: 'simulator',        color: '#A5B4FC',
+    beta: 'Exam mode is labelled untimed and has no timer' },
+  { label: 'Explain Mistake', icon: AlertTriangle,   to: 'explain-mistake',  color: '#A5B4FC',
+    beta: 'Explains at topic level, not per mistake; merging into Mistake Analysis' },
+  { label: 'Concept Tools',   icon: Lightbulb,       to: 'concept',          color: '#A5B4FC',
+    beta: 'Overlaps Writing Tools — being merged' },
+  { label: 'Pomodoro',        icon: Timer,           to: 'pomodoro',         color: '#A5B4FC',
+    beta: 'Duplicate of Focus Mode' },
   // Was labelled "My Tasks" but routed to 'school', so tapping it opened
   // School Hub saying "Not in a school yet". Named for where it actually goes.
-  { label: 'School Hub',      icon: BookOpen,        to: 'school',           color: '#A5B4FC' },
-  { label: 'Study Plan',      icon: Calendar,        to: 'study-plan',       color: '#A5B4FC' },
-  { label: 'Exam Planner',    icon: Target,          to: 'exam-planner',     color: '#A5B4FC' },
-  { label: 'Topic Architect', icon: Brain,           to: 'topic-architect',  color: '#A5B4FC' },
-  { label: 'Adaptive Quiz',   icon: Brain,           to: 'quiz',             color: '#A5B4FC' },
-  { label: 'Writing Tools',   icon: Edit3,           to: 'writing',          color: '#A5B4FC' },
-  { label: 'Concept Tools',   icon: Lightbulb,       to: 'concept',          color: '#A5B4FC' },
-  { label: 'Formula Sheet',   icon: FunctionSquare,  to: 'formula',          color: '#A5B4FC' },
-  { label: 'Pomodoro',        icon: Timer,           to: 'pomodoro',         color: '#A5B4FC' },
+  { label: 'School Hub',      icon: BookOpen,        to: 'school',           color: '#A5B4FC',
+    beta: 'Only joinable from the login screen — unreachable for most students' },
 ]
 
 const TEACHER_NAV: NavItem[] = [
@@ -726,6 +753,26 @@ function NavItemRow({ item, isActive, isHovered, isGenerating = false, compact =
           whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
         }}>
           {item.label}
+        </span>
+      )}
+
+      {/* Unfinished tools say so. The alternative is a student tapping into a
+          screen that looks done, finding it isn't, and reasonably concluding
+          the whole app is like that. The reason is in the tooltip. */}
+      {!compact && item.beta && !isGenerating && (
+        <span
+          title={item.beta}
+          style={{
+            fontSize: 8.5, fontWeight: 700, letterSpacing: 0.6,
+            textTransform: 'uppercase',
+            color: '#C8952A',
+            background: 'rgba(255, 180, 74, 0.13)',
+            border: '1px solid rgba(255, 180, 74, 0.3)',
+            borderRadius: 999, padding: '2px 6px',
+            flexShrink: 0,
+          }}
+        >
+          beta
         </span>
       )}
 
