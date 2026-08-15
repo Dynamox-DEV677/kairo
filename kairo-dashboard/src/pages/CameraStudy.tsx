@@ -32,6 +32,46 @@ Format your response in clean markdown:
 - No code fences around prose
 - No <think> tags`
 
+/**
+ * NCERT grounding.
+ *
+ * Every prompt here used to say "explain simply for a Class 10 student", which
+ * produces a technically correct answer in the wrong dialect. CBSE marks
+ * against NCERT's own wording and NCERT's own method, so an answer that uses
+ * different terminology or a shortcut the book does not teach can be right and
+ * still lose marks. That is worse than useless to a student revising for the
+ * board — it teaches them to write something an examiner will not reward.
+ *
+ * These rules go on every content prompt in this file.
+ */
+const NCERT_RULES = `
+
+Follow the NCERT textbook, not a general or international treatment:
+- Use NCERT's own terminology and definitions. If NCERT calls it "displacement reaction", do not call it "single replacement".
+- Use the method NCERT teaches for this chapter, even if a faster method exists. If you mention a shortcut, mark it clearly as extra and show the NCERT method first.
+- Use SI units and the symbols as printed in NCERT.
+- Where NCERT gives a standard worked example for this idea, follow its structure.
+- Stay inside the CBSE Class 9-12 syllabus. Do not bring in higher-level material (calculus in a Class 10 answer, orbital hybridisation where NCERT only wants valency) unless the page itself does.
+- If you are not sure whether something is in the NCERT syllabus, say so plainly rather than presenting it as required knowledge.`
+
+/**
+ * CBSE awards marks per step, not for the final number. A correct answer with
+ * no formula line loses the formula mark; the right method with an arithmetic
+ * slip keeps most of them. Showing the answer in the shape the examiner marks
+ * is the difference between a student who knows the physics and a student who
+ * scores for it.
+ */
+const CBSE_STEP_RULES = `
+
+Write the solution the way it must be written to earn full marks in a CBSE paper:
+1. **Given** — list what the question provides, with units.
+2. **To find** — state what is being asked.
+3. **Formula** — write the formula on its own line before substituting anything.
+4. **Substitution** — put the values in, keeping units.
+5. **Answer** — final value on its own line, with the correct unit, boxed as **bold**.
+
+Never skip the formula line even if the arithmetic is trivial — it carries a mark on its own.`
+
 const CHECK_PROMPT = `This image contains a student's OWN handwritten working for a problem. Your job is to audit their working line by line and find the EXACT step where it first goes wrong.
 
 Work through it silently first: solve the problem correctly yourself, then compare the student's work against your solution step by step.
@@ -60,21 +100,23 @@ State the correct final answer on its own line, with units.
 ## Stop this repeating
 Two specific checks the student can run on similar problems to catch this class of error.
 
-Be precise and never invent steps the student didn't write. If the handwriting is unreadable in places, say so in the Comment for that step instead of guessing.` + MD_RULES
+Be precise and never invent steps the student didn't write. If the handwriting is unreadable in places, say so in the Comment for that step instead of guessing.` + NCERT_RULES + MD_RULES
 
 const ACTIONS = [
   { id: 'check',     label: 'Check my work', icon: CheckCircle2, color: '#4FD8E8',
     hint: 'Photo of YOUR working — finds the exact wrong step',
     prompt: CHECK_PROMPT },
   { id: 'solve',     label: 'Solve',         icon: Sparkles,     color: '#7C5CFF',
-    hint: 'Solves the question step by step',
-    prompt: 'Read the question(s) in this image carefully. Solve each one step-by-step with clear working.' + MD_RULES },
+    hint: 'Solves it the way CBSE marks it — formula, substitution, units',
+    prompt: 'Read the question(s) in this image carefully and solve each one.\n\nName the chapter this question comes from at the top, as "Class <n> <Subject> · <Chapter>". If you are not confident which chapter it is, write "Chapter: not identified" rather than guessing.'
+      + CBSE_STEP_RULES + NCERT_RULES + MD_RULES },
   { id: 'explain',   label: 'Explain',       icon: Lightbulb,    color: '#A5B4FC',
-    hint: 'Breaks the concept down simply',
-    prompt: 'Explain the concept(s) shown in this image as if teaching a Class 10 student in India. Use simple language, give an analogy, end with a 3-line summary under "## Summary".' + MD_RULES },
+    hint: 'Explains it in NCERT’s own words',
+    prompt: 'Explain the concept(s) shown in this image to an Indian school student.\n\nStructure:\n## What the book calls it\nThe NCERT definition, in NCERT\'s wording.\n## In plain words\nThe same idea in everyday language, with one analogy.\n## Worked example\nA short example in NCERT\'s style.\n## Common mistake\nThe error students most often make here, and how to avoid it.\n## Quick check\nOne question the student can answer to test themselves.'
+      + NCERT_RULES + MD_RULES },
   { id: 'flashcards', label: 'Flashcards',   icon: BookmarkPlus, color: '#A5B4FC',
-    hint: 'Turns the page into revision cards',
-    prompt: 'Create 8-10 high-quality flashcards from the content in this image. Return ONLY a JSON array: [{"front":"question","back":"answer"}]. No other text, no markdown, no explanation.' },
+    hint: 'Board-exam style cards from the page',
+    prompt: 'Create 8-10 flashcards from the STUDY CONTENT in this image, in the style of CBSE board questions — definitions, formulas, reasons, differences, and one-mark recall the exam actually asks for.\n\nUse NCERT terminology. Do not ask about page numbers, exercise numbers, or anything that is not subject knowledge.\n\nIf the image is NOT study material (a receipt, a photo, a screenshot, a booking, a form), return exactly: {"notStudyMaterial": true}\n\nOtherwise return ONLY a JSON array: [{"front":"question","back":"answer"}]. No other text, no markdown, no explanation.' },
   /**
    * The model only READS the equation. The balancing is done in code by
    * src/lib/balanceEquation.js, because balancing is linear algebra with one
@@ -86,7 +128,7 @@ const ACTIONS = [
     prompt: 'Read the chemical equation in this image. Transcribe it EXACTLY as written, including any existing coefficients, using -> for the arrow. Do NOT balance it. Do not solve anything.\n\nReturn ONLY a JSON object: {"equation":"<the equation as written>","readable":true|false}' },
   { id: 'summarize', label: 'Summarize',     icon: FileText,     color: '#A5B4FC',
     hint: 'Condenses notes into key points',
-    prompt: 'Summarize the content in this image into clear bullet points organized under "## Section Name" headings. Capture all key facts, formulas, and definitions. Keep it tight.' + MD_RULES },
+    prompt: 'Summarize the STUDY CONTENT in this image into clear bullet points under "## Section Name" headings. Capture every definition, formula, law and labelled diagram part exactly as the book states them — a summary that reworded NCERT would cost the student marks.' + NCERT_RULES + MD_RULES },
 ]
 
 interface VisionMsg {
@@ -331,6 +373,19 @@ export default function CameraStudy() {
          *    response looked identical to success.
          */
         const md = typeof text === 'string' ? text : ''
+
+        // Refuses non-study images. It previously made cards from a hotel
+        // booking — "What is the check-out date?" is not revision, and filing
+        // it into Flashcards pollutes the deck the student actually revises.
+        if (/"notStudyMaterial"\s*:\s*true/.test(md)) {
+          setCards([])
+          setResult('')
+          setErr("That doesn't look like study material. Photograph a textbook page, your notes, or a question.")
+          setBusy(false)
+          setActiveAction(null)
+          return
+        }
+
         const match = md.match(/\[[\s\S]*\]/)
         let parsed: { front: string; back: string }[] = []
         try {
