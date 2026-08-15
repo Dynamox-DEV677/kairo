@@ -16,3 +16,16 @@ export function selectPrediction(events: EventLike[] | null | undefined, outOf?:
   ready: boolean; need?: number; reason?: string
   low?: number; high?: number; mid?: number; outOf?: number; basedOn?: number
 }
+
+export interface TopicRow {
+  topicId: string | null
+  /** Kept required to match twin.ts WeakTopic, which these feed directly. */
+  topic: string
+  subject: string
+  mastery: number
+  attempts: number
+  severity: number
+  lastStudiedAt: number | null
+}
+export function selectWeakTopics(mastery: any[] | null | undefined, opts?: { max?: number; minAttempts?: number }): TopicRow[]
+export function selectStrongTopics(mastery: any[] | null | undefined, opts?: { max?: number; minAttempts?: number }): TopicRow[]

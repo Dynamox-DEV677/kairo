@@ -10,6 +10,7 @@ import assert from 'node:assert/strict'
 import {
   selectStreak, selectXP, selectLevel, selectMastered, selectRetention,
   selectPrediction, PREDICTION_MIN_SCORED, MASTERY_BAR,
+  selectWeakTopics, selectStrongTopics,
 } from '../../src/lib/selectors.core.js'
 
 const DAY = 86_400_000
@@ -210,4 +211,37 @@ test('a brand-new account shows honest zeros, not fake numbers', () => {
   assert.equal(snap.mastered, 0)
   assert.equal(snap.retention, null, 'retention must be unknown, not 0%')
   assert.equal(snap.prediction.ready, false, 'must not predict from no data')
+})
+
+// --- weak / strong topics -------------------------------------------------
+
+test('a topic is never both weak and strong', () => {
+  const m = [
+    { topic: 'Electricity', mastery: 0.2, attempts: 6 },
+    { topic: 'Trigonometry', mastery: 0.85, attempts: 5 },
+    { topic: 'Light', mastery: 0.5, attempts: 4 },
+  ]
+  const weak = selectWeakTopics(m).map(t => t.topic)
+  const strong = selectStrongTopics(m).map(t => t.topic)
+  assert.equal(weak.filter(t => strong.includes(t)).length, 0,
+    `overlap: ${weak.filter(t => strong.includes(t))}`)
+})
+
+test('one unlucky answer does not brand a topic weak', () => {
+  const m = [{ topic: 'Heredity', mastery: 0.1, attempts: 1 }]
+  assert.deepEqual(selectWeakTopics(m), [], 'called weak after a single attempt')
+})
+
+test('weak topics come back worst-first', () => {
+  const m = [
+    { topic: 'A', mastery: 0.40, attempts: 3 },
+    { topic: 'B', mastery: 0.10, attempts: 3 },
+    { topic: 'C', mastery: 0.25, attempts: 3 },
+  ]
+  assert.deepEqual(selectWeakTopics(m).map(t => t.topic), ['B', 'C', 'A'])
+})
+
+test('severity is derived from mastery, not stored separately', () => {
+  const [t] = selectWeakTopics([{ topic: 'X', mastery: 0.3, attempts: 4 }])
+  assert.equal(t.severity, 0.7)
 })

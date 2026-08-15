@@ -128,3 +128,49 @@ export function selectPrediction(events, outOf = 100) {
     basedOn: recent.length,
   }
 }
+
+/**
+ * Weak topics, ranked worst first.
+ *
+ * There were two answers to "what am I weak at": this list, derived from
+ * mastery, and a comma-separated text field the student typed into their
+ * profile. The typed one fed the AI prompt, so a student who never filled it in
+ * got generic advice while the app already knew their real weak spots.
+ *
+ * `minAttempts` guards against calling a topic weak after one unlucky answer.
+ */
+export function selectWeakTopics(mastery, { max = 6, minAttempts = 2 } = {}) {
+  return (mastery || [])
+    .filter(m => Number(m?.attempts) >= minAttempts && Number(m?.mastery) < 0.45)
+    .sort((a, b) => (a.mastery || 0) - (b.mastery || 0))
+    .slice(0, max)
+    .map(m => ({
+      topicId: m.topicId || m.topic || null,
+      topic: m.topic,
+      subject: m.subject,
+      mastery: Math.round((Number(m.mastery) || 0) * 100) / 100,
+      attempts: Number(m.attempts) || 0,
+      // Severity is what the UI sorts and colours by. Deriving it from mastery
+      // keeps it from becoming a third independent number.
+      severity: Math.round((1 - (Number(m.mastery) || 0)) * 100) / 100,
+      lastStudiedAt: m.lastStudiedAt ?? null,
+    }))
+}
+
+export function selectStrongTopics(mastery, { max = 5, minAttempts = 3 } = {}) {
+  return (mastery || [])
+    .filter(m => Number(m?.attempts) >= minAttempts && Number(m?.mastery) >= MASTERY_BAR)
+    .sort((a, b) => (b.mastery || 0) - (a.mastery || 0))
+    .slice(0, max)
+    .map(m => ({
+      topicId: m.topicId || m.topic || null,
+      topic: m.topic,
+      subject: m.subject,
+      mastery: Math.round((Number(m.mastery) || 0) * 100) / 100,
+      attempts: Number(m.attempts) || 0,
+      // Zero by definition — a strong topic has no severity. Kept on the shape
+      // so weak and strong lists stay interchangeable for the UI.
+      severity: 0,
+      lastStudiedAt: m.lastStudiedAt ?? null,
+    }))
+}

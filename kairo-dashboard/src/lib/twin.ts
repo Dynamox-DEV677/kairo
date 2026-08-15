@@ -169,7 +169,7 @@ import * as storage from './storage'
 import { exportGameState, importGameState } from './game'
 // Shared arithmetic — see selectors.core.js. Imported here so the twin cannot
 // disagree with Home about a number they both display.
-import { selectStreak, selectPrediction } from './selectors.core.js'
+import { selectStreak, selectPrediction, selectWeakTopics, selectStrongTopics } from './selectors.core.js'
 
 const STORAGE_PREFIX = 'kairo:twin:'
 const MAX_EVENTS     = 800
@@ -1114,18 +1114,6 @@ function computeConfidence(mastery: MasteryRow[], events: TwinEvent[]) {
   return clamp01(0.45 * masteryFactor + 0.55 * accFactor)
 }
 
-function topTopics(mastery: MasteryRow[], { weak, max }: { weak: boolean; max: number }): WeakTopic[] {
-  const sorted = [...mastery].sort((a, b) => weak ? a.mastery - b.mastery : b.mastery - a.mastery)
-  return sorted.slice(0, max).map(m => ({
-    subject:        m.subject,
-    topic:          m.topic,
-    mastery:        m.mastery,
-    attempts:       m.attempts,
-    severity:       weak ? +(1 - m.mastery).toFixed(2) : 0,
-    lastStudiedAt:  m.lastStudiedAt,
-  }))
-}
-
 function forgettingSoon(mastery: MasteryRow[], max = 8): ForgetTopic[] {
   const now = Date.now()
   return [...mastery]
@@ -1374,8 +1362,11 @@ export function recompute(state: TwinState) {
   const perfTrend   = computePerformanceTrend(events)
   const burnout     = computeBurnout(events, perfTrend)
   const confidence  = computeConfidence(state.mastery, events)
-  const weak        = topTopics(state.mastery, { weak: true,  max: 6 })
-  const strong      = topTopics(state.mastery, { weak: false, max: 5 })
+  // Same selectors Home uses, so the weak list cannot differ between screens.
+  // Also gains a minimum-attempts guard: topTopics() just sorted by mastery, so
+  // one unlucky answer was enough to brand a topic weak.
+  const weak        = selectWeakTopics(state.mastery, { max: 6 })
+  const strong      = selectStrongTopics(state.mastery, { max: 5 })
   const forgetSoon  = forgettingSoon(state.mastery, 8)
   // Streak and prediction come from the shared selectors, so the Kyno tab
   // cannot disagree with Home about the same number. Both read the FULL event
