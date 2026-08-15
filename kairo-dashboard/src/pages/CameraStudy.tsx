@@ -6,11 +6,12 @@ import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
 import {
   Camera, Upload, X, Sparkles, FileText, BookmarkPlus,
-  Lightbulb, RotateCcw, Loader2, CheckCircle2, Scale,
+  Lightbulb, RotateCcw, Loader2, CheckCircle2, Scale, FunctionSquare,
 } from 'lucide-react'
 import { saveRecentChat, makeTitle } from '../lib/recentChats'
 import { aiHeaders } from '../lib/devKey'
-import { recordMistake, recordFlashcard } from '../lib/twin'
+import { recordMistake, recordFlashcard, listFormulas } from '../lib/twin'
+import { formulaSignature } from '../lib/knowledgeHygiene.js'
 import { balance } from '../lib/balanceEquation.js'
 import { awardXP } from '../lib/game'
 
@@ -126,6 +127,21 @@ const ACTIONS = [
   { id: 'balance',   label: 'Balance',       icon: Scale,        color: '#4FD8E8',
     hint: 'Photo of an unbalanced equation — balances it with the working',
     prompt: 'Read the chemical equation in this image. Transcribe it EXACTLY as written, including any existing coefficients, using -> for the arrow. Do NOT balance it. Do not solve anything.\n\nReturn ONLY a JSON object: {"equation":"<the equation as written>","readable":true|false}' },
+  /**
+   * Formula Reader.
+   *
+   * Matches against the student's OWN formula sheet by symbol signature — the
+   * same matcher that collapsed the six Ohm's Law cards, so "V = IR" on the
+   * page finds the card they saved as "R = V/I". There is no second formula
+   * database: inventing one would mean two sources of truth for the same fact,
+   * and the rest of this app has spent a lot of effort removing exactly that.
+   *
+   * No match is not a failure — it falls through to a real NCERT-grounded
+   * explanation rather than guessing at which formula it might be.
+   */
+  { id: 'formula',   label: 'Formula',       icon: FunctionSquare, color: '#7C5CFF',
+    hint: 'Snap a formula — what it means, and where it comes from',
+    prompt: 'Read the single most prominent formula or equation in this image.\n\nReturn ONLY a JSON object:\n{"formula":"<the formula exactly as written, plain notation>","name":"<its usual name if you are confident, else null>","readable":true|false}\n\nDo not explain it. Do not solve it. If no formula is visible, set readable to false.' },
   { id: 'summarize', label: 'Summarize',     icon: FileText,     color: '#A5B4FC',
     hint: 'Condenses notes into key points',
     prompt: 'Summarize the STUDY CONTENT in this image into clear bullet points under "## Section Name" headings. Capture every definition, formula, law and labelled diagram part exactly as the book states them — a summary that reworded NCERT would cost the student marks.' + NCERT_RULES + MD_RULES },
@@ -331,6 +347,47 @@ export default function CameraStudy() {
         ],
         updated: Date.now(),
       })
+
+      if (action.id === 'formula') {
+        const md = typeof text === 'string' ? text : ''
+        const obj = md.match(/\{[\s\S]*\}/)
+        let read: { formula?: string; name?: string | null } = {}
+        try { read = obj ? JSON.parse(obj[0]) : {} }
+        catch (e) { console.warn('[camera] formula JSON did not parse:', e) }
+
+        const expr = (read.formula || '').trim()
+        if (!expr) {
+          setResult('')
+          setErr("Couldn't find a formula in that photo. Try a closer shot of just the formula.")
+        } else {
+          // Signature match against the student's own sheet: V = IR finds the
+          // card they saved as R = V/I, because both relate {I, R, V}.
+          const sig = formulaSignature(expr)
+          const match = sig
+            ? listFormulas().find(f => formulaSignature(f.expr) === sig)
+            : undefined
+
+          if (match) {
+            const variants = (match.variants || []).filter(Boolean)
+            setResult(
+              `## ${match.name || 'From your formula sheet'}\n\n**${match.expr}**\n\n` +
+              (variants.length ? `Also written as: ${variants.map(v => `\`${v}\``).join(', ')}\n\n` : '') +
+              (match.topic ? `**Topic:** ${match.topic}\n\n` : '') +
+              (match.subject ? `**Subject:** ${match.subject}\n\n` : '') +
+              `## Read from your page\n\n\`${expr}\`\n\n` +
+              `You already have this one saved — it matched a formula on your sheet.`,
+            )
+          } else {
+            // Honest fallback: say it is not on the sheet, then explain it for
+            // real rather than guessing at which formula it resembles.
+            setResult(
+              `## Read from your page\n\n\`${expr}\`` +
+              (read.name ? `\n\nThis looks like **${read.name}**.` : '') +
+              `\n\nNot on your formula sheet yet. Tap **Explain** for a full NCERT breakdown, or **Solve** if it came with a question.`,
+            )
+          }
+        }
+      }
 
       if (action.id === 'balance') {
         const md = typeof text === 'string' ? text : ''
