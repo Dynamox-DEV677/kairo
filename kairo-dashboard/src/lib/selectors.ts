@@ -33,6 +33,17 @@ export function selectStreak(): number {
   return core.selectStreak(loadState().events)
 }
 
+/**
+ * Streak plus the grace mechanic: one forgiven day per week, so a single
+ * missed day does not reset a month of work to zero.
+ *
+ * Freezes are derived from the event log, not stored, so there is nothing to
+ * sync and nothing that can disagree with the history.
+ */
+export function selectStreakDetail() {
+  return core.selectStreakDetail(loadState().events)
+}
+
 export function selectXP(): { total: number; today: number; week: number } {
   return core.selectXP(loadGame())
 }

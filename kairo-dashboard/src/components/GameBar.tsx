@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Flame, Trophy, CheckCircle2, Circle, Zap, Medal } from 'lucide-react'
 import { loadGame, questsForToday, badges, fetchLeaderboard } from '../lib/game'
-import { selectLevel, selectStreak } from '../lib/selectors'
+import { selectLevel, selectStreakDetail } from '../lib/selectors'
 import { KYNO } from '../theme/tokens'
 
 const GLASS: React.CSSProperties = {
@@ -35,7 +35,7 @@ export function GameBar() {
   // Home or the Kyno tab about the same figure.
   const s = loadGame()
   const { level, into, need } = selectLevel()
-  const streak = selectStreak()
+  const { streak, freezesLeftThisWeek, usedFreeze } = selectStreakDetail()
   const quests = questsForToday()
   const earned = badges(s).filter(b => b.earned)
   const pct = Math.max(0, Math.min(100, (into / need) * 100))
@@ -106,6 +106,17 @@ export function GameBar() {
           />
           <span style={{ ...bigNum, fontSize: 20, color: KYNO.gold }}>{streak}</span>
           <span style={{ fontSize: 10.5, color: KYNO.textMuted }}>day streak</span>
+
+          {/* Deliberately never says "you broke it" or "don't lose your
+              streak". A missed day is normal; the app's job is to keep the
+              run alive, not to make the student feel watched. */}
+          <span style={{ fontSize: 10, color: KYNO.textMuted, marginLeft: 'auto' }}>
+            {usedFreeze
+              ? 'rest day used'
+              : freezesLeftThisWeek > 0
+              ? `${freezesLeftThisWeek} rest day left`
+              : ''}
+          </span>
         </div>
         {earned.length > 0 && (
           <div style={{ display: 'flex', gap: 6, marginTop: 12, flexWrap: 'wrap' }}>

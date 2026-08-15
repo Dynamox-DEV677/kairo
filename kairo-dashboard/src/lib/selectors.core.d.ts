@@ -29,3 +29,13 @@ export interface TopicRow {
 }
 export function selectWeakTopics(mastery: any[] | null | undefined, opts?: { max?: number; minAttempts?: number }): TopicRow[]
 export function selectStrongTopics(mastery: any[] | null | undefined, opts?: { max?: number; minAttempts?: number }): TopicRow[]
+
+export const FREEZES_PER_WEEK: number
+export interface StreakDetail {
+  streak: number
+  /** Days the grace mechanic forgave, as start-of-day timestamps. */
+  frozenDays: number[]
+  freezesLeftThisWeek: number
+  usedFreeze: boolean
+}
+export function selectStreakDetail(events: EventLike[] | null | undefined, now?: number): StreakDetail

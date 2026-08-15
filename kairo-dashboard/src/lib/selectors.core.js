@@ -43,6 +43,80 @@ export function selectStreak(events, now = Date.now()) {
   return streak
 }
 
+/** ISO-ish week key (Monday-based) for a timestamp. Used to ration freezes. */
+function weekKey(ms) {
+  const d = new Date(startOfDay(ms))
+  const dow = (d.getDay() + 6) % 7          // Monday = 0
+  d.setDate(d.getDate() - dow)
+  return startOfDay(d.getTime())
+}
+
+export const FREEZES_PER_WEEK = 1
+
+/**
+ * Streak with the grace mechanic.
+ *
+ * One missed day per week is forgiven instead of resetting to zero. A student
+ * who studies six days a week for a month has built a habit; telling them they
+ * are on "day 0" because of one bad Tuesday is both false and the exact moment
+ * they stop opening the app.
+ *
+ * The freezes are DERIVED, not stored. A freeze is spent by walking backwards
+ * and forgiving the first gap in each week, computed from the same event log
+ * as the streak itself. That means no extra state to persist, nothing to drift
+ * between devices, and no way for the count to disagree with the history —
+ * a stored freeze counter would be a second source of truth for the same fact.
+ *
+ * Returns the streak, which days were forgiven, and how many freezes remain in
+ * the CURRENT week so the UI can show it.
+ */
+export function selectStreakDetail(events, now = Date.now()) {
+  const empty = { streak: 0, frozenDays: [], freezesLeftThisWeek: FREEZES_PER_WEEK, usedFreeze: false }
+  if (!events || !events.length) return empty
+
+  const days = new Set()
+  for (const e of events) if (e && typeof e.ts === 'number') days.add(startOfDay(e.ts))
+  if (!days.size) return empty
+
+  const today = startOfDay(now)
+  const usedByWeek = new Map()
+  const frozenDays = []
+  let streak = 0
+
+  for (let i = 0; ; i++) {
+    const target = today - i * DAY
+    if (days.has(target)) { streak++; continue }
+
+    // Today not being done YET is not a miss — the day is still running.
+    if (i === 0) continue
+
+    const wk = weekKey(target)
+    const used = usedByWeek.get(wk) || 0
+    if (used < FREEZES_PER_WEEK) {
+      usedByWeek.set(wk, used + 1)
+      frozenDays.push(target)
+      continue                                  // forgiven, streak survives
+    }
+    break                                       // second miss in a week ends it
+  }
+
+  // A trailing freeze is a gap the streak never actually reached past, so it
+  // should not be reported as "spent" on the student's behalf.
+  while (frozenDays.length && frozenDays[frozenDays.length - 1] < today - streak * DAY) {
+    frozenDays.pop()
+  }
+
+  const thisWeek = weekKey(today)
+  const spentThisWeek = frozenDays.filter(d => weekKey(d) === thisWeek).length
+
+  return {
+    streak,
+    frozenDays,
+    freezesLeftThisWeek: Math.max(0, FREEZES_PER_WEEK - spentThisWeek),
+    usedFreeze: spentThisWeek > 0,
+  }
+}
+
 /** XP is a genuine accumulator, so it comes from game state — but only from
  *  here, so no screen adds its own bonus on top. */
 export function selectXP(game) {

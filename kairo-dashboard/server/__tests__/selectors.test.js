@@ -11,6 +11,7 @@ import {
   selectStreak, selectXP, selectLevel, selectMastered, selectRetention,
   selectPrediction, PREDICTION_MIN_SCORED, MASTERY_BAR,
   selectWeakTopics, selectStrongTopics,
+  selectStreakDetail, FREEZES_PER_WEEK,
 } from '../../src/lib/selectors.core.js'
 
 const DAY = 86_400_000
@@ -244,4 +245,64 @@ test('weak topics come back worst-first', () => {
 test('severity is derived from mastery, not stored separately', () => {
   const [t] = selectWeakTopics([{ topic: 'X', mastery: 0.3, attempts: 4 }])
   assert.equal(t.severity, 0.7)
+})
+
+// --- streak freeze (grace mechanic) --------------------------------------
+
+test('one missed day is forgiven instead of collapsing the streak', () => {
+  // Seven days, one missed. The freeze must preserve the run — but it must NOT
+  // count the missed day as studied. The student did six days; claiming seven
+  // would be exactly the kind of flattering fake number this app is trying to
+  // stop showing.
+  const ev = [0, 1, 2, 4, 5, 6].map(d => ({ ts: daysAgo(d) }))
+  const r = selectStreakDetail(ev, NOW)
+
+  assert.equal(r.streak, 6, `expected the 6 days actually studied, got ${r.streak}`)
+  assert.equal(r.usedFreeze, true)
+
+  // Without the grace mechanic the same history reads as 3 — which is what
+  // made a student who showed up six times feel like they had failed.
+  assert.equal(selectStreak(ev, NOW), 3)
+})
+
+test('a second miss in the same week does end the streak', () => {
+  const ev = [0, 1, 4, 5, 6].map(d => ({ ts: daysAgo(d) }))   // 2 and 3 missing
+  const r = selectStreakDetail(ev, NOW)
+  assert.ok(r.streak < 7, `freeze covered two misses: ${r.streak}`)
+})
+
+test('freezes do not accumulate — one per week, not one per gap', () => {
+  const ev = Array.from({ length: 30 }, (_, d) => d).filter(d => d % 3 !== 0)
+    .map(d => ({ ts: daysAgo(d) }))
+  const r = selectStreakDetail(ev, NOW)
+  assert.ok(r.streak < 30, 'every third day missing still produced a full streak')
+})
+
+test('an unbroken week reports its freeze unspent', () => {
+  const ev = [0, 1, 2, 3, 4, 5, 6].map(d => ({ ts: daysAgo(d) }))
+  const r = selectStreakDetail(ev, NOW)
+  assert.equal(r.streak, 7)
+  assert.equal(r.freezesLeftThisWeek, FREEZES_PER_WEEK)
+  assert.equal(r.usedFreeze, false)
+})
+
+test('not having studied yet today never spends a freeze', () => {
+  // A student at 9am. Charging them a freeze for a day still in progress would
+  // silently burn their one grace day every morning.
+  const ev = [1, 2, 3].map(d => ({ ts: daysAgo(d) }))
+  const r = selectStreakDetail(ev, NOW)
+  assert.equal(r.streak, 3)
+  assert.equal(r.freezesLeftThisWeek, FREEZES_PER_WEEK)
+})
+
+test('the freeze streak is deterministic across five reads', () => {
+  const ev = [0, 1, 2, 4, 5, 6].map(d => ({ ts: daysAgo(d) }))
+  const runs = Array.from({ length: 5 }, () => JSON.stringify(selectStreakDetail(ev, NOW)))
+  assert.equal(new Set(runs).size, 1, 'freeze accounting drifted between reads')
+})
+
+test('an empty log is a zero streak with a full allowance', () => {
+  const r = selectStreakDetail([], NOW)
+  assert.equal(r.streak, 0)
+  assert.equal(r.freezesLeftThisWeek, FREEZES_PER_WEEK)
 })
