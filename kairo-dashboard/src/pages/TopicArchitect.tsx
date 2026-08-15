@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { aiHeaders } from '../lib/devKey'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Sparkles, Loader2, Brain, CheckCircle2, XCircle, Map as MapIcon,
@@ -77,7 +78,9 @@ export default function TopicArchitect() {
     setLoading(true); setError(null); setPlan(null); setOpenQ(null)
     try {
       const r = await fetch('/api/topic-architect/plan', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        // Route now requires a verified session (it calls Groq), so without
+        // this header the planner 401s.
+        method: 'POST', headers: { 'Content-Type': 'application/json', ...aiHeaders() },
         body: JSON.stringify({ topic: topic.trim(), exam, depth }),
       })
       if (!r.ok) throw new Error('Server returned ' + r.status)

@@ -10,7 +10,7 @@ import { loadGame } from '../lib/game'
 import { getNotificationPrefs, setNotificationPref } from '../lib/notifications'
 import { getRaw, setRaw, activeBackend } from '../lib/storage'
 import { DecoratedAvatar, DECORATIONS, getDecor, setDecor } from '../components/AvatarDecor'
-import { isDevMode, setDevMode, getDevKeyRaw, setDevKey, looksLikeGroqKey } from '../lib/devKey'
+import { isDevMode, setDevMode, getDevKeyRaw, setDevKey, looksLikeGroqKey, aiHeaders } from '../lib/devKey'
 
 const BOARDS = ['CBSE', 'ICSE', 'Maharashtra', 'Tamil Nadu', 'Karnataka', 'UP Board', 'Bihar Board']
 const CLASSES = ['6', '7', '8', '9', '10', '11', '12']
@@ -73,7 +73,7 @@ export default function Settings() {
     try {
       const res = await fetch('/api/ai/chat', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-groq-key': k },
+        headers: { 'Content-Type': 'application/json', ...aiHeaders(), 'x-groq-key': k },
         body: JSON.stringify({ messages: [{ role: 'user', content: 'Reply with only the word: ok' }] }),
       })
       const data = await res.json().catch(() => ({}))

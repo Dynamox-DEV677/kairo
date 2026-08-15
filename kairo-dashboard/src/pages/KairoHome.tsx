@@ -8,6 +8,7 @@ import KairoGyro from '../components/KairoGyro'
 import { GameBar } from '../components/GameBar'
 import { getProfile, getMistakes } from '../lib/twin'
 import { selectStreak, selectRetention } from '../lib/selectors'
+import { aiHeaders } from '../lib/devKey'
 import { get as getStored, set as setStored } from '../lib/storage'
 
 /** Local calendar day. Deliberately not UTC — a student in IST at 11pm is
@@ -135,7 +136,10 @@ export default function KairoHome({ onNavigate }: Props) {
       const timer = setTimeout(() => ctrl.abort(), 30000)
       try {
         const r = await fetch('/api/council/brief', {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          // /api/council now requires a verified session — it calls Groq, so
+          // an unauthenticated route was an open tab on the quota. Without
+          // this header the daily brief 401s and Home never loads.
+          method: 'POST', headers: { 'Content-Type': 'application/json', ...aiHeaders() },
           body: JSON.stringify(profile), signal: ctrl.signal,
         })
         if (!r.ok) throw new Error('Server returned ' + r.status)

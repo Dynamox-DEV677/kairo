@@ -38,8 +38,33 @@ export function activeDevGroqKey(): string {
   return looksLikeGroqKey(k) ? k : ''
 }
 
-/** Merge into the `headers` of any `/api/ai/*` fetch. Empty object when dev mode is off. */
+/**
+ * Headers for any AI-route fetch: the bring-your-own Groq key when dev mode is
+ * on, and ALWAYS the session token.
+ *
+ * The token half is not optional. /api/ai/*, /api/camera/*, /api/document/*,
+ * /api/council and /api/topic-architect used to be reachable with no auth at
+ * all — anyone could burn the Groq quota — so they were put behind
+ * requireSupabaseAuth. These call sites send headers built here and nothing
+ * else, so without the Authorization header every one of them 401s and the
+ * Solver stops answering.
+ *
+ * kairo_token holds the Supabase access_token (set on every login path in
+ * Login.tsx and refreshed by lib/api.ts), which is exactly what the server
+ * verifies.
+ */
 export function aiHeaders(): Record<string, string> {
+  const h: Record<string, string> = {}
+
   const k = activeDevGroqKey()
-  return k ? { 'x-groq-key': k } : {}
+  if (k) h['x-groq-key'] = k
+
+  try {
+    const token = localStorage.getItem('kairo_token')
+    if (token) h.Authorization = `Bearer ${token}`
+  } catch (e) {
+    console.warn('[ai] could not read the session token:', e)
+  }
+
+  return h
 }
