@@ -1,6 +1,9 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
+// Bundled rather than the jsdelivr <link>: hashed into /assets/, so the
+// offline service worker caches it and math stays styled with no network.
+import 'katex/dist/katex.min.css'
 import App from './App.tsx'
 import { initPwa } from './lib/pwa'
 import { migrateStorage, removeRaw } from './lib/storage'

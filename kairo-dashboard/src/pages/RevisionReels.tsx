@@ -1,5 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
+import remarkMath from 'remark-math'
+import rehypeKatex from 'rehype-katex'
 import { Layers, ChevronLeft, ChevronRight, Sparkles, FunctionSquare, RotateCcw } from 'lucide-react'
 import { ToggleChip } from '../components/PrimaryButton'
 import MathExpr from '../components/MathExpr'
@@ -23,6 +27,25 @@ import { startTopicClock } from '../lib/timeTracker'
 const C = {
   bg: '#0A0D16', panel: '#141A2A', border: 'rgba(255,255,255,0.08)',
   text: '#fafafa', dim: '#B1B5BA', faint: '#9CA3AF', purple: '#A5B4FC',
+}
+
+/**
+ * Card text is not plain text: flashcards generated from doubts and camera
+ * pages carry $...$ inline math, and rendering them as a raw string put
+ * literal "$s = ut + \frac{1}{2}at^2$" on screen. Same renderer stack as the
+ * Solver and drill answers, paragraphs flattened so the card stays centred.
+ */
+const MD_INLINE = { p: ({ children }: any) => <span>{children}</span> }
+function CardText({ text }: { text: string }) {
+  return (
+    <ReactMarkdown
+      remarkPlugins={[remarkGfm, remarkMath]}
+      rehypePlugins={[rehypeKatex]}
+      components={MD_INLINE}
+    >
+      {text}
+    </ReactMarkdown>
+  )
 }
 
 function posKey(): string {
@@ -190,11 +213,11 @@ export default function RevisionReels() {
 
                   {!flipped ? (
                     <div style={{ fontSize: 21, fontWeight: 800, color: C.text, lineHeight: 1.45 }}>
-                      {card.front}
+                      <CardText text={card.front} />
                     </div>
                   ) : (
                     <div style={{ fontSize: 18, color: C.text, lineHeight: 1.6, maxWidth: 560 }}>
-                      {card.kind === 'formula' ? <MathExpr expr={card.back} /> : card.back}
+                      {card.kind === 'formula' ? <MathExpr expr={card.back} /> : <CardText text={card.back} />}
                       {card.variants.length > 0 && (
                         <div style={{ marginTop: 14, fontSize: 13, color: C.dim }}>
                           <div style={{ fontSize: 10, letterSpacing: 1.2, textTransform: 'uppercase', color: C.faint, marginBottom: 6 }}>
