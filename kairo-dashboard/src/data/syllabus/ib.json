@@ -1,0 +1,400 @@
+{
+  "board": "ib",
+  "label": "IB Diploma Programme",
+  "version": "first assessment 2025",
+  "note": "Theme and topic titles from the IB subject guides. Structure only — no guide prose or learning-objective text is reproduced. topicId is a stable contract: never renumber or reword an existing id.",
+  "singleStage": "dp",
+  "sources": {
+    "Physics": "IB Diploma Programme Physics guide, first assessment 2025.",
+    "Chemistry": "IB Diploma Programme Chemistry guide, first assessment 2025.",
+    "Biology": "IB Diploma Programme Biology guide, first assessment 2025."
+  },
+  "unmapped": {
+    "Mathematics": "No verified map. The IB mathematics guides are not publicly downloadable, and writing a topic list from memory would be fabricated curriculum data. Kyno says so rather than guessing.",
+    "MYP (classes 6-10)": "The Middle Years Programme is concept-based and the IB does not publish a fixed topic list per year — schools build their own units from key concepts and global contexts. There is no chapter structure to map, so an MYP student gets IB-aligned teaching style with no topic list, which is the truthful answer."
+  },
+  "classes": {
+    "dp": {
+      "Physics": {
+        "A. Space, time and motion": [
+          {
+            "topicId": "ib.phy.space-time-motion.kinematics",
+            "name": "Kinematics"
+          },
+          {
+            "topicId": "ib.phy.space-time-motion.forces-momentum",
+            "name": "Forces and momentum"
+          },
+          {
+            "topicId": "ib.phy.space-time-motion.work-energy-power",
+            "name": "Work, energy and power"
+          },
+          {
+            "topicId": "ib.phy.space-time-motion.rigid-body-mechanics",
+            "name": "Rigid body mechanics"
+          },
+          {
+            "topicId": "ib.phy.space-time-motion.galilean-special-relativity",
+            "name": "Galilean and special relativity"
+          }
+        ],
+        "B. The particulate nature of matter": [
+          {
+            "topicId": "ib.phy.b-particulate-nature-matter.thermal-energy-transfers",
+            "name": "Thermal energy transfers"
+          },
+          {
+            "topicId": "ib.phy.b-particulate-nature-matter.greenhouse-effect",
+            "name": "Greenhouse effect"
+          },
+          {
+            "topicId": "ib.phy.b-particulate-nature-matter.gas-laws",
+            "name": "Gas laws"
+          },
+          {
+            "topicId": "ib.phy.b-particulate-nature-matter.thermodynamics",
+            "name": "Thermodynamics"
+          },
+          {
+            "topicId": "ib.phy.b-particulate-nature-matter.current-circuits",
+            "name": "Current and circuits"
+          }
+        ],
+        "C. Wave behaviour": [
+          {
+            "topicId": "ib.phy.c-wave-behaviour.simple-harmonic-motion",
+            "name": "Simple harmonic motion"
+          },
+          {
+            "topicId": "ib.phy.c-wave-behaviour.wave-model",
+            "name": "Wave model"
+          },
+          {
+            "topicId": "ib.phy.c-wave-behaviour.wave-phenomena",
+            "name": "Wave phenomena"
+          },
+          {
+            "topicId": "ib.phy.c-wave-behaviour.standing-waves-resonance",
+            "name": "Standing waves and resonance"
+          },
+          {
+            "topicId": "ib.phy.c-wave-behaviour.doppler-effect",
+            "name": "Doppler effect"
+          }
+        ],
+        "D. Fields": [
+          {
+            "topicId": "ib.phy.d-fields.gravitational-fields",
+            "name": "Gravitational fields"
+          },
+          {
+            "topicId": "ib.phy.d-fields.electric-magnetic-fields",
+            "name": "Electric and magnetic fields"
+          },
+          {
+            "topicId": "ib.phy.d-fields.motion-electromagnetic-fields",
+            "name": "Motion in electromagnetic fields"
+          },
+          {
+            "topicId": "ib.phy.d-fields.induction",
+            "name": "Induction"
+          }
+        ],
+        "E. Nuclear and quantum physics": [
+          {
+            "topicId": "ib.phy.e-nuclear-quantum-physics.structure-atom",
+            "name": "Structure of the atom"
+          },
+          {
+            "topicId": "ib.phy.e-nuclear-quantum-physics.quantum-physics",
+            "name": "Quantum physics"
+          },
+          {
+            "topicId": "ib.phy.e-nuclear-quantum-physics.radioactive-decay",
+            "name": "Radioactive decay"
+          },
+          {
+            "topicId": "ib.phy.e-nuclear-quantum-physics.fission",
+            "name": "Fission"
+          },
+          {
+            "topicId": "ib.phy.e-nuclear-quantum-physics.fusion-stars",
+            "name": "Fusion and stars"
+          }
+        ]
+      },
+      "Chemistry": {
+        "Structure 1. Models of the particulate nature of matter": [
+          {
+            "topicId": "ib.chem.structure-1-models-particulate.introduction-particulate-nature-matter",
+            "name": "Introduction to the particulate nature of matter"
+          },
+          {
+            "topicId": "ib.chem.structure-1-models-particulate.nuclear-atom",
+            "name": "The nuclear atom"
+          },
+          {
+            "topicId": "ib.chem.structure-1-models-particulate.electron-configurations",
+            "name": "Electron configurations"
+          },
+          {
+            "topicId": "ib.chem.structure-1-models-particulate.counting-particles-by-mass",
+            "name": "Counting particles by mass: The mole"
+          },
+          {
+            "topicId": "ib.chem.structure-1-models-particulate.ideal-gases",
+            "name": "Ideal gases"
+          }
+        ],
+        "Structure 2. Models of bonding and structure": [
+          {
+            "topicId": "ib.chem.structure-2-models-bonding.ionic-model",
+            "name": "The ionic model"
+          },
+          {
+            "topicId": "ib.chem.structure-2-models-bonding.covalent-model",
+            "name": "The covalent model"
+          },
+          {
+            "topicId": "ib.chem.structure-2-models-bonding.metallic-model",
+            "name": "The metallic model"
+          },
+          {
+            "topicId": "ib.chem.structure-2-models-bonding.from-models-materials",
+            "name": "From models to materials"
+          }
+        ],
+        "Structure 3. Classification of matter": [
+          {
+            "topicId": "ib.chem.structure-3-classification-matter.periodic-table-classification-elements",
+            "name": "The periodic table: Classification of elements"
+          },
+          {
+            "topicId": "ib.chem.structure-3-classification-matter.functional-groups-classification-organic",
+            "name": "Functional groups: Classification of organic compounds"
+          }
+        ],
+        "Reactivity 1. What drives chemical reactions?": [
+          {
+            "topicId": "ib.chem.reactivity-1-what-drives.measuring-enthalpy-changes",
+            "name": "Measuring enthalpy changes"
+          },
+          {
+            "topicId": "ib.chem.reactivity-1-what-drives.energy-cycles-reactions",
+            "name": "Energy cycles in reactions"
+          },
+          {
+            "topicId": "ib.chem.reactivity-1-what-drives.energy-from-fuels",
+            "name": "Energy from fuels"
+          },
+          {
+            "topicId": "ib.chem.reactivity-1-what-drives.entropy-spontaneity",
+            "name": "Entropy and spontaneity"
+          }
+        ],
+        "Reactivity 2. How much, how fast and how far?": [
+          {
+            "topicId": "ib.chem.reactivity-2-how-much.how-much-amount-chemical",
+            "name": "How much? The amount of chemical change"
+          },
+          {
+            "topicId": "ib.chem.reactivity-2-how-much.how-fast-rate-chemical",
+            "name": "How fast? The rate of chemical change"
+          },
+          {
+            "topicId": "ib.chem.reactivity-2-how-much.how-far-extent-chemical",
+            "name": "How far? The extent of chemical change"
+          }
+        ],
+        "Reactivity 3. What are the mechanisms of chemical change?": [
+          {
+            "topicId": "ib.chem.reactivity-3-what-are.proton-transfer-reactions",
+            "name": "Proton transfer reactions"
+          },
+          {
+            "topicId": "ib.chem.reactivity-3-what-are.electron-transfer-reactions",
+            "name": "Electron transfer reactions"
+          },
+          {
+            "topicId": "ib.chem.reactivity-3-what-are.electron-sharing-reactions",
+            "name": "Electron sharing reactions"
+          },
+          {
+            "topicId": "ib.chem.reactivity-3-what-are.electron-pair-sharing-reactions",
+            "name": "Electron-pair sharing reactions"
+          }
+        ]
+      },
+      "Biology": {
+        "A. Unity and diversity": [
+          {
+            "topicId": "ib.bio.a1-1",
+            "name": "A1.1 Water"
+          },
+          {
+            "topicId": "ib.bio.a1-2",
+            "name": "A1.2 Nucleic acids"
+          },
+          {
+            "topicId": "ib.bio.a2-1",
+            "name": "A2.1 Origins of cells"
+          },
+          {
+            "topicId": "ib.bio.a2-2",
+            "name": "A2.2 Cell structure"
+          },
+          {
+            "topicId": "ib.bio.a2-3",
+            "name": "A2.3 Viruses"
+          },
+          {
+            "topicId": "ib.bio.a3-1",
+            "name": "A3.1 Diversity of organisms"
+          },
+          {
+            "topicId": "ib.bio.a3-2",
+            "name": "A3.2 Classification and cladistics"
+          },
+          {
+            "topicId": "ib.bio.a4-1",
+            "name": "A4.1 Evolution and speciation"
+          },
+          {
+            "topicId": "ib.bio.a4-2",
+            "name": "A4.2 Conservation of biodiversity"
+          }
+        ],
+        "B. Form and function": [
+          {
+            "topicId": "ib.bio.b1-1",
+            "name": "B1.1 Carbohydrates and lipids"
+          },
+          {
+            "topicId": "ib.bio.b1-2",
+            "name": "B1.2 Proteins"
+          },
+          {
+            "topicId": "ib.bio.b2-1",
+            "name": "B2.1 Membranes and membrane transport"
+          },
+          {
+            "topicId": "ib.bio.b2-2",
+            "name": "B2.2 Organelles and compartmentalization"
+          },
+          {
+            "topicId": "ib.bio.b2-3",
+            "name": "B2.3 Cell specialization"
+          },
+          {
+            "topicId": "ib.bio.b3-1",
+            "name": "B3.1 Gas exchange"
+          },
+          {
+            "topicId": "ib.bio.b3-2",
+            "name": "B3.2 Transport"
+          },
+          {
+            "topicId": "ib.bio.b3-3",
+            "name": "B3.3 Muscle and motility"
+          },
+          {
+            "topicId": "ib.bio.b4-1",
+            "name": "B4.1 Adaptation to environment"
+          },
+          {
+            "topicId": "ib.bio.b4-2",
+            "name": "B4.2 Ecological niches"
+          }
+        ],
+        "C. Interaction and interdependence": [
+          {
+            "topicId": "ib.bio.c1-1",
+            "name": "C1.1 Enzymes and metabolism"
+          },
+          {
+            "topicId": "ib.bio.c1-2",
+            "name": "C1.2 Cell respiration"
+          },
+          {
+            "topicId": "ib.bio.c1-3",
+            "name": "C1.3 Photosynthesis"
+          },
+          {
+            "topicId": "ib.bio.c2-1",
+            "name": "C2.1 Chemical signalling"
+          },
+          {
+            "topicId": "ib.bio.c2-2",
+            "name": "C2.2 Neural signalling"
+          },
+          {
+            "topicId": "ib.bio.c3-1",
+            "name": "C3.1 Integration of body systems"
+          },
+          {
+            "topicId": "ib.bio.c3-2",
+            "name": "C3.2 Defence against disease"
+          },
+          {
+            "topicId": "ib.bio.c4-1",
+            "name": "C4.1 Populations and communities"
+          },
+          {
+            "topicId": "ib.bio.c4-2",
+            "name": "C4.2 Transfers of energy and matter"
+          }
+        ],
+        "D. Continuity and change": [
+          {
+            "topicId": "ib.bio.d1-1",
+            "name": "D1.1 DNA replication"
+          },
+          {
+            "topicId": "ib.bio.d1-2",
+            "name": "D1.2 Protein synthesis"
+          },
+          {
+            "topicId": "ib.bio.d1-3",
+            "name": "D1.3 Mutations and gene editing"
+          },
+          {
+            "topicId": "ib.bio.d2-1",
+            "name": "D2.1 Cell and nuclear division"
+          },
+          {
+            "topicId": "ib.bio.d2-2",
+            "name": "D2.2 Gene expression"
+          },
+          {
+            "topicId": "ib.bio.d2-3",
+            "name": "D2.3 Water potential"
+          },
+          {
+            "topicId": "ib.bio.d3-1",
+            "name": "D3.1 Reproduction"
+          },
+          {
+            "topicId": "ib.bio.d3-2",
+            "name": "D3.2 Inheritance"
+          },
+          {
+            "topicId": "ib.bio.d3-3",
+            "name": "D3.3 Homeostasis"
+          },
+          {
+            "topicId": "ib.bio.d4-1",
+            "name": "D4.1 Natural selection"
+          },
+          {
+            "topicId": "ib.bio.d4-2",
+            "name": "D4.2 Stability and change"
+          },
+          {
+            "topicId": "ib.bio.d4-3",
+            "name": "D4.3 Climate change"
+          }
+        ]
+      }
+    }
+  }
+}

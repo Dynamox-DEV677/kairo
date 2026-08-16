@@ -52,6 +52,7 @@ const STUDENT_NAV: NavItem[] = [
   { label: 'Mistake Analysis',icon: Activity,        to: 'mistakes',         color: '#A5B4FC' },
   { label: 'AI Notebook',     icon: BookOpen,        to: 'notebook',         color: '#A5B4FC' },
   { label: 'Exam Planner',    icon: Target,          to: 'exam-planner',     color: '#A5B4FC' },
+  { label: 'Switched board?', icon: Target,          to: 'bridge',           color: '#A5B4FC' },
 
   { label: 'Focus Mode',      icon: Target,          to: 'focus',            color: '#A5B4FC' },
   { label: 'Study Plan',      icon: Calendar,        to: 'study-plan',       color: '#A5B4FC' },

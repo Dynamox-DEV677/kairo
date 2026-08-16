@@ -5,7 +5,8 @@ import {
   Trophy, RefreshCw, Brain, AlertTriangle, Pencil,
 } from 'lucide-react'
 import { chat } from '../lib/openrouter'
-import { getMistakes, track } from '../lib/twin'
+import { getMistakes, track, getProfile } from '../lib/twin'
+import { curriculumDirective } from '../lib/curriculum.core'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
@@ -172,12 +173,17 @@ export default function RevisionSimulator() {
     try {
       const reply = await chat({
         messages: [
-          { role: 'system', content: `You are an expert exam question writer for Indian school students (CBSE/ICSE/state boards). Generate ${diff.count} ${diff.label}-difficulty MCQs targeting ONLY the topics provided. Mix conceptual + applied questions. Each question has exactly 4 options with one correct answer (index 0-3). Keep questions exam-realistic, concise, and unambiguous.
+          // The prompt used to assert every student was Indian and on a CBSE/ICSE
+          // /state board. Question style, notation and units all differ by
+          // curriculum, so the drill now follows the student's own Board setting.
+          { role: 'system', content: `You are an expert exam question writer. Generate ${diff.count} ${diff.label}-difficulty MCQs targeting ONLY the topics provided. Mix conceptual + applied questions. Each question has exactly 4 options with one correct answer (index 0-3). Keep questions exam-realistic, concise, and unambiguous.
 
 Return ONLY a JSON array, no other text:
 [
   {"q":"...","options":["A","B","C","D"],"answer":2,"explain":"why C is right + one tip","topic":"...","subject":"..."}
-]` },
+]
+
+${curriculumDirective(getProfile()?.board, getProfile()?.cls)}` },
           { role: 'user', content: `Topics: ${pickedTopics.join(', ')}.\n${weakTopics.length ? 'These came from the student\'s weak-topic memory — focus on common pitfalls.' : ''}` },
         ],
       })

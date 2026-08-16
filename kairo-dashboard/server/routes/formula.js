@@ -1,4 +1,6 @@
 import { Router } from 'express'
+import { curriculumDirective, resolveCurriculum } from '../../src/lib/curriculum.core.js'
+import { allTopics } from '../utils/syllabus.js'
 import { db } from '../db/index.js'
 import { aiCall, parseJSON } from '../utils/ai.js'
 
@@ -19,9 +21,24 @@ router.post('/generate', async (req, res) => {
   if (!subject) return res.status(400).json({ error: 'subject is required.' })
 
   try {
-    const prompt = `You are an expert ${board} Class ${cls} ${subject} teacher.
+    // Notation, units and which formulas are even examinable differ between
+    // curricula — an IGCSE sheet is not a CBSE sheet with a different header.
+    // Scope comes from the verified topic map, so the model picks from the
+    // student's real chapter list instead of a remembered one.
+    const p = resolveCurriculum(board, cls)
+    const scope = p.syllabusBoard
+      ? allTopics(p.syllabusBoard, p.cls || undefined)
+          .filter(t => t.subject === subject || t.subject === 'Science')
+          .map(t => `${t.name} (${t.chapter})`)
+      : []
+
+    const prompt = `You are an expert ${p.label} ${cls ? `class ${cls} ` : ''}${subject} teacher.
+
+${curriculumDirective(board, cls, { scope })}
 
 Generate a comprehensive formula sheet${chapter ? ` for the chapter "${chapter}"` : ` for ${subject}`}.
+Only include formulas that are actually part of this curriculum at this level. If a
+formula is commonly taught elsewhere but is NOT in this syllabus, leave it out.
 
 Return ONLY valid JSON:
 {

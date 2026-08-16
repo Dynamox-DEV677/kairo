@@ -104,14 +104,92 @@ const CURRICULA = {
     examples: ['Use Indian context in examples: rupees (₹), Indian places and names.'],
   },
   ib: {
-    id: 'ib', label: 'IB', syllabusBoard: null, region: 'international', currency: null,
-    style: ['Follow the IB approach: emphasise conceptual understanding, inquiry and the reasoning behind a result rather than recall alone.'],
-    exam: ['The student sits IB assessments, which are marked against criteria bands. Make the reasoning explicit — an unjustified correct answer scores poorly.'],
-    examples: ['Use international context. Use SI units and do not assume a currency.'],
+    id: 'ib',
+    label: 'IB Diploma Programme',
+    syllabusBoard: 'ib',
+    region: 'international',
+    currency: null,
+    style: [
+      'Follow the IB Diploma Programme treatment. The DP sciences are organised around themes and concepts rather than a chapter list, so explain how the idea fits the bigger theme, not only the isolated fact.',
+      'Distinguish SL from HL. If content is HL-only ("Additional higher level"), say so, so an SL student is not revising material they will never be asked.',
+      'Nature of Science matters in the DP: where relevant, say how the knowledge was arrived at — the evidence, the model, its limitations.',
+      'Use IB terminology and the codes the guides use (Physics themes A-E, Chemistry Structure/Reactivity, Biology theme+level codes like C1.2), so the student can find the topic in their own materials.',
+    ],
+    exam: [
+      'The student sits IB assessments, marked against published criteria and command terms. An unjustified correct answer scores poorly — the reasoning carries the marks.',
+      'IB command terms are precise and differ from everyday usage. "State" wants a fact, "outline" a brief account, "explain" a reasoned account, "discuss" a balanced review. Answer the term that was asked.',
+      'Internal assessment and data-based questions are a large share of the grade. Where data is involved, address uncertainty, error and the limits of the conclusion.',
+    ],
+    examples: [
+      'Use international context in examples and word problems. Do not assume the student lives in any one country.',
+      'Use SI units and IB conventions. Where money is needed use a neutral currency, never assume rupees.',
+    ],
   },
   generic: {
     id: 'generic', label: 'school syllabus', syllabusBoard: null, region: null, currency: null,
     style: [], exam: [], examples: [],
+  },
+}
+
+/**
+ * Class as a number. The profile stores it as "Class 9", "9", "IX" or blank
+ * depending on which screen collected it.
+ */
+export function classNumber(cls) {
+  const m = String(cls ?? '').match(/\d{1,2}/)
+  if (!m) return null
+  const n = parseInt(m[0], 10)
+  return n >= 1 && n <= 12 ? n : null
+}
+
+/**
+ * How hard to pitch the answer.
+ *
+ * Curriculum alone was not enough: a Class 6 and a Class 9 student on NCERT were
+ * getting the same explanation of the same idea, because the only thing the
+ * model knew was "CBSE". Grade is the other half — an 11-year-old and a
+ * 15-year-old need different sentences for the same physics.
+ *
+ * Bands rather than per-year rules, because the real jumps are structural:
+ * primary/middle school works from the concrete, secondary introduces formal
+ * symbols and derivations, and the last two years assume both.
+ */
+export function gradeBand(cls) {
+  const n = classNumber(cls)
+  if (n == null) return null
+  if (n <= 8)  return 'middle'
+  if (n <= 10) return 'secondary'
+  return 'senior'
+}
+
+const DEPTH = {
+  middle: {
+    label: 'roughly ages 11-14',
+    rules: [
+      'Lead with something the student can picture or has seen. Build the idea from the concrete example, do not open with the definition.',
+      'Short sentences, one idea each. Everyday words wherever a technical word is not required. When a technical word IS required, introduce it and say what it means in plain language the first time.',
+      'Arithmetic only — no algebraic rearrangement, no derivations, no calculus. If a formula is needed, give it directly and substitute numbers.',
+      'Keep the whole answer short. A long answer at this level is a worse answer.',
+      'Do not reach into later years to explain something. If the honest explanation needs material they have not met, say the fuller reason comes later and give the version that is true at their level.',
+    ],
+  },
+  secondary: {
+    label: 'roughly ages 14-16',
+    rules: [
+      'Use the proper technical vocabulary and expect it back. Define a term once, then use it.',
+      'Symbols, units and formal statements are expected. Rearranging a formula is fine; show the rearrangement.',
+      'Give the reason as well as the fact — this is the level where "why" starts carrying marks.',
+      'Derivations are appropriate where the syllabus expects them, but only those it expects.',
+    ],
+  },
+  senior: {
+    label: 'roughly ages 16-18',
+    rules: [
+      'Full rigour. Abstraction, algebraic generality and quantitative treatment are all expected.',
+      'Assume the earlier material and build on it rather than re-teaching it.',
+      'State assumptions, limiting cases and where a model stops being valid.',
+      'Where the mathematics is part of the answer, do the mathematics — do not describe it in words to avoid it.',
+    ],
   },
 }
 
@@ -150,7 +228,10 @@ export function resolveCurriculum(board, cls) {
     region: c.region,
     currency: c.currency,
     cls: cls != null && String(cls).trim() ? String(cls).trim() : null,
+    classNo: classNumber(cls),
+    band: gradeBand(cls),
     isCambridge: c.id === 'cambridge',
+    isIB: c.id === 'ib',
   }
 }
 
@@ -173,6 +254,18 @@ export function curriculumDirective(board, cls, opts = {}) {
       ? `This student follows ${c.label}, class/grade ${p.cls}.`
       : `This student follows ${c.label}.`,
   )
+
+  // Grade depth. Without this the only thing the model knows is the board, and
+  // a Class 6 and a Class 9 student on NCERT get the same paragraph.
+  const band = gradeBand(cls)
+  if (band) {
+    const d = DEPTH[band]
+    lines.push(
+      '',
+      `Pitch the answer at class/grade ${p.cls} (${d.label}). This is not a tone setting — it changes what the answer may contain:`,
+      ...d.rules.map(r => `- ${r}`),
+    )
+  }
 
   if (c.style.length)    lines.push('', 'How to teach it:', ...c.style.map(s => `- ${s}`))
   if (c.exam.length)     lines.push('', 'How they are examined:', ...c.exam.map(s => `- ${s}`))

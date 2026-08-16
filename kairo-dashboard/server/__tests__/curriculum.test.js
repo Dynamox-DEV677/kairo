@@ -61,7 +61,9 @@ test('boards we have not mapped are styled but never given another board\'s chap
   const icse = resolveCurriculum('ICSE', '9')
   assert.equal(icse.syllabusBoard, null, 'ICSE must not borrow the CBSE map')
   assert.match(curriculumDirective('ICSE', '9'), /ICSE/)
-  assert.equal(resolveCurriculum('IB', '10').syllabusBoard, null)
+  // IB used to be unmapped and is asserted here no longer: it now has a real
+  // map from the IB's own subject guides. ICSE above is still the live case.
+  assert.equal(resolveCurriculum('IB', '11').syllabusBoard, 'ib')
 })
 
 /* ── Feature 4: localised examples ────────────────────────────────────────── */

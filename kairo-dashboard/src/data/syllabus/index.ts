@@ -1,5 +1,6 @@
 import cbse from './cbse.json'
 import cambridge from './cambridge.json'
+import ib from './ib.json'
 
 /**
  * The syllabus map, and the only sanctioned way to turn text into a topic.
@@ -31,12 +32,12 @@ export interface ResolvedTopic {
   confidence: number
 }
 
-export type BoardId = 'cbse' | 'cambridge' | 'icse' | 'jee' | 'neet'
+export type BoardId = 'cbse' | 'cambridge' | 'ib' | 'icse' | 'jee' | 'neet'
 
 /** Below this, a match is a guess, and a guessed weakness is worse than none. */
 export const CONFIDENCE_FLOOR = 0.55
 
-const BOARDS: Partial<Record<BoardId, any>> = { cbse, cambridge }
+const BOARDS: Partial<Record<BoardId, any>> = { cbse, cambridge, ib }
 
 export function boardAvailable(board: BoardId): boolean {
   return !!BOARDS[board]

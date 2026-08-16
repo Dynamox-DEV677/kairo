@@ -23,5 +23,16 @@
       "Every button in Kyno now looks and presses the same way, so the main action on a screen is obvious.",
       "You will see this card after logging in whenever there is something new — including anything you missed."
     ]
+  },
+  {
+    "n": 3,
+    "date": "2026-08-16",
+    "title": "Kyno Update 3",
+    "changes": [
+      "Answers now match your grade as well as your board — a Class 6 explanation is no longer a Class 9 explanation with the same words.",
+      "IB is now a full option with its own topic lists, alongside CBSE and Cambridge.",
+      "Switched board? A new page compares your old and new curriculum and shows exactly what you still need to catch up on.",
+      "Your formula sheets and revision drills now follow your own curriculum instead of one universal list."
+    ]
   }
 ]
