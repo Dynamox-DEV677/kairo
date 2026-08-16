@@ -5,11 +5,15 @@ import { Loader2 } from 'lucide-react'
  * The one primary-action button.
  *
  * Before this the app had at least five spellings of "the main button on this
- * screen": flat outline pills, flat solid rectangles, square-cornered gradients
- * with no depth, and the correct treatment on Home and the Formula Sheet tabs.
- * A student reading a screen cannot tell which control is the main one when
- * every screen answers that differently, so the inconsistency was costing more
- * than looks.
+ * screen". A student reading a screen cannot tell which control is the main one
+ * when every screen answers that differently, so the inconsistency was costing
+ * more than looks.
+ *
+ * The look is NOT invented here: it is the treatment Home's "Refresh brief"
+ * button already had — a flat violet face, a 14px radius and a hard darker
+ * bottom edge that presses down on tap. The job was to spread that, not to
+ * design something new. (A first pass turned it into a glowing 999px pill and
+ * spread THAT, which was the wrong thing done thoroughly.)
  *
  * IMPORTANT: this is for PRIMARY actions only. Deliberately not applied to
  * secondary or destructive controls — if everything glows, nothing reads as
@@ -43,12 +47,11 @@ const SIZES: Record<Size, { padding: string; fontSize: number; icon: number }> =
 /**
  * The skin lives in index.css, not here.
  *
- * .kyno-chunky / .kyno-ghost / .kyno-danger already had 45 call sites across
- * the app. Defining the gradient a second time in this file would have made
- * this component a *new* button style rather than the shared one — exactly the
- * problem it exists to fix. So the component only contributes layout, and the
- * paint comes from the same class every legacy call site uses. One definition,
- * two ways in.
+ * .kyno-chunky / .kyno-ghost / .kyno-danger are on ~320 buttons across the app.
+ * Restating the face a second time in this file would make this component a
+ * *new* button style rather than the shared one — exactly the problem it exists
+ * to fix. So the component only contributes layout, and the paint comes from
+ * the same class every other call site uses. One definition, two ways in.
  */
 const CLASS: Record<Variant, string> = {
   primary:   'kyno-chunky',
@@ -93,11 +96,11 @@ export function PrimaryButton({
  * Selected/unselected pill for toggle groups — board and class pickers, subject
  * chips, tab pairs.
  *
- * Selected gets the same gradient and glow as PrimaryButton so "this one is
- * chosen" reads identically everywhere. Previously the selected state was a
- * slightly different grey on almost every screen, which is a real usability
- * problem, not a cosmetic one: on the Settings board picker you could not tell
- * at a glance which board was actually set.
+ * Selected gets the same violet face as PrimaryButton so "this one is chosen"
+ * reads identically everywhere. Previously the selected state was a slightly
+ * different grey on almost every screen, which is a real usability problem, not
+ * a cosmetic one: on the Settings board picker you could not tell at a glance
+ * which board was actually set.
  */
 export function ToggleChip({
   selected, children, style, ...rest

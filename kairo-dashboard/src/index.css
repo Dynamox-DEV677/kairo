@@ -74,49 +74,49 @@ button, [role="button"], a, .kyno-tile, .kyno-chip {
    If you change the gradient or the shadow, change it in BOTH this block and
    src/components/PrimaryButton.tsx, or the split reopens. */
 /* ── Why !important on the paint ─────────────────────────────────────────────
-   ~240 buttons across the app carry their own inline `background` / `border` /
-   `borderRadius`, and an inline style beats any stylesheet rule. Putting these
-   buttons on the system therefore meant one of two things: rewriting 240 inline
-   style objects with a regex, or letting the class win.
+   This IS the button — the flat violet face, the 14px radius and the hard
+   darker bottom edge. It is not a new look; it is the look Home's "Refresh
+   brief" already had, now reaching all ~320 buttons instead of the 55 that
+   happened to carry the class.
 
-   The class wins. Only PAINT is forced — background, border, radius, shadow,
-   typography. Layout (padding, width, display, gap, position) is left entirely
-   to the call site, so nothing moves; only the skin changes. That also makes the
-   system enforceable going forward: a new button cannot quietly reinvent the
-   look by adding an inline gradient.
+   !important because ~240 of those buttons set their own inline `background` /
+   `border` / `borderRadius`, and an inline style beats any stylesheet rule.
+   Only PAINT is forced. Layout — padding, width, display, gap, position — is
+   left entirely to the call site, so nothing moves; only the skin changes.
 
-   .kyno-chip is deliberately NOT forced this way — see its block below. */
+   Deliberately NOT a full 999px pill, and deliberately no outer glow. The
+   chunky bottom edge is the whole idea: the button looks like a physical key
+   that presses down. A glow around it and fully round ends read as a different
+   component, which is what the first attempt at this got wrong. */
 .kyno-chunky {
   position: relative;
   border: none !important;
-  border-radius: 999px !important;
-  background: linear-gradient(145deg, #9B82FF 0%, var(--c-purple) 55%, var(--c-purple-deep) 100%) !important;
+  border-radius: 14px !important;
+  background: var(--c-purple) !important;
   color: #fff !important;
   font-family: var(--kyno-display) !important; font-weight: 800 !important; letter-spacing: 0.2px;
-  /* Tight dark shadow = the raised edge. Wide violet = the glow. Both collapse
-     on press so the button reads as physically pushed in. */
-  box-shadow: 0 3px 0 0 var(--c-purple-deep), 0 6px 18px rgba(124, 92, 255, 0.42) !important;
-  transition: transform .07s ease, box-shadow .07s ease, filter .12s ease;
+  box-shadow: 0 4px 0 0 var(--c-purple-deep) !important;
+  transition: transform .07s ease, box-shadow .07s ease;
   cursor: pointer; will-change: transform;
   -webkit-user-select: none; user-select: none;
 }
-.kyno-chunky:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 0 0 0 var(--c-purple-deep), 0 2px 8px rgba(124, 92, 255, 0.30); }
-/* Semantic hues keep their meaning (cyan = focus/time, gold = XP/reward) but
-   now share the pill shape and glow, so they read as the same component. */
-.kyno-chunky.cyan  { background: linear-gradient(145deg, #7FE9F5 0%, var(--c-cyan) 55%, var(--c-cyan-deep) 100%) !important; color: #062B31 !important; box-shadow: 0 3px 0 0 var(--c-cyan-deep), 0 6px 18px rgba(79, 216, 232, 0.38) !important; }
-.kyno-chunky.cyan:active:not(:disabled) { box-shadow: 0 0 0 0 var(--c-cyan-deep), 0 2px 8px rgba(79, 216, 232, 0.28); }
-.kyno-chunky.gold  { background: linear-gradient(145deg, #FFD37A 0%, var(--c-gold) 55%, var(--c-gold-deep) 100%) !important; color: #2A1A00 !important; box-shadow: 0 3px 0 0 var(--c-gold-deep), 0 6px 18px rgba(255, 176, 32, 0.38) !important; }
-.kyno-chunky.gold:active:not(:disabled) { box-shadow: 0 0 0 0 var(--c-gold-deep), 0 2px 8px rgba(255, 176, 32, 0.28); }
-.kyno-chunky:disabled { opacity: 0.55; cursor: not-allowed; transform: none; box-shadow: none !important; }
+.kyno-chunky:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 1px 0 0 var(--c-purple-deep) !important; }
+/* Semantic hues keep their meaning (cyan = focus/time, gold = XP/reward) and
+   share the same shape and bottom edge. */
+.kyno-chunky.cyan  { background: var(--c-cyan) !important; color: #062B31 !important; box-shadow: 0 4px 0 0 var(--c-cyan-deep) !important; }
+.kyno-chunky.cyan:active:not(:disabled) { box-shadow: 0 1px 0 0 var(--c-cyan-deep) !important; }
+.kyno-chunky.gold  { background: var(--c-gold) !important; color: #2A1A00 !important; box-shadow: 0 4px 0 0 var(--c-gold-deep) !important; }
+.kyno-chunky.gold:active:not(:disabled) { box-shadow: 0 1px 0 0 var(--c-gold-deep) !important; }
+.kyno-chunky:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none !important; }
 
 /* Outline (ghost) variant — matches PrimaryButton variant="secondary".
    Deliberately NOT glowing: if every control glows, none of them reads as the
    main action on the screen. */
 .kyno-ghost {
-  border: 1.5px solid rgba(124, 92, 255, 0.45) !important;
-  background: rgba(124, 92, 255, 0.08) !important;
-  color: #C7BAFF !important;
-  border-radius: 999px !important;
+  border: 1.5px solid var(--c-purple) !important;
+  background: transparent !important;
+  color: var(--c-purple) !important;
+  border-radius: 14px !important;
   font-family: var(--kyno-display) !important; font-weight: 800 !important;
   box-shadow: none !important;
   cursor: pointer;
@@ -129,10 +129,10 @@ button, [role="button"], a, .kyno-tile, .kyno-chip {
 /* Destructive variant — outline only, never the glow. "Clear all data" must
    never look like the thing you are being invited to press. */
 .kyno-danger {
-  border: 1.5px solid rgba(226, 88, 92, 0.45) !important;
-  background: rgba(226, 88, 92, 0.07) !important;
+  border: 1.5px solid #E2585C !important;
+  background: transparent !important;
   color: #E2585C !important;
-  border-radius: 999px !important;
+  border-radius: 14px !important;
   font-family: var(--kyno-display) !important; font-weight: 800 !important;
   box-shadow: none !important;
   cursor: pointer;
@@ -180,7 +180,8 @@ button, [role="button"], a, .kyno-tile, .kyno-chip {
 /* Raised 3D chip / mode toggle / tab — selected shows a pressed-in purple fill */
 /* Shape and typography are forced; background and colour are NOT.
    A converted toggle group carries its selected state as an inline background —
-   forcing the paint here would make every tab look unselected. */
+   forcing the paint here would make every tab look unselected. Chips keep the
+   999px pill they always had; that is the chip shape, not the button shape. */
 .kyno-chip {
   position: relative; border: 1.5px solid var(--c-line);
   border-radius: 999px !important;
@@ -192,18 +193,15 @@ button, [role="button"], a, .kyno-tile, .kyno-chip {
   -webkit-user-select: none; user-select: none;
 }
 .kyno-chip:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 1px 0 0 rgba(0,0,0,0.26); }
-/* Selected state matches ToggleChip's — same gradient and glow as the primary
-   button, so "this one is chosen" reads identically on every picker. It used to
-   be a slightly different grey per screen; on the Settings board picker you
-   genuinely could not tell which board was set. */
+/* Selected state is the same violet face as .kyno-chunky, so "this one is
+   chosen" reads identically on every picker. */
 .kyno-chip.on {
-  background: linear-gradient(145deg, #9B82FF 0%, var(--c-purple) 55%, var(--c-purple-deep) 100%);
-  color: #fff; border-color: transparent;
-  box-shadow: 0 2px 0 0 var(--c-purple-deep), 0 5px 14px rgba(124, 92, 255, 0.38);
+  background: var(--c-purple); color: #fff; border-color: var(--c-purple);
+  box-shadow: 0 2px 0 0 var(--c-purple-deep);
 }
-.kyno-chip.on:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 0 0 0 var(--c-purple-deep), 0 2px 8px rgba(124, 92, 255, 0.28); }
-.kyno-chip.cyan.on { background: linear-gradient(145deg, #7FE9F5 0%, var(--c-cyan) 55%, var(--c-cyan-deep) 100%); color: #062B31; border-color: transparent; box-shadow: 0 2px 0 0 var(--c-cyan-deep), 0 5px 14px rgba(79, 216, 232, 0.34); }
-.kyno-chip.gold.on { background: linear-gradient(145deg, #FFD37A 0%, var(--c-gold) 55%, var(--c-gold-deep) 100%); color: #2A1A00; border-color: transparent; box-shadow: 0 2px 0 0 var(--c-gold-deep), 0 5px 14px rgba(255, 176, 32, 0.34); }
+.kyno-chip.on:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 0 0 0 var(--c-purple-deep); }
+.kyno-chip.cyan.on { background: var(--c-cyan); color: #062B31; border-color: var(--c-cyan); box-shadow: 0 2px 0 0 var(--c-cyan-deep); }
+.kyno-chip.gold.on { background: var(--c-gold); color: #2A1A00; border-color: var(--c-gold); box-shadow: 0 2px 0 0 var(--c-gold-deep); }
 
 /* Sidebar / drawer nav row — subtle raised edge, press-down, active = pressed-in purple */
 .kyno-nav {
