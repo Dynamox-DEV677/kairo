@@ -7,7 +7,7 @@ import {
   GraduationCap, Shield, Sparkles, DollarSign, Bot, UserCheck, Grid3x3, Building2,
   Edit3, Lightbulb, FunctionSquare, Brain, Star, Timer, Megaphone,
   Target, Activity, Zap, Compass, Network, Mic, Swords, Share2, AlertTriangle,
-  Beaker, Cpu, Trophy,
+  Beaker, Cpu, Trophy, Layers,
   PanelLeftClose, PanelLeftOpen, MoreHorizontal, ChevronUp,
 } from 'lucide-react'
 import { useGeneration } from '../lib/generationContext'
@@ -53,6 +53,7 @@ const STUDENT_NAV: NavItem[] = [
   { label: 'AI Notebook',     icon: BookOpen,        to: 'notebook',         color: '#A5B4FC' },
   { label: 'Exam Planner',    icon: Target,          to: 'exam-planner',     color: '#A5B4FC' },
   { label: 'Switched board?', icon: Target,          to: 'bridge',           color: '#A5B4FC' },
+  { label: 'Revision Reels',  icon: Layers,          to: 'reels',            color: '#A5B4FC' },
 
   { label: 'Focus Mode',      icon: Target,          to: 'focus',            color: '#A5B4FC' },
   { label: 'Study Plan',      icon: Calendar,        to: 'study-plan',       color: '#A5B4FC' },
@@ -140,6 +141,17 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
   const [recentOpen, setRecentOpen]   = useState(true)
   const [hoveredItem, setHoveredItem] = useState<string | null>(null)
   const [recents, setRecents] = useState<RecentChat[]>(() => getRecentChats())
+  // C23 — doubt history search. Matches the ANSWERS too, not just titles: a
+  // student remembers a phrase from the explanation more often than their own
+  // question's wording.
+  const [chatQuery, setChatQuery] = useState('')
+  const visibleRecents = chatQuery.trim()
+    ? recents.filter(r => {
+        const q = chatQuery.trim().toLowerCase()
+        return r.title.toLowerCase().includes(q)
+          || r.messages.some(m => m.content.toLowerCase().includes(q))
+      })
+    : recents
   const [profilePic, setProfilePic] = useState<string | null>(() =>
     profile?.avatar_url || profile?.pic || localStorage.getItem('kairo_profile_pic')
   )
@@ -539,12 +551,31 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
               transition={{ duration: 0.2 }}
               style={{ overflow: 'hidden' }}
             >
+              {recents.length > 3 && (
+                <input
+                  value={chatQuery}
+                  onChange={e => setChatQuery(e.target.value)}
+                  placeholder="Search your doubts…"
+                  style={{
+                    width: '100%', boxSizing: 'border-box', margin: '2px 0 6px',
+                    padding: '7px 10px', borderRadius: 9, fontSize: 11.5,
+                    background: isDark ? 'rgba(255,255,255,0.04)' : '#fff',
+                    border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : '#e4e4e7'}`,
+                    color: 'inherit', fontFamily: 'inherit', outline: 'none',
+                  }}
+                />
+              )}
               {recents.length === 0 && (
                 <div style={{ padding: '8px 10px', fontSize: 11, color: isDark ? '#4B5563' : '#B1B5BA', fontStyle: 'italic' }}>
                   No chats yet — ask anything in Kyno's Solver
                 </div>
               )}
-              {recents.map(r => (
+              {recents.length > 0 && visibleRecents.length === 0 && (
+                <div style={{ padding: '8px 10px', fontSize: 11, color: isDark ? '#4B5563' : '#B1B5BA', fontStyle: 'italic' }}>
+                  Nothing matches “{chatQuery.trim()}” — it searches your questions and their answers.
+                </div>
+              )}
+              {visibleRecents.map(r => (
                 <div
                   key={r.id}
                   onClick={() => openChat(r.id)}

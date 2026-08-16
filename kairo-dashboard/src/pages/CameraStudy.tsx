@@ -152,6 +152,15 @@ const ACTIONS = [
   { id: 'formula',   label: 'Formula',       icon: FunctionSquare, color: '#7C5CFF',
     hint: 'Snap a formula — what it means, and where it comes from',
     prompt: 'Read the single most prominent formula or equation in this image.\n\nReturn ONLY a JSON object:\n{"formula":"<the formula exactly as written, plain notation>","name":"<its usual name if you are confident, else null>","readable":true|false}\n\nDo not explain it. Do not solve it. If no formula is visible, set readable to false.' },
+  /**
+   * B13 — unfamiliar word scanner. Rides the same vision pipeline as every
+   * other action; curriculumRules() is appended at send time, which carries the
+   * student's grade band, so the definition is pitched at their age rather than
+   * dictionary-speak.
+   */
+  { id: 'define',    label: 'Define',        icon: Lightbulb,    color: '#FFB020',
+    hint: 'Snap a word you don\'t know — plain meaning + example',
+    prompt: 'Find the single most prominent word (or short phrase) in this image that a student would be looking up.\n\nRespond in EXACTLY this structure:\n## <the word>\nOne-sentence meaning in everyday language a student of this grade already understands — no dictionary jargon.\n## In a sentence\nOne example sentence using the word naturally, in a school context they would recognise.\n## Related\nUp to 2 closely related words with a 3-6 word gloss each. Skip this section if nothing is genuinely related.\n\nIf several words are visible and none is clearly the subject, pick the hardest one and say in one line which you chose. If no readable word is visible, say so plainly and ask for a closer photo — do not guess.' + MD_RULES },
   { id: 'summarize', label: 'Summarize',     icon: FileText,     color: '#A5B4FC',
     hint: 'Condenses notes into key points',
     prompt: 'Summarize the STUDY CONTENT in this image into clear bullet points under "## Section Name" headings. Cover every definition, formula, law and labelled diagram part on the page, keeping the exact technical terms and symbols the student must reproduce in an exam. Write the surrounding explanation in your own words — do not copy the book\'s sentences.' + MD_RULES },

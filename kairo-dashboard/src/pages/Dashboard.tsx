@@ -12,6 +12,7 @@ import Flashcards from './Flashcards'
 import StudyPlan from './StudyPlan'
 import ExamPlanner from './ExamPlanner'
 import Bridge from './Bridge'
+import RevisionReels from './RevisionReels'
 import TopicArchitect from './TopicArchitect'
 import KairoHome from './KairoHome'
 import KairoChat from './KairoChat'
@@ -315,6 +316,8 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
             <div className={pageClass} style={pageStyle('exam-planner')}>{mounted('exam-planner') && <ExamPlanner />}</div>
 
             <div className={pageClass} style={pageStyle('bridge')}>{mounted('bridge') && <Bridge />}</div>
+
+            <div className={pageClass} style={pageStyle('reels')}>{mounted('reels') && <RevisionReels />}</div>
 
             <div className={pageClass} style={pageStyle('topic-architect')}>{mounted('topic-architect') && <TopicArchitect />}</div>
 

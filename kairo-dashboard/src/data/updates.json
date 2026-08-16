@@ -34,5 +34,17 @@
       "Switched board? A new page compares your old and new curriculum and shows exactly what you still need to catch up on.",
       "Your formula sheets and revision drills now follow your own curriculum instead of one universal list."
     ]
+  },
+  {
+    "n": 4,
+    "date": "2026-08-16",
+    "title": "Kyno Update 4",
+    "changes": [
+      "Revision Reels: swipe through your own formulas and flashcards — cards due for review come up first, and it remembers where you stopped.",
+      "Every solved doubt now has a Save to Reels button, so a good explanation becomes a revision card in one tap.",
+      "Explain it differently: one tap gets you a genuinely new angle on the same doubt, not the same words reshuffled.",
+      "Search your past doubts from the sidebar — it looks inside the answers too, not just your questions.",
+      "New Define camera button: snap any word you don't know for a plain-language meaning at your grade level."
+    ]
   }
 ]

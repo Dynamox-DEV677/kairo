@@ -3,7 +3,7 @@ import GeoVisualMode from '../components/GeoVisualMode'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Send, StopCircle, Sparkles, Image as ImageIcon, Loader2,
-  ChevronLeft, ChevronRight, Beaker, ExternalLink, BookOpen, Atom,
+  ChevronLeft, ChevronRight, Beaker, ExternalLink, BookOpen, Atom, RefreshCw,
   Mic, MicOff, Calendar, X, Paperclip,
   FileText as TextIcon, MapPin as MapPinIcon,
   Box as Box3DIcon, LayoutPanelTop as BothIcon, Wand2, Camera,
@@ -12,7 +12,7 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
-import { recordDoubt, recordFormula, recordConcept, getStudentMemory, getMistakes } from '../lib/twin'
+import { recordDoubt, recordFormula, recordConcept, recordFlashcard, getStudentMemory, getMistakes } from '../lib/twin'
 import { lookupNcert } from '../lib/ncertCacheLookup'
 import { aiHeaders } from '../lib/devKey'
 
@@ -532,6 +532,7 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
                 busy={busy && !resp}
                 error={error}
                 retryHint={retryHint}
+                question={topic}
                 onOpenLab={(route) => onNavigate?.('labs:' + route)}
                 onAskRelated={(c) => ask(c)}
               />
@@ -1218,6 +1219,57 @@ function Slideshow({ slides, busy, topic, questionType, err, compact = false }: 
   )
 }
 
+/**
+ * C30 + C16, on every solved answer.
+ *
+ * Save to Reels writes a flashcard into the twin store — the SAME store
+ * Revision Reels reads — so the card appears there with no extra plumbing.
+ *
+ * "Explain differently" re-asks with the previous explanation attached and an
+ * explicit instruction to change the APPROACH, because without seeing what was
+ * already said the model reliably produces the same explanation reworded.
+ */
+function AnswerActions({ resp, question, onAskRelated }: {
+  resp: SolverResponse
+  question?: string
+  onAskRelated: (q: string) => void
+}) {
+  const [saved, setSaved] = useState(false)
+
+  function saveToReels() {
+    if (saved) return
+    recordFlashcard({
+      front: (question || resp.topicKeyword || 'Doubt').slice(0, 200),
+      back:  resp.textExplanation.slice(0, 700),
+      topic: resp.topicKeyword || undefined,
+      source: 'auto-from-doubt',
+    })
+    setSaved(true)
+  }
+
+  function explainDifferently() {
+    const prev = resp.textExplanation.slice(0, 900)
+    onAskRelated(
+      `Explain "${question || resp.topicKeyword || 'this'}" again, but take a genuinely different approach — a different analogy, a different starting point, or a different representation (visual/numerical/story). Do NOT reword the previous explanation. For reference, the previous explanation was:
+
+${prev}`,
+    )
+  }
+
+  return (
+    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+      <button onClick={saveToReels} className="kyno-ghost"
+        style={{ padding: '7px 13px', fontSize: 11.5, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+        <BookOpen size={12} /> {saved ? 'Saved to Reels ✓' : 'Save to Reels'}
+      </button>
+      <button onClick={explainDifferently} className="kyno-ghost"
+        style={{ padding: '7px 13px', fontSize: 11.5, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+        <RefreshCw size={12} /> Explain it differently
+      </button>
+    </div>
+  )
+}
+
 function SlideshowSkeleton() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 18, color: '#B1B5BA' }}>
@@ -1252,11 +1304,12 @@ function SlideshowSkeleton() {
   )
 }
 
-function ExplanationPanel({ resp, busy, error, retryHint, onOpenLab, onAskRelated }: {
+function ExplanationPanel({ resp, busy, error, retryHint, question, onOpenLab, onAskRelated }: {
   resp: SolverResponse | null
   busy: boolean
   error: string
   retryHint?: string
+  question?: string
   onOpenLab: (route: string) => void
   onAskRelated: (concept: string) => void
 }) {
@@ -1333,6 +1386,8 @@ function ExplanationPanel({ resp, busy, error, retryHint, onOpenLab, onAskRelate
               {resp.textExplanation}
             </ReactMarkdown>
           </div>
+
+          <AnswerActions resp={resp} question={question} onAskRelated={onAskRelated} />
 
           {resp.formulas.length > 0 && (
             <div style={{
