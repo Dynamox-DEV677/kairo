@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
-  MessageCircle, BookMarked, Brain, Swords, Mic, Network,
+  MessageCircle, BookMarked, Brain, Swords, Mic, Network, Layers,
   BookOpen, Compass, Activity, Zap, Target, Camera, Star,
   Calendar, FileText, Edit3, Lightbulb, FunctionSquare, Timer,
   Megaphone, Bell, DollarSign, Bot, UserCheck, Grid3x3,
@@ -47,8 +47,12 @@ const DRAWER_STUDENT = [
   {
     title: 'Core',
     items: [
+      // 'home' was reachable only on desktop — Today's 3 and the daily brief
+      // live there, so on mobile they simply did not exist.
+      { to: 'home',           label: 'Home · Daily brief', icon: Star },
       { to: 'kairo-os',       label: 'Kyno',           icon: Brain },
       { to: 'doubt',          label: "Kyno's Solver",     icon: MessageCircle },
+      { to: 'reels',          label: 'Revision Reels',    icon: Layers },
       { to: 'camera-live',    label: 'Study Mode · Live',  icon: Camera },
       { to: 'mistakes',       label: 'Mistake Analysis',   icon: Activity },
       { to: 'explain-mistake',label: 'Explain Mistake',    icon: AlertTriangle },
@@ -71,6 +75,7 @@ const DRAWER_STUDENT = [
     items: [
       { to: 'study-plan',   label: 'Smart Timetable', icon: Calendar },
       { to: 'exam-planner', label: 'Exam Planner',    icon: Calendar },
+      { to: 'bridge',       label: 'Switched board?', icon: Compass },
       { to: 'topic-architect', label: 'Topic Architect', icon: Brain },
       { to: 'school',       label: 'My Tasks',        icon: BookOpen },
       { to: 'quiz',         label: 'Adaptive Quiz',   icon: Brain },

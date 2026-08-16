@@ -4,8 +4,10 @@ import {
   Sparkles, MessageCircle, Swords, BookMarked, Beaker,
   TrendingUp, AlertTriangle, ChevronRight, Repeat, Brain,
   Flame, Activity, Zap, ChevronsRight, BookOpen, Target,
-  RefreshCw, FileJson,
+  RefreshCw, FileJson, Clock,
 } from 'lucide-react'
+import { readTimeStore } from '../lib/timeTracker'
+import { aggregate, formatMs } from '../lib/time.core'
 import {
   getDashboard, refresh, seedDemo,
   type DashboardSnapshot, type Twin, type MasteryRow,
@@ -144,6 +146,8 @@ export default function KairoOSMobile({ onNavigate, onOpenBackup }: Props) {
           </div>
         </section>
 
+        <TimeSection />
+
         <section style={{ padding: '0 18px' }}>
           <SectionLabel inline>Trajectory</SectionLabel>
           <TrajectoryCard
@@ -270,6 +274,46 @@ function PulseHero({ pct, label, twin, pulsing, onRecompute }: {
         <MiniMetric label="Best hour"   value={twin.focusBestHour ?? '—'} unit={twin.focusBestHour != null ? ':00' : ''} />
       </div>
     </motion.div>
+  )
+}
+
+/**
+ * C24, mobile — same real time store as the desktop TimeCard, compact. Only
+ * renders once any time has actually been attributed; no estimates, ever.
+ */
+function TimeSection() {
+  const agg = aggregate(readTimeStore(), Date.now())
+  if (agg.totalMs === 0) return null
+  return (
+    <section style={{ padding: '0 18px' }}>
+      <SectionLabel inline>Where your time went</SectionLabel>
+      <div style={{
+        background: C.panel, border: `1px solid ${C.border}`, borderRadius: 14, padding: 14,
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 10, fontSize: 11, color: C.textFaint }}>
+          <Clock size={12} color={C.purpleLite} />
+          today {formatMs(agg.todayMs)} · this week {formatMs(agg.weekMs)}
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+          {agg.subjects.slice(0, 4).map(su => (
+            <div key={su.subject} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ flex: 1, minWidth: 0, fontSize: 12, fontWeight: 700, color: C.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {su.subject}
+              </span>
+              <span style={{ fontSize: 10.5, color: C.textFaint }}>
+                {su.topics.length} topic{su.topics.length === 1 ? '' : 's'}
+              </span>
+              <span style={{ width: 52, textAlign: 'right', fontSize: 11, color: C.purpleLite, fontWeight: 700 }}>
+                {formatMs(su.ms)}
+              </span>
+            </div>
+          ))}
+        </div>
+        <div style={{ marginTop: 9, fontSize: 9.5, color: C.textFaint, lineHeight: 1.5 }}>
+          Only time Kyno can attribute — Reels on screen, Solver answers, finished drills.
+        </div>
+      </div>
+    </section>
   )
 }
 
