@@ -1,0 +1,28 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "kyno-dashboard",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "dev"
+      ],
+      "cwd": "kairo-dashboard",
+      "port": 5173
+    },
+    {
+      "name": "kyno-preview",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": [
+        "vite",
+        "preview",
+        "--port",
+        "3010",
+        "--strictPort"
+      ],
+      "cwd": "kairo-dashboard",
+      "port": 3010
+    }
+  ]
+}

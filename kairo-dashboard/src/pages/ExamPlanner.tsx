@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { aiHeaders } from '../lib/devKey'
+import { readjustPlan, planDayIndex, missedBlocks } from '../lib/replan.core'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Sparkles, Target, Calendar, Clock, AlertTriangle, Trophy, BookOpen,
@@ -205,6 +206,33 @@ export default function ExamPlanner() {
     } catch (e: any) { setError(e.message) }
   }, [plan, userId, exam, examDate, hoursPerDay])
 
+  const [planCreatedAt, setPlanCreatedAt] = useState<number | null>(null)
+
+  // C13 — how far behind this plan the student actually is, from their own
+  // check-ins. Deterministic; see replan.core.js.
+  const behind = (plan && planCreatedAt)
+    ? missedBlocks(plan, completion, planDayIndex(planCreatedAt, Date.now())).length
+    : 0
+
+  const refit = useCallback(async () => {
+    if (!plan || !planCreatedAt) return
+    const r = readjustPlan(plan, completion, planDayIndex(planCreatedAt, Date.now()))
+    if (!r.changed && r.overflow.length === 0) return
+    setPlan(r.plan)
+    if (r.overflow.length) {
+      setError(`Re-fitted ${r.moved} missed block${r.moved === 1 ? '' : 's'}. ${r.overflow.length} would not fit before the exam — they are the lowest-priority ones (${r.overflow.map(b => b.topic).filter(Boolean).slice(0, 3).join(', ')}…). Trimming scope beats pretending.`)
+    }
+    if (planId) {
+      try {
+        await authFetch(`/api/exam-planner/${planId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json', ...aiHeaders() },
+          body: JSON.stringify({ plan_json: r.plan, hours_per_day: hoursPerDay }),
+        })
+      } catch { /* local re-fit still applied; sync retries on next save */ }
+    }
+  }, [plan, planCreatedAt, completion, planId, hoursPerDay])
+
   const loadPlan = useCallback(async (id: string) => {
     setLoading(true); setError(null)
     try {
@@ -214,6 +242,7 @@ export default function ExamPlanner() {
       setPlan(row.plan_json)
       setPlanId(row.id)
       setCompletion(row.completion_state || {})
+      setPlanCreatedAt(Date.parse(row.created_at) || null)
       setExam(row.exam); setExamDate(row.exam_date); setHoursPerDay(row.hours_per_day)
       setShowSavedList(false)
     } catch (e: any) { setError(e.message) }
@@ -506,6 +535,22 @@ export default function ExamPlanner() {
                 ))}
               </div>
             </div>
+
+            {behind > 0 && (
+              <div style={{
+                ...card, padding: 16, marginBottom: 16,
+                border: '1px solid rgba(255,176,32,0.35)', background: 'rgba(255,176,32,0.05)',
+              }}>
+                <div style={{ fontSize: 12.5, color: '#B1B5BA', lineHeight: 1.6, marginBottom: 10 }}>
+                  <b style={{ color: '#fafafa' }}>{behind} planned block{behind === 1 ? '' : 's'} slipped past.</b>{' '}
+                  Completely normal — plans meet real weeks. One tap spreads them over the days you
+                  have left, most important first, without overloading any single day.
+                </div>
+                <button className="kyno-chunky" onClick={refit} style={{ padding: '9px 16px', fontSize: 12 }}>
+                  Re-fit my plan
+                </button>
+              </div>
+            )}
 
             <div style={{ ...card, padding: 18, marginBottom: 16 }}>
               <h3 style={{ fontSize: 13, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: '#A5B4FC', margin: '0 0 12px', display: 'flex', alignItems: 'center', gap: 8 }}>

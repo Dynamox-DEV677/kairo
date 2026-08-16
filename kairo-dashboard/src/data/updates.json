@@ -65,5 +65,15 @@
       "Kyno OS now shows where your time actually went — real minutes per subject and chapter from Reels, Solver answers and finished drills, never an estimate.",
       "After a rough drill, you get a recovery plan built from that attempt's own wrong answers: what to re-learn, what just needs practice, and what's already solid."
     ]
+  },
+  {
+    "n": 7,
+    "date": "2026-08-16",
+    "title": "Kyno Update 7",
+    "changes": [
+      "Kyno works offline now — once you've opened it, the app loads without internet, and everything you've saved was already on your device.",
+      "Starting a topic whose earlier chapter gave you trouble? Kyno offers a quick brush-up first — your call, never a lock.",
+      "Fell behind your exam plan? One tap re-fits the missed blocks over the days you have left, most important first, without overloading any day."
+    ]
   }
 ]

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Zap, Clock, Target, CheckCircle2, XCircle, Sparkles,
@@ -7,6 +7,10 @@ import {
 import { chat } from '../lib/openrouter'
 import { getMistakes, track, getProfile, loadState } from '../lib/twin'
 import { nextDifficulty, recoveryPlan } from '../lib/daily.core'
+import { prereqGate } from '../lib/prereq.core'
+import { resolveCurriculum } from '../lib/curriculum.core'
+import { allTopics } from '../data/syllabus/index'
+import { getDashboard } from '../lib/twin'
 import { creditTime } from '../lib/timeTracker'
 import { curriculumDirective } from '../lib/curriculum.core'
 import ReactMarkdown from 'react-markdown'
@@ -195,6 +199,27 @@ export default function RevisionSimulator() {
 
   const sessionStartRef = useRef(0)
 
+  // C17 — before starting, check the syllabus chapters that come right before
+  // the picked topics against the student's real mastery rows. Advisory, never
+  // a lock: the offer prepends the prerequisite to the drill, or is ignored.
+  const gate = useMemo(() => {
+    try {
+      const prof = getProfile() as any
+      const cur = resolveCurriculum(prof?.board, prof?.cls)
+      if (!cur.syllabusBoard) return null
+      const mastery = getDashboard().mastery
+      for (const t of pickedTopics) {
+        const g = prereqGate(t, {
+          board: cur.syllabusBoard, cls: cur.cls,
+          lookup: (b, c) => allTopics(b as any, c ?? undefined),
+          mastery,
+        })
+        if (g) return { ...g, forTopic: t }
+      }
+      return null
+    } catch { return null }
+  }, [pickedTopics])
+
   async function startSession() {
     sessionStartRef.current = Date.now()
     if (pickedTopics.length === 0) { setErr('Pick at least one weak topic'); return }
@@ -239,7 +264,8 @@ ${curriculumDirective(getProfile()?.board, getProfile()?.cls)}` },
   }
 
   if (phase === 'setup') return <SetupView
-    diff={diff} setDiff={setDiff} autoDiff={autoDiff}
+    diff={diff} setDiff={setDiff} autoDiff={autoDiff} gate={gate}
+    onAddPrereq={(ch: string) => setPicked(p => p.includes(ch) ? p : [ch, ...p])}
     mode={mode} setMode={setMode}
     weakTopics={weakTopics} memoryReady={memoryReady}
     pickedTopics={pickedTopics} setPicked={setPicked}
@@ -267,7 +293,7 @@ ${curriculumDirective(getProfile()?.board, getProfile()?.cls)}` },
 }
 
 function SetupView({
-  diff, setDiff, autoDiff, mode, setMode, weakTopics, memoryReady, pickedTopics, setPicked, err, onStart,
+  diff, setDiff, autoDiff, gate, onAddPrereq, mode, setMode, weakTopics, memoryReady, pickedTopics, setPicked, err, onStart,
 }: any) {
   const isExam = mode === 'exam'
   function toggle(t: string) {
