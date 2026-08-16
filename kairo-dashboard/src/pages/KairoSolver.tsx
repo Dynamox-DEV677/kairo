@@ -13,6 +13,7 @@ import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
 import { recordDoubt, recordFormula, recordConcept, recordFlashcard, getStudentMemory, getMistakes } from '../lib/twin'
+import { startTopicClock } from '../lib/timeTracker'
 import { lookupNcert } from '../lib/ncertCacheLookup'
 import { aiHeaders } from '../lib/devKey'
 
@@ -103,6 +104,16 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
   const [busy, setBusy]                 = useState(false)
   const [topic, setTopic]               = useState(boot.topic)
   const [resp, setResp]                 = useState<SolverResponse | null>(boot.resp)
+
+  // C24 — reading time on an answer counts toward its topic. The clock follows
+  // whichever answer is on screen and pauses while the tab is hidden.
+  const timeClockRef = useRef<ReturnType<typeof startTopicClock> | null>(null)
+  useEffect(() => {
+    if (!resp?.topicKeyword) return
+    if (!timeClockRef.current) timeClockRef.current = startTopicClock()
+    timeClockRef.current.switch('General', resp.topicKeyword)
+  }, [resp?.topicKeyword])
+  useEffect(() => () => { timeClockRef.current?.stop(); timeClockRef.current = null }, [])
   const [error, setError]               = useState('')
   const [retryHint, setRetryHint]       = useState('')
   const [voiceOn, setVoiceOn]           = useState(false)

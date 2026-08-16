@@ -6,6 +6,7 @@ import MathExpr from '../components/MathExpr'
 import { listFormulas, listFlashcards } from '../lib/twin'
 import { buildDeck, deckSubjects, readPositions, positionFor, withPosition, type ReelCard } from '../lib/reels.core'
 import { getRaw, setRaw, get as getKey } from '../lib/storage'
+import { startTopicClock } from '../lib/timeTracker'
 
 /**
  * Revision Reels — a swipeable feed of the student's OWN cards.
@@ -80,6 +81,17 @@ export default function RevisionReels() {
   }, [idx, filtered.length, subject])
 
   const card: ReelCard | undefined = filtered[idx]
+
+  // C24 — the time this card is actually on a visible screen counts toward its
+  // subject/topic. The clock pauses when the tab is hidden and clamps runaway
+  // credits; see timeTracker.ts.
+  const clockRef = useMemo(() => ({ c: null as ReturnType<typeof startTopicClock> | null }), [])
+  useEffect(() => {
+    if (!clockRef.c) clockRef.c = startTopicClock()
+    if (card) clockRef.c.switch(card.subject, card.topic)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [card?.id])
+  useEffect(() => () => { clockRef.c?.stop(); clockRef.c = null }, [clockRef])
 
   return (
     <div style={{

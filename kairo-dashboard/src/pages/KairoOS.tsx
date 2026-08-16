@@ -19,6 +19,8 @@ import { confirmDialog } from '../components/ConfirmModal'
 import TwinBackupModal from '../components/TwinBackupModal'
 import KairoGyro from '../components/KairoGyro'
 import { useIsMobile } from '../lib/useIsMobile'
+import { readTimeStore } from '../lib/timeTracker'
+import { aggregate, formatMs } from '../lib/time.core'
 import KairoOSMobile from './KairoOSMobile'
 
 const C = {
@@ -334,6 +336,10 @@ export default function KairoOS() {
         <div className="kr-half-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18, marginTop: 18 }}>
           <HeatmapCard mastery={snap.mastery} openDetail={setDetail} />
           <RetentionCard mastery={snap.mastery} forgetting={snap.twin!.forgettingSoon} openDetail={setDetail} />
+        </div>
+
+        <div style={{ marginTop: 18 }}>
+          <TimeCard />
         </div>
 
         <div className="kr-vitals-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 18, marginTop: 18 }}>
@@ -1694,6 +1700,65 @@ function buildDayActivityRows(events: TwinEvent[], days: number) {
     })
   }
   return rows
+}
+
+/**
+ * C24 — where the time actually went, per subject and chapter.
+ *
+ * Every number is summed from real logged credits (see timeTracker.ts): time a
+ * Reel card or a Solver answer was on a visible screen, and completed drill
+ * sessions. Deliberately labelled as attributed time — Kyno does not claim to
+ * see study it cannot measure, and it never shows an estimate.
+ */
+function TimeCard() {
+  const agg = useMemo(() => aggregate(readTimeStore(), Date.now()), [])
+
+  if (agg.totalMs === 0) {
+    return (
+      <Card>
+        <CardTitle icon={<Clock size={13} />}>Where your time went</CardTitle>
+        <EmptyInline icon={<Clock size={20} color={C.textFaint} />} text="Flip Reels, read Solver answers, or finish a drill — the minutes land here, per chapter." />
+      </Card>
+    )
+  }
+
+  return (
+    <Card>
+      <CardTitle icon={<Clock size={13} />}>
+        Where your time went
+        <span style={{ marginLeft: 'auto', fontSize: 10, color: C.textFaint, fontWeight: 600 }}>
+          today {formatMs(agg.todayMs)} · 7d {formatMs(agg.weekMs)}
+        </span>
+      </CardTitle>
+      <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 10, maxHeight: 300, overflowY: 'auto' }}>
+        {agg.subjects.map(su => (
+          <div key={su.subject}>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 5 }}>
+              <span style={{ fontSize: 12, fontWeight: 800, color: C.text }}>{su.subject}</span>
+              <span style={{ fontSize: 10.5, color: C.textFaint }}>{formatMs(su.ms)} total</span>
+              <span style={{ marginLeft: 'auto', fontSize: 10.5, color: C.purple }}>{formatMs(su.weekMs)} this week</span>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              {su.topics.slice(0, 6).map(t => (
+                <div key={t.topic} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <div style={{ flex: 1, minWidth: 0, fontSize: 11.5, color: C.textDim, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {t.topic}
+                  </div>
+                  <div style={{ width: 90, height: 5, borderRadius: 3, background: 'rgba(255,255,255,0.05)', overflow: 'hidden', flexShrink: 0 }}>
+                    <div style={{ width: `${Math.max(4, Math.round((t.ms / (su.topics[0]?.ms || 1)) * 100))}%`, height: '100%', background: C.purple, borderRadius: 3 }} />
+                  </div>
+                  <span style={{ width: 48, textAlign: 'right', fontSize: 10.5, color: C.textFaint, flexShrink: 0 }}>{formatMs(t.ms)}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+      <div style={{ marginTop: 10, fontSize: 10, color: C.textFaint, lineHeight: 1.5 }}>
+        Counts only time Kyno can attribute to a chapter — Reels on screen, Solver answers, finished drills. Paused while the tab is hidden.
+      </div>
+    </Card>
+  )
 }
 
 function Card({ children }: { children: React.ReactNode }) {

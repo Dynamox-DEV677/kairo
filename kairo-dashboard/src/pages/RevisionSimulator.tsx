@@ -6,7 +6,8 @@ import {
 } from 'lucide-react'
 import { chat } from '../lib/openrouter'
 import { getMistakes, track, getProfile, loadState } from '../lib/twin'
-import { nextDifficulty } from '../lib/daily.core'
+import { nextDifficulty, recoveryPlan } from '../lib/daily.core'
+import { creditTime } from '../lib/timeTracker'
 import { curriculumDirective } from '../lib/curriculum.core'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
@@ -123,6 +124,17 @@ export default function RevisionSimulator() {
       setAnswers(finalAnswers)
       setPhase('review')
       trackResultsToMemory(questions, finalAnswers)
+      // C24 — the session's real duration, split evenly across the topics that
+      // were actually drilled. Even-split is honest at this granularity: the
+      // questions interleave topics, so per-question attribution would imply a
+      // precision the data does not have.
+      if (sessionStartRef.current > 0) {
+        const elapsed = Date.now() - sessionStartRef.current
+        const per = Math.floor(elapsed / Math.max(1, pickedTopics.length))
+        const bySubject = new Map<string, string | undefined>(questions.map(q => [q.topic, q.subject]))
+        for (const t of pickedTopics) creditTime(bySubject.get(t) || 'General', t, per)
+        sessionStartRef.current = 0
+      }
     } else {
       setIdx(i => i + 1)
     }
@@ -181,7 +193,10 @@ export default function RevisionSimulator() {
     advance(answers[idx])
   }
 
+  const sessionStartRef = useRef(0)
+
   async function startSession() {
+    sessionStartRef.current = Date.now()
     if (pickedTopics.length === 0) { setErr('Pick at least one weak topic'); return }
     setErr(''); setPhase('loading')
     try {
@@ -598,11 +613,47 @@ function ResultsView({ questions, answers, onReset }: any) {
   const correct = answers.filter((a: any, i: number) => a === questions[i].answer).length
   const total = questions.length
   const pct = Math.round((correct / total) * 100)
+  // C19 — built from THIS attempt's actual wrong answers, never generic.
+  const plan = recoveryPlan(questions.map((q: Question, i: number) => ({
+    topic: q.topic, subject: q.subject, correct: answers[i] === q.answer,
+  })))
   const grade = pct >= 90 ? 'A+' : pct >= 75 ? 'A' : pct >= 60 ? 'B' : pct >= 40 ? 'C' : 'D'
   const gradeColor = pct >= 75 ? '#A5B4FC' : pct >= 60 ? '#A5B4FC' : pct >= 40 ? '#A5B4FC' : '#A5B4FC'
 
   return (
     <div style={{ padding: '28px 36px', maxWidth: 880, margin: '0 auto', height: '100%', overflowY: 'auto' }}>
+      {plan && (
+        <div style={{ ...card, padding: 22, marginBottom: 22, border: '1px solid rgba(165,180,252,0.28)' }}>
+          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1.6, textTransform: 'uppercase', color: '#A5B4FC', marginBottom: 10 }}>
+            Your recovery plan — from this attempt
+          </div>
+          {plan.solid.length > 0 && (
+            <div style={{ fontSize: 12, color: '#34D399', marginBottom: 10 }}>
+              Already solid here: {plan.solid.join(', ')} — every question on {plan.solid.length === 1 ? 'it' : 'these'} was right.
+            </div>
+          )}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {plan.steps.map((st: any) => (
+              <div key={st.topic} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                <span style={{
+                  width: 20, height: 20, borderRadius: 6, flexShrink: 0, marginTop: 1,
+                  background: 'rgba(124,92,255,0.14)', color: '#A5B4FC',
+                  display: 'grid', placeItems: 'center', fontSize: 10.5, fontWeight: 800,
+                }}>{st.order}</span>
+                <div style={{ fontSize: 12.5, color: '#B1B5BA', lineHeight: 1.55 }}>
+                  <b style={{ color: '#fafafa' }}>{st.topic}</b> — missed {st.wrong} of {st.total}. {st.action}
+                </div>
+              </div>
+            ))}
+          </div>
+          <div style={{ marginTop: 12 }}>
+            <button onClick={onReset} className="kyno-chunky" style={{ padding: '9px 16px', fontSize: 12 }}>
+              Drill these again
+            </button>
+          </div>
+        </div>
+      )}
+
       <div style={{ ...card, padding: 28, marginBottom: 22, position: 'relative', overflow: 'hidden' }}>
         <div style={{
           position: 'absolute', top: -40, right: -40, width: 200, height: 200,

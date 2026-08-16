@@ -205,3 +205,52 @@ export function nextDifficulty(results, current = 'medium') {
     reason: `${Math.round(accuracy * 100)}% recently — this level is doing its job`,
   }
 }
+
+/* ── C19: post-test recovery plan ─────────────────────────────────────────── */
+
+/**
+ * A revisit order built from THIS test's wrong answers — never generic advice.
+ *
+ * Order: most-missed topic first (largest gap), ties broken by lower accuracy.
+ * Topics the student got fully right are listed as anchors — starting a
+ * recovery session with proof of what already works is the tone rule applied
+ * to structure, not just wording.
+ *
+ * Input rows: { topic, subject?, correct } for each question in the attempt.
+ * Returns null when nothing was wrong — no plan is manufactured for a clean
+ * run.
+ */
+export function recoveryPlan(rows) {
+  const clean = (rows || []).filter(r => r && r.topic && typeof r.correct === 'boolean')
+  if (!clean.length) return null
+
+  const byTopic = new Map()
+  for (const r of clean) {
+    const k = r.topic
+    if (!byTopic.has(k)) byTopic.set(k, { topic: k, subject: r.subject || null, wrong: 0, total: 0 })
+    const t = byTopic.get(k)
+    t.total++
+    if (!r.correct) t.wrong++
+  }
+
+  const all = [...byTopic.values()]
+  const steps = all
+    .filter(t => t.wrong > 0)
+    .sort((a, b) => (b.wrong - a.wrong) || (a.total - a.wrong) / a.total - (b.total - b.wrong) / b.total)
+    .map((t, i) => ({
+      ...t,
+      order: i + 1,
+      action: t.wrong === t.total
+        ? `Re-learn ${t.topic} from the concept up — every question on it missed the same ground, so the fastest fix is the idea itself, then the drill.`
+        : `Redrill ${t.topic} — you got ${t.total - t.wrong} of ${t.total} right, so the method is there and practice will finish it.`,
+    }))
+
+  if (!steps.length) return null
+
+  return {
+    steps,
+    solid: all.filter(t => t.wrong === 0).map(t => t.topic),
+    wrongCount: clean.filter(r => !r.correct).length,
+    total: clean.length,
+  }
+}

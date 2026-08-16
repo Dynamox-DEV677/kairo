@@ -26,3 +26,18 @@ export function nextDifficulty(
   results: unknown,
   current?: string,
 ): { level: string; changed: boolean; reason: string; accuracy: number | null }
+
+export interface RecoveryStep {
+  topic: string
+  subject: string | null
+  wrong: number
+  total: number
+  order: number
+  action: string
+}
+export function recoveryPlan(rows: unknown): {
+  steps: RecoveryStep[]
+  solid: string[]
+  wrongCount: number
+  total: number
+} | null

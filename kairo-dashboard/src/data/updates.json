@@ -56,5 +56,14 @@
       "A personal progress line compares you only with yourself — accuracy this week vs three weeks ago, never with other students.",
       "Revision drills now open at the difficulty your recent answers earned, one step at a time — you can always override it."
     ]
+  },
+  {
+    "n": 6,
+    "date": "2026-08-16",
+    "title": "Kyno Update 6",
+    "changes": [
+      "Kyno OS now shows where your time actually went — real minutes per subject and chapter from Reels, Solver answers and finished drills, never an estimate.",
+      "After a rough drill, you get a recovery plan built from that attempt's own wrong answers: what to re-learn, what just needs practice, and what's already solid."
+    ]
   }
 ]
