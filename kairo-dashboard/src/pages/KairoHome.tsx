@@ -7,6 +7,7 @@ import {
 import KairoGyro from '../components/KairoGyro'
 import { GameBar } from '../components/GameBar'
 import { getProfile, getMistakes } from '../lib/twin'
+import TodaysThree from '../components/TodaysThree'
 import { selectStreak, selectRetention } from '../lib/selectors'
 import { aiHeaders } from '../lib/devKey'
 import { get as getStored, set as setStored } from '../lib/storage'
@@ -230,6 +231,8 @@ export default function KairoHome({ onNavigate }: Props) {
           {error}
         </div>
       )}
+
+      <TodaysThree onNavigate={onNavigate} />
 
       {editing && (
         <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} style={{ ...card, padding: 18, marginBottom: 18, overflow: 'hidden' }}>

@@ -46,5 +46,15 @@
       "Search your past doubts from the sidebar — it looks inside the answers too, not just your questions.",
       "New Define camera button: snap any word you don't know for a plain-language meaning at your grade level."
     ]
+  },
+  {
+    "n": 5,
+    "date": "2026-08-16",
+    "title": "Kyno Update 5",
+    "changes": [
+      "Home now opens with Today's 3 things — three small tasks picked from what you're about to forget, your weakest topic, and what's due, each with the reason why.",
+      "A personal progress line compares you only with yourself — accuracy this week vs three weeks ago, never with other students.",
+      "Revision drills now open at the difficulty your recent answers earned, one step at a time — you can always override it."
+    ]
   }
 ]

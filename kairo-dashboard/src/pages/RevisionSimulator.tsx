@@ -5,7 +5,8 @@ import {
   Trophy, RefreshCw, Brain, AlertTriangle, Pencil,
 } from 'lucide-react'
 import { chat } from '../lib/openrouter'
-import { getMistakes, track, getProfile } from '../lib/twin'
+import { getMistakes, track, getProfile, loadState } from '../lib/twin'
+import { nextDifficulty } from '../lib/daily.core'
 import { curriculumDirective } from '../lib/curriculum.core'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
@@ -38,7 +39,20 @@ export default function RevisionSimulator() {
   const [phase, setPhase]         = useState<Phase>('setup')
   const [mode, setMode]           = useState<'practice' | 'exam'>('practice')
   const [revealed, setRevealed]   = useState(false)
-  const [diff, setDiff]           = useState<typeof DIFFICULTIES[0]>(DIFFICULTIES[1])
+  // C11 — the opening difficulty adapts to the student's real recent answers.
+  // One level at a time, never off fewer than 4 data points, and the student
+  // can always override by tapping another level.
+  const [autoDiff] = useState(() => {
+    try {
+      const answers = loadState().events
+        .filter(e => e.type === 'quiz_answered' && typeof e.correct === 'boolean')
+        .map(e => ({ correct: e.correct as boolean }))
+      return nextDifficulty(answers, 'medium')
+    } catch { return { level: 'medium', changed: false, reason: '', accuracy: null } }
+  })
+  const [diff, setDiff]           = useState<typeof DIFFICULTIES[0]>(
+    DIFFICULTIES.find(d => d.id === autoDiff.level) || DIFFICULTIES[1],
+  )
   const [weakTopics, setWeakTopics] = useState<{ topic: string; subject?: string }[]>([])
   const [pickedTopics, setPicked] = useState<string[]>([])
   const [memoryReady, setMemoryReady] = useState(false)
@@ -210,7 +224,7 @@ ${curriculumDirective(getProfile()?.board, getProfile()?.cls)}` },
   }
 
   if (phase === 'setup') return <SetupView
-    diff={diff} setDiff={setDiff}
+    diff={diff} setDiff={setDiff} autoDiff={autoDiff}
     mode={mode} setMode={setMode}
     weakTopics={weakTopics} memoryReady={memoryReady}
     pickedTopics={pickedTopics} setPicked={setPicked}
@@ -238,7 +252,7 @@ ${curriculumDirective(getProfile()?.board, getProfile()?.cls)}` },
 }
 
 function SetupView({
-  diff, setDiff, mode, setMode, weakTopics, memoryReady, pickedTopics, setPicked, err, onStart,
+  diff, setDiff, autoDiff, mode, setMode, weakTopics, memoryReady, pickedTopics, setPicked, err, onStart,
 }: any) {
   const isExam = mode === 'exam'
   function toggle(t: string) {
@@ -303,6 +317,11 @@ function SetupView({
         }}>
           Difficulty
         </label>
+        {autoDiff.accuracy != null && (
+          <div style={{ fontSize: 11.5, color: autoDiff.changed ? '#A5B4FC' : '#9CA3AF', margin: '0 0 8px' }}>
+            {autoDiff.changed ? 'Auto-set to ' + autoDiff.level + ': ' : ''}{autoDiff.reason}. Tap another level to override.
+          </div>
+        )}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
           {DIFFICULTIES.map(d => {
             const active = diff.id === d.id
