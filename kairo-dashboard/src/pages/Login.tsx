@@ -353,7 +353,7 @@ function SignIn({ onLogin, onBack }: any) {
           || data.user.email?.split('@')[0]
           || 'Kyno Student'
         try {
-          await supabase.from('users').insert({
+          await supabase.from('users').upsert({
             id:        data.user.id,
             name:      fallbackName,
             role:      'student',

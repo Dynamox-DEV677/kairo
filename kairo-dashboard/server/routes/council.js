@@ -5,6 +5,41 @@ import { requireSupabaseAuth } from '../middleware/supabaseAuth.js'
 
 const router = Router()
 
+/**
+ * The brief served when the AI cannot be reached (pool cooling, quota) or
+ * returns garbage. Built from the SAME request data — focus items come from
+ * the student's real topic lists, nothing invented — and the fabricatable
+ * fields (scores, motivation, trend) are omitted rather than guessed; the
+ * client hides those cards when they are absent. Exported for tests.
+ */
+export function fallbackBrief({ name, weakTopics = [], strongTopics = [], nextExam = null, withDays = [] }) {
+  const focusPool = (weakTopics.length ? weakTopics : strongTopics).slice(0, 3)
+  return {
+    fallback: true,
+    greetingNote: `Hi ${name} — the AI mentors are busy right now, so today's plan is built straight from your own data.`,
+    todaysFocus: focusPool.length
+      ? focusPool.map(t => ({
+          task: `30 focused minutes on ${t}`,
+          subject: '',
+          why: weakTopics.includes(t)
+            ? 'It is on your weak-topic list — steady reps here move your score most.'
+            : 'One of your strengths — one harder set turns good into exam-proof.',
+        }))
+      : [{
+          task: 'Revise the last chapter you studied, then attempt 10 questions on it',
+          subject: '',
+          why: 'No topic data yet — finishing one clean loop today gives Kyno something real to plan from tomorrow.',
+        }],
+    mentorNote: nextExam
+      ? `${nextExam.name} is ${nextExam.days} day${nextExam.days === 1 ? '' : 's'} out — one topic per day from your gap list covers it. Avoid starting anything brand-new today.`
+      : 'Keep it small and finish it: one topic, one drill, one review. Avoid queueing more than you can close today.',
+    mainWeakness: weakTopics[0] || null,
+    examDates: withDays,
+    nextExam,
+    generatedAt: new Date().toISOString(),
+  }
+}
+
 // Phase 0: was reachable with no token. These burn the Groq quota and touch
 // student data; identity comes from the verified JWT only.
 router.use(requireSupabaseAuth)
@@ -69,14 +104,25 @@ Rules:
       temperature: 0.6,
     })
     const brief = parseJSON(raw)
-    if (!brief) return res.status(502).json({ error: 'AI returned non-JSON', raw: raw?.slice(0, 600) })
+    // Garbage from the model gets the same data-built fallback as an outage —
+    // a 502 here killed the whole Home screen over one malformed response.
+    if (!brief) {
+      console.error('[council] non-JSON from model, serving fallback')
+      return res.json(fallbackBrief({ name, weakTopics, strongTopics, nextExam, withDays }))
+    }
     brief.examDates = withDays
     brief.nextExam = nextExam
     brief.generatedAt = new Date().toISOString()
     return res.json(brief)
   } catch (err) {
-    console.error('[council] brief failed:', err)
-    return res.status(500).json({ error: err.message })
+    // The pool WILL have bad moments (429 cool-downs, quota resets). A 500
+    // here killed the whole Home screen and invited refresh-hammering, which
+    // makes the pool worse. Degrade instead: a brief computed from the SAME
+    // request data. Focus items come from the student's real weak topics —
+    // nothing invented — and the fabricatable fields (scores, motivation,
+    // trend) are omitted rather than guessed; the client hides those cards.
+    console.error('[council] brief failed, serving data-built fallback:', err.message)
+    return res.json(fallbackBrief({ name, weakTopics, strongTopics, nextExam, withDays }))
   }
 })
 

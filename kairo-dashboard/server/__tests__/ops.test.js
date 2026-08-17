@@ -113,3 +113,34 @@ test('GET /api no longer publishes the route inventory', async () => {
   const res = await get('/api')
   assert.equal(res.status, 404)
 })
+
+// ── council fallback (incident: /api/council/brief 500 loop, 2026-08-16) ────
+// When aiCall throws (pool cooling / quota) the route must serve a brief built
+// from the request's own data instead of 500ing the whole Home screen.
+import { fallbackBrief } from '../routes/council.js'
+
+test('council fallback is built from the student\'s real topics, no invented scores', () => {
+  const b = fallbackBrief({
+    name: 'Darshan',
+    weakTopics: ['trigonometry', 'mole concept'],
+    strongTopics: ['cells'],
+    nextExam: { name: 'Unit test', days: 3 },
+    withDays: [],
+  })
+  assert.equal(b.fallback, true)
+  assert.equal(b.todaysFocus.length, 2)
+  assert.match(b.todaysFocus[0].task, /trigonometry/)
+  assert.equal(b.mainWeakness, 'trigonometry')
+  assert.match(b.mentorNote, /Unit test is 3 days out/)
+  // The fabricatable fields must be ABSENT, not guessed.
+  assert.ok(!('predictedScore' in b))
+  assert.ok(!('motivation' in b))
+  assert.ok(!('trend' in b))
+})
+
+test('council fallback with no topic data gives one honest starter task', () => {
+  const b = fallbackBrief({ name: 'S', weakTopics: [], strongTopics: [] })
+  assert.equal(b.todaysFocus.length, 1)
+  assert.match(b.todaysFocus[0].why, /No topic data yet/)
+  assert.equal(b.mainWeakness, null)
+})

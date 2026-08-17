@@ -320,7 +320,12 @@ export default function KairoHome({ onNavigate }: Props) {
 
         <div style={{ ...card, padding: 18 }}>
           <div style={{ ...lbl, color: '#A5B4FC', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}><TrendingUp size={12} /> AI prediction</div>
-          {brief ? (
+          {brief && brief.predictedScore == null ? (
+            <div style={{ fontSize: 12.5, color: '#9CA3AF', lineHeight: 1.6 }}>
+              Score prediction is paused while the AI mentors are busy — your plan below still stands.
+              {brief.mainWeakness && <> Fix first: <b style={{ color: '#ff8aa0' }}>{brief.mainWeakness}</b>.</>}
+            </div>
+          ) : brief ? (
             <>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
                 <span style={{ fontSize: 36, fontWeight: 900, color: '#fafafa' }}>{brief.predictedScore}</span>

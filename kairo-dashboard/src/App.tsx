@@ -162,7 +162,7 @@ export default function App() {
               school_id:  null as any,
               avatar_url: meta.avatar_url || meta.picture || null,
             }
-            try { await supabase.from('users').insert(newRow) } catch {  }
+            try { await supabase.from('users').upsert(newRow, { onConflict: 'id', ignoreDuplicates: true }) } catch {  }
             userRow = newRow as any
           }
 
