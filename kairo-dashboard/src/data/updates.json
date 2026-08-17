@@ -75,5 +75,14 @@
       "Starting a topic whose earlier chapter gave you trouble? Kyno offers a quick brush-up first — your call, never a lock.",
       "Fell behind your exam plan? One tap re-fits the missed blocks over the days you have left, most important first, without overloading any day."
     ]
+  },
+  {
+    "n": 8,
+    "date": "2026-08-16",
+    "title": "Kyno Update 8",
+    "changes": [
+      "Study Rooms: create a room, share the 6-letter code, and study on one shared Pomodoro with a live list of who's in — anyone in the room can start or pause for everyone.",
+      "If the AI mentors are ever too busy, your daily brief no longer breaks — Kyno builds the plan from your own data and says so."
+    ]
   }
 ]

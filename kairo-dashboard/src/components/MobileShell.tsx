@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
-  MessageCircle, BookMarked, Brain, Swords, Mic, Network, Layers,
+  MessageCircle, BookMarked, Brain, Swords, Mic, Network, Layers, Users,
   BookOpen, Compass, Activity, Zap, Target, Camera, Star,
   Calendar, FileText, Edit3, Lightbulb, FunctionSquare, Timer,
   Megaphone, Bell, DollarSign, Bot, UserCheck, Grid3x3,
@@ -53,6 +53,7 @@ const DRAWER_STUDENT = [
       { to: 'kairo-os',       label: 'Kyno',           icon: Brain },
       { to: 'doubt',          label: "Kyno's Solver",     icon: MessageCircle },
       { to: 'reels',          label: 'Revision Reels',    icon: Layers },
+      { to: 'rooms',          label: 'Study Room',        icon: Users },
       { to: 'camera-live',    label: 'Study Mode · Live',  icon: Camera },
       { to: 'mistakes',       label: 'Mistake Analysis',   icon: Activity },
       { to: 'explain-mistake',label: 'Explain Mistake',    icon: AlertTriangle },
