@@ -8,9 +8,6 @@ import assert from 'node:assert/strict'
 import {
   makeNote, mergeNotes, removeNote, noteToNotebook, MAX_NOTES, MAX_LEN,
 } from '../../src/lib/roomNotes.core.js'
-import {
-  isPolite, shouldInitiate, isForMe, reconcilePeers, rmsLevel, TALK_THRESHOLD,
-} from '../../src/lib/roomVoice.core.js'
 
 /* ── shared notes ─────────────────────────────────────────────────────────── */
 
@@ -64,44 +61,4 @@ test('linking a note builds a real Notebook payload tagged to the room', () => {
   // A long note title is truncated with an ellipsis.
   const long = makeNote({ byKey: 'a', byName: 'A', text: 'x'.repeat(100), ts: 1 })
   assert.ok(noteToNotebook(long).title.endsWith('…'))
-})
-
-/* ── voice mesh decisions ─────────────────────────────────────────────────── */
-
-test('exactly one peer initiates each pair — no glare', () => {
-  // For any pair, initiate and polite are opposite on the two sides.
-  const pairs = [['aaa', 'bbb'], ['x9', 'x1'], ['member-2', 'member-10']]
-  for (const [p, q] of pairs) {
-    assert.notEqual(shouldInitiate(p, q), shouldInitiate(q, p), `${p}/${q} both/neither initiate`)
-    assert.equal(isPolite(p, q), !shouldInitiate(p, q))
-    assert.equal(isPolite(q, p), !shouldInitiate(q, p))
-  }
-})
-
-test('a signal is mine only if addressed to me from someone else', () => {
-  assert.ok(isForMe({ to: 'me', from: 'you', type: 'offer' }, 'me'))
-  assert.ok(!isForMe({ to: 'other', from: 'you' }, 'me'))
-  assert.ok(!isForMe({ to: 'me', from: 'me' }, 'me'), 'no self-signalling')
-  assert.ok(!isForMe(null, 'me'))
-})
-
-test('reconcilePeers adds new voice members and drops leavers, never myself', () => {
-  const r1 = reconcilePeers(['me', 'a', 'b'], 'me', [])
-  assert.deepEqual(r1.add.sort(), ['a', 'b'])
-  assert.deepEqual(r1.drop, [])
-  // 'b' left voice, 'c' turned it on.
-  const r2 = reconcilePeers(['me', 'a', 'c'], 'me', ['a', 'b'])
-  assert.deepEqual(r2.add, ['c'])
-  assert.deepEqual(r2.drop, ['b'])
-  // I am never my own peer.
-  assert.ok(!reconcilePeers(['me'], 'me', []).add.includes('me'))
-})
-
-test('rmsLevel is silence-at-128 and rises with signal', () => {
-  const silence = new Uint8Array(64).fill(128)
-  assert.equal(rmsLevel(silence), 0)
-  const loud = new Uint8Array(64).map((_, i) => (i % 2 ? 220 : 40))
-  assert.ok(rmsLevel(loud) > TALK_THRESHOLD, 'loud buffer crosses the talk threshold')
-  assert.equal(rmsLevel([]), 0)
-  assert.equal(rmsLevel(null), 0)
 })

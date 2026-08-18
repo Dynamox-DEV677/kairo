@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import {
   Users, Copy, Check, LogOut, Play, Pause, Coffee, DoorOpen, Timer,
-  StickyNote, Send, BookmarkPlus, X, Mic, MicOff, PhoneOff, Volume2,
+  StickyNote, Send, BookmarkPlus, X,
 } from 'lucide-react'
 import { PrimaryButton } from '../components/PrimaryButton'
 import { supabase } from '../lib/supabase'
@@ -15,7 +15,6 @@ import {
 import {
   makeNote, mergeNotes, removeNote, noteToNotebook, type RoomNote,
 } from '../lib/roomNotes.core'
-import { useVoiceMesh, type VoiceSignal } from '../lib/useVoiceMesh'
 
 /**
  * C3 — Study Rooms: study together, live. Its own dashboard, not a widget.
@@ -39,7 +38,7 @@ const card: React.CSSProperties = {
   background: C.panel, border: `1px solid ${C.border}`, borderRadius: 16, padding: 20,
 }
 
-interface Member { key: string; name: string; joinedAt: number; voice: boolean }
+interface Member { key: string; name: string; joinedAt: number }
 
 function myName(): string {
   const p = getProfile() as any
@@ -136,30 +135,8 @@ function RoomDashboard({ code, onLeave }: { code: string; onLeave: () => void })
   const notesRef = useRef(notes)
   notesRef.current = notes
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null)
-  const voiceOnRef = useRef(false)
-  // The page holds the voice hook's signal sink; the channel dispatches into it.
-  const voiceSignalRef = useRef<((s: VoiceSignal) => void) | null>(null)
   // Presence key: stable per tab, so a refresh rejoins as the same person.
   const meKey = useMemo(() => `${myName()}-${Math.random().toString(36).slice(2, 7)}`, [])
-
-  // Re-announce myself with the current voice flag (called by the voice hook).
-  const retrack = useCallback((voice: boolean) => {
-    voiceOnRef.current = voice
-    channelRef.current?.track({ name: myName(), joinedAt: Date.now(), voice })
-  }, [])
-
-  const voiceRosterKeys = useMemo(
-    () => members.filter(m => m.voice && m.key !== meKey).map(m => m.key),
-    [members, meKey],
-  )
-
-  const voice = useVoiceMesh({
-    getChannel: () => channelRef.current,
-    meKey,
-    voiceRosterKeys,
-    onVoiceStateChange: retrack,
-    registerSignalHandler: (fn) => { voiceSignalRef.current = fn },
-  })
 
   useEffect(() => {
     const ch = supabase.channel(`kyno-room-${code}`, {
@@ -168,18 +145,10 @@ function RoomDashboard({ code, onLeave }: { code: string; onLeave: () => void })
     channelRef.current = ch
 
     ch.on('presence', { event: 'sync' }, () => {
-      const state = ch.presenceState() as Record<string, Array<{ name: string; joinedAt: number; voice?: boolean }>>
-      const list: Member[] = Object.entries(state).map(([key, metas]) => {
-        // Re-calling track() to flip the voice flag APPENDS a meta rather than
-        // replacing it, so a member on voice looks like [false, true, true].
-        // Identity comes from the first meta (stable), current state from the
-        // last — reading metas[0].voice would show everyone as never on voice.
-        const first = metas[0]
-        const last = metas[metas.length - 1] || first
-        return {
-          key, name: first?.name || 'Student', joinedAt: first?.joinedAt || 0, voice: !!last?.voice,
-        }
-      })
+      const state = ch.presenceState() as Record<string, Array<{ name: string; joinedAt: number }>>
+      const list: Member[] = Object.entries(state).map(([key, metas]) => ({
+        key, name: metas[0]?.name || 'Student', joinedAt: metas[0]?.joinedAt || 0,
+      }))
       list.sort((a, b) => a.joinedAt - b.joinedAt)
       setMembers(list)
     })
@@ -196,11 +165,6 @@ function RoomDashboard({ code, onLeave }: { code: string; onLeave: () => void })
       if (payload?.id) setNotes(cur => removeNote(cur, payload.id))
     })
 
-    // Voice signalling passes straight to the mesh hook.
-    ch.on('broadcast', { event: 'voice' }, ({ payload }) => {
-      voiceSignalRef.current?.(payload as VoiceSignal)
-    })
-
     // A joiner asks for current state; everyone answers. LWW (timer) and
     // union-by-id (notes) make the duplicate replies harmless. No coordinator.
     ch.on('broadcast', { event: 'hello' }, () => {
@@ -215,7 +179,7 @@ function RoomDashboard({ code, onLeave }: { code: string; onLeave: () => void })
     ch.subscribe(async (status) => {
       if (status === 'SUBSCRIBED') {
         setConnected(true)
-        await ch.track({ name: myName(), joinedAt: Date.now(), voice: voiceOnRef.current })
+        await ch.track({ name: myName(), joinedAt: Date.now() })
         ch.send({ type: 'broadcast', event: 'hello', payload: {} })
       }
     })
@@ -302,31 +266,6 @@ function RoomDashboard({ code, onLeave }: { code: string; onLeave: () => void })
         </div>
       </div>
 
-      {/* Voice bar — opt-in, mic only, peer-to-peer. */}
-      <div style={{ ...card, marginBottom: 14, padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-        <Volume2 size={16} color={voice.voiceOn ? C.green : C.faint} style={{ flexShrink: 0 }} />
-        <div style={{ flex: 1, minWidth: 160 }}>
-          <div style={{ fontSize: 12.5, fontWeight: 700, color: C.text }}>
-            {voice.voiceOn ? `Voice on · ${voice.peerCount} connected` : 'Voice chat'}
-          </div>
-          <div style={{ fontSize: 11, color: C.faint }}>
-            {voice.error
-              ? <span style={{ color: C.amber }}>{voice.error}</span>
-              : voice.voiceOn ? 'Talk it out — mic only, no camera.' : 'Turn it on to talk while you study. Others must turn theirs on too.'}
-          </div>
-        </div>
-        {voice.voiceOn && (
-          <button onClick={voice.toggleMute}
-            className={voice.muted ? 'kyno-danger' : 'kyno-ghost'}
-            style={{ padding: '8px 14px', fontSize: 12, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-            {voice.muted ? <><MicOff size={13} /> Muted</> : <><Mic size={13} /> Mic on</>}
-          </button>
-        )}
-        <PrimaryButton size="sm" variant={voice.voiceOn ? 'danger' : 'primary'} onClick={voice.toggleVoice}>
-          {voice.voiceOn ? <><PhoneOff size={13} /> Leave voice</> : <><Mic size={13} /> Join voice</>}
-        </PrimaryButton>
-      </div>
-
       <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 14 }} className="mob-stack">
         {/* The shared timer. */}
         <div style={{ ...card, textAlign: 'center', padding: '30px 20px' }}>
@@ -376,27 +315,21 @@ function RoomDashboard({ code, onLeave }: { code: string; onLeave: () => void })
               {members.length === 0 && (
                 <div style={{ fontSize: 12, color: C.faint }}>Connecting you…</div>
               )}
-              {members.map(m => {
-                const talking = !!voice.speaking[m.key]
-                return (
-                  <div key={m.key} style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
-                    <span style={{
-                      width: 26, height: 26, borderRadius: 8, flexShrink: 0,
-                      background: 'rgba(124,92,255,0.14)', color: C.purple,
-                      display: 'grid', placeItems: 'center', fontSize: 11, fontWeight: 800,
-                      boxShadow: talking ? `0 0 0 2px ${C.green}` : 'none',
-                      transition: 'box-shadow .12s',
-                    }}>{m.name.slice(0, 1).toUpperCase()}</span>
-                    <span style={{ fontSize: 12.5, color: C.text, fontWeight: 600, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {m.name}{m.key === meKey ? ' (you)' : ''}
-                    </span>
-                    {m.voice && <Mic size={11} color={talking ? C.green : C.faint} style={{ flexShrink: 0 }} />}
-                    <span style={{ fontSize: 10, color: inFocus ? C.green : C.faint }}>
-                      {inFocus ? 'focusing' : inBreak ? 'on break' : 'here'}
-                    </span>
-                  </div>
-                )
-              })}
+              {members.map(m => (
+                <div key={m.key} style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
+                  <span style={{
+                    width: 26, height: 26, borderRadius: 8, flexShrink: 0,
+                    background: 'rgba(124,92,255,0.14)', color: C.purple,
+                    display: 'grid', placeItems: 'center', fontSize: 11, fontWeight: 800,
+                  }}>{m.name.slice(0, 1).toUpperCase()}</span>
+                  <span style={{ fontSize: 12.5, color: C.text, fontWeight: 600, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {m.name}{m.key === meKey ? ' (you)' : ''}
+                  </span>
+                  <span style={{ fontSize: 10, color: inFocus ? C.green : C.faint }}>
+                    {inFocus ? 'focusing' : inBreak ? 'on break' : 'here'}
+                  </span>
+                </div>
+              ))}
             </div>
             {members.length === 1 && connected && (
               <div style={{ fontSize: 11, color: C.faint, marginTop: 10, lineHeight: 1.5 }}>
