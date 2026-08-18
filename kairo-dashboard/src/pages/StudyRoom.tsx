@@ -45,10 +45,23 @@ function myName(): string {
   return (p?.nickname || p?.name || 'Student').slice(0, 24)
 }
 
+// Which room this session is in, remembered so a remount (navigation crash,
+// a refresh, the app being killed on mobile) drops you back into it instead of
+// the create screen. sessionStorage is per-tab, so it clears itself when the
+// tab closes — you are not "stuck" in a room forever.
+const ACTIVE_KEY = 'kyno:room:active'
+const readActive = () => { try { return sessionStorage.getItem(ACTIVE_KEY) } catch { return null } }
+const writeActive = (c: string | null) => {
+  try { c ? sessionStorage.setItem(ACTIVE_KEY, c) : sessionStorage.removeItem(ACTIVE_KEY) } catch {  }
+}
+
 export default function StudyRoom() {
-  const [code, setCode] = useState<string | null>(null)
+  const [code, setCodeState] = useState<string | null>(() => readActive())
   const [joinInput, setJoinInput] = useState('')
   const [err, setErr] = useState('')
+
+  // Every code change (create, join, leave) is mirrored to sessionStorage.
+  const setCode = (c: string | null) => { writeActive(c); setCodeState(c) }
 
   return (
     <div style={{ width: '100%', height: '100%', overflowY: 'auto', background: C.bg, padding: '24px 20px 80px' }}>

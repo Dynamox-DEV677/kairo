@@ -263,10 +263,11 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
 
             <XPToast />
 
-            {/* Re-keyed on the active page: without this, one page throwing
-                leaves EVERY tab showing the error screen until a full reload,
-                because the boundary's hasError never clears on navigation. */}
-            <ErrorBoundary key={active}>
+            {/* resetKey (NOT key): the boundary clears a stale error when the
+                page changes, but the pages stay mounted across navigation. A
+                `key={active}` here remounted the whole subtree on every tab
+                switch, which wiped live state like the Study Room's channel. */}
+            <ErrorBoundary resetKey={active}>
 
             <div className={pageClass} style={pageStyle('home')}>{mounted('home') && <KairoHomeM onNavigate={setActive} />}</div>
 

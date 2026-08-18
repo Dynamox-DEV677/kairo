@@ -1,13 +1,31 @@
 import { Component, type ReactNode } from 'react'
 
-interface Props { children: ReactNode }
-interface State { hasError: boolean; message?: string }
+interface Props {
+  children: ReactNode
+  /**
+   * Changes when the user navigates. When it changes we clear any stale error
+   * so a crash on one page does not stick across every tab — WITHOUT using
+   * `key`, which would remount the whole page subtree on every navigation and
+   * wipe live in-memory state (the Study Room's channel and membership, for
+   * one). Clearing state here keeps the pages mounted.
+   */
+  resetKey?: string | number
+}
+interface State { hasError: boolean; message?: string; lastKey?: string | number }
 
 export default class ErrorBoundary extends Component<Props, State> {
   state: State = { hasError: false }
 
-  static getDerivedStateFromError(err: any): State {
+  static getDerivedStateFromError(err: any): Partial<State> {
     return { hasError: true, message: err?.message ? String(err.message) : undefined }
+  }
+
+  static getDerivedStateFromProps(props: Props, state: State): Partial<State> | null {
+    // Navigation happened: forget the previous page's error, keep children mounted.
+    if (props.resetKey !== state.lastKey) {
+      return { hasError: false, message: undefined, lastKey: props.resetKey }
+    }
+    return null
   }
 
   componentDidCatch(error: any, info: any) {
