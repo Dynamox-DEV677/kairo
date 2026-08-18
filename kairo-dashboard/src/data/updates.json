@@ -84,5 +84,14 @@
       "Study Rooms: create a room, share the 6-letter code, and study on one shared Pomodoro with a live list of who's in — anyone in the room can start or pause for everyone.",
       "If the AI mentors are ever too busy, your daily brief no longer breaks — Kyno builds the plan from your own data and says so."
     ]
+  },
+  {
+    "n": 9,
+    "date": "2026-08-18",
+    "title": "Kyno Update 9",
+    "changes": [
+      "Study Rooms now have shared notes — post a note everyone in the room sees live, and save any note straight into your own Notebook to keep it.",
+      "Talk while you study: turn on voice chat in a room and hear each other, mic-only, with a green ring showing who's speaking."
+    ]
   }
 ]
