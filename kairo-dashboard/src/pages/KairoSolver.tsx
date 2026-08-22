@@ -3,7 +3,7 @@ import GeoVisualMode from '../components/GeoVisualMode'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Send, StopCircle, Sparkles, Image as ImageIcon, Loader2,
-  ChevronLeft, ChevronRight, Beaker, ExternalLink, BookOpen, Atom, RefreshCw,
+  ChevronLeft, ChevronRight, Beaker, ExternalLink, BookOpen, Atom, RefreshCw, Layers,
   Mic, MicOff, Calendar, X, Paperclip,
   FileText as TextIcon, MapPin as MapPinIcon,
   Box as Box3DIcon, LayoutPanelTop as BothIcon, Wand2, Camera,
@@ -14,6 +14,7 @@ import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
 import { recordDoubt, recordFormula, recordConcept, recordFlashcard, getStudentMemory, getMistakes } from '../lib/twin'
 import { startTopicClock } from '../lib/timeTracker'
+import { buildClozeCards } from '../lib/cloze.core'
 import { lookupNcert } from '../lib/ncertCacheLookup'
 import { aiHeaders } from '../lib/devKey'
 
@@ -1246,6 +1247,7 @@ function AnswerActions({ resp, question, onAskRelated }: {
   onAskRelated: (q: string) => void
 }) {
   const [saved, setSaved] = useState(false)
+  const [cloze, setCloze] = useState<'idle' | number>('idle')
 
   function saveToReels() {
     if (saved) return
@@ -1256,6 +1258,17 @@ function AnswerActions({ resp, question, onAskRelated }: {
       source: 'auto-from-doubt',
     })
     setSaved(true)
+  }
+
+  // Fill-in-the-blank cards from the answer's own sentences (cloze.core —
+  // deterministic, skips sentences with no confident term). They join Reels.
+  function makeCloze() {
+    if (cloze !== 'idle') return
+    const cards = buildClozeCards(resp.textExplanation, { max: 6 })
+    for (const c of cards) {
+      try { recordFlashcard({ front: c.front, back: c.back, topic: resp.topicKeyword || undefined, source: 'auto-from-doubt' }) } catch {  }
+    }
+    setCloze(cards.length)
   }
 
   function explainDifferently() {
@@ -1276,6 +1289,10 @@ ${prev}`,
       <button onClick={explainDifferently} className="kyno-ghost"
         style={{ padding: '7px 13px', fontSize: 11.5, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
         <RefreshCw size={12} /> Explain it differently
+      </button>
+      <button onClick={makeCloze} disabled={cloze !== 'idle'} className="kyno-ghost"
+        style={{ padding: '7px 13px', fontSize: 11.5, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+        <Layers size={12} /> {cloze === 'idle' ? 'Fill-in cards' : cloze > 0 ? `${cloze} card${cloze === 1 ? '' : 's'} made ✓` : 'No blanks found'}
       </button>
     </div>
   )
