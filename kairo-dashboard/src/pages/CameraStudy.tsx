@@ -6,7 +6,7 @@ import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
 import {
   Camera, Upload, X, Sparkles, FileText, BookmarkPlus,
-  Lightbulb, RotateCcw, Loader2, CheckCircle2, Scale, FunctionSquare,
+  Lightbulb, RotateCcw, Loader2, CheckCircle2, Scale, FunctionSquare, Tags, Eye,
 } from 'lucide-react'
 import { saveRecentChat, makeTitle } from '../lib/recentChats'
 import { aiHeaders } from '../lib/devKey'
@@ -14,6 +14,7 @@ import { recordMistake, recordFlashcard, listFormulas, getProfile } from '../lib
 import { curriculumDirective, resolveCurriculum } from '../lib/curriculum.core'
 import { formulaSignature } from '../lib/knowledgeHygiene.js'
 import { balance } from '../lib/balanceEquation.js'
+import { parseDiagramResponse, cardsFromDiagram } from '../lib/diagramRecall.core'
 import { awardXP } from '../lib/game'
 
 const VISION_MODELS = [
@@ -161,6 +162,15 @@ const ACTIONS = [
   { id: 'define',    label: 'Define',        icon: Lightbulb,    color: '#FFB020',
     hint: 'Snap a word you don\'t know — plain meaning + example',
     prompt: 'Find the single most prominent word (or short phrase) in this image that a student would be looking up.\n\nRespond in EXACTLY this structure:\n## <the word>\nOne-sentence meaning in everyday language a student of this grade already understands — no dictionary jargon.\n## In a sentence\nOne example sentence using the word naturally, in a school context they would recognise.\n## Related\nUp to 2 closely related words with a 3-6 word gloss each. Skip this section if nothing is genuinely related.\n\nIf several words are visible and none is clearly the subject, pick the hardest one and say in one line which you chose. If no readable word is visible, say so plainly and ask for a closer photo — do not guess.' + MD_RULES },
+  /**
+   * B4 — diagram labelling recall. The model identifies the diagram and lists
+   * its parts; the student recalls each from a clue, then reveals (see
+   * diagramRecall.core.js for the honesty gate). Not pixel occlusion — a vision
+   * model can't box labels reliably — but real active recall on real parts.
+   */
+  { id: 'label',     label: 'Label it',      icon: Tags,         color: '#4FD8E8',
+    hint: 'Snap a diagram — recall the parts, then reveal',
+    prompt: 'Identify the labelled scientific diagram in this image (e.g. animal cell, human heart, neuron, plant cell, reflex arc).\n\nReturn ONLY a JSON object:\n{"diagramType":"<short name of the diagram>","confidence":"high"|"low","parts":[{"label":"<the part\'s name>","clue":"<a 4-10 word hint describing where/what it is, WITHOUT naming it>"}]}\n\nList 4-10 of the most important labelled parts a student is expected to know. Set confidence to "high" ONLY if you clearly recognise the diagram and its parts; otherwise "low". Do not invent parts. No text outside the JSON.' },
   { id: 'summarize', label: 'Summarize',     icon: FileText,     color: '#A5B4FC',
     hint: 'Condenses notes into key points',
     prompt: 'Summarize the STUDY CONTENT in this image into clear bullet points under "## Section Name" headings. Cover every definition, formula, law and labelled diagram part on the page, keeping the exact technical terms and symbols the student must reproduce in an exam. Write the surrounding explanation in your own words — do not copy the book\'s sentences.' + MD_RULES },
@@ -182,6 +192,8 @@ export default function CameraStudy() {
   const [result, setResult]       = useState('')
   // Parsed flashcards, rendered as cards rather than dumped as JSON.
   const [cards, setCards]         = useState<{ front: string; back: string }[]>([])
+  // B4 diagram recall: the identified diagram + its parts, or null.
+  const [recall, setRecall]       = useState<{ diagramType: string; parts: { label: string; clue: string }[] } | null>(null)
   const [savedNote, setSavedNote] = useState('')
   const [err, setErr]             = useState('')
   const [docBusy, setDocBusy]     = useState(false)
@@ -331,7 +343,7 @@ export default function CameraStudy() {
   const run = useCallback(async (action: typeof ACTIONS[0]) => {
     if (!imageData) return
     setBusy(true); setActiveAction(action.id); setErr(''); setResult('')
-    setCards([]); setSavedNote('')
+    setCards([]); setRecall(null); setSavedNote('')
     try {
       const messages: VisionMsg[] = [
         {
@@ -509,6 +521,26 @@ export default function CameraStudy() {
         }
       }
 
+      // B4 — diagram recall. Parse + honesty gate in diagramRecall.core; a
+      // low-confidence read is an honest miss, never a guessed diagram.
+      if (action.id === 'label') {
+        const parsed = parseDiagramResponse(typeof text === 'string' ? text : '')
+        setResult('')
+        if (parsed.ok) {
+          setRecall({ diagramType: parsed.diagramType, parts: parsed.parts })
+          try { awardXP('camera_scan' as any) } catch {  }
+        } else {
+          setRecall(null)
+          setErr(
+            parsed.reason === 'low-confidence'
+              ? `Kyno isn't sure enough about this diagram to quiz you on it${parsed.diagramType ? ` (it might be a ${parsed.diagramType})` : ''}. Try a clearer, straight-on photo — a wrong label is worse than none.`
+              : "Kyno couldn't read a diagram in that photo. Try a clearer, straight-on shot of a labelled diagram.",
+          )
+        }
+        setBusy(false); setActiveAction(null)
+        return
+      }
+
       // "Check my work" feeds the twin: a real slip becomes a tracked mistake so it
       // shows up in Mistake Analysis / weak spots; a clean check just earns XP.
       if (action.id === 'check') {
@@ -537,7 +569,7 @@ export default function CameraStudy() {
 
   const reset = () => {
     setImageData(null); setResult(''); setActiveAction(null); setErr('')
-    setCards([]); setSavedNote('')
+    setCards([]); setRecall(null); setSavedNote('')
   }
 
   return (
@@ -765,6 +797,14 @@ export default function CameraStudy() {
         </div>
       )}
 
+      {/* B4 — diagram recall exercise (its own panel, above the AI-result box). */}
+      {recall && (
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+          style={{ background: '#141A2A', border: '1px solid #2d2b55', borderRadius: 14, padding: 22, marginBottom: 16 }}>
+          <DiagramRecall recall={recall} onSaved={setSavedNote} savedNote={savedNote} />
+        </motion.div>
+      )}
+
       <AnimatePresence>
         {(result || cards.length > 0) && (
           <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
@@ -845,4 +885,81 @@ function cleanMarkdown(s: string): string {
     .replace(/^\s*```\s*$/gm, '')
     .replace(/\n{3,}/g, '\n\n')
     .trim()
+}
+
+/**
+ * B4 — the recall exercise. Each part shows its clue with the label hidden;
+ * tapping reveals it. "Save as cards" writes them to the flashcard store so
+ * they join Reels + spaced repetition (cardsFromDiagram builds the Q/A).
+ */
+function DiagramRecall({ recall, onSaved, savedNote }: {
+  recall: { diagramType: string; parts: { label: string; clue: string }[] }
+  onSaved: (s: string) => void
+  savedNote: string
+}) {
+  const [shown, setShown] = useState<Record<number, boolean>>({})
+  const [saved, setSaved] = useState(false)
+  const allShown = recall.parts.every((_, i) => shown[i])
+
+  function saveCards() {
+    if (saved) return
+    const cards = cardsFromDiagram(recall.diagramType, recall.parts)
+    let n = 0
+    for (const c of cards) {
+      try { recordFlashcard({ front: c.front, back: c.back, topic: c.topic || undefined, source: 'camera' as any }); n++ } catch {  }
+    }
+    setSaved(true)
+    onSaved(`${n} card${n === 1 ? '' : 's'} from this diagram saved to Flashcards.`)
+  }
+
+  return (
+    <div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+        <Tags size={15} color="#4FD8E8" />
+        <span style={{ fontSize: 12, fontWeight: 700, color: '#4FD8E8', textTransform: 'uppercase', letterSpacing: 1.5 }}>
+          Label it — {recall.diagramType}
+        </span>
+      </div>
+      <p style={{ fontSize: 12.5, color: '#B1B5BA', margin: '0 0 14px', lineHeight: 1.6 }}>
+        Name each part from the clue, then tap to check. {recall.parts.length} parts.
+      </p>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {recall.parts.map((p, i) => (
+          <button key={i} onClick={() => setShown(s => ({ ...s, [i]: !s[i] }))}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 12, width: '100%', textAlign: 'left',
+              padding: '11px 14px', borderRadius: 11, cursor: 'pointer',
+              background: shown[i] ? 'rgba(79,216,232,0.08)' : 'rgba(255,255,255,0.03)',
+              border: `1px solid ${shown[i] ? 'rgba(79,216,232,0.35)' : 'rgba(255,255,255,0.08)'}`,
+              fontFamily: 'inherit',
+            }}>
+            <span style={{
+              width: 22, height: 22, borderRadius: 6, flexShrink: 0, background: 'rgba(79,216,232,0.15)',
+              color: '#4FD8E8', display: 'grid', placeItems: 'center', fontSize: 11, fontWeight: 800,
+            }}>{i + 1}</span>
+            <span style={{ flex: 1, minWidth: 0 }}>
+              <span style={{ display: 'block', fontSize: 12.5, color: '#B1B5BA' }}>{p.clue || 'This part'}</span>
+              {shown[i]
+                ? <span style={{ display: 'block', fontSize: 14, fontWeight: 800, color: '#fafafa', marginTop: 2 }}>{p.label}</span>
+                : <span style={{ display: 'block', fontSize: 12, color: '#6B7280', marginTop: 2, fontStyle: 'italic' }}>tap to reveal the label</span>}
+            </span>
+            <Eye size={13} color={shown[i] ? '#4FD8E8' : '#6B7280'} style={{ flexShrink: 0 }} />
+          </button>
+        ))}
+      </div>
+
+      <div style={{ display: 'flex', gap: 8, marginTop: 14, flexWrap: 'wrap', alignItems: 'center' }}>
+        <button onClick={() => setShown(Object.fromEntries(recall.parts.map((_, i) => [i, !allShown])))}
+          className="kyno-ghost" style={{ padding: '8px 14px', fontSize: 12 }}>
+          {allShown ? 'Hide all' : 'Reveal all'}
+        </button>
+        <button onClick={saveCards} disabled={saved} className="kyno-chunky"
+          style={{ padding: '8px 14px', fontSize: 12, display: 'inline-flex', alignItems: 'center', gap: 6, opacity: saved ? 0.7 : 1 }}>
+          <BookmarkPlus size={13} /> {saved ? 'Saved' : 'Save as cards'}
+        </button>
+        {savedNote && <span style={{ fontSize: 11.5, color: '#34D399' }}>{savedNote}</span>}
+      </div>
+    </div>
+  )
 }
