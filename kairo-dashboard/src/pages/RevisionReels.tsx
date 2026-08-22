@@ -4,13 +4,15 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
-import { Layers, ChevronLeft, ChevronRight, Sparkles, FunctionSquare, RotateCcw } from 'lucide-react'
+import { Layers, ChevronLeft, ChevronRight, Sparkles, FunctionSquare, RotateCcw, Plus, Check } from 'lucide-react'
 import { ToggleChip } from '../components/PrimaryButton'
 import MathExpr from '../components/MathExpr'
-import { listFormulas, listFlashcards } from '../lib/twin'
+import { listFormulas, listFlashcards, recordFlashcard, getProfile } from '../lib/twin'
 import { buildDeck, deckSubjects, readPositions, positionFor, withPosition, type ReelCard } from '../lib/reels.core'
 import { getRaw, setRaw, get as getKey } from '../lib/storage'
 import { startTopicClock } from '../lib/timeTracker'
+import { STARTER_DECKS, type StarterDeck } from '../data/starterDecks'
+import { decksForCurriculum, newCardsForDeck, deckRemainingCount } from '../lib/starterDecks.core'
 
 /**
  * Revision Reels — a swipeable feed of the student's OWN cards.
@@ -56,10 +58,14 @@ function posKey(): string {
 }
 
 export default function RevisionReels() {
-  // Read once on mount; the twin store does not change under an open reel.
+  // Bumped when a starter deck is added, to rebuild the deck from the store.
+  const [rev, setRev] = useState(0)
+  const [showPicker, setShowPicker] = useState(false)
+
+  // Read on mount and after each starter-deck add.
   const deck = useMemo(
     () => buildDeck({ formulas: listFormulas(), flashcards: listFlashcards() }, { now: Date.now() }),
-    [],
+    [rev],
   )
   const subjects = useMemo(() => deckSubjects(deck), [deck])
 
@@ -68,6 +74,19 @@ export default function RevisionReels() {
     () => (subject ? deck.filter(c => c.subject === subject) : deck),
     [deck, subject],
   )
+
+  // Starter decks that suit this student's board/class.
+  const starterDecks = useMemo(() => {
+    const p = getProfile() as any
+    return decksForCurriculum(STARTER_DECKS, { board: p?.board, cls: p?.cls })
+  }, [])
+
+  function addDeck(d: StarterDeck) {
+    const cards = newCardsForDeck(d, listFlashcards())
+    for (const c of cards) recordFlashcard(c)
+    setRev(r => r + 1)   // rebuild the reel from the store
+    setShowPicker(false)
+  }
 
   const [positions, setPositions] = useState<Record<string, string>>(() => readPositions(getRaw(posKey())))
   const [idx, setIdx] = useState(0)
@@ -141,7 +160,7 @@ export default function RevisionReels() {
         </div>
 
         {subjects.length > 0 && (
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 18 }}>
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 18, alignItems: 'center' }}>
             <ToggleChip selected={subject === null} onClick={() => setSubject(null)}>
               All ({deck.length})
             </ToggleChip>
@@ -150,23 +169,23 @@ export default function RevisionReels() {
                 {s.subject} ({s.count})
               </ToggleChip>
             ))}
+            {starterDecks.length > 0 && (
+              <button onClick={() => setShowPicker(v => !v)} className="kyno-ghost"
+                style={{ padding: '7px 13px', fontSize: 11.5, display: 'inline-flex', alignItems: 'center', gap: 5, marginLeft: 'auto' }}>
+                <Plus size={12} /> {showPicker ? 'Close' : 'Starter decks'}
+              </button>
+            )}
           </div>
         )}
 
-        {!card ? (
-          <div style={{
-            padding: '64px 24px', textAlign: 'center',
-            background: C.panel, border: `1px dashed ${C.border}`, borderRadius: 18,
-          }}>
-            <Sparkles size={26} color={C.purple} style={{ marginBottom: 12 }} />
-            <div style={{ fontSize: 15, fontWeight: 800, color: C.text, marginBottom: 6 }}>
-              Nothing here yet — and that's normal
-            </div>
-            <p style={{ fontSize: 12.5, color: C.dim, maxWidth: 400, margin: '0 auto', lineHeight: 1.7 }}>
-              Reels fill up as you use Kyno: formulas you touch in the Solver and flashcards you save
-              land here automatically. Ask one doubt or snap one page, and your first card appears.
-            </p>
-          </div>
+        {/* Cold-start: no cards yet, OR the student opened the picker to add more. */}
+        {(!card || showPicker) ? (
+          <StarterPicker
+            decks={starterDecks}
+            existing={listFlashcards()}
+            onAdd={addDeck}
+            emptyReel={!card}
+          />
         ) : (
           <>
             <div style={{ fontSize: 11, color: C.faint, marginBottom: 8, textAlign: 'center' }}>
@@ -250,6 +269,82 @@ export default function RevisionReels() {
             </div>
           </>
         )}
+      </div>
+    </div>
+  )
+}
+
+/**
+ * Starter deck picker — the cold-start fix. Full-width stacked cards so it
+ * reads cleanly on a phone (no side-by-side squeeze), each showing how many
+ * of its cards are still new to the student. Adding is idempotent: once every
+ * card is in, the deck shows "Added" and can't double.
+ */
+function StarterPicker({ decks, existing, onAdd, emptyReel }: {
+  decks: StarterDeck[]
+  existing: any[]
+  onAdd: (d: StarterDeck) => void
+  emptyReel: boolean
+}) {
+  if (decks.length === 0) {
+    return (
+      <div style={{
+        padding: '48px 24px', textAlign: 'center',
+        background: C.panel, border: `1px dashed ${C.border}`, borderRadius: 18,
+      }}>
+        <Sparkles size={24} color={C.purple} style={{ marginBottom: 10 }} />
+        <div style={{ fontSize: 14.5, fontWeight: 800, color: C.text, marginBottom: 6 }}>
+          Starter decks for your board are coming
+        </div>
+        <p style={{ fontSize: 12.5, color: C.dim, maxWidth: 400, margin: '0 auto', lineHeight: 1.7 }}>
+          For now, Reels fills up as you use Kyno — ask a doubt in the Solver or snap a page,
+          and your first cards appear here.
+        </p>
+      </div>
+    )
+  }
+
+  return (
+    <div>
+      {emptyReel && (
+        <div style={{ marginBottom: 14 }}>
+          <div style={{ fontSize: 15, fontWeight: 800, color: C.text, marginBottom: 4 }}>
+            Start with a ready deck
+          </div>
+          <p style={{ fontSize: 12.5, color: C.dim, lineHeight: 1.6, margin: 0 }}>
+            High-yield cards to revise from today. They join your own cards, and Kyno spaces them
+            out for you. Your Solver doubts and saved formulas land here too.
+          </p>
+        </div>
+      )}
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {decks.map(d => {
+          const remaining = deckRemainingCount(d, existing)
+          const added = remaining === 0
+          return (
+            <div key={d.id} style={{
+              display: 'flex', alignItems: 'center', gap: 12,
+              padding: '14px 16px', borderRadius: 14,
+              background: C.panel, border: `1px solid ${C.border}`,
+            }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 13.5, fontWeight: 800, color: C.text }}>{d.title}</div>
+                <div style={{ fontSize: 11.5, color: C.faint, marginTop: 3, lineHeight: 1.5 }}>{d.blurb}</div>
+                <div style={{ fontSize: 10.5, color: C.faint, marginTop: 4 }}>
+                  {d.cards.length} cards{added ? ' · added' : remaining < d.cards.length ? ` · ${remaining} new` : ''}
+                </div>
+              </div>
+              <button
+                onClick={() => onAdd(d)}
+                disabled={added}
+                className={added ? 'kyno-ghost' : 'kyno-chunky'}
+                style={{ padding: '9px 15px', fontSize: 12, display: 'inline-flex', alignItems: 'center', gap: 6, flexShrink: 0, opacity: added ? 0.7 : 1 }}>
+                {added ? <><Check size={13} /> Added</> : <><Plus size={13} /> Add</>}
+              </button>
+            </div>
+          )
+        })}
       </div>
     </div>
   )

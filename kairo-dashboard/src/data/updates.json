@@ -93,5 +93,14 @@
       "Study Rooms now have a shared notes wall — post a note everyone in the room sees live, and save any note straight into your own Notebook to keep it.",
       "Rooms hold a big group now — study together with the shared timer and notes."
     ]
+  },
+  {
+    "n": 10,
+    "date": "2026-08-23",
+    "title": "Kyno Update 10",
+    "changes": [
+      "Revision Reels now start you off with ready-made decks — high-yield Physics, Chemistry, Biology and Maths cards you can add in one tap, so there's something to revise from day one.",
+      "Added decks join your own cards and get spaced out for review like everything else."
+    ]
   }
 ]

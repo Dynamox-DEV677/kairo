@@ -132,7 +132,7 @@ export interface Flashcard {
   reviews:   number
   ease:      number
   dueAt:     number
-  source:    'manual' | 'auto-from-doubt' | 'auto-from-mistake'
+  source:    'manual' | 'auto-from-doubt' | 'auto-from-mistake' | 'starter'
 }
 
 export interface KynoProfile {
