@@ -21,6 +21,7 @@ export interface TwinEvent {
   score?:     number
   correct?:   boolean
   durationMs?: number
+  difficulty?: number
   modality?:  Modality
   payload?:   Record<string, any>
 }
@@ -820,6 +821,9 @@ export function track(args: TrackArgs): TwinState {
     score:      typeof args.score   === 'number' ? args.score   : undefined,
     correct:    typeof args.correct === 'boolean' ? args.correct : undefined,
     durationMs: args.durationMs,
+    // Persisted (not just fed to mastery): the mistake analyser reads it to
+    // tell an easy-question slip from a hard-question gap.
+    difficulty: typeof args.difficulty === 'number' ? args.difficulty : undefined,
     modality:   args.modality || MODALITY_BY_DEFAULT[args.type],
     payload:    args.payload,
   }

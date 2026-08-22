@@ -63,6 +63,10 @@ export default function RevisionSimulator() {
   const [memoryReady, setMemoryReady] = useState(false)
   const [questions, setQuestions] = useState<Question[]>([])
   const [idx, setIdx]             = useState(0)
+  // C28 — per-question time, so the mistake analyser can tell a careless
+  // fast slip from a slow struggle. Stamped when a question is shown.
+  const qShownRef = useRef(Date.now())
+  useEffect(() => { qShownRef.current = Date.now() }, [idx, phase])
   const [answers, setAnswers]     = useState<(number | null)[]>([])
   const [secsLeft, setSecsLeft]   = useState(0)
   const [err, setErr]             = useState('')
@@ -182,6 +186,7 @@ export default function RevisionSimulator() {
           correct,
           score:   correct ? 100 : 0,
           difficulty: ({ easy: 0.3, medium: 0.55, hard: 0.8 } as any)[diff.id] ?? 0.5,
+          durationMs: Date.now() - qShownRef.current,
           modality: 'interactive',
         })
       }

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Brain, CheckCircle, XCircle, Trophy, RotateCcw, History, Target, Zap, BarChart3, Award, ArrowRight } from 'lucide-react'
 import { post, get } from '../lib/api'
@@ -185,6 +185,8 @@ function SetupScreen({ form, setForm, onStart, loading, err }: any) {
 
 function QuizScreen({ questions, onComplete }: any) {
   const [index, setIndex] = useState(0)
+  const qShownRef = useRef(Date.now())
+  useEffect(() => { qShownRef.current = Date.now() }, [index])
   const [selected, setSelected] = useState<string | null>(null)
   const [revealed, setRevealed] = useState(false)
   const [score, setScore] = useState(0)
@@ -209,6 +211,7 @@ function QuizScreen({ questions, onComplete }: any) {
         correct,
         score:   correct ? 100 : 0,
         difficulty: ({ easy: 0.3, medium: 0.5, hard: 0.75 } as any)[(q as any).difficulty] ?? 0.5,
+        durationMs: Date.now() - qShownRef.current,
         modality: 'interactive',
       })
     } catch {  }

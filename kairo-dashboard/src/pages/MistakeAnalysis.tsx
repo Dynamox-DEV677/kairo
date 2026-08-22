@@ -5,8 +5,9 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
-import { getMistakes, recordMistake, type MistakeRow } from '../lib/twin'
+import { getMistakes, recordMistake, getDashboard, type MistakeRow } from '../lib/twin'
 import { chat } from '../lib/openrouter'
+import { classifyMistakes, type MistakeCategory } from '../lib/mistakes.core'
 
 const C = {
   bg:        '#0A0D16',
@@ -91,6 +92,10 @@ export default function MistakeAnalysis() {
           <Kpi label="Total mistakes"   value={totalMistakes}    hint="across every Kyno activity" accent="#7C5CFF" />
           <Kpi label="Recurring topics" value={recurringTopics}  hint="≥ 3 wrong attempts" accent="#ffb020" />
           <Kpi label="High-severity"    value={highSeverity}     hint="needs attention now" accent="#FF5A6E" />
+        </div>
+
+        <div style={{ marginTop: 22 }}>
+          <MistakePatterns />
         </div>
 
         <div style={{ marginTop: 22 }}>
@@ -185,6 +190,61 @@ function Kpi({ label, value, hint, accent = '#7C5CFF' }: { label: string; value:
       </div>
       <div style={{ fontSize: 11.5, color: C.textFaint, marginTop: 6 }}>{hint}</div>
     </motion.div>
+  )
+}
+
+/**
+ * C28 — why the mistakes happen, from real quiz timing + answers. Only renders
+ * once there are wrong attempts to analyse; each cause carries its fix.
+ */
+function MistakePatterns() {
+  const { categories, total, timedShare } = (() => {
+    try {
+      const snap = getDashboard()
+      return classifyMistakes(snap.recentEvents, snap.mastery, { now: Date.now() })
+    } catch { return { categories: [] as MistakeCategory[], total: 0, timedShare: 0 } }
+  })()
+
+  if (total === 0) return null
+
+  const accent: Record<string, string> = {
+    careless: '#FFB020', conceptual: '#FF5A6E', timing: '#4FD8E8', unclear: '#9CA3AF',
+  }
+
+  return (
+    <div style={{ background: C.panel, border: `1px solid ${C.border}`, borderRadius: 16, padding: 20 }}>
+      <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1.4, textTransform: 'uppercase', color: '#A5B4FC', marginBottom: 4 }}>
+        Why you're missing them
+      </div>
+      <p style={{ fontSize: 12, color: C.textFaint, margin: '0 0 14px', lineHeight: 1.6 }}>
+        Grouped from your recent quizzes — the fix is different for each, so this points you at the right one.
+      </p>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {categories.map(cat => (
+          <div key={cat.key} style={{
+            padding: '12px 14px', borderRadius: 12,
+            background: 'rgba(255,255,255,0.03)', border: `1px solid ${C.border}`,
+          }}>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 4 }}>
+              <span style={{ width: 8, height: 8, borderRadius: '50%', background: accent[cat.key], flexShrink: 0 }} />
+              <span style={{ fontSize: 13.5, fontWeight: 800, color: C.text }}>{cat.label}</span>
+              <span style={{ fontSize: 11, color: C.textFaint }}>{cat.count} {cat.count === 1 ? 'miss' : 'misses'}</span>
+            </div>
+            <div style={{ fontSize: 12, color: C.textDim, lineHeight: 1.55, marginBottom: cat.topics.length ? 6 : 0 }}>{cat.fix}</div>
+            {cat.topics.length > 0 && (
+              <div style={{ fontSize: 11, color: C.textFaint }}>
+                Mostly: {cat.topics.slice(0, 3).map(t => t.topic).join(', ')}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+      {timedShare < 0.5 && (
+        <div style={{ fontSize: 10.5, color: C.textFaint, marginTop: 10, lineHeight: 1.5 }}>
+          Timing-based calls will sharpen as you take more quizzes in the app — older attempts had no per-question timing.
+        </div>
+      )}
+    </div>
   )
 }
 
