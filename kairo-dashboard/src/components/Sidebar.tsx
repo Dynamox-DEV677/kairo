@@ -55,6 +55,7 @@ const STUDENT_NAV: NavItem[] = [
   { label: 'Switched board?', icon: Target,          to: 'bridge',           color: '#A5B4FC' },
   { label: 'Revision Reels',  icon: Layers,          to: 'reels',            color: '#A5B4FC' },
   { label: 'Study Room',      icon: Users,           to: 'rooms',            color: '#A5B4FC' },
+  { label: 'Which stream?',   icon: Compass,         to: 'stream',           color: '#A5B4FC' },
 
   { label: 'Focus Mode',      icon: Target,          to: 'focus',            color: '#A5B4FC' },
   { label: 'Study Plan',      icon: Calendar,        to: 'study-plan',       color: '#A5B4FC' },

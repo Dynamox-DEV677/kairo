@@ -102,5 +102,16 @@
       "Revision Reels now start you off with ready-made decks — high-yield Physics, Chemistry, Biology and Maths cards you can add in one tap, so there's something to revise from day one.",
       "Added decks join your own cards and get spaced out for review like everything else."
     ]
+  },
+  {
+    "n": 11,
+    "date": "2026-08-23",
+    "title": "Kyno Update 11",
+    "changes": [
+      "Camera Study can now quiz you on diagram labels — snap a diagram, recall each part from its clue, then reveal.",
+      "Mistake Analysis now shows WHY you miss questions — careless slips, concept gaps or time pressure — each with what to do about it.",
+      "Any solved doubt can become fill-in-the-blank cards in one tap.",
+      "New 'Which stream?' guide (Class 9-10): a Science/Commerce/Arts suggestion weighed against how you actually perform, not just a quiz."
+    ]
   }
 ]

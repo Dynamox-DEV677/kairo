@@ -14,6 +14,7 @@ import ExamPlanner from './ExamPlanner'
 import Bridge from './Bridge'
 import RevisionReels from './RevisionReels'
 import StudyRoom from './StudyRoom'
+import StreamGuide from './StreamGuide'
 import TopicArchitect from './TopicArchitect'
 import KairoHome from './KairoHome'
 import KairoChat from './KairoChat'
@@ -322,6 +323,8 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
             <div className={pageClass} style={pageStyle('reels')}>{mounted('reels') && <RevisionReels />}</div>
 
             <div className={pageClass} style={pageStyle('rooms')}>{mounted('rooms') && <StudyRoom />}</div>
+
+            <div className={pageClass} style={pageStyle('stream')}>{mounted('stream') && <StreamGuide />}</div>
 
             <div className={pageClass} style={pageStyle('topic-architect')}>{mounted('topic-architect') && <TopicArchitect />}</div>
 
