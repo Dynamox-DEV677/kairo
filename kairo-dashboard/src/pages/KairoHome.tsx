@@ -217,6 +217,9 @@ export default function KairoHome({ onNavigate }: Props) {
           </p>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
+          <button onClick={() => go('focus')} className="kyno-ghost" style={ghostBtn}>
+            <Target size={13} /> Start focus
+          </button>
           <button onClick={() => setEditing(e => !e)} className="kyno-ghost" style={ghostBtn}>
             <Settings2 size={13} /> Profile
           </button>

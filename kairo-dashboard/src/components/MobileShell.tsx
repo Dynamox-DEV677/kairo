@@ -82,7 +82,7 @@ const DRAWER_STUDENT = [
       { to: 'topic-architect', label: 'Topic Architect', icon: Brain },
       { to: 'school',       label: 'My Tasks',        icon: BookOpen },
       { to: 'quiz',         label: 'Adaptive Quiz',   icon: Brain },
-      { to: 'focus',        label: 'Focus Mode',      icon: Target },
+      { to: 'focus',        label: 'Focus Lock',      icon: Target },
       { to: 'pomodoro',     label: 'Pomodoro',        icon: Timer },
     ],
   },

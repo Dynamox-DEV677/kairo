@@ -58,7 +58,7 @@ const STUDENT_NAV: NavItem[] = [
   { label: 'Study Room',      icon: Users,           to: 'rooms',            color: '#A5B4FC' },
   { label: 'Which stream?',   icon: Compass,         to: 'stream',           color: '#A5B4FC' },
 
-  { label: 'Focus Mode',      icon: Target,          to: 'focus',            color: '#A5B4FC' },
+  { label: 'Focus Lock',      icon: Target,          to: 'focus',            color: '#A5B4FC' },
   { label: 'Study Plan',      icon: Calendar,        to: 'study-plan',       color: '#A5B4FC' },
   { label: 'Knowledge Graph', icon: Share2,          to: 'knowledge',        color: '#A5B4FC' },
   { label: 'Formula Sheet',   icon: FunctionSquare,  to: 'formula',          color: '#A5B4FC' },
