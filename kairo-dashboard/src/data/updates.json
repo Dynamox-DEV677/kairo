@@ -113,5 +113,17 @@
       "Any solved doubt can become fill-in-the-blank cards in one tap.",
       "New 'Which stream?' guide (Class 9-10): a Science/Commerce/Arts suggestion weighed against how you actually perform, not just a quiz."
     ]
+  },
+  {
+    "n": 12,
+    "date": "2026-08-23",
+    "title": "Kyno Update 12",
+    "changes": [
+      "My goal: set your board target once and Kyno tracks the gap per subject from how you actually score — plus the exact topics that win back the most marks.",
+      "Focus Lock: a study timer where only real focus counts — drift to another app and the clock calmly waits. Builds a focus streak from your real sessions.",
+      "The Mistake Museum: every wrong answer files itself with the full question. Re-drill your misses; beat one twice in a row and it retires to Fixed.",
+      "Listen: your revision cards read aloud by your device — due cards first, formulas included, works offline. Revise while walking.",
+      "Mock test: sit a paper under real exam conditions — a clock that never pauses, OMR answers, negative marking on JEE/NEET patterns, and a post-mortem showing exactly where marks leaked."
+    ]
   }
 ]
