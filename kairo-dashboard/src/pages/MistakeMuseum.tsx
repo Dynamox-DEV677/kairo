@@ -1,4 +1,4 @@
-import { useMemo, useState, useRef } from 'react'
+import { useMemo, useState, useRef, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Landmark, CheckCircle2, XCircle, Play, RotateCcw, ArrowRight } from 'lucide-react'
 import { PrimaryButton } from '../components/PrimaryButton'
@@ -36,6 +36,20 @@ export default function MistakeMuseum() {
   const [filter, setFilter] = useState<Filter>('all')
   const [drill, setDrill] = useState<MuseumEntry[] | null>(null)
 
+  // Pages stay mounted (display:none) across tab switches, so a mount-time
+  // memo goes stale: an exam miss filed elsewhere would not appear on revisit.
+  // Recompute whenever this page actually becomes visible again.
+  const rootRef = useRef<HTMLDivElement | null>(null)
+  useEffect(() => {
+    const el = rootRef.current
+    if (!el || typeof IntersectionObserver === 'undefined') return
+    const io = new IntersectionObserver(es => {
+      if (es.some(e => e.isIntersecting)) setTick(t => t + 1)
+    })
+    io.observe(el)
+    return () => io.disconnect()
+  }, [])
+
   const { entries, legacy } = useMemo(() => {
     // loadState().events is the FULL event log (twin caps it itself) — the
     // dashboard snapshot only keeps the last 30, which would forget misses.
@@ -62,7 +76,7 @@ export default function MistakeMuseum() {
   }
 
   return (
-    <div style={{ width: '100%', height: '100%', overflowY: 'auto', background: C.bg, padding: '24px 20px 80px' }}>
+    <div ref={rootRef} style={{ width: '100%', height: '100%', overflowY: 'auto', background: C.bg, padding: '24px 20px 80px' }}>
       <div style={{ maxWidth: 760, margin: '0 auto' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 6 }}>
           <div style={{ width: 46, height: 46, borderRadius: 13, flexShrink: 0, background: 'linear-gradient(135deg, #A5B4FC 0%, #7C5CFF 60%, #0B1530 100%)', display: 'grid', placeItems: 'center' }}>

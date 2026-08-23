@@ -79,6 +79,7 @@ const DRAWER_STUDENT = [
       { to: 'goal',         label: 'My goal',         icon: Target },
       { to: 'study-plan',   label: 'Smart Timetable', icon: Calendar },
       { to: 'exam-planner', label: 'Exam Planner',    icon: Calendar },
+      { to: 'exam-hall',    label: 'Mock test',       icon: Timer },
       { to: 'bridge',       label: 'Switched board?', icon: Compass },
       { to: 'stream',       label: 'Which stream?',   icon: Compass },
       { to: 'topic-architect', label: 'Topic Architect', icon: Brain },

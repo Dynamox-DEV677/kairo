@@ -54,6 +54,7 @@ const STUDENT_NAV: NavItem[] = [
   { label: 'My mistakes',     icon: AlertTriangle,   to: 'museum',           color: '#A5B4FC' },
   { label: 'AI Notebook',     icon: BookOpen,        to: 'notebook',         color: '#A5B4FC' },
   { label: 'Exam Planner',    icon: Target,          to: 'exam-planner',     color: '#A5B4FC' },
+  { label: 'Mock test',       icon: Timer,           to: 'exam-hall',        color: '#A5B4FC' },
   { label: 'Switched board?', icon: Target,          to: 'bridge',           color: '#A5B4FC' },
   { label: 'Revision Reels',  icon: Layers,          to: 'reels',            color: '#A5B4FC' },
   { label: 'Listen',          icon: Headphones,      to: 'listen',           color: '#A5B4FC' },
