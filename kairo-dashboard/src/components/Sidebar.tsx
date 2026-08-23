@@ -51,6 +51,7 @@ const STUDENT_NAV: NavItem[] = [
   { label: 'Camera Study',    icon: Camera,          to: 'camera',           color: '#A5B4FC' },
   { label: 'Mistake Analysis',icon: Activity,        to: 'mistakes',         color: '#A5B4FC' },
   { label: 'My goal',         icon: Target,          to: 'goal',             color: '#A5B4FC' },
+  { label: 'My mistakes',     icon: AlertTriangle,   to: 'museum',           color: '#A5B4FC' },
   { label: 'AI Notebook',     icon: BookOpen,        to: 'notebook',         color: '#A5B4FC' },
   { label: 'Exam Planner',    icon: Target,          to: 'exam-planner',     color: '#A5B4FC' },
   { label: 'Switched board?', icon: Target,          to: 'bridge',           color: '#A5B4FC' },

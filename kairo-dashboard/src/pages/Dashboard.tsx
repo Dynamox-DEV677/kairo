@@ -16,6 +16,7 @@ import RevisionReels from './RevisionReels'
 import StudyRoom from './StudyRoom'
 import StreamGuide from './StreamGuide'
 import GoalTracker from './GoalTracker'
+import MistakeMuseum from './MistakeMuseum'
 import TopicArchitect from './TopicArchitect'
 import KairoHome from './KairoHome'
 import KairoChat from './KairoChat'
@@ -103,6 +104,7 @@ const PAGE_TITLES: Record<string, string> = {
   school:           'School Hub',
   focus:            'Focus Lock',
   goal:             'My Goal',
+  museum:           'Mistake Museum',
   camera:           'Camera Study',
   mistakes:         'Mistake Analysis',
   simulator:        'Revision Simulator',
@@ -329,6 +331,8 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
             <div className={pageClass} style={pageStyle('stream')}>{mounted('stream') && <StreamGuide />}</div>
 
             <div className={pageClass} style={pageStyle('goal')}>{mounted('goal') && <GoalTracker />}</div>
+
+            <div className={pageClass} style={pageStyle('museum')}>{mounted('museum') && <MistakeMuseum />}</div>
 
             <div className={pageClass} style={pageStyle('topic-architect')}>{mounted('topic-architect') && <TopicArchitect />}</div>
 

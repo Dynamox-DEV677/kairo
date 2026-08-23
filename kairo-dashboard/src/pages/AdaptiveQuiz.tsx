@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Brain, CheckCircle, XCircle, Trophy, RotateCcw, History, Target, Zap, BarChart3, Award, ArrowRight } from 'lucide-react'
 import { post, get } from '../lib/api'
 import { track, getProfile } from '../lib/twin'
+import { cleanOption } from '../lib/museum.core'
 import { awardXP } from '../lib/game'
 
 const SCHOOL_ID = 'demo_school'
@@ -204,6 +205,19 @@ function QuizScreen({ questions, onComplete }: any) {
     if (correct) setScore(s => s + 1)
     setAnswers(a => [...a, { question_index: index, answer: letter, correct }])
     try {
+      // The Mistake Museum needs the QUESTION, not just right/wrong: a miss
+      // stores the full card (so it can be re-asked later), a hit stores only
+      // the question text (so consecutive-correct retirement can see it).
+      const cleaned = (q.options as string[]).map(cleanOption)
+      const payload = correct
+        ? { q: q.question }
+        : {
+            q: q.question,
+            options: cleaned,
+            correctIndex: (q.options as string[]).findIndex((o: string) => o.charAt(0) === q.correct),
+            chosenIndex: (q.options as string[]).indexOf(opt),
+            explanation: q.explanation || undefined,
+          }
       track({
         type:    'quiz_answered',
         subject: (q as any).subject,
@@ -213,6 +227,7 @@ function QuizScreen({ questions, onComplete }: any) {
         difficulty: ({ easy: 0.3, medium: 0.5, hard: 0.75 } as any)[(q as any).difficulty] ?? 0.5,
         durationMs: Date.now() - qShownRef.current,
         modality: 'interactive',
+        payload,
       })
     } catch {  }
   }

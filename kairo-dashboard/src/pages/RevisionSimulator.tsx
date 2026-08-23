@@ -188,6 +188,11 @@ export default function RevisionSimulator() {
           difficulty: ({ easy: 0.3, medium: 0.55, hard: 0.8 } as any)[diff.id] ?? 0.5,
           durationMs: Date.now() - qShownRef.current,
           modality: 'interactive',
+          // Museum payload: misses keep the full card for re-asking; hits keep
+          // just the text so retirement can match this question later.
+          payload: correct
+            ? { q: q.q }
+            : { q: q.q, options: q.options, correctIndex: q.answer, chosenIndex: i, explanation: (q as any).explain || undefined },
         })
       }
     } catch {  }

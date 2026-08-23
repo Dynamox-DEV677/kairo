@@ -56,6 +56,7 @@ const DRAWER_STUDENT = [
       { to: 'rooms',          label: 'Study Room',        icon: Users },
       { to: 'camera-live',    label: 'Study Mode · Live',  icon: Camera },
       { to: 'mistakes',       label: 'Mistake Analysis',   icon: Activity },
+      { to: 'museum',         label: 'My mistakes',        icon: AlertTriangle },
       { to: 'explain-mistake',label: 'Explain Mistake',    icon: AlertTriangle },
       { to: 'teach-back',     label: 'Teach Back',         icon: GraduationCap },
       { to: 'simulator',      label: 'Revision Simulator', icon: Zap },
