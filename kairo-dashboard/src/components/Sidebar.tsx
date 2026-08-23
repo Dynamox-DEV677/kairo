@@ -7,7 +7,7 @@ import {
   GraduationCap, Shield, Sparkles, DollarSign, Bot, UserCheck, Grid3x3, Building2,
   Edit3, Lightbulb, FunctionSquare, Brain, Star, Timer, Megaphone,
   Target, Activity, Zap, Compass, Network, Mic, Swords, Share2, AlertTriangle,
-  Beaker, Cpu, Trophy, Layers, Users,
+  Beaker, Cpu, Trophy, Layers, Users, Headphones,
   PanelLeftClose, PanelLeftOpen, MoreHorizontal, ChevronUp,
 } from 'lucide-react'
 import { useGeneration } from '../lib/generationContext'
@@ -56,6 +56,7 @@ const STUDENT_NAV: NavItem[] = [
   { label: 'Exam Planner',    icon: Target,          to: 'exam-planner',     color: '#A5B4FC' },
   { label: 'Switched board?', icon: Target,          to: 'bridge',           color: '#A5B4FC' },
   { label: 'Revision Reels',  icon: Layers,          to: 'reels',            color: '#A5B4FC' },
+  { label: 'Listen',          icon: Headphones,      to: 'listen',           color: '#A5B4FC' },
   { label: 'Study Room',      icon: Users,           to: 'rooms',            color: '#A5B4FC' },
   { label: 'Which stream?',   icon: Compass,         to: 'stream',           color: '#A5B4FC' },
 

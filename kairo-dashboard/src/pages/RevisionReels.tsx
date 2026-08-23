@@ -4,7 +4,9 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
-import { Layers, ChevronLeft, ChevronRight, Sparkles, FunctionSquare, RotateCcw, Plus, Check } from 'lucide-react'
+import { Layers, ChevronLeft, ChevronRight, Sparkles, FunctionSquare, RotateCcw, Plus, Check, Headphones, Square } from 'lucide-react'
+import { speakableText } from '../lib/listen.core'
+import { speak, stopSpeaking, ttsAvailable } from '../lib/tts'
 import { ToggleChip } from '../components/PrimaryButton'
 import MathExpr from '../components/MathExpr'
 import { listFormulas, listFlashcards, recordFlashcard, getProfile } from '../lib/twin'
@@ -91,6 +93,9 @@ export default function RevisionReels() {
   const [positions, setPositions] = useState<Record<string, string>>(() => readPositions(getRaw(posKey())))
   const [idx, setIdx] = useState(0)
   const [flipped, setFlipped] = useState(false)
+  const [speakingId, setSpeakingId] = useState<string | null>(null)
+  // The voice never outlives the page.
+  useEffect(() => () => stopSpeaking(), [])
   const [dir, setDir] = useState(1)
 
   // Resume where they left off whenever the filter changes.
@@ -254,6 +259,28 @@ export default function RevisionReels() {
                     <RotateCcw size={10} style={{ verticalAlign: '-1px', marginRight: 4 }} />
                     tap to {flipped ? 'see the front' : 'reveal'} · swipe or arrow keys to move
                   </div>
+
+                  {/* Listen: the card reads itself aloud (front, beat, answer).
+                      stopPropagation so it never doubles as a flip. */}
+                  {ttsAvailable() && (
+                    <button
+                      onClick={e => {
+                        e.stopPropagation()
+                        if (speakingId === card.id) { stopSpeaking(); setSpeakingId(null); return }
+                        const script = `${speakableText(card.front)}. ... ${card.kind === 'formula' ? 'The formula is: ' : 'The answer: '}${speakableText(card.back)}.`
+                        if (speak(script, { onend: () => setSpeakingId(null) })) setSpeakingId(card.id)
+                      }}
+                      aria-label={speakingId === card.id ? 'Stop reading' : 'Read this card aloud'}
+                      style={{
+                        position: 'absolute', top: 12, right: 12, width: 34, height: 34,
+                        borderRadius: '50%', border: `1px solid ${C.border}`, cursor: 'pointer',
+                        background: speakingId === card.id ? '#FF7A90' : 'rgba(124,92,255,0.15)',
+                        color: speakingId === card.id ? '#fff' : C.purple,
+                        display: 'grid', placeItems: 'center',
+                      }}>
+                      {speakingId === card.id ? <Square size={12} /> : <Headphones size={14} />}
+                    </button>
+                  )}
                 </motion.div>
             </div>
 

@@ -7,7 +7,7 @@ import {
   Megaphone, Bell, DollarSign, Bot, UserCheck, Grid3x3,
   Building2, GraduationCap, Shield, Sparkles, Settings, LogOut,
   Sun, Moon, Menu, X, MoreHorizontal, ChevronRight, Key, Copy, Check,
-  AlertTriangle, Beaker, Trophy,
+  AlertTriangle, Beaker, Trophy, Headphones,
 } from 'lucide-react'
 import type { AuthProfile } from '../pages/Login'
 import { DecoratedAvatar } from './AvatarDecor'
@@ -53,6 +53,7 @@ const DRAWER_STUDENT = [
       { to: 'kairo-os',       label: 'Kyno',           icon: Brain },
       { to: 'doubt',          label: "Kyno's Solver",     icon: MessageCircle },
       { to: 'reels',          label: 'Revision Reels',    icon: Layers },
+      { to: 'listen',         label: 'Listen',            icon: Headphones },
       { to: 'rooms',          label: 'Study Room',        icon: Users },
       { to: 'camera-live',    label: 'Study Mode · Live',  icon: Camera },
       { to: 'mistakes',       label: 'Mistake Analysis',   icon: Activity },

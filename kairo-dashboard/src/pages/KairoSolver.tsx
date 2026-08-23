@@ -3,7 +3,7 @@ import GeoVisualMode from '../components/GeoVisualMode'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Send, StopCircle, Sparkles, Image as ImageIcon, Loader2,
-  ChevronLeft, ChevronRight, Beaker, ExternalLink, BookOpen, Atom, RefreshCw, Layers,
+  ChevronLeft, ChevronRight, Beaker, ExternalLink, BookOpen, Atom, RefreshCw, Layers, Headphones,
   Mic, MicOff, Calendar, X, Paperclip,
   FileText as TextIcon, MapPin as MapPinIcon,
   Box as Box3DIcon, LayoutPanelTop as BothIcon, Wand2, Camera,
@@ -15,6 +15,8 @@ import rehypeKatex from 'rehype-katex'
 import { recordDoubt, recordFormula, recordConcept, recordFlashcard, getStudentMemory, getMistakes } from '../lib/twin'
 import { startTopicClock } from '../lib/timeTracker'
 import { buildClozeCards } from '../lib/cloze.core'
+import { speakableText } from '../lib/listen.core'
+import { speak, stopSpeaking, ttsAvailable } from '../lib/tts'
 import { lookupNcert } from '../lib/ncertCacheLookup'
 import { aiHeaders } from '../lib/devKey'
 
@@ -1248,6 +1250,16 @@ function AnswerActions({ resp, question, onAskRelated }: {
 }) {
   const [saved, setSaved] = useState(false)
   const [cloze, setCloze] = useState<'idle' | number>('idle')
+  const [speaking, setSpeaking] = useState(false)
+
+  // Nothing keeps talking after the answer unmounts.
+  useEffect(() => () => { if (speaking) stopSpeaking() }, [speaking])
+
+  function listen() {
+    if (speaking) { stopSpeaking(); setSpeaking(false); return }
+    const ok = speak(speakableText(resp.textExplanation), { onend: () => setSpeaking(false) })
+    setSpeaking(ok)
+  }
 
   function saveToReels() {
     if (saved) return
@@ -1294,6 +1306,12 @@ ${prev}`,
         style={{ padding: '7px 13px', fontSize: 11.5, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
         <Layers size={12} /> {cloze === 'idle' ? 'Fill-in cards' : cloze > 0 ? `${cloze} card${cloze === 1 ? '' : 's'} made ✓` : 'No blanks found'}
       </button>
+      {ttsAvailable() && (
+        <button onClick={listen} className="kyno-ghost"
+          style={{ padding: '7px 13px', fontSize: 11.5, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+          <Headphones size={12} /> {speaking ? 'Stop' : 'Listen'}
+        </button>
+      )}
     </div>
   )
 }
