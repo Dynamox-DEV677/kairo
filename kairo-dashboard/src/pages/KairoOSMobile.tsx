@@ -8,6 +8,7 @@ import {
 } from 'lucide-react'
 import { readTimeStore } from '../lib/timeTracker'
 import { aggregate, formatMs } from '../lib/time.core'
+import FocusTodayCard from '../components/FocusTodayCard'
 import {
   getDashboard, refresh, seedDemo,
   type DashboardSnapshot, type Twin, type MasteryRow,
@@ -147,6 +148,10 @@ export default function KairoOSMobile({ onNavigate, onOpenBackup }: Props) {
         </section>
 
         <TimeSection />
+
+        <section style={{ padding: '0 18px' }}>
+          <FocusTodayCard nudge />
+        </section>
 
         <section style={{ padding: '0 18px' }}>
           <SectionLabel inline>Trajectory</SectionLabel>

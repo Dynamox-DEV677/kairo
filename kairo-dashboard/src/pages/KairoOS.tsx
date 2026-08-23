@@ -18,6 +18,7 @@ import {
 import { confirmDialog } from '../components/ConfirmModal'
 import TwinBackupModal from '../components/TwinBackupModal'
 import KairoGyro from '../components/KairoGyro'
+import FocusTodayCard from '../components/FocusTodayCard'
 import { useIsMobile } from '../lib/useIsMobile'
 import { readTimeStore } from '../lib/timeTracker'
 import { aggregate, formatMs } from '../lib/time.core'
@@ -340,6 +341,10 @@ export default function KairoOS() {
 
         <div style={{ marginTop: 18 }}>
           <TimeCard />
+        </div>
+
+        <div style={{ marginTop: 18 }}>
+          <FocusTodayCard nudge />
         </div>
 
         <div className="kr-vitals-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 18, marginTop: 18 }}>

@@ -125,5 +125,15 @@
       "Listen: your revision cards read aloud by your device — due cards first, formulas included, works offline. Revise while walking.",
       "Mock test: sit a paper under real exam conditions — a clock that never pauses, OMR answers, negative marking on JEE/NEET patterns, and a post-mortem showing exactly where marks leaked."
     ]
+  },
+  {
+    "n": 13,
+    "date": "2026-08-23",
+    "title": "Kyno Update 13",
+    "changes": [
+      "Focus Lock now takes a ban list — name the apps you're banning (Instagram, games, your call) and Kyno holds you to it: leave for any of them and the clock freezes, the drift is timed, and it all shows on your session receipt.",
+      "Every focus session now ends with a receipt of what you ACTUALLY studied in it — questions answered, cards flipped, notes made, topics touched — pulled from your real activity, never self-reported.",
+      "Home and Kyno OS show Today's focus: your focused minutes, whether you kept the contract, and what you studied inside the lock."
+    ]
   }
 ]

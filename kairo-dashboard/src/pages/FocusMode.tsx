@@ -1,11 +1,15 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Play, Pause, RotateCcw, Target, Flame, CalendarClock, Volume2, VolumeX, Undo2 } from 'lucide-react'
-import { track, getDashboard } from '../lib/twin'
+import { track, getDashboard, loadState } from '../lib/twin'
 import {
   sessionFocusedMs, parseHistory, appendSession, focusStreakDays, weekMinutes, sessionHeadline,
   type FocusRecord, type FocusSegment,
 } from '../lib/focus.core'
+import {
+  parseBanList, toggleBan, sessionReceipt, receiptLine, SUGGESTED_BANS,
+  type Receipt,
+} from '../lib/focusReceipt.core'
 
 /**
  * Focus Lock — a distraction-free session where only real focus counts.
@@ -19,6 +23,7 @@ import {
 
 const HISTORY_KEY = 'kyno:focus:history'
 const LEGACY_TOTAL_KEY = 'kairo_focus_total_min'
+const BANLIST_KEY = 'kyno:focus:banlist'
 
 const PRESETS = [15, 25, 45, 60]
 
@@ -43,9 +48,25 @@ export default function FocusMode() {
   const [headline, setHeadline] = useState('')
   const [, forceTick] = useState(0)
 
+  // The ban list — a commitment contract, persisted across sessions.
+  const [banList, setBanList] = useState<string[]>(() => {
+    try { return parseBanList(localStorage.getItem(BANLIST_KEY) || '') } catch { return [] }
+  })
+  const [banInput, setBanInput] = useState('')
+  function setBans(next: string[]) {
+    setBanList(next)
+    try { localStorage.setItem(BANLIST_KEY, JSON.stringify(next)) } catch {}
+  }
+
+  // Live receipt of what this session actually touched (twin log ∩ window).
+  const [liveReceipt, setLiveReceipt] = useState<Receipt | null>(null)
+
   const segmentsRef = useRef<FocusSegment[]>([])
   const statusRef = useRef<Status>('idle')
   statusRef.current = status
+  const sessionStartRef = useRef(0)
+  const driftStartRef = useRef(0)
+  const driftMsRef = useRef(0)
 
   const plannedMs = durationMin * 60_000
   const focusedMs = sessionFocusedMs(segmentsRef.current, Date.now())
@@ -62,20 +83,39 @@ export default function FocusMode() {
     if (last && last.end == null) last.end = Date.now()
     const focused = sessionFocusedMs(segs, Date.now())
 
-    const record: FocusRecord = { ts: Date.now(), focusedMs: focused, plannedMs, drifts, goal: goal || undefined }
+    // If we finish WHILE drifted, that drift ends now too.
+    if (driftStartRef.current > 0) {
+      driftMsRef.current += Date.now() - driftStartRef.current
+      driftStartRef.current = 0
+    }
+
+    // The receipt: what the twin log says actually happened in this window.
+    let receipt: Receipt | undefined
+    try { receipt = sessionReceipt(loadState().events, sessionStartRef.current, Date.now()) } catch {}
+
+    const record: FocusRecord = {
+      ts: Date.now(), focusedMs: focused, plannedMs, drifts, goal: goal || undefined,
+      driftMs: driftMsRef.current || undefined,
+      banned: banList.length ? banList : undefined,
+      receipt,
+    }
     const next = appendSession(loadHistory(), record)
     try { localStorage.setItem(HISTORY_KEY, JSON.stringify(next)) } catch {}
     setHistory(next)
     setHeadline(sessionHeadline(record, next, Date.now()))
+    setLiveReceipt(receipt || null)
     try {
       track({ type: 'session_end', durationMs: focused, payload: { kind: 'focus', goal, drifts, why } })
     } catch {}
+    // Tell the Home / Kyno OS cards a session just banked (deterministic
+    // refresh; the visibility observer alone can be lost across HMR swaps).
+    try { window.dispatchEvent(new CustomEvent('kyno:focus-banked')) } catch {}
     try { if (document.fullscreenElement) document.exitFullscreen() } catch {}
     if (typeof Notification !== 'undefined' && Notification.permission === 'granted' && why === 'complete') {
       try { new Notification('Kyno Focus Lock', { body: 'Session complete. Take a 5-minute break.' }) } catch {}
     }
     setStatus('done')
-  }, [plannedMs, drifts, goal])
+  }, [plannedMs, drifts, goal, banList])
 
   // The tick: re-render twice a second while running; auto-finish at zero.
   useEffect(() => {
@@ -88,12 +128,25 @@ export default function FocusMode() {
     return () => window.clearInterval(id)
   }, [status, plannedMs, finish])
 
+  // The live receipt: every few seconds, ask the twin log what this session
+  // has actually touched so far. Cheap enough at 5s; honest at any rate.
+  useEffect(() => {
+    if (status !== 'running') return
+    const compute = () => {
+      try { setLiveReceipt(sessionReceipt(loadState().events, sessionStartRef.current, Date.now())) } catch {}
+    }
+    compute()
+    const id = window.setInterval(compute, 5000)
+    return () => window.clearInterval(id)
+  }, [status])
+
   // The lock: drifting to another tab/app closes the segment and pauses.
   useEffect(() => {
     const onVis = () => {
       if (document.hidden && statusRef.current === 'running') {
         const last = segmentsRef.current[segmentsRef.current.length - 1]
         if (last && last.end == null) last.end = Date.now()
+        driftStartRef.current = Date.now() // the drift is TIMED, not just counted
         setDrifts(d => d + 1)
         setStatus('drifted')
       }
@@ -120,18 +173,29 @@ export default function FocusMode() {
     if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
       Notification.requestPermission().catch(() => {})
     }
-    if (status === 'idle' || status === 'done') { segmentsRef.current = []; setDrifts(0); setHeadline('') }
+    if (status === 'idle' || status === 'done') {
+      segmentsRef.current = []; setDrifts(0); setHeadline(''); setLiveReceipt(null)
+      driftMsRef.current = 0; driftStartRef.current = 0
+      sessionStartRef.current = Date.now()
+    }
     openSegment()
     setStatus('running')
     // Best-effort immersion. Esc always exits; failure is fine.
     try { document.documentElement.requestFullscreen?.()?.catch(() => {}) } catch {}
   }
   function pause() { closeSegment(); setStatus('paused') }
-  function resume() { openSegment(); setStatus('running') }
+  function resume() {
+    if (driftStartRef.current > 0) { // coming back from a drift: bank its length
+      driftMsRef.current += Date.now() - driftStartRef.current
+      driftStartRef.current = 0
+    }
+    openSegment(); setStatus('running')
+  }
   function reset() {
     closeSegment()
     segmentsRef.current = []
-    setDrifts(0); setHeadline(''); setStatus('idle')
+    driftMsRef.current = 0; driftStartRef.current = 0
+    setDrifts(0); setHeadline(''); setLiveReceipt(null); setStatus('idle')
     try { if (document.fullscreenElement) document.exitFullscreen() } catch {}
   }
 
@@ -259,6 +323,32 @@ export default function FocusMode() {
         </div>
       </div>
 
+      {/* the contract + the live receipt, front and centre while locked in */}
+      {inSession && (
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, marginBottom: 18, zIndex: 1, maxWidth: 520 }}>
+          {banList.length > 0 && (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, justifyContent: 'center', alignItems: 'center' }}>
+              <span style={{ fontSize: 10, letterSpacing: 1.6, textTransform: 'uppercase', color: '#6B7280', fontWeight: 700 }}>Banned this session</span>
+              {banList.map(b => (
+                <span key={b} style={{
+                  fontSize: 11, padding: '4px 10px', borderRadius: 999, fontWeight: 600,
+                  background: 'rgba(255,122,144,0.10)', border: '1px solid rgba(255,122,144,0.35)', color: '#FF9CB0',
+                  textDecoration: 'line-through',
+                }}>{b}</span>
+              ))}
+            </div>
+          )}
+          {liveReceipt && receiptLine(liveReceipt) && (
+            <div style={{
+              fontSize: 11.5, color: '#B1B5BA', padding: '7px 14px', borderRadius: 999,
+              background: '#141A2A', border: '1px solid #1f2532',
+            }}>
+              This session so far: <b style={{ color: '#fafafa' }}>{receiptLine(liveReceipt)}</b>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* drifted banner — calm, one action */}
       <AnimatePresence>
         {status === 'drifted' && (
@@ -287,6 +377,21 @@ export default function FocusMode() {
           }}>
           {headline}
           {goal && <div style={{ fontSize: 11.5, color: '#9CA3AF', fontWeight: 500, marginTop: 4 }}>on: {goal}</div>}
+          {liveReceipt && receiptLine(liveReceipt) && (
+            <div style={{ fontSize: 12, color: '#B1B5BA', fontWeight: 500, marginTop: 8, paddingTop: 8, borderTop: '1px dashed rgba(255,255,255,0.12)' }}>
+              You studied: {receiptLine(liveReceipt)}
+              {liveReceipt.topics.length > 0 && (
+                <div style={{ fontSize: 11, color: '#9CA3AF', marginTop: 3 }}>
+                  {liveReceipt.topics.slice(0, 3).map(t => t.topic).join(' · ')}
+                </div>
+              )}
+            </div>
+          )}
+          <div style={{ fontSize: 11, fontWeight: 500, marginTop: 6, color: drifts === 0 ? '#34D399' : '#FFB020' }}>
+            {drifts === 0
+              ? (banList.length ? 'Contract held — you never left. ✓' : 'You never left. ✓')
+              : `Left ${drifts}× for ${Math.max(1, Math.round(driftMsRef.current / 60000))} min — the clock waited, none of it counted.`}
+          </div>
         </motion.div>
       )}
 
@@ -372,6 +477,45 @@ export default function FocusMode() {
                 ))}
               </div>
             )}
+          </div>
+
+          {/* The ban list — the commitment contract. */}
+          <div style={{ width: '100%', maxWidth: 560, marginTop: 22, zIndex: 1 }}>
+            <label style={{
+              fontSize: 11, fontWeight: 700, color: '#6B7280',
+              textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 8,
+            }}>
+              Banned during focus
+            </label>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 }}>
+              {[...new Set([...banList, ...SUGGESTED_BANS])].map(b => {
+                const on = banList.some(x => x.toLowerCase() === b.toLowerCase())
+                return (
+                  <button key={b} onClick={() => setBans(toggleBan(banList, b))}
+                    className={`kyno-chip${on ? ' on' : ''}`}
+                    style={{ padding: '6px 12px', fontSize: 11, textDecoration: on ? 'line-through' : 'none' }}>
+                    {on ? '🚫 ' : ''}{b}
+                  </button>
+                )
+              })}
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <input
+                value={banInput}
+                onChange={e => setBanInput(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter' && banInput.trim()) { setBans(toggleBan(banList, banInput)); setBanInput('') } }}
+                placeholder="Add your own… (Enter)"
+                style={{
+                  flex: 1, padding: '10px 14px', borderRadius: 10,
+                  background: '#141A2A', border: '1px solid #1f2532',
+                  color: '#fafafa', fontFamily: 'inherit', fontSize: 12.5,
+                  outline: 'none', minWidth: 0,
+                }}
+              />
+            </div>
+            <div style={{ fontSize: 10.5, color: '#6B7280', marginTop: 8, lineHeight: 1.55 }}>
+              Straight with you: a web app can't force-close other apps. What Kyno does is <b style={{ color: '#9CA3AF' }}>witness the contract</b> — the moment you open anything else, the clock freezes, the drift is timed, and it shows on your session receipt. Pair it with your phone's own app timer if you want a hard wall.
+            </div>
           </div>
         </>
       )}

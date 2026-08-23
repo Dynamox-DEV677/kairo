@@ -8,6 +8,12 @@ export interface FocusRecord {
   plannedMs?: number
   drifts?: number
   goal?: string
+  /** total ms spent drifted away mid-session */
+  driftMs?: number
+  /** the commitment contract: what the student banned for this session */
+  banned?: string[]
+  /** what the twin log says was studied inside the session window */
+  receipt?: import('./focusReceipt.core').Receipt
 }
 
 export function sessionFocusedMs(segments: FocusSegment[] | unknown, now?: number): number
