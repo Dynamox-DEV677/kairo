@@ -15,6 +15,7 @@ import Bridge from './Bridge'
 import RevisionReels from './RevisionReels'
 import StudyRoom from './StudyRoom'
 import StreamGuide from './StreamGuide'
+import GoalTracker from './GoalTracker'
 import TopicArchitect from './TopicArchitect'
 import KairoHome from './KairoHome'
 import KairoChat from './KairoChat'
@@ -100,7 +101,8 @@ const PAGE_TITLES: Record<string, string> = {
   pomodoro:         'Pomodoro Timer',
   announcement:     'Announcements',
   school:           'School Hub',
-  focus:            'Focus Mode',
+  focus:            'Focus Lock',
+  goal:             'My Goal',
   camera:           'Camera Study',
   mistakes:         'Mistake Analysis',
   simulator:        'Revision Simulator',
@@ -325,6 +327,8 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
             <div className={pageClass} style={pageStyle('rooms')}>{mounted('rooms') && <StudyRoom />}</div>
 
             <div className={pageClass} style={pageStyle('stream')}>{mounted('stream') && <StreamGuide />}</div>
+
+            <div className={pageClass} style={pageStyle('goal')}>{mounted('goal') && <GoalTracker />}</div>
 
             <div className={pageClass} style={pageStyle('topic-architect')}>{mounted('topic-architect') && <TopicArchitect />}</div>
 
