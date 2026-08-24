@@ -5,16 +5,8 @@ import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
 import ActionChips from './ActionChips'
+import { prepMathMarkdown } from '../lib/math.core'
 
-function normalizeMath(text: string): string {
-  return text
-    .replace(/\\\[([\s\S]*?)\\\]/g, (_,m) => `\n$$${m}$$\n`)
-    .replace(/\\\(([\s\S]*?)\\\)/g, (_,m) => `$${m}$`)
-    .replace(/^\[\s*([\s\S]*?)\s*\]$/gm, (_,m) => {
-      if (m.includes('\\') || /[_^{}]/.test(m)) return `$$${m}$$`
-      return _
-    })
-}
 
 interface Message {
   role: 'user' | 'assistant'
@@ -116,7 +108,7 @@ export default function MessageBubble({ message, isLast, isStreaming, onChipActi
                   a: ({ children, href }) => <a href={href} target="_blank" rel="noreferrer" style={{ color: '#A5B4FC', textDecoration: 'underline' }}>{children}</a>,
                 }}
               >
-                {normalizeMath(message.content)}
+                {prepMathMarkdown(message.content)}
               </ReactMarkdown>
               {isStreaming && isLast && (
                 <span style={{

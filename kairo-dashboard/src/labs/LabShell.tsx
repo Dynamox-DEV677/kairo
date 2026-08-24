@@ -9,15 +9,6 @@ import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
 
-function normalizeMath(text: string): string {
-  return text
-    .replace(/\\\[([\s\S]*?)\\\]/g, (_, m) => `\n$$${m}$$\n`)
-    .replace(/\\\(([\s\S]*?)\\\)/g, (_, m) => `$${m}$`)
-    .replace(/^\[\s*([\s\S]*?)\s*\]$/gm, (_, m) => {
-      if (m.includes('\\') || /[_^{}]/.test(m)) return `$$${m}$$`
-      return _
-    })
-}
 
 const MARKDOWN_COMPONENTS = {
   p:  ({ children }: any) => <p style={{ margin: '0 0 10px', lineHeight: 1.7 }}>{children}</p>,
@@ -42,6 +33,7 @@ const MARKDOWN_COMPONENTS = {
 }
 import { chat } from '../lib/openrouter'
 import { saveToNotebook } from '../lib/notebook'
+import { prepMathMarkdown } from '../lib/math.core'
 
 type Mode = '3d' | 'text' | 'both'
 
@@ -321,7 +313,7 @@ Keep total length 180-280 words. Tone: friendly, specific, exam-aware.` },
                     remarkPlugins={[remarkGfm, remarkMath]}
                     rehypePlugins={[rehypeKatex]}
                     components={MARKDOWN_COMPONENTS}>
-                    {normalizeMath(explanation)}
+                    {prepMathMarkdown(explanation)}
                   </ReactMarkdown>
                 </motion.div>
               )}

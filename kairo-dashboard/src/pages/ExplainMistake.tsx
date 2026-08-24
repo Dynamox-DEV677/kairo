@@ -10,6 +10,7 @@ import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
 import { chat } from '../lib/openrouter'
 import { saveToNotebook } from '../lib/notebook'
+import { prepMathMarkdown } from '../lib/math.core'
 
 const SUBJECTS = ['Mathematics', 'Physics', 'Chemistry', 'Biology', 'English', 'Hindi', 'History', 'Geography', 'Economics', 'Computer Science', 'General']
 
@@ -224,7 +225,7 @@ Now teach me how to never make this mistake again, following your structure exac
 
                   <div className="prose-ai" style={{ fontSize: 13.5, color: '#e4e4e7', lineHeight: 1.7 }}>
                     <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>
-                      {result}
+                      {prepMathMarkdown(result)}
                     </ReactMarkdown>
                   </div>
 

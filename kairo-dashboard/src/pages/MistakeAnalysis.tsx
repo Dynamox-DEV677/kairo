@@ -8,6 +8,7 @@ import rehypeKatex from 'rehype-katex'
 import { getMistakes, recordMistake, getDashboard, type MistakeRow } from '../lib/twin'
 import { chat } from '../lib/openrouter'
 import { classifyMistakes, type MistakeCategory } from '../lib/mistakes.core'
+import { prepMathMarkdown } from '../lib/math.core'
 
 const C = {
   bg:        '#0A0D16',
@@ -27,11 +28,6 @@ const C = {
 const GRAD_PILL = 'linear-gradient(135deg, #7C5CFF 0%, #4A2FA8 100%)'
 const FONT = "'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif"
 
-function normalizeMath(md: string): string {
-  return md
-    .replace(/\\\[([\s\S]+?)\\\]/g, (_m, e) => `$$${e}$$`)
-    .replace(/\\\(([\s\S]+?)\\\)/g, (_m, e) => `$${e}$`)
-}
 
 export default function MistakeAnalysis() {
   const [rows, setRows] = useState<MistakeRow[]>([])
@@ -390,7 +386,7 @@ function AiResultModal({ title, body, loading, onClose }: {
           </div>
         ) : (
           <div className="prose-ai" style={{ fontSize: 14, color: C.textDim, lineHeight: 1.7 }}>
-            <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>{normalizeMath(body)}</ReactMarkdown>
+            <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>{prepMathMarkdown(body)}</ReactMarkdown>
           </div>
         )}
       </motion.div>

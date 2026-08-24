@@ -13,6 +13,7 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
+import { prepMathMarkdown } from '../lib/math.core'
 
 export interface GeographySection {
   heading: string
@@ -559,7 +560,7 @@ function ExplanationPanel({
           maxHeight: 380, overflowY: 'auto', paddingRight: 6,
         }}>
           <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>
-            {textExplanation}
+            {prepMathMarkdown(textExplanation)}
           </ReactMarkdown>
         </div>
       )}

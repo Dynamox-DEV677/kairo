@@ -8,6 +8,7 @@ import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
 import { chat } from '../lib/openrouter'
+import { prepMathMarkdown } from '../lib/math.core'
 
 const SUBJECTS = [
   'Mathematics', 'Physics', 'Chemistry', 'Biology',
@@ -339,7 +340,7 @@ Generate the JSON schedule and markdown plan as instructed.`
             <div className="prose-ai" style={{
               fontSize: 13.5, color: '#e4e4e7', lineHeight: 1.7,
             }}>
-              <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>{plan.markdown}</ReactMarkdown>
+              <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>{prepMathMarkdown(plan.markdown)}</ReactMarkdown>
             </div>
 
             <div style={{ display: 'flex', gap: 8, marginTop: 18 }}>

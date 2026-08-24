@@ -16,6 +16,7 @@ import { formulaSignature } from '../lib/knowledgeHygiene.js'
 import { balance } from '../lib/balanceEquation.js'
 import { parseDiagramResponse, cardsFromDiagram } from '../lib/diagramRecall.core'
 import { awardXP } from '../lib/game'
+import { prepMathMarkdown } from '../lib/math.core'
 
 const VISION_MODELS = [
   {
@@ -851,7 +852,7 @@ export default function CameraStudy() {
             ) : (
               <div className="prose-ai" style={{ fontSize: 14, color: '#e4e4e7', lineHeight: 1.7 }}>
                 <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>
-                  {cleanMarkdown(result)}
+                  {prepMathMarkdown(cleanMarkdown(result))}
                 </ReactMarkdown>
               </div>
             )}

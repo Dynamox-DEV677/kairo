@@ -6,6 +6,7 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
+import { prepMathMarkdown } from '../lib/math.core'
 
 const SCHOOL_ID = 'demo_school'
 
@@ -136,7 +137,7 @@ function SimplifyTab() {
               Explanation
             </div>
             <div className="prose-ai" style={{ fontSize: 14, color: '#e4e4e7', lineHeight: 1.9 }}>
-              <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>{result.explanation}</ReactMarkdown>
+              <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>{prepMathMarkdown(result.explanation)}</ReactMarkdown>
             </div>
             {concept && (
               <div style={{ marginTop: 12, padding: '8px 12px', background: '#141A2A', borderRadius: 8, fontSize: 11, color: '#9CA3AF' }}>

@@ -17,7 +17,7 @@ The single core idea this question tests (2-3 lines).
 The deeper conceptual picture. Use an analogy if it helps. Tie it to the exam.
 
 ## Step-by-Step Solution
-Numbered steps. Show every key line of working. Use $...$ for inline math and $$...$$ for display equations.
+Numbered steps. Show every key line of working. Use $...$ for inline math and $$...$$ for display equations — NEVER \\(...\\), \\[...\\], or bare LaTeX outside dollar delimiters, and never an unmatched $$. This applies to EVERY section of your answer, including prose.
 
 ## Shortcut Method
 The fastest exam approach — elimination, dimensional analysis, symmetry, a remembered result. If none exists, say "No reliable shortcut — solve fully."

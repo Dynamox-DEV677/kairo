@@ -13,6 +13,7 @@ import rehypeKatex from 'rehype-katex'
 import { aiHeaders } from '../lib/devKey'
 import { recordMistake, recordFlashcard } from '../lib/twin'
 import { awardXP } from '../lib/game'
+import { prepMathMarkdown } from '../lib/math.core'
 
 /* ── tuning: keeps the "always watching" feel without burning the free tier ── */
 const SAMPLE_MS     = 1200   // how often we look at the frame locally (free)
@@ -587,7 +588,7 @@ export default function CameraLive({ onExit }: { onExit?: () => void }) {
               ) : (sheet === 'explain' ? explainMd : hint) ? (
                 <div className="prose-ai" style={{ fontSize: 13.5, color: '#e4e4e7', lineHeight: 1.75 }}>
                   <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>
-                    {sheet === 'explain' ? explainMd : hint}
+                    {prepMathMarkdown(sheet === 'explain' ? explainMd : hint)}
                   </ReactMarkdown>
                 </div>
               ) : <Waiting text={sheet === 'explain' ? 'Reading the page…' : 'Thinking of a nudge…'} />}

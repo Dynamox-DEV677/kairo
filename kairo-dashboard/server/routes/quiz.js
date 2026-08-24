@@ -39,7 +39,8 @@ Return ONLY valid JSON:
   ]
 }
 
-Mix difficulties: 30% easy, 50% medium, 20% hard. Make questions exam-style. No markdown.`
+Mix difficulties: 30% easy, 50% medium, 20% hard. Make questions exam-style. No markdown.
+Mathematics notation: use $...$ for inline math and $$...$$ for display math ONLY. Never use \\(...\\), \\[...\\], or bare LaTeX commands outside dollar delimiters.`
 
     const raw = await aiCall({
       taskType: 'quiz_generate',

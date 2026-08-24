@@ -12,6 +12,7 @@ import { chat } from '../lib/openrouter'
 import { saveToNotebook } from '../lib/notebook'
 import { getMistakes, recordDoubt } from '../lib/twin'
 import { awardXP } from '../lib/game'
+import { prepMathMarkdown } from '../lib/math.core'
 
 const SUBJECTS = ['Mathematics', 'Physics', 'Chemistry', 'Biology', 'English', 'History', 'Geography', 'Economics', 'Computer Science', 'General']
 
@@ -366,7 +367,7 @@ export default function TeachBack() {
             <div style={{ ...card, padding: 22 }}>
               <div className="prose-ai" style={{ fontSize: 13.5, color: '#e4e4e7', lineHeight: 1.7 }}>
                 <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>
-                  {result}
+                  {prepMathMarkdown(result)}
                 </ReactMarkdown>
               </div>
 

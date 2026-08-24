@@ -10,6 +10,7 @@ import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
 import { chat } from '../lib/openrouter'
 import { saveToNotebook } from '../lib/notebook'
+import { prepMathMarkdown } from '../lib/math.core'
 
 const SUBJECTS = ['Mathematics', 'Physics', 'Chemistry', 'Biology', 'English', 'Hindi', 'History', 'Geography', 'Political Science', 'Economics', 'Computer Science']
 const GRADES   = ['6', '7', '8', '9', '10', '11', '12']
@@ -388,9 +389,9 @@ Markdown structure:
             ) : (
               <div className="prose-ai" style={{ fontSize: 13.5, color: '#e4e4e7', lineHeight: 1.7 }}>
                 <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>
-                  {activeTab === 'lesson_plan'    ? pack.lesson_plan
+                  {prepMathMarkdown(activeTab === 'lesson_plan'    ? pack.lesson_plan
                    : activeTab === 'homework'      ? pack.homework
-                   : pack.revision_sheet}
+                   : pack.revision_sheet)}
                 </ReactMarkdown>
               </div>
             )}

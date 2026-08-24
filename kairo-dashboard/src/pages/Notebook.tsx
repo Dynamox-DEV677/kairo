@@ -15,6 +15,7 @@ import {
   saveToNotebook, type NoteEntry,
 } from '../lib/notebook'
 import { listDoubts, listConcepts, listFormulas, type Doubt, type Concept, type Formula } from '../lib/twin'
+import { prepMathMarkdown } from '../lib/math.core'
 
 type Kind = 'flashcards' | 'summary' | 'doubt' | 'concept_map' | 'note' | 'plan' | 'grade'
 
@@ -50,11 +51,6 @@ const inp: React.CSSProperties = {
 }
 
 // Normalise LaTeX delimiters so KaTeX renders them: \[..\] -> $$..$$, \(..\) -> $..$.
-function normalizeMath(md: string): string {
-  return (md || '')
-    .replace(/\\\[([\s\S]+?)\\\]/g, (_m, e) => `$$${e}$$`)
-    .replace(/\\\(([\s\S]+?)\\\)/g, (_m, e) => `$${e}$`)
-}
 
 function entryToNote(e: NoteEntry): Note {
   return {
@@ -613,7 +609,7 @@ function NoteDetail({ note, editing, onClose, onTogglePin, onDelete, onEdit, onS
             </div>
           )}
           <div className="prose-ai nb-math" style={{ fontSize: 14, color: '#e4e4e7', lineHeight: 1.7, maxWidth: 760 }}>
-            <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>{normalizeMath(note.content)}</ReactMarkdown>
+            <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>{prepMathMarkdown(note.content)}</ReactMarkdown>
           </div>
         </>
       )}
@@ -703,7 +699,7 @@ function CreateModal({ onClose, onCreated }: { onClose: () => void; onCreated: (
             background: '#141A2A', border: '1px solid #1f2532', borderRadius: 8, padding: '10px 12px',
           }}>
             {content.trim()
-              ? <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>{normalizeMath(content)}</ReactMarkdown>
+              ? <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>{prepMathMarkdown(content)}</ReactMarkdown>
               : <span style={{ color: '#6B7280' }}>Nothing to preview yet.</span>}
           </div>
         ) : (

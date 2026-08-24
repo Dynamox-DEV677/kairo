@@ -15,6 +15,7 @@ import { getRaw, setRaw, get as getKey } from '../lib/storage'
 import { startTopicClock } from '../lib/timeTracker'
 import { STARTER_DECKS, type StarterDeck } from '../data/starterDecks'
 import { decksForCurriculum, newCardsForDeck, deckRemainingCount } from '../lib/starterDecks.core'
+import { prepMathMarkdown } from '../lib/math.core'
 
 /**
  * Revision Reels — a swipeable feed of the student's OWN cards.
@@ -47,7 +48,7 @@ function CardText({ text }: { text: string }) {
       rehypePlugins={[rehypeKatex]}
       components={MD_INLINE}
     >
-      {text}
+      {prepMathMarkdown(text)}
     </ReactMarkdown>
   )
 }

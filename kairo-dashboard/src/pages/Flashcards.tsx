@@ -16,6 +16,7 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
+import { prepMathMarkdown } from '../lib/math.core'
 
 const C = {
   bg:        '#0A0D16',
@@ -455,11 +456,6 @@ function DeckViewer({ cards, idx, flipped, onFlip, onPrev, onNext }: {
 }
 
 // Normalise LaTeX delimiters so KaTeX renders them: \[..\] -> $$..$$, \(..\) -> $..$.
-function normalizeMath(s: string): string {
-  return (s || '')
-    .replace(/\\\[([\s\S]+?)\\\]/g, (_m, e) => `$$${e}$$`)
-    .replace(/\\\(([\s\S]+?)\\\)/g, (_m, e) => `$${e}$`)
-}
 
 function FlipCard({ front, back, flipped, onFlip }: { front: string; back: string; flipped: boolean; onFlip: () => void }) {
   return (
@@ -533,7 +529,7 @@ function Face({ side, text, active }: { side: 'front' | 'back'; text: string; ac
           .fc-math .katex-display { margin: 6px 0; overflow-x: auto; overflow-y: hidden; }
         `}</style>
         <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>
-          {normalizeMath(text)}
+          {prepMathMarkdown(text)}
         </ReactMarkdown>
       </div>
       <div style={{

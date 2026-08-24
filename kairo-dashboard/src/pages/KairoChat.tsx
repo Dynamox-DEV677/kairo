@@ -11,6 +11,7 @@ import { getRecentChats, saveRecentChat, makeTitle } from '../lib/recentChats'
 import { awardXP } from '../lib/game'
 import { useIsMobile } from '../hooks/useViewport'
 import { aiHeaders } from '../lib/devKey'
+import { prepMathMarkdown } from '../lib/math.core'
 
 interface Slide { url: string; caption: string; source: string }
 interface DoneAction { label: string; view: string }
@@ -334,7 +335,7 @@ export default function KairoChat() {
                     remarkPlugins={[remarkGfm, remarkMath]}
                     rehypePlugins={[rehypeKatex]}
                   >
-                    {t.text}
+                    {prepMathMarkdown(t.text)}
                   </ReactMarkdown>
                 </div>
               ) : t.text}

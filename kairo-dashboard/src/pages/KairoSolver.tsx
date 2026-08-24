@@ -19,6 +19,7 @@ import { speakableText } from '../lib/listen.core'
 import { speak, stopSpeaking, ttsAvailable } from '../lib/tts'
 import { lookupNcert } from '../lib/ncertCacheLookup'
 import { aiHeaders } from '../lib/devKey'
+import { prepMathMarkdown } from '../lib/math.core'
 
 interface ImageSlide {
   url:         string
@@ -1429,7 +1430,7 @@ function ExplanationPanel({ resp, busy, error, retryHint, question, onOpenLab, o
               rehypePlugins={[rehypeKatex]}
               components={MD_COMPONENTS}
             >
-              {resp.textExplanation}
+              {prepMathMarkdown(resp.textExplanation)}
             </ReactMarkdown>
           </div>
 
@@ -1451,7 +1452,7 @@ function ExplanationPanel({ resp, busy, error, retryHint, question, onOpenLab, o
                 {resp.formulas.map((f, i) => (
                   <div key={i} style={{ fontSize: 13.5, color: '#fafafa' }}>
                     <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
-                      {`$$${f}$$`}
+                      {prepMathMarkdown(`$$${f}$$`)}
                     </ReactMarkdown>
                   </div>
                 ))}

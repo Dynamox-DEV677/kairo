@@ -6,6 +6,7 @@ import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
 import { chat } from '../lib/openrouter'
+import { prepMathMarkdown } from '../lib/math.core'
 
 const SYSTEM = `You are Kyno, an expert exam analyst for Indian board exams.
 Predict the most likely exam topics based on 10-year patterns. Provide:
@@ -85,7 +86,7 @@ export default function ExamPredictor() {
       {prediction && !loading && (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
           style={{ background: '#141A2A', border: '1px solid #1f2532', borderRadius: 14, padding: '28px 32px' }}>
-          <div className="prose-ai"><ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>{prediction}</ReactMarkdown></div>
+          <div className="prose-ai"><ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>{prepMathMarkdown(prediction)}</ReactMarkdown></div>
         </motion.div>
       )}
     </div>

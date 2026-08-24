@@ -6,6 +6,7 @@ import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
 import { chat } from '../lib/openrouter'
+import { prepMathMarkdown } from '../lib/math.core'
 
 const SYSTEM = `You are Kyno, an expert pedagogy advisor for Indian school teachers.
 Create a detailed NEP 2020-aligned lesson plan including:
@@ -91,7 +92,7 @@ export default function LessonPlan() {
             <button className="kyno-ghost" onClick={() => setPlan('')} style={{ fontSize: 12, padding: '6px 14px', borderRadius: 7, background: '#1C2233', border: '1px solid #1f2532', color: '#9CA3AF', cursor: 'pointer', fontFamily: 'inherit' }}>New plan</button>
           </div>
           <div style={{ background: '#141A2A', border: '1px solid #1f2532', borderRadius: 14, padding: '28px 32px' }}>
-            <div className="prose-ai"><ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>{plan}</ReactMarkdown></div>
+            <div className="prose-ai"><ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>{prepMathMarkdown(plan)}</ReactMarkdown></div>
           </div>
         </motion.div>
       )}

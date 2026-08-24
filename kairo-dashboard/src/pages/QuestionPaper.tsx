@@ -6,6 +6,7 @@ import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
 import { chat } from '../lib/openrouter'
+import { prepMathMarkdown } from '../lib/math.core'
 
 const SYSTEM = `You are an expert question paper setter for Indian school board exams.
 Create a complete board-standard paper with:
@@ -172,7 +173,7 @@ export default function QuestionPaper() {
           </div>
           <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 4px 40px rgba(0,0,0,0.4)', padding: '48px 56px' }}>
             <div id="qp-render" className="qp-paper">
-              <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>{paper}</ReactMarkdown>
+              <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>{prepMathMarkdown(paper)}</ReactMarkdown>
             </div>
           </div>
         </motion.div>
