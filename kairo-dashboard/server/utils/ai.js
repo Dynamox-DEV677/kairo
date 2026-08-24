@@ -96,6 +96,46 @@ function cacheSet(key, value) {
 
 const sleep = ms => new Promise(r => setTimeout(r, ms))
 
+/* ── instrumentation (audit task 3) ──────────────────────────────────────────
+   One structured line per finished call, plus a rolling window so
+   /api/ops/health can report the REAL failure rate in production — the
+   number the audit asked for before any copy tuning. Serverless instances
+   are ephemeral: counters reset per instance and that's understood. */
+
+const OUTCOMES_MAX = 500
+const outcomes = []
+
+function recordOutcome(o) {
+  const row = { ts: Date.now(), ...o }
+  outcomes.push(row)
+  if (outcomes.length > OUTCOMES_MAX) outcomes.shift()
+  // grep-able one-liner: [ai] task=quiz_generate ok=false ms=8123 attempts=4 status=429 reason=groq 429
+  console.log(
+    `[ai] task=${row.task} ok=${row.ok} ms=${row.ms} attempts=${row.attempts}` +
+    (row.ok ? '' : ` status=${row.status} reason=${JSON.stringify(row.reason || '')}`),
+  )
+}
+
+/** Failure rate + latency percentiles over the last hour, for /api/ops/health. */
+export function aiHealth(now = Date.now()) {
+  const hour = outcomes.filter(o => now - o.ts <= 3_600_000)
+  const fails = hour.filter(o => !o.ok)
+  const lat = hour.filter(o => o.ok).map(o => o.ms).sort((a, b) => a - b)
+  const pct = p => (lat.length ? lat[Math.min(lat.length - 1, Math.floor(p * lat.length))] : null)
+  const byReason = {}
+  for (const f of fails) byReason[f.reason || String(f.status)] = (byReason[f.reason || String(f.status)] || 0) + 1
+  return {
+    windowMinutes: 60,
+    calls: hour.length,
+    failures: fails.length,
+    failRate: hour.length ? +(fails.length / hour.length).toFixed(3) : null,
+    p50ms: pct(0.5),
+    p95ms: pct(0.95),
+    byReason,
+    pool: groqPool.status().hint,
+  }
+}
+
 /** One upstream attempt. Throws on failure so the caller can rotate. */
 async function attempt(model, key, messages, temperature, maxTokens, timeoutMs) {
   const res = await fetch(GROQ_URL, {
@@ -148,7 +188,9 @@ export async function aiCall({
 
   const run = (async () => {
     const deadline = Date.now() + timeout + 1500
+    const t0 = Date.now()
     let lastError = null
+    let attempts = 0
 
     for (let i = 0; i < MAX_ATTEMPTS; i++) {
       const model = models[i % models.length]
@@ -159,12 +201,14 @@ export async function aiCall({
       if (remaining < 1200) break        // no time for another honest try
 
       await acquire()
+      attempts++
       try {
         const content = await attempt(
           model, apiKey, messages, temperature, maxTokens,
           Math.min(timeout, remaining),
         )
         if (!noCache) cacheSet(key, content)
+        recordOutcome({ task: taskType, ok: true, ms: Date.now() - t0, attempts, status: 200 })
         return content
       } catch (err) {
         lastError = err
@@ -175,6 +219,10 @@ export async function aiCall({
       }
     }
 
+    recordOutcome({
+      task: taskType, ok: false, ms: Date.now() - t0, attempts,
+      status: lastError?.status || 0, reason: lastError?.message || 'unknown',
+    })
     console.warn('[AI] all attempts failed:', lastError?.message, '|', groqPool.status().hint)
     const friendly = new Error(
       'Kyno is busy right now — a lot of students are using it. Please try again in a few seconds.',

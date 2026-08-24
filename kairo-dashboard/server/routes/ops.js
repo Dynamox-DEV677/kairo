@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import { supabaseAdmin } from '../services/supabase.js'
 import { requireOpsToken } from '../middleware/opsAuth.js'
+import { aiHealth } from '../utils/ai.js'
 
 const router = Router()
 
@@ -115,7 +116,10 @@ router.get('/status', requireOpsToken, async (_req, res) => {
 })
 
 router.get('/health', (_req, res) => {
-  res.json({ ok: true, ts: Date.now() })
+  // ai: failure rate + latency over the last hour (per serverless instance) —
+  // the audit-task-3 measurement. Counts and percentiles only; no student
+  // data, no prompts, no key material.
+  res.json({ ok: true, ts: Date.now(), ai: aiHealth() })
 })
 
 // Operator-only, and not only for the env-presence leak: an unauthenticated

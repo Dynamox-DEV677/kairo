@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { motion } from 'framer-motion'
 import {
   Sparkles, Loader2, Flame, Brain, Target, TrendingUp, Calendar,
@@ -80,6 +80,8 @@ function defaultProfile(): Profile {
 }
 
 interface Brief {
+  /** true when the server could not reach the AI and built the plan from the student's own data */
+  fallback?: boolean
   greetingNote: string
   todaysFocus: { task: string; subject: string; why: string }[]
   mentorNote: string
@@ -164,12 +166,25 @@ export default function KairoHome({ onNavigate }: Props) {
       // student who opened the app at 8am and again at 9pm got a different
       // prediction and a different focus list on the same day, with no new
       // activity to justify it.
-      try { setStored('homeBrief', { data, day: localDay() }) }
-      catch (e) { console.warn('[home] could not cache brief:', e) }
+      //
+      // Audit task 3: a DEGRADED brief (fallback: true) must never be cached
+      // as the day's brief — that turned one busy moment into a dead end for
+      // the whole day. Fallbacks render, schedule ONE quiet auto-retry, and
+      // the next success overwrites them.
+      if (!data.fallback) {
+        try { setStored('homeBrief', { data, day: localDay() }) }
+        catch (e) { console.warn('[home] could not cache brief:', e) }
+      } else if (!autoRetriedRef.current) {
+        autoRetriedRef.current = true
+        window.setTimeout(() => { fetchBriefRef.current?.() }, 30_000)
+      }
     } catch {
       setError("Couldn't reach your AI council just now. Tap “Refresh brief” to try again — everything else still works.")
     } finally { setLoading(false) }
   }, [profile])
+  const fetchBriefRef = useRef<(() => void) | null>(null)
+  useEffect(() => { fetchBriefRef.current = fetchBrief }, [fetchBrief])
+  const autoRetriedRef = useRef(false)
 
   useEffect(() => {
     // Today's brief is generated ONCE per calendar day and reloaded unchanged.
@@ -234,6 +249,20 @@ export default function KairoHome({ onNavigate }: Props) {
       {error && (
         <div style={{ marginBottom: 16, padding: '10px 14px', background: 'rgba(255,77,109,0.10)', border: '1px solid rgba(255,77,109,0.30)', borderRadius: 8, color: '#ff8aa0', fontSize: 13 }}>
           {error}
+        </div>
+      )}
+
+      {/* Degraded-but-recoverable, never a dead end (audit task 3): the plan
+          below is real (built from the student's own data); the AI layer will
+          be retried automatically and Refresh brief retries now. */}
+      {brief?.fallback && !loading && (
+        <div style={{ marginBottom: 16, padding: '10px 14px', background: 'rgba(255,176,32,0.08)', border: '1px solid rgba(255,176,32,0.3)', borderRadius: 8, color: '#e8c27a', fontSize: 12.5, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+          <span style={{ flex: 1, minWidth: 200 }}>
+            The AI mentors were busy, so today's plan is built from your own data — it still stands. Retrying automatically in ~30s.
+          </span>
+          <button onClick={fetchBrief} className="kyno-ghost" style={{ padding: '6px 12px', borderRadius: 8, cursor: 'pointer', background: 'transparent', color: '#FFB020', fontFamily: 'inherit', fontSize: 12, fontWeight: 700, border: '1px solid rgba(255,176,32,0.4)' }}>
+            Retry now
+          </button>
         </div>
       )}
 
