@@ -9,6 +9,7 @@ import {
 import {
   getConceptGraph, recordConcept,
   type ConceptNode, type ConceptEdge,
+  getSyncEnabled,
 } from '../lib/twin'
 import { KEYS, getRaw, setRaw } from '../lib/storage'
 
@@ -92,7 +93,7 @@ export default function ConceptMap() {
   useEffect(() => {
     reload()
     const onStorage = (e: StorageEvent) => {
-      if (e.key?.startsWith('kairo:twin:')) reload()
+      if (e.key?.startsWith('kyno:twin:')) reload()
     }
     window.addEventListener('storage', onStorage)
     return () => window.removeEventListener('storage', onStorage)
@@ -406,7 +407,7 @@ function Header({ onRefresh, nodeCount, edgeCount, mode, setMode }: {
           </h1>
           <p style={{ margin: '6px 0 0', fontSize: 13, color: C.textFaint, lineHeight: 1.55, maxWidth: 640 }}>
             {nodeCount} concept{nodeCount === 1 ? '' : 's'} · {edgeCount} connection{edgeCount === 1 ? '' : 's'}.
-            Auto-discovered from every quiz, lab, doubt, and revision you've done — nothing leaves your device.
+            Auto-discovered from every quiz, lab, doubt, and revision you've done — {getSyncEnabled() ? 'synced with your Kyno account' : 'stored on this device until you turn on sync'}.
           </p>
         </div>
       </div>
@@ -511,7 +512,7 @@ function Empty() {
         >Ask the Solver</button>
       </div>
       <p style={{ margin: '10px 0 0', fontSize: 11, color: C.textFaint, letterSpacing: 1.2, textTransform: 'uppercase', fontWeight: 600 }}>
-        Stored on this device only
+        {getSyncEnabled() ? 'Synced with your Kyno account' : 'On this device · sync off'}
       </p>
     </div>
   )

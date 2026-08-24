@@ -213,7 +213,7 @@ export default function KairoChat() {
       if (text.action) {
         done = performAction(text.action)
         if (done) {
-          try { window.dispatchEvent(new StorageEvent('storage', { key: 'kairo:twin:chat' })) } catch {  }
+          try { window.dispatchEvent(new StorageEvent('storage', { key: 'kyno:twin:chat' })) } catch {  }
           const view = done.view
           setTimeout(() => openView(view), 1200)
         }

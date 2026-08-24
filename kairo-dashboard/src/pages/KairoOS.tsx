@@ -14,6 +14,7 @@ import {
   type DashboardSnapshot,
   type Twin, type Observation, type Recommendation, type TwinEvent,
   type MasteryRow, type Modality,
+  getSyncEnabled,
 } from '../lib/twin'
 import { confirmDialog } from '../components/ConfirmModal'
 import TwinBackupModal from '../components/TwinBackupModal'
@@ -205,7 +206,7 @@ export default function KairoOS() {
   useEffect(() => {
     reload()
     const onStorage = (e: StorageEvent) => {
-      if (e.key && e.key.startsWith('kairo:twin:')) reload()
+      if (e.key && e.key.startsWith('kyno:twin:')) reload()
     }
     window.addEventListener('storage', onStorage)
     return () => window.removeEventListener('storage', onStorage)
@@ -1130,9 +1131,23 @@ function PrivacyFooter({ onWipe, eventCount }: { onWipe: () => void; eventCount:
     }}>
       <Sparkles size={14} color={C.purple} />
       <div style={{ flex: 1, minWidth: 260, fontSize: 12, color: C.textDim, lineHeight: 1.55 }}>
-        <span style={{ color: C.text, fontWeight: 700 }}>Stored on this device only.</span>{' '}
-        Your Kyno profile ({eventCount} events) lives in your browser's localStorage —
-        none of this is uploaded to Kyno's servers. Clearing your browser data wipes it.
+        {/* Audit task 8: this copy claimed device-only even while cloud sync
+            was snapshotting the twin. It now tells the truth for the actual
+            sync state. */}
+        {getSyncEnabled() ? (
+          <>
+            <span style={{ color: C.text, fontWeight: 700 }}>On this device + your cloud backup.</span>{' '}
+            Your Kyno profile ({eventCount} events) lives in this browser and syncs to your
+            Kyno account, so a new phone can restore it. Manage this in Settings → Sync.
+          </>
+        ) : (
+          <>
+            <span style={{ color: C.text, fontWeight: 700 }}>Stored on this device only.</span>{' '}
+            Your Kyno profile ({eventCount} events) lives in this browser — clearing browser
+            data wipes it, and a new phone starts empty. Turn on cloud sync in Settings, or
+            export a backup below, to keep it safe.
+          </>
+        )}
       </div>
       <button onClick={onWipe} style={{
         ...chipBtn(), color: C.red, borderColor: 'rgba(165, 180, 252, 0.14)', flexShrink: 0,
