@@ -122,4 +122,37 @@ router.get('/history', async (req, res) => {
   }
 })
 
+/**
+ * Audit task 6 — "this looks wrong" on any model-generated question.
+ * Converts an invisible risk into a review stream. Requires the
+ * question_reports table (server/db/2026-08-24_question_reports.sql); until
+ * that migration runs, the endpoint answers { stored: false } and clients
+ * keep the report queued locally.
+ */
+router.post('/report', async (req, res) => {
+  const { question, options, claimed, source = 'unknown', note = '' } = req.body || {}
+  if (!question || typeof question !== 'string') return res.status(400).json({ error: 'question required' })
+
+  try {
+    const { supabaseAdmin } = await import('../services/supabase.js')
+    const { error } = await supabaseAdmin.from('question_reports').insert({
+      user_id: req.user.id,
+      source: String(source).slice(0, 40),
+      question: String(question).slice(0, 2000),
+      options: Array.isArray(options) ? options.slice(0, 6).map(o => String(o).slice(0, 500)) : null,
+      claimed: claimed != null ? String(claimed).slice(0, 500) : null,
+      note: String(note).slice(0, 1000),
+    })
+    if (error) {
+      // 42P01 = table missing (migration not run yet). Say so honestly.
+      console.warn('[quiz/report] insert failed:', error.code, error.message)
+      return res.json({ stored: false, reason: error.code === '42P01' ? 'table-missing' : 'insert-failed' })
+    }
+    return res.json({ stored: true })
+  } catch (e) {
+    console.warn('[quiz/report]', e?.message)
+    return res.json({ stored: false, reason: 'error' })
+  }
+})
+
 export default router

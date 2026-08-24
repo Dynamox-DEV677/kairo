@@ -2,6 +2,7 @@ import { useMemo, useState, useRef, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Landmark, CheckCircle2, XCircle, Play, RotateCcw, ArrowRight } from 'lucide-react'
 import { PrimaryButton } from '../components/PrimaryButton'
+import ReportQuestion from '../components/ReportQuestion'
 import { loadState, track } from '../lib/twin'
 import {
   museumEntries, drillDeck, rotatedOptions, museumStats,
@@ -170,6 +171,9 @@ function EntryCard({ e }: { e: MuseumEntry }) {
         </div>
       )}
       {e.explanation && <div style={{ fontSize: 11.5, color: C.dim, lineHeight: 1.55, marginBottom: 8 }}>{e.explanation}</div>}
+      {e.options && e.correctIndex != null && (
+        <ReportQuestion question={e.question} options={e.options} claimed={e.options[e.correctIndex]} source="museum" style={{ marginTop: 0, marginBottom: 8 }} />
+      )}
       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
         <span style={{ fontSize: 10.5, color: why.color, fontWeight: 600 }}>{e.fixed ? '✓ fixed — beaten twice in a row' : why.label}</span>
         <span style={{ fontSize: 10.5, color: C.faint }}>

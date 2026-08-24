@@ -18,6 +18,7 @@ import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
 import { prepMathMarkdown } from '../lib/math.core'
+import ReportQuestion from '../components/ReportQuestion'
 
 // Render short question / option strings with inline math ($...$), no block margins.
 const MD_INLINE = { p: ({ children }: any) => <span>{children}</span> }
@@ -632,6 +633,7 @@ function LiveView({ q, idx, total, secsLeft, maxSecs, picked, onPick, mode, reve
               <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]} components={MD_INLINE}>{prepMathMarkdown(q.explain)}</ReactMarkdown>
             </div>
           )}
+          <ReportQuestion question={q.q} options={q.options} claimed={'ABCD'[q.answer] || String(q.answer)} source="simulator" />
           <motion.button className="kyno-chunky" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={onNext}
             style={{
               marginTop: 16, width: '100%', padding: '12px 16px', borderRadius: 10, border: 'none', cursor: 'pointer',

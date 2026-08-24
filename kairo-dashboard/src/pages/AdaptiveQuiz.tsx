@@ -4,6 +4,7 @@ import { Brain, CheckCircle, XCircle, Trophy, RotateCcw, History, Target, Zap, B
 import { post, get } from '../lib/api'
 import { track, getProfile } from '../lib/twin'
 import { cleanOption } from '../lib/museum.core'
+import ReportQuestion from '../components/ReportQuestion'
 import { awardXP } from '../lib/game'
 
 const SCHOOL_ID = 'demo_school'
@@ -312,6 +313,13 @@ function QuizScreen({ questions, onComplete }: any) {
             <div style={{ fontSize: 11, fontWeight: 700, color: '#A5B4FC', marginBottom: 4 }}>EXPLANATION</div>
             <div style={{ fontSize: 12, color: '#B1B5BA' }}>{q.explanation}</div>
           </motion.div>
+        )}
+
+        {revealed && (
+          <ReportQuestion
+            question={q.question} options={q.options} claimed={q.correct}
+            source="adaptive-quiz" style={{ marginBottom: 12 }}
+          />
         )}
 
         {revealed && (
