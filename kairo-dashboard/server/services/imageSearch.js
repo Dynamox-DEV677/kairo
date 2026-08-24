@@ -12,14 +12,14 @@ export async function searchWikipediaArticle(query) {
     action: 'query', format: 'json', list: 'search',
     srsearch: query, srlimit: '1', origin: '*',
   })
-  const sr = await fetch(`${WIKIPEDIA_API}?${searchParams}`, { headers: { 'User-Agent': UA } })
+  const sr = await fetch(`${WIKIPEDIA_API}?${searchParams}`, { headers: { 'User-Agent': UA }, signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) })
   if (!sr.ok) return null
   const sdata = await sr.json()
   const title = sdata?.query?.search?.[0]?.title
   if (!title) return null
 
   const summaryUrl = `${WIKIPEDIA_REST}/page/summary/${encodeURIComponent(title)}`
-  const summary = await fetch(summaryUrl, { headers: { 'User-Agent': UA } }).then(r => r.ok ? r.json() : null)
+  const summary = await fetch(summaryUrl, { headers: { 'User-Agent': UA }, signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) }).then(r => r.ok ? r.json() : null)
   if (!summary) return null
 
   const img = summary.originalimage || summary.thumbnail
@@ -40,7 +40,7 @@ export async function getWikipediaArticleImages(topic, limit = 6) {
     action: 'query', format: 'json', list: 'search',
     srsearch: topic, srlimit: '1', origin: '*',
   })
-  const sr = await fetch(`${WIKIPEDIA_API}?${searchParams}`, { headers: { 'User-Agent': UA } })
+  const sr = await fetch(`${WIKIPEDIA_API}?${searchParams}`, { headers: { 'User-Agent': UA }, signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) })
   if (!sr.ok) return []
   const sdata = await sr.json()
   const title = sdata?.query?.search?.[0]?.title
@@ -50,7 +50,7 @@ export async function getWikipediaArticleImages(topic, limit = 6) {
     action: 'query', format: 'json',
     titles: title, prop: 'images', imlimit: '20', origin: '*',
   })
-  const r = await fetch(`${WIKIPEDIA_API}?${params}`, { headers: { 'User-Agent': UA } })
+  const r = await fetch(`${WIKIPEDIA_API}?${params}`, { headers: { 'User-Agent': UA }, signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) })
   if (!r.ok) return []
   const data = await r.json()
   const page = Object.values(data?.query?.pages || {})[0]
@@ -67,7 +67,7 @@ export async function getWikipediaArticleImages(topic, limit = 6) {
       iiprop: 'url|size|extmetadata', iiurlwidth: '900', origin: '*',
     })
     try {
-      const rr = await fetch(`${WIKIMEDIA_API}?${p}`, { headers: { 'User-Agent': UA } })
+      const rr = await fetch(`${WIKIMEDIA_API}?${p}`, { headers: { 'User-Agent': UA }, signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) })
       if (!rr.ok) return null
       const dd = await rr.json()
       const pp = Object.values(dd?.query?.pages || {})[0]
@@ -106,7 +106,7 @@ export async function searchWikimedia(query) {
     origin:        '*',
   })
 
-  const r = await fetch(`${WIKIMEDIA_API}?${params}`, { headers: { 'User-Agent': UA } })
+  const r = await fetch(`${WIKIMEDIA_API}?${params}`, { headers: { 'User-Agent': UA }, signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) })
   if (!r.ok) return null
   const data = await r.json()
   const pages = data?.query?.pages
@@ -142,7 +142,7 @@ export async function searchPexels(query) {
   const key = process.env.PEXELS_API_KEY
   if (!key) return null
   const params = new URLSearchParams({ query, per_page: '1', orientation: 'landscape' })
-  const r = await fetch(`${PEXELS_API}?${params}`, { headers: { Authorization: key } })
+  const r = await fetch(`${PEXELS_API}?${params}`, { headers: { Authorization: key }, signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) })
   if (!r.ok) return null
   const data = await r.json()
   const photo = data?.photos?.[0]
@@ -163,6 +163,7 @@ export async function searchUnsplash(query) {
   const params = new URLSearchParams({ query, per_page: '1', orientation: 'landscape' })
   const r = await fetch(`${UNSPLASH_API}?${params}`, {
     headers: { Authorization: `Client-ID ${key}` },
+    signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
   })
   if (!r.ok) return null
   const data = await r.json()
@@ -202,8 +203,25 @@ export async function searchAny(query) {
   return null
 }
 
+/* ── generation (audit task 4) ────────────────────────────────────────────────
+   pollinations.ai is a free public endpoint with no SLA and no content
+   controls, in a path serving minors. The audit's prescription — a paid
+   provider with a contract — conflicts with the project's hard $0 rule, so
+   the honest remediation is:
+     1. licensed, attributed sources (Wikipedia/Wikimedia/Pexels/Unsplash)
+        now come FIRST — generated images only top up the remainder;
+     2. a generated URL is server-side VERIFIED (it actually returns an
+        image, with a hard timeout) before a student ever sees it, so a dead
+        endpoint means fewer slides, never broken ones;
+     3. verified results are cached per instance;
+     4. zero slides is a clean state the client already renders.
+   If a contracted provider ever fits the budget, makeGeneratedSlide is the
+   one seam to swap. */
+
 const POLLINATIONS = 'https://image.pollinations.ai/prompt/'
 const GEN_STYLE = ', clean educational textbook illustration, labeled diagram, vibrant colors, white background, high detail, no watermark'
+const FETCH_TIMEOUT_MS = 4000
+const VERIFY_TIMEOUT_MS = 3500
 
 function stableSeed(s) {
   let h = 2166136261
@@ -220,8 +238,32 @@ export function makeGeneratedSlide(query) {
     url: `${POLLINATIONS}${prompt}?width=960&height=600&nologo=true&seed=${stableSeed(query)}`,
     caption: query,
     source: 'kairo-ai',
-    attribution: 'Generated by Kyno AI',
+    attribution: 'AI-generated illustration',
   }
+}
+
+// url -> boolean, capped LRU-ish; per serverless instance, which is fine —
+// the point is not re-verifying within a burst.
+const verifyCache = new Map()
+const VERIFY_CACHE_MAX = 300
+
+/** Does this URL actually serve an image right now? */
+export async function verifyImageUrl(url) {
+  if (verifyCache.has(url)) return verifyCache.get(url)
+  let ok = false
+  try {
+    const r = await fetch(url, { method: 'HEAD', signal: AbortSignal.timeout(VERIFY_TIMEOUT_MS) })
+    ok = r.ok && /^image\//i.test(r.headers.get('content-type') || '')
+    // Some CDNs reject HEAD; one GET attempt before giving up.
+    if (!ok && (r.status === 405 || r.status === 403)) {
+      const g = await fetch(url, { signal: AbortSignal.timeout(VERIFY_TIMEOUT_MS) })
+      ok = g.ok && /^image\//i.test(g.headers.get('content-type') || '')
+      try { g.body?.cancel?.() } catch {}
+    }
+  } catch { ok = false }
+  verifyCache.set(url, ok)
+  if (verifyCache.size > VERIFY_CACHE_MAX) verifyCache.delete(verifyCache.keys().next().value)
+  return ok
 }
 
 export async function searchManyParallel(queries, topic) {
@@ -239,15 +281,27 @@ export async function searchManyParallel(queries, topic) {
     else if (r) flat.push(r)
   }
 
-  const generated = (queries || []).slice(0, 5).map(q => makeGeneratedSlide(q))
-
+  // Licensed, attributed sources lead. Generation only tops up what's
+  // missing, at most 3, and only after each URL is verified to actually load.
   const seen = new Set()
   const out = []
-  for (const r of [...generated, ...flat]) {
+  for (const r of flat) {
     if (!r?.url || seen.has(r.url)) continue
     seen.add(r.url)
     out.push(r)
     if (out.length >= 10) break
+  }
+
+  const missing = Math.max(0, 6 - out.length)
+  if (missing > 0) {
+    const candidates = (queries || []).slice(0, Math.min(3, missing)).map(q => makeGeneratedSlide(q))
+    const checks = await Promise.all(candidates.map(c => verifyImageUrl(c.url).catch(() => false)))
+    for (let i = 0; i < candidates.length; i++) {
+      if (checks[i] && !seen.has(candidates[i].url)) {
+        seen.add(candidates[i].url)
+        out.push(candidates[i])
+      }
+    }
   }
   return out
 }
