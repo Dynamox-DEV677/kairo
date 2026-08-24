@@ -173,7 +173,8 @@ import * as storage from './storage'
 import { exportGameState, importGameState } from './game'
 // Shared arithmetic — see selectors.core.js. Imported here so the twin cannot
 // disagree with Home about a number they both display.
-import { selectStreak, selectPrediction, selectWeakTopics, selectStrongTopics } from './selectors.core.js'
+import { selectStreak, selectPrediction, selectWeakTopics, selectStrongTopics, selectPerformanceTrend } from './selectors.core.js'
+import { DEMO_QUIZ_EVENTS, DEMO_ACTIVITY_EVENTS } from './demoData.core.js'
 // Phase 2: nothing reaches the graph without passing through these.
 import { canonicalTopic, classifyChatTurn, isSameFormula, findRecentDuplicate } from './knowledgeHygiene.js'
 import { revisionQueue } from './srs.js'
@@ -848,22 +849,15 @@ export function track(args: TrackArgs): TwinState {
 }
 
 export function seedDemo(): TwinState {
+  // One pure dataset (demoData.core.js) feeds this AND the node test that
+  // asserts the showcase numbers can never regress to "TREND −100% /
+  // PREDICTED —" again. 21 scored assessments — deliberately above the
+  // prediction gate — telling a believable improving fortnight.
   const demo: Array<TrackArgs & { _daysAgo?: number }> = [
-    { type: 'lab_opened',       subject: 'Biology',   topic: 'cell',                                                _daysAgo: 9 },
-    { type: 'quiz_answered',    subject: 'Math',      topic: 'quadratic equations', correct: false, score: 40, difficulty: 0.6, _daysAgo: 8 },
-    { type: 'quiz_answered',    subject: 'Math',      topic: 'quadratic equations', correct: true,  score: 70, difficulty: 0.6, _daysAgo: 8 },
-    { type: 'flashcard_review', subject: 'Chemistry', topic: 'periodic table',      correct: true,                _daysAgo: 7 },
-    { type: 'lab_opened',       subject: 'Space',     topic: 'solar system',                                       _daysAgo: 6 },
-    { type: 'quiz_answered',    subject: 'Physics',   topic: 'newton laws',         correct: true,  score: 80, difficulty: 0.5, _daysAgo: 5 },
-    { type: 'quiz_answered',    subject: 'Physics',   topic: 'newton laws',         correct: true,  score: 90, difficulty: 0.5, _daysAgo: 5 },
-    { type: 'essay_graded',     subject: 'English',   topic: 'persuasive essay',                                   _daysAgo: 4 },
-    { type: 'lab_opened',       subject: 'Biology',   topic: 'dna',                                                _daysAgo: 3 },
-    { type: 'quiz_answered',    subject: 'Math',      topic: 'vectors',             correct: false, score: 30, difficulty: 0.7, _daysAgo: 2 },
-    { type: 'quiz_answered',    subject: 'Math',      topic: 'vectors',             correct: false, score: 50, difficulty: 0.7, _daysAgo: 2 },
-    { type: 'flashcard_review', subject: 'Chemistry', topic: 'periodic table',      correct: true,                _daysAgo: 1 },
-    { type: 'lab_opened',       subject: 'Biology',   topic: 'heart',                                              _daysAgo: 1 },
-    { type: 'quiz_completed',   subject: 'Math',      topic: 'quadratic equations', score: 75,                    _daysAgo: 0 },
+    ...DEMO_QUIZ_EVENTS, ...DEMO_ACTIVITY_EVENTS,
   ]
+    .map(({ daysAgo, ...args }) => ({ ...(args as TrackArgs), _daysAgo: daysAgo }))
+    .sort((a, b) => (b._daysAgo ?? 0) - (a._daysAgo ?? 0))
 
   let state: TwinState | null = null
   for (const d of demo) {
@@ -990,16 +984,6 @@ function applyToMastery(state: TwinState, args: {
   else          state.mastery.push(row)
 }
 
-function slope(ys: number[]): number {
-  if (ys.length < 2) return 0
-  const n  = ys.length
-  const sx = (n - 1) * n / 2
-  const sy = ys.reduce((a, b) => a + b, 0)
-  const sxy = ys.reduce((acc, y, i) => acc + i * y, 0)
-  const sxx = ys.reduce((acc, _, i) => acc + i * i, 0)
-  const denom = n * sxx - sx * sx
-  return denom === 0 ? 0 : (n * sxy - sx * sy) / denom
-}
 
 function computeLearningStyle(events: TwinEvent[]) {
   const buckets: Record<Modality, number> = { visual: 0, text: 0, interactive: 0, repetition: 0 }
@@ -1104,14 +1088,13 @@ function computeBurnout(events: TwinEvent[], perfTrend: number) {
   return clamp01(0.6 * overload + 0.4 * stagn)
 }
 
+/**
+ * Assessments only (selectors.core). Counting every scored event let
+ * 'mistake' bookkeeping records (score:0) crush the trend to −100% — the
+ * demo's headline bug, and live for any student who logged mistakes.
+ */
 function computePerformanceTrend(events: TwinEvent[]) {
-  const scored = events
-    .filter(e => typeof e.score === 'number')
-    .sort((a, b) => a.ts - b.ts)
-    .map(e => e.score!)
-  if (scored.length < 4) return 0
-  const s = slope(scored)
-  return clamp01(Math.abs(s) / 3) * (s >= 0 ? 1 : -1)
+  return selectPerformanceTrend(events)
 }
 
 function computeConfidence(mastery: MasteryRow[], events: TwinEvent[]) {

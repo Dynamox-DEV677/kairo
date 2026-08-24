@@ -170,10 +170,46 @@ export const PREDICTION_MIN_SCORED = 20
  * Returns a range, never a bare number, and returns null with a reason below
  * the evidence bar rather than inventing confidence.
  */
-export function selectPrediction(events, outOf = 100) {
-  const scored = (events || [])
-    .filter(e => typeof e?.score === 'number' && typeof e?.ts === 'number')
+/**
+ * Only these event types are PERFORMANCE evidence. The demo-metrics bug
+ * (audit task 2) traced here: 'mistake' records carry score:0 as bookkeeping,
+ * and counting them dragged both the trend (to a flat −100%) and the
+ * prediction band down for any student who logged mistakes — while their
+ * actual quiz scores were fine.
+ */
+export const ASSESSMENT_TYPES = new Set(['quiz_answered', 'quiz_completed', 'essay_graded'])
+
+export function assessmentScores(events) {
+  return (events || [])
+    .filter(e => e && ASSESSMENT_TYPES.has(e.type) && typeof e.score === 'number' && typeof e.ts === 'number')
     .sort((a, b) => a.ts - b.ts)
+}
+
+function slope(ys) {
+  if (ys.length < 2) return 0
+  const n = ys.length
+  const sx = (n - 1) * n / 2
+  const sy = ys.reduce((a, b) => a + b, 0)
+  const sxy = ys.reduce((acc, y, i) => acc + i * y, 0)
+  const sxx = ys.reduce((acc, _, i) => acc + i * i, 0)
+  const denom = n * sxx - sx * sx
+  return denom === 0 ? 0 : (n * sxy - sx * sy) / denom
+}
+
+/**
+ * Direction of travel over real assessments, −1..1. Fewer than 4 scored
+ * assessments is a coin toss, so it reports 0 rather than guessing.
+ */
+export function selectPerformanceTrend(events) {
+  const scored = assessmentScores(events).map(e => e.score)
+  if (scored.length < 4) return 0
+  const s = slope(scored)
+  const mag = Math.min(1, Math.abs(s) / 3)
+  return s >= 0 ? mag : -mag
+}
+
+export function selectPrediction(events, outOf = 100) {
+  const scored = assessmentScores(events)
 
   if (scored.length < PREDICTION_MIN_SCORED) {
     return {

@@ -107,7 +107,7 @@ test('retention reflects real mastery once there is data', () => {
 // --- prediction -----------------------------------------------------------
 
 test('no prediction below the evidence bar, and it says how many more', () => {
-  const ev = Array.from({ length: 5 }, (_, i) => ({ ts: daysAgo(i), score: 70 }))
+  const ev = Array.from({ length: 5 }, (_, i) => ({ ts: daysAgo(i), type: 'quiz_answered', score: 70 }))
   const p = selectPrediction(ev)
   assert.equal(p.ready, false)
   assert.equal(p.need, PREDICTION_MIN_SCORED - 5)
@@ -117,19 +117,19 @@ test('no prediction below the evidence bar, and it says how many more', () => {
 test('prediction is identical across five reads — the 250 -> 180 bug', () => {
   // The old code sliced an UNSORTED array, so a reload could pick a different
   // 20 events and move the number with no new activity.
-  const ev = Array.from({ length: 40 }, (_, i) => ({ ts: daysAgo(40 - i), score: 40 + (i % 30) }))
+  const ev = Array.from({ length: 40 }, (_, i) => ({ ts: daysAgo(40 - i), type: 'quiz_answered', score: 40 + (i % 30) }))
   const runs = Array.from({ length: 5 }, () => JSON.stringify(selectPrediction(ev, 360)))
   assert.equal(new Set(runs).size, 1, `prediction drifted:\n${runs.join('\n')}`)
 })
 
 test('input order does not change the prediction', () => {
-  const ev = Array.from({ length: 30 }, (_, i) => ({ ts: daysAgo(30 - i), score: 50 + i }))
+  const ev = Array.from({ length: 30 }, (_, i) => ({ ts: daysAgo(30 - i), type: 'quiz_answered', score: 50 + i }))
   const shuffled = [...ev].reverse()
   assert.deepEqual(selectPrediction(ev, 360), selectPrediction(shuffled, 360))
 })
 
 test('prediction is a range, never a bare number', () => {
-  const ev = Array.from({ length: 25 }, (_, i) => ({ ts: daysAgo(25 - i), score: 60 + (i % 10) }))
+  const ev = Array.from({ length: 25 }, (_, i) => ({ ts: daysAgo(25 - i), type: 'quiz_answered', score: 60 + (i % 10) }))
   const p = selectPrediction(ev, 360)
   assert.equal(p.ready, true)
   assert.ok(p.low < p.high, 'band collapsed to a point')
@@ -138,15 +138,15 @@ test('prediction is a range, never a bare number', () => {
 })
 
 test('an erratic student gets a wider band than a steady one', () => {
-  const steady  = Array.from({ length: 25 }, (_, i) => ({ ts: daysAgo(25 - i), score: 70 }))
-  const erratic = Array.from({ length: 25 }, (_, i) => ({ ts: daysAgo(25 - i), score: i % 2 ? 40 : 95 }))
+  const steady  = Array.from({ length: 25 }, (_, i) => ({ ts: daysAgo(25 - i), type: 'quiz_answered', score: 70 }))
+  const erratic = Array.from({ length: 25 }, (_, i) => ({ ts: daysAgo(25 - i), type: 'quiz_answered', score: i % 2 ? 40 : 95 }))
   const s = selectPrediction(steady, 360)
   const e = selectPrediction(erratic, 360)
   assert.ok((e.high - e.low) > (s.high - s.low), 'band did not widen for erratic scores')
 })
 
 test('prediction stays inside the paper total', () => {
-  const ev = Array.from({ length: 25 }, (_, i) => ({ ts: daysAgo(25 - i), score: 100 }))
+  const ev = Array.from({ length: 25 }, (_, i) => ({ ts: daysAgo(25 - i), type: 'quiz_answered', score: 100 }))
   const p = selectPrediction(ev, 360)
   assert.ok(p.high <= 360, `high ${p.high} exceeds the paper`)
   assert.ok(p.low >= 0)
@@ -176,7 +176,7 @@ test('five reloads with no activity produce byte-identical numbers', () => {
   // A realistic account: 40 days of activity, 30 scored attempts, mixed mastery.
   const events = [
     ...Array.from({ length: 40 }, (_, d) => ({ ts: daysAgo(d) })),
-    ...Array.from({ length: 30 }, (_, i) => ({ ts: daysAgo(30 - i), score: 45 + (i * 7) % 50 })),
+    ...Array.from({ length: 30 }, (_, i) => ({ ts: daysAgo(30 - i), type: 'quiz_answered', score: 45 + (i * 7) % 50 })),
   ]
   const mastery = [
     { mastery: 0.92, attempts: 11 }, { mastery: 0.71, attempts: 6 },
@@ -194,7 +194,7 @@ test('event order in storage does not change any displayed number', () => {
   // may change what the student sees.
   const events = [
     ...Array.from({ length: 25 }, (_, d) => ({ ts: daysAgo(d) })),
-    ...Array.from({ length: 22 }, (_, i) => ({ ts: daysAgo(22 - i), score: 50 + i })),
+    ...Array.from({ length: 22 }, (_, i) => ({ ts: daysAgo(22 - i), type: 'quiz_answered', score: 50 + i })),
   ]
   const mastery = [{ mastery: 0.8, attempts: 5 }]
   const game = { totalXP: 420 }

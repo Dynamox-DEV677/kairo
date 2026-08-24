@@ -7,6 +7,9 @@ export interface GameLike { totalXP?: number; todayXP?: number; weekXP?: number 
 export const MASTERY_BAR: number
 export const PREDICTION_MIN_SCORED: number
 
+export const ASSESSMENT_TYPES: Set<string>
+export function assessmentScores(events: EventLike[] | null | undefined): EventLike[]
+export function selectPerformanceTrend(events: EventLike[] | null | undefined): number
 export function selectStreak(events: EventLike[] | null | undefined, now?: number): number
 export function selectXP(game: GameLike | null | undefined): { total: number; today: number; week: number }
 export function selectLevel(totalXP: number): { level: number; into: number; need: number; pct: number }
