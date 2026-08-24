@@ -3,6 +3,7 @@ import express from 'express'
 import { apiLimiter, aiLimiter } from './middleware/rateLimit.js'
 
 import aiChatRoutes from './routes/aiChat.js'
+import ttsRoutes from './routes/tts.js'
 import cameraLiveRoutes from './routes/cameraLive.js'
 import documentRoutes from './routes/document.js'
 
@@ -125,6 +126,7 @@ app.use([
 ], aiLimiter)
 
 app.use('/api/ai',             aiChatRoutes)
+app.use('/api/tts',            ttsRoutes)
 app.use('/api/camera',         cameraLiveRoutes)
 app.use('/api/document',       documentRoutes)
 app.use('/api/ops',            opsRoutes)

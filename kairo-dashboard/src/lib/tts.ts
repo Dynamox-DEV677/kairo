@@ -8,13 +8,47 @@ export function ttsAvailable(): boolean {
   return typeof window !== 'undefined' && 'speechSynthesis' in window
 }
 
-/** Prefer an Indian-English voice when the device has one. */
+const VOICE_PREF_KEY = 'kyno:listen:voice'
+
+export function listVoices(): { name: string; lang: string }[] {
+  try {
+    return (window.speechSynthesis.getVoices() || [])
+      .filter(v => /^en/i.test(v.lang))
+      .map(v => ({ name: v.name, lang: v.lang }))
+  } catch { return [] }
+}
+
+export function setPreferredVoice(name: string | null): void {
+  try {
+    if (name) localStorage.setItem(VOICE_PREF_KEY, name)
+    else localStorage.removeItem(VOICE_PREF_KEY)
+  } catch {}
+}
+
+export function getPreferredVoice(): string | null {
+  try { return localStorage.getItem(VOICE_PREF_KEY) } catch { return null }
+}
+
+/**
+ * The student's saved pick first; otherwise the best voice the device has —
+ * the "Natural/Neural/Online" voices (Edge ships free neural ones, Android
+ * has Google's) sound far better than the old robotic defaults.
+ */
 function pickVoice(): SpeechSynthesisVoice | null {
   try {
     const voices = window.speechSynthesis.getVoices() || []
+    const saved = getPreferredVoice()
+    if (saved) {
+      const v = voices.find(x => x.name === saved)
+      if (v) return v
+    }
+    const en = voices.filter(v => /^en/i.test(v.lang))
     return (
-      voices.find(v => /en[-_]IN/i.test(v.lang)) ||
-      voices.find(v => /^en/i.test(v.lang)) ||
+      en.find(v => /natural|neural|online/i.test(v.name) && /en[-_]IN/i.test(v.lang)) ||
+      en.find(v => /natural|neural|online/i.test(v.name)) ||
+      en.find(v => /google/i.test(v.name)) ||
+      en.find(v => /en[-_]IN/i.test(v.lang)) ||
+      en[0] ||
       null
     )
   } catch { return null }

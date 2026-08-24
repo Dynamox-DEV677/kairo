@@ -4,7 +4,13 @@ import { PrimaryButton } from '../components/PrimaryButton'
 import { listFormulas, listFlashcards } from '../lib/twin'
 import { buildDeck } from '../lib/reels.core'
 import { buildPlaylist, type ListenItem } from '../lib/listen.core'
-import { speak, stopSpeaking, pauseSpeaking, resumeSpeaking, ttsAvailable } from '../lib/tts'
+import {
+  speak, stopSpeaking, pauseSpeaking, resumeSpeaking, ttsAvailable,
+  listVoices, setPreferredVoice, getPreferredVoice,
+} from '../lib/tts'
+import {
+  speakOnline, stopOnline, pauseOnline, resumeOnline, isOnlineActive, HD_VOICES,
+} from '../lib/ttsOnline'
 
 /**
  * Revise with your ears — the student's own reel cards as a spoken playlist.
@@ -29,6 +35,31 @@ export default function Listen() {
   const rateRef = useRef(rate)
   rateRef.current = rate
 
+  // HD voice (Groq TTS via /api/tts). Device voice stays the offline fallback.
+  const [hd, setHd] = useState(() => { try { return localStorage.getItem('kyno:listen:hd') === '1' } catch { return false } })
+  const [hdVoice, setHdVoice] = useState(() => { try { return localStorage.getItem('kyno:listen:hdvoice') || HD_VOICES[0] } catch { return HD_VOICES[0] } })
+  const [hdNote, setHdNote] = useState('')
+  const hdRef = useRef(hd); hdRef.current = hd
+  const hdVoiceRef = useRef(hdVoice); hdVoiceRef.current = hdVoice
+  function toggleHd() {
+    const next = !hd
+    setHd(next); setHdNote('')
+    try { localStorage.setItem('kyno:listen:hd', next ? '1' : '0') } catch {}
+  }
+  function pickHdVoice(v: string) {
+    setHdVoice(v)
+    try { localStorage.setItem('kyno:listen:hdvoice', v) } catch {}
+  }
+
+  // Device voices load async on some browsers — refresh when they arrive.
+  const [deviceVoices, setDeviceVoices] = useState(listVoices)
+  const [devVoice, setDevVoice] = useState(() => getPreferredVoice() || '')
+  useEffect(() => {
+    const refresh = () => setDeviceVoices(listVoices())
+    try { window.speechSynthesis?.addEventListener?.('voiceschanged', refresh) } catch {}
+    return () => { try { window.speechSynthesis?.removeEventListener?.('voiceschanged', refresh) } catch {} }
+  }, [])
+
   const items = useMemo(() => {
     try {
       return buildPlaylist(buildDeck({ formulas: listFormulas(), flashcards: listFlashcards() }, { now: Date.now() }))
@@ -37,19 +68,29 @@ export default function Listen() {
   }, [tick])
 
   // Leaving the page stops the voice — nothing should keep talking unseen.
-  useEffect(() => () => stopSpeaking(), [])
+  useEffect(() => () => { stopSpeaking(); stopOnline() }, [])
 
   const supported = ttsAvailable()
 
-  function playFrom(index: number, list: ListenItem[]) {
+  async function playFrom(index: number, list: ListenItem[]) {
     const item = list[index]
     if (!item) { setPlayingId(null); return }
     setPlayingId(item.id)
     setPaused(false)
-    speak(item.script, {
-      rate: rateRef.current,
-      onend: () => playFrom(index + 1, list),
-    })
+    const next = () => playFrom(index + 1, list)
+
+    // HD first when it's on and we're online; ANY failure falls back to the
+    // device voice for this clip — the playlist never stalls on the network.
+    if (hdRef.current && navigator.onLine) {
+      try {
+        await speakOnline(item.script, { voice: hdVoiceRef.current, rate: rateRef.current, onend: next })
+        setHdNote('')
+        return
+      } catch {
+        setHdNote('HD voice unavailable right now — using the device voice.')
+      }
+    }
+    speak(item.script, { rate: rateRef.current, onend: next })
   }
 
   function playAll() { queueRef.current = items; playFrom(0, items) }
@@ -57,13 +98,18 @@ export default function Listen() {
   function skip() {
     const list = queueRef.current
     const i = list.findIndex(x => x.id === playingId)
-    stopSpeaking()
+    stopSpeaking(); stopOnline()
     playFrom(i + 1, list)
   }
-  function stopAll() { stopSpeaking(); setPlayingId(null); setPaused(false) }
+  function stopAll() { stopSpeaking(); stopOnline(); setPlayingId(null); setPaused(false) }
   function togglePause() {
-    if (paused) { resumeSpeaking(); setPaused(false) }
-    else { pauseSpeaking(); setPaused(true) }
+    if (paused) {
+      if (isOnlineActive()) resumeOnline(); else resumeSpeaking()
+      setPaused(false)
+    } else {
+      if (isOnlineActive()) pauseOnline(); else pauseSpeaking()
+      setPaused(true)
+    }
   }
   function cycleRate() {
     const next = RATES[(RATES.indexOf(rate) + 1) % RATES.length]
@@ -115,6 +161,30 @@ export default function Listen() {
                 {rate}× speed
               </button>
             </div>
+
+            {/* voice controls: HD (online, Groq) vs the device's own voices */}
+            <div style={{ display: 'flex', gap: 8, marginBottom: 6, alignItems: 'center', flexWrap: 'wrap' }}>
+              <button className={`kyno-chip${hd ? ' on' : ''}`} onClick={toggleHd} style={{ padding: '8px 14px', fontSize: 12 }}>
+                ✨ HD voice {hd ? 'on' : 'off'}
+              </button>
+              {hd ? (
+                <select value={hdVoice} onChange={e => pickHdVoice(e.target.value)}
+                  style={{ background: C.panel, color: C.text, border: `1px solid ${C.border}`, borderRadius: 10, padding: '8px 10px', fontSize: 12, fontFamily: 'inherit', outline: 'none' }}>
+                  {HD_VOICES.map(v => <option key={v} value={v}>{v[0].toUpperCase() + v.slice(1)} (HD)</option>)}
+                </select>
+              ) : deviceVoices.length > 1 && (
+                <select value={devVoice} onChange={e => { setDevVoice(e.target.value); setPreferredVoice(e.target.value || null) }}
+                  style={{ background: C.panel, color: C.text, border: `1px solid ${C.border}`, borderRadius: 10, padding: '8px 10px', fontSize: 12, fontFamily: 'inherit', outline: 'none', maxWidth: 230 }}>
+                  <option value="">Best device voice (auto)</option>
+                  {deviceVoices.map(v => <option key={v.name} value={v.name}>{v.name}</option>)}
+                </select>
+              )}
+            </div>
+            {hd && (
+              <div style={{ fontSize: 10.5, color: hdNote ? C.dim : C.faint, marginBottom: 10, lineHeight: 1.5 }}>
+                {hdNote || 'HD uses Kyno\'s AI voice online; if it\'s busy or you\'re offline, the device voice takes over automatically.'}
+              </div>
+            )}
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {items.map(item => {

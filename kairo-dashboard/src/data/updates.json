@@ -135,5 +135,14 @@
       "Every focus session now ends with a receipt of what you ACTUALLY studied in it — questions answered, cards flipped, notes made, topics touched — pulled from your real activity, never self-reported.",
       "Home and Kyno OS show Today's focus: your focused minutes, whether you kept the contract, and what you studied inside the lock."
     ]
+  },
+  {
+    "n": 14,
+    "date": "2026-08-24",
+    "title": "Kyno Update 14",
+    "changes": [
+      "Listen gets an HD voice — a natural AI voice (online) with three voices to pick from. If it's busy or you're offline, your device voice takes over automatically, mid-playlist, no stall.",
+      "New device-voice picker in Listen — your phone or laptop usually has better voices hiding (Edge's Natural ones especially); Kyno now finds the best one by default and lets you choose."
+    ]
   }
 ]
