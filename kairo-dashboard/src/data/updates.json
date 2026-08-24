@@ -144,5 +144,14 @@
       "Listen gets an HD voice — a natural AI voice (online) with three voices to pick from. If it's busy or you're offline, your device voice takes over automatically, mid-playlist, no stall.",
       "New device-voice picker in Listen — your phone or laptop usually has better voices hiding (Edge's Natural ones especially); Kyno now finds the best one by default and lets you choose."
     ]
+  },
+  {
+    "n": 15,
+    "date": "2026-08-24",
+    "title": "Kyno Update 15",
+    "changes": [
+      "Listen gets a Neural voice — a studio-quality AI voice that runs ON YOUR DEVICE. One ~90 MB download, then it works offline forever: no internet, no limits.",
+      "Pick your voice source in Listen: Device (instant), HD (online), or Neural (best) — with four neural voices to choose from. If your pick can't speak a card, the next one takes over automatically."
+    ]
   }
 ]

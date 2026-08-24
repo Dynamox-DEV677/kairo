@@ -11,6 +11,10 @@ import {
 import {
   speakOnline, stopOnline, pauseOnline, resumeOnline, isOnlineActive, HD_VOICES,
 } from '../lib/ttsOnline'
+import {
+  speakNeural, stopNeural, pauseNeural, resumeNeural, isNeuralActive,
+  loadNeural, neuralStatus, NEURAL_VOICES, NEURAL_VOICE_LABELS,
+} from '../lib/ttsNeural'
 
 /**
  * Revise with your ears — the student's own reel cards as a spoken playlist.
@@ -35,21 +39,45 @@ export default function Listen() {
   const rateRef = useRef(rate)
   rateRef.current = rate
 
-  // HD voice (Groq TTS via /api/tts). Device voice stays the offline fallback.
-  const [hd, setHd] = useState(() => { try { return localStorage.getItem('kyno:listen:hd') === '1' } catch { return false } })
+  // Voice source: the device's own voices, Kyno's online HD voice, or the
+  // on-device Neural voice (Kokoro — one ~90MB download, then offline forever).
+  type Source = 'device' | 'hd' | 'neural'
+  const [source, setSource] = useState<Source>(() => {
+    try {
+      const saved = localStorage.getItem('kyno:listen:source') as Source | null
+      if (saved === 'device' || saved === 'hd' || saved === 'neural') return saved
+      return localStorage.getItem('kyno:listen:hd') === '1' ? 'hd' : 'device' // migrate the old toggle
+    } catch { return 'device' }
+  })
+  const sourceRef = useRef(source); sourceRef.current = source
+  function pickSource(s: Source) {
+    setSource(s); setHdNote('')
+    try { localStorage.setItem('kyno:listen:source', s) } catch {}
+    if (s === 'neural') loadNeural().catch(() => {}) // start the one-time download immediately
+  }
+
   const [hdVoice, setHdVoice] = useState(() => { try { return localStorage.getItem('kyno:listen:hdvoice') || HD_VOICES[0] } catch { return HD_VOICES[0] } })
   const [hdNote, setHdNote] = useState('')
-  const hdRef = useRef(hd); hdRef.current = hd
   const hdVoiceRef = useRef(hdVoice); hdVoiceRef.current = hdVoice
-  function toggleHd() {
-    const next = !hd
-    setHd(next); setHdNote('')
-    try { localStorage.setItem('kyno:listen:hd', next ? '1' : '0') } catch {}
-  }
   function pickHdVoice(v: string) {
     setHdVoice(v)
     try { localStorage.setItem('kyno:listen:hdvoice', v) } catch {}
   }
+
+  const [neuralVoice, setNeuralVoice] = useState<string>(() => { try { return localStorage.getItem('kyno:listen:nvoice') || NEURAL_VOICES[0] } catch { return NEURAL_VOICES[0] } })
+  const neuralVoiceRef = useRef(neuralVoice); neuralVoiceRef.current = neuralVoice
+  function pickNeuralVoice(v: string) {
+    setNeuralVoice(v)
+    try { localStorage.setItem('kyno:listen:nvoice', v) } catch {}
+  }
+
+  // Poll the model download so the progress line moves.
+  const [nStat, setNStat] = useState(neuralStatus)
+  useEffect(() => {
+    if (source !== 'neural') return
+    const id = window.setInterval(() => setNStat(neuralStatus()), 500)
+    return () => window.clearInterval(id)
+  }, [source])
 
   // Device voices load async on some browsers — refresh when they arrive.
   const [deviceVoices, setDeviceVoices] = useState(listVoices)
@@ -68,7 +96,7 @@ export default function Listen() {
   }, [tick])
 
   // Leaving the page stops the voice — nothing should keep talking unseen.
-  useEffect(() => () => { stopSpeaking(); stopOnline() }, [])
+  useEffect(() => () => { stopSpeaking(); stopOnline(); stopNeural() }, [])
 
   const supported = ttsAvailable()
 
@@ -79,15 +107,24 @@ export default function Listen() {
     setPaused(false)
     const next = () => playFrom(index + 1, list)
 
-    // HD first when it's on and we're online; ANY failure falls back to the
-    // device voice for this clip — the playlist never stalls on the network.
-    if (hdRef.current && navigator.onLine) {
+    // The chain: chosen source first, then graceful steps down — the playlist
+    // never stalls on a download, the network, or a rate limit.
+    if (sourceRef.current === 'neural') {
       try {
-        await speakOnline(item.script, { voice: hdVoiceRef.current, rate: rateRef.current, onend: next })
+        await speakNeural(item.script, { voice: neuralVoiceRef.current, rate: rateRef.current, onend: next })
         setHdNote('')
         return
       } catch {
-        setHdNote('HD voice unavailable right now — using the device voice.')
+        setHdNote('Neural voice not ready — using a fallback for this card.')
+      }
+    }
+    if ((sourceRef.current === 'hd' || sourceRef.current === 'neural') && navigator.onLine) {
+      try {
+        await speakOnline(item.script, { voice: hdVoiceRef.current, rate: rateRef.current, onend: next })
+        if (sourceRef.current === 'hd') setHdNote('')
+        return
+      } catch {
+        if (sourceRef.current === 'hd') setHdNote('HD voice unavailable right now — using the device voice.')
       }
     }
     speak(item.script, { rate: rateRef.current, onend: next })
@@ -98,16 +135,16 @@ export default function Listen() {
   function skip() {
     const list = queueRef.current
     const i = list.findIndex(x => x.id === playingId)
-    stopSpeaking(); stopOnline()
+    stopSpeaking(); stopOnline(); stopNeural()
     playFrom(i + 1, list)
   }
-  function stopAll() { stopSpeaking(); stopOnline(); setPlayingId(null); setPaused(false) }
+  function stopAll() { stopSpeaking(); stopOnline(); stopNeural(); setPlayingId(null); setPaused(false) }
   function togglePause() {
     if (paused) {
-      if (isOnlineActive()) resumeOnline(); else resumeSpeaking()
+      if (isNeuralActive()) resumeNeural(); else if (isOnlineActive()) resumeOnline(); else resumeSpeaking()
       setPaused(false)
     } else {
-      if (isOnlineActive()) pauseOnline(); else pauseSpeaking()
+      if (isNeuralActive()) pauseNeural(); else if (isOnlineActive()) pauseOnline(); else pauseSpeaking()
       setPaused(true)
     }
   }
@@ -162,17 +199,30 @@ export default function Listen() {
               </button>
             </div>
 
-            {/* voice controls: HD (online, Groq) vs the device's own voices */}
+            {/* voice source: device / HD online / neural on-device */}
             <div style={{ display: 'flex', gap: 8, marginBottom: 6, alignItems: 'center', flexWrap: 'wrap' }}>
-              <button className={`kyno-chip${hd ? ' on' : ''}`} onClick={toggleHd} style={{ padding: '8px 14px', fontSize: 12 }}>
-                ✨ HD voice {hd ? 'on' : 'off'}
+              <button className={`kyno-chip${source === 'device' ? ' on' : ''}`} onClick={() => pickSource('device')} style={{ padding: '8px 13px', fontSize: 12 }}>
+                Device
               </button>
-              {hd ? (
+              <button className={`kyno-chip${source === 'hd' ? ' on' : ''}`} onClick={() => pickSource('hd')} style={{ padding: '8px 13px', fontSize: 12 }}>
+                ✨ HD · online
+              </button>
+              <button className={`kyno-chip${source === 'neural' ? ' on' : ''}`} onClick={() => pickSource('neural')} style={{ padding: '8px 13px', fontSize: 12 }}>
+                🧠 Neural · on-device
+              </button>
+              {source === 'hd' && (
                 <select value={hdVoice} onChange={e => pickHdVoice(e.target.value)}
                   style={{ background: C.panel, color: C.text, border: `1px solid ${C.border}`, borderRadius: 10, padding: '8px 10px', fontSize: 12, fontFamily: 'inherit', outline: 'none' }}>
-                  {HD_VOICES.map(v => <option key={v} value={v}>{v[0].toUpperCase() + v.slice(1)} (HD)</option>)}
+                  {HD_VOICES.map(v => <option key={v} value={v}>{v[0].toUpperCase() + v.slice(1)}</option>)}
                 </select>
-              ) : deviceVoices.length > 1 && (
+              )}
+              {source === 'neural' && (
+                <select value={neuralVoice} onChange={e => pickNeuralVoice(e.target.value)}
+                  style={{ background: C.panel, color: C.text, border: `1px solid ${C.border}`, borderRadius: 10, padding: '8px 10px', fontSize: 12, fontFamily: 'inherit', outline: 'none' }}>
+                  {NEURAL_VOICES.map(v => <option key={v} value={v}>{NEURAL_VOICE_LABELS[v] || v}</option>)}
+                </select>
+              )}
+              {source === 'device' && deviceVoices.length > 1 && (
                 <select value={devVoice} onChange={e => { setDevVoice(e.target.value); setPreferredVoice(e.target.value || null) }}
                   style={{ background: C.panel, color: C.text, border: `1px solid ${C.border}`, borderRadius: 10, padding: '8px 10px', fontSize: 12, fontFamily: 'inherit', outline: 'none', maxWidth: 230 }}>
                   <option value="">Best device voice (auto)</option>
@@ -180,9 +230,17 @@ export default function Listen() {
                 </select>
               )}
             </div>
-            {hd && (
+            {source !== 'device' && (
               <div style={{ fontSize: 10.5, color: hdNote ? C.dim : C.faint, marginBottom: 10, lineHeight: 1.5 }}>
-                {hdNote || 'HD uses Kyno\'s AI voice online; if it\'s busy or you\'re offline, the device voice takes over automatically.'}
+                {hdNote || (source === 'neural'
+                  ? (nStat.status === 'ready'
+                      ? `Neural voice ready — runs on this device (${nStat.device}), works offline.`
+                      : nStat.status === 'downloading'
+                        ? `Downloading the neural voice — one time, ~90 MB… ${nStat.progress > 0 ? nStat.progress + '%' : ''} It'll be cached after this.`
+                        : nStat.status === 'error'
+                          ? 'Neural voice failed to load on this device — cards fall back to HD/device voice.'
+                          : 'Neural: the best quality — a one-time ~90 MB download, then it works offline forever.')
+                  : 'HD uses Kyno\'s AI voice online; if it\'s busy or you\'re offline, the device voice takes over automatically.')}
               </div>
             )}
 
