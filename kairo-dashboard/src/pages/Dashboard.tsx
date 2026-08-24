@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, memo, lazy, Suspense } from 'react'
+import { useState, useEffect, useCallback, useRef, memo, lazy, Suspense } from 'react'
 import Sidebar from '../components/Sidebar'
 import TopBar from '../components/TopBar'
 import MobileShell from '../components/MobileShell'
@@ -60,6 +60,7 @@ import ExplainMistake from './ExplainMistake'
 const KairoLabs = lazy(() => import('./KairoLabs'))
 import KairoOS from './KairoOS'
 import { DEFAULT_MODEL } from '../lib/openrouter'
+import { logScreenView } from '../lib/usage'
 
 import type { AuthProfile } from './Login'
 import { KEYS, getRaw, setRaw } from '../lib/storage'
@@ -132,8 +133,47 @@ interface DashboardProps {
   onLogout?: () => void
 }
 
+/** #/<page-id> ↔ nav state. Only ids the registry knows; junk → null. */
+function pageFromHash(): string | null {
+  const m = window.location.hash.match(/^#\/([a-z0-9-]+)$/i)
+  const id = m?.[1]
+  return id && PAGE_TITLES[id] ? id : null
+}
+
 export default function Dashboard({ profile, onLogout }: DashboardProps) {
-  const [active, setActive]           = useState(profile?.role === 'admin' ? 'school' : 'home')
+  // Audit task 9 — real URLs without a rewrite. The stay-mounted page
+  // architecture is deliberate (remounting wiped Study Room state once), so
+  // the router is a thin hash layer over the existing `active` state:
+  // #/goal deep-links, back/forward work, refresh restores the screen.
+  const [active, setActive] = useState(
+    () => pageFromHash() || (profile?.role === 'admin' ? 'school' : 'home'),
+  )
+  const activeRef = useRef(active)
+  activeRef.current = active
+
+  // state → URL + screen-view log (pushState does not re-fire hashchange,
+  // so there is no loop).
+  useEffect(() => {
+    const want = `#/${active}`
+    if (window.location.hash !== want) {
+      try { window.history.pushState(null, '', want) } catch {}
+    }
+    try { logScreenView(active) } catch {}
+  }, [active])
+
+  // URL → state: browser back/forward and pasted deep links.
+  useEffect(() => {
+    const onHash = () => {
+      const id = pageFromHash()
+      if (id && id !== activeRef.current) setActive(id)
+    }
+    window.addEventListener('hashchange', onHash)
+    window.addEventListener('popstate', onHash)
+    return () => {
+      window.removeEventListener('hashchange', onHash)
+      window.removeEventListener('popstate', onHash)
+    }
+  }, [])
 
   // Home and Kyno OS are deliberately two separate screens.
   //
@@ -142,7 +182,10 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
   // real. That was the actual bug, and it is fixed: both now read the same
   // selectors (selectors.core.js), so they cannot disagree. Two views of one
   // truth is a design choice; two truths was not.
-  const [visited, setVisited] = useState<Set<string>>(() => new Set([profile?.role === 'admin' ? 'school' : 'home']))
+  const [visited, setVisited] = useState<Set<string>>(
+    // seeded from the hash too, so a deep link paints on the FIRST render
+    () => new Set([pageFromHash() || (profile?.role === 'admin' ? 'school' : 'home')]),
+  )
   useEffect(() => {
     setVisited(prev => (prev.has(active) ? prev : new Set(prev).add(active)))
   }, [active])

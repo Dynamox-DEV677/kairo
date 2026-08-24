@@ -6,6 +6,19 @@ import { requireSupabaseAuth, requireRole } from '../middleware/supabaseAuth.js'
 
 const router = Router()
 
+/**
+ * Screen-view beacon (audit tasks 9+11). BEFORE the auth gate on purpose:
+ * navigator.sendBeacon cannot attach Authorization headers. It accepts a
+ * screen id and nothing else, writes nothing, and logs one grep-able line —
+ * aggregate funnel counts come out of production logs with zero DB surface.
+ */
+const KNOWN_SCREEN = /^[a-z0-9-]{1,40}$/
+router.post('/screen', (req, res) => {
+  const screen = String(req.body?.screen || '')
+  if (KNOWN_SCREEN.test(screen)) console.log(`[screen] ${screen}`)
+  res.status(204).end()
+})
+
 // Phase 0: served school data to anyone who guessed an integer school_id.
 // No UI ships for these in v1, so the role check is the only guard.
 router.use(requireSupabaseAuth)
