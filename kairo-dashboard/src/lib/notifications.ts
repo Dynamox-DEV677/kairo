@@ -1,10 +1,11 @@
 import { getRaw, setRaw } from './storage'
+import { storedProfileRaw } from '../lib/storage'
 
 export interface KynoNotification { id: string; text: string; icon: string; ts: number; read: boolean }
 
 function nkey(): string {
   try {
-    const p = JSON.parse(localStorage.getItem('kairo_profile') || '{}')
+    const p = JSON.parse(storedProfileRaw() || '{}')
     return 'kairo:notifs:' + (p.id || p.user_id || '_local')
   } catch { return 'kairo:notifs:_local' }
 }

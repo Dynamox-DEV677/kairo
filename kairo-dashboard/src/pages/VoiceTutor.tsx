@@ -6,6 +6,7 @@ import {
 } from 'lucide-react'
 import { chat } from '../lib/openrouter'
 import { saveToNotebook } from '../lib/notebook'
+import { authToken } from '../lib/storage'
 
 interface Turn {
   role: 'user' | 'assistant'
@@ -168,7 +169,7 @@ export default function VoiceTutor() {
     let memoryContext = ''
     try {
       const r = await fetch('/api/memory/context', {
-        headers: { Authorization: `Bearer ${localStorage.getItem('kairo_token') || ''}` },
+        headers: { Authorization: `Bearer ${authToken() || ''}` },
       })
       if (r.ok) memoryContext = (await r.json()).context || ''
     } catch {  }

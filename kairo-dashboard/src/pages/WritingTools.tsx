@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Edit3, Expand, Star, Shield, ArrowRight, Copy, Check, PencilLine, Sparkles, AlertTriangle, BookOpen, Zap } from 'lucide-react'
 import { post } from '../lib/api'
 import { chat } from '../lib/openrouter'
+import { KEYS, getRaw, setRaw } from '../lib/storage'
 
 const SCHOOL_ID = 'demo_school'
 
@@ -149,11 +150,11 @@ function Editor() {
   const [err, setErr]           = useState('')
 
   useEffect(() => {
-    const saved = localStorage.getItem('kairo:writing:draft')
+    const saved = getRaw(KEYS.writingDraft)
     if (saved) setText(saved)
   }, [])
   useEffect(() => {
-    const t = setTimeout(() => localStorage.setItem('kairo:writing:draft', text), 400)
+    const t = setTimeout(() => setRaw(KEYS.writingDraft, text), 400)
     return () => clearTimeout(t)
   }, [text])
 

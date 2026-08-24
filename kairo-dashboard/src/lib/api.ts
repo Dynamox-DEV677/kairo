@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import { authToken, clearAuthTokens, refreshTokenRaw, setAuthToken, setRefreshToken } from '../lib/storage'
 
 const BASE = '/api'
 
@@ -18,7 +19,7 @@ function isNetworkError(err: any): boolean {
 async function refreshAccessToken(): Promise<RefreshResult> {
   if (refreshPromise) return refreshPromise
   refreshPromise = (async () => {
-    const refresh_token = localStorage.getItem('kairo_refresh')
+    const refresh_token = refreshTokenRaw()
     if (!refresh_token) return { ok: false, reason: 'auth' } as const
 
     let lastErr: any = null
@@ -30,8 +31,8 @@ async function refreshAccessToken(): Promise<RefreshResult> {
           return { ok: false, reason: 'auth' } as const
         }
         if (!data?.session) return { ok: false, reason: 'auth' } as const
-        localStorage.setItem('kairo_token',   data.session.access_token)
-        localStorage.setItem('kairo_refresh', data.session.refresh_token)
+        setAuthToken(   data.session.access_token)
+        setRefreshToken( data.session.refresh_token)
         return { ok: true, token: data.session.access_token } as const
       } catch (e) {
         lastErr = e
@@ -50,8 +51,8 @@ async function refreshAccessToken(): Promise<RefreshResult> {
 function wait(ms: number) { return new Promise(res => setTimeout(res, ms)) }
 
 function clearAuthAndNotify() {
-  localStorage.removeItem('kairo_token')
-  localStorage.removeItem('kairo_refresh')
+  clearAuthTokens()
+  clearAuthTokens()
   window.dispatchEvent(new CustomEvent('kairo:auth-expired'))
 }
 
@@ -59,12 +60,12 @@ async function getAccessToken(): Promise<string | null> {
   try {
     const { data } = await supabase.auth.getSession()
     if (data?.session?.access_token) {
-      localStorage.setItem('kairo_token',   data.session.access_token)
-      localStorage.setItem('kairo_refresh', data.session.refresh_token)
+      setAuthToken(   data.session.access_token)
+      setRefreshToken( data.session.refresh_token)
       return data.session.access_token
     }
   } catch {  }
-  return localStorage.getItem('kairo_token')
+  return authToken()
 }
 
 async function buildHeaders(custom?: HeadersInit): Promise<HeadersInit> {
@@ -80,7 +81,7 @@ export async function api(path: string, options: RequestInit = {}): Promise<any>
     headers: await buildHeaders(options.headers),
   })
 
-  if (res.status === 401 && localStorage.getItem('kairo_refresh')) {
+  if (res.status === 401 && refreshTokenRaw()) {
     const result = await refreshAccessToken()
     if (result.ok) {
       const headers = await buildHeaders(options.headers)
@@ -120,7 +121,7 @@ export const put  = (path: string, body: any) => api(path, { method: 'PUT',  bod
 export const del  = (path: string) => api(path, { method: 'DELETE' })
 
 export async function refreshIfStale(): Promise<void> {
-  const token = localStorage.getItem('kairo_token')
+  const token = authToken()
   if (!token) return
   try {
     const payload = JSON.parse(atob(token.split('.')[1]))

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { authToken } from '../lib/storage'
 
 /**
  * Audit task 6 — answer provenance + the one-tap "this looks wrong".
@@ -32,7 +33,7 @@ async function post(p: ReportPayload): Promise<boolean> {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${localStorage.getItem('kairo_token') || ''}`,
+        Authorization: `Bearer ${authToken() || ''}`,
       },
       body: JSON.stringify(p),
     })

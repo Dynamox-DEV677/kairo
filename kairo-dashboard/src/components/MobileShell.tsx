@@ -11,6 +11,7 @@ import {
 } from 'lucide-react'
 import type { AuthProfile } from '../pages/Login'
 import { DecoratedAvatar } from './AvatarDecor'
+import { authToken, clearAuthTokens, profilePicRaw, removeStoredProfile } from '../lib/storage'
 
 interface NavItem {
   to: string
@@ -225,7 +226,7 @@ function MobileTopBar({
   useEffect(() => {
     if (!isAdmin || !profile?.school_id) return
     fetch(`/api/schools/${profile.school_id}/passcode`, {
-      headers: { Authorization: `Bearer ${localStorage.getItem('kairo_token') || ''}` },
+      headers: { Authorization: `Bearer ${authToken() || ''}` },
     })
       .then(r => r.json())
       .then(d => { if (d?.passcode) setPasscode(d.passcode) })
@@ -419,7 +420,7 @@ function MobileDrawer({
   active, setActive, isDark, toggleTheme, profile, onLogout, onClose,
 }: MobileShellProps & { onClose: () => void }) {
   const groups = getDrawerGroups(profile?.role)
-  const profilePic = profile?.avatar_url || localStorage.getItem('kairo_profile_pic') || null
+  const profilePic = profile?.avatar_url || profilePicRaw() || null
 
   function go(to: string) {
     setActive(to)
@@ -570,9 +571,9 @@ function MobileDrawer({
               }}>{profile?.role || 'student'}{profile?.school_name ? ' · ' + profile.school_name : ''}</div>
             </div>
             <button onClick={() => {
-              localStorage.removeItem('kairo_token')
-              localStorage.removeItem('kairo_refresh')
-              localStorage.removeItem('kairo_profile')
+              clearAuthTokens()
+              clearAuthTokens()
+              removeStoredProfile()
               if (onLogout) onLogout(); else window.location.reload()
             }} aria-label="Log out"
               style={{

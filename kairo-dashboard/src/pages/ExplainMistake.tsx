@@ -11,6 +11,7 @@ import rehypeKatex from 'rehype-katex'
 import { chat } from '../lib/openrouter'
 import { saveToNotebook } from '../lib/notebook'
 import { prepMathMarkdown } from '../lib/math.core'
+import { authToken } from '../lib/storage'
 
 const SUBJECTS = ['Mathematics', 'Physics', 'Chemistry', 'Biology', 'English', 'Hindi', 'History', 'Geography', 'Economics', 'Computer Science', 'General']
 
@@ -71,7 +72,7 @@ export default function ExplainMistake() {
     let memCtx = ''
     try {
       const r = await fetch('/api/memory/context', {
-        headers: { Authorization: `Bearer ${localStorage.getItem('kairo_token') || ''}` },
+        headers: { Authorization: `Bearer ${authToken() || ''}` },
       })
       if (r.ok) memCtx = (await r.json()).context || ''
     } catch {  }
@@ -101,7 +102,7 @@ Now teach me how to never make this mistake again, following your structure exac
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${localStorage.getItem('kairo_token') || ''}`,
+            Authorization: `Bearer ${authToken() || ''}`,
           },
           body: JSON.stringify({
             type:    'weak_topic',

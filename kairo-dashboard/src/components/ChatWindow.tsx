@@ -7,6 +7,7 @@ import MessageBubble from './MessageBubble'
 import { chat, DEFAULT_MODEL } from '../lib/openrouter'
 import { post } from '../lib/api'
 import { saveRecentChat, getRecentChats, makeTitle } from '../lib/recentChats'
+import { authToken } from '../lib/storage'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -123,7 +124,7 @@ export default function ChatWindow({ onNewMessage, onNavigate, model = DEFAULT_M
     let memoryContext = ''
     try {
       const r = await fetch('/api/memory/context', {
-        headers: { Authorization: `Bearer ${localStorage.getItem('kairo_token') || ''}` },
+        headers: { Authorization: `Bearer ${authToken() || ''}` },
       })
       if (r.ok) memoryContext = (await r.json()).context || ''
     } catch {  }

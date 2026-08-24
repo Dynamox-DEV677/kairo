@@ -10,6 +10,7 @@ import {
   getConceptGraph, recordConcept,
   type ConceptNode, type ConceptEdge,
 } from '../lib/twin'
+import { KEYS, getRaw, setRaw } from '../lib/storage'
 
 type ViewMode = 'illustrated' | 'pro'
 
@@ -50,12 +51,12 @@ export default function ConceptMap() {
   const svgRef = useRef<SVGSVGElement>(null)
   const [view, setView] = useState({ k: 1, x: 0, y: 0 })
   const [mode, setMode] = useState<ViewMode>(() => {
-    try { return (localStorage.getItem('kairo:conceptmap:view') as ViewMode) || 'illustrated' }
+    try { return (getRaw(KEYS.conceptmapView) as ViewMode) || 'illustrated' }
     catch { return 'illustrated' }
   })
   const [centerId, setCenterId] = useState<string | null>(null)
   useEffect(() => {
-    try { localStorage.setItem('kairo:conceptmap:view', mode) } catch {  }
+    try { setRaw(KEYS.conceptmapView, mode) } catch {  }
   }, [mode])
 
   function reload() {

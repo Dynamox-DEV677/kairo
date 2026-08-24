@@ -19,6 +19,7 @@ import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
 import { prepMathMarkdown } from '../lib/math.core'
 import ReportQuestion from '../components/ReportQuestion'
+import { authToken } from '../lib/storage'
 
 // Render short question / option strings with inline math ($...$), no block margins.
 const MD_INLINE = { p: ({ children }: any) => <span>{children}</span> }
@@ -88,7 +89,7 @@ export default function RevisionSimulator() {
         return
       }
       const r = await fetch('/api/memory', {
-        headers: { Authorization: `Bearer ${localStorage.getItem('kairo_token') || ''}` },
+        headers: { Authorization: `Bearer ${authToken() || ''}` },
       })
       if (r.ok) {
         const d = await r.json()
@@ -159,7 +160,7 @@ export default function RevisionSimulator() {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${localStorage.getItem('kairo_token') || ''}`,
+            Authorization: `Bearer ${authToken() || ''}`,
           },
           body: JSON.stringify({
             type:    correct ? 'strong_topic' : 'mistake',

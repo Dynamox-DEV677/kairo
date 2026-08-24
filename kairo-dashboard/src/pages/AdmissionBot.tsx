@@ -6,6 +6,7 @@ import {
 } from 'lucide-react'
 
 import { api, friendlyError } from '../lib/api'
+import { storedProfileRaw } from '../lib/storage'
 
 async function publicApi(path: string, opts: RequestInit = {}): Promise<any> {
   const res = await fetch(`/api${path}`, {
@@ -74,7 +75,7 @@ export default function AdmissionBot() {
   const [err, setErr] = useState('')
 
   const profile = (() => {
-    try { return JSON.parse(localStorage.getItem('kairo_profile') || 'null') } catch { return null }
+    try { return JSON.parse(storedProfileRaw() || 'null') } catch { return null }
   })()
   const schoolId = profile?.school_id || ''
   const isAdmin  = profile?.role === 'admin'

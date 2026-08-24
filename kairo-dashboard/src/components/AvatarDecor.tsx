@@ -13,10 +13,10 @@ export const DECORATIONS: DecorDef[] = [
 ]
 
 export function getDecor(): string {
-  try { return getRaw('kairo:decor') || 'none' } catch { return 'none' }
+  try { return getRaw('kyno:decor') || 'none' } catch { return 'none' }
 }
 export function setDecor(id: string) {
-  try { setRaw('kairo:decor', id) } catch {  }
+  try { setRaw('kyno:decor', id) } catch {  }
   try { window.dispatchEvent(new CustomEvent('kairo:decor', { detail: id })) } catch {  }
 }
 

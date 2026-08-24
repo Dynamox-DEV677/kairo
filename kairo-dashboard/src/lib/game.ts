@@ -3,6 +3,7 @@ import { addNotification } from './notifications'
 import { post } from './api'
 
 import { FLAGS, type FlagName } from '../config/flags'
+import { storedProfileRaw } from '../lib/storage'
 
 const KEY = 'kairo:game:v1'
 const STREAK_MILESTONES = [3, 7, 14, 30, 50, 100, 200, 365]
@@ -277,15 +278,15 @@ export function awardXPAmount(amount: number, label: string) {
 function userIdentity(): { id: string; name: string } {
   let id = '', name = 'Student'
   try {
-    const p = JSON.parse(localStorage.getItem('kairo_profile') || '{}')
+    const p = JSON.parse(storedProfileRaw() || '{}')
     id = p.id || p.user_id || ''
     name = p.name || p.full_name || 'Student'
   } catch {  }
   if (!id) {
-    id = getRaw('kairo:device-id') || ''
+    id = getRaw('kyno:device-id') || ''
     if (!id) {
       id = 'dev-' + Math.random().toString(36).slice(2, 10)
-      try { setRaw('kairo:device-id', id) } catch {  }
+      try { setRaw('kyno:device-id', id) } catch {  }
     }
   }
   return { id, name }

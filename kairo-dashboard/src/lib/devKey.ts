@@ -1,4 +1,5 @@
 // Developer Mode — "bring your own Groq key" (BYOK).
+import { authToken } from '../lib/storage'
 //
 // When a student turns Developer Mode on and pastes their own Groq API key,
 // EVERY AI request from this device carries that key in the `x-groq-key`
@@ -79,7 +80,7 @@ export function aiHeaders(): Record<string, string> {
  */
 export function sessionToken(): string | null {
   try {
-    const direct = localStorage.getItem('kairo_token')
+    const direct = authToken()
     if (direct) return direct
   } catch { /* storage blocked; try the SDK key below */ }
 

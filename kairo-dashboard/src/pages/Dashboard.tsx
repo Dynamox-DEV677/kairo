@@ -62,6 +62,7 @@ import KairoOS from './KairoOS'
 import { DEFAULT_MODEL } from '../lib/openrouter'
 
 import type { AuthProfile } from './Login'
+import { KEYS, getRaw, setRaw } from '../lib/storage'
 type Profile = AuthProfile
 
 // Perf: memoize the page components. Every tab switch re-renders Dashboard; without
@@ -147,7 +148,7 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
   }, [active])
   const mounted = (id: string) => visited.has(id)
   const [solverUi, setSolverUi] = useState<'chat' | 'classic'>(() => {
-    try { return (localStorage.getItem('kairo:solver-ui') as 'chat' | 'classic') || 'chat' } catch { return 'chat' }
+    try { return (getRaw(KEYS.solverUi) as 'chat' | 'classic') || 'chat' } catch { return 'chat' }
   })
   const [isDark]                       = useState(true)
   const setIsDark = (_: boolean | ((d: boolean) => boolean)) => {  }
@@ -167,7 +168,7 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
     document.body.style.background = '#0A0D16'
     document.body.style.color      = '#fafafa'
     try {
-      localStorage.setItem('kairo_theme', 'dark')
+      setRaw(KEYS.theme, 'dark')
       restoreDarkTheme()
     } catch {  }
     return () => {
@@ -287,7 +288,7 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
                   onClick={() => {
                     const next = solverUi === 'chat' ? 'classic' : 'chat'
                     setSolverUi(next)
-                    try { localStorage.setItem('kairo:solver-ui', next) } catch {}
+                    try { setRaw(KEYS.solverUi, next) } catch {}
                   }}
                   style={{
                     position: 'absolute', top: isMobile ? 8 : 10, zIndex: 20,

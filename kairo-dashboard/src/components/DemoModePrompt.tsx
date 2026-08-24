@@ -2,22 +2,23 @@ import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Sparkles, X } from 'lucide-react'
 import { seedDemo, loadState } from '../lib/twin'
+import { authToken } from '../lib/storage'
 
 function promptStorageKey(): string {
-  if (typeof window === 'undefined') return 'kairo:demo-prompt-shown:_local'
+  if (typeof window === 'undefined') return 'kyno:demo-prompt-shown:_local'
   try {
-    const tok = localStorage.getItem('kairo_token')
+    const tok = authToken()
     if (tok) {
       const payload = JSON.parse(atob(tok.split('.')[1]))
       if (payload?.sub) {
         let h = 0x811c9dc5
         const s = String(payload.sub)
         for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 0x01000193)
-        return 'kairo:demo-prompt-shown:' + ((h >>> 0).toString(36)).padStart(7, '0')
+        return 'kyno:demo-prompt-shown:' + ((h >>> 0).toString(36)).padStart(7, '0')
       }
     }
   } catch {  }
-  return 'kairo:demo-prompt-shown:_local'
+  return 'kyno:demo-prompt-shown:_local'
 }
 
 interface Props {

@@ -1,4 +1,5 @@
 
+import { authToken } from '../lib/storage'
 export type NoteKind = 'flashcards' | 'summary' | 'doubt' | 'concept_map' | 'note' | 'plan' | 'grade'
 
 export interface NoteEntry {
@@ -109,13 +110,13 @@ export async function saveToNotebook(payload: {
   arr.unshift(entry)
   writeAll(arr)
 
-  if (typeof window !== 'undefined' && localStorage.getItem('kairo_token')) {
+  if (typeof window !== 'undefined' && authToken()) {
     try {
       void fetch('/api/notebook', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('kairo_token') || ''}`,
+          Authorization: `Bearer ${authToken() || ''}`,
         },
         body: JSON.stringify(payload),
       }).catch(() => {})

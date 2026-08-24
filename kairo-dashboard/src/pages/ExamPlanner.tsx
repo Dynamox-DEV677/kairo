@@ -8,6 +8,7 @@ import {
 } from 'lucide-react'
 import KairoGyro from '../components/KairoGyro'
 import { awardXP } from '../lib/game'
+import { authToken, storedProfileRaw } from '../lib/storage'
 
 // Plans are now scoped to the signed-in user server-side, so every call to a
 // plan route has to carry the token or it will (correctly) 401.
@@ -15,7 +16,7 @@ const authFetch = (url: string, init: RequestInit = {}) => fetch(url, {
   ...init,
   headers: {
     ...(init.headers as Record<string, string> | undefined),
-    Authorization: `Bearer ${localStorage.getItem('kairo_token') || ''}`,
+    Authorization: `Bearer ${authToken() || ''}`,
   },
 })
 
@@ -39,7 +40,7 @@ interface SavedPlanRow {
 
 function getUserId(): string | null {
   try {
-    const raw = localStorage.getItem('kairo_profile')
+    const raw = storedProfileRaw()
     if (raw) {
       const p = JSON.parse(raw)
       return p?.id || p?.user_id || null
@@ -139,7 +140,7 @@ export default function ExamPlanner() {
       .then(setExams)
       .catch(() => {})
 
-    const token = localStorage.getItem('kairo_token')
+    const token = authToken()
     if (token) {
       fetch('/api/memory/weak-topics', {
         headers: { Authorization: `Bearer ${token}` },

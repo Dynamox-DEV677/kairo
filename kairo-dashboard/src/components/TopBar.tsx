@@ -7,6 +7,7 @@ import {
 } from 'lucide-react'
 import { loadGame } from '../lib/game'
 import { listNotifications, markAllRead, timeAgo, type KynoNotification } from '../lib/notifications'
+import { authToken } from '../lib/storage'
 
 const MODELS = [
   { id: 'openai/gpt-oss-20b:free',                            name: 'GPT OSS 20B',          provider: 'OpenAI', users: 3241, color: '#34d399', badge: 'Default' },
@@ -68,7 +69,7 @@ export default function TopBar({ title, onModelChange, profile, modelLocked, mod
   useEffect(() => {
     if (!isAdmin || !profile?.school_id) return
     fetch(`/api/schools/${profile.school_id}/passcode`, {
-      headers: { Authorization: `Bearer ${localStorage.getItem('kairo_token') || ''}` },
+      headers: { Authorization: `Bearer ${authToken() || ''}` },
     })
       .then(r => r.json())
       .then(d => { if (d?.passcode) setPasscode(d.passcode) })
@@ -91,7 +92,7 @@ export default function TopBar({ title, onModelChange, profile, modelLocked, mod
     try {
       const res = await fetch(`/api/schools/${profile.school_id}/regenerate-passcode`, {
         method: 'POST',
-        headers: { Authorization: `Bearer ${localStorage.getItem('kairo_token') || ''}` },
+        headers: { Authorization: `Bearer ${authToken() || ''}` },
       })
       const d = await res.json()
       if (d?.passcode) setPasscode(d.passcode)

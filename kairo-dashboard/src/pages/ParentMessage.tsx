@@ -2,8 +2,9 @@ import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Sparkles, Copy, Check, Mail, ChevronDown, Search, User, X, Edit3 } from 'lucide-react'
 import { chat } from '../lib/openrouter'
+import { authToken, storedProfileRaw } from '../lib/storage'
 
-function token() { return localStorage.getItem('kairo_token') || '' }
+function token() { return authToken() || '' }
 async function apiFetch(path: string) {
   const res = await fetch(`/api${path}`, {
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token()}` },
@@ -166,7 +167,7 @@ export default function ParentMessage() {
   const [students, setStudents]       = useState<Student[]>([])
 
   useEffect(() => {
-    const raw = localStorage.getItem('kairo_profile')
+    const raw = storedProfileRaw()
     if (!raw) return
     try {
       const profile = JSON.parse(raw)

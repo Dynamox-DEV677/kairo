@@ -15,6 +15,7 @@ import { getRecentChats, deleteRecentChat, timeAgo } from '../lib/recentChats'
 import type { RecentChat } from '../lib/recentChats'
 import { selectXP } from '../lib/selectors'
 import { DecoratedAvatar } from './AvatarDecor'
+import { KEYS, clearAuthTokens, getRaw, profilePicRaw, removeStoredProfile, setProfilePicRaw, setRaw } from '../lib/storage'
 
 interface NavItem {
   label: string
@@ -159,7 +160,7 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
       })
     : recents
   const [profilePic, setProfilePic] = useState<string | null>(() =>
-    profile?.avatar_url || profile?.pic || localStorage.getItem('kairo_profile_pic')
+    profile?.avatar_url || profile?.pic || profilePicRaw()
   )
   const [decorTick, setDecorTick] = useState(0)
   useEffect(() => {
@@ -169,11 +170,11 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
   }, [])
 
   const [expanded, setExpanded] = useState<boolean>(() => {
-    try { return localStorage.getItem('kairo:sidebar:expanded') !== '0' }
+    try { return getRaw(KEYS.sidebarExpanded) !== '0' }
     catch { return true }
   })
   useEffect(() => {
-    try { localStorage.setItem('kairo:sidebar:expanded', expanded ? '1' : '0') }
+    try { setRaw(KEYS.sidebarExpanded, expanded ? '1' : '0') }
     catch {  }
   }, [expanded])
 
@@ -186,11 +187,11 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
   }, [])
 
   const [showAll, setShowAll] = useState<boolean>(() => {
-    try { return localStorage.getItem('kairo:sidebar:showAll') === '1' }
+    try { return getRaw(KEYS.sidebarShowAll) === '1' }
     catch { return false }
   })
   useEffect(() => {
-    try { localStorage.setItem('kairo:sidebar:showAll', showAll ? '1' : '0') }
+    try { setRaw(KEYS.sidebarShowAll, showAll ? '1' : '0') }
     catch {  }
   }, [showAll])
 
@@ -242,7 +243,7 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
     reader.onload = ev => {
       const url = ev.target?.result as string
       setProfilePic(url)
-      localStorage.setItem('kairo_profile_pic', url)
+      setProfilePicRaw( url)
     }
     reader.readAsDataURL(file)
   }
@@ -681,9 +682,9 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
               <button className="kyno-danger"
                 title="Log out"
                 onClick={() => {
-                  localStorage.removeItem('kairo_token')
-                  localStorage.removeItem('kairo_refresh')
-                  localStorage.removeItem('kairo_profile')
+                  clearAuthTokens()
+                  clearAuthTokens()
+                  removeStoredProfile()
                   if (onLogout) onLogout()
                   else window.location.reload()
                 }}

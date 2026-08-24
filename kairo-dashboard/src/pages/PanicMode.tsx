@@ -11,6 +11,7 @@ import rehypeKatex from 'rehype-katex'
 import { chat } from '../lib/openrouter'
 import { saveToNotebook } from '../lib/notebook'
 import { prepMathMarkdown } from '../lib/math.core'
+import { authToken } from '../lib/storage'
 
 const SUBJECTS = ['Mathematics', 'Physics', 'Chemistry', 'Biology', 'English', 'Hindi', 'History', 'Geography', 'Economics', 'Computer Science']
 
@@ -47,7 +48,7 @@ export default function PanicMode() {
   const loadWeak = useCallback(async () => {
     try {
       const r = await fetch('/api/memory', {
-        headers: { Authorization: `Bearer ${localStorage.getItem('kairo_token') || ''}` },
+        headers: { Authorization: `Bearer ${authToken() || ''}` },
       })
       if (r.ok) {
         const d = await r.json()

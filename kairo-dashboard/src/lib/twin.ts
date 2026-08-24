@@ -179,8 +179,11 @@ import { DEMO_QUIZ_EVENTS, DEMO_ACTIVITY_EVENTS } from './demoData.core.js'
 import { canonicalTopic, classifyChatTurn, isSameFormula, findRecentDuplicate } from './knowledgeHygiene.js'
 import { revisionQueue } from './srs.js'
 import { cleanupLocalData, summarise } from './cleanupLocalData.js'
+import { authToken, storedProfileRaw } from '../lib/storage'
 
-const STORAGE_PREFIX = 'kairo:twin:'
+// kyno: since migration v2 (audit task 7) — v2 re-copies kairo:twin:<uid>
+// newest-wins before anything reads this prefix, so no history is lost.
+const STORAGE_PREFIX = 'kyno:twin:'
 const MAX_EVENTS     = 800
 const EVENT_TTL_MS   = 90 * 86_400_000
 const ALPHA          = 0.28
@@ -200,7 +203,7 @@ const MODALITY_BY_DEFAULT: Partial<Record<EventType, Modality>> = {
 
 function getUserKey(): string {
   try {
-    const tok = localStorage.getItem('kairo_token')
+    const tok = authToken()
     if (tok) {
       const payload = JSON.parse(atob(tok.split('.')[1]))
       if (payload?.sub) return shortHash(String(payload.sub))
@@ -304,7 +307,7 @@ export function getStudentMemory(): Record<string, unknown> {
   let name: string | undefined = p.nickname || p.name
   if (!name && typeof localStorage !== 'undefined') {
     try {
-      const kp = JSON.parse(localStorage.getItem('kairo_profile') || '{}')
+      const kp = JSON.parse(storedProfileRaw() || '{}')
       name = kp.nickname || kp.name || kp.full_name
     } catch {  }
   }
@@ -351,12 +354,15 @@ export function resetAllData() {
     'kairo_token',
     'kairo:terms-accepted',
     'kairo:onboarded',
+    'kyno:token',
+    'kyno:refresh',
+    'kyno:schema',
   ])
   const toRemove: string[] = []
   for (const k of storage.listKeys()) {
     if (!k) continue
     if (
-      (k.startsWith('kairo:') || k.startsWith('kairo_')) &&
+      (k.startsWith('kairo:') || k.startsWith('kairo_') || k.startsWith('kyno:')) &&
       !PRESERVE.has(k)
     ) toRemove.push(k)
   }
@@ -503,13 +509,13 @@ function emitSync(kind: 'pulling' | 'pulled' | 'pushed' | 'idle' | 'error', deta
 
 export function setSyncEnabled(on: boolean) {
   syncEnabled = on
-  try { storage.setRaw('kairo:sync:enabled', on ? '1' : '0') } catch {  }
+  try { storage.setRaw('kyno:sync:enabled', on ? '1' : '0') } catch {  }
   if (on) scheduleSyncToCloud()
 }
 export function getSyncEnabled(): boolean {
   if (typeof window === 'undefined') return false
   try {
-    const raw = storage.getRaw('kairo:sync:enabled')
+    const raw = storage.getRaw('kyno:sync:enabled')
     if (raw === null) return true
     return raw === '1'
   } catch { return false }
@@ -553,7 +559,7 @@ export function scheduleSyncToCloud() {
 
 export async function syncToCloudNow(): Promise<{ ok: boolean; reason?: string }> {
   if (typeof window === 'undefined') return { ok: false, reason: 'no-window' }
-  const token = localStorage.getItem('kairo_token')
+  const token = authToken()
   if (!token) return { ok: false, reason: 'not-signed-in' }
   try {
     const { post } = await import('./api')
@@ -575,7 +581,7 @@ export async function syncToCloudNow(): Promise<{ ok: boolean; reason?: string }
 
 export async function deleteCloudSnapshot(): Promise<{ ok: boolean; reason?: string }> {
   if (typeof window === 'undefined') return { ok: false, reason: 'no-window' }
-  const token = localStorage.getItem('kairo_token')
+  const token = authToken()
   if (!token) return { ok: false, reason: 'not-signed-in' }
   try {
     const { del } = await import('./api')
@@ -594,7 +600,7 @@ export async function pullFromCloud(opts: { force?: boolean } = {}): Promise<{
   stats?:    { events: number; doubts: number; concepts: number; formulas: number; flashcards: number; mastery: number }
 }> {
   if (typeof window === 'undefined') return { ok: false, restored: false, reason: 'no-window' }
-  const token = localStorage.getItem('kairo_token')
+  const token = authToken()
   if (!token) return { ok: false, restored: false, reason: 'not-signed-in' }
 
   if (!opts.force) {
@@ -655,7 +661,7 @@ export async function pullFromCloud(opts: { force?: boolean } = {}): Promise<{
 // The other devices do NOT need to be online — this reads the persisted cloud copy.
 export async function reconcileWithCloud(): Promise<{ ok: boolean; restored: boolean; reason?: string }> {
   if (typeof window === 'undefined') return { ok: false, restored: false, reason: 'no-window' }
-  const token = localStorage.getItem('kairo_token')
+  const token = authToken()
   if (!token) return { ok: false, restored: false, reason: 'not-signed-in' }
 
   emitSync('pulling')
@@ -724,7 +730,7 @@ export interface CloudPeek {
 // summary and let them approve the restore first (confirm-on-this-device).
 export async function peekCloudSnapshot(): Promise<CloudPeek> {
   if (typeof window === 'undefined') return { ok: false, found: false, reason: 'no-window' }
-  const token = localStorage.getItem('kairo_token')
+  const token = authToken()
   if (!token) return { ok: false, found: false, reason: 'not-signed-in' }
   try {
     const { get } = await import('./api')

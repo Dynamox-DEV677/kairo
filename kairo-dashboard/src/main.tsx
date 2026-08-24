@@ -6,7 +6,7 @@ import './index.css'
 import 'katex/dist/katex.min.css'
 import App from './App.tsx'
 import { initPwa } from './lib/pwa'
-import { migrateStorage, removeRaw } from './lib/storage'
+import { migrateStorage } from './lib/storage'
 import { runKnowledgeCleanup } from './lib/twin'
 
 /* Runs before anything reads storage. Renames the legacy kairo:* / kairo_*
@@ -14,9 +14,7 @@ import { runKnowledgeCleanup } from './lib/twin'
    kept inside the profile blob, drops the dead second Supabase project's key,
    and frees the two oversized chat caches. Idempotent — real work happens
    once per device. */
-migrateStorage()
-
-removeRaw('kairo:font')
+migrateStorage()   // v2 also clears every remaining kairo:* key, kairo:font included
 
 // Phase 2.4: repairs knowledge-graph data already on this device — the "Ai"
 // node, the "General" tags, split topic rows, duplicate formulas, and chat

@@ -6,8 +6,9 @@ import {
   ChevronUp, ChevronDown, Star, Target,
 } from 'lucide-react'
 import type { AuthProfile } from './Login'
+import { authToken, clearAuthTokens, removeStoredProfile } from '../lib/storage'
 
-function token() { return localStorage.getItem('kairo_token') || '' }
+function token() { return authToken() || '' }
 async function api(path: string): Promise<any> {
   const res = await fetch(`/api${path}`, {
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token()}` },
@@ -174,9 +175,9 @@ export default function ParentDashboard({ profile, onLogout }: ParentDashboardPr
           </div>
           <button className="kyno-ghost"
             onClick={() => {
-              localStorage.removeItem('kairo_token')
-              localStorage.removeItem('kairo_refresh')
-              localStorage.removeItem('kairo_profile')
+              clearAuthTokens()
+              clearAuthTokens()
+              removeStoredProfile()
               if (onLogout) onLogout(); else window.location.reload()
             }}
             style={{ background: 'none', border: '1px solid #1f2532', borderRadius: 6, padding: '5px 10px',

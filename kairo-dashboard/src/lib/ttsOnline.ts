@@ -3,6 +3,7 @@
  * must keep the device voice as fallback, because offline is a first-class
  * Kyno state. Clips are cached in memory so replaying a card costs nothing.
  */
+import { authToken } from './storage'
 
 const CACHE = new Map<string, string>() // text|voice -> object URL
 const CACHE_CAP = 30
@@ -21,7 +22,7 @@ async function fetchClip(text: string, voice: string): Promise<string> {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${localStorage.getItem('kairo_token') || ''}`,
+      Authorization: `Bearer ${authToken() || ''}`,
     },
     body: JSON.stringify({ text, voice }),
   })

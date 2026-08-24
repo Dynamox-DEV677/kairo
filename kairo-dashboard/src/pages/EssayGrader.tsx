@@ -7,6 +7,7 @@ import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
 import { chat } from '../lib/openrouter'
 import { prepMathMarkdown } from '../lib/math.core'
+import { authToken } from '../lib/storage'
 
 const SYSTEM = `You are Kyno, an expert AI teaching assistant for Indian school students (CBSE/ICSE/state boards).
 
@@ -53,7 +54,7 @@ export default function EssayGrader() {
     let memoryContext = ''
     try {
       const r = await fetch('/api/memory/context', {
-        headers: { Authorization: `Bearer ${localStorage.getItem('kairo_token') || ''}` },
+        headers: { Authorization: `Bearer ${authToken() || ''}` },
       })
       if (r.ok) memoryContext = (await r.json()).context || ''
     } catch {  }
@@ -79,7 +80,7 @@ export default function EssayGrader() {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
-                Authorization: `Bearer ${localStorage.getItem('kairo_token') || ''}`,
+                Authorization: `Bearer ${authToken() || ''}`,
               },
               body: JSON.stringify({
                 type:    pct < 0.5 ? 'weak_topic' : pct > 0.85 ? 'strong_topic' : 'note',

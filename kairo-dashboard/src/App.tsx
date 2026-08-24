@@ -19,6 +19,7 @@ import DemoModePrompt from './components/DemoModePrompt'
 import ResetPasswordPage from './pages/ResetPasswordPage'
 import StatusPage from './pages/StatusPage'
 import AboutPage from './pages/AboutPage'
+import { KEYS, authToken, clearAuthTokens, getRaw, removeStoredProfile, setRaw, setStoredProfileRaw, storedProfileRaw, userKey } from './lib/storage'
 
 export default function App() {
   const [profile, setProfile] = useState<AuthProfile | null>(null)
@@ -127,8 +128,8 @@ export default function App() {
 
   useEffect(() => {
     async function restoreSession() {
-      const token   = localStorage.getItem('kairo_token')
-      const cached  = localStorage.getItem('kairo_profile')
+      const token   = authToken()
+      const cached  = storedProfileRaw()
 
       if (!token && cached) {
         try {
@@ -195,7 +196,7 @@ export default function App() {
             refresh_token:   session.refresh_token,
           }
           scopeLocalToUser(freshProfile.id)
-          localStorage.setItem('kairo_profile', JSON.stringify(freshProfile))
+          setStoredProfileRaw( JSON.stringify(freshProfile))
           setProfile(freshProfile)
         } else if (cached) {
           try { setProfile(JSON.parse(cached)) } catch { clearSession() }
@@ -220,9 +221,9 @@ export default function App() {
     if (checking || sprintingIn || onboard !== 'checking') return
     try {
       const id = profile.id || ''
-      if (localStorage.getItem('kairo:onboarded:' + id) === '1' || isOnboarded()) { setOnboard('done'); return }
-      if (localStorage.getItem('kairo:onboard:hide:' + id) === '1') { setOnboard('done'); return }
-      if (localStorage.getItem('kairo:onboard:skip:' + id) === '1') { setOnboard('skipped'); return }
+      if (getRaw(userKey.onboarded(id)) === '1' || isOnboarded()) { setOnboard('done'); return }
+      if (getRaw(userKey.onboardHide(id)) === '1') { setOnboard('done'); return }
+      if (getRaw(userKey.onboardSkip(id)) === '1') { setOnboard('skipped'); return }
     } catch {  }
     setOnboard('open')
   }, [profile, checking, sprintingIn, onboard])
@@ -335,8 +336,8 @@ export default function App() {
       {onboard === 'open' && (
         <Onboarding
           profile={profile}
-          onDone={() => { try { localStorage.setItem('kairo:onboarded:' + (profile.id || ''), '1'); window.dispatchEvent(new Event('kairo:profile')) } catch {  }; setOnboard('done') }}
-          onSkip={() => { try { localStorage.setItem('kairo:onboard:skip:' + (profile.id || ''), '1') } catch {  }; setOnboard('skipped') }}
+          onDone={() => { try { setRaw(userKey.onboarded(profile.id || ''), '1'); window.dispatchEvent(new Event('kairo:profile')) } catch {  }; setOnboard('done') }}
+          onSkip={() => { try { setRaw(userKey.onboardSkip(profile.id || ''), '1') } catch {  }; setOnboard('skipped') }}
         />
       )}
       {onboard === 'skipped' && (
@@ -360,7 +361,7 @@ export default function App() {
             ✨ Finish setting up Kyno →
           </button>
           <button className="kyno-ghost"
-            onClick={() => { try { localStorage.setItem('kairo:onboard:hide:' + (profile.id || ''), '1') } catch {  }; setOnboard('done') }}
+            onClick={() => { try { setRaw(userKey.onboardHide(profile.id || ''), '1') } catch {  }; setOnboard('done') }}
             title="Don't remind me again" aria-label="Dismiss"
             style={{
               padding: '0 14px', cursor: 'pointer', color: '#9CA3AF',
@@ -397,22 +398,33 @@ export default function App() {
 }
 
 function clearSession() {
-  localStorage.removeItem('kairo_token')
-  localStorage.removeItem('kairo_refresh')
-  localStorage.removeItem('kairo_profile')
+  clearAuthTokens()
+  removeStoredProfile()
 }
 
+/**
+ * A different student signed in on this device: wipe the previous student's
+ * local data. Covers BOTH namespaces now — after the kyno: migration
+ * (audit task 7), wiping only kairo:* would have leaked the previous
+ * student's goal, focus history and museum to the next login.
+ */
 function scopeLocalToUser(uid?: string | null) {
   if (!uid || typeof window === 'undefined') return
   try {
-    const last = localStorage.getItem('kairo:last_uid')
+    const last = getRaw(KEYS.lastUid)
     if (last !== uid) {
-      const keep = new Set(['kairo_token', 'kairo_profile', 'kairo_refresh'])
+      const keep = new Set([
+        'kairo_token', 'kairo_profile', 'kairo_refresh',
+        'kyno:token', 'kyno:refresh', 'kyno:profile',
+        'kyno:schema',                        // migration marker, device-scoped
+      ])
       Object.keys(localStorage).forEach(k => {
-        if (/^kairo[:_]/.test(k) && !keep.has(k)) localStorage.removeItem(k)
+        if ((/^kairo[:_]/.test(k) || k.startsWith('kyno:')) && !keep.has(k)) {
+          localStorage.removeItem(k)
+        }
       })
     }
-    localStorage.setItem('kairo:last_uid', uid)
+    setRaw(KEYS.lastUid, uid)
   } catch {  }
 }
 

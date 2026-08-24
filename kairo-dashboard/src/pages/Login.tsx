@@ -384,9 +384,9 @@ function SignIn({ onLogin, onBack }: any) {
         access_token:    data.session.access_token,
         refresh_token:   data.session.refresh_token,
       }
-      localStorage.setItem('kairo_token',   data.session.access_token)
-      localStorage.setItem('kairo_refresh', data.session.refresh_token)
-      localStorage.setItem('kairo_profile', JSON.stringify(profile))
+      setAuthToken(   data.session.access_token)
+      setRefreshToken( data.session.refresh_token)
+      setStoredProfileRaw( JSON.stringify(profile))
       onLogin(profile)
     } catch (e: any) { setErr(e.message); setBusy(false) }
   }
@@ -445,6 +445,7 @@ function SignIn({ onLogin, onBack }: any) {
 }
 
 import { BOARD_OPTIONS } from '../lib/curriculum.core'
+import { setAuthToken, setRefreshToken, setStoredProfileRaw } from '../lib/storage'
 
 function PersonalSignup({ onLogin, onBack }: any) {
   const [name, setName]         = useState('')
@@ -513,9 +514,9 @@ function PersonalSignup({ onLogin, onBack }: any) {
         access_token:  data.access_token,
         refresh_token: data.refresh_token,
       }
-      localStorage.setItem('kairo_token',   data.access_token)
-      localStorage.setItem('kairo_refresh', data.refresh_token)
-      localStorage.setItem('kairo_profile', JSON.stringify(profile))
+      setAuthToken(   data.access_token)
+      setRefreshToken( data.refresh_token)
+      setStoredProfileRaw( JSON.stringify(profile))
       onLogin(profile)
     } catch (e: any) {
       const msg = (e.message || 'Something went wrong.').toLowerCase()
@@ -541,9 +542,9 @@ function PersonalSignup({ onLogin, onBack }: any) {
             access_token:  signed.session.access_token,
             refresh_token: signed.session.refresh_token,
           }
-          localStorage.setItem('kairo_token',   signed.session.access_token)
-          localStorage.setItem('kairo_refresh', signed.session.refresh_token)
-          localStorage.setItem('kairo_profile', JSON.stringify(profile))
+          setAuthToken(   signed.session.access_token)
+          setRefreshToken( signed.session.refresh_token)
+          setStoredProfileRaw( JSON.stringify(profile))
           onLogin(profile)
           return
         } catch {
@@ -703,9 +704,9 @@ function JoinSchool({ onLogin, onBack }: any) {
           linked_student_name: data.linked_student?.name,
           access_token: data.access_token, refresh_token: data.refresh_token,
         }
-        localStorage.setItem('kairo_token',   data.access_token)
-        localStorage.setItem('kairo_refresh', data.refresh_token)
-        localStorage.setItem('kairo_profile', JSON.stringify(profile))
+        setAuthToken(   data.access_token)
+        setRefreshToken( data.refresh_token)
+        setStoredProfileRaw( JSON.stringify(profile))
         onLogin(profile)
       } else {
         const data = await post('/users/register', {
@@ -719,9 +720,9 @@ function JoinSchool({ onLogin, onBack }: any) {
           school_logo_url: data.school?.school_logo_url,
           access_token: data.access_token, refresh_token: data.refresh_token,
         }
-        localStorage.setItem('kairo_token',   data.access_token)
-        localStorage.setItem('kairo_refresh', data.refresh_token)
-        localStorage.setItem('kairo_profile', JSON.stringify(profile))
+        setAuthToken(   data.access_token)
+        setRefreshToken( data.refresh_token)
+        setStoredProfileRaw( JSON.stringify(profile))
         onLogin(profile)
       }
     } catch (e: any) { setErr(e.message); setBusy(false) }
@@ -926,9 +927,9 @@ function CreateSchool({ onLogin, onBack }: any) {
       school_id: result.school_id, school_name: result.school_name,
       access_token: result.access_token, refresh_token: result.refresh_token,
     }
-    localStorage.setItem('kairo_token',   result.access_token)
-    localStorage.setItem('kairo_refresh', result.refresh_token)
-    localStorage.setItem('kairo_profile', JSON.stringify(profile))
+    setAuthToken(   result.access_token)
+    setRefreshToken( result.refresh_token)
+    setStoredProfileRaw( JSON.stringify(profile))
     onLogin(profile)
   }
 

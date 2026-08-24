@@ -192,7 +192,11 @@ export async function mirrorEvent(userKey: string, ev: any): Promise<void> {
    ──────────────────────────────────────────────────────────────────────── */
 
 const SCHEMA_KEY = 'kyno:schema'
-const SCHEMA_VERSION = 1
+// v2 (audit task 7): every reader now goes through this module and reads
+// kyno: keys, so v2 re-copies kairo:* → kyno:* newest-wins (legacy kept
+// being written between v1 and this build) and then REMOVES the legacy
+// keys. The migration itself stays for at least two releases.
+const SCHEMA_VERSION = 2
 
 /** Every key the app owns. Logical name → storage key. */
 export const KEYS = {
@@ -245,11 +249,51 @@ export function remove(name: KeyName): void {
   removeRaw(KEYS[name])
 }
 
+/* ── auth/profile accessors (audit task 7) ───────────────────────────────────
+   The ONE place that touches the session keys. Reads prefer the kyno: key
+   and fall back to the legacy one (so a device that hasn't run migration v2
+   yet still signs in); writes go to kyno: only; clears remove both. Raw
+   string-in/string-out on purpose — every migrated call site keeps its exact
+   `|| ''` / JSON.parse semantics. */
+
+const K_TOKEN = 'kyno:token'
+const K_REFRESH = 'kyno:refresh'
+const K_PROFILE = KEYS.profile              // 'kyno:profile'
+const K_PROFILE_PIC = 'kyno:profile_pic'
+const L_TOKEN = 'kairo_token'
+const L_REFRESH = 'kairo_refresh'
+const L_PROFILE = 'kairo_profile'
+const L_PROFILE_PIC = 'kairo_profile_pic'
+
+export function authToken(): string | null {
+  return getRaw(K_TOKEN) ?? getRaw(L_TOKEN)
+}
+export function setAuthToken(v: string): void { setRaw(K_TOKEN, v) }
+export function refreshTokenRaw(): string | null {
+  return getRaw(K_REFRESH) ?? getRaw(L_REFRESH)
+}
+export function setRefreshToken(v: string): void { setRaw(K_REFRESH, v) }
+export function clearAuthTokens(): void {
+  for (const k of [K_TOKEN, K_REFRESH, L_TOKEN, L_REFRESH]) removeRaw(k)
+}
+
+export function storedProfileRaw(): string | null {
+  return getRaw(K_PROFILE) ?? getRaw(L_PROFILE)
+}
+export function setStoredProfileRaw(json: string): void { setRaw(K_PROFILE, json) }
+export function removeStoredProfile(): void { removeRaw(K_PROFILE); removeRaw(L_PROFILE) }
+
+export function profilePicRaw(): string | null {
+  return getRaw(K_PROFILE_PIC) ?? getRaw(L_PROFILE_PIC)
+}
+export function setProfilePicRaw(url: string): void { setRaw(K_PROFILE_PIC, url) }
+
 /** Per-user keys can't live in the static registry. */
 export const userKey = {
   notifs:    (uid: string) => `kyno:notifs:${uid}`,
   onboarded: (uid: string) => `kyno:onboarded:${uid}`,
   onboardHide: (uid: string) => `kyno:onboard:hide:${uid}`,
+  onboardSkip: (uid: string) => `kyno:onboard:skip:${uid}`,
   twin:      (uid: string) => `kyno:twin:${uid}`,
   /** Highest "Kyno Update N" this student has dismissed. Per-uid on purpose:
    *  scopeLocalToUser() in App.tsx only clears `kairo:`-prefixed keys, so a
@@ -314,59 +358,54 @@ export function migrateStorage(): MigrationReport {
 
     const sizeOf = (k: string) => (getRaw(k)?.length ?? 0)
 
-    // 1. Drop what should never have been persisted, or is too big to keep.
-    for (const k of [...OVERSIZED_LEGACY, ...LEGACY_TOKEN_KEYS, DEAD_SUPABASE_KEY]) {
-      const bytes = sizeOf(k)
-      if (bytes === 0) continue
-      report.bytesFreed += bytes
-      report.dropped.push(k)
-      removeRaw(k)
-    }
-
-    // 2. Strip the access_token / refresh_token out of the profile blob.
-    //    The KEY stays — App.tsx reads 'kairo_profile' to know who is signed
-    //    in, so removing it signs the user out. Rewriting it in place without
-    //    the tokens gets the security win with no breakage.
-    const legacyProfile = getJSON<Record<string, unknown>>('kairo_profile')
-    if (legacyProfile) {
-      const clean: StoredProfile = {
-        id:         legacyProfile.id as string | undefined,
-        name:       legacyProfile.name as string | undefined,
-        role:       legacyProfile.role as string | undefined,
-        avatar_url: legacyProfile.avatar_url as string | undefined,
-        school_id:  (legacyProfile.school_id as string | null) ?? null,
+    // ── v1 steps (devices that never migrated at all) ─────────────────────
+    if (current < 1) {
+      // 1. Drop what should never have been persisted, or is too big to keep.
+      for (const k of [...OVERSIZED_LEGACY, ...LEGACY_TOKEN_KEYS, DEAD_SUPABASE_KEY]) {
+        const bytes = sizeOf(k)
+        if (bytes === 0) continue
+        report.bytesFreed += bytes
+        report.dropped.push(k)
+        removeRaw(k)
       }
-      report.strippedProfileTokens =
-        'access_token' in legacyProfile || 'refresh_token' in legacyProfile
-      setJSON(KEYS.profile, clean)
-      setJSON('kairo_profile', clean)   // same object, tokens gone
-      report.renamed++
+
+      // 2. Strip the access_token / refresh_token out of the profile blob.
+      const legacyProfile = getJSON<Record<string, unknown>>('kairo_profile')
+      if (legacyProfile) {
+        const clean: StoredProfile = {
+          id:         legacyProfile.id as string | undefined,
+          name:       legacyProfile.name as string | undefined,
+          role:       legacyProfile.role as string | undefined,
+          avatar_url: legacyProfile.avatar_url as string | undefined,
+          school_id:  (legacyProfile.school_id as string | null) ?? null,
+        }
+        report.strippedProfileTokens =
+          'access_token' in legacyProfile || 'refresh_token' in legacyProfile
+        setJSON('kairo_profile', clean)   // v2 below copies the clean blob across
+        report.renamed++
+      }
     }
 
-    // 3. COPY, don't move. kairo:foo -> kyno:foo, legacy key left in place.
-    //
-    //    28 files still read the legacy keys directly — App.tsx for the signed-in
-    //    profile and onboarding flags, Sidebar for its expanded/showAll state,
-    //    api.ts for the auth header. Moving the keys silently breaks every one
-    //    of those readers, and the failure looks like "the app forgot me"
-    //    rather than like a migration bug.
-    //
-    //    Dual-write is the safe shape for a transition: new code can read kyno:
-    //    today, old code keeps working, and a later migration drops the legacy
-    //    copies once nothing reads them. The duplication costs a few KB.
-    for (const k of listKeys()) {
-      if (!(k.startsWith('kairo:') || k.startsWith('kairo_'))) continue
-      if (k === 'kairo:storage:migrated:v1') continue
+    // ── v2: MOVE, newest-wins ─────────────────────────────────────────────
+    // v1 copied without overwriting and kept the legacy keys because 28
+    // files still read them. Those readers are migrated now (everything goes
+    // through this module), so v2 finishes the job: overwrite-copy — the
+    // legacy value is the newest, since old code kept writing it after v1 —
+    // then remove the legacy key. 'kairo:' and 'kairo_' are both 6 chars,
+    // so one slice covers both (kairo_token → kyno:token).
+    if (current < 2) {
+      for (const k of listKeys()) {
+        if (!(k.startsWith('kairo:') || k.startsWith('kairo_'))) continue
+        if (k === 'kairo:storage:migrated:v1') { removeRaw(k); continue }
 
-      // 'kairo:' and 'kairo_' are both 6 characters, so one slice covers both.
-      const next = `kyno:${k.slice(6)}`
-      if (getRaw(next) !== null) continue   // already copied
-
-      const v = getRaw(k)
-      if (v === null) continue
-      setRaw(next, v)
-      // Legacy key intentionally NOT removed — see the note above.
-      report.renamed++
+        const v = getRaw(k)
+        if (v !== null) {
+          setRaw(`kyno:${k.slice(6)}`, v)
+          report.renamed++
+        }
+        report.bytesFreed += sizeOf(k)
+        removeRaw(k)
+      }
     }
 
     setRaw(SCHEMA_KEY, String(SCHEMA_VERSION))

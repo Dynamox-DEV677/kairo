@@ -9,6 +9,7 @@ import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
 import { chat } from '../lib/openrouter'
 import { prepMathMarkdown } from '../lib/math.core'
+import { authToken } from '../lib/storage'
 
 const SUBJECTS = [
   'Mathematics', 'Physics', 'Chemistry', 'Biology',
@@ -98,7 +99,7 @@ export default function StudyPlan() {
     setLoadingMemory(true)
     try {
       const r = await fetch('/api/memory', {
-        headers: { Authorization: `Bearer ${localStorage.getItem('kairo_token') || ''}` },
+        headers: { Authorization: `Bearer ${authToken() || ''}` },
       })
       if (r.ok) {
         const d = await r.json()

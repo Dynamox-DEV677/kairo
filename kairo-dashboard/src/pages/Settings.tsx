@@ -18,10 +18,11 @@ import { isDevMode, setDevMode, getDevKeyRaw, setDevKey, looksLikeGroqKey, aiHea
 // Settings showing CBSE. This selector is also no longer cosmetic: it drives
 // the curriculum the AI teaches to. See src/lib/curriculum.core.js.
 import { BOARD_OPTIONS } from '../lib/curriculum.core'
+import { authToken, profilePicRaw, setProfilePicRaw, setStoredProfileRaw, storedProfileRaw } from '../lib/storage'
 const CLASSES = ['6', '7', '8', '9', '10', '11', '12']
 
 function safeProfile(): any {
-  try { return JSON.parse(localStorage.getItem('kairo_profile') || '{}') || {} }
+  try { return JSON.parse(storedProfileRaw() || '{}') || {} }
   catch { return {} }
 }
 
@@ -32,7 +33,7 @@ export default function Settings() {
   const [cls, setCls] = useState(stored.cls || '10')
   const [role] = useState(stored.role || 'student')
   const [pic, setPic] = useState<string | null>(
-    () => getRaw('kairo_profile_pic') ?? localStorage.getItem('kairo_profile_pic'),
+    () => profilePicRaw(),
   )
   // Persisted per kind — the old single boolean was component state that
   // nothing saved and nothing read.
@@ -169,14 +170,14 @@ export default function Settings() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('kairo_token') || ''}`,
+          Authorization: `Bearer ${authToken() || ''}`,
         },
         body: JSON.stringify({ new_email: newEmail, code: emailCode }),
       })
       const j = await r.json().catch(() => ({}))
       if (!r.ok) throw new Error(j.error || 'Verification failed.')
       const merged = { ...safeProfile(), email: newEmail.trim().toLowerCase() }
-      localStorage.setItem('kairo_profile', JSON.stringify(merged))
+      setStoredProfileRaw( JSON.stringify(merged))
       setEmailStep('done')
     } catch (e: any) {
       setEmailErr(e.message || 'Verification failed.')
@@ -191,8 +192,8 @@ export default function Settings() {
     reader.onload = ev => {
       const url = ev.target?.result as string
       setPic(url)
-      setRaw('kairo_profile_pic', url)
-      try { localStorage.setItem('kairo_profile_pic', url) } catch {  }
+      setProfilePicRaw(url)
+      try { setProfilePicRaw( url) } catch {  }
       console.log('[settings] profile pic saved via', activeBackend())
     }
     reader.readAsDataURL(file)
@@ -200,7 +201,7 @@ export default function Settings() {
 
   async function save() {
     const profile = { ...stored, name, board, cls, role }
-    localStorage.setItem('kairo_profile', JSON.stringify(profile))
+    setStoredProfileRaw( JSON.stringify(profile))
     try { window.dispatchEvent(new CustomEvent('kairo:profile')) } catch {  }
     if (stored.id && !stored.localMode) {
       try {

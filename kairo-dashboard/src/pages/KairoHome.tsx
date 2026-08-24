@@ -13,6 +13,7 @@ import FocusTodayCard from '../components/FocusTodayCard'
 import { selectStreak, selectRetention } from '../lib/selectors'
 import { aiHeaders } from '../lib/devKey'
 import { get as getStored, set as setStored } from '../lib/storage'
+import { setStoredProfileRaw, storedProfileRaw } from '../lib/storage'
 
 /** Local calendar day. Deliberately not UTC — a student in IST at 11pm is
  *  still on today, and a UTC rollover would swap their plan mid-evening. */
@@ -52,7 +53,7 @@ function loadProfile(): Profile {
         strongTopics: Array.isArray(merged.strongTopics) ? merged.strongTopics : base.strongTopics,
       }
       try {
-        const p = JSON.parse(localStorage.getItem('kairo_profile') || '{}')
+        const p = JSON.parse(storedProfileRaw() || '{}')
         if (p.name) saved.name = p.name
       } catch {}
       return saved
@@ -62,7 +63,7 @@ function loadProfile(): Profile {
 }
 function defaultProfile(): Profile {
   let name = 'Student', goal = '', weak: string[] = [], strong: string[] = [], exam: 'jee' | 'neet' = 'jee'
-  try { const p = JSON.parse(localStorage.getItem('kairo_profile') || '{}'); name = p.name || p.full_name || 'Student' } catch {}
+  try { const p = JSON.parse(storedProfileRaw() || '{}'); name = p.name || p.full_name || 'Student' } catch {}
   try {
     const kp = getProfile()
     if (kp) {
@@ -278,12 +279,12 @@ export default function KairoHome({ onNavigate }: Props) {
             <div><div style={lbl}>Name</div><input style={inp} value={profile.name} onChange={e => {
               saveProfile({ ...profile, name: e.target.value })
               try {
-                const p = JSON.parse(localStorage.getItem('kairo_profile') || '{}')
-                localStorage.setItem('kairo_profile', JSON.stringify({ ...p, name: e.target.value }))
+                const p = JSON.parse(storedProfileRaw() || '{}')
+                setStoredProfileRaw( JSON.stringify({ ...p, name: e.target.value }))
               } catch {}
             }} onBlur={async e => {
               try {
-                const p = JSON.parse(localStorage.getItem('kairo_profile') || '{}')
+                const p = JSON.parse(storedProfileRaw() || '{}')
                 if (p.id && !p.localMode) {
                   const { supabase } = await import('../lib/supabase')
                   await supabase.from('users').update({ name: e.target.value }).eq('id', p.id)
