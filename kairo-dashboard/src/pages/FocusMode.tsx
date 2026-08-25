@@ -22,7 +22,7 @@ import {
  */
 
 const HISTORY_KEY = 'kyno:focus:history'
-const LEGACY_TOTAL_KEY = 'kairo_focus_total_min'
+const LEGACY_TOTAL_KEY = 'kyno:focus_total_min'
 const BANLIST_KEY = 'kyno:focus:banlist'
 
 const PRESETS = [15, 25, 45, 60]

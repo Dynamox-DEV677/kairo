@@ -279,7 +279,7 @@ function AutoCollectedStrip({ onBuilt }: { onBuilt?: (id: string) => void }) {
   useEffect(() => {
     reload()
     const onStorage = (e: StorageEvent) => {
-      if (e.key?.startsWith('kairo:twin:')) reload()
+      if (e.key?.startsWith('kyno:twin:')) reload()
     }
     window.addEventListener('storage', onStorage)
     return () => window.removeEventListener('storage', onStorage)

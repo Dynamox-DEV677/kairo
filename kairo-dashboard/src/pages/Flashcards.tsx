@@ -11,12 +11,14 @@ import { saveToNotebook } from '../lib/notebook'
 import {
   recordFlashcard, listFlashcards, getMistakes,
   type Flashcard as TwinCard,
+  reviewFlashcard,
 } from '../lib/twin'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
 import { prepMathMarkdown } from '../lib/math.core'
+import { nearestExamDays } from '../lib/examDate'
 
 const C = {
   bg:        '#0A0D16',
@@ -616,7 +618,15 @@ function ReviewDeck({ deck, onReload }: { deck: TwinCard[]; onReload: () => void
 
   const c = deck[idx % deck.length]
   function go(n: number, action?: 'got' | 'forgot') {
-    if (action) setReviewed(r => ({ ...r, [action]: r[action] + 1 }))
+    if (action) {
+      setReviewed(r => ({ ...r, [action]: r[action] + 1 }))
+      // The review PERSISTS now (it used to update this counter and nothing
+      // else): FSRS reschedules the card, compressed toward the exam date.
+      const card = deck[idx]
+      if (card?.id) {
+        try { reviewFlashcard(card.id, action === 'got' ? 3 : 1, { daysToExam: nearestExamDays() }) } catch {}
+      }
+    }
     setFlipped(false)
     setIdx(i => (i + n + deck.length) % deck.length)
   }

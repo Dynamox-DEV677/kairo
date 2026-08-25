@@ -14,7 +14,7 @@ export interface NoteEntry {
   updatedAt: number
 }
 
-const KEY = 'kairo:notebook:entries'
+const KEY = 'kyno:notebook:entries'
 const MAX_ENTRIES = 500
 
 function readAll(): NoteEntry[] {

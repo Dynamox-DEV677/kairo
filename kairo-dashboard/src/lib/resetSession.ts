@@ -1,8 +1,8 @@
 
 export type Step = 'forgot' | 'verify' | 'create' | 'confirm' | 'success'
 
-const K_EMAIL        = 'kairo:reset:email'
-const K_OTP          = 'kairo:reset:otp'
+const K_EMAIL        = 'kyno:reset:email'
+const K_OTP          = 'kyno:reset:otp'
 const K_OTP_EXPIRES  = 'kairo:reset:otp_expires'
 const K_VERIFIED     = 'kairo:reset:verified'
 const K_STEP         = 'kairo:reset:step'

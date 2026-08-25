@@ -134,6 +134,10 @@ export interface Flashcard {
   ease:      number
   dueAt:     number
   source:    'manual' | 'auto-from-doubt' | 'auto-from-mistake' | 'starter'
+  /** FSRS memory state (retention+coverage brief part B). Absent on cards
+   *  never reviewed under FSRS; first review initialises it. */
+  fsrs?: { stability: number; difficulty: number; reps: number; lapses: number }
+  lastReviewAt?: number
 }
 
 export interface KynoProfile {
@@ -175,6 +179,7 @@ import { exportGameState, importGameState } from './game'
 // disagree with Home about a number they both display.
 import { selectStreak, selectPrediction, selectWeakTopics, selectStrongTopics, selectPerformanceTrend } from './selectors.core.js'
 import { DEMO_QUIZ_EVENTS, DEMO_ACTIVITY_EVENTS } from './demoData.core.js'
+import { initCard as fsrsInit, reviewCard as fsrsReview, nextInterval as fsrsNextInterval } from './fsrs.core.js'
 // Phase 2: nothing reaches the graph without passing through these.
 import { canonicalTopic, classifyChatTurn, isSameFormula, findRecentDuplicate } from './knowledgeHygiene.js'
 import { revisionQueue } from './srs.js'
@@ -1744,6 +1749,47 @@ export function recordFlashcard(args: { front: string; back: string; subject?: s
 }
 
 export function listFlashcards(): Flashcard[]   { return loadState().flashcards }
+
+/**
+ * Persist a flashcard review (retention+coverage brief part B).
+ *
+ * Before this, "Got it / Forgot" on the review screen updated a LOCAL
+ * COUNTER and nothing else — dueAt froze at creation and the "SRS" never
+ * actually spaced anything. Reviews now run FSRS with the exam date as a
+ * first-class input: the interval compresses by phase and is hard-clamped
+ * to land before the paper.
+ */
+export function reviewFlashcard(
+  id: string,
+  rating: 1 | 2 | 3 | 4,
+  opts: { daysToExam?: number | null } = {},
+): Flashcard | null {
+  const state = loadState()
+  const card = state.flashcards.find(c => c.id === id)
+  if (!card) return null
+
+  const now = Date.now()
+  const elapsedDays = card.lastReviewAt ? (now - card.lastReviewAt) / 86_400_000 : 0
+  card.fsrs = card.fsrs
+    ? fsrsReview(card.fsrs, rating, elapsedDays)
+    : fsrsInit(rating)
+  const { intervalDays } = fsrsNextInterval(card.fsrs, { daysToExam: opts.daysToExam ?? null })
+
+  card.lastReviewAt = now
+  card.dueAt = now + intervalDays * 86_400_000
+  card.reviews = (card.reviews || 0) + 1
+
+  saveState(state)
+  try {
+    track({
+      type: 'flashcard_review',
+      subject: card.subject, topic: card.topic,
+      correct: rating >= 3,
+      modality: 'repetition',
+    })
+  } catch {  }
+  return card
+}
 export function listConcepts():  Concept[]      { return loadState().concepts  }
 
 export interface HistoryEntry {

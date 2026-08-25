@@ -38,6 +38,23 @@ test('no localStorage access to kairo-prefixed keys outside storage.ts', () => {
   assert.deepEqual(hits, [], `legacy kairo key access found:\n${hits.join('\n')}`)
 })
 
+test('no storage-key CONSTANTS defined with a kairo prefix (the indirection loophole)', () => {
+  // `const PROFILE_KEY = 'kairo_student_profile'` dodged the literal scans
+  // and silently orphaned its data after migration v2 moved the keys. Any
+  // key-looking constant assigned a kairo string is a regression.
+  const RE = /const\s+\w*(?:KEY|Key)\w*\s*=\s*['"`]kairo[:_]/
+  const hits = []
+  for (const file of walk(SRC)) {
+    const rel = file.slice(SRC.length + 1).replace(/\\/g, '/')
+    if (ALLOWED.has(rel)) continue
+    const lines = readFileSync(file, 'utf-8').split('\n')
+    lines.forEach((line, i) => {
+      if (RE.test(line)) hits.push(`${rel}:${i + 1}  ${line.trim().slice(0, 90)}`)
+    })
+  }
+  assert.deepEqual(hits, [], `legacy key constants found:\n${hits.join('\n')}`)
+})
+
 test('no NEW kairo-prefixed literals fed to the storage helpers either', () => {
   // getRaw('kairo:…') / setRaw('kairo:…') sneaking back in defeats the
   // migration just as surely as raw localStorage would.

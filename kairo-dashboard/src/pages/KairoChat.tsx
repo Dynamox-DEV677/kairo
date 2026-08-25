@@ -73,8 +73,8 @@ let _id = 1
 
 // The active conversation is persisted here so Kyno remembers your last chat
 // when you come back. Wiped automatically on account switch (App scopeLocalToUser).
-const CHAT_KEY = 'kairo:chat:last'
-const CHAT_ID_KEY = 'kairo:chat:lastid'
+const CHAT_KEY = 'kyno:chat:last'
+const CHAT_ID_KEY = 'kyno:chat:lastid'
 
 function newChatId() {
   return 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6)

@@ -1,4 +1,4 @@
-const KEY = 'kairo_recent_chats'
+const KEY = 'kyno:recent_chats'
 const MAX = 15
 
 export interface ChatMessage {

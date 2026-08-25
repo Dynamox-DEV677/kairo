@@ -10,7 +10,7 @@ import type { EncryptedBundle, TransferChunk, SnapshotPayload, SnapshotStats } f
 const log = makeLog('import')
 
 // Never overwrite the receiving device's own auth session.
-const PROTECT = new Set(['kairo_token'])
+const PROTECT = new Set(['kairo_token', 'kyno:token', 'kyno:refresh'])
 
 export async function verifyAndReassemble(bundle: EncryptedBundle, chunks: TransferChunk[]): Promise<Uint8Array> {
   if (chunks.length !== bundle.chunkCount) {

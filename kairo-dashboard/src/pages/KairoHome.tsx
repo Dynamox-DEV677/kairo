@@ -36,7 +36,7 @@ interface Profile {
   studyHours: number
   recentAccuracy: number | null
 }
-const PROFILE_KEY = 'kairo_student_profile'
+const PROFILE_KEY = 'kyno:student_profile'
 function loadProfile(): Profile {
   try {
     const raw = localStorage.getItem(PROFILE_KEY)

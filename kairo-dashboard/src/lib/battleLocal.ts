@@ -26,9 +26,9 @@ export interface DailyChallenge {
   questions:      number
 }
 
-const K_STATS   = 'kairo:battle:stats'
-const K_RESULTS = 'kairo:battle:results'
-const K_DAILY   = 'kairo:battle:daily'
+const K_STATS   = 'kyno:battle:stats'
+const K_RESULTS = 'kyno:battle:results'
+const K_DAILY   = 'kyno:battle:daily'
 
 const ROTATION: Array<DailyChallenge['challenge']> = [
   { subject: 'Math',      topic: 'quadratic equations',  difficulty: 'medium' },

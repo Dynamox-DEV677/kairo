@@ -86,7 +86,7 @@ const SUGGESTIONS = [
 ]
 
 // --- Last-solve persistence (survives reload + Chat<->Visual toggle remount) ---
-const SOLVE_KEY = 'kairo:solve:last'
+const SOLVE_KEY = 'kyno:solve:last'
 
 function loadLastSolve(): { topic: string; resp: SolverResponse | null } {
   try {
@@ -751,7 +751,7 @@ function ExamPlanModal({ onClose }: { onClose: () => void }) {
   function save() {
     if (!subject.trim() || !date) return
     try {
-      const key = 'kairo:exams'
+      const key = 'kyno:exams'
       const list = JSON.parse(localStorage.getItem(key) || '[]')
       list.push({
         id:       Math.random().toString(36).slice(2, 10),
