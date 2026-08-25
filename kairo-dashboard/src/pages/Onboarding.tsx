@@ -1,7 +1,10 @@
-import { useState } from 'react'
+import { useState, useMemo, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowRight, ArrowLeft, Check, Sparkles, GraduationCap, BookOpen, Repeat, Eye } from 'lucide-react'
-import { saveProfile, type KynoProfile } from '../lib/twin'
+import { saveProfile, track, listFlashcards, recordFlashcard, type KynoProfile } from '../lib/twin'
+import { pickDiagnostic, type DiagnosticQ } from '../lib/diagnostic.core'
+import { STARTER_DECKS } from '../data/starterDecks'
+import { decksForCurriculum, newCardsForDeck } from '../lib/starterDecks.core'
 import type { AuthProfile } from './Login'
 
 interface Props { profile: AuthProfile; onDone: () => void; onSkip: () => void }
@@ -22,7 +25,7 @@ const STYLES = [
   { id: 'repeat', label: 'Repetition', desc: 'Flashcards & recall', icon: Repeat },
 ]
 
-const STEPS = ['You', 'School', 'How you learn', 'Subjects & goal', 'You beyond books']
+const STEPS = ['You', 'School', 'How you learn', 'Subjects & goal', 'You beyond books', 'Quick check']
 
 export default function Onboarding({ profile, onDone, onSkip }: Props) {
   const [step, setStep] = useState(0)
@@ -43,6 +46,35 @@ export default function Onboarding({ profile, onDone, onSkip }: Props) {
   const toggle = (arr: string[], set: (v: string[]) => void, v: string) =>
     set(arr.includes(v) ? arr.filter(x => x !== v) : [...arr, v])
 
+  // Audit task 10 — the diagnostic: five real questions whose answers become
+  // real twin events, so the weakness panels, Today's 3 and the Museum are
+  // never empty rooms on day one. Weak-subject-first, offline, deterministic.
+  const diagnostic = useMemo(() => pickDiagnostic({ weak }), [weak])
+  const [dIdx, setDIdx] = useState(0)
+  const [dPicked, setDPicked] = useState<number | null>(null)
+  const [dRight, setDRight] = useState(0)
+  const dShownAt = useRef(Date.now())
+  const diagDone = dIdx >= diagnostic.length
+
+  function answerDiagnostic(i: number) {
+    if (dPicked != null) return
+    setDPicked(i)
+    const q: DiagnosticQ = diagnostic[dIdx]
+    const correct = i === q.correctIndex
+    if (correct) setDRight(r => r + 1)
+    try {
+      track({
+        type: 'quiz_answered', subject: q.subject, topic: q.topic, correct,
+        score: correct ? 100 : 0, difficulty: q.difficulty,
+        durationMs: Date.now() - dShownAt.current, modality: 'interactive',
+        payload: correct
+          ? { q: q.q }
+          : { q: q.q, options: q.options, correctIndex: q.correctIndex, chosenIndex: i },
+      })
+    } catch {}
+    setTimeout(() => { setDPicked(null); setDIdx(n => n + 1); dShownAt.current = Date.now() }, 650)
+  }
+
   function finish() {
     const p: KynoProfile = {
       name: profile.name, nickname: nickname.trim() || undefined, mode,
@@ -52,6 +84,20 @@ export default function Onboarding({ profile, onDone, onSkip }: Props) {
       strong, weak, hobbies, dailyHours: dailyHours || undefined,
     }
     saveProfile(p)
+    // Seed the starter SRS decks that match this student's board/class, so
+    // Reels, Listen and the due queue have real cards from minute one.
+    // Capped so day one is a start, not a backlog.
+    try {
+      let added = 0
+      for (const d of decksForCurriculum(STARTER_DECKS, { board, cls })) {
+        for (const c of newCardsForDeck(d, listFlashcards())) {
+          if (added >= 30) break
+          recordFlashcard(c)
+          added++
+        }
+        if (added >= 30) break
+      }
+    } catch {}
     onDone()
   }
 
@@ -154,17 +200,61 @@ export default function Onboarding({ profile, onDone, onSkip }: Props) {
                 <Field label="How long do you study daily?"><div style={chipWrap}>{HOURS.map(h => <Chip key={h} on={dailyHours === h} onClick={() => setDailyHours(dailyHours === h ? '' : h)}>{h}</Chip>)}</div></Field>
               </Section>
             )}
+
+            {step === 5 && (
+              <Section
+                title={diagDone ? `Nice — ${dRight} of ${diagnostic.length} 🎯` : 'Sixty-second check'}
+                sub={diagDone
+                  ? 'Kyno now starts exactly where you are — your first day is already planned from these answers.'
+                  : `Five quick ones so day one is built on how YOU actually answer — not guesses. ${dIdx + 1} of ${diagnostic.length}.`}>
+                {!diagDone && diagnostic[dIdx] && (
+                  <div>
+                    <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase', color: A.mut, marginBottom: 8 }}>
+                      {diagnostic[dIdx].subject}
+                    </div>
+                    <div style={{ fontSize: 16, fontWeight: 700, lineHeight: 1.5, marginBottom: 14 }}>{diagnostic[dIdx].q}</div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                      {diagnostic[dIdx].options.map((opt, i) => {
+                        const revealed = dPicked != null
+                        const isRight = i === diagnostic[dIdx].correctIndex
+                        const isPick = i === dPicked
+                        return (
+                          <button key={i} className="kyno-ghost" onClick={() => answerDiagnostic(i)} style={{
+                            padding: '13px 15px', borderRadius: 12, textAlign: 'left', fontFamily: FONT, fontSize: 14,
+                            cursor: revealed ? 'default' : 'pointer', color: A.text,
+                            background: revealed && isRight ? 'rgba(52,211,153,0.14)' : revealed && isPick ? 'rgba(255,122,144,0.12)' : '#151a24',
+                            border: `1px solid ${revealed && isRight ? 'rgba(52,211,153,0.5)' : revealed && isPick ? 'rgba(255,122,144,0.45)' : A.border}`,
+                          }}>{opt}</button>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
+                {diagDone && (
+                  <div style={{ fontSize: 13.5, color: A.mut, lineHeight: 1.7 }}>
+                    Your revision deck is being stocked with starter cards for your class, and the topics you
+                    slipped on are already queued in Today's 3. Nothing here is a grade — it's a starting point.
+                  </div>
+                )}
+              </Section>
+            )}
           </motion.div>
         </AnimatePresence>
 
         <div style={{ display: 'flex', gap: 12, marginTop: 30 }}>
-          {step > 0 && (
+          {step > 0 && step !== last && (
             <button className="kyno-ghost" onClick={() => setStep(step - 1)} style={{ ...navBtn, background: 'transparent', border: `1px solid ${A.border}`, color: A.text, flex: '0 0 auto', padding: '14px 20px' }}>
               <ArrowLeft size={16} />
             </button>
           )}
-          <button className="kyno-ghost" onClick={() => (step === last ? finish() : setStep(step + 1))} style={{ ...navBtn, flex: 1 }}>
-            {step === last ? <>Finish setup <Check size={17} /></> : <>Continue <ArrowRight size={17} /></>}
+          <button
+            className="kyno-ghost"
+            disabled={step === last && !diagDone}
+            onClick={() => (step === last ? finish() : setStep(step + 1))}
+            style={{ ...navBtn, flex: 1, opacity: step === last && !diagDone ? 0.45 : 1, cursor: step === last && !diagDone ? 'default' : 'pointer' }}>
+            {step === last
+              ? (diagDone ? <>Finish setup <Check size={17} /></> : <>Answer the five to finish</>)
+              : <>Continue <ArrowRight size={17} /></>}
           </button>
         </div>
       </div>
