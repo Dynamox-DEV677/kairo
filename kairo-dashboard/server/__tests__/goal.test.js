@@ -5,7 +5,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import {
-  goalPlan, subjectProjection, leverTopics, suggestSubjects, parseGoal, MIN_ATTEMPTS,
+  goalPlan, subjectProjection, leverTopics, suggestSubjects, parseGoal, totalOutOf, MIN_ATTEMPTS,
 } from '../../src/lib/goal.core.js'
 
 // A believable twin: strong-ish Physics, leaky Chemistry, no English data.
@@ -66,9 +66,39 @@ test('an on-track subject earns no levers and no nag', () => {
 
 test('setup helpers: suggested subjects lead with what was actually practised', () => {
   const s = suggestSubjects(MASTERY)
-  assert.equal(s[0], 'Physics')          // most attempts
-  assert.ok(s.includes('Mathematics'))   // topped up from the standard list
+  assert.equal(s[0], 'physics', 'most attempts first, as a canonical id')
+  assert.ok(s.includes('mathematics'))   // topped up from the pool
   assert.ok(!s.some(x => /general/i.test(x)))
+})
+
+test('DONE WHEN: "Math" and "Mathematics" never both appear (the reported bug)', () => {
+  // Real shape of the bug: quiz data wrote "Math", the hardcoded list said
+  // "Mathematics", and My Goal rendered a chip for each.
+  const mixed = [
+    { subject: 'Math', topic: 'algebra', mastery: 0.5, attempts: 10, correct: 7 },
+    { subject: 'Mathematics', topic: 'calculus', mastery: 0.5, attempts: 6, correct: 4 },
+    { subject: 'Maths', topic: 'trig', mastery: 0.5, attempts: 3, correct: 2 },
+  ]
+  const s = suggestSubjects(mixed)
+  assert.equal(s.filter(x => x === 'mathematics').length, 1, 'one maths chip, not three')
+  assert.ok(!s.includes('math') && !s.includes('maths'))
+})
+
+test('a subject stored as "Math" still matches mastery rows written as "Mathematics"', () => {
+  const mixed = [
+    { subject: 'Math', topic: 'algebra', mastery: 0.5, attempts: 10, correct: 8 },
+    { subject: 'Mathematics', topic: 'calculus', mastery: 0.5, attempts: 10, correct: 6 },
+  ]
+  // both rows resolve to the same id, so the projection sees all 20 attempts
+  const p = subjectProjection(mixed, 'mathematics')
+  assert.equal(p.attempts, 20)
+  assert.equal(p.projected, 70)
+})
+
+test('the denominator follows the subjects actually taken', () => {
+  assert.equal(totalOutOf(5), 500)
+  assert.equal(totalOutOf(6), 600, 'a six-subject CBSE student is not out of 500')
+  assert.equal(totalOutOf(0), 0)
 })
 
 test('parseGoal round-trips and rejects junk', () => {

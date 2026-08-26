@@ -7,6 +7,8 @@ import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
 import { prepMathMarkdown } from '../lib/math.core'
+import { subjectLabels } from '../curriculum/subjects'
+import { getProfile } from '../lib/twin'
 
 const SCHOOL_ID = 'demo_school'
 
@@ -21,7 +23,7 @@ const inp   = { background: '#141A2A', border: '1px solid #1f2532', borderRadius
 const lbl   = { fontSize: 11, color: '#9CA3AF', display: 'block', marginBottom: 5, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.8 } as React.CSSProperties
 const btn   = (active = true, color?: string) => ({ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', borderRadius: 9, border: 'none', background: active ? (color || 'linear-gradient(135deg,#7C5CFF,#7C5CFF)') : '#171D2D', color: active ? '#fff' : '#6B7280', fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: active ? 'pointer' : 'not-allowed' } as React.CSSProperties)
 
-const SUBJECTS = ['General','Physics','Chemistry','Biology','Mathematics','History','Geography','English','Hindi','Economics']
+const SUBJECTS = (() => { const p = getProfile() as any; return subjectLabels({ board: p?.board, cls: p?.cls, general: true }) })()
 
 export default function ConceptTools() {
   const [tab, setTab] = useState('simplify')

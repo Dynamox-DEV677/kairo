@@ -7,6 +7,8 @@ import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
 import { chat } from '../lib/openrouter'
 import { prepMathMarkdown } from '../lib/math.core'
+import { subjectLabels } from '../curriculum/subjects'
+import { getProfile } from '../lib/twin'
 
 const SYSTEM = `You are Kyno, an expert pedagogy advisor for Indian school teachers.
 Create a detailed NEP 2020-aligned lesson plan including:
@@ -52,7 +54,7 @@ export default function LessonPlan() {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 12, marginBottom: 14 }}>
           {[
             { label: 'Board', v: board, set: setBoard, opts: ['CBSE','ICSE','Maharashtra','Tamil Nadu','Karnataka'] },
-            { label: 'Subject', v: subject, set: setSubject, opts: ['Mathematics','Physics','Chemistry','Biology','English','Hindi','History','Geography','Science'] },
+            { label: 'Subject', v: subject, set: setSubject, opts: subjectLabels({ board: (getProfile() as any)?.board, cls: (getProfile() as any)?.cls }) },
             { label: 'Class', v: cls, set: setCls, opts: ['6','7','8','9','10','11','12'] },
             { label: 'Duration (min)', v: duration, set: setDuration, opts: ['30','40','45','50','60'] },
           ].map(f => (

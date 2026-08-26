@@ -2,11 +2,14 @@ import { useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Target, Pencil, RotateCw, ArrowRight, Info, TrendingUp } from 'lucide-react'
 import { PrimaryButton } from '../components/PrimaryButton'
-import { getDashboard } from '../lib/twin'
+import { getDashboard, getProfile } from '../lib/twin'
 import {
-  goalPlan, parseGoal, suggestSubjects, TARGET_PRESETS, MIN_ATTEMPTS,
+  goalPlan, parseGoal, suggestSubjects, totalOutOf, TARGET_PRESETS, MIN_ATTEMPTS,
   type GoalTarget, type GoalSubject,
 } from '../lib/goal.core'
+import {
+  availableSubjects, resolveSubjectId, displayLabel, boardProfile, getSubject,
+} from '../curriculum/subjects'
 
 /**
  * The 490 Tracker — the student's own board target, tracked against their REAL
@@ -38,7 +41,7 @@ export default function GoalTracker() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tick])
 
-  const plan = useMemo(() => goalPlan({ mastery, target: goal }), [mastery, goal])
+  const plan = useMemo(() => goalPlan({ mastery, target: goal, resolve: (v: unknown) => resolveSubjectId(v) || String(v || '').toLowerCase() }), [mastery, goal])
 
   function save(t: GoalTarget) {
     try { localStorage.setItem(KEY, JSON.stringify(t)) } catch {}
@@ -138,7 +141,7 @@ function SubjectRow({ s }: { s: GoalSubject }) {
       <button onClick={() => hasData && setOpen(o => !o)}
         style={{ display: 'block', width: '100%', textAlign: 'left', background: 'transparent', border: 'none', padding: 0, cursor: hasData ? 'pointer' : 'default', fontFamily: 'inherit' }}>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 6 }}>
-          <span style={{ fontSize: 13, fontWeight: 700, color: hasData ? C.text : C.faint }}>{s.subject}</span>
+          <span style={{ fontSize: 13, fontWeight: 700, color: hasData ? C.text : C.faint }}>{getSubject(s.subject)?.label || s.subject}</span>
           <span style={{ fontSize: 11.5, color: C.faint }}>
             {hasData
               ? <>projected <b style={{ color: barColor }}>{s.projected}</b> / target {s.targetPer} · from {s.attempts} answers{s.confidence === 'low' ? ' · early' : ''}</>
@@ -181,32 +184,73 @@ function GoalSetup({ initial, mastery, onSave, onCancel }: {
   onSave: (t: GoalTarget) => void
   onCancel?: () => void
 }) {
-  const options = useMemo(() => {
-    const sugg = suggestSubjects(mastery)
-    for (const s of initial?.subjects || []) if (!sugg.some(x => x.toLowerCase() === s.toLowerCase())) sugg.unshift(s)
-    return sugg
-  }, [mastery, initial])
+  const profile = (getProfile() as any) || {}
+  const board = boardProfile(profile.board)
 
-  const [picked, setPicked] = useState<string[]>(() => initial?.subjects || options.slice(0, 5))
+  // Everything the student's OWN board offers — never a CBSE list for a
+  // state-board student, and languages ordered board-default first.
+  const catalogue = useMemo(
+    () => availableSubjects(profile.board, profile.cls),
+    [profile.board, profile.cls],
+  )
+
+  const suggested = useMemo(() => suggestSubjects(mastery, {
+    resolve: resolveSubjectId,
+    available: catalogue.map(s => s.id),
+  }), [mastery, catalogue])
+
+  // Stored selections may be old display labels ("Math"); resolve them so a
+  // student who picked Tamil last month still has Tamil after this refactor.
+  const [picked, setPicked] = useState<string[]>(() => {
+    const from = initial?.subjects?.length ? initial.subjects : suggested.slice(0, 5)
+    const ids = from.map(resolveSubjectId).filter(Boolean) as string[]
+    return [...new Set(ids)]
+  })
+  const [search, setSearch] = useState('')
+  const [showAll, setShowAll] = useState(false)
   const [total, setTotal] = useState<number>(() => initial?.total || 490)
-  const outOf = picked.length * 100
 
-  const toggle = (s: string) => setPicked(p => p.includes(s) ? p.filter(x => x !== s) : [...p, s])
+  const outOf = totalOutOf(picked.length)   // live: 100 × subjects actually taken
+  const toggle = (id: string) => setPicked(p => p.includes(id) ? p.filter(x => x !== id) : [...p, id])
   const valid = picked.length >= 2 && total > 0 && total <= outOf
+
+  // Shortlist by default; the full catalogue (40+ languages) behind search.
+  const shortlistIds = new Set([...picked, ...suggested.slice(0, 8)])
+  const q = search.trim().toLowerCase()
+  const shown = q
+    ? catalogue.filter(s => s.label.toLowerCase().includes(q) || (s.nativeLabel || '').includes(search.trim()))
+    : showAll ? catalogue : catalogue.filter(s => shortlistIds.has(s.id))
 
   return (
     <div style={card}>
       <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1.4, textTransform: 'uppercase', color: C.purple, marginBottom: 12 }}>Set your target</div>
 
-      <div style={{ fontSize: 12.5, fontWeight: 700, color: C.text, marginBottom: 8 }}>Which subjects count?</div>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7, marginBottom: 16 }}>
-        {options.map(s => (
-          <button key={s} onClick={() => toggle(s)} className={`kyno-chip${picked.includes(s) ? ' on' : ''}`}
-            style={{ padding: '7px 14px', fontSize: 12 }}>{s}</button>
-        ))}
+      <div style={{ fontSize: 12.5, fontWeight: 700, color: C.text, marginBottom: 4 }}>Which subjects count?</div>
+      <div style={{ fontSize: 11, color: C.faint, marginBottom: 8 }}>
+        Showing what {board.label} offers{profile.cls ? ` in class ${String(profile.cls).replace(/\D/g, '')}` : ''}.
       </div>
 
-      <div style={{ fontSize: 12.5, fontWeight: 700, color: C.text, marginBottom: 8 }}>Total target (out of {outOf})</div>
+      <input
+        value={search} onChange={e => setSearch(e.target.value)}
+        placeholder="Search subjects and languages…"
+        style={{ width: '100%', background: '#0d1117', border: '1px solid #1f2532', borderRadius: 9, padding: '9px 12px', fontSize: 12.5, color: C.text, fontFamily: 'inherit', outline: 'none', marginBottom: 9, boxSizing: 'border-box' }}
+      />
+
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7, marginBottom: 8, maxHeight: 210, overflowY: 'auto' }}>
+        {shown.map(s => (
+          <button key={s.id} onClick={() => toggle(s.id)} className={`kyno-chip${picked.includes(s.id) ? ' on' : ''}`}
+            style={{ padding: '7px 14px', fontSize: 12 }}>{displayLabel(s)}</button>
+        ))}
+        {shown.length === 0 && <span style={{ fontSize: 12, color: C.faint }}>Nothing matches “{search}”.</span>}
+      </div>
+      {!q && (
+        <button className="kyno-ghost" onClick={() => setShowAll(v => !v)}
+          style={{ background: 'none', border: 'none', color: C.purple, fontSize: 11.5, fontWeight: 700, cursor: 'pointer', padding: 0, marginBottom: 16 }}>
+          {showAll ? 'Show fewer' : `Show all ${catalogue.length} subjects`}
+        </button>
+      )}
+
+      <div style={{ fontSize: 12.5, fontWeight: 700, color: C.text, margin: '10px 0 8px' }}>Total target (out of {outOf})</div>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7, alignItems: 'center', marginBottom: 6 }}>
         {TARGET_PRESETS.filter(p => p <= outOf).map(p => (
           <button key={p} onClick={() => setTotal(p)} className={`kyno-chip${total === p ? ' on' : ''}`}

@@ -38,8 +38,13 @@ export interface GoalPlan {
 
 export interface GoalTarget { total: number; subjects: string[] }
 
-export function subjectProjection(mastery: unknown, subject: string): SubjectProjection
-export function leverTopics(mastery: unknown, subject: string, gap: number, opts?: { max?: number }): LeverTopic[]
-export function goalPlan(args: { mastery?: unknown; target?: GoalTarget | null }): GoalPlan | null
+export function subjectProjection(mastery: unknown, subject: string, resolve?: (v: unknown) => string): SubjectProjection
+export function leverTopics(mastery: unknown, subject: string, gap: number, opts?: { max?: number; resolve?: (v: unknown) => string }): LeverTopic[]
+export function goalPlan(args: { mastery?: unknown; target?: GoalTarget | null; resolve?: (v: unknown) => string }): GoalPlan | null
 export function parseGoal(raw: unknown): GoalTarget | null
-export function suggestSubjects(mastery: unknown, opts?: { max?: number }): string[]
+export function suggestSubjects(mastery: unknown, opts?: {
+  max?: number
+  resolve?: (v: unknown) => string | null
+  available?: string[]
+}): string[]
+export function totalOutOf(subjectCount: number): number

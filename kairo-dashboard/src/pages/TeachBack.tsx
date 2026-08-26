@@ -10,11 +10,12 @@ import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
 import { chat } from '../lib/openrouter'
 import { saveToNotebook } from '../lib/notebook'
-import { getMistakes, recordDoubt } from '../lib/twin'
+import { getMistakes, recordDoubt, getProfile } from '../lib/twin'
 import { awardXP } from '../lib/game'
 import { prepMathMarkdown } from '../lib/math.core'
+import { subjectLabels } from '../curriculum/subjects'
 
-const SUBJECTS = ['Mathematics', 'Physics', 'Chemistry', 'Biology', 'English', 'History', 'Geography', 'Economics', 'Computer Science', 'General']
+const SUBJECTS = (() => { const p = getProfile() as any; return subjectLabels({ board: p?.board, cls: p?.cls, general: true }) })()
 
 const card: React.CSSProperties = { background: '#141A2A', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14 }
 const inp: React.CSSProperties = {

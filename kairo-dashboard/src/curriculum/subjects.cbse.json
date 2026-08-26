@@ -1,0 +1,2398 @@
+{
+  "source": "CBSE ANNEXURE-H SUBJECT LIST, CLASS-X/XII (2025-26), parikshasangam.cbse.gov.in/ps/SUBJECTSOFFERED.pdf",
+  "fetched": "2026-08-26",
+  "subjects": [
+    {
+      "id": "mathematics",
+      "label": "Mathematics",
+      "kind": "core",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "10",
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "10:standard": "041",
+          "10:basic": "241",
+          "12:default": "041"
+        }
+      }
+    },
+    {
+      "id": "science",
+      "label": "Science",
+      "kind": "core",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "10"
+      ],
+      "codes": {
+        "cbse": {
+          "10:default": "086"
+        }
+      }
+    },
+    {
+      "id": "social-science",
+      "label": "Social Science",
+      "kind": "core",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "10"
+      ],
+      "codes": {
+        "cbse": {
+          "10:default": "087"
+        }
+      }
+    },
+    {
+      "id": "accountancy",
+      "label": "Accountancy",
+      "kind": "elective",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "12:default": "055"
+        }
+      }
+    },
+    {
+      "id": "agriculture",
+      "label": "Agriculture",
+      "kind": "skill",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "10",
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "10:default": "408",
+          "12:default": "808"
+        }
+      }
+    },
+    {
+      "id": "air-conditioning-and",
+      "label": "Air-Conditioning &",
+      "kind": "skill",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "12:default": "827"
+        }
+      }
+    },
+    {
+      "id": "app-commercial-art",
+      "label": "App/Commercial Art",
+      "kind": "elective",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "12:default": "052"
+        }
+      }
+    },
+    {
+      "id": "apparel",
+      "label": "Apparel",
+      "kind": "skill",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "10"
+      ],
+      "codes": {
+        "cbse": {
+          "10:default": "414"
+        }
+      }
+    },
+    {
+      "id": "applied-mathematics",
+      "label": "Applied Mathematics",
+      "kind": "elective",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "12:default": "241"
+        }
+      }
+    },
+    {
+      "id": "arabic",
+      "label": "Arabic",
+      "kind": "language",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "10",
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "10:default": "016",
+          "12:default": "116"
+        }
+      },
+      "nativeLabel": "العربية"
+    },
+    {
+      "id": "artificial-intelligence",
+      "label": "Artificial Intelligence",
+      "kind": "skill",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "10"
+      ],
+      "codes": {
+        "cbse": {
+          "10:default": "417"
+        }
+      }
+    },
+    {
+      "id": "assamese",
+      "label": "Assamese",
+      "kind": "language",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "10",
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "10:default": "014",
+          "12:default": "114"
+        }
+      },
+      "nativeLabel": "অসমীয়া"
+    },
+    {
+      "id": "automotive",
+      "label": "Automotive",
+      "kind": "skill",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "10",
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "10:default": "404",
+          "12:default": "804"
+        }
+      }
+    },
+    {
+      "id": "bahasa-melayu",
+      "label": "Bahasa Melayu",
+      "kind": "language",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "10"
+      ],
+      "codes": {
+        "cbse": {
+          "10:default": "990"
+        }
+      },
+      "nativeLabel": "Bahasa Melayu"
+    },
+    {
+      "id": "banking",
+      "label": "Banking",
+      "kind": "skill",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "12:default": "811"
+        }
+      }
+    },
+    {
+      "id": "banking-and-insurance",
+      "label": "Banking & Insurance",
+      "kind": "skill",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "10"
+      ],
+      "codes": {
+        "cbse": {
+          "10:default": "411"
+        }
+      }
+    },
+    {
+      "id": "beauty-and-wellness",
+      "label": "Beauty & Wellness",
+      "kind": "skill",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "10",
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "10:default": "407",
+          "12:default": "807"
+        }
+      }
+    },
+    {
+      "id": "bengali",
+      "label": "Bengali",
+      "kind": "language",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "10",
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "10:default": "005",
+          "12:default": "105"
+        }
+      },
+      "nativeLabel": "বাংলা"
+    },
+    {
+      "id": "bharatnatyam-dance",
+      "label": "Bharatnatyam - Dance",
+      "kind": "elective",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "12:default": "057"
+        }
+      }
+    },
+    {
+      "id": "bhoti",
+      "label": "Bhoti",
+      "kind": "language",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "10",
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "10:default": "088",
+          "12:default": "188"
+        }
+      },
+      "nativeLabel": "བོད་སྐད"
+    },
+    {
+      "id": "bhutia",
+      "label": "Bhutia",
+      "kind": "language",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "10",
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "10:default": "095",
+          "12:default": "195"
+        }
+      },
+      "nativeLabel": "འབྲས་ལྗོངས་སྐད"
+    },
+    {
+      "id": "biology",
+      "label": "Biology",
+      "kind": "elective",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "12:default": "044"
+        }
+      }
+    },
+    {
+      "id": "biotechnology",
+      "label": "Biotechnology",
+      "kind": "elective",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "12:default": "045"
+        }
+      }
+    },
+    {
+      "id": "bodo",
+      "label": "Bodo",
+      "kind": "language",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "10",
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "10:default": "092",
+          "12:default": "192"
+        }
+      },
+      "nativeLabel": "बड़ो"
+    },
+    {
+      "id": "business-administration",
+      "label": "Business Administration",
+      "kind": "skill",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "12:default": "833"
+        }
+      }
+    },
+    {
+      "id": "business-studies",
+      "label": "Business Studies",
+      "kind": "elective",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "12:default": "054"
+        }
+      }
+    },
+    {
+      "id": "car-music",
+      "label": "Car. Music",
+      "kind": "elective",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "10"
+      ],
+      "codes": {
+        "cbse": {
+          "10:default": "031"
+        }
+      }
+    },
+    {
+      "id": "car-music-mel-ins",
+      "label": "Car. Music Mel. Ins.",
+      "kind": "elective",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "10",
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "10:default": "032",
+          "12:default": "032"
+        }
+      }
+    },
+    {
+      "id": "car-music-per-ins",
+      "label": "Car. Music Per. Ins.",
+      "kind": "elective",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "10"
+      ],
+      "codes": {
+        "cbse": {
+          "10:default": "033"
+        }
+      }
+    },
+    {
+      "id": "car-music-per-ins-mridangam",
+      "label": "Car. Music Per Ins Mridangam",
+      "kind": "elective",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "12:default": "033"
+        }
+      }
+    },
+    {
+      "id": "car-music-vocal",
+      "label": "Car. Music Vocal",
+      "kind": "elective",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "12:default": "031"
+        }
+      }
+    },
+    {
+      "id": "chemistry",
+      "label": "Chemistry",
+      "kind": "elective",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "12:default": "043"
+        }
+      }
+    },
+    {
+      "id": "computer-applications",
+      "label": "Computer Applications",
+      "kind": "elective",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "10"
+      ],
+      "codes": {
+        "cbse": {
+          "10:default": "165"
+        }
+      }
+    },
+    {
+      "id": "computer-science",
+      "label": "Computer Science",
+      "kind": "elective",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "12:default": "083"
+        }
+      }
+    },
+    {
+      "id": "cost-accounting",
+      "label": "Cost Accounting",
+      "kind": "skill",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "12:default": "823"
+        }
+      }
+    },
+    {
+      "id": "data-science",
+      "label": "Data Science",
+      "kind": "skill",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "10"
+      ],
+      "codes": {
+        "cbse": {
+          "10:default": "419"
+        }
+      }
+    },
+    {
+      "id": "design",
+      "label": "Design",
+      "kind": "skill",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "12:default": "830"
+        }
+      }
+    },
+    {
+      "id": "design-thinking-and-innovation",
+      "label": "Design Thinking & Innovation",
+      "kind": "skill",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "10",
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "10:default": "422",
+          "12:default": "848"
+        }
+      }
+    },
+    {
+      "id": "early-childhood-care-and",
+      "label": "Early Childhood Care &",
+      "kind": "skill",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "12:default": "842"
+        }
+      }
+    },
+    {
+      "id": "economics",
+      "label": "Economics",
+      "kind": "elective",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "12:default": "030"
+        }
+      }
+    },
+    {
+      "id": "education",
+      "label": "Education",
+      "kind": "skill",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "12:default": "845"
+        }
+      }
+    },
+    {
+      "id": "electrical-technology",
+      "label": "Electrical Technology",
+      "kind": "skill",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "12:default": "819"
+        }
+      }
+    },
+    {
+      "id": "electronic-technology",
+      "label": "Electronic Technology",
+      "kind": "skill",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "12:default": "820"
+        }
+      }
+    },
+    {
+      "id": "electronics-and-hardware",
+      "label": "Electronics & Hardware",
+      "kind": "skill",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "10",
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "10:default": "420",
+          "12:default": "847"
+        }
+      }
+    },
+    {
+      "id": "elements-of-book-keeping-and",
+      "label": "Elements of Book Keeping &",
+      "kind": "elective",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "10"
+      ],
+      "codes": {
+        "cbse": {
+          "10:default": "254"
+        }
+      }
+    },
+    {
+      "id": "elements-of-business",
+      "label": "Elements of Business",
+      "kind": "elective",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "10"
+      ],
+      "codes": {
+        "cbse": {
+          "10:default": "154"
+        }
+      }
+    },
+    {
+      "id": "engg-graphics",
+      "label": "Engg. Graphics",
+      "kind": "elective",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "12:default": "046"
+        }
+      }
+    },
+    {
+      "id": "english",
+      "label": "English",
+      "kind": "language",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "10",
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "10:communicative": "101",
+          "10:lang-lit": "184",
+          "12:lang-lit": "301"
+        }
+      },
+      "nativeLabel": "English"
+    },
+    {
+      "id": "entrepreneurship",
+      "label": "Entrepreneurship",
+      "kind": "elective",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "12:default": "066"
+        }
+      }
+    },
+    {
+      "id": "fashion-studies",
+      "label": "Fashion Studies",
+      "kind": "skill",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "12:default": "841"
+        }
+      }
+    },
+    {
+      "id": "financial-markets-management",
+      "label": "Financial Markets Management",
+      "kind": "skill",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "12:default": "805"
+        }
+      }
+    },
+    {
+      "id": "food-nutrition-and-dietetics",
+      "label": "Food Nutrition & Dietetics",
+      "kind": "skill",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "12:default": "834"
+        }
+      }
+    },
+    {
+      "id": "food-production",
+      "label": "Food Production",
+      "kind": "skill",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "10",
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "10:default": "409",
+          "12:default": "809"
+        }
+      }
+    },
+    {
+      "id": "foundation-skill-for-sciences",
+      "label": "Foundation Skill For Sciences",
+      "kind": "skill",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "10"
+      ],
+      "codes": {
+        "cbse": {
+          "10:default": "421"
+        }
+      }
+    },
+    {
+      "id": "french",
+      "label": "French",
+      "kind": "language",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "10",
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "10:default": "018",
+          "12:default": "118"
+        }
+      },
+      "nativeLabel": "Français"
+    },
+    {
+      "id": "front-office-operations",
+      "label": "Front Office Operations",
+      "kind": "skill",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "10",
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "10:default": "410",
+          "12:default": "810"
+        }
+      }
+    },
+    {
+      "id": "geography",
+      "label": "Geography",
+      "kind": "elective",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "12:default": "029"
+        }
+      }
+    },
+    {
+      "id": "geospatial-technology",
+      "label": "Geospatial Technology",
+      "kind": "skill",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "12:default": "818"
+        }
+      }
+    },
+    {
+      "id": "german",
+      "label": "German",
+      "kind": "language",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "10",
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "10:default": "020",
+          "12:default": "120"
+        }
+      },
+      "nativeLabel": "Deutsch"
+    },
+    {
+      "id": "graphics",
+      "label": "Graphics",
+      "kind": "elective",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "12:default": "050"
+        }
+      }
+    },
+    {
+      "id": "gujarati",
+      "label": "Gujarati",
+      "kind": "language",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "10",
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "10:default": "010",
+          "12:default": "110"
+        }
+      },
+      "nativeLabel": "ગુજરાતી"
+    },
+    {
+      "id": "gurung",
+      "label": "Gurung",
+      "kind": "language",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "10"
+      ],
+      "codes": {
+        "cbse": {
+          "10:default": "132"
+        }
+      },
+      "nativeLabel": "गुरुङ"
+    },
+    {
+      "id": "health-care",
+      "label": "Health Care",
+      "kind": "skill",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "10",
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "10:default": "413",
+          "12:default": "813"
+        }
+      }
+    },
+    {
+      "id": "hind-music",
+      "label": "Hind. Music",
+      "kind": "elective",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "10"
+      ],
+      "codes": {
+        "cbse": {
+          "10:default": "034"
+        }
+      }
+    },
+    {
+      "id": "hind-music-mel-ins",
+      "label": "Hind. Music Mel. Ins.",
+      "kind": "elective",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "10",
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "10:default": "035",
+          "12:default": "035"
+        }
+      }
+    },
+    {
+      "id": "hind-music-per-ins",
+      "label": "Hind. Music Per. Ins.",
+      "kind": "elective",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "10"
+      ],
+      "codes": {
+        "cbse": {
+          "10:default": "036"
+        }
+      }
+    },
+    {
+      "id": "hind-music-vocal",
+      "label": "Hind. Music.Vocal",
+      "kind": "elective",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "12:default": "034"
+        }
+      }
+    },
+    {
+      "id": "hind-per-ins",
+      "label": "Hind. Per Ins.",
+      "kind": "elective",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "12:default": "036"
+        }
+      }
+    },
+    {
+      "id": "hindi",
+      "label": "Hindi",
+      "kind": "language",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "10",
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "10:A": "002",
+          "10:B": "085",
+          "12:elective": "002",
+          "12:core": "302"
+        }
+      },
+      "nativeLabel": "हिन्दी"
+    },
+    {
+      "id": "history",
+      "label": "History",
+      "kind": "elective",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "12:default": "027"
+        }
+      }
+    },
+    {
+      "id": "home-science",
+      "label": "Home Science",
+      "kind": "elective",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "10",
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "10:default": "064",
+          "12:default": "064"
+        }
+      }
+    },
+    {
+      "id": "horticulture",
+      "label": "Horticulture",
+      "kind": "skill",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "12:default": "816"
+        }
+      }
+    },
+    {
+      "id": "informatics-practice",
+      "label": "Informatics Practice",
+      "kind": "elective",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "12:default": "065"
+        }
+      }
+    },
+    {
+      "id": "information-technology",
+      "label": "Information Technology",
+      "kind": "skill",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "10",
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "10:default": "402",
+          "12:default": "802"
+        }
+      }
+    },
+    {
+      "id": "insurance",
+      "label": "Insurance",
+      "kind": "skill",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "12:default": "814"
+        }
+      }
+    },
+    {
+      "id": "introduction-to-financial",
+      "label": "Introduction To Financial",
+      "kind": "skill",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "10"
+      ],
+      "codes": {
+        "cbse": {
+          "10:default": "405"
+        }
+      }
+    },
+    {
+      "id": "introduction-to-tourism",
+      "label": "Introduction To Tourism",
+      "kind": "skill",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "10"
+      ],
+      "codes": {
+        "cbse": {
+          "10:default": "406"
+        }
+      }
+    },
+    {
+      "id": "japanese",
+      "label": "Japanese",
+      "kind": "language",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "10",
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "10:default": "094",
+          "12:default": "194"
+        }
+      },
+      "nativeLabel": "日本語"
+    },
+    {
+      "id": "kannada",
+      "label": "Kannada",
+      "kind": "language",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "10",
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "10:default": "015",
+          "12:default": "115"
+        }
+      },
+      "nativeLabel": "ಕನ್ನಡ"
+    },
+    {
+      "id": "kashmiri",
+      "label": "Kashmiri",
+      "kind": "language",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "10",
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "10:default": "097",
+          "12:default": "197"
+        }
+      },
+      "nativeLabel": "کٲشُر"
+    },
+    {
+      "id": "kathak-dance",
+      "label": "Kathak - Dance",
+      "kind": "elective",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "12:default": "056"
+        }
+      }
+    },
+    {
+      "id": "kathakali-dance",
+      "label": "Kathakali - Dance",
+      "kind": "elective",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "12:default": "061"
+        }
+      }
+    },
+    {
+      "id": "knowledge-tradition-and-pract",
+      "label": "Knowledge Tradition & Pract",
+      "kind": "elective",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "12:default": "073"
+        }
+      }
+    },
+    {
+      "id": "kokborok",
+      "label": "Kokborok",
+      "kind": "language",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "10",
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "10:default": "091",
+          "12:default": "191"
+        }
+      },
+      "nativeLabel": "Kokborok"
+    },
+    {
+      "id": "kuchipudi-dance",
+      "label": "Kuchipudi - Dance",
+      "kind": "elective",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "12:default": "058"
+        }
+      }
+    },
+    {
+      "id": "land-transportation-associate",
+      "label": "Land Transportation Associate",
+      "kind": "skill",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "12:default": "846"
+        }
+      }
+    },
+    {
+      "id": "legal-studies",
+      "label": "Legal Studies",
+      "kind": "elective",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "12:default": "074"
+        }
+      }
+    },
+    {
+      "id": "lepcha",
+      "label": "Lepcha",
+      "kind": "language",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "10",
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "10:default": "026",
+          "12:default": "126"
+        }
+      },
+      "nativeLabel": "ᰛᰩᰵ"
+    },
+    {
+      "id": "library-and-information-science",
+      "label": "Library & Information Science",
+      "kind": "skill",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "12:default": "836"
+        }
+      }
+    },
+    {
+      "id": "limboo",
+      "label": "Limboo",
+      "kind": "language",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "10",
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "10:default": "025",
+          "12:default": "125"
+        }
+      },
+      "nativeLabel": "ᤕᤠᤰᤌᤢᤱ"
+    },
+    {
+      "id": "malayalam",
+      "label": "Malayalam",
+      "kind": "language",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "10",
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "10:default": "012",
+          "12:default": "112"
+        }
+      },
+      "nativeLabel": "മലയാളം"
+    },
+    {
+      "id": "manipuri",
+      "label": "Manipuri",
+      "kind": "language",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "10",
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "10:default": "011",
+          "12:default": "111"
+        }
+      },
+      "nativeLabel": "ꯃꯤꯇꯩꯂꯣꯟ"
+    },
+    {
+      "id": "manipuri-dance",
+      "label": "Manipuri - Dance",
+      "kind": "elective",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "12:default": "060"
+        }
+      }
+    },
+    {
+      "id": "marathi",
+      "label": "Marathi",
+      "kind": "language",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "10",
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "10:default": "009",
+          "12:default": "109"
+        }
+      },
+      "nativeLabel": "मराठी"
+    },
+    {
+      "id": "marketing",
+      "label": "Marketing",
+      "kind": "skill",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "12:default": "812"
+        }
+      }
+    },
+    {
+      "id": "marketing-and-sales",
+      "label": "Marketing & Sales",
+      "kind": "skill",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "10"
+      ],
+      "codes": {
+        "cbse": {
+          "10:default": "412"
+        }
+      }
+    },
+    {
+      "id": "mass-media-studies",
+      "label": "Mass Media Studies",
+      "kind": "skill",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "12:default": "835"
+        }
+      }
+    },
+    {
+      "id": "medical-diagnostics",
+      "label": "Medical Diagnostics",
+      "kind": "skill",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "12:default": "828"
+        }
+      }
+    },
+    {
+      "id": "mizo",
+      "label": "Mizo",
+      "kind": "language",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "10",
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "10:default": "098",
+          "12:default": "198"
+        }
+      },
+      "nativeLabel": "Mizo tawng"
+    },
+    {
+      "id": "multi-skill-foundation-course",
+      "label": "Multi Skill Foundation",
+      "kind": "skill",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "10"
+      ],
+      "codes": {
+        "cbse": {
+          "10:default": "416"
+        }
+      }
+    },
+    {
+      "id": "multimedia",
+      "label": "Multimedia",
+      "kind": "skill",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "10",
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "10:default": "415",
+          "12:default": "821"
+        }
+      }
+    },
+    {
+      "id": "national-cadet-corps",
+      "label": "National Cadet Corps",
+      "kind": "elective",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "10",
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "10:default": "076",
+          "12:default": "076"
+        }
+      }
+    },
+    {
+      "id": "nepali",
+      "label": "Nepali",
+      "kind": "language",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "10",
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "10:default": "024",
+          "12:default": "124"
+        }
+      },
+      "nativeLabel": "नेपाली"
+    },
+    {
+      "id": "odia",
+      "label": "Odia",
+      "kind": "language",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "10",
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "10:default": "013",
+          "12:default": "113"
+        }
+      },
+      "nativeLabel": "ଓଡ଼ିଆ"
+    },
+    {
+      "id": "odissi-dance",
+      "label": "Odissi - Dance",
+      "kind": "elective",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "12:default": "059"
+        }
+      }
+    },
+    {
+      "id": "office-procedures-and-practices",
+      "label": "Office Procedures & Practices",
+      "kind": "skill",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "12:default": "824"
+        }
+      }
+    },
+    {
+      "id": "painting",
+      "label": "Painting",
+      "kind": "elective",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "10",
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "10:default": "049",
+          "12:default": "049"
+        }
+      }
+    },
+    {
+      "id": "persian",
+      "label": "Persian",
+      "kind": "language",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "10",
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "10:default": "023",
+          "12:default": "123"
+        }
+      },
+      "nativeLabel": "فارسی"
+    },
+    {
+      "id": "physical-activity-trainer",
+      "label": "Physical Activity Trainer",
+      "kind": "skill",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "10"
+      ],
+      "codes": {
+        "cbse": {
+          "10:default": "418"
+        }
+      }
+    },
+    {
+      "id": "physical-education",
+      "label": "Physical Education",
+      "kind": "elective",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "12:default": "048"
+        }
+      }
+    },
+    {
+      "id": "physics",
+      "label": "Physics",
+      "kind": "elective",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "12:default": "042"
+        }
+      }
+    },
+    {
+      "id": "political-science",
+      "label": "Political Science",
+      "kind": "elective",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "12:default": "028"
+        }
+      }
+    },
+    {
+      "id": "psychology",
+      "label": "Psychology",
+      "kind": "elective",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "12:default": "037"
+        }
+      }
+    },
+    {
+      "id": "punjabi",
+      "label": "Punjabi",
+      "kind": "language",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "10",
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "10:default": "004",
+          "12:default": "104"
+        }
+      },
+      "nativeLabel": "ਪੰਜਾਬੀ"
+    },
+    {
+      "id": "rai",
+      "label": "Rai",
+      "kind": "language",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "10"
+      ],
+      "codes": {
+        "cbse": {
+          "10:default": "131"
+        }
+      },
+      "nativeLabel": "Rai"
+    },
+    {
+      "id": "retail",
+      "label": "Retail",
+      "kind": "skill",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "10",
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "10:default": "401",
+          "12:default": "801"
+        }
+      }
+    },
+    {
+      "id": "russian",
+      "label": "Russian",
+      "kind": "language",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "10",
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "10:default": "021",
+          "12:default": "121"
+        }
+      },
+      "nativeLabel": "Русский"
+    },
+    {
+      "id": "salesmanship",
+      "label": "Salesmanship",
+      "kind": "skill",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "12:default": "831"
+        }
+      }
+    },
+    {
+      "id": "sanskrit",
+      "label": "Sanskrit",
+      "kind": "language",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "10",
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "10:communicative": "119",
+          "10:core": "122",
+          "12:core": "322"
+        }
+      },
+      "nativeLabel": "संस्कृतम्"
+    },
+    {
+      "id": "sculpture",
+      "label": "Sculpture",
+      "kind": "elective",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "12:default": "051"
+        }
+      }
+    },
+    {
+      "id": "security",
+      "label": "Security",
+      "kind": "skill",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "10"
+      ],
+      "codes": {
+        "cbse": {
+          "10:default": "403"
+        }
+      }
+    },
+    {
+      "id": "sherpa",
+      "label": "Sherpa",
+      "kind": "language",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "10"
+      ],
+      "codes": {
+        "cbse": {
+          "10:default": "134"
+        }
+      },
+      "nativeLabel": "ཤར་པ"
+    },
+    {
+      "id": "shorthand",
+      "label": "Shorthand",
+      "kind": "skill",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "12:default": "826"
+        }
+      }
+    },
+    {
+      "id": "sindhi",
+      "label": "Sindhi",
+      "kind": "language",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "10",
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "10:default": "008",
+          "12:default": "108"
+        }
+      },
+      "nativeLabel": "سنڌي"
+    },
+    {
+      "id": "sn",
+      "label": "Sn",
+      "kind": "skill",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "12:default": "843"
+        }
+      }
+    },
+    {
+      "id": "sociology",
+      "label": "Sociology",
+      "kind": "elective",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "12:default": "039"
+        }
+      }
+    },
+    {
+      "id": "spanish",
+      "label": "Spanish",
+      "kind": "language",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "10",
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "10:default": "099",
+          "12:default": "196"
+        }
+      },
+      "nativeLabel": "Español"
+    },
+    {
+      "id": "tamang",
+      "label": "Tamang",
+      "kind": "language",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "10"
+      ],
+      "codes": {
+        "cbse": {
+          "10:default": "133"
+        }
+      },
+      "nativeLabel": "तामाङ"
+    },
+    {
+      "id": "tamil",
+      "label": "Tamil",
+      "kind": "language",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "10",
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "10:default": "006",
+          "12:default": "106"
+        }
+      },
+      "nativeLabel": "தமிழ்"
+    },
+    {
+      "id": "tangkhul",
+      "label": "Tangkhul",
+      "kind": "language",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "10",
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "10:default": "093",
+          "12:default": "193"
+        }
+      },
+      "nativeLabel": "Tangkhul"
+    },
+    {
+      "id": "taxation",
+      "label": "Taxation",
+      "kind": "skill",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "12:default": "822"
+        }
+      }
+    },
+    {
+      "id": "telugu",
+      "label": "Telugu",
+      "kind": "language",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "10",
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "10:default": "007",
+          "12:default": "107"
+        }
+      },
+      "nativeLabel": "తెలుగు"
+    },
+    {
+      "id": "telugu-telangana",
+      "label": "Telugu-Telangana",
+      "kind": "language",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "10",
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "10:default": "089",
+          "12:default": "189"
+        }
+      },
+      "nativeLabel": "తెలుగు"
+    },
+    {
+      "id": "textile-design",
+      "label": "Textile Design",
+      "kind": "skill",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "12:default": "829"
+        }
+      }
+    },
+    {
+      "id": "thai",
+      "label": "Thai",
+      "kind": "language",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "10"
+      ],
+      "codes": {
+        "cbse": {
+          "10:default": "136"
+        }
+      },
+      "nativeLabel": "ไทย"
+    },
+    {
+      "id": "tibetan",
+      "label": "Tibetan",
+      "kind": "language",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "10",
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "10:default": "017",
+          "12:default": "117"
+        }
+      },
+      "nativeLabel": "བོད་ཡིག"
+    },
+    {
+      "id": "tourism",
+      "label": "Tourism",
+      "kind": "skill",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "12:default": "806"
+        }
+      }
+    },
+    {
+      "id": "typography-and-computer",
+      "label": "Typography & Computer",
+      "kind": "skill",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "12:default": "817"
+        }
+      }
+    },
+    {
+      "id": "urdu",
+      "label": "Urdu",
+      "kind": "language",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "10",
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "10:A": "003",
+          "10:B": "303",
+          "12:elective": "003",
+          "12:core": "303"
+        }
+      },
+      "nativeLabel": "اُردُو"
+    },
+    {
+      "id": "web-application",
+      "label": "Web Application",
+      "kind": "skill",
+      "boards": [
+        "cbse"
+      ],
+      "classes": [
+        "12"
+      ],
+      "codes": {
+        "cbse": {
+          "12:default": "803"
+        }
+      }
+    }
+  ]
+}

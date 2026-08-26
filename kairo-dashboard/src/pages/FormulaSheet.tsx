@@ -8,6 +8,7 @@ import { post, get, del } from '../lib/api'
 import { listFormulas, getProfile, type Formula as TwinFormula } from '../lib/twin'
 import { PrimaryButton } from '../components/PrimaryButton'
 import MathExpr from '../components/MathExpr'
+import { subjectLabels } from '../curriculum/subjects'
 
 const SCHOOL_ID = 'demo_school'
 
@@ -40,7 +41,7 @@ const btn   = (active = true) => ({
   boxShadow: active ? '0 6px 18px rgba(124, 92, 255, 0.35)' : 'none',
 } as React.CSSProperties)
 
-const SUBJECTS = ['Physics','Chemistry','Biology','Mathematics','History','Geography','Economics','English','Computer Science']
+const SUBJECTS = (() => { const p = getProfile() as any; return subjectLabels({ board: p?.board, cls: p?.cls }) })()
 
 type Tab = 'collected' | 'sheets'
 

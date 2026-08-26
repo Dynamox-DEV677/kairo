@@ -4,6 +4,8 @@ import { Edit3, Expand, Star, Shield, ArrowRight, Copy, Check, PencilLine, Spark
 import { post } from '../lib/api'
 import { chat } from '../lib/openrouter'
 import { KEYS, getRaw, setRaw } from '../lib/storage'
+import { subjectLabels } from '../curriculum/subjects'
+import { getProfile } from '../lib/twin'
 
 const SCHOOL_ID = 'demo_school'
 
@@ -386,7 +388,7 @@ function ToneImprover() {
         <div>
           <label style={label}>Subject</label>
           <select style={inp} value={subject} onChange={e => setSubject(e.target.value)}>
-            {['General','Physics','Chemistry','Biology','Mathematics','History','Geography','English','Hindi'].map(s => <option key={s}>{s}</option>)}
+            {subjectLabels({ board: (getProfile() as any)?.board, cls: (getProfile() as any)?.cls, general: true }).map(s => <option key={s}>{s}</option>)}
           </select>
         </div>
         <div>
@@ -433,7 +435,7 @@ function ExpandTool() {
         <div>
           <label style={label}>Subject</label>
           <select style={inp} value={subject} onChange={e => setSubject(e.target.value)}>
-            {['General','Physics','Chemistry','Biology','Mathematics','History','Geography','English'].map(s => <option key={s}>{s}</option>)}
+            {subjectLabels({ board: (getProfile() as any)?.board, cls: (getProfile() as any)?.cls, general: true }).map(s => <option key={s}>{s}</option>)}
           </select>
         </div>
         <div>
@@ -479,7 +481,7 @@ function TopperTool() {
       <div style={{ marginBottom: 12 }}>
         <label style={label}>Subject</label>
         <select style={{ ...inp, marginBottom: 12 }} value={subject} onChange={e => setSubject(e.target.value)}>
-          {['General','Physics','Chemistry','Biology','Mathematics','History','Geography','English'].map(s => <option key={s}>{s}</option>)}
+          {subjectLabels({ board: (getProfile() as any)?.board, cls: (getProfile() as any)?.cls, general: true }).map(s => <option key={s}>{s}</option>)}
         </select>
         <label style={label}>Your Current Answer</label>
         <textarea style={{ ...inp, height: 160, resize: 'vertical' }} value={text} onChange={e => setText(e.target.value)} placeholder="Write your current answer — any quality is fine…" />

@@ -1,7 +1,7 @@
 import { useState, useMemo, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowRight, ArrowLeft, Check, Sparkles, GraduationCap, BookOpen, Repeat, Eye } from 'lucide-react'
-import { saveProfile, track, listFlashcards, recordFlashcard, type KynoProfile } from '../lib/twin'
+import { saveProfile, track, listFlashcards, recordFlashcard, type KynoProfile, getProfile } from '../lib/twin'
 import { pickDiagnostic, type DiagnosticQ } from '../lib/diagnostic.core'
 import { STARTER_DECKS } from '../data/starterDecks'
 import { decksForCurriculum, newCardsForDeck } from '../lib/starterDecks.core'
@@ -13,8 +13,9 @@ const A = { bg: '#0A0D16', card: '#141A2A', border: '#1f2532', accent: '#7C5CFF'
 const FONT = "'Inter', system-ui, sans-serif"
 
 import { BOARD_OPTIONS } from '../lib/curriculum.core'
+import { subjectLabels } from '../curriculum/subjects'
 const TIMES = ['Morning', 'Afternoon', 'Evening', 'Late night']
-const SUBJECTS = ['Maths', 'Physics', 'Chemistry', 'Biology', 'English', 'Social', 'Computer', 'Hindi', 'Economics', 'Other']
+const SUBJECTS = (() => { const p = getProfile() as any; return subjectLabels({ board: p?.board, cls: p?.cls }) })()
 const GOALS = ['Score 90%+ in boards', 'Top my class', 'Crack JEE', 'Crack NEET', 'Build strong basics', 'Just learn better']
 const HOBBIES = ['Cricket', 'Football', 'Gaming', 'Music', 'Drawing', 'Coding', 'Reading', 'Dancing', 'Movies', 'Space', 'Chess', 'Cooking', 'Anime', 'Photography']
 const HOURS = ['Under 1 hr', '1–2 hrs', '2–4 hrs', '4+ hrs']

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
+import { subjectLabels } from '../curriculum/subjects'
 import { motion } from 'framer-motion'
 import { Timer, Flag, ArrowLeft, ArrowRight, Landmark, RotateCcw, AlertTriangle } from 'lucide-react'
 import { PrimaryButton } from '../components/PrimaryButton'
@@ -22,7 +23,7 @@ import {
  */
 
 const SCHOOL_ID = 'demo_school'
-const SUBJECTS = ['Physics', 'Chemistry', 'Biology', 'Mathematics', 'History', 'Geography', 'Economics', 'English', 'Computer Science']
+const SUBJECTS = (() => { const p = getProfile() as any; return subjectLabels({ board: p?.board, cls: p?.cls }) })()
 
 const C = {
   bg: '#0A0D16', panel: '#141A2A', border: 'rgba(255,255,255,0.08)',

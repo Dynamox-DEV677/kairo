@@ -6,6 +6,7 @@ import { track, getProfile } from '../lib/twin'
 import { cleanOption } from '../lib/museum.core'
 import ReportQuestion from '../components/ReportQuestion'
 import { awardXP } from '../lib/game'
+import { subjectLabels } from '../curriculum/subjects'
 
 const SCHOOL_ID = 'demo_school'
 
@@ -14,7 +15,7 @@ const inp   = { background: '#141A2A', border: '1px solid #1f2532', borderRadius
 const lbl   = { fontSize: 11, color: '#9CA3AF', display: 'block', marginBottom: 5, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.8 } as React.CSSProperties
 const btn   = (active = true, color?: string) => ({ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', borderRadius: 9, border: 'none', background: active ? (color || 'linear-gradient(135deg,#7C5CFF,#6455e0)') : '#171D2D', color: active ? '#fff' : '#6B7280', fontFamily: 'inherit', fontSize: 13, fontWeight: 600, cursor: active ? 'pointer' : 'not-allowed' } as React.CSSProperties)
 
-const SUBJECTS = ['Physics','Chemistry','Biology','Mathematics','History','Geography','Economics','English','Computer Science']
+const SUBJECTS = (() => { const p = getProfile() as any; return subjectLabels({ board: p?.board, cls: p?.cls }) })()
 
 type Screen = 'setup' | 'quiz' | 'result' | 'history'
 

@@ -8,6 +8,8 @@ import rehypeKatex from 'rehype-katex'
 import { chat } from '../lib/openrouter'
 import { prepMathMarkdown } from '../lib/math.core'
 import { authToken } from '../lib/storage'
+import { subjectLabels } from '../curriculum/subjects'
+import { getProfile } from '../lib/twin'
 
 const SYSTEM = `You are Kyno, an expert AI teaching assistant for Indian school students (CBSE/ICSE/state boards).
 
@@ -118,7 +120,7 @@ export default function EssayGrader() {
             <div style={{ flex: 1 }}>
               <label style={{ fontSize: 11, fontWeight: 600, color: '#9CA3AF', display: 'block', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.8 }}>Subject</label>
               <select value={subject} onChange={e => setSubject(e.target.value)} style={{ width: '100%', background: '#141A2A', border: '1px solid #1f2532', borderRadius: 8, padding: '9px 12px', fontSize: 13, color: '#fafafa', fontFamily: 'inherit', outline: 'none', appearance: 'none' }}>
-                {['General','English','Hindi','History','Geography','Science','Economics','Political Science','Business Studies'].map(s => <option key={s}>{s}</option>)}
+                {subjectLabels({ board: (getProfile() as any)?.board, cls: (getProfile() as any)?.cls, kinds: ['language', 'core', 'elective'], general: true }).map(s => <option key={s}>{s}</option>)}
               </select>
             </div>
             <div style={{ width: 110 }}>

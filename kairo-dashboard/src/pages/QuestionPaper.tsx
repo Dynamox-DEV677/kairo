@@ -7,6 +7,8 @@ import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
 import { chat } from '../lib/openrouter'
 import { prepMathMarkdown } from '../lib/math.core'
+import { subjectLabels } from '../curriculum/subjects'
+import { getProfile } from '../lib/twin'
 
 const SYSTEM = `You are an expert question paper setter for Indian school board exams.
 Create a complete board-standard paper with:
@@ -102,7 +104,7 @@ export default function QuestionPaper() {
             </div>
             <div>
               <label style={{ fontSize: 11, fontWeight: 600, color: '#9CA3AF', display: 'block', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.8 }}>Subject</label>
-              {sel(subject, setSubject, ['Mathematics','Physics','Chemistry','Biology','English','Hindi','History','Geography','Economics','Science','Computer Science'])}
+              {sel(subject, setSubject, subjectLabels({ board: (getProfile() as any)?.board, cls: (getProfile() as any)?.cls }))}
             </div>
             <div>
               <label style={{ fontSize: 11, fontWeight: 600, color: '#9CA3AF', display: 'block', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.8 }}>Class</label>

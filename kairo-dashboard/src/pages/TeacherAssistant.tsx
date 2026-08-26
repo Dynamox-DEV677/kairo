@@ -11,8 +11,10 @@ import rehypeKatex from 'rehype-katex'
 import { chat } from '../lib/openrouter'
 import { saveToNotebook } from '../lib/notebook'
 import { prepMathMarkdown } from '../lib/math.core'
+import { subjectLabels } from '../curriculum/subjects'
+import { getProfile } from '../lib/twin'
 
-const SUBJECTS = ['Mathematics', 'Physics', 'Chemistry', 'Biology', 'English', 'Hindi', 'History', 'Geography', 'Political Science', 'Economics', 'Computer Science']
+const SUBJECTS = (() => { const p = getProfile() as any; return subjectLabels({ board: p?.board, cls: p?.cls }) })()
 const GRADES   = ['6', '7', '8', '9', '10', '11', '12']
 
 const card: React.CSSProperties = { background: '#141A2A', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14 }
