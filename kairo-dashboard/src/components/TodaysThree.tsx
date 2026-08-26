@@ -1,7 +1,22 @@
 import { useMemo } from 'react'
 import { ListTodo, ArrowRight, TrendingUp } from 'lucide-react'
-import { getDashboard, listFlashcards, getProfile } from '../lib/twin'
+import { getDashboard, listFlashcards, getProfile, loadState } from '../lib/twin'
 import { todaysThree, growthStat, type DailyTask } from '../lib/daily.core'
+import { graphForProfile } from '../lib/syllabusFor'
+import { nodeStates } from '../lib/syllabusGraph.core'
+import { rankNodes } from '../lib/syllabusRank.core'
+import { todayPlan, DEFAULT_DAILY_MINUTES, type TodayPlan } from '../lib/todayPlan.core'
+import { nearestExamDays } from '../lib/examDate'
+
+/** "2–4 hrs" style capacity from onboarding → a minutes budget. */
+function dailyMinutesOf(profile: { dailyHours?: string } | null | undefined): number {
+  const h = String(profile?.dailyHours || '')
+  if (/under 1/i.test(h)) return 45
+  if (/1.?2/.test(h)) return 90
+  if (/2.?4/.test(h)) return 150
+  if (/4\+/.test(h)) return 210
+  return DEFAULT_DAILY_MINUTES
+}
 
 /**
  * C8 — "today's 3 things", on Home.
@@ -16,14 +31,37 @@ import { todaysThree, growthStat, type DailyTask } from '../lib/daily.core'
  * the number to mean something.
  */
 export default function TodaysThree({ onNavigate }: { onNavigate?: (view: string) => void }) {
-  const { tasks, growth } = useMemo(() => {
+  const { tasks, growth, plan } = useMemo(() => {
     const now = Date.now()
     const snap = getDashboard()
-    const dueCards = listFlashcards().filter(c => typeof c.dueAt === 'number' && c.dueAt <= now).length
+    const cards = listFlashcards()
+    const due = cards.filter(c => typeof c.dueAt === 'number' && c.dueAt <= now)
     const examDates = (getProfile() as any)?.examDates || []
+
+    // Retention+coverage brief (part D-2): when a syllabus graph exists for
+    // this student, the MIX of today comes from the scheduler — phase-aware,
+    // capped to their declared capacity. Otherwise the original C8 three.
+    let syllabusPlan: TodayPlan | null = null
+    try {
+      const graph = graphForProfile(getProfile() as any)
+      if (graph) {
+        const states = nodeStates(graph, { events: loadState().events, mastery: snap.mastery })
+        const fading = graph.chapters.filter(c => states.get(c.id)?.state === 'FADING')
+        syllabusPlan = todayPlan({
+          dueCards: due,
+          ranked: rankNodes(graph, states, { max: 5 }),
+          fading,
+          daysToExam: nearestExamDays(now),
+          dailyMinutes: dailyMinutesOf(getProfile() as any),
+          now,
+        })
+      }
+    } catch {  }
+
     return {
-      tasks: todaysThree({ twin: snap.twin, dueCards, examDates, now }),
+      tasks: todaysThree({ twin: snap.twin, dueCards: due.length, examDates, now }),
       growth: growthStat(snap.recentEvents, now),
+      plan: syllabusPlan,
     }
   }, [])
 
@@ -36,10 +74,41 @@ export default function TodaysThree({ onNavigate }: { onNavigate?: (view: string
         display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12,
         fontSize: 11, fontWeight: 700, letterSpacing: 1.6, textTransform: 'uppercase', color: '#A5B4FC',
       }}>
-        <ListTodo size={13} /> Today's 3 things
+        <ListTodo size={13} /> Today
+        {plan?.daysToExam != null && (
+          <span style={{ marginLeft: 'auto', textTransform: 'none', letterSpacing: 0, fontWeight: 600, color: '#9CA3AF', fontSize: 11 }}>
+            {plan.daysToExam} day{plan.daysToExam === 1 ? '' : 's'} to your exam · {plan.phase.toLowerCase()} phase
+          </span>
+        )}
       </div>
 
-      {tasks.length === 0 ? (
+      {/* The scheduler's day, when a syllabus map exists for this student. */}
+      {plan && plan.items.length > 0 ? (
+        <>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {plan.items.map((it, i) => (
+              <button key={it.id} onClick={() => onNavigate?.(it.to)} className="kyno-ghost"
+                style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', padding: '10px 14px', textAlign: 'left' }}>
+                <span style={{
+                  width: 22, height: 22, borderRadius: 7, flexShrink: 0, display: 'grid', placeItems: 'center',
+                  fontSize: 11, fontWeight: 800,
+                  background: it.kind === 'repair' ? 'rgba(255,122,144,0.16)' : it.kind === 'review' ? 'rgba(52,211,153,0.16)' : 'rgba(124,92,255,0.14)',
+                  color: it.kind === 'repair' ? '#FF9CB0' : it.kind === 'review' ? '#34D399' : '#A5B4FC',
+                }}>{i + 1}</span>
+                <span style={{ flex: 1, minWidth: 0 }}>
+                  <span style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#fafafa' }}>{it.title}</span>
+                  <span style={{ display: 'block', fontSize: 11.5, color: '#9CA3AF', marginTop: 2, lineHeight: 1.5 }}>{it.why}</span>
+                </span>
+                <span style={{ flexShrink: 0, fontSize: 10.5, color: '#6B7280' }}>{it.minutes}m</span>
+                <ArrowRight size={13} style={{ flexShrink: 0, opacity: 0.7 }} />
+              </button>
+            ))}
+          </div>
+          <div style={{ fontSize: 10.5, color: '#6B7280', marginTop: 9, lineHeight: 1.5 }}>
+            {plan.note} · about {plan.plannedMinutes} min of your {plan.budgetMinutes}.
+          </div>
+        </>
+      ) : tasks.length === 0 ? (
         <p style={{ margin: 0, fontSize: 12.5, color: '#B1B5BA', lineHeight: 1.7 }}>
           Nothing queued yet — that just means Kyno hasn't seen you work.
           Ask one doubt in the Solver and tomorrow's three will be built from it.

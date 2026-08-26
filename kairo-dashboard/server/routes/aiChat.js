@@ -2,6 +2,7 @@ import express from 'express'
 import { searchManyParallel } from '../services/imageSearch.js'
 import { supabaseAdmin } from '../services/supabase.js'
 import groqPool from '../services/groqPool.js'
+import { PRODUCTION_MODELS, TASK_MODELS, liveModels, isDeadModelError, markModelDead, isModelDead, noteKeyUsed, modelForKey, deadModelReport } from '../utils/models.js'
 import { withSlot, loadLevel } from '../utils/ai.js'
 
 import { requireSupabaseAuth } from '../middleware/supabaseAuth.js'
@@ -152,7 +153,10 @@ async function chatWikipediaFallback(question) {
   }
 }
 
-const CHAT_MODELS_TEXT   = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant']
+// Shared registry — same ids everywhere, and one place to fix when a model
+// retires. Five models deep now: the screenshot that prompted this had a
+// 429 on one and a 404 on the other, and there was nothing behind them.
+const CHAT_MODELS_TEXT   = [...PRODUCTION_MODELS.smart, ...PRODUCTION_MODELS.fast, ...PRODUCTION_MODELS.backstop]
 const CHAT_MODELS_VISION = ['qwen/qwen3.6-27b']
 
 const messagesHaveImages = (messages) =>
@@ -177,7 +181,8 @@ router.post('/chat', async (req, res) => {
 
   const devKey = readDevKey(req)
   const wantVision = messagesHaveImages(messages)
-  let order = wantVision ? [...CHAT_MODELS_VISION] : [...CHAT_MODELS_TEXT]
+  // liveModels(): skip anything already proven unusable for this deployment.
+  let order = wantVision ? liveModels(CHAT_MODELS_VISION) : liveModels(CHAT_MODELS_TEXT)
   if (typeof model === 'string' && model && !model.endsWith(':free')) {
     if (!wantVision || CHAT_MODELS_VISION.includes(model)) {
       order = [model, ...order.filter(m => m !== model)]
@@ -191,9 +196,12 @@ router.post('/chat', async (req, res) => {
     // to a fresh pool key on the second pass recovers most of them.
     const attempts = [...order, ...order]
     for (let i = 0; i < attempts.length; i++) {
-      const m = attempts[i]
       const key = devKey || groqPool.next()
       if (!key) { lastErr = new Error('no live Groq keys (all cooling or none configured)'); break }
+      noteKeyUsed(key)
+      // Model access differs per Groq ACCOUNT and the pool spans several, so
+      // prefer one this particular key has not already refused.
+      const m = modelForKey(attempts.slice(i), key) || attempts[i]
       try {
         // Hold one global upstream slot so 50 students don't fire 50 concurrent
         // requests and 429 each other. Released as soon as Groq accepts.
@@ -211,6 +219,7 @@ router.post('/chat', async (req, res) => {
             try { groqPool.markBad(key, r.status) } catch {  }
           }
           const text = await r.text().catch(() => '')
+          if (isDeadModelError(r.status, text)) markModelDead(m, `HTTP ${r.status}`)
           throw new Error(`groq/${m} ${r.status}: ${text.slice(0, 160)}`)
         }
         upstream = r
@@ -454,19 +463,27 @@ CRITICAL: Output ONLY the JSON. Do not wrap in code fences. Do not say "Here is 
 // Ordered by intelligence. The solver PREFERS the smartest model that succeeds and
 // only falls back to a faster/smaller one if the smart ones fail or time out — so
 // answers read like a top-tier assistant, not whichever model won a speed race.
-const SOLVER_SMART_MODELS = [
-  'openai/gpt-oss-120b',      // strongest reasoning on Groq — ChatGPT-like depth
-  'llama-3.3-70b-versatile',  // strong, reliable, native JSON mode
-]
-const SOLVER_FAST_MODEL = 'llama-3.1-8b-instant'  // last-resort fast safety net
+// Model ids live in ONE place (server/utils/models.js) and are filtered
+// through liveModels() so a model this key cannot use (404) is skipped for
+// the rest of the process instead of burning an attempt on every request.
+const SOLVER_SMART_MODELS = PRODUCTION_MODELS.smart
+const SOLVER_FAST_MODEL = PRODUCTION_MODELS.fast[0]  // last-resort fast safety net
+const SOLVER_BACKSTOP = PRODUCTION_MODELS.backstop[0]
 // Union kept for the status probe / back-compat helpers.
-const GROQ_MODELS = [...SOLVER_SMART_MODELS, SOLVER_FAST_MODEL]
+const GROQ_MODELS = [...SOLVER_SMART_MODELS, SOLVER_FAST_MODEL, SOLVER_BACKSTOP]
 
+/**
+ * One model, one attempt — but the pool holds keys from SEVERAL Groq
+ * accounts with different model access, so a 404 here means "this account
+ * can't use this model", not "this model is gone". callGroqModel() wraps
+ * this and retries the same model on a different key before giving up.
+ */
 async function callGroqOne(model, question, apiKey, timeout = 7000, systemExtra = '') {
   const key = apiKey || groqPool.next()
   if (!key) {
     throw new Error(`groq/${model}: no live keys (all 429-cooling or none configured)`)
   }
+  noteKeyUsed(key)
 
   const ctrl = new AbortController()
   const timer = setTimeout(() => ctrl.abort(), timeout)
@@ -502,6 +519,14 @@ async function callGroqOne(model, question, apiKey, timeout = 7000, systemExtra 
         try { groqPool.markBad(key, resp.status) } catch {  }
       }
       const t = await resp.text()
+      // "does not exist or you do not have access to it" — this ACCOUNT
+      // can't use this model. Remember the (model, key) pair only.
+      if (isDeadModelError(resp.status, t)) {
+        markModelDead(model, `HTTP ${resp.status}`, key)
+        const err = new Error(`groq/${model} HTTP ${resp.status}: ${t.slice(0, 120)}`)
+        err.deadForKey = true
+        throw err
+      }
       throw new Error(`groq/${model} HTTP ${resp.status}: ${t.slice(0, 120)}`)
     }
     const data = await resp.json()
@@ -516,8 +541,37 @@ async function callGroqOne(model, question, apiKey, timeout = 7000, systemExtra 
   }
 }
 
+/**
+ * One model, ACROSS ACCOUNTS. The pool holds keys from several Groq
+ * accounts whose model access differs, so a 404 from one account is not a
+ * verdict on the model — it is a verdict on that key. Retry the same model
+ * with fresh keys before writing it off.
+ *
+ * BYOK (a student's own key) gets exactly one attempt: there is no second
+ * account to fall back to, and hammering their key is not ours to do.
+ */
+const KEY_RETRIES = 3
+
+async function callGroqModel(model, question, apiKey, timeout = 7000, systemExtra = '') {
+  if (apiKey) return callGroqOne(model, question, apiKey, timeout, systemExtra)
+
+  let lastErr = null
+  for (let i = 0; i < KEY_RETRIES; i++) {
+    try {
+      return await callGroqOne(model, question, '', timeout, systemExtra)
+    } catch (e) {
+      lastErr = e
+      // Only a per-account access failure is worth re-rolling the key for.
+      // 429s are handled by the pool's own cooldown + the model chain.
+      if (!e.deadForKey) throw e
+      if (isModelDead(model)) break   // every key we know has refused it
+    }
+  }
+  throw lastErr || new Error(`groq/${model}: unavailable`)
+}
+
 async function callGroq(question, apiKey, timeout = 7000) {
-  return callGroqOne(GROQ_MODELS[0], question, apiKey, timeout)
+  return callGroqModel(GROQ_MODELS[0], question, apiKey, timeout)
 }
 
 function callGroqAll(question, apiKey, timeout = 7000) {
@@ -594,27 +648,35 @@ async function getSolverPlan(question, devKey = null, student = null) {
   let winner = null
   const errs = []
 
+  // Skip models this deployment has already proven it cannot use.
+  const smartLive = liveModels(SOLVER_SMART_MODELS)
+  const fastLive = liveModels([SOLVER_FAST_MODEL, SOLVER_BACKSTOP])
+
   if (load.busy) {
     console.log(`[solver] busy (${load.active} active / ${load.queued} queued) → sequential`)
-    for (const m of [...SOLVER_SMART_MODELS, SOLVER_FAST_MODEL]) {
-      try { winner = await callGroqOne(m, question, devKey, 7000, systemExtra); break }
+    for (const m of [...smartLive, ...fastLive]) {
+      try { winner = await callGroqModel(m, question, devKey, 7000, systemExtra); break }
       catch (e) { errs.push(e.message) }
     }
   } else {
     // Fire the smart models AND a fast safety net together (so the fallback stays warm),
     // but PREFER the smartest model that succeeds — never just take whoever's fastest.
-    const smartTasks = SOLVER_SMART_MODELS.map(m => callGroqOne(m, question, devKey, 7000, systemExtra))
-    const fastTask   = callGroqOne(SOLVER_FAST_MODEL, question, devKey, 6000, systemExtra)
-    ;[...smartTasks, fastTask].forEach(t => t.catch(() => {}))  // avoid unhandled rejections
-    console.log(`[solver] smart-first: ${SOLVER_SMART_MODELS.join(' → ')} → ${SOLVER_FAST_MODEL} (pool: ${groqStatus.hint})`)
+    const smartTasks = smartLive.map(m => callGroqModel(m, question, devKey, 7000, systemExtra))
+    const fastTasks  = fastLive.map(m => callGroqModel(m, question, devKey, 6000, systemExtra))
+    ;[...smartTasks, ...fastTasks].forEach(t => t.catch(() => {}))  // avoid unhandled rejections
+    console.log(`[solver] smart-first: ${smartLive.join(' → ')} → ${fastLive.join(' → ')} (pool: ${groqStatus.hint})`)
 
     for (const t of smartTasks) {
       try { winner = await t; break }
       catch (e) { errs.push(e.message) }
     }
     if (!winner) {
-      try { winner = await fastTask }
-      catch (e) { errs.push(e.message) }
+      // Try each safety net in turn — one 429 must not end the request when
+      // another model with a separate capacity pool is standing right there.
+      for (const t of fastTasks) {
+        try { winner = await t; break }
+        catch (e) { errs.push(e.message) }
+      }
     }
   }
 
@@ -631,13 +693,21 @@ async function getSolverPlan(question, devKey = null, student = null) {
       console.warn('[solver] wikipedia fallback also failed:', e.message)
     }
 
-    const all429 = errs.length > 0 && errs.every(m => /HTTP 429/.test(m || ''))
-    if (all429) {
-      const err = new Error('Free AI is busy and Wikipedia is unreachable. Try again in a minute.')
-      err.statusCode = 429
-      throw err
-    }
-    throw new Error('All AI models failed: ' + errs.join(' · ').slice(0, 300))
+    // A student must never be shown raw provider JSON. The screenshot that
+    // prompted this fix put `{"error":{"message":"Rate limit reached ...
+    // in organization org_01k5..."}}` on a phone screen — unreadable, and it
+    // leaked the org id. Detail goes to the log and to err.internal; the
+    // message the student sees is plain and tells them what to do.
+    const detail = errs.join(' · ').slice(0, 400)
+    const anyRateLimited = errs.some(m => /HTTP 429/.test(m || ''))
+    const err = new Error(
+      anyRateLimited
+        ? 'The free AI is busy right now — a lot of students are using it. Try again in a minute; everything else in Kyno still works.'
+        : "Kyno couldn't reach the AI just now. Try again in a moment — your notes, cards and plan are unaffected.",
+    )
+    err.statusCode = anyRateLimited ? 429 : 503
+    err.internal = detail
+    throw err
   }
 
   const { plan, model } = winner

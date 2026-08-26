@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { aiHeaders } from '../lib/devKey'
 import { readjustPlan, planDayIndex, missedBlocks } from '../lib/replan.core'
+import SyllabusMap from '../components/SyllabusMap'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Sparkles, Target, Calendar, Clock, AlertTriangle, Trophy, BookOpen,
@@ -338,6 +339,12 @@ export default function ExamPlanner() {
           </button>
         )}
       </div>
+
+      {/* The syllabus map absorbs into Exam Planner (brief part D-1): coverage
+          and retention are one model, and this is where a student already
+          comes to think about the whole syllabus. Renders nothing when no
+          graph is seeded for their board/class. */}
+      <SyllabusMap />
 
       <AnimatePresence>
         {showSavedList && (
