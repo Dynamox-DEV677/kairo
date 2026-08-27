@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useRef } from 'react'
 import { motion } from 'framer-motion'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
 import { Layers, ChevronLeft, ChevronRight, Sparkles, FunctionSquare, RotateCcw, Plus, Check, Headphones, Square } from 'lucide-react'
+import { useHotkeys } from '../lib/useHotkeys'
 import { speakableText } from '../lib/listen.core'
 import { speak, stopSpeaking, ttsAvailable } from '../lib/tts'
 import { ToggleChip } from '../components/PrimaryButton'
@@ -117,16 +118,17 @@ export default function RevisionReels() {
     try { setRaw(posKey(), JSON.stringify(p)) } catch { /* private mode */ }
   }
 
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowRight') go(1)
-      else if (e.key === 'ArrowLeft') go(-1)
-      else if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); setFlipped(f => !f) }
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [idx, filtered.length, subject])
+  // Deck keys are page-scoped. Reels stays mounted behind whatever page is
+  // showing, so an unguarded listener here ate the space bar app-wide and let
+  // cursor arrows reshuffle the deck from other screens. useHotkeys refuses to
+  // fire while the student is typing or while this page is parked.
+  const rootRef = useRef<HTMLDivElement | null>(null)
+
+  useHotkeys(e => {
+    if (e.key === 'ArrowRight') { e.preventDefault(); go(1) }
+    else if (e.key === 'ArrowLeft') { e.preventDefault(); go(-1) }
+    else if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); setFlipped(f => !f) }
+  }, { containerRef: rootRef })
 
   const card: ReelCard | undefined = filtered[idx]
 
@@ -142,7 +144,7 @@ export default function RevisionReels() {
   useEffect(() => () => { clockRef.c?.stop(); clockRef.c = null }, [clockRef])
 
   return (
-    <div style={{
+    <div ref={rootRef} style={{
       width: '100%', height: '100%', overflowY: 'auto', background: C.bg,
       padding: '24px 32px 60px',
     }}>
