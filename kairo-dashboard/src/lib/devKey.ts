@@ -1,5 +1,6 @@
 // Developer Mode — "bring your own Groq key" (BYOK).
-import { authToken } from '../lib/storage'
+import { authToken, setAuthToken } from '../lib/storage'
+import { supabase } from './supabase'
 //
 // When a student turns Developer Mode on and pastes their own Groq API key,
 // EVERY AI request from this device carries that key in the `x-groq-key`
@@ -67,25 +68,25 @@ export function aiHeaders(): Record<string, string> {
 }
 
 /**
- * The current Supabase access token, synchronously.
+ * Is this JWT past its expiry?
  *
- * kairo_token alone is not enough. It is written by the login paths in
- * Login.tsx, so a session the Supabase SDK restored on its own — a returning
- * user who never re-logged-in — has no kairo_token at all, and every AI route
- * 401s. That is exactly what happened in production.
- *
- * The SDK's own storage key is the real source of truth, so fall back to it.
- * Reading it directly rather than calling getSession() because that is async
- * and this is used inline in header objects.
+ * Treats anything unparseable as expired. A token we cannot read is a token we
+ * cannot vouch for, and sending it produces exactly the 401 this is here to
+ * prevent. The 30s skew covers the request being in flight when it lapses.
  */
-export function sessionToken(): string | null {
+function isExpired(jwt: string): boolean {
   try {
-    const direct = authToken()
-    if (direct) return direct
-  } catch { /* storage blocked; try the SDK key below */ }
+    const payload = JSON.parse(atob(jwt.split('.')[1]))
+    if (!payload?.exp) return true
+    return payload.exp * 1000 - Date.now() < 30_000
+  } catch {
+    return true
+  }
+}
 
+/** The Supabase SDK's own storage key holds the live session it auto-refreshes. */
+function tokenFromSdkStorage(): string | null {
   try {
-    // supabase-js v2 stores under sb-<project-ref>-auth-token.
     for (let i = 0; i < localStorage.length; i++) {
       const k = localStorage.key(i)
       if (!k || !k.startsWith('sb-') || !k.endsWith('-auth-token')) continue
@@ -98,6 +99,62 @@ export function sessionToken(): string | null {
   } catch (e) {
     console.warn('[ai] could not read the Supabase session:', e)
   }
+  return null
+}
+
+/**
+ * The current Supabase access token, synchronously.
+ *
+ * ORDER MATTERS, and getting it wrong took most of the AI offline.
+ *
+ * kyno:token is a SNAPSHOT written at sign-in. The Supabase SDK auto-refreshes
+ * roughly hourly and writes the new token to sb-<ref>-auth-token — nothing
+ * updates the snapshot. This used to return the snapshot first and without an
+ * expiry check, so about an hour after signing in it shadowed the live session
+ * with a dead token, and every AI route 401'd while everything routed through
+ * api.ts (which asks the SDK) kept working. That split is what made it look
+ * like an outage rather than an auth bug.
+ *
+ * So: the SDK's storage is the source of truth, the snapshot is the fallback,
+ * and an expired token is never returned from either.
+ */
+export function sessionToken(): string | null {
+  const live = tokenFromSdkStorage()
+  if (live && !isExpired(live)) return live
+
+  try {
+    const cached = authToken()
+    if (cached && !isExpired(cached)) return cached
+  } catch { /* storage blocked */ }
 
   return null
+}
+
+/**
+ * Headers for an AI call, with a token that is actually valid.
+ *
+ * Prefer this over aiHeaders() anywhere you can await. getSession() returns the
+ * SDK's live session and refreshes it if it is close to expiry, so this cannot
+ * send the stale snapshot. It also re-seeds kyno:token, which keeps the
+ * synchronous callers healthy for the next hour.
+ */
+export async function aiHeadersAsync(): Promise<Record<string, string>> {
+  const h: Record<string, string> = {}
+
+  const k = activeDevGroqKey()
+  if (k) h['x-groq-key'] = k
+
+  try {
+    const { data } = await supabase.auth.getSession()
+    const t = data?.session?.access_token
+    if (t) {
+      try { setAuthToken(t) } catch { /* storage blocked */ }
+      h.Authorization = `Bearer ${t}`
+      return h
+    }
+  } catch { /* fall through to the sync path */ }
+
+  const fallback = sessionToken()
+  if (fallback) h.Authorization = `Bearer ${fallback}`
+  return h
 }

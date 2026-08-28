@@ -1,3 +1,4 @@
+import { AiError } from '../lib/aiError.core'
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { motion } from 'framer-motion'
 import {
@@ -179,8 +180,8 @@ export default function KairoHome({ onNavigate }: Props) {
         autoRetriedRef.current = true
         window.setTimeout(() => { fetchBriefRef.current?.() }, 30_000)
       }
-    } catch {
-      setError("Couldn't reach your AI council just now. Tap “Refresh brief” to try again — everything else still works.")
+    } catch (e) {
+      setError(AiError.from(e).message)
     } finally { setLoading(false) }
   }, [profile])
   const fetchBriefRef = useRef<(() => void) | null>(null)
@@ -259,7 +260,12 @@ export default function KairoHome({ onNavigate }: Props) {
       {brief?.fallback && !loading && (
         <div style={{ marginBottom: 16, padding: '10px 14px', background: 'rgba(255,176,32,0.08)', border: '1px solid rgba(255,176,32,0.3)', borderRadius: 8, color: '#e8c27a', fontSize: 12.5, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
           <span style={{ flex: 1, minWidth: 200 }}>
-            The AI mentors were busy, so today's plan is built from your own data — it still stands. Retrying automatically in ~30s.
+            {/* Was hardcoded to "The AI mentors were busy" for EVERY failure,
+                which blamed load for auth and server faults alike. Say the real
+                reason; the fallback plan is genuinely usable either way. */}
+            {error
+              ? `${error} Today's plan below is built from your own data — it still stands.`
+              : "Today's plan is built from your own data — it still stands, and the AI layer is retrying."}
           </span>
           <button onClick={fetchBrief} className="kyno-ghost" style={{ padding: '6px 12px', borderRadius: 8, cursor: 'pointer', background: 'transparent', color: '#FFB020', fontFamily: 'inherit', fontSize: 12, fontWeight: 700, border: '1px solid rgba(255,176,32,0.4)' }}>
             Retry now

@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import { AiError } from './aiError.core'
 import { authToken, clearAuthTokens, refreshTokenRaw, setAuthToken, setRefreshToken } from '../lib/storage'
 
 const BASE = '/api'
@@ -16,7 +17,7 @@ function isNetworkError(err: any): boolean {
   return /failed to fetch|network|err_network|err_internet|abort|load failed/.test(msg)
 }
 
-async function refreshAccessToken(): Promise<RefreshResult> {
+export async function refreshAccessToken(): Promise<RefreshResult> {
   if (refreshPromise) return refreshPromise
   refreshPromise = (async () => {
     const refresh_token = refreshTokenRaw()
@@ -95,24 +96,31 @@ export async function api(path: string, options: RequestInit = {}): Promise<any>
   }
 
   const data = await res.json().catch(() => ({}))
-  if (!res.ok) throw new Error(data.error || `API error ${res.status}`)
+  if (!res.ok) {
+    // Routes disagree on the error shape: auth.js sends {error:{code,message}}
+    // while the rest send {error:'string'}. Passing the object straight to
+    // Error() rendered "[object Object]" on screen.
+    const detail = typeof data?.error === 'string'
+      ? data.error
+      : (data?.error?.message || data?.error?.code)
+    const err: any = new Error(detail || `HTTP ${res.status}`)
+    err.status = res.status
+    err.upstream = data
+    throw err
+  }
   return data
 }
 
+/**
+ * Kept for the call sites that already import it — now backed by AiError, so
+ * it can no longer return a raw status or claim load for a server fault.
+ *
+ * It used to map every 5xx to "Kyno's servers are busy right now", and to
+ * `return msg` verbatim for anything it did not recognise. Both are how debug
+ * strings and false explanations reached students.
+ */
 export function friendlyError(e: any): string {
-  const msg = (e?.message || String(e ?? '')).trim()
-  if (!msg) return 'Something went wrong. Please try again.'
-  const low = msg.toLowerCase()
-  if (
-    low.includes('failed to fetch') || low.includes('networkerror') ||
-    low.includes('network request failed') || low.includes('load failed') ||
-    low.includes('unexpected token') || low.includes('aborted') ||
-    low.includes('the operation was aborted') || low.includes('timeout')
-  ) return 'Couldn’t reach Kyno — check your connection and try again.'
-  if (/^api error 5\d\d/i.test(msg) || /\b50[234]\b/.test(msg)) {
-    return 'Kyno’s servers are busy right now. Give it a moment and try again.'
-  }
-  return msg
+  return AiError.from(e).message
 }
 
 export const get  = (path: string) => api(path)

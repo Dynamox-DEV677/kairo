@@ -1,3 +1,4 @@
+import { AiError } from '../lib/aiError.core'
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Send, Loader2, Play, Image as ImageIcon, X, Sparkles } from 'lucide-react'
@@ -193,8 +194,13 @@ export default function KairoChat() {
         body: JSON.stringify({ question: q, history, student, mistakes }),
       })
       if (!r.ok) {
+        // Was: 'Kyno is busy right now (' + r.status + ')' — which showed the
+        // student an HTTP code AND blamed load for faults that were not load.
         const j = await r.json().catch(() => null)
-        throw new Error(j?.error || 'Kyno is busy right now (' + r.status + ') — try again in a few seconds.')
+        const detail = typeof j?.error === 'string' ? j.error : j?.error?.message
+        const err: any = new Error(detail || `HTTP ${r.status}`)
+        err.status = r.status
+        throw AiError.from(err)
       }
       const text = await r.json()
 

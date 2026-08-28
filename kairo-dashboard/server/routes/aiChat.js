@@ -13,6 +13,41 @@ import { allTopics } from '../utils/syllabus.js'
 
 const router = express.Router()
 
+/**
+ * Config check — deliberately BEFORE the auth gate, and deliberately cheap.
+ *
+ * When the AI went down, the endpoint that could have explained it
+ * (/solver/status) sat behind this router's auth, and the failure WAS auth. So
+ * the one tool for diagnosing the outage was disabled by the outage.
+ *
+ * This answers "is the server configured?" without calling a provider, so it
+ * costs no quota, and it returns only booleans and counts - never a key, never
+ * a fragment of one.
+ */
+router.get('/config-check', (_req, res) => {
+  const pool = groqPool.status()
+  res.set('Cache-Control', 'no-store')
+  res.json({
+    ok: pool.total > 0,
+    groq: {
+      configured:   pool.total > 0,
+      total_keys:   pool.total,
+      live_keys:    pool.live,
+      cooling_keys: pool.cooling,
+      env_var_seen: !!process.env.GROQ_API_KEYS
+        ? 'GROQ_API_KEYS'
+        : (!!process.env.GROQ_API_KEY ? 'GROQ_API_KEY' : null),
+    },
+    supabase_configured: !!(process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL),
+    service_role_key_set: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+    commit: process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) || null,
+    env: process.env.VERCEL_ENV || process.env.NODE_ENV || null,
+    hint: pool.total > 0
+      ? 'Keys are loaded. If AI calls still fail, it is not configuration.'
+      : 'No Groq keys loaded. Set GROQ_API_KEYS in Vercel for the PRODUCTION environment, then redeploy.',
+  })
+})
+
 // Phase 0: was reachable with no token at all. These call Groq on every
 // request, so an open endpoint is an open tab on the quota as well as the data.
 router.use(requireSupabaseAuth)

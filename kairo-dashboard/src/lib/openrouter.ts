@@ -1,4 +1,6 @@
-import { aiHeaders } from './devKey'
+import { aiHeaders, aiHeadersAsync } from './devKey'
+
+import { AiError } from './aiError.core'
 
 const PROXY_URL = '/api/ai/chat'
 
@@ -35,13 +37,21 @@ async function callModel(
   const res = await fetch(PROXY_URL, {
     method: 'POST',
     signal,
-    headers: { 'Content-Type': 'application/json', ...aiHeaders() },
+    // await, so the SDK hands back a live token rather than the stale
+    // kyno:token snapshot that used to 401 every AI route after an hour
+    headers: { 'Content-Type': 'application/json', ...(await aiHeadersAsync()) },
     body: JSON.stringify({ model, messages, stream: !!onChunk }),
   })
 
   if (!res.ok) {
-    const err = await res.json().catch(() => ({}))
-    throw new Error(err?.error?.message || `HTTP ${res.status}`)
+    const body = await res.json().catch(() => ({}))
+    // Carry the status on the error object. AiError classifies on it, and the
+    // string form is never shown to a student.
+    const detail = typeof body?.error === 'string' ? body.error : body?.error?.message
+    const err: any = new Error(detail || `HTTP ${res.status}`)
+    err.status = res.status
+    err.upstream = body
+    throw err
   }
 
   if (!onChunk) {
@@ -72,18 +82,47 @@ async function callModel(
   return full
 }
 
+/**
+ * An auth failure is not a model failure.
+ *
+ * This used to walk the whole fallback chain on ANY error, so a 401 was retried
+ * once per model — each with its own timeout — before surfacing. That is why a
+ * broken session read as "the button does nothing" rather than as an error: the
+ * student was waiting out two dead requests. Switching models cannot fix
+ * credentials, so auth errors leave the loop immediately.
+ */
+function isAuthError(e: any): boolean {
+  const m = String(e?.message || '')
+  return e?.status === 401 || e?.status === 403 || /(401|403)/.test(m) ||
+    /missing bearer|invalid or expired token|not authenticated/i.test(m)
+}
+
 export async function chat({ model = DEFAULT_MODEL, messages, onChunk, signal }: ChatOptions): Promise<string> {
   const chain = Array.from(new Set([model, ...FALLBACK_CHAIN]))
-  let lastErr = ''
+  let lastErr: any = null
+
   for (const m of chain) {
     if (signal?.aborted) throw new DOMException('Aborted', 'AbortError')
     try {
       return await callModel(m, messages, onChunk, signal)
     } catch (e: any) {
       if (e?.name === 'AbortError') throw e
-      lastErr = e?.message || 'Unknown error'
-      console.warn(`[Kyno] ${m} failed: ${lastErr}`)
+      lastErr = e
+
+      if (isAuthError(e)) {
+        // One forced refresh, then one retry on the SAME model. If the session
+        // is genuinely gone, fail now rather than after the whole chain.
+        try {
+          const { refreshAccessToken } = await import('./api')
+          const r = await refreshAccessToken()
+          if (r?.ok) return await callModel(m, messages, onChunk, signal)
+        } catch { /* fall through to the throw below */ }
+        throw new AiError('AUTH_EXPIRED', e)
+      }
+
+      console.warn(`[Kyno] ${m} failed: ${e?.message || e}`)
     }
   }
-  throw new Error(`AI request failed. Last error: ${lastErr}`)
+
+  throw AiError.from(lastErr)
 }
