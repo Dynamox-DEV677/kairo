@@ -6,6 +6,7 @@ import {
   TrendingDown, Flame, ChevronsRight,
 } from 'lucide-react'
 import { chat } from '../lib/openrouter'
+import ErrorNote from '../components/ErrorNote'
 import { usePageGeneration } from '../lib/generationContext'
 import { saveToNotebook } from '../lib/notebook'
 import {
@@ -238,21 +239,17 @@ export default function Flashcards() {
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 12 }}>
                   {suggestions.map(s => (
                     <SuggestedDeckCard key={s.title} title={s.title} subject={s.subject} severity={s.severity} count={s.count}
+                      busy={loading && topic === s.title}
                       onClick={() => generate(s.title)} />
                   ))}
                 </div>
               </Section>
             )}
 
-            {error && (
-              <div style={{
-                marginTop: 16, padding: '12px 14px', borderRadius: 10,
-                background: 'rgba(165, 180, 252, 0.05)', border: '1px solid rgba(165, 180, 252, 0.3)',
-                color: C.purpleLite, fontSize: 13,
-              }}>
-                {error}
-              </div>
-            )}
+            {/* Was purple-on-dark at 5% opacity, below the card grid — it read
+                as an info note, which is most of why a failure here registered
+                as "the button did nothing". */}
+            <ErrorNote error={error} onRetry={() => generate()} />
 
             {!loading && cards.length > 0 && (
               <Section title="Your fresh deck" subtitle={`${cards.length} cards · ${topic}`} icon={<Sparkles size={13} />}>
@@ -381,13 +378,14 @@ function Section({ title, subtitle, icon, children }: { title: string; subtitle?
   )
 }
 
-function SuggestedDeckCard({ title, subject, severity, count, onClick }: { title: string; subject: string; severity: number; count: number; onClick: () => void }) {
+function SuggestedDeckCard({ title, subject, severity, count, onClick, busy = false }: { title: string; subject: string; severity: number; count: number; onClick: () => void; busy?: boolean }) {
   const intensity = Math.min(1, severity)
   return (
     <motion.button
       onClick={onClick}
-      whileHover={{ y: -4, boxShadow: `0 14px 34px rgba(124, 92, 255, 0.03)` }}
-      whileTap={{ scale: 0.97 }}
+      disabled={busy}
+      whileHover={busy ? undefined : { y: -4, boxShadow: `0 14px 34px rgba(124, 92, 255, 0.03)` }}
+      whileTap={busy ? undefined : { scale: 0.97 }}
       style={{
         textAlign: 'left', padding: '16px 18px', borderRadius: 14,
         background: `linear-gradient(135deg, ${C.panel} 0%, ${C.bg} 100%)`,
@@ -420,7 +418,8 @@ function SuggestedDeckCard({ title, subject, severity, count, onClick }: { title
           background: 'rgba(165, 180, 252, 0.12)', border: `1px solid rgba(165, 180, 252, 0.3)`,
           fontSize: 11, color: C.purpleLite, fontWeight: 700, letterSpacing: 0.3,
         }}>
-          Generate 10 cards <ChevronsRight size={12} />
+          {busy ? <><RotateCcw size={12} className="fc-spin" /> Generating…</>
+                : <>Generate 10 cards <ChevronsRight size={12} /></>}
         </div>
       </div>
     </motion.button>
