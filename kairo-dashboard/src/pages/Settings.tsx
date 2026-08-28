@@ -12,6 +12,8 @@ import { PrimaryButton, ToggleChip } from '../components/PrimaryButton'
 import { getRaw, setRaw, activeBackend } from '../lib/storage'
 import { DecoratedAvatar, DECORATIONS, getDecor, setDecor } from '../components/AvatarDecor'
 import { isDevMode, setDevMode, getDevKeyRaw, setDevKey, looksLikeGroqKey, aiHeaders } from '../lib/devKey'
+import { activeFlows, privacyHeadline } from '../lib/privacy.core'
+import { telemetryEnabled, setTelemetryEnabled } from '../lib/usage'
 
 // Board list lives in one place now — Settings, Onboarding and Login used to
 // carry three different ones, so a student could pick IGCSE at signup and find
@@ -28,6 +30,11 @@ function safeProfile(): any {
 
 export default function Settings() {
   const stored = safeProfile()
+
+  // What leaves this device depends on who is using it, which is exactly why
+  // one fixed sentence could never be honest for everyone.
+  const signedIn  = !!authToken()
+  const schoolMode = !!((stored as any)?.school_id) && !(stored as any)?.localMode
   const [name, setName] = useState(stored.name || 'Arjun Sharma')
   const [board, setBoard] = useState(stored.board || 'CBSE')
   const [cls, setCls] = useState(stored.cls || '10')
@@ -42,6 +49,7 @@ export default function Settings() {
   const [backupOpen, setBackupOpen] = useState(false)
   const [transferOpen, setTransferOpen] = useState(false)
   const [resetOpen, setResetOpen] = useState(false)
+  const [telemetry, setTelemetry] = useState(telemetryEnabled)
   const [syncing, setSyncing] = useState(false)
   const [syncMsg, setSyncMsg] = useState('')
   const fileRef = useRef<HTMLInputElement>(null)
@@ -280,7 +288,7 @@ export default function Settings() {
           </motion.div>
           <div>
             <p style={{ fontSize: 14, fontWeight: 600, color: '#fafafa', marginBottom: 4 }}>{name || 'Your Name'}</p>
-            <button className="kyno-ghost"
+            <button
               onClick={() => fileRef.current?.click()}
               style={{ fontSize: 12, color: '#7C5CFF', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', padding: 0, display: 'flex', alignItems: 'center', gap: 5 }}
             >
@@ -560,9 +568,74 @@ export default function Settings() {
       </Section>
 
       <Section icon={<Shield size={14} />} title="Privacy & Data">
+        {/*
+          This section used to make one flat, absolute claim: that everything
+          stayed on the device and the servers never saw any of it. True in
+          local mode, false the moment a student signs in - the twin syncs on a
+          debounce, every doubt goes to a model, screen views are beaconed. It
+          was the one claim a student could not check for themselves, so it ran
+          entirely on trust it had not earned.
+
+          Now it renders the inventory in src/lib/privacy.core.js, per state.
+          privacy-inventory.test.js fails the build if a new server route is
+          added without saying what it sends - and it greps this file for the
+          old wording, which is why the sentence is described here rather than
+          quoted.
+        */}
         <p style={{ fontSize: 13, color: '#9CA3AF', marginBottom: 14, lineHeight: 1.6 }}>
-          All your data is stored locally on your device. Nothing is sent to our servers. You can clear everything below.
+          {privacyHeadline({ signedIn, schoolMode, telemetry })}
         </p>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 1, marginBottom: 16, borderRadius: 10, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.07)' }}>
+          {activeFlows({ signedIn, schoolMode, telemetry }).map(f => (
+            <div key={f.id} style={{ background: '#12161F', padding: '11px 13px' }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' }}>
+                <span style={{ fontSize: 12.5, color: '#d4d4d8', fontWeight: 600 }}>{f.what}</span>
+                {f.optional && (
+                  <span style={{ fontSize: 9.5, padding: '2px 7px', borderRadius: 999, background: 'rgba(52,211,153,0.12)', border: '1px solid rgba(52,211,153,0.3)', color: '#34D399', fontWeight: 700 }}>
+                    you can turn this off
+                  </span>
+                )}
+              </div>
+              <div style={{ fontSize: 11, color: '#6B7280', marginTop: 3, lineHeight: 1.5 }}>
+                {f.when} &middot; goes to {f.where}
+              </div>
+              {f.note && (
+                <div style={{ fontSize: 11, color: '#9CA3AF', marginTop: 5, lineHeight: 1.5 }}>{f.note}</div>
+              )}
+            </div>
+          ))}
+        </div>
+
+        <div style={{ marginBottom: 16 }}>
+          <ToggleRow
+            label="Share which screens I open"
+            desc="The screen name and the time, never what you typed. It tells us which features are worth keeping."
+            value={telemetry}
+            onChange={v => { setTelemetry(v); setTelemetryEnabled(v) }}
+          />
+        </div>
+
+        {signedIn && (
+          <button
+            onClick={async () => {
+              const ok = await confirmDialog({
+                title: 'Delete your cloud backup?',
+                body: 'Your work stays on this device. The backup on Kyno’s servers is deleted, so a new phone would start empty.',
+                confirmLabel: 'Delete backup',
+                tone: 'danger',
+              })
+              if (!ok) return
+              const r = await deleteCloudSnapshot()
+              setSyncMsg(r.ok ? 'Cloud backup deleted.' : `Could not delete: ${r.reason}`)
+            }}
+            className="kyno-ghost"
+            style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 16px', fontSize: 12.5, marginBottom: 12 }}
+          >
+            <CloudOff size={13} /> Delete my cloud backup
+          </button>
+        )}
+
         <button className="kyno-danger"
           onClick={clearData}
           style={{

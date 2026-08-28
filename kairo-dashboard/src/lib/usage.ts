@@ -14,6 +14,22 @@ import { authToken } from './storage'
 const KEY = 'kyno:usage:screens'
 const CAP = 1000
 
+/**
+ * The beacon is the one outbound flow a student can switch off, so the switch
+ * has to be real. Settings lists this flow as optional; if this preference
+ * stopped being honoured, that listing would become the next false claim.
+ * Default on — it is disclosed in Settings rather than assumed.
+ */
+const TELEMETRY_KEY = 'kyno:privacy:telemetry'
+
+export function telemetryEnabled(): boolean {
+  try { return getRaw(TELEMETRY_KEY) !== '0' } catch { return true }
+}
+
+export function setTelemetryEnabled(on: boolean): void {
+  try { setRaw(TELEMETRY_KEY, on ? '1' : '0') } catch {}
+}
+
 interface ScreenHit { s: string; ts: number }
 
 export function logScreenView(screen: string): void {
@@ -25,6 +41,9 @@ export function logScreenView(screen: string): void {
     list.push({ s: screen, ts: Date.now() })
     setRaw(KEY, JSON.stringify(list.slice(-CAP)))
   } catch {}
+
+  // Local counting above is on-device and always fine. Only the beacon leaves.
+  if (!telemetryEnabled()) return
 
   try {
     const body = JSON.stringify({ screen, ts: Date.now() })
