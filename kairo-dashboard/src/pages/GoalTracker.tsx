@@ -244,7 +244,7 @@ function GoalSetup({ initial, mastery, onSave, onCancel }: {
         {shown.length === 0 && <span style={{ fontSize: 12, color: C.faint }}>Nothing matches “{search}”.</span>}
       </div>
       {!q && (
-        <button className="kyno-ghost" onClick={() => setShowAll(v => !v)}
+        <button onClick={() => setShowAll(v => !v)}
           style={{ background: 'none', border: 'none', color: C.purple, fontSize: 11.5, fontWeight: 700, cursor: 'pointer', padding: 0, marginBottom: 16 }}>
           {showAll ? 'Show fewer' : `Show all ${catalogue.length} subjects`}
         </button>

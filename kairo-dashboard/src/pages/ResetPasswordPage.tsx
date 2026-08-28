@@ -175,7 +175,7 @@ export default function ResetPasswordPage({ onDone }: Props) {
 
                 <p style={{ fontSize: 11, color: '#6B7280', textAlign: 'center', marginTop: 16, lineHeight: 1.5 }}>
                   Changed your mind?{' '}
-                  <button className="kyno-ghost" onClick={onDone} style={{
+                  <button onClick={onDone} style={{
                     background: 'none', border: 'none', color: '#A5B4FC',
                     fontFamily: 'inherit', fontSize: 11, fontWeight: 600, cursor: 'pointer', padding: 0,
                   }}>Back to sign in</button>

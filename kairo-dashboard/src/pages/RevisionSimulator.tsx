@@ -469,7 +469,7 @@ function SetupView({
                 padding: '2px 8px', borderRadius: 4, background: '#171D2D', color: '#B1B5BA',
               }}>
                 {t}
-                <button className="kyno-ghost" onClick={() => setPicked((p: string[]) => p.filter(x => x !== t))}
+                <button onClick={() => setPicked((p: string[]) => p.filter(x => x !== t))}
                   style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9CA3AF', padding: 0 }}>×</button>
               </span>
             ))}

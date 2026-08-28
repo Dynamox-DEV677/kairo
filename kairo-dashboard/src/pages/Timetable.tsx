@@ -333,7 +333,7 @@ function GenerateTab() {
                 <input style={inp} type="number" placeholder="Periods/wk" value={s.periods_per_week} onChange={e => updateSubject(i, 'periods_per_week', Number(e.target.value))} />
               </div>
             ))}
-            <button className="kyno-ghost" onClick={() => setSubjects(s => [...s, { name: '', teacher: '', periods_per_week: 3 }])} style={{ fontSize: 11, color: '#A5B4FC', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+            <button onClick={() => setSubjects(s => [...s, { name: '', teacher: '', periods_per_week: 3 }])} style={{ fontSize: 11, color: '#A5B4FC', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
               + Add Subject
             </button>
           </div>

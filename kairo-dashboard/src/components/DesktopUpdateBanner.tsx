@@ -146,7 +146,7 @@ export default function DesktopUpdateBanner() {
                 </div>
               </div>
 
-              <button className="kyno-ghost"
+              <button
                 onClick={() => setDismissed(true)}
                 aria-label="Dismiss"
                 style={{

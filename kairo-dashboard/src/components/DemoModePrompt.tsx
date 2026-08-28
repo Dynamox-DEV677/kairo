@@ -84,7 +84,7 @@ export default function DemoModePrompt({ delayMs = 1400 }: Props) {
             boxShadow: '0 18px 48px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(124, 92, 255, 0.06)',
           }}
         >
-          <button className="kyno-ghost"
+          <button
             onClick={dismiss}
             aria-label="Dismiss"
             style={{

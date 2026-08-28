@@ -94,7 +94,7 @@ function ErrBanner({ msg, onDismiss }: { msg: string; onDismiss?: () => void }) 
         padding: '10px 14px', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, color: '#A5B4FC' }}>
       <AlertCircle size={14} style={{ flexShrink: 0 }} />
       <span style={{ flex: 1 }}>{msg}</span>
-      {onDismiss && <button className="kyno-ghost" onClick={onDismiss} style={{ background: 'none', border: 'none', color: '#A5B4FC', cursor: 'pointer', padding: 0 }}><X size={13} /></button>}
+      {onDismiss && <button onClick={onDismiss} style={{ background: 'none', border: 'none', color: '#A5B4FC', cursor: 'pointer', padding: 0 }}><X size={13} /></button>}
     </motion.div>
   )
 }
@@ -106,7 +106,7 @@ function SuccessBanner({ msg, onDismiss }: { msg: string; onDismiss?: () => void
         padding: '10px 14px', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, color: '#A5B4FC' }}>
       <CheckCircle size={14} style={{ flexShrink: 0 }} />
       <span style={{ flex: 1 }}>{msg}</span>
-      {onDismiss && <button className="kyno-ghost" onClick={onDismiss} style={{ background: 'none', border: 'none', color: '#A5B4FC', cursor: 'pointer', padding: 0 }}><X size={13} /></button>}
+      {onDismiss && <button onClick={onDismiss} style={{ background: 'none', border: 'none', color: '#A5B4FC', cursor: 'pointer', padding: 0 }}><X size={13} /></button>}
     </motion.div>
   )
 }
@@ -225,7 +225,7 @@ function Modal({ open, onClose, title, children, width = 480 }: {
               width: '100%', maxWidth: width, padding: 24, maxHeight: '90vh', overflowY: 'auto' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
               <span style={{ fontWeight: 700, color: '#fafafa', fontSize: 16 }}>{title}</span>
-              <button className="kyno-ghost" onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6B7280', padding: 2 }}>
+              <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6B7280', padding: 2 }}>
                 <X size={16} />
               </button>
             </div>
@@ -252,7 +252,7 @@ function Btn({ children, onClick, variant = 'primary', size = 'md', disabled = f
   const pad = size === 'sm' ? '5px 10px' : '8px 16px'
   const fs  = size === 'sm' ? 12 : 13
   return (
-    <button className="kyno-ghost" onClick={onClick} disabled={disabled} style={{
+    <button onClick={onClick} disabled={disabled} style={{
       padding: pad, borderRadius: 7, fontSize: fs, fontWeight: 600,
       background: cfg.bg, color: cfg.color, border: 'none', cursor: disabled ? 'not-allowed' : 'pointer',
       fontFamily: 'inherit', opacity: disabled ? 0.5 : 1, transition: 'all 0.12s', ...style,
@@ -2049,7 +2049,7 @@ function TeacherMarks({ schoolId, profile }: { schoolId: string; profile: AuthPr
                       </div>
                       <div style={{ fontSize: 11, color: '#6B7280' }}>{pct}%</div>
                     </div>
-                    <button className="kyno-ghost" onClick={() => deleteMark(m.id)} title="Delete"
+                    <button onClick={() => deleteMark(m.id)} title="Delete"
                       style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6B7280', padding: 4 }}
                       onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = '#A5B4FC' }}
                       onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = '#6B7280' }}>

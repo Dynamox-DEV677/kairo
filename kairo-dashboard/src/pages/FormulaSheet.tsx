@@ -253,7 +253,7 @@ function TwinFormulaCard({ f }: { f: TwinFormula }) {
           <div style={{ fontSize: 12.5, fontWeight: 700, color: C.text, lineHeight: 1.3 }}>{f.name}</div>
           {f.topic && <div style={{ fontSize: 10, color: C.textFaint, marginTop: 2, textTransform: 'capitalize' }}>{f.topic}</div>}
         </div>
-        <button className="kyno-ghost"
+        <button
           onClick={() => { navigator.clipboard.writeText(f.expr); setCopied(true); setTimeout(() => setCopied(false), 1800) }}
           style={{ background: 'none', border: 'none', cursor: 'pointer', color: copied ? C.purpleLite : C.textGhost, padding: 2 }}
           title={copied ? 'Copied' : 'Copy'}
@@ -379,7 +379,7 @@ function SheetsView({ sheets, loading, selected, setSelected, showForm, setShowF
                 <div style={{ fontSize: 12, fontWeight: 700, color: C.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.subject}</div>
                 <div style={{ fontSize: 10, color: C.textGhost }}>{s.chapter || 'All chapters'}</div>
               </div>
-              <button className="kyno-ghost" onClick={e => { e.stopPropagation(); remove(s.id || s._id) }}
+              <button onClick={e => { e.stopPropagation(); remove(s.id || s._id) }}
                 style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.textGhost, padding: 2 }}
                 onMouseEnter={(e: any) => (e.currentTarget.style.color = C.purpleLite)}
                 onMouseLeave={(e: any) => (e.currentTarget.style.color = C.textGhost)}>

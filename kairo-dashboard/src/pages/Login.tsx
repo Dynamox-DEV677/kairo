@@ -408,7 +408,7 @@ function SignIn({ onLogin, onBack }: any) {
           </button>
         </div>
         <div style={{ marginTop: 6, display: 'flex', justifyContent: 'flex-end' }}>
-          <button className="kyno-ghost"
+          <button
             type="button"
             onClick={sendPasswordReset}
             disabled={busy}
@@ -638,7 +638,7 @@ function PersonalSignup({ onLogin, onBack }: any) {
       )}
       <p style={{ fontSize: 11, color: '#6B7280', textAlign: 'center', marginTop: 12, lineHeight: 1.5 }}>
         Already have an account?{' '}
-        <button className="kyno-ghost" onClick={onBack} style={{
+        <button onClick={onBack} style={{
           background: 'none', border: 'none', color: '#A5B4FC',
           fontFamily: 'inherit', fontSize: 11, fontWeight: 600, cursor: 'pointer', padding: 0,
         }}>Sign in instead</button>
