@@ -36,11 +36,11 @@ export default function ConceptTools() {
         <p style={{ fontSize: 13, color: '#6B7280', marginTop: 4 }}>Simplify concepts · Visual mindmaps · Doubt history</p>
       </div>
 
-      <div className="seg-scroll" style={{ display: 'flex', gap: 4, marginBottom: 24, background: '#141A2A', border: '1px solid #1f2532', borderRadius: 10, padding: 4 }}>
+      <div className="kyno-tabrow" style={{ marginBottom: 24, background: '#141A2A', border: '1px solid #1f2532' }}>
         {TABS.map(t => (
           <button className="kyno-chunky" key={t.id} onClick={() => setTab(t.id)} style={{
-            flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-            padding: '8px 8px', borderRadius: 7, border: 'none', fontFamily: 'inherit',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+            padding: '9px 14px', borderRadius: 'var(--r-sm)', border: 'none', fontFamily: 'inherit',
             fontSize: 12, fontWeight: tab === t.id ? 700 : 500, cursor: 'pointer',
             background: tab === t.id ? 'linear-gradient(135deg,#7C5CFF,#6455e0)' : 'transparent',
             color: tab === t.id ? '#fff' : '#6B7280', transition: 'all 0.15s',

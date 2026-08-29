@@ -287,7 +287,7 @@ function ChatTab({ ctx }: { ctx: SchoolCtx }) {
             onChange={e => setInput(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && send()}
           />
-          <button onClick={send} disabled={!input.trim() || loading} style={{
+          <button className="kyno-text" onClick={send} disabled={!input.trim() || loading} style={{
             width: 38, height: 38, borderRadius: 9, border: 'none',
             cursor: input.trim() ? 'pointer' : 'not-allowed',
             background: input.trim() ? 'linear-gradient(135deg,#7C5CFF,#7C5CFF)' : '#171D2D',
@@ -433,7 +433,7 @@ function LeadsTab() {
                   <option key={s} value={s}>{s.replace('_', ' ')}</option>
                 ))}
               </select>
-              <button onClick={() => remove(l.id)} title="Delete"
+              <button className="kyno-text" onClick={() => remove(l.id)} title="Delete"
                 style={{
                   background: 'none', border: 'none', cursor: 'pointer',
                   color: '#4B5563', padding: 4, display: 'flex',

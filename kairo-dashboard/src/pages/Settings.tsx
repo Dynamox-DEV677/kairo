@@ -289,7 +289,7 @@ export default function Settings() {
           </motion.div>
           <div>
             <p style={{ fontSize: 14, fontWeight: 600, color: '#fafafa', marginBottom: 4 }}>{name || 'Your Name'}</p>
-            <button
+            <button className="kyno-text"
               onClick={() => fileRef.current?.click()}
               style={{ fontSize: 12, color: '#7C5CFF', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', padding: 0, display: 'flex', alignItems: 'center', gap: 5 }}
             >
@@ -765,7 +765,7 @@ function ToggleRow({ label, desc, value, onChange }: { label: string; desc: stri
         <p style={{ fontSize: 13, color: '#d4d4d8', fontWeight: 500 }}>{label}</p>
         <p style={{ fontSize: 11, color: '#6B7280', marginTop: 2 }}>{desc}</p>
       </div>
-      <button
+      <button className="kyno-text"
         onClick={() => onChange(!value)}
         style={{
           width: 44, height: 26, borderRadius: 13, border: 'none', cursor: 'pointer',

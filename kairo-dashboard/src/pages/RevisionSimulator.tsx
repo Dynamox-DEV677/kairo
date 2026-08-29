@@ -348,7 +348,7 @@ function SetupView({
             const col = m.id === 'exam' ? '#FB7185' : '#A5B4FC'
             return (
               <button className="kyno-chip" key={m.id} onClick={() => setMode(m.id)} style={{
-                padding: '14px 14px', borderRadius: 10, cursor: 'pointer',
+                padding: '14px 14px', borderRadius: 'var(--r-lg)', cursor: 'pointer',
                 border: `1px solid ${active ? col : '#1f2532'}`,
                 background: active ? `${col}14` : '#141A2A',
                 fontFamily: 'inherit', textAlign: 'left', transition: 'all 0.15s',
@@ -382,7 +382,7 @@ function SetupView({
             const active = diff.id === d.id
             return (
               <button className="kyno-chip" key={d.id} onClick={() => setDiff(d)} style={{
-                padding: '14px 12px', borderRadius: 10, cursor: 'pointer',
+                padding: '14px 12px', borderRadius: 'var(--r-lg)', cursor: 'pointer',
                 border: `1px solid ${active ? d.color : '#1f2532'}`,
                 background: active ? `${d.color}12` : '#141A2A',
                 fontFamily: 'inherit', textAlign: 'left', transition: 'all 0.15s',
@@ -470,7 +470,7 @@ function SetupView({
                 padding: '2px 8px', borderRadius: 4, background: '#171D2D', color: '#B1B5BA',
               }}>
                 {t}
-                <button onClick={() => setPicked((p: string[]) => p.filter(x => x !== t))}
+                <button className="kyno-text" onClick={() => setPicked((p: string[]) => p.filter(x => x !== t))}
                   style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9CA3AF', padding: 0 }}>×</button>
               </span>
             ))}

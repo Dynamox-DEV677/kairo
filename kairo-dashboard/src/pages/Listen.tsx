@@ -253,7 +253,7 @@ export default function Listen() {
                     border: `1px solid ${active ? 'rgba(124,92,255,0.55)' : C.border}`,
                     background: active ? 'rgba(124,92,255,0.08)' : C.panel,
                   }}>
-                    <button
+                    <button className="kyno-text"
                       onClick={() => active ? stopAll() : playOne(item)}
                       disabled={!supported}
                       aria-label={active ? 'Stop' : 'Listen'}

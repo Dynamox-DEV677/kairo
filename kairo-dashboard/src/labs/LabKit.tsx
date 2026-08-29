@@ -301,7 +301,7 @@ function PartInfoCard({ part, onClose }: { part: LabPart; onClose: () => void })
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
         <div style={{ width: 10, height: 10, borderRadius: '50%', background: part.color, boxShadow: `0 0 12px ${part.color}` }} />
         <div style={{ flex: 1, fontSize: 16, fontWeight: 800, letterSpacing: '-0.3px' }}>{part.label}</div>
-        <button onClick={onClose} aria-label="Close" style={{
+        <button className="kyno-text" onClick={onClose} aria-label="Close" style={{
           background: 'none', border: 'none', cursor: 'pointer',
           color: '#9CA3AF', padding: 4, display: 'flex',
         }}>

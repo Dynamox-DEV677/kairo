@@ -17,6 +17,17 @@
   /* Reading width for page content on a docked-sidebar desktop layout. */
   --kyno-content-max: 1200px;
 
+  /* ── Radius scale ────────────────────────────────────────────────────────
+     The app had TWELVE distinct border-radius values (3,6,7,8,9,10,11,12,14,
+     16,18,999). That is not a scale, it is an accident, and it is why option
+     cards ended up looking like stadiums next to rounded rectangles. Four
+     steps plus the pill. */
+  --r-sm:   8px;    /* chips, inputs, small controls   */
+  --r-md:  14px;    /* buttons — matches .kyno-chunky  */
+  --r-lg:  18px;    /* cards, option cards, panels     */
+  --r-xl:  24px;    /* sheets, modals                  */
+  --r-pill: 999px;  /* only for things that ARE pills  */
+
   /* ── Kyno gamified theme tokens (mirror of src/theme/tokens.ts) ──────────── */
   --kyno-bg:            #0A0D16;   /* deep navy-black base                    */
   --kyno-surface:       #141A2B;   /* elevated cards / surfaces               */
@@ -109,22 +120,57 @@ button, [role="button"], a, .kyno-tile, .kyno-chip {
 .kyno-chunky.gold:active:not(:disabled) { box-shadow: 0 1px 0 0 var(--c-gold-deep) !important; }
 .kyno-chunky:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none !important; }
 
-/* Outline (ghost) variant — matches PrimaryButton variant="secondary".
-   Deliberately NOT glowing: if every control glows, none of them reads as the
-   main action on the screen. */
+/* SECONDARY — a subtle filled surface, NOT an outline.
+ *
+ * This used to be `1.5px solid var(--c-purple)` on transparent, and it was on
+ * 197 buttons. A purple ring on a dark ground reads as a focus state somebody
+ * forgot to clear, not as a control — and because it was applied to primary
+ * actions too ("Generate 10 cards" outlined, "Refresh brief" filled, side by
+ * side), it actively inverted the hierarchy of several screens.
+ *
+ * A filled surface says "pressable" without competing with the primary fill,
+ * which is what a secondary is for. The outline now belongs to :focus-visible
+ * and nothing else.
+ */
 .kyno-ghost {
-  border: 1.5px solid var(--c-purple) !important;
-  background: transparent !important;
-  color: var(--c-purple) !important;
-  border-radius: 14px !important;
+  border: 1px solid rgba(255,255,255,0.10) !important;
+  background: rgba(255,255,255,0.06) !important;
+  color: #E6E8EF !important;
+  border-radius: var(--r-md) !important;
   font-family: var(--kyno-display) !important; font-weight: 800 !important;
   box-shadow: none !important;
   cursor: pointer;
   transition: transform .07s ease, background .14s ease;
   -webkit-user-select: none; user-select: none;
 }
+.kyno-ghost:hover:not(:disabled)  { background: rgba(255,255,255,0.10) !important; }
 .kyno-ghost:active:not(:disabled) { transform: translateY(2px); }
 .kyno-ghost:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+
+/* TEXT — genuinely minor actions. No surface, no border, just the label.
+   "Change photo", "Skip for now", a close X. */
+.kyno-text {
+  border: none !important;
+  background: none !important;
+  color: var(--c-purple-lite, #A5B4FC) !important;
+  border-radius: var(--r-sm) !important;
+  font-family: inherit; font-weight: 700;
+  padding: 4px 2px;
+  cursor: pointer;
+  transition: color .14s ease;
+}
+.kyno-text:hover:not(:disabled) { color: #fff !important; }
+.kyno-text:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* THE OUTLINE'S ACTUAL JOB.
+ *
+ * There was no global focus ring at all — so the purple outline was being spent
+ * on decoration while keyboard users got nothing. Now it means one thing. */
+:where(button, a, [role="button"], input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--c-purple, #7C5CFF) !important;
+  outline-offset: 2px !important;
+  border-radius: var(--r-sm);
+}
 
 /* Destructive variant — outline only, never the glow. "Clear all data" must
    never look like the thing you are being invited to press. */
@@ -182,9 +228,15 @@ button, [role="button"], a, .kyno-tile, .kyno-chip {
    A converted toggle group carries its selected state as an inline background —
    forcing the paint here would make every tab look unselected. Chips keep the
    999px pill they always had; that is the chip shape, not the button shape. */
+/* A pill radius on two-character content is a circle. "10 / 15 / 20 / 30" in
+   Exam Hall rendered as four dots while every other selector in the app read as
+   a pill — same class, different content length. min-width restores the pill
+   shape without touching the longer chips. */
 .kyno-chip {
   position: relative; border: 1.5px solid var(--c-line);
-  border-radius: 999px !important;
+  border-radius: var(--r-pill) !important;
+  min-width: 3.25rem;
+  text-align: center;
   font-family: var(--kyno-display) !important; font-weight: 700 !important;
   background: var(--c-bg-elev2); color: var(--c-faint);
   box-shadow: 0 3px 0 0 rgba(0,0,0,0.26);
@@ -1968,3 +2020,38 @@ html[data-theme="light"] [style*="rgb(17, 17, 17) none repeat scroll"]
        any page that relies on instant scrolling for layout calculations. */
 .kr-app-scroll { scroll-behavior: smooth; }
 
+
+
+/* ── Segmented row of mode buttons ─────────────────────────────────────────
+   Writing Tools and Concept Tools both rendered these as one nowrap flex row
+   with gap:4 inside overflow-x:auto. It scrolled, but nothing said so, and the
+   fourth button clipped mid-word — "Topper Level" read as "To…", which looks
+   like a bug rather than an invitation to swipe.
+
+   It WRAPS. A row that wraps cannot clip a label, needs no scroll affordance,
+   and never hides an option behind an edge the student has to guess about.
+   Five short labels take two lines at 320px and one line from ~430px up. */
+.kyno-tabrow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 6px;
+  border-radius: var(--r-md);
+}
+.kyno-tabrow > * {
+  flex: 1 1 auto;
+  min-width: max-content;   /* a label sets its own floor — never truncates */
+  white-space: nowrap;
+}
+/* On the narrowest phones two per line beats five cramped ones. */
+@media (max-width: 380px) {
+  .kyno-tabrow > * { flex: 1 1 calc(50% - 8px); }
+}
+
+
+/* KaTeX display mode ships `margin: 1em 0`, which at 17px a side was the real
+   source of the dead space around formula cards — the container padding was
+   only ever 10px. A formula box sized to its content has to zero that; the box
+   provides the breathing room, not the maths. */
+.kyno-formula-box .katex-display { margin: 0 !important; }
+.kyno-formula-box .katex-display > .katex { text-align: center; }

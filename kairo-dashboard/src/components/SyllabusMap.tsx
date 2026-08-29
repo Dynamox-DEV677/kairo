@@ -129,7 +129,7 @@ export default function SyllabusMap() {
                 <div style={{ fontSize: 10.5, color: C.faint, marginTop: 6 }}>{(open.topics || []).join(' · ')}</div>
               )}
             </div>
-            <button onClick={() => setOpen(null)} style={{ background: 'none', border: 'none', color: C.faint, cursor: 'pointer', flexShrink: 0 }}><X size={14} /></button>
+            <button className="kyno-text" onClick={() => setOpen(null)} style={{ background: 'none', border: 'none', color: C.faint, cursor: 'pointer', flexShrink: 0 }}><X size={14} /></button>
           </div>
           <button className="kyno-chunky" onClick={() => go('quiz')}
             style={{ marginTop: 10, padding: '8px 16px', borderRadius: 10, border: 'none', background: '#7C5CFF', color: '#fff', fontFamily: 'inherit', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>

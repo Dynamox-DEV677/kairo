@@ -1204,7 +1204,7 @@ function Slideshow({ slides, busy, topic, questionType, err, compact = false }: 
           display: 'flex', justifyContent: 'center', gap: 6,
         }}>
           {slides.map((_, i) => (
-            <button key={i} onClick={() => setIdx(i)}
+            <button className="kyno-text" key={i} onClick={() => setIdx(i)}
               aria-label={`Slide ${i + 1}`}
               style={{
                 width: i === idx ? 24 : 8, height: 8, borderRadius: 4,

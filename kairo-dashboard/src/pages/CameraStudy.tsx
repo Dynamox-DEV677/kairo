@@ -753,14 +753,17 @@ export default function CameraStudy() {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
             {ACTIONS.map(a => {
               const isActive = activeAction === a.id && busy
+              // An option CARD, not a chip. These wore .kyno-chip, whose
+              // 999px !important overrode the inline radius and rendered the
+              // four modes as stadiums.
               return (
-                <motion.button className="kyno-chip" key={a.id}
+                <motion.button key={a.id}
                   whileHover={{ y: busy ? 0 : -2 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => run(a)}
                   disabled={busy}
                   style={{
-                    padding: 16, borderRadius: 12,
+                    padding: 16, borderRadius: 'var(--r-lg)',
                     border: `1px solid ${isActive ? a.color : '#1f2532'}`,
                     background: isActive ? `${a.color}10` : '#141A2A',
                     cursor: busy ? 'not-allowed' : 'pointer',

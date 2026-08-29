@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
+import IconButton from '../components/IconButton'
 import { studentMessage } from '../lib/aiError.core'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -254,25 +255,27 @@ function TwinFormulaCard({ f }: { f: TwinFormula }) {
           <div style={{ fontSize: 12.5, fontWeight: 700, color: C.text, lineHeight: 1.3 }}>{f.name}</div>
           {f.topic && <div style={{ fontSize: 10, color: C.textFaint, marginTop: 2, textTransform: 'capitalize' }}>{f.topic}</div>}
         </div>
-        <button
+        <IconButton
           onClick={() => { navigator.clipboard.writeText(f.expr); setCopied(true); setTimeout(() => setCopied(false), 1800) }}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', color: copied ? C.purpleLite : C.textGhost, padding: 2 }}
-          title={copied ? 'Copied' : 'Copy'}
+          title={copied ? 'Copied' : 'Copy formula'}
+          active={copied}
         >
-          {copied ? <Check size={12} /> : <Copy size={12} />}
-        </button>
+          {copied ? <Check size={16} /> : <Copy size={16} />}
+        </IconButton>
       </div>
-      <div style={{
+      {/* Sized to the equation, not to a fixed block. minHeight 48 plus 14px
+          of vertical padding left a band of dead space around a single line of
+          maths; the box now hugs its content and only grows when the formula
+          actually needs two lines. */}
+      <div className="kyno-formula-box" style={{
         fontSize: 17, color: C.text,
-        padding: '14px 14px',
-        borderRadius: 10,
+        padding: '12px 14px',
+        borderRadius: 'var(--r-sm)',
         background: '#141A2A',
-
-
         border: '1px solid rgba(255, 255, 255, 0.06)',
         wordBreak: 'break-word', overflowX: 'auto',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        minHeight: 48, lineHeight: 1.4,
+        lineHeight: 1.25,
       }}>
         <MathExpr expr={f.expr} displayMode />
       </div>
@@ -380,7 +383,7 @@ function SheetsView({ sheets, loading, selected, setSelected, showForm, setShowF
                 <div style={{ fontSize: 12, fontWeight: 700, color: C.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.subject}</div>
                 <div style={{ fontSize: 10, color: C.textGhost }}>{s.chapter || 'All chapters'}</div>
               </div>
-              <button onClick={e => { e.stopPropagation(); remove(s.id || s._id) }}
+              <button className="kyno-text" onClick={e => { e.stopPropagation(); remove(s.id || s._id) }}
                 style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.textGhost, padding: 2 }}
                 onMouseEnter={(e: any) => (e.currentTarget.style.color = C.purpleLite)}
                 onMouseLeave={(e: any) => (e.currentTarget.style.color = C.textGhost)}>
@@ -500,7 +503,7 @@ function FormulaRow({ formula }: { formula: any }) {
     <div style={{ background: C.panel2, borderRadius: 10, padding: '12px 14px', border: `1px solid ${C.borderSoft}` }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
         <div style={{ fontSize: 13, fontWeight: 700, color: C.text }}>{formula.name}</div>
-        <button onClick={() => { navigator.clipboard.writeText(formula.formula); setCopied(true); setTimeout(() => setCopied(false), 2000) }}
+        <button className="kyno-text" onClick={() => { navigator.clipboard.writeText(formula.formula); setCopied(true); setTimeout(() => setCopied(false), 2000) }}
           style={{ background: 'none', border: 'none', cursor: 'pointer', color: copied ? C.purpleLite : C.textGhost }}>
           {copied ? <Check size={12} /> : <Copy size={12} />}
         </button>

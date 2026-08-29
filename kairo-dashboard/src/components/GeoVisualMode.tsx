@@ -447,7 +447,7 @@ function ImageCarousel({ slides, busy }: { slides: GeoImageSlide[]; busy: boolea
           border: `1px solid ${C.border}`,
         }}>
           {slides.map((_, i) => (
-            <button key={i} onClick={() => setIdx(i)} aria-label={`Image ${i + 1}`}
+            <button className="kyno-text" key={i} onClick={() => setIdx(i)} aria-label={`Image ${i + 1}`}
               style={{
                 width: 6, height: 6, borderRadius: '50%', border: 'none',
                 background: i === idx ? C.secondary : 'rgba(255, 255, 255, 0.25)',

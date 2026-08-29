@@ -206,7 +206,7 @@ Generate the JSON schedule and markdown plan as instructed.`
                 ? <>No memory data yet — schedule will be balanced. Use Kyno's Solver, Grader, or quizzes to teach Kyno your weak spots.</>
                 : <>Memory has {memoryCount} entries but no weak topics flagged yet.</>}
           </span>
-          <button onClick={loadMemory} style={{
+          <button className="kyno-text" onClick={loadMemory} style={{
             marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer',
             color: '#6B7280', display: 'flex', alignItems: 'center', gap: 4, fontSize: 11,
           }}>

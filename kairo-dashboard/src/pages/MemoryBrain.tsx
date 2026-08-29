@@ -312,7 +312,7 @@ function EntryList({ items, accent, empty, onForget, busy }: {
                 </span>
               </div>
             </div>
-            <button onClick={() => onForget(m.id)} disabled={busy === m.id} title="Forget this"
+            <button className="kyno-text" onClick={() => onForget(m.id)} disabled={busy === m.id} title="Forget this"
               style={{
                 background: 'none', border: 'none', cursor: 'pointer', padding: 4,
                 color: '#4B5563', display: 'flex',

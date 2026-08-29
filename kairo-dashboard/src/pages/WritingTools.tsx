@@ -34,11 +34,11 @@ export default function WritingTools() {
         <p style={{ fontSize: 13, color: '#6B7280', marginTop: 4 }}>AI-powered writing enhancement for exam success</p>
       </div>
 
-      <div style={{ display: 'flex', gap: 4, marginBottom: 24, background: '#141A2A', border: '1px solid #1f2532', borderRadius: 10, padding: 4, overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+      <div className="kyno-tabrow" style={{ marginBottom: 24, background: '#141A2A', border: '1px solid #1f2532' }}>
         {TABS.map(t => (
           <button className="kyno-chunky" key={t.id} onClick={() => setTab(t.id)} style={{
-            flex: '1 0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-            padding: '8px 12px', borderRadius: 7, border: 'none', fontFamily: 'inherit',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+            padding: '9px 14px', borderRadius: 'var(--r-sm)', border: 'none', fontFamily: 'inherit',
             fontSize: 12, fontWeight: tab === t.id ? 700 : 500, cursor: 'pointer',
             whiteSpace: 'nowrap',
             background: tab === t.id ? 'linear-gradient(135deg,#7C5CFF,#6455e0)' : 'transparent',
@@ -69,7 +69,7 @@ function ResultBox({ title, text, color = '#A5B4FC' }: { title: string; text: st
     <div style={{ ...card, marginTop: 16 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
         <span style={{ fontSize: 13, fontWeight: 600, color }}>{title}</span>
-        <button onClick={() => { navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 2000) }}
+        <button className="kyno-text" onClick={() => { navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 2000) }}
           style={{ background: 'none', border: 'none', cursor: 'pointer', color: copied ? '#A5B4FC' : '#6B7280', display: 'flex', alignItems: 'center', gap: 4, fontSize: 12 }}>
           {copied ? <><Check size={12} /> Copied</> : <><Copy size={12} /> Copy</>}
         </button>

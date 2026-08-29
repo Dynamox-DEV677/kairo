@@ -225,7 +225,7 @@ export function TextButton({ children, onClick, disabled }: {
   disabled?: boolean
 }) {
   return (
-    <button
+    <button className="kyno-text"
       onClick={onClick}
       disabled={disabled}
       style={{

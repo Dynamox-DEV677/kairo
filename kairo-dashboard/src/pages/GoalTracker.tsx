@@ -138,7 +138,7 @@ function SubjectRow({ s }: { s: GoalSubject }) {
 
   return (
     <div>
-      <button onClick={() => hasData && setOpen(o => !o)}
+      <button className="kyno-text" onClick={() => hasData && setOpen(o => !o)}
         style={{ display: 'block', width: '100%', textAlign: 'left', background: 'transparent', border: 'none', padding: 0, cursor: hasData ? 'pointer' : 'default', fontFamily: 'inherit' }}>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 6 }}>
           <span style={{ fontSize: 13, fontWeight: 700, color: hasData ? C.text : C.faint }}>{getSubject(s.subject)?.label || s.subject}</span>
@@ -244,7 +244,7 @@ function GoalSetup({ initial, mastery, onSave, onCancel }: {
         {shown.length === 0 && <span style={{ fontSize: 12, color: C.faint }}>Nothing matches “{search}”.</span>}
       </div>
       {!q && (
-        <button onClick={() => setShowAll(v => !v)}
+        <button className="kyno-text" onClick={() => setShowAll(v => !v)}
           style={{ background: 'none', border: 'none', color: C.purple, fontSize: 11.5, fontWeight: 700, cursor: 'pointer', padding: 0, marginBottom: 16 }}>
           {showAll ? 'Show fewer' : `Show all ${catalogue.length} subjects`}
         </button>

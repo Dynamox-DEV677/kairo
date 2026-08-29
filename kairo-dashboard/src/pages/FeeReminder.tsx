@@ -172,7 +172,7 @@ function StudentsTab() {
                   ₹{s.pending_amount} due
                 </span>
               )}
-              <button onClick={() => remove(s._id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#4B5563', padding: 4 }}
+              <button className="kyno-text" onClick={() => remove(s._id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#4B5563', padding: 4 }}
                 onMouseEnter={e => (e.currentTarget.style.color = '#A5B4FC')} onMouseLeave={e => (e.currentTarget.style.color = '#4B5563')}>
                 <Trash2 size={13} />
               </button>

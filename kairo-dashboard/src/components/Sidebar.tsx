@@ -609,7 +609,7 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
                   }}>
                     {r.title}
                   </span>
-                  <button
+                  <button className="kyno-text"
                     data-del
                     onClick={(e) => removeChat(e, r.id)}
                     title="Delete"
@@ -679,7 +679,7 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
                 <div style={{ fontSize: 12, fontWeight: 600, color: isDark ? '#fafafa' : '#18181b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{displayName}</div>
                 <div style={{ fontSize: 10, color: isDark ? '#4B5563' : '#B1B5BA' }}>{displaySub}</div>
               </div>
-              <button
+              <button className="kyno-text"
                 title="Log out"
                 onClick={() => {
                   clearAuthTokens()

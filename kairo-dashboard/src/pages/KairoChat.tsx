@@ -592,7 +592,7 @@ function MediaStrip({ turn, onPatch }: { turn: Turn; onPatch: (id: number, p: Pa
             </div>
             <div style={{ display: 'flex', gap: 8 }} onClick={e => e.stopPropagation()}>
               {slides.map((_, i) => (
-                <button key={i}
+                <button className="kyno-text" key={i}
                   onClick={() => onPatch(turn.id, { lightbox: i })}
                   style={{
                     width: 9, height: 9, borderRadius: '50%', border: 'none', cursor: 'pointer',

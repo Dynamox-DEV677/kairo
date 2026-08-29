@@ -95,7 +95,7 @@ function ErrBanner({ msg, onDismiss }: { msg: string; onDismiss?: () => void }) 
         padding: '10px 14px', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, color: '#A5B4FC' }}>
       <AlertCircle size={14} style={{ flexShrink: 0 }} />
       <span style={{ flex: 1 }}>{msg}</span>
-      {onDismiss && <button onClick={onDismiss} style={{ background: 'none', border: 'none', color: '#A5B4FC', cursor: 'pointer', padding: 0 }}><X size={13} /></button>}
+      {onDismiss && <button className="kyno-text" onClick={onDismiss} style={{ background: 'none', border: 'none', color: '#A5B4FC', cursor: 'pointer', padding: 0 }}><X size={13} /></button>}
     </motion.div>
   )
 }
@@ -107,7 +107,7 @@ function SuccessBanner({ msg, onDismiss }: { msg: string; onDismiss?: () => void
         padding: '10px 14px', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, color: '#A5B4FC' }}>
       <CheckCircle size={14} style={{ flexShrink: 0 }} />
       <span style={{ flex: 1 }}>{msg}</span>
-      {onDismiss && <button onClick={onDismiss} style={{ background: 'none', border: 'none', color: '#A5B4FC', cursor: 'pointer', padding: 0 }}><X size={13} /></button>}
+      {onDismiss && <button className="kyno-text" onClick={onDismiss} style={{ background: 'none', border: 'none', color: '#A5B4FC', cursor: 'pointer', padding: 0 }}><X size={13} /></button>}
     </motion.div>
   )
 }
@@ -226,7 +226,7 @@ function Modal({ open, onClose, title, children, width = 480 }: {
               width: '100%', maxWidth: width, padding: 24, maxHeight: '90vh', overflowY: 'auto' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
               <span style={{ fontWeight: 700, color: '#fafafa', fontSize: 16 }}>{title}</span>
-              <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6B7280', padding: 2 }}>
+              <button className="kyno-text" onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6B7280', padding: 2 }}>
                 <X size={16} />
               </button>
             </div>
@@ -253,7 +253,7 @@ function Btn({ children, onClick, variant = 'primary', size = 'md', disabled = f
   const pad = size === 'sm' ? '5px 10px' : '8px 16px'
   const fs  = size === 'sm' ? 12 : 13
   return (
-    <button onClick={onClick} disabled={disabled} style={{
+    <button className="kyno-text" onClick={onClick} disabled={disabled} style={{
       padding: pad, borderRadius: 7, fontSize: fs, fontWeight: 600,
       background: cfg.bg, color: cfg.color, border: 'none', cursor: disabled ? 'not-allowed' : 'pointer',
       fontFamily: 'inherit', opacity: disabled ? 0.5 : 1, transition: 'all 0.12s', ...style,
@@ -1406,7 +1406,7 @@ function AdminSettings({ schoolId, profile }: { schoolId: string; profile: AuthP
             <div style={{ fontSize: 13, fontWeight: 600, color: '#fafafa' }}>Require Admin Approval</div>
             <div style={{ fontSize: 12, color: '#6B7280' }}>New students must be approved before accessing school features.</div>
           </div>
-          <button onClick={() => setReqApproval(v => !v)} style={{
+          <button className="kyno-text" onClick={() => setReqApproval(v => !v)} style={{
             background: 'none', border: 'none', cursor: 'pointer', color: reqApproval ? '#A5B4FC' : '#6B7280',
           }}>
             {reqApproval ? <ToggleRight size={28} /> : <ToggleLeft size={28} />}
@@ -2050,7 +2050,7 @@ function TeacherMarks({ schoolId, profile }: { schoolId: string; profile: AuthPr
                       </div>
                       <div style={{ fontSize: 11, color: '#6B7280' }}>{pct}%</div>
                     </div>
-                    <button onClick={() => deleteMark(m.id)} title="Delete"
+                    <button className="kyno-text" onClick={() => deleteMark(m.id)} title="Delete"
                       style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6B7280', padding: 4 }}
                       onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = '#A5B4FC' }}
                       onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = '#6B7280' }}>

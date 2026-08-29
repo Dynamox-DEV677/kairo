@@ -584,7 +584,7 @@ export default function ExamPlanner() {
                           const key = blockKey(wk.week, day.day, i)
                           const done = !!completion[key]
                           return (
-                            <button key={i}
+                            <button className="kyno-text" key={i}
                               onClick={() => toggleCheckin(wk.week, day.day, i)}
                               style={{
                                 width: '100%', textAlign: 'left', cursor: 'pointer',

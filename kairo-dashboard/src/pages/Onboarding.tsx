@@ -124,7 +124,7 @@ export default function Onboarding({ profile, onDone, onSkip }: Props) {
             <img src="/kyno-logo.png" alt="" style={{ width: 34, height: 34, objectFit: 'contain', filter: 'drop-shadow(0 0 12px rgba(165,180,252,0.4))' }} />
             <span style={{ fontWeight: 800, letterSpacing: -0.3 }}>Set up your Kyno</span>
           </div>
-          <button onClick={onSkip} style={{ background: 'none', border: 'none', color: A.mut, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: FONT }}>Skip for now</button>
+          <button className="kyno-text" onClick={onSkip} style={{ background: 'none', border: 'none', color: A.mut, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: FONT }}>Skip for now</button>
         </div>
 
         <div style={{ height: 4, background: 'rgba(255,255,255,0.08)', borderRadius: 999, overflow: 'hidden', marginBottom: 6 }}>

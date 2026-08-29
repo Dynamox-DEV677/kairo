@@ -101,7 +101,7 @@ export default function Announcement() {
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
                 <div style={{ width: 7, height: 7, borderRadius: '50%', background: TYPE_COLORS[a.type] || '#A5B4FC', flexShrink: 0 }} />
                 <div style={{ fontSize: 12, fontWeight: 600, color: '#e4e4e7', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.title || a.topic}</div>
-                <button onClick={e => { e.stopPropagation(); remove(a.id || a._id) }}
+                <button className="kyno-text" onClick={e => { e.stopPropagation(); remove(a.id || a._id) }}
                   style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#4B5563' }}
                   onMouseEnter={e => (e.currentTarget.style.color = '#A5B4FC')}
                   onMouseLeave={e => (e.currentTarget.style.color = '#4B5563')}>
@@ -129,7 +129,7 @@ export default function Announcement() {
 function CopyBtn({ text }: { text: string }) {
   const [copied, setCopied] = useState(false)
   return (
-    <button onClick={() => { navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 2000) }}
+    <button className="kyno-text" onClick={() => { navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 2000) }}
       style={{ background: 'none', border: 'none', cursor: 'pointer', color: copied ? '#A5B4FC' : '#6B7280', display: 'flex', alignItems: 'center', gap: 4, fontSize: 11 }}>
       {copied ? <><Check size={11} /> Copied</> : <><Copy size={11} /> Copy</>}
     </button>

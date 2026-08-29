@@ -488,7 +488,7 @@ export default function VoiceTutor() {
             />
           </div>
 
-          <button onClick={submitText} disabled={!textInput.trim() || listening || thinking}
+          <button className="kyno-text" onClick={submitText} disabled={!textInput.trim() || listening || thinking}
             style={{
               width: 38, height: 38, borderRadius: 9, flexShrink: 0,
               background: textInput.trim() ? 'linear-gradient(135deg,#7C5CFF,#7C5CFF)' : '#171D2D',
