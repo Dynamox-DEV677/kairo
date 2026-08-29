@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
+import { studentMessage } from '../lib/aiError.core'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Send, StopCircle, GraduationCap, Sparkles, Layers, CheckCircle2, AlertTriangle } from 'lucide-react'
 import { getProfile } from '../lib/twin'
@@ -146,7 +147,7 @@ export default function ChatWindow({ onNewMessage, onNavigate, model = DEFAULT_M
       })
     } catch (e: any) {
       if (!stopRef.current && e?.name !== 'AbortError') {
-        const msg = e?.message || 'Something went wrong'
+        const msg = studentMessage(e)
         accRef.current = `⚠️ ${msg}`
         setStreamContent(accRef.current)
         setError(msg)
@@ -195,7 +196,7 @@ export default function ChatWindow({ onNewMessage, onNavigate, model = DEFAULT_M
         }, 1200)
       } catch (e: any) {
         setFcState('error')
-        setFcMsg(`⚠️ ${e.message || 'Could not create flashcards'}`)
+        setFcMsg(`⚠️ ${studentMessage(e)}`)
         setTimeout(() => { setFcState('idle'); setFcMsg('') }, 3500)
       }
       return

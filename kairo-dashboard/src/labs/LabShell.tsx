@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, ReactNode, useCallback } from 'react'
+import { studentMessage } from '../lib/aiError.core'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Box, Type, Layers, Save, RotateCcw, Pause, Play,
@@ -125,7 +126,7 @@ Keep total length 180-280 words. Tone: friendly, specific, exam-aware.` },
         ],
       })
       setExplanation(reply)
-    } catch (e: any) { setAiErr(e.message) }
+    } catch (e: any) { setAiErr(studentMessage(e)) }
     finally { setAiBusy(false) }
   }, [params, subject, aiPrompt])
 

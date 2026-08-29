@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react'
+import { safeDetail } from '../lib/aiError.core'
 import { motion } from 'framer-motion'
 import { Camera, User, Bell, Shield, Trash2, Check, FileJson, Smartphone, Laptop, ChevronsRight, KeyRound, Sparkles, RotateCcw, Mail, RefreshCw, CloudOff, Loader2, Terminal, ExternalLink } from 'lucide-react'
 import { confirmDialog } from '../components/ConfirmModal'
@@ -97,7 +98,7 @@ export default function Settings() {
         setDevMsg('Key failed: ' + String(data?.error || `HTTP ${res.status}`).slice(0, 160))
       }
     } catch (e: any) {
-      setDevMsg('Key test failed: ' + String(e?.message || e).slice(0, 160))
+      setDevMsg('Key test failed: ' + safeDetail(e, 'the key was rejected'))
     } finally {
       setDevTesting(false)
     }
@@ -118,7 +119,7 @@ export default function Settings() {
           : `Sync failed: ${r.reason || 'network issue'}`)
       }
     } catch (e: any) {
-      setSyncMsg('Sync failed: ' + String(e?.message || e))
+      setSyncMsg('Sync failed: ' + safeDetail(e, 'try again in a moment'))
     } finally {
       setSyncing(false)
     }
@@ -163,7 +164,7 @@ export default function Settings() {
       if (!r.ok) throw new Error(j.error || 'Could not send the code.')
       setEmailStep('code')
     } catch (e: any) {
-      setEmailErr(e.message || 'Could not send the code.')
+      setEmailErr(safeDetail(e, 'Could not send the code.'))
       setEmailStep('idle')
     }
   }
@@ -188,7 +189,7 @@ export default function Settings() {
       setStoredProfileRaw( JSON.stringify(merged))
       setEmailStep('done')
     } catch (e: any) {
-      setEmailErr(e.message || 'Verification failed.')
+      setEmailErr(safeDetail(e, 'Verification failed.'))
       setEmailStep('code')
     }
   }

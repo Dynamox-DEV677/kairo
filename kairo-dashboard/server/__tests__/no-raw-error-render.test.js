@@ -39,16 +39,24 @@ test('no screen renders a raw error message', () => {
       if (SANCTIONED.test(line)) return
       if (line.trim().startsWith('//') || line.trim().startsWith('*')) return
 
-      // setErr(e.message) / setError(String(err)) and friends.
-      //
       // The receiver has to look like a caught error. `setMsg(r.message)` where
       // r is a server RESPONSE is a success path — flagging that would push
       // people to route a "Credentials saved!" confirmation through an error
       // mapper, which is worse than the bug.
       const ERRISH = String.raw`(e|err|error|ex|reason|cause)\d?`
+
+      // An exhaustive audit of the 20 AI callers found five this missed, each
+      // escaping a different way. All three forms are now covered:
+      //   setAiErr(e.message)              — a prefixed setter
+      //   const msg = e?.message; set…(msg) — indirection through a local
+      //   setModal({ body: `${e.message}` }) — inside an object or template
+      const SETTER = String.raw`\bset[A-Za-z]*(Err|Error|Msg|Message|Modal|State)\w*\s*\(`
+
       const raw =
-        new RegExp(String.raw`\bset(Err|Error|ErrorMsg|Msg)\s*\(\s*[^)]*\b${ERRISH}\??\.message`).test(line) ||
-        new RegExp(String.raw`\bset(Err|Error|ErrorMsg|Msg)\s*\(\s*String\s*\(\s*${ERRISH}\b`).test(line)
+        new RegExp(SETTER + String.raw`[\s\S]{0,120}?\b${ERRISH}\??\.message`).test(line) ||
+        new RegExp(SETTER + String.raw`\s*String\s*\(\s*${ERRISH}\b`).test(line) ||
+        // a local that captures the raw message and is used a line or two later
+        new RegExp(String.raw`\b(const|let)\s+\w*(msg|message|err|error)\w*\s*=\s*${ERRISH}\??\.message`, 'i').test(line)
 
       if (raw) offenders.push(`${rel}:${i + 1}  ${line.trim().slice(0, 92)}`)
     })

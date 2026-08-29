@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { AlertTriangle, RotateCcw } from 'lucide-react'
 import { AiError } from '../lib/aiError.core'
 
@@ -25,8 +26,26 @@ export default function ErrorNote({
   onRetry?: () => void
   compact?: boolean
 }) {
-  if (!error) return null
-  const e = AiError.from(error)
+  const e = error ? AiError.from(error) : null
+
+  /**
+   * retryAfter, honoured rather than decorative.
+   *
+   * A rate limit that says "try again in a moment" and then offers a button
+   * that fails instantly teaches a student the message is noise. The button
+   * counts down and only arms when the wait is actually over.
+   */
+  const [waitLeft, setWaitLeft] = useState(0)
+  useEffect(() => {
+    if (!e?.retryAfter) { setWaitLeft(0); return }
+    setWaitLeft(e.retryAfter)
+    const id = setInterval(() => setWaitLeft(w => (w <= 1 ? 0 : w - 1)), 1000)
+    return () => clearInterval(id)
+    // a new failure restarts the wait; the code+message identify it
+  }, [e?.code, e?.message, e?.retryAfter])
+
+  if (!e) return null
+  const waiting = waitLeft > 0
 
   return (
     <div
@@ -51,17 +70,20 @@ export default function ErrorNote({
 
       {onRetry && e.retryable && (
         <button
-          onClick={onRetry}
+          onClick={waiting ? undefined : onRetry}
+          disabled={waiting}
           style={{
+            opacity: waiting ? 0.55 : 1,
+            cursor: waiting ? 'default' : 'pointer',
             display: 'inline-flex', alignItems: 'center', gap: 6,
             padding: '7px 14px', borderRadius: 9,
             background: 'rgba(226, 88, 92, 0.14)',
             border: '1px solid rgba(226, 88, 92, 0.4)',
             color: '#F0B4B6', fontFamily: 'inherit', fontSize: 12, fontWeight: 700,
-            cursor: 'pointer', flexShrink: 0,
+            flexShrink: 0,
           }}
         >
-          <RotateCcw size={12} /> Try again
+          <RotateCcw size={12} /> {waiting ? `Try again in ${waitLeft}s` : 'Try again'}
         </button>
       )}
     </div>

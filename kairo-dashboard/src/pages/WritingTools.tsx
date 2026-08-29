@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react'
+import ErrorNote from '../components/ErrorNote'
 import { studentMessage } from '../lib/aiError.core'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Edit3, Expand, Star, Shield, ArrowRight, Copy, Check, PencilLine, Sparkles, AlertTriangle, BookOpen, Zap } from 'lucide-react'
@@ -405,7 +406,7 @@ function ToneImprover() {
         <label style={label}>Your Text</label>
         <textarea style={{ ...inp, height: 160, resize: 'vertical' }} value={text} onChange={e => setText(e.target.value)} placeholder="Paste your answer or paragraph here…" />
       </div>
-      {err && <p style={{ color: '#4A2FA8', fontSize: 12, marginBottom: 10 }}>{err}</p>}
+      <ErrorNote error={err} />
       <button className="kyno-ghost" onClick={run} disabled={loading} style={btn(!loading)}>
         <ArrowRight size={13} /> {loading ? 'Improving…' : 'Improve Tone'}
       </button>

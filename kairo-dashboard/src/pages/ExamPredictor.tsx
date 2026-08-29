@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import ErrorNote from '../components/ErrorNote'
 import { studentMessage } from '../lib/aiError.core'
 import { motion } from 'framer-motion'
 import { Sparkles } from 'lucide-react'
@@ -66,7 +67,7 @@ export default function ExamPredictor() {
           </div>
         </div>
 
-        {error && <p style={{ fontSize: 12, color: '#A5B4FC', marginBottom: 14 }}>{error}</p>}
+        <ErrorNote error={error} />
 
         <motion.button className="kyno-chunky" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} onClick={predict} disabled={loading}
           style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '11px 22px', borderRadius: 10, border: 'none',

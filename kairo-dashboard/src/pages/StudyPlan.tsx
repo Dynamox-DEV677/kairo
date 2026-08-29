@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import ErrorNote from '../components/ErrorNote'
 import { studentMessage } from '../lib/aiError.core'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -302,7 +303,7 @@ Generate the JSON schedule and markdown plan as instructed.`
             </div>
           )}
 
-          {err && <p style={{ fontSize: 12, color: '#A5B4FC', marginBottom: 12 }}>{err}</p>}
+          <ErrorNote error={err} onRetry={generate} />
 
           <motion.button className="kyno-chunky"
             whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}

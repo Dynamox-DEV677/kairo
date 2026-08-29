@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react'
-import { studentMessage, safeDetail } from '../lib/aiError.core'
+import { safeDetail, studentMessage } from '../lib/aiError.core'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Mail, Lock, User, Building2, Key, ArrowRight, ArrowLeft,
@@ -215,7 +215,7 @@ function ChooseMode({ setMode }: { setMode: (m: Mode) => void }) {
             try { await Browser.close() } catch {  }
             window.location.href = '/'      // reload app with the new session
           } catch (e: any) {
-            setGErr(e?.message || 'Google sign-in failed — try again.')
+            setGErr(safeDetail(e, 'Google sign-in failed — try again.'))
             setGBusy(false)
           } finally {
             sub.remove()
@@ -233,7 +233,7 @@ function ChooseMode({ setMode }: { setMode: (m: Mode) => void }) {
       })
       if (error) throw new Error(error.message)
     } catch (e: any) {
-      setGErr(e?.message || 'Google sign-in failed — try again.')
+      setGErr(safeDetail(e, 'Google sign-in failed — try again.'))
       setGBusy(false)
     }
   }

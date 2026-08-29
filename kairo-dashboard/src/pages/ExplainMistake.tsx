@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import ErrorNote from '../components/ErrorNote'
 import { studentMessage } from '../lib/aiError.core'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -190,7 +191,7 @@ Now teach me how to never make this mistake again, following your structure exac
               style={{ ...inp, resize: 'vertical', lineHeight: 1.6 }} />
           </div>
 
-          {err && <p style={{ fontSize: 12, color: '#A5B4FC', marginBottom: 12 }}>{err}</p>}
+          <ErrorNote error={err} />
 
           <button
             onClick={explain} disabled={busy || !question.trim() || !myAnswer.trim()}

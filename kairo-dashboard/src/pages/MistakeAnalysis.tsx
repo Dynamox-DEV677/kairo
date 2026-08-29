@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { studentMessage } from '../lib/aiError.core'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Activity, AlertTriangle, Sparkles, Repeat, Plus, X, Loader2 } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
@@ -53,7 +54,7 @@ export default function MistakeAnalysis() {
       })
       setAiModal({ title, body: reply || '_AI returned no response. Try again in a few seconds._', loading: false })
     } catch (e: any) {
-      setAiModal({ title, body: `_Couldn't reach the AI. ${e?.message || 'Try again.'}_`, loading: false })
+      setAiModal({ title, body: `_${studentMessage(e)}_`, loading: false })
     }
   }
 
