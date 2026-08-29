@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { studentMessage } from '../lib/aiError.core'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Brain, Sparkles, RefreshCw, BookOpen, AlertTriangle,
@@ -116,7 +117,7 @@ Now teach me how to never make this mistake again, following your structure exac
         })
       } catch {  }
     } catch (e: any) {
-      setErr(e.message)
+      setErr(studentMessage(e))
     } finally {
       setBusy(false)
     }

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { studentMessage } from '../lib/aiError.core'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Sparkles, Plus, X, Calendar, Brain, RefreshCw, BookOpen, Target, Zap,
@@ -166,7 +167,7 @@ Generate the JSON schedule and markdown plan as instructed.`
 
       const markdown = reply.replace(/```(?:json)?\s*\[[\s\S]*?\]\s*```/, '').trim()
       setPlan({ markdown, blocks })
-    } catch (e: any) { setErr(e.message) }
+    } catch (e: any) { setErr(studentMessage(e)) }
     finally { setBusy(false) }
   }
 

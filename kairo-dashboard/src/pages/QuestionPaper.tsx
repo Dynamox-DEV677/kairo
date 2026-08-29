@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { studentMessage } from '../lib/aiError.core'
 import { motion } from 'framer-motion'
 import { Sparkles, Printer, RotateCcw } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
@@ -68,7 +69,7 @@ export default function QuestionPaper() {
     try {
       const r = await chat({ messages: [{ role: 'system', content: SYSTEM }, { role: 'user', content: `${totalMarks}-mark, ${duration}-hour ${board} Class ${cls} ${subject} paper. School: ${school}. Topics: ${topics || 'Full syllabus'}. Difficulty: ${difficulty}.` }] })
       setPaper(r)
-    } catch (e: any) { setError(e.message) }
+    } catch (e: any) { setError(studentMessage(e)) }
     finally { setLoading(false) }
   }
 

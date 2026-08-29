@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { studentMessage } from '../lib/aiError.core'
 import { motion } from 'framer-motion'
 import {
   Activity, Cpu, Database, GitBranch, Globe, Users, AlertTriangle,
@@ -46,7 +47,7 @@ export default function Ops() {
       setErr('')
       setLastFetch(Date.now())
     } catch (e: any) {
-      setErr(e.message || 'fetch failed')
+      setErr(studentMessage(e))
     }
   }
 

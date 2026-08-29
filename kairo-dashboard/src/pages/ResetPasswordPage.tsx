@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { studentMessage } from '../lib/aiError.core'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Lock, Eye, EyeOff, CheckCircle2, AlertCircle, Loader2, ArrowRight } from 'lucide-react'
 import { post } from '../lib/api'
@@ -38,7 +39,7 @@ export default function ResetPasswordPage({ onDone }: Props) {
       setDone(true)
       try { window.history.replaceState({}, '', '/') } catch {}
     } catch (e: any) {
-      setErr(e.message || 'Could not reset your password. Try requesting a new link.')
+      setErr(studentMessage(e))
     } finally {
       setBusy(false)
     }

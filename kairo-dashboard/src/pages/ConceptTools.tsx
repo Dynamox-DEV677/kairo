@@ -1,4 +1,5 @@
 import { useState, useEffect, type JSX } from 'react'
+import { studentMessage } from '../lib/aiError.core'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Lightbulb, GitBranch, HelpCircle, Search, Trash2 } from 'lucide-react'
 import { post, get, del } from '../lib/api'
@@ -74,7 +75,7 @@ function SimplifyTab() {
     if (!concept.trim()) { setErr('Enter a concept'); return }
     setLoading(true); setErr(''); setResult(null)
     try { setResult(await post('/concept/simplify', { concept, subject, level, school_id: SCHOOL_ID })) }
-    catch (e: any) { setErr(e.message) }
+    catch (e: any) { setErr(studentMessage(e)) }
     finally { setLoading(false) }
   }
 
@@ -84,7 +85,7 @@ function SimplifyTab() {
     try {
       const r = await post('/concept/doubt', { question, subject, school_id: SCHOOL_ID })
       setResult({ explanation: r.answer })
-    } catch (e: any) { setErr(e.message) }
+    } catch (e: any) { setErr(studentMessage(e)) }
     finally { setLoading(false) }
   }
 
@@ -170,7 +171,7 @@ function MindmapTab() {
     if (!chapter.trim()) { setErr('Enter a chapter name'); return }
     setLoading(true); setErr(''); setMindmap(null)
     try { setMindmap(await post('/concept/mindmap', { chapter, subject, school_id: SCHOOL_ID })) }
-    catch (e: any) { setErr(e.message) }
+    catch (e: any) { setErr(studentMessage(e)) }
     finally { setLoading(false) }
   }
 

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { studentMessage } from '../lib/aiError.core'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Megaphone, Plus, Trash2, Copy, Check, MessageCircle, Phone } from 'lucide-react'
 import { post, get, del } from '../lib/api'
@@ -37,7 +38,7 @@ export default function Announcement() {
       setSelected(a)
       setShowForm(false)
       setForm(f => ({ ...f, topic: '', details: '' }))
-    } catch (e: any) { setErr(e.message) }
+    } catch (e: any) { setErr(studentMessage(e)) }
     finally { setGenerating(false) }
   }
 

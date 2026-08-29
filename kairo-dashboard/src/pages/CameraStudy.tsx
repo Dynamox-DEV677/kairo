@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
+import { studentMessage, safeDetail } from '../lib/aiError.core'
 import { motion, AnimatePresence } from 'framer-motion'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
@@ -228,7 +229,7 @@ export default function CameraStudy() {
         if (videoRef.current) videoRef.current.srcObject = stream
       })
     } catch (e: any) {
-      setErr('Camera unavailable: ' + (e.message || 'permission denied'))
+      setErr('Camera unavailable: ' + safeDetail(e, 'permission denied'))
     }
   }
 
@@ -295,7 +296,7 @@ export default function CameraStudy() {
       })
       const j = await r.json().catch(() => null)
       if (!r.ok || !j?.markdown) {
-        setErr(j?.error || `Could not read that document (${r.status}).`)
+        setErr(studentMessage(Object.assign(new Error(j?.error || 'read failed'), { status: r.status })))
         return
       }
       setDocResult(j.markdown)
@@ -305,7 +306,7 @@ export default function CameraStudy() {
         : 'Read the file'
       )
     } catch (e: any) {
-      setErr(`Could not read that document. ${String(e?.message || '').slice(0, 80)}`)
+      setErr('Could not read that document. ' + safeDetail(e, 'Try a clearer, straighter photo.'))
     } finally {
       setDocBusy(false)
     }
@@ -562,7 +563,7 @@ export default function CameraStudy() {
         } catch {  }
       }
     } catch (e: any) {
-      setErr(e.message)
+      setErr(studentMessage(e))
     } finally {
       setBusy(false)
     }

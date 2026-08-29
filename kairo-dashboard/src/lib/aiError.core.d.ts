@@ -12,3 +12,5 @@ export declare class AiError extends Error {
 }
 
 export function studentMessage(e: unknown): string
+export function isSafeForStudents(raw: string): boolean
+export function safeDetail(e: unknown, fallback: string): string

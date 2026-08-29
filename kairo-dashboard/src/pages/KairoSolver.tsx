@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from 'react'
+import { studentMessage } from '../lib/aiError.core'
 import GeoVisualMode from '../components/GeoVisualMode'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -409,7 +410,7 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
         imagesCached: img.cached || false,
       } : prev)
     } catch (e: any) {
-      if (e?.name !== 'AbortError') setError(e?.message || 'Something went wrong.')
+      if (e?.name !== 'AbortError') setError(studentMessage(e))
       setBusy(false)
     }
   }

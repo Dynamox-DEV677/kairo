@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
+import { studentMessage } from '../lib/aiError.core'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Zap, Clock, Target, CheckCircle2, XCircle, Sparkles,
@@ -266,7 +267,7 @@ ${curriculumDirective(getProfile()?.board, getProfile()?.cls)}` },
       setRevealed(false)
       setPhase('live')
     } catch (e: any) {
-      setErr(e.message)
+      setErr(studentMessage(e))
       setPhase('setup')
     }
   }

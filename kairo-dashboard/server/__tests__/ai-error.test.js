@@ -107,3 +107,55 @@ test('every code produces a non-empty, non-technical sentence', () => {
     assert.doesNotMatch(m, /undefined|null|\[object/i, c)
   }
 })
+
+/* ── the safety valve ─────────────────────────────────────────────────────── */
+
+test('RATE_LIMITED is unreachable from any status except 429', () => {
+  // The brief's explicit ask: reporting an auth outage as popularity is how
+  // nobody noticed the API was down. This fails if that door ever reopens.
+  for (let s = 400; s <= 599; s++) {
+    if (s === 429) continue
+    const code = AiError.from(Object.assign(new Error(`API error ${s}`), { status: s })).code
+    assert.notEqual(code, 'RATE_LIMITED', `status ${s} produced RATE_LIMITED`)
+  }
+  assert.equal(AiError.from(Object.assign(new Error('x'), { status: 429 })).code, 'RATE_LIMITED')
+})
+
+test('every status maps to the code the brief specifies', () => {
+  const expect = { 401: 'AUTH_EXPIRED', 403: 'AUTH_EXPIRED', 429: 'RATE_LIMITED',
+                   500: 'SERVER_FAULT', 502: 'SERVER_FAULT', 503: 'SERVER_FAULT', 504: 'SERVER_FAULT' }
+  for (const [status, code] of Object.entries(expect)) {
+    const e = AiError.from(Object.assign(new Error('x'), { status: Number(status) }))
+    assert.equal(e.code, code, `status ${status}`)
+  }
+})
+
+test('a genuinely useful server sentence survives', () => {
+  // Flattening these to "Something went wrong" would be a downgrade dressed
+  // up as a fix.
+  for (const msg of [
+    'You already have a deck with that name.',
+    'Pick at least one subject before generating a plan.',
+    'That topic is not in your syllabus for Class 10.',
+  ]) {
+    assert.equal(studentMessage(new Error(msg)), msg)
+  }
+})
+
+test('but anything that could leak internals does not', () => {
+  for (const msg of [
+    'API error 500',
+    'HTTP 401 Unauthorized',
+    'error: connect ECONNREFUSED 127.0.0.1:5432',
+    'TypeError: Cannot read properties of undefined',
+    'at handler (/var/task/server/routes/quiz.js:88:12)',
+    'select * from users where id = $1 failed',
+    'Invalid api_key provided: gsk_abc123',
+    'fetch failed for http://localhost:3002/api/ai/chat',
+    '[object Object]',
+  ]) {
+    const out = studentMessage(new Error(msg))
+    assert.notEqual(out, msg, `leaked: ${msg}`)
+    assert.doesNotMatch(out, /\b[1-5]\d\d\b|HTTP|ECONN|gsk_|localhost|\[object/i)
+  }
+})

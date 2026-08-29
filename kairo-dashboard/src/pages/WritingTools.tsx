@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react'
+import { studentMessage } from '../lib/aiError.core'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Edit3, Expand, Star, Shield, ArrowRight, Copy, Check, PencilLine, Sparkles, AlertTriangle, BookOpen, Zap } from 'lucide-react'
 import { post } from '../lib/api'
@@ -187,7 +188,7 @@ Rules:
         suggestions: Array.isArray(parsed.suggestions) ? parsed.suggestions.slice(0, 5).map((s: any) => String(s).slice(0, 200)) : [],
       })
     } catch (e: any) {
-      setErr(e.message || 'Kyno could not analyze that.')
+      setErr(studentMessage(e))
     } finally {
       setLoading(false)
     }
@@ -378,7 +379,7 @@ function ToneImprover() {
     if (!text.trim()) { setErr('Enter some text'); return }
     setLoading(true); setErr(''); setResult(null)
     try { setResult(await post('/writing/improve', { text, tone, subject, school_id: SCHOOL_ID })) }
-    catch (e: any) { setErr(e.message) }
+    catch (e: any) { setErr(studentMessage(e)) }
     finally { setLoading(false) }
   }
 
@@ -425,7 +426,7 @@ function ExpandTool() {
     if (!text.trim()) { setErr('Enter some text'); return }
     setLoading(true); setErr(''); setResult(null)
     try { setResult(await post('/writing/expand', { text, subject, target_words: Number(words), school_id: SCHOOL_ID })) }
-    catch (e: any) { setErr(e.message) }
+    catch (e: any) { setErr(studentMessage(e)) }
     finally { setLoading(false) }
   }
 
@@ -469,7 +470,7 @@ function TopperTool() {
     if (!text.trim()) { setErr('Enter your answer'); return }
     setLoading(true); setErr(''); setResult(null)
     try { setResult(await post('/writing/topper', { text, subject, school_id: SCHOOL_ID })) }
-    catch (e: any) { setErr(e.message) }
+    catch (e: any) { setErr(studentMessage(e)) }
     finally { setLoading(false) }
   }
 
@@ -512,7 +513,7 @@ function PlagiarismTool() {
     if (text.length < 50) { setErr('Enter at least 50 characters'); return }
     setLoading(true); setErr(''); setResult(null)
     try { setResult(await post('/writing/plagiarism', { text, school_id: SCHOOL_ID })) }
-    catch (e: any) { setErr(e.message) }
+    catch (e: any) { setErr(studentMessage(e)) }
     finally { setLoading(false) }
   }
 

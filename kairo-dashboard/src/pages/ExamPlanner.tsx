@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { studentMessage } from '../lib/aiError.core'
 import { aiHeaders } from '../lib/devKey'
 import { readjustPlan, planDayIndex, missedBlocks } from '../lib/replan.core'
 import SyllabusMap from '../components/SyllabusMap'
@@ -181,7 +182,7 @@ export default function ExamPlanner() {
       setPlan(data)
       try { awardXP('exam_plan') } catch {  }
     } catch (e: any) {
-      setError(e.message || 'Failed to generate plan')
+      setError(studentMessage(e))
     } finally {
       setLoading(false)
     }
@@ -205,7 +206,7 @@ export default function ExamPlanner() {
       const row = await r.json()
       setPlanId(row.id)
       setSavedPlans(prev => [row, ...prev])
-    } catch (e: any) { setError(e.message) }
+    } catch (e: any) { setError(studentMessage(e)) }
   }, [plan, userId, exam, examDate, hoursPerDay])
 
   const [planCreatedAt, setPlanCreatedAt] = useState<number | null>(null)
@@ -247,7 +248,7 @@ export default function ExamPlanner() {
       setPlanCreatedAt(Date.parse(row.created_at) || null)
       setExam(row.exam); setExamDate(row.exam_date); setHoursPerDay(row.hours_per_day)
       setShowSavedList(false)
-    } catch (e: any) { setError(e.message) }
+    } catch (e: any) { setError(studentMessage(e)) }
     finally { setLoading(false) }
   }, [])
 
@@ -306,7 +307,7 @@ export default function ExamPlanner() {
           body: JSON.stringify({ plan_json: newPlan, hours_per_day: hoursPerDay }),
         })
       }
-    } catch (e: any) { setError(e.message) }
+    } catch (e: any) { setError(studentMessage(e)) }
     finally { setLoading(false) }
   }, [plan, planId, mockScore, mockNote, completion, weakAreas, hoursPerDay, examDate])
 

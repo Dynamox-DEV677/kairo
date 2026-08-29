@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { studentMessage } from '../lib/aiError.core'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Sparkles, Copy, Check, Mail, ChevronDown, Search, User, X, Edit3 } from 'lucide-react'
 import { chat } from '../lib/openrouter'
@@ -193,7 +194,7 @@ export default function ParentMessage() {
         ],
       })
       setMessage(r)
-    } catch (e: any) { setError(e.message) }
+    } catch (e: any) { setError(studentMessage(e)) }
     finally { setLoading(false) }
   }
 

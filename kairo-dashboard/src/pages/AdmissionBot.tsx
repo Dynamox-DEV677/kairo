@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { studentMessage } from '../lib/aiError.core'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Send, Bot, User, Users, Phone, Mail, CheckCircle, Clock, XCircle,
@@ -92,7 +93,7 @@ export default function AdmissionBot() {
         school_logo: data.school_logo || null,
         config:      data.config || {},
       })
-    } catch (e: any) { setErr(e.message) }
+    } catch (e: any) { setErr(studentMessage(e)) }
   }, [schoolId, isAdmin])
 
   useEffect(() => { loadCtx() }, [loadCtx])
@@ -360,7 +361,7 @@ function LeadsTab() {
     setLoading(true); setErr('')
     api('/admission/leads' + (filter === 'all' ? '' : `?status=${filter}`))
       .then(d => setLeads(Array.isArray(d) ? d : []))
-      .catch(e => setErr(e.message))
+      .catch(e => setErr(studentMessage(e)))
       .finally(() => setLoading(false))
   }, [filter])
 
@@ -463,7 +464,7 @@ function StatsTab() {
   useEffect(() => {
     api('/admission/stats')
       .then(setStats)
-      .catch(e => setErr(e.message))
+      .catch(e => setErr(studentMessage(e)))
       .finally(() => setLoading(false))
   }, [])
 
@@ -513,7 +514,7 @@ function SettingsTab({ ctx, onSaved }: { ctx: SchoolCtx; onSaved: () => void }) 
       await api('/admission/config', { method: 'PUT', body: JSON.stringify(cfg) })
       setMsg('Saved. The bot now uses these details.')
       onSaved()
-    } catch (e: any) { setErr(e.message) }
+    } catch (e: any) { setErr(studentMessage(e)) }
     finally { setSaving(false) }
   }
 

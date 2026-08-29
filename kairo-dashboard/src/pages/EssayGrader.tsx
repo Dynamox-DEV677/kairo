@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { studentMessage } from '../lib/aiError.core'
 import { motion } from 'framer-motion'
 import { Sparkles } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
@@ -95,7 +96,7 @@ export default function EssayGrader() {
           } catch {  }
         }
       }
-    } catch (e: any) { setError(e.message) }
+    } catch (e: any) { setError(studentMessage(e)) }
     finally { setLoading(false) }
   }
 

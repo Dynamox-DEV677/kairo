@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
+import { studentMessage } from '../lib/aiError.core'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   BookOpen, Plus, Trash2, ChevronDown, ChevronRight, Copy, Check,
@@ -83,7 +84,7 @@ export default function FormulaSheet() {
       setSheets(s => [sheet, ...s])
       setSelected(sheet)
       setShowForm(false)
-    } catch (e: any) { setErr(e.message) }
+    } catch (e: any) { setErr(studentMessage(e)) }
     finally { setGen(false) }
   }
 

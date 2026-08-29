@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
+import { studentMessage } from '../lib/aiError.core'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Swords, Trophy, Flame, Target, Crown, Medal,
@@ -90,7 +91,7 @@ export default function BattleMode() {
         setLeaders(lb.leaders as any); setMe(lb.you as any)
         setErr('')
       } else {
-        setErr(e.message)
+        setErr(studentMessage(e))
       }
     }
   }, [tab])
@@ -175,7 +176,7 @@ Return ONLY a JSON array:
       setIdx(0)
       setPhase('live')
     } catch (e: any) {
-      setErr(e.message); setPhase('lobby')
+      setErr(studentMessage(e)); setPhase('lobby')
     }
   }
 
@@ -207,7 +208,7 @@ Return ONLY a JSON array:
       setIdx(0)
       setPhase('live')
     } catch (e: any) {
-      setErr(e.message); setPhase('lobby')
+      setErr(studentMessage(e)); setPhase('lobby')
     }
   }
 
@@ -279,7 +280,7 @@ Tips: each tip is one specific actionable line (max 18 words) — reference the 
         if (isMissingBackend(e)) {
           submitLocal(payload as any)
         } else {
-          setErr(e.message)
+          setErr(studentMessage(e))
         }
       }
       finally {

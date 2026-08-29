@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { studentMessage } from '../lib/aiError.core'
 import { motion, AnimatePresence } from 'framer-motion'
 import { DollarSign, Users, Mail, Settings, Send, CheckCircle, XCircle, Clock, Plus, Trash2, RefreshCw, BarChart2 } from 'lucide-react'
 import { get, post, put, del } from '../lib/api'
@@ -114,7 +115,7 @@ function StudentsTab() {
       await post('/students', { school_id: SCHOOL_ID, ...form })
       setForm({ name: '', class: '', parent_email: '', phone: '' })
       setAdding(false); load()
-    } catch (e: any) { setErr(e.message) }
+    } catch (e: any) { setErr(studentMessage(e)) }
     finally { setSaving(false) }
   }
 
@@ -210,7 +211,7 @@ function FeesTab() {
       await post('/fees', { school_id: SCHOOL_ID, ...form, amount: Number(form.amount) })
       setForm({ student_id: '', amount: '', due_date: '', label: 'Monthly Fee' })
       setAdding(false); load()
-    } catch (e: any) { setErr(e.message) }
+    } catch (e: any) { setErr(studentMessage(e)) }
     finally { setSaving(false) }
   }
 
@@ -314,7 +315,7 @@ function SendTab() {
       })
       const improved = data?.choices?.[0]?.message?.content?.trim()
       if (improved) setMessage(improved)
-    } catch (e: any) { setErr('AI polish failed: ' + e.message) }
+    } catch (e: any) { setErr(studentMessage(e)) }
     finally { setPolishing(false) }
   }
 
@@ -325,14 +326,14 @@ function SendTab() {
       if (senderName.trim())        payload.sender_name    = senderName.trim()
       if (mode === 'manual' && message.trim()) payload.custom_message = message.trim()
       setResult(await post('/emails/send-bulk', payload))
-    } catch (e: any) { setErr(e.message) }
+    } catch (e: any) { setErr(studentMessage(e)) }
     finally { setSending(false) }
   }
 
   async function retry() {
     setSending(true); setErr(''); setResult(null)
     try { setResult(await post('/emails/retry', { school_id: SCHOOL_ID })) }
-    catch (e: any) { setErr(e.message) }
+    catch (e: any) { setErr(studentMessage(e)) }
     finally { setSending(false) }
   }
 
@@ -473,7 +474,7 @@ function SetupTab() {
     try {
       const r = await post('/credentials/save', { school_id: SCHOOL_ID, ...creds })
       setMsg(r.message || 'Credentials saved!')
-    } catch (e: any) { setErr(e.message) }
+    } catch (e: any) { setErr(studentMessage(e)) }
     finally { setSaving(false) }
   }
 
@@ -483,7 +484,7 @@ function SetupTab() {
     try {
       const r = await post('/credentials/test', creds)
       setMsg(r.message)
-    } catch (e: any) { setErr(e.message) }
+    } catch (e: any) { setErr(studentMessage(e)) }
     finally { setTesting(false) }
   }
 

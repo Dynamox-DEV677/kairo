@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { studentMessage } from '../lib/aiError.core'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Brain, AlertTriangle, TrendingUp, Sparkles, X,
@@ -89,7 +90,7 @@ export default function MemoryBrain() {
         all,
       })
     } catch (e: any) {
-      setErr(e.message || 'Failed to read local memory.')
+      setErr(studentMessage(e))
     } finally {
       setLoading(false)
     }

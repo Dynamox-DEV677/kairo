@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { studentMessage } from '../lib/aiError.core'
 import { motion } from 'framer-motion'
 import {
   CheckCircle2, AlertTriangle, XCircle, RefreshCw, Loader2,
@@ -67,7 +68,7 @@ export default function StatusPage({ onExit }: Props) {
       setReqAt(Date.now() - t0)
       setErr('')
     } catch (e: any) {
-      setErr(e?.message || 'Could not reach Kyno right now.')
+      setErr(studentMessage(e))
       setSnap(null)
     } finally {
       setLoading(false)

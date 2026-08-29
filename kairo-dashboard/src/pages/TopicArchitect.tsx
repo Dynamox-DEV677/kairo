@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { studentMessage } from '../lib/aiError.core'
 import { aiHeaders } from '../lib/devKey'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -90,7 +91,7 @@ export default function TopicArchitect() {
       setPlan(data)
       try { awardXP('topic_plan') } catch {  }
     } catch (e: any) {
-      setError(e.message || 'Failed to plan this topic')
+      setError(studentMessage(e))
     } finally { setLoading(false) }
   }
 

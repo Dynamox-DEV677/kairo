@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { studentMessage } from '../lib/aiError.core'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   AlertTriangle, Sparkles, Save, RefreshCw, Target,
@@ -156,7 +157,7 @@ Be direct. Indian exam context. Under 200 words total.` },
       })
       setTab('topics')
     } catch (e: any) {
-      setErr(e.message)
+      setErr(studentMessage(e))
     } finally {
       setBusy(false)
       setProg('')

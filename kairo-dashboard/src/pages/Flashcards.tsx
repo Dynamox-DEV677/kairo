@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { studentMessage } from '../lib/aiError.core'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   BookMarked, ChevronLeft, ChevronRight, Sparkles, RotateCcw,
@@ -131,7 +132,7 @@ export default function Flashcards() {
         tags: [useTopic.split(' ')[0]],
         source: 'flashcards-page',
       })
-    } catch (e: any) { setError(e.message || 'Failed') }
+    } catch (e: any) { setError(studentMessage(e)) }
     finally { setLoading(false); stopGenerating() }
   }
 

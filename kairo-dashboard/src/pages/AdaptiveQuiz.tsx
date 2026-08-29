@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { studentMessage } from '../lib/aiError.core'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Brain, CheckCircle, XCircle, Trophy, RotateCcw, History, Target, Zap, BarChart3, Award, ArrowRight } from 'lucide-react'
 import { post, get } from '../lib/api'
@@ -48,7 +49,7 @@ export default function AdaptiveQuiz() {
       setQuestions((r.questions || []).slice(0, wanted))
       setSessionId(r.session_id || 'local')
       setScreen('quiz')
-    } catch (e: any) { setErr(e.message) }
+    } catch (e: any) { setErr(studentMessage(e)) }
     finally { setLoading(false) }
   }
 

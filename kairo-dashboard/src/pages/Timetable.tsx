@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { studentMessage, safeDetail } from '../lib/aiError.core'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Grid3x3, Plus, Trash2, AlertCircle, Sparkles } from 'lucide-react'
 import { get, post, del } from '../lib/api'
@@ -83,8 +84,8 @@ function GridTab() {
       await post('/timetable', { school_id: SCHOOL_ID, ...form, period: Number(form.period) })
       setAdding(false); load()
     } catch (e: any) {
-      if (e.message.includes('Clash')) { setErr(e.message + ' — save anyway?'); return }
-      setErr(e.message)
+      if (String(e?.message || '').includes('Clash')) { setErr(safeDetail(e, 'That slot clashes with another class.') + ' — save anyway?'); return }
+      setErr(studentMessage(e))
     }
     finally { setSaving(false) }
   }
@@ -94,7 +95,7 @@ function GridTab() {
     try {
       await post('/timetable', { school_id: SCHOOL_ID, ...form, period: Number(form.period), force: true })
       setAdding(false); load()
-    } catch (e: any) { setErr(e.message) }
+    } catch (e: any) { setErr(studentMessage(e)) }
     finally { setSaving(false) }
   }
 
@@ -302,7 +303,7 @@ function GenerateTab() {
     try {
       const data = await post('/timetable/generate', { school_id: SCHOOL_ID, class: cls, subjects })
       setResult(data)
-    } catch (e: any) { setErr(e.message) }
+    } catch (e: any) { setErr(studentMessage(e)) }
     finally { setLoading(false) }
   }
 

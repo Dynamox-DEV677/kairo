@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { studentMessage } from '../lib/aiError.core'
 import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import QRCode from 'qrcode'
@@ -107,7 +108,7 @@ function SendFlow() {
     started.current = true
     exportToFile()
       .then(setExp)
-      .catch(e => setErr(String(e?.message || e)))
+      .catch(e => setErr(studentMessage(e)))
   }, [])
 
   useEffect(() => {

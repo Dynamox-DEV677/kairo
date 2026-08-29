@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
+import { studentMessage, safeDetail } from '../lib/aiError.core'
 import { aiHeaders } from '../lib/devKey'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -325,7 +326,7 @@ function NoSchoolView() {
       // The server's messages are already specific — "School X not found",
       // "Incorrect school passcode" — so pass them through rather than
       // flattening everything into "something went wrong".
-      setMsg(err?.message || 'Could not join that school.')
+      setMsg(safeDetail(err, 'Could not join that school.'))
     } finally {
       setBusy(false)
     }
@@ -476,7 +477,7 @@ function AdminAIAnnounce({ schoolId: _ }: { schoolId: string }) {
       const text = data?.choices?.[0]?.message?.content?.trim()
       if (!text) throw new Error('AI returned no text. Try again.')
       setDraft(text.replace(/^["']|["']$/g, '').replace(/<\/?think(?:ing)?>[\s\S]*?<\/?think(?:ing)?>/gi, '').trim())
-    } catch (e: any) { setErr(e.message) }
+    } catch (e: any) { setErr(studentMessage(e)) }
     finally { setGenerating(false) }
   }
 
@@ -490,7 +491,7 @@ function AdminAIAnnounce({ schoolId: _ }: { schoolId: string }) {
       })
       setSuccess(`Sent to ${audience === 'all' ? 'everyone' : audience + 's'}. Auto-deletes in ${hours}h.`)
       setDraft(''); setTopic('')
-    } catch (e: any) { setErr(e.message) }
+    } catch (e: any) { setErr(studentMessage(e)) }
     finally { setSending(false) }
   }
 
@@ -624,7 +625,7 @@ function AdminOverview({ schoolId }: { schoolId: string }) {
   useEffect(() => {
     setLoading(true)
     api(`/schools/${schoolId}/stats`)
-      .then(setStats).catch(e => setErr(e.message)).finally(() => setLoading(false))
+      .then(setStats).catch(e => setErr(studentMessage(e))).finally(() => setLoading(false))
   }, [schoolId])
 
   if (loading) return <Spinner />
@@ -669,7 +670,7 @@ function AdminHealthMonitor() {
         leadFunnel: { new: 0, contacted: 0, admitted: 0, ...(d.leadFunnel || {}) },
       } : null)
     }
-    catch (e: any) { setErr(e.message) }
+    catch (e: any) { setErr(studentMessage(e)) }
     finally { setLoading(false) }
   }, [])
 
@@ -867,7 +868,7 @@ function AdminPending({ schoolId, onApprove }: { schoolId: string; onApprove: ()
     setLoading(true); setErr('')
     api(`/schools/${schoolId}/members?status=pending`)
       .then(d => setMembers(d.members || []))
-      .catch(e => setErr(e.message))
+      .catch(e => setErr(studentMessage(e)))
       .finally(() => setLoading(false))
   }, [schoolId])
 
@@ -880,7 +881,7 @@ function AdminPending({ schoolId, onApprove }: { schoolId: string; onApprove: ()
       setSuccess(`${m.name} approved!`)
       setMembers(prev => prev.filter(x => x.id !== m.id))
       onApprove()
-    } catch (e: any) { setErr(e.message) }
+    } catch (e: any) { setErr(studentMessage(e)) }
     finally { setBusy(null) }
   }
 
@@ -891,7 +892,7 @@ function AdminPending({ schoolId, onApprove }: { schoolId: string; onApprove: ()
       await api(`/schools/${schoolId}/members/${m.id}`, { method: 'DELETE' })
       setSuccess(`${m.name} removed.`)
       setMembers(prev => prev.filter(x => x.id !== m.id))
-    } catch (e: any) { setErr(e.message) }
+    } catch (e: any) { setErr(studentMessage(e)) }
     finally { setBusy(null) }
   }
 
@@ -950,7 +951,7 @@ function AdminMembers({ schoolId, selfId }: { schoolId: string; selfId: string }
     const q = filter !== 'all' ? `?role=${filter}` : ''
     api(`/schools/${schoolId}/members${q}`)
       .then(d => setMembers(d.members || []))
-      .catch(e => setErr(e.message))
+      .catch(e => setErr(studentMessage(e)))
       .finally(() => setLoading(false))
   }, [schoolId, filter])
 
@@ -966,7 +967,7 @@ function AdminMembers({ schoolId, selfId }: { schoolId: string; selfId: string }
       if (action === 'remove')    await api(`/schools/${schoolId}/members/${m.id}`,   { method: 'DELETE' })
       setSuccess(`Done: ${m.name}`)
       load()
-    } catch (e: any) { setErr(e.message) }
+    } catch (e: any) { setErr(studentMessage(e)) }
     finally { setBusy(null) }
   }
 
@@ -1043,7 +1044,7 @@ function AdminTasks({ schoolId: _schoolId }: { schoolId: string }) {
     setLoading(true)
     api('/tasks')
       .then(d => setTasks(Array.isArray(d) ? d : (d.tasks || [])))
-      .catch(e => setErr(e.message))
+      .catch(e => setErr(studentMessage(e)))
       .finally(() => setLoading(false))
   }, [])
 
@@ -1094,7 +1095,7 @@ function AdminNetwork({ schoolId: _schoolId }: { schoolId: string }) {
     setLoading(true); setErr('')
     api('/network-rules')
       .then(d => { setRules(d.rules || []); setYourIp(d.your_ip || '') })
-      .catch(e => setErr(e.message))
+      .catch(e => setErr(studentMessage(e)))
       .finally(() => setLoading(false))
   }, [])
 
@@ -1108,7 +1109,7 @@ function AdminNetwork({ schoolId: _schoolId }: { schoolId: string }) {
       setSuccess('Rule added.')
       setLabel(''); setCidr(''); setShowForm(false)
       load()
-    } catch (e: any) { setErr(e.message) }
+    } catch (e: any) { setErr(studentMessage(e)) }
     finally { setBusy(null) }
   }
 
@@ -1117,7 +1118,7 @@ function AdminNetwork({ schoolId: _schoolId }: { schoolId: string }) {
     try {
       await api(`/network-rules/${r.id}`, { method: 'PUT', body: JSON.stringify({ enabled: !r.enabled }) })
       setRules(prev => prev.map(x => x.id === r.id ? { ...x, enabled: !x.enabled } : x))
-    } catch (e: any) { setErr(e.message) }
+    } catch (e: any) { setErr(studentMessage(e)) }
     finally { setBusy(null) }
   }
 
@@ -1128,7 +1129,7 @@ function AdminNetwork({ schoolId: _schoolId }: { schoolId: string }) {
       await api(`/network-rules/${r.id}`, { method: 'DELETE' })
       setRules(prev => prev.filter(x => x.id !== r.id))
       setSuccess(`Rule "${r.label}" deleted.`)
-    } catch (e: any) { setErr(e.message) }
+    } catch (e: any) { setErr(studentMessage(e)) }
     finally { setBusy(null) }
   }
 
@@ -1228,7 +1229,7 @@ function AdminLogs({ schoolId }: { schoolId: string }) {
     setLoading(true); setErr('')
     api(`/schools/${schoolId}/login-logs?limit=100${failOnly ? '&failed=true' : ''}`)
       .then(d => setLogs(d.logs || []))
-      .catch(e => setErr(e.message))
+      .catch(e => setErr(studentMessage(e)))
       .finally(() => setLoading(false))
   }, [schoolId, failOnly])
 
@@ -1337,7 +1338,7 @@ function AdminSettings({ schoolId, profile }: { schoolId: string; profile: AuthP
         setDomain(d.domain || '')
         setReqApproval(d.require_approval)
       })
-      .catch(e => setErr(e.message))
+      .catch(e => setErr(studentMessage(e)))
       .finally(() => setLoading(false))
   }, [schoolId])
 
@@ -1354,7 +1355,7 @@ function AdminSettings({ schoolId, profile }: { schoolId: string; profile: AuthP
         }),
       })
       setSuccess('School settings saved.')
-    } catch (e: any) { setErr(e.message) }
+    } catch (e: any) { setErr(studentMessage(e)) }
     finally { setBusy(false) }
   }
 
@@ -1365,7 +1366,7 @@ function AdminSettings({ schoolId, profile }: { schoolId: string; profile: AuthP
       const d = await api(`/schools/${schoolId}/regenerate-passcode`, { method: 'POST' })
       setNewPasscode(d.passcode)
       setPasskeyModal(true)
-    } catch (e: any) { setErr(e.message) }
+    } catch (e: any) { setErr(studentMessage(e)) }
     finally { setBusy(false) }
   }
 
@@ -1380,7 +1381,7 @@ function AdminSettings({ schoolId, profile }: { schoolId: string; profile: AuthP
       setSuccess(`Teacher "${tName}" added.`)
       setTeacherModal(false)
       setTName(''); setTEmail(''); setTPass(''); setTSubject('')
-    } catch (e: any) { setErr(e.message) }
+    } catch (e: any) { setErr(studentMessage(e)) }
     finally { setTBusy(false) }
   }
 
@@ -1510,7 +1511,7 @@ function TeacherTasks({ schoolId: _schoolId }: { schoolId: string }) {
     setLoading(true)
     api('/tasks')
       .then(d => setTasks(Array.isArray(d) ? d : (d.tasks || [])))
-      .catch(e => setErr(e.message))
+      .catch(e => setErr(studentMessage(e)))
       .finally(() => setLoading(false))
   }, [])
 
@@ -1568,7 +1569,7 @@ function CreateTask({ schoolId: _schoolId, onCreated }: { schoolId: string; onCr
         }),
       })
       onCreated()
-    } catch (e: any) { setErr(e.message) }
+    } catch (e: any) { setErr(studentMessage(e)) }
     finally { setLoading(false) }
   }
 
@@ -1639,7 +1640,7 @@ function StudentTasks({ profile }: { profile: AuthProfile }) {
     setLoading(true)
     api('/tasks')
       .then(d => setTasks(Array.isArray(d) ? d : (d.tasks || [])))
-      .catch(e => setErr(e.message))
+      .catch(e => setErr(studentMessage(e)))
       .finally(() => setLoading(false))
   }, [profile.id])
 
@@ -1657,7 +1658,7 @@ function StudentTasks({ profile }: { profile: AuthProfile }) {
         ? { ...t, my_submission: { status: 'submitted', submitted_at: new Date().toISOString() } }
         : t
       ))
-    } catch (e: any) { setErr(e.message) }
+    } catch (e: any) { setErr(studentMessage(e)) }
     finally { setSubmitting(false) }
   }
 
@@ -1795,7 +1796,7 @@ function NotifPanel({ schoolId, profile, canSend }: { schoolId: string; profile:
     setLoading(true)
     api('/notifications')
       .then(d => setNotifs(Array.isArray(d) ? d : (d.notifications || [])))
-      .catch(e => setErr(e.message))
+      .catch(e => setErr(studentMessage(e)))
       .finally(() => setLoading(false))
   }, [schoolId])
 
@@ -1816,7 +1817,7 @@ function NotifPanel({ schoolId, profile, canSend }: { schoolId: string; profile:
       setSuccess('Notification sent!')
       setMsg('')
       load()
-    } catch (e: any) { setErr(e.message) }
+    } catch (e: any) { setErr(studentMessage(e)) }
     finally { setSending(false) }
   }
 
@@ -1933,7 +1934,7 @@ function TeacherMarks({ schoolId, profile }: { schoolId: string; profile: AuthPr
         setStudents(s.members || [])
         setMarks(m.marks || [])
       })
-      .catch(e => setErr(e.message))
+      .catch(e => setErr(studentMessage(e)))
       .finally(() => setLoading(false))
   }, [schoolId])
 
@@ -1956,7 +1957,7 @@ function TeacherMarks({ schoolId, profile }: { schoolId: string; profile: AuthPr
       setSuccess('Marks added successfully.')
       setMarks(prev => [d.mark, ...prev])
       setStudentId(''); setSubject(''); setExamName(''); setObtained(''); setTotal('100'); setRemarks('')
-    } catch (e: any) { setErr(e.message) }
+    } catch (e: any) { setErr(studentMessage(e)) }
     finally { setBusy(false) }
   }
 
@@ -1966,7 +1967,7 @@ function TeacherMarks({ schoolId, profile }: { schoolId: string; profile: AuthPr
       await api(`/marks/${id}`, { method: 'DELETE' })
       setMarks(prev => prev.filter(m => m.id !== id))
       setSuccess('Mark deleted.')
-    } catch (e: any) { setErr(e.message) }
+    } catch (e: any) { setErr(studentMessage(e)) }
   }
 
   if (loading) return <Spinner />
@@ -2091,7 +2092,7 @@ function StudentMarks({ profile, schoolId }: { profile: AuthProfile; schoolId: s
         setCode(cd.code || null)
         setCodeExpiry(cd.expires_at || null)
       })
-      .catch(e => setErr(e.message))
+      .catch(e => setErr(studentMessage(e)))
       .finally(() => setLoading(false))
   }, [profile.id])
 
@@ -2101,7 +2102,7 @@ function StudentMarks({ profile, schoolId }: { profile: AuthProfile; schoolId: s
       const d = await api('/parent/generate-code', { method: 'POST' })
       setCode(d.code)
       setCodeExpiry(d.expires_at)
-    } catch (e: any) { setErr(e.message) }
+    } catch (e: any) { setErr(studentMessage(e)) }
     finally { setCodeLoading(false) }
   }
 
@@ -2222,7 +2223,7 @@ function AdminMarksAudit({ schoolId }: { schoolId: string }) {
         setMarks(md.marks || [])
         setLinks(ld.links || [])
       })
-      .catch(e => setErr(e.message))
+      .catch(e => setErr(studentMessage(e)))
       .finally(() => setLoading(false))
   }, [schoolId])
 

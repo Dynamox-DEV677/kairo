@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
+import { studentMessage } from '../lib/aiError.core'
 import { subjectLabels } from '../curriculum/subjects'
 import { motion } from 'framer-motion'
 import { Timer, Flag, ArrowLeft, ArrowRight, Landmark, RotateCcw, AlertTriangle } from 'lucide-react'
@@ -87,7 +88,7 @@ export default function ExamHall() {
         setProgress(`Building your paper… ${questions.length}/${wantQ}`)
       }
     } catch (e: any) {
-      if (questions.length < 6) { setErr(e?.message || 'Could not build the paper — try again.'); setPhase('setup'); return }
+      if (questions.length < 6) { setErr(studentMessage(e)); setPhase('setup'); return }
     }
     if (questions.length < 6) { setErr('Could not build enough questions — try again in a minute.'); setPhase('setup'); return }
 

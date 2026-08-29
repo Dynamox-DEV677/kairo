@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { studentMessage } from '../lib/aiError.core'
 import { motion } from 'framer-motion'
 import { TrendingUp, AlertTriangle, Trophy, BarChart3, Target } from 'lucide-react'
 import { get, post } from '../lib/api'
@@ -260,7 +261,7 @@ function RankTab() {
         class: cls, board,
       })
       setResult(r)
-    } catch (e: any) { setErr(e.message) }
+    } catch (e: any) { setErr(studentMessage(e)) }
     finally { setLoading(false) }
   }
 

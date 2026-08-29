@@ -128,5 +128,58 @@ export class AiError extends Error {
  * the screen in the first place.
  */
 export function studentMessage(e) {
-  return AiError.from(e).message
+  const mapped = AiError.from(e)
+
+  // A recognised failure always uses the map's copy.
+  if (mapped.code !== 'UNKNOWN') return mapped.message
+
+  // An UNRECOGNISED message might still be a good one. Plenty of routes send
+  // real, useful sentences ("You already have a deck with that name"), and
+  // flattening those to "Something went wrong" would be a downgrade dressed up
+  // as a fix. So keep it — but only if it cannot be leaking internals.
+  const raw = String(e?.message ?? e ?? '').trim()
+  return isSafeForStudents(raw) ? raw : mapped.message
+}
+
+/**
+ * Would this string embarrass us on a student's screen?
+ *
+ * Deliberately strict, and it fails closed: anything unrecognised goes to the
+ * map. A false negative costs a slightly generic sentence; a false positive
+ * puts a stack trace in front of a 15-year-old.
+ */
+export function isSafeForStudents(raw) {
+  if (!raw || raw.length < 8 || raw.length > 160) return false
+
+  const banned = [
+    /[1-5]\d\d/,                     // any HTTP-looking status
+    /HTTP|status\s*code/i,
+    /error:|exception|stack|trace/i,
+    /undefined|null|NaN|\[object/i,
+    /[{}<>\\]|\$\{|=>/,                  // code, templates, JSX
+    /\/[a-z_]+\/[a-z_]+/,                // unix-ish paths
+    /[A-Za-z]:\\/,                       // windows paths
+    /ECONN|ENOTFOUND|ETIMEDOUT|EPERM|EACCES/i,
+    /at\s+\w+\s*\(/,                   // stack frame
+    /select |insert |relation |column |constraint/i,  // SQL
+    /api[_-]?key|token|bearer|secret|password/i,
+    /localhost|127\.0\.0\.1|\d+\.\d+\.\d+\.\d+/,
+  ]
+  if (banned.some(re => re.test(raw))) return false
+
+  // Has to read like a sentence a person wrote, not a symbol someone threw.
+  return /^[A-Z]/.test(raw) && /[a-z]/.test(raw) && /\s/.test(raw)
+}
+
+/**
+ * A detail you can safely append to your own sentence.
+ *
+ * For domains that are not the AI - camera permissions, microphone, a clash the
+ * server explains better than we can - where the surrounding copy is already
+ * written and only the detail is untrusted. Returns the fallback rather than
+ * anything that could leak.
+ */
+export function safeDetail(e, fallback) {
+  const raw = String(e?.message ?? e ?? '').trim()
+  return isSafeForStudents(raw) ? raw : fallback
 }

@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
+import { studentMessage, safeDetail } from '../lib/aiError.core'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Mic, MicOff, Volume2, VolumeX, Square, Send, Sparkles,
@@ -152,7 +153,7 @@ export default function VoiceTutor() {
       recogRef.current = recog
       setListening(true)
     } catch (e: any) {
-      setErr('Microphone access denied: ' + (e.message || 'unknown'))
+      setErr('Microphone access denied: ' + safeDetail(e, 'check your browser permissions'))
       stopAll()
     }
   }
@@ -188,7 +189,7 @@ export default function VoiceTutor() {
 
       if (!muted) speak(aiTurn.text)
     } catch (e: any) {
-      setErr(e.message)
+      setErr(studentMessage(e))
     } finally {
       setThinking(false)
     }

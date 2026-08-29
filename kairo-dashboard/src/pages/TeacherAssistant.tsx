@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { studentMessage } from '../lib/aiError.core'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Sparkles, FileText, BookMarked, ClipboardList, BookOpen,
@@ -167,7 +168,7 @@ Markdown structure:
       })
       setActiveTab('lesson_plan')
     } catch (e: any) {
-      setErr(e.message)
+      setErr(studentMessage(e))
     } finally {
       setBusy(false)
       setProgress('')

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { studentMessage } from '../lib/aiError.core'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   BarChart3, TrendingUp, TrendingDown, Award, AlertCircle,
@@ -133,7 +134,7 @@ export default function ParentDashboard({ profile, onLogout }: ParentDashboardPr
           weak_subjects:   Array.isArray(d.summary.weak_subjects)   ? d.summary.weak_subjects   : [],
         } : null)
       })
-      .catch(e => setErr(e.message))
+      .catch(e => setErr(studentMessage(e)))
       .finally(() => setLoading(false))
   }, [])
 

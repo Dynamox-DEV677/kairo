@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
+import { studentMessage } from '../lib/aiError.core'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   GraduationCap, Send, Loader2, RefreshCw, Save, Award,
@@ -115,7 +116,7 @@ export default function TeachBack() {
       })
       setTurns([{ role: 'learner', text: reply.trim() }])
     } catch (e: any) {
-      setErr(e?.message || 'Could not start the session — try again.')
+      setErr(studentMessage(e))
     } finally { setBusy(false) }
   }
 
@@ -134,7 +135,7 @@ export default function TeachBack() {
       })
       setTurns(prev => [...prev, { role: 'learner', text: reply.trim() }])
     } catch (e: any) {
-      setErr(e?.message || 'Kiran went quiet — try sending again.')
+      setErr(studentMessage(e))
     } finally { setBusy(false) }
   }
 
@@ -166,7 +167,7 @@ export default function TeachBack() {
         })
       } catch {  }
     } catch (e: any) {
-      setErr(e?.message || 'Could not grade the session — try again.')
+      setErr(studentMessage(e))
     } finally { setGrading(false) }
   }
 

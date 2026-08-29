@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react'
+import { studentMessage, safeDetail } from '../lib/aiError.core'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Mail, Lock, User, Building2, Key, ArrowRight, ArrowLeft,
@@ -328,7 +329,7 @@ function SignIn({ onLogin, onBack }: any) {
       await post('/users/forgot-password', { email: email.trim().toLowerCase() })
       setResetSent(true)
     } catch (e: any) {
-      setErr(`Couldn't send reset email: ${e.message || 'try again later'}`)
+      setErr("Couldn't send reset email: " + safeDetail(e, 'try again in a minute'))
     } finally {
       setBusy(false)
     }
@@ -388,7 +389,7 @@ function SignIn({ onLogin, onBack }: any) {
       setRefreshToken( data.session.refresh_token)
       setStoredProfileRaw( JSON.stringify(profile))
       onLogin(profile)
-    } catch (e: any) { setErr(e.message); setBusy(false) }
+    } catch (e: any) { setErr(studentMessage(e)); setBusy(false) }
   }
 
   return (
@@ -467,7 +468,7 @@ function PersonalSignup({ onLogin, onBack }: any) {
       await post('/users/forgot-password', { email: email.trim().toLowerCase() })
       setResetSent(true)
     } catch (e: any) {
-      setErr(`Couldn't send reset email: ${e.message || 'try again later'}`)
+      setErr("Couldn't send reset email: " + safeDetail(e, 'try again in a minute'))
     } finally {
       setBusy(false)
     }
@@ -554,7 +555,7 @@ function PersonalSignup({ onLogin, onBack }: any) {
           return
         }
       }
-      setErr(e.message || 'Something went wrong.')
+      setErr(studentMessage(e))
       setBusy(false)
     }
   }
@@ -681,7 +682,7 @@ function JoinSchool({ onLogin, onBack }: any) {
       if (!res.ok) throw new Error(d.error || 'School not found.')
       setSchool(d)
       setStep(2)
-    } catch (e: any) { setErr(e.message) }
+    } catch (e: any) { setErr(studentMessage(e)) }
     finally { setBusy(false) }
   }
 
@@ -725,7 +726,7 @@ function JoinSchool({ onLogin, onBack }: any) {
         setStoredProfileRaw( JSON.stringify(profile))
         onLogin(profile)
       }
-    } catch (e: any) { setErr(e.message); setBusy(false) }
+    } catch (e: any) { setErr(studentMessage(e)); setBusy(false) }
   }
 
   if (step === 1) return (
@@ -917,7 +918,7 @@ function CreateSchool({ onLogin, onBack }: any) {
         school_name:   schoolName.trim(),
       })
       setStep(3)
-    } catch (e: any) { setErr(e.message); setBusy(false) }
+    } catch (e: any) { setErr(studentMessage(e)); setBusy(false) }
   }
 
   function continueToDashboard() {
