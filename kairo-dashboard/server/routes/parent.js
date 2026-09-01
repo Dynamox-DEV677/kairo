@@ -1,4 +1,5 @@
 import { Router }  from 'express'
+import { fail } from '../lib/fail.js'
 import crypto      from 'crypto'
 import bcrypt      from 'bcryptjs'
 import { supabaseAdmin, requireSupabase } from '../services/supabase.js'
@@ -42,7 +43,7 @@ router.post('/generate-code', requireSupabaseAuth, requireRole('student'), async
       warning:    'Previous codes have been invalidated. This code expires in 7 days.',
     })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -66,7 +67,7 @@ router.get('/my-code', requireSupabaseAuth, requireRole('student'), async (req, 
 
     res.json({ code: data.code, expires_at: data.expires_at, created_at: data.created_at })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -190,7 +191,7 @@ router.post('/register', async (req, res) => {
     })
   } catch (e) {
     console.error('[Parent/register]', e.message)
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -214,7 +215,7 @@ router.get('/profile', requireSupabaseAuth, requireRole('parent'), async (req, r
       links:  links || [],
     })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -247,7 +248,7 @@ router.get('/marks', requireSupabaseAuth, requireRole('parent'), async (req, res
 
     res.json({ student: link.student, marks: data, summary })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -269,7 +270,7 @@ router.get('/links', requireSupabaseAuth, requireRole('admin'), async (req, res)
 
     res.json({ links: data, count: data.length })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 

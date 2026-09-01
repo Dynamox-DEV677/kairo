@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import { fail } from '../lib/fail.js'
 import { requireSupabaseAuth, requireRole } from '../middleware/supabaseAuth.js'
 import { aiCall, parseJSON } from '../utils/ai.js'
 
@@ -61,7 +62,7 @@ Rules:
 
     res.json(parseJSON(raw))
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 

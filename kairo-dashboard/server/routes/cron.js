@@ -1,4 +1,5 @@
 import express from 'express'
+import { fail } from '../lib/fail.js'
 import { runAllCleanup } from '../jobs/cleanup.js'
 
 const router = express.Router()
@@ -15,7 +16,7 @@ router.get('/cleanup', async (req, res) => {
     await runAllCleanup()
     res.json({ ok: true, ranAt: new Date().toISOString() })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 

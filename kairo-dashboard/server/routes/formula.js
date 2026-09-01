@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import { fail } from '../lib/fail.js'
 import { curriculumDirective, resolveCurriculum } from '../../src/lib/curriculum.core.js'
 import { allTopics } from '../utils/syllabus.js'
 import { db } from '../db/index.js'
@@ -83,7 +84,7 @@ Include at least 3 sections with 3-5 formulas each. No markdown.`
 
     res.status(201).json({ ...sheet, id: doc?._id })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -95,7 +96,7 @@ router.get('/', async (req, res) => {
     const sheets = await db.formulaSheets?.findAsync?.(q) || []
     res.json(sheets.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)))
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 

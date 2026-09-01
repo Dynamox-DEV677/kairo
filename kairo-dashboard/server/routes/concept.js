@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import { fail } from '../lib/fail.js'
 import { db } from '../db/index.js'
 import { aiCall } from '../utils/ai.js'
 
@@ -45,7 +46,7 @@ Keep it under 150 words. No markdown headers.`
 
     res.json({ concept, level, explanation, subject })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -107,7 +108,7 @@ Create at least 4 main topics, each with 2-4 subtopics. No markdown.`
 
     res.status(201).json({ ...mindmap, id: doc?._id })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -143,7 +144,7 @@ Keep it educational and encouraging.`
 
     res.status(201).json({ question, answer, id: doc?._id })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -160,7 +161,7 @@ router.get('/doubts', async (req, res) => {
     }
     res.json(doubts)
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 

@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import { fail } from '../lib/fail.js'
 import { db } from '../db/index.js'
 import { aiCall, parseJSON } from '../utils/ai.js'
 
@@ -85,7 +86,7 @@ Return ONLY valid JSON:
       failed: results.length - validResults.length,
     })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -118,7 +119,7 @@ Be warm and encouraging. No JSON needed — just the feedback text.`
 
     res.json({ student_name, feedback })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -127,7 +128,7 @@ router.get('/results', async (req, res) => {
     const sessions = await db.gradingSessions?.findAsync?.({ school_id: sid(req) }) || []
     res.json(sessions.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 30))
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 

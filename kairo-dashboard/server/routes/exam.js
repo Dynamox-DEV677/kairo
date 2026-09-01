@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import { fail } from '../lib/fail.js'
 import { requireSupabaseAuth } from '../middleware/supabaseAuth.js'
 import { aiCall, parseJSON } from '../utils/ai.js'
 
@@ -54,7 +55,7 @@ List at least 5 high, 5 medium, 3 low topics. Be specific and exam-focused. No m
 
     res.json(parseJSON(raw))
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -125,7 +126,7 @@ No markdown, no extra text.`
 
     res.json(parseJSON(raw))
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 

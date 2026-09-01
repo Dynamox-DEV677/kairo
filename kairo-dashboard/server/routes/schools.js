@@ -1,4 +1,5 @@
 import { Router }   from 'express'
+import { fail } from '../lib/fail.js'
 import bcrypt       from 'bcryptjs'
 import crypto       from 'crypto'
 import { supabaseAdmin, requireSupabase }         from '../services/supabase.js'
@@ -137,7 +138,7 @@ router.post('/register', async (req, res) => {
       expires_in,
     })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -183,7 +184,7 @@ router.get('/preview/:code', async (req, res) => {
       require_approval: !!data.require_approval,
     })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -198,7 +199,7 @@ router.get('/:id', async (req, res) => {
     if (error || !data) return res.status(404).json({ error: 'School not found.' })
     res.json(data)
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -213,7 +214,7 @@ router.get('/by-name/:name', async (req, res) => {
     if (error || !data) return res.status(404).json({ error: 'School not found.' })
     res.json(data)
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -240,7 +241,7 @@ router.get('/:id/members', requireSupabaseAuth, requireTeacherOrAdmin, async (re
 
     res.json({ school_id: schoolId, members: data, count: data.length })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -264,7 +265,7 @@ router.get('/:id/passcode', requireSupabaseAuth, requireSchoolAdmin, async (req,
     }
     res.json({ passcode: data.passcode_plain })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -291,7 +292,7 @@ router.post('/:id/regenerate-passcode', requireSupabaseAuth, requireSchoolAdmin,
       warning:  'The old passcode is now invalid. Save this new one securely.',
     })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -344,7 +345,7 @@ router.post('/:id/teachers', requireSupabaseAuth, requireSchoolAdmin, async (req
       teacher: profile,
     })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -385,7 +386,7 @@ router.post('/:id/approve/:userId', requireSupabaseAuth, requireSchoolAdmin, asy
 
     res.json({ message: `${target.name} has been approved and can now access school features.` })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -418,7 +419,7 @@ router.post('/:id/suspend/:userId', requireSupabaseAuth, requireSchoolAdmin, asy
 
     res.json({ message: `${target.name} has been suspended.`, reason: reason || null })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -446,7 +447,7 @@ router.post('/:id/reinstate/:userId', requireSupabaseAuth, requireSchoolAdmin, a
 
     res.json({ message: `${target.name} has been reinstated.` })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -477,7 +478,7 @@ router.delete('/:id/members/:userId', requireSupabaseAuth, requireSchoolAdmin, a
 
     res.json({ message: `${target.name} has been removed from the school. Their account remains active.` })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -512,7 +513,7 @@ router.post('/:id/upload-logo', requireSupabaseAuth, requireSchoolAdmin, async (
 
     res.json({ logo_url: publicUrl })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -553,7 +554,7 @@ router.get('/:id/stats', requireSupabaseAuth, requireTeacherOrAdmin, async (req,
       open_tasks:           openTasks,
     })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -582,7 +583,7 @@ router.put('/:id', requireSupabaseAuth, requireSchoolAdmin, async (req, res) => 
     if (error) throw new Error(error.message)
     res.json({ message: 'School settings updated.', school: data })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -612,7 +613,7 @@ router.get('/:id/login-logs', requireSupabaseAuth, requireSchoolAdmin, async (re
 
     res.json({ school_id: schoolId, logs: data, count: data.length, limit, offset })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 

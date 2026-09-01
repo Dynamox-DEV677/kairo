@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import { fail } from '../lib/fail.js'
 import bcrypt     from 'bcryptjs'
 import { supabaseAdmin, requireSupabase }      from '../services/supabase.js'
 import { requireSupabaseAuth, requireRole }    from '../middleware/supabaseAuth.js'
@@ -227,7 +228,7 @@ router.post('/register', async (req, res) => {
     })
   } catch (e) {
     console.error('[Users/register]', e.message)
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -322,7 +323,7 @@ router.post('/register-personal', async (req, res) => {
     })
   } catch (e) {
     console.error('[Users/register-personal] FATAL:', e.message)
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -481,7 +482,7 @@ router.post('/login', async (req, res) => {
     })
   } catch (e) {
     console.error('[Users/login]', e.message)
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -513,7 +514,7 @@ router.put('/profile', requireSupabaseAuth, async (req, res) => {
     if (error) throw new Error(error.message)
     res.json({ message: 'Profile updated.', user: data })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -564,7 +565,7 @@ router.post('/join-school', requireSupabaseAuth, async (req, res) => {
       pending_approval: initialStatus === 'pending',
     })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -589,7 +590,7 @@ router.get('/school-members', requireSupabaseAuth, requireRole('teacher', 'admin
 
     res.json({ school_id: req.schoolId, members: data, count: data.length })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 

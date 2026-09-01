@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import { fail } from '../lib/fail.js'
 import { aiCall, parseJSON } from '../utils/ai.js'
 
 import { requireSupabaseAuth } from '../middleware/supabaseAuth.js'
@@ -91,7 +92,7 @@ Rules:
     return res.json(plan)
   } catch (err) {
     console.error('[topic-architect] plan failed:', err)
-    return res.status(500).json({ error: err.message })
+    return fail(res, req, err)
   }
 })
 
@@ -121,7 +122,7 @@ For numerical questions, "options" may be an empty array. Exactly ${n} items. No
     return res.json({ topic, exam, count: qs.length, questions: qs })
   } catch (err) {
     console.error('[topic-architect] questions failed:', err)
-    return res.status(500).json({ error: err.message })
+    return fail(res, req, err)
   }
 })
 

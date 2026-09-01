@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import { fail } from '../lib/fail.js'
 import { db } from '../db/index.js'
 import { aiCall } from '../utils/ai.js'
 
@@ -66,7 +67,7 @@ Return ONLY valid JSON:
 
     res.status(201).json({ ...announcement, id: doc?._id })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -78,7 +79,7 @@ router.get('/', async (req, res) => {
     const announcements = await db.announcements?.findAsync?.(q) || []
     res.json(announcements.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 50))
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 

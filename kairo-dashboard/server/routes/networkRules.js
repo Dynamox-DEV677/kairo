@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import { fail } from '../lib/fail.js'
 import { supabaseAdmin, requireSupabase }     from '../services/supabase.js'
 import { requireSupabaseAuth }                from '../middleware/supabaseAuth.js'
 import { requireSchoolAdmin, getClientIp, isIpInRange } from '../middleware/schoolAuth.js'
@@ -50,7 +51,7 @@ router.get('/check', async (req, res) => {
         : 'Your IP does not match any allowed network.',
     })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -85,7 +86,7 @@ router.post('/', requireSchoolAdmin, async (req, res) => {
     console.log(`[NetworkRules] ✓ Added rule: ${label} (${cidr}) for school ${req.schoolId}`)
     res.status(201).json({ message: 'Network rule added.', rule: data })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -116,7 +117,7 @@ router.get('/', requireSchoolAdmin, async (req, res) => {
       your_ip_allowed: enabledRules.length === 0 || enabledRules.some(r => isIpInRange(clientIp, r.cidr)),
     })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -155,7 +156,7 @@ router.put('/:id', requireSchoolAdmin, async (req, res) => {
     if (error) throw new Error(error.message)
     res.json({ message: 'Rule updated.', rule: data })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -182,7 +183,7 @@ router.delete('/:id', requireSchoolAdmin, async (req, res) => {
     console.log(`[NetworkRules] 🗑 Deleted rule: ${existing.label} (${req.params.id})`)
     res.json({ message: `Rule "${existing.label}" deleted.` })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 

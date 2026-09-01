@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import { fail } from '../lib/fail.js'
 import { db } from '../db/index.js'
 import { aiCall, parseJSON } from '../utils/ai.js'
 import { sm2, getDueCards, freshCardState } from '../utils/srs.js'
@@ -59,7 +60,7 @@ Generate exactly ${count} items. No markdown, no extra text.`
 
     res.status(201).json({ count: inserted.length, cards: inserted })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -83,7 +84,7 @@ router.get('/', async (req, res) => {
     const cards = await db.flashcards.findAsync(q).sort({ created_at: -1 })
     res.json(cards)
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -93,7 +94,7 @@ router.get('/due', async (req, res) => {
     const due = getDueCards(all)
     res.json({ total_due: due.length, cards: due })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -111,7 +112,7 @@ router.post('/:id/review', async (req, res) => {
 
     res.json({ message: 'Review recorded.', nextReview: updated.nextReview, interval: updated.interval })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 

@@ -1,4 +1,5 @@
 import { Router }        from 'express'
+import { fail } from '../lib/fail.js'
 import { supabaseAdmin, requireSupabase } from '../services/supabase.js'
 import { requireSupabaseAuth, requireRole } from '../middleware/supabaseAuth.js'
 
@@ -38,7 +39,7 @@ router.post('/', requireRole('teacher', 'admin'), async (req, res) => {
     res.status(201).json({ message: 'Notification sent.', notification: data })
   } catch (e) {
     console.error('[Notifications/send]', e.message)
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -69,7 +70,7 @@ router.get('/', async (req, res) => {
 
     res.json({ notifications: enriched, count: enriched.length })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -94,7 +95,7 @@ router.get('/all', requireRole('teacher', 'admin'), async (req, res) => {
 
     res.json({ notifications: enriched, count: enriched.length })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -123,7 +124,7 @@ router.delete('/:id', async (req, res) => {
 
     res.json({ message: 'Notification deleted.' })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 

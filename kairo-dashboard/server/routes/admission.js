@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import { fail } from '../lib/fail.js'
 import { supabaseAdmin, requireSupabase } from '../services/supabase.js'
 import { requireSupabaseAuth, requireRole } from '../middleware/supabaseAuth.js'
 import { aiCall } from '../utils/ai.js'
@@ -46,7 +47,7 @@ router.get('/public-config/:school_id', async (req, res) => {
       config:      data.admission_config || {},
     })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -79,7 +80,7 @@ router.post('/chat', async (req, res) => {
     res.json({ reply, timestamp: new Date().toISOString() })
   } catch (e) {
     console.error('[admission/chat]', e.message)
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -121,7 +122,7 @@ router.post('/lead', async (req, res) => {
     })
   } catch (e) {
     console.error('[admission/lead]', e.message)
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -143,7 +144,7 @@ router.get('/config', requireRole('admin'), async (req, res) => {
       config:      data.admission_config || {},
     })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -170,7 +171,7 @@ router.put('/config', requireRole('admin'), async (req, res) => {
     if (error) throw new Error(error.message)
     res.json({ message: 'Saved.', config: data.admission_config })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -192,7 +193,7 @@ router.get('/leads', requireRole('admin'), async (req, res) => {
     if (error) throw new Error(error.message)
     res.json(data || [])
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -226,7 +227,7 @@ router.put('/leads/:id', requireRole('admin'), async (req, res) => {
     if (error) throw new Error(error.message)
     res.json({ message: 'Lead updated.' })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -250,7 +251,7 @@ router.delete('/leads/:id', requireRole('admin'), async (req, res) => {
     if (error) throw new Error(error.message)
     res.json({ message: 'Lead deleted.' })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -274,7 +275,7 @@ router.get('/stats', requireRole('admin'), async (req, res) => {
 
     res.json({ total, new: newCount, contacted, admitted, rejected })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 

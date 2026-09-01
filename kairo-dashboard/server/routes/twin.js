@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import { fail } from '../lib/fail.js'
 import { supabaseAdmin, requireSupabase } from '../services/supabase.js'
 import { requireSupabaseAuth }            from '../middleware/supabaseAuth.js'
 import {
@@ -44,7 +45,7 @@ router.get('/', async (req, res) => {
     const twin = await getTwin(req.user.id)
     res.json({ twin })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -53,7 +54,7 @@ router.post('/refresh', async (req, res) => {
     const twin = await refreshTwinAll(req.user.id)
     res.json({ twin, refreshed_at: new Date().toISOString() })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -117,7 +118,7 @@ router.get('/dashboard', async (req, res) => {
         sql_file: 'kairo-dashboard/server/db/twin_schema.sql',
       })
     }
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -131,7 +132,7 @@ router.get('/mastery', async (req, res) => {
     const data = r.data || []
     res.json({ mastery: data.map(m => ({ ...m, retention_now: +retentionFor(m).toFixed(3) })) })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -162,7 +163,7 @@ router.get('/retention', async (req, res) => {
     }
     res.json({ days, topic_count: rows.length })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -171,7 +172,7 @@ router.get('/recommendations', async (req, res) => {
     const open = await readOpenRecs(req.user.id, 12)
     res.json({ recommendations: open })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -184,7 +185,7 @@ router.post('/recommendations/:id/act', async (req, res) => {
       .eq('user_id', req.user.id)
     if (error) throw new Error(error.message)
     res.json({ ok: true })
-  } catch (e) { res.status(500).json({ error: e.message }) }
+  } catch (e) { fail(res, req, e) }
 })
 
 router.post('/recommendations/:id/dismiss', async (req, res) => {
@@ -196,7 +197,7 @@ router.post('/recommendations/:id/dismiss', async (req, res) => {
       .eq('user_id', req.user.id)
     if (error) throw new Error(error.message)
     res.json({ ok: true })
-  } catch (e) { res.status(500).json({ error: e.message }) }
+  } catch (e) { fail(res, req, e) }
 })
 
 router.get('/observations', async (req, res) => {
@@ -204,7 +205,7 @@ router.get('/observations', async (req, res) => {
     const obs = await readRecentObs(req.user.id, 10)
     res.json({ observations: obs })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -217,7 +218,7 @@ router.post('/observations/:id/ack', async (req, res) => {
       .eq('user_id', req.user.id)
     if (error) throw new Error(error.message)
     res.json({ ok: true })
-  } catch (e) { res.status(500).json({ error: e.message }) }
+  } catch (e) { fail(res, req, e) }
 })
 
 router.get('/timeline', async (req, res) => {
@@ -229,7 +230,7 @@ router.get('/timeline', async (req, res) => {
       .order('created_at', { ascending: false })
       .limit(60)
     res.json({ events: data })
-  } catch (e) { res.status(500).json({ error: e.message }) }
+  } catch (e) { fail(res, req, e) }
 })
 
 router.get('/snapshot', async (req, res) => {
@@ -255,7 +256,7 @@ router.get('/snapshot', async (req, res) => {
       console.warn('[twin/snapshot] table missing — run twin_snapshot_schema.sql')
       return res.json({ snapshot: null, setup_required: true })
     }
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -291,7 +292,7 @@ router.post('/snapshot', async (req, res) => {
         sql_file: 'kairo-dashboard/server/db/twin_snapshot_schema.sql',
       })
     }
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -307,7 +308,7 @@ router.delete('/snapshot', async (req, res) => {
     if (/relation .* does not exist/i.test(e.message || '')) {
       return res.json({ ok: true, deleted_at: new Date().toISOString() })
     }
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -341,7 +342,7 @@ router.post('/event', async (req, res) => {
 
     res.status(201).json({ ok: true, id })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 

@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import { fail } from '../lib/fail.js'
 import crypto from 'crypto'
 import { supabaseAdmin, requireSupabase } from '../services/supabase.js'
 import { requireSupabaseAuth, requireRole } from '../middleware/supabaseAuth.js'
@@ -133,7 +134,7 @@ router.post('/create-session', requireSupabaseAuth, requireRole('admin'), async 
     })
   } catch (e) {
     console.error('[payments/create-session]', e.message)
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -205,7 +206,7 @@ router.post('/webhook', async (req, res) => {
     res.json({ ok: true, event })
   } catch (e) {
     console.error('[webhook]', e.message)
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -233,7 +234,7 @@ router.get('/status', requireSupabaseAuth, async (req, res) => {
       available_plans:     Object.values(PLANS),
     })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 

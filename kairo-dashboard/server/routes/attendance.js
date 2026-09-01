@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import { fail } from '../lib/fail.js'
 import { db } from '../db/index.js'
 import { aiCall } from '../utils/ai.js'
 
@@ -30,7 +31,7 @@ router.post('/log', async (req, res) => {
     }
     await db.attendance.insertAsync({ ...q, status, created_at: new Date().toISOString() })
     res.status(201).json({ message: 'Attendance logged.' })
-  } catch (e) { res.status(500).json({ error: e.message }) }
+  } catch (e) { fail(res, req, e) }
 })
 
 router.post('/bulk', async (req, res) => {
@@ -51,7 +52,7 @@ router.post('/bulk', async (req, res) => {
       logged++
     }
     res.json({ message: `Attendance logged for ${logged} students.` })
-  } catch (e) { res.status(500).json({ error: e.message }) }
+  } catch (e) { fail(res, req, e) }
 })
 
 router.get('/', async (req, res) => {
@@ -66,7 +67,7 @@ router.get('/', async (req, res) => {
   try {
     const records = await db.attendance.findAsync(q).sort({ date: -1 }).limit(500)
     res.json(records)
-  } catch (e) { res.status(500).json({ error: e.message }) }
+  } catch (e) { fail(res, req, e) }
 })
 
 router.get('/at-risk', async (req, res) => {
@@ -89,7 +90,7 @@ router.get('/at-risk', async (req, res) => {
     }
     atRisk.sort((a, b) => a.percentage - b.percentage)
     res.json({ count: atRisk.length, threshold: pct, students: atRisk })
-  } catch (e) { res.status(500).json({ error: e.message }) }
+  } catch (e) { fail(res, req, e) }
 })
 
 router.get('/stats/:studentId', async (req, res) => {
@@ -105,7 +106,7 @@ router.get('/stats/:studentId', async (req, res) => {
     const excused  = records.filter(r => r.status === 'excused').length
     const percentage = total > 0 ? Math.round(((present + late) / total) * 100) : 0
     res.json({ total, present, absent, late, excused, percentage, records })
-  } catch (e) { res.status(500).json({ error: e.message }) }
+  } catch (e) { fail(res, req, e) }
 })
 
 router.post('/alert', async (req, res) => {
@@ -115,7 +116,7 @@ router.post('/alert', async (req, res) => {
     const prompt = `Write a brief professional attendance alert for parent. Student: ${student_name}, Class: ${cls || ''}. Attendance: ${percentage}% (Absent ${absent_days} of ${total_days} days). School: ${school_name || 'School'}. Return JSON: { "subject": "...", "message": "2-3 sentences", "whatsapp_version": "under 200 chars" }`
     const raw = await aiCall({ taskType: 'attendance_alert', messages: [{ role: 'user', content: prompt }], maxTokens: 400 })
     res.json(JSON.parse(raw.replace(/```json|```/g, '').trim()))
-  } catch (e) { res.status(500).json({ error: e.message }) }
+  } catch (e) { fail(res, req, e) }
 })
 
 export default router

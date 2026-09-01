@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import { fail } from '../lib/fail.js'
 import { db } from '../db/index.js'
 import { aiCall, parseJSON } from '../utils/ai.js'
 
@@ -78,7 +79,7 @@ router.get('/weak-areas', async (req, res) => {
       generated_at: new Date().toISOString(),
     })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -139,7 +140,7 @@ router.get('/class-performance', async (req, res) => {
       generated_at: new Date().toISOString(),
     })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -196,7 +197,7 @@ Return ONLY valid JSON:
     const prediction = parseJSON(raw)
     res.json(prediction)
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 

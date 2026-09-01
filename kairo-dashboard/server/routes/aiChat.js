@@ -1,4 +1,5 @@
 import express from 'express'
+import { fail } from '../lib/fail.js'
 import { searchManyParallel } from '../services/imageSearch.js'
 import { supabaseAdmin } from '../services/supabase.js'
 import groqPool from '../services/groqPool.js'
@@ -996,7 +997,7 @@ router.post('/solver/images', async (req, res) => {
     res.json({ imageSlides: slides, cached: false })
   } catch (e) {
     console.error('[solver/images]', e.message)
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 

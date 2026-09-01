@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import { fail } from '../lib/fail.js'
 import { db } from '../db/index.js'
 import { aiCall, parseJSON } from '../utils/ai.js'
 
@@ -46,7 +47,7 @@ router.post('/', async (req, res) => {
       created_at: new Date().toISOString(),
     })
     res.status(201).json({ slot, clashes: clashes.length > 0 ? clashes : undefined })
-  } catch (e) { res.status(500).json({ error: e.message }) }
+  } catch (e) { fail(res, req, e) }
 })
 
 router.get('/', async (req, res) => {
@@ -65,7 +66,7 @@ router.get('/', async (req, res) => {
       grouped[s.class][s.day].push(s)
     }
     res.json({ slots, grouped })
-  } catch (e) { res.status(500).json({ error: e.message }) }
+  } catch (e) { fail(res, req, e) }
 })
 
 router.put('/:id', async (req, res) => {
@@ -85,7 +86,7 @@ router.put('/:id', async (req, res) => {
     if (end_time)   u.end_time   = end_time
     await db.timetable.updateAsync({ _id: existing._id }, { $set: u })
     res.json({ message: 'Slot updated.' })
-  } catch (e) { res.status(500).json({ error: e.message }) }
+  } catch (e) { fail(res, req, e) }
 })
 
 router.delete('/:id', async (req, res) => {
@@ -100,7 +101,7 @@ router.get('/clashes', async (req, res) => {
   try {
     const slots = await db.timetable.findAsync({ school_id, has_clash: true })
     res.json({ count: slots.length, clashed_slots: slots })
-  } catch (e) { res.status(500).json({ error: e.message }) }
+  } catch (e) { fail(res, req, e) }
 })
 
 router.post('/generate', async (req, res) => {
@@ -115,7 +116,7 @@ Return ONLY valid JSON: { "class": "${cls}", "timetable": { "Monday": [{ "period
 No markdown.`
     const raw = await aiCall({ taskType: 'lesson_plan', messages: [{ role: 'user', content: prompt }], maxTokens: 2000, temperature: 0.5 })
     res.json(parseJSON(raw))
-  } catch (e) { res.status(500).json({ error: e.message }) }
+  } catch (e) { fail(res, req, e) }
 })
 
 export default router

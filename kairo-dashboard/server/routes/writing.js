@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import { fail } from '../lib/fail.js'
 import { db } from '../db/index.js'
 import { aiCall } from '../utils/ai.js'
 
@@ -45,7 +46,7 @@ Return ONLY the improved version. No explanations, no markdown.`
 
     res.json({ original: text, improved, tone, id: doc?._id })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -74,7 +75,7 @@ Return ONLY the expanded answer. No headings, no markdown.`
 
     res.json({ original: text, expanded, target_words })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -107,7 +108,7 @@ Return ONLY the rewritten answer. No preamble.`
 
     res.json({ original: text, rewritten })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -159,7 +160,7 @@ Return ONLY valid JSON:
 
     res.json(result)
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 

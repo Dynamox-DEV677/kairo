@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import { fail } from '../lib/fail.js'
 import { emailLimiter } from '../middleware/rateLimit.js'
 import { sendFeeReminder, sendBulkReminders, retryFailed } from '../services/emailService.js'
 import { runDailyReminders } from '../services/schedulerService.js'
@@ -22,7 +23,7 @@ router.post('/send-one', emailLimiter, async (req, res) => {
     return res.status(400).json({ error: `tone must be: ${TONES.join(', ')}` })
   try {
     res.json(await sendFeeReminder({ schoolId: school_id, studentId: student_id, feeId: fee_id, trigger, tone }))
-  } catch (e) { res.status(500).json({ error: e.message }) }
+  } catch (e) { fail(res, req, e) }
 })
 
 router.post('/send-bulk', emailLimiter, async (req, res) => {
@@ -30,19 +31,19 @@ router.post('/send-bulk', emailLimiter, async (req, res) => {
   if (!school_id) return res.status(400).json({ error: 'school_id is required.' })
   try {
     res.json(await sendBulkReminders({ schoolId: school_id, trigger, tone }))
-  } catch (e) { res.status(500).json({ error: e.message }) }
+  } catch (e) { fail(res, req, e) }
 })
 
 router.post('/retry', async (req, res) => {
   const { school_id, max_attempts = 3 } = req.body
   if (!school_id) return res.status(400).json({ error: 'school_id is required.' })
   try { res.json(await retryFailed(school_id, max_attempts)) }
-  catch (e) { res.status(500).json({ error: e.message }) }
+  catch (e) { fail(res, req, e) }
 })
 
-router.post('/run-scheduler', async (_req, res) => {
+router.post('/run-scheduler', async (req, res) => {
   try { res.json({ message: 'Done.', ...(await runDailyReminders()) }) }
-  catch (e) { res.status(500).json({ error: e.message }) }
+  catch (e) { fail(res, req, e) }
 })
 
 router.get('/logs', async (req, res) => {

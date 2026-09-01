@@ -1,4 +1,5 @@
 import 'dotenv/config'
+import { reportFault } from './services/alert.js'
 import express from 'express'
 import { apiLimiter, aiLimiter } from './middleware/rateLimit.js'
 
@@ -211,8 +212,21 @@ app.use((_req, res) => {
   res.status(404).json({ error: 'Route not found.' })
 })
 
-app.use((err, _req, res, _next) => {
+/**
+ * Anything that reaches here is a 500 a student saw. Alert on it.
+ *
+ * Two dead features sat in production because nothing did this — the only
+ * record was a console line in Vercel that nobody was reading.
+ */
+app.use((err, req, res, _next) => {
   console.error('[Error]', err.message)
+  reportFault({
+    route: req?.originalUrl || req?.path || 'unknown',
+    message: err?.message || String(err),
+    stack: err?.stack,
+    status: 500,
+    source: 'server',
+  })
   res.status(500).json({ error: 'Internal server error.' })
 })
 

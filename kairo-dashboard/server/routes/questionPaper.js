@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import { fail } from '../lib/fail.js'
 import { requireSupabaseAuth, requireRole } from '../middleware/supabaseAuth.js'
 import { aiCall, parseJSON } from '../utils/ai.js'
 
@@ -109,7 +110,7 @@ Ensure total marks add up to exactly ${total_marks}. No markdown, no extra text.
 
     res.json(parseJSON(raw))
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 

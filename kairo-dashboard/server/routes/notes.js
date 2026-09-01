@@ -1,4 +1,5 @@
 import { Router }        from 'express'
+import { fail } from '../lib/fail.js'
 import PDFDocument       from 'pdfkit'
 import { supabaseAdmin, requireSupabase } from '../services/supabase.js'
 import { requireSupabaseAuth } from '../middleware/supabaseAuth.js'
@@ -33,7 +34,7 @@ router.post('/', async (req, res) => {
     res.status(201).json({ message: 'Note saved.', note: data })
   } catch (e) {
     console.error('[Notes/save]', e.message)
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -56,7 +57,7 @@ router.get('/', async (req, res) => {
 
     res.json({ notes: data, count: data.length })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -72,7 +73,7 @@ router.get('/subjects', async (req, res) => {
     const subjects = [...new Set(data.map(r => r.subject))].sort()
     res.json({ subjects })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -88,7 +89,7 @@ router.get('/:id', async (req, res) => {
     if (error || !data) return res.status(404).json({ error: 'Note not found.' })
     res.json(data)
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -113,7 +114,7 @@ router.put('/:id', async (req, res) => {
     if (error || !data) return res.status(404).json({ error: 'Note not found or not yours.' })
     res.json({ message: 'Note updated.', note: data })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -130,7 +131,7 @@ router.delete('/:id', async (req, res) => {
     if (error || !data) return res.status(404).json({ error: 'Note not found or not yours.' })
     res.json({ message: 'Note deleted.' })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -195,7 +196,7 @@ router.get('/:id/pdf', async (req, res) => {
     console.log(`[Notes] ✓ PDF generated: "${note.title}"`)
   } catch (e) {
     console.error('[Notes/pdf]', e.message)
-    if (!res.headersSent) res.status(500).json({ error: e.message })
+    if (!res.headersSent) fail(res, req, e)
   }
 })
 

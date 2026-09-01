@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import { fail } from '../lib/fail.js'
 import { db } from '../db/index.js'
 import { aiCall, parseJSON } from '../utils/ai.js'
 
@@ -82,7 +83,7 @@ Be fair but exam-standard strict. No markdown.`
 
     res.status(201).json(doc)
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -95,7 +96,7 @@ router.get('/', async (req, res) => {
     const essays = await db.essays.findAsync(q).sort({ graded_at: -1 }).limit(50)
     res.json(essays)
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -105,7 +106,7 @@ router.get('/:id', async (req, res) => {
     if (!essay) return res.status(404).json({ error: 'Essay not found.' })
     res.json(essay)
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 

@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import { fail } from '../lib/fail.js'
 import bcrypt from 'bcryptjs'
 import { db } from '../db/index.js'
 import { signToken, requireAuth } from '../middleware/auth.js'
@@ -31,7 +32,7 @@ router.post('/register', async (req, res) => {
     const token = signToken({ id: user._id, email: user.email, role: user.role, school_id: user.school_id })
     res.status(201).json({ token, user: { id: user._id, name: user.name, email: user.email, role: user.role, school_id: user.school_id } })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -50,7 +51,7 @@ router.post('/login', async (req, res) => {
     const token = signToken({ id: user._id, email: user.email, role: user.role, school_id: user.school_id })
     res.json({ token, user: { id: user._id, name: user.name, email: user.email, role: user.role, school_id: user.school_id } })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -61,7 +62,7 @@ router.get('/me', requireAuth, async (req, res) => {
     const { password_hash, ...safe } = user
     res.json(safe)
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 

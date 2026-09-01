@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import { fail } from '../lib/fail.js'
 import { aiCall, parseJSON } from '../utils/ai.js'
 import { supabaseAdmin, SUPABASE_CONFIGURED } from '../services/supabase.js'
 import groqPool from '../services/groqPool.js'
@@ -220,15 +221,24 @@ Rules:
     })
     const plan = parseJSON(raw)
     if (!plan) {
-      return res.status(502).json({ error: 'AI returned non-JSON', raw: raw?.slice(0, 1000) })
+      // The model answered, but not with JSON. That is a real fault worth
+      // knowing about — and `raw` was being echoed to the student, which put
+      // a slab of model output on their screen.
+      return fail(res, req, new Error('AI returned non-JSON'), {
+        status: 502,
+        message: 'Kyno could not read the plan it just built. Try again.',
+        extra: { rawHead: String(raw || '').slice(0, 400) },
+      })
     }
     plan.generatedAt = new Date().toISOString()
     plan.hoursPerDay = hoursPerDay
     plan.examDate = examDate
     return res.json(plan)
   } catch (err) {
-    console.error('[exam-planner] generate failed:', err)
-    return res.status(500).json({ error: err.message, hint: 'Set GROQ_API_KEYS in Vercel env, then redeploy.' })
+    // Was: res.status(500).json({ error: err.message, hint: 'Set GROQ_API_KEYS
+    // in Vercel env, then redeploy.' } — which told a student to go and
+    // configure an environment variable, and leaked the raw error with it.
+    return fail(res, req, err, { message: 'Could not build your plan just now. Try again.' })
   }
 })
 
@@ -304,7 +314,7 @@ Return ONLY valid JSON, no markdown.`
     return res.json(plan)
   } catch (err) {
     console.error('[exam-planner] replan failed:', err)
-    return res.status(500).json({ error: err.message })
+    return fail(res, req, err)
   }
 })
 
@@ -374,7 +384,7 @@ router.post('/save', requireDB, optionalSupabaseAuth, async (req, res) => {
     res.json(data)
   } catch (e) {
     console.error('[exam-planner] save:', e)
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -440,7 +450,7 @@ router.patch('/:id/checkin', requireDB, optionalSupabaseAuth, requireOwnPlan, as
     if (error) throw error
     res.json(data)
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -465,7 +475,7 @@ router.patch('/:id/mock', requireDB, optionalSupabaseAuth, requireOwnPlan, async
     if (error) throw error
     res.json(data)
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -484,7 +494,7 @@ router.patch('/:id', requireDB, optionalSupabaseAuth, requireOwnPlan, async (req
     if (error) throw error
     res.json(data)
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -497,7 +507,7 @@ router.delete('/:id', requireDB, optionalSupabaseAuth, requireOwnPlan, async (re
     if (error) throw error
     res.json({ ok: true })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 

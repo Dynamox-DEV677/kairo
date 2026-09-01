@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import { fail } from '../lib/fail.js'
 import { db } from '../db/index.js'
 import { aiCall, parseJSON } from '../utils/ai.js'
 
@@ -64,7 +65,7 @@ Mathematics notation: use $...$ for inline math and $$...$$ for display math ONL
       questions: data.questions,
     })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -107,7 +108,7 @@ router.post('/complete', async (req, res) => {
 
     res.json({ score, total, percent, grade, xp_earned: xpEarned })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -118,7 +119,7 @@ router.get('/history', async (req, res) => {
     }) || []
     res.json(sessions.sort((a, b) => new Date(b.completed_at) - new Date(a.completed_at)).slice(0, 50))
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 

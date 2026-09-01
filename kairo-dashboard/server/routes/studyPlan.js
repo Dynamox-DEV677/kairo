@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import { fail } from '../lib/fail.js'
 import { db } from '../db/index.js'
 import { aiCall, parseJSON } from '../utils/ai.js'
 
@@ -92,7 +93,7 @@ Rules:
 
     res.status(201).json(doc)
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -103,7 +104,7 @@ router.get('/', async (req, res) => {
       .sort({ created_at: -1 })
     res.json(plans)
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -113,7 +114,7 @@ router.get('/:id', async (req, res) => {
     if (!plan) return res.status(404).json({ error: 'Plan not found.' })
     res.json(plan)
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -134,7 +135,7 @@ router.put('/:id/progress', async (req, res) => {
     await db.studyPlans.updateAsync({ _id: plan._id }, { $set: { completed_tasks: completed } })
     res.json({ message: 'Progress updated.', completed_count: completed.length })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 

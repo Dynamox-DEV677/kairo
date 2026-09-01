@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import { fail } from '../lib/fail.js'
 import { db } from '../db/index.js'
 
 import { requireSupabaseAuth } from '../middleware/supabaseAuth.js'
@@ -76,7 +77,7 @@ router.get('/profile', async (req, res) => {
 
     res.json({ ...profile, level: levelInfo, badges_earned: earnedBadges })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -111,7 +112,7 @@ router.post('/xp', async (req, res) => {
     const updated = await db.gamification?.findOneAsync?.({ school_id: schoolId, user_id })
     res.json({ xp_added: xpToAdd, total_xp: updated?.xp || xpToAdd, level: getLevel(updated?.xp || xpToAdd) })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -125,7 +126,7 @@ router.get('/leaderboard', async (req, res) => {
       .slice(0, 20)
     res.json(leaderboard)
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -148,7 +149,7 @@ router.get('/badges', async (req, res) => {
     })
     res.json(badges)
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 

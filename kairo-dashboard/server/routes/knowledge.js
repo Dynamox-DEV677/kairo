@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import { fail } from '../lib/fail.js'
 import { supabaseAdmin, requireSupabase } from '../services/supabase.js'
 import { requireSupabaseAuth } from '../middleware/supabaseAuth.js'
 
@@ -70,7 +71,7 @@ router.get('/graph', async (req, res) => {
       },
     })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -112,7 +113,7 @@ router.post('/extract', async (req, res) => {
 
     res.json({ message: `Added ${added} relations`, added })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -136,7 +137,7 @@ router.post('/relate', async (req, res) => {
       .single()
     if (error) throw new Error(error.message)
     res.status(201).json({ id: data.id, message: 'Relation added.' })
-  } catch (e) { res.status(500).json({ error: e.message }) }
+  } catch (e) { fail(res, req, e) }
 })
 
 router.delete('/relation/:id', async (req, res) => {
@@ -150,7 +151,7 @@ router.delete('/relation/:id', async (req, res) => {
       .from('concept_relations').delete().eq('id', req.params.id)
     if (error) throw new Error(error.message)
     res.json({ message: 'Relation deleted.' })
-  } catch (e) { res.status(500).json({ error: e.message }) }
+  } catch (e) { fail(res, req, e) }
 })
 
 export default router

@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import { fail } from '../lib/fail.js'
 import { supabaseAdmin, requireSupabase } from '../services/supabase.js'
 import { requireSupabaseAuth } from '../middleware/supabaseAuth.js'
 
@@ -70,7 +71,7 @@ router.post('/submit', async (req, res) => {
     res.status(201).json({ message: 'Score saved', id: data.id, xp_gained: xp })
   } catch (e) {
     if (isMissingTable(e)) return res.json({ message: 'no-op', xp_gained: xp })
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -134,7 +135,7 @@ router.get('/leaderboard', async (req, res) => {
     res.json({ range, leaders: enriched, you: enriched.find(e => e.user_id === req.user.id) || null })
   } catch (e) {
     if (isMissingTable(e)) return res.json({ range, leaders: [], you: null, table_missing: true })
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -195,7 +196,7 @@ router.get('/me', async (req, res) => {
     })
   } catch (e) {
     if (isMissingTable(e)) return res.json(empty)
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 

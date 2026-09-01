@@ -1,4 +1,5 @@
 import { Router }  from 'express'
+import { fail } from '../lib/fail.js'
 import { supabaseAdmin, requireSupabase } from '../services/supabase.js'
 import { requireSupabaseAuth, requireRole } from '../middleware/supabaseAuth.js'
 
@@ -21,7 +22,7 @@ router.get('/my', requireRole('student'), async (req, res) => {
 
     res.json({ marks: data, summary: buildSummary(data) })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -57,7 +58,7 @@ router.get('/child', requireRole('parent'), async (req, res) => {
       summary:  buildSummary(data),
     })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -86,7 +87,7 @@ router.get('/school', requireRole('admin'), async (req, res) => {
 
     res.json({ marks: data, count: data.length })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -118,7 +119,7 @@ router.get('/student/:id', requireRole('teacher', 'admin'), async (req, res) => 
 
     res.json({ student, marks: data, summary: buildSummary(data) })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -172,7 +173,7 @@ router.post('/', requireRole('teacher', 'admin'), async (req, res) => {
     console.log(`[Marks] ✓ Added: ${student.name} — ${subject} ${exam_name} ${obtained}/${total}`)
     res.status(201).json({ message: 'Marks added.', mark: data })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -212,7 +213,7 @@ router.put('/:id', requireRole('teacher', 'admin'), async (req, res) => {
     if (error) throw new Error(error.message)
     res.json({ message: 'Marks updated.', mark: data })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -242,7 +243,7 @@ router.delete('/:id', requireRole('teacher', 'admin'), async (req, res) => {
     console.log(`[Marks] 🗑 Deleted: ${existing.subject} / ${existing.exam_name}`)
     res.json({ message: 'Mark entry deleted.' })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 

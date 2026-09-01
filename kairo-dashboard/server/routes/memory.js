@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import { fail } from '../lib/fail.js'
 import { supabaseAdmin, requireSupabase } from '../services/supabase.js'
 import { requireSupabaseAuth } from '../middleware/supabaseAuth.js'
 import { resolveTopic, isInScope } from '../utils/syllabus.js'
@@ -128,7 +129,7 @@ router.post('/track', async (req, res) => {
     res.status(201).json({ message: 'Tracked', id: data.id, topicId: resolved?.topicId || null, mastery })
   } catch (e) {
     if (isMissingTable(e)) return res.json({ message: 'no-op (table missing)' })
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -168,7 +169,7 @@ router.get('/', async (req, res) => {
     })
   } catch (e) {
     if (isMissingTable(e)) return res.json(EMPTY_MEMORY)
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -188,7 +189,7 @@ router.get('/context', async (req, res) => {
     res.json(buildContext(data || []))
   } catch (e) {
     if (isMissingTable(e)) return res.json(EMPTY_CONTEXT)
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -203,7 +204,7 @@ router.delete('/:id', async (req, res) => {
     res.json({ message: 'Forgotten' })
   } catch (e) {
     if (isMissingTable(e)) return res.json({ message: 'no-op' })
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -217,7 +218,7 @@ router.post('/clear', async (req, res) => {
     res.json({ message: 'Memory cleared.' })
   } catch (e) {
     if (isMissingTable(e)) return res.json({ message: 'no-op' })
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 

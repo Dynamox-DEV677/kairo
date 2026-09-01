@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import { fail } from '../lib/fail.js'
 import { supabaseAdmin, requireSupabase }             from '../services/supabase.js'
 import { requireSupabaseAuth }                         from '../middleware/supabaseAuth.js'
 import { requireTeacherOrAdmin, checkNetworkRestriction } from '../middleware/schoolAuth.js'
@@ -44,7 +45,7 @@ router.post('/', requireTeacherOrAdmin, async (req, res) => {
     console.log(`[Tasks] ✓ Created: "${title}" by ${req.user.name}`)
     res.status(201).json({ message: 'Task created.', task: data })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -93,7 +94,7 @@ router.get('/', async (req, res) => {
 
     res.json({ tasks: data, count: data.length })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -130,7 +131,7 @@ router.get('/:id', async (req, res) => {
 
     res.json({ task, submission_count: submissionCount })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -168,7 +169,7 @@ router.put('/:id', requireTeacherOrAdmin, async (req, res) => {
     if (error) throw new Error(error.message)
     res.json({ message: 'Task updated.', task: data })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -198,7 +199,7 @@ router.delete('/:id', requireTeacherOrAdmin, async (req, res) => {
     console.log(`[Tasks] 🗑 Deleted: "${existing.title}" by ${req.user.name}`)
     res.json({ message: 'Task deleted.' })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -254,7 +255,7 @@ router.post('/:id/submit', async (req, res) => {
       submission: data,
     })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -296,7 +297,7 @@ router.get('/:id/submissions', requireTeacherOrAdmin, async (req, res) => {
       ungraded,
     })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
@@ -343,7 +344,7 @@ router.put('/:id/submissions/:sid/grade', requireTeacherOrAdmin, async (req, res
     console.log(`[Tasks] ✅ Graded: submission ${req.params.sid} → ${score}/${task.max_score}`)
     res.json({ message: 'Submission graded.', submission: data })
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    fail(res, req, e)
   }
 })
 
