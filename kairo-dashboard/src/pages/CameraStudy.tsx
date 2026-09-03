@@ -10,7 +10,7 @@ import {
   Lightbulb, RotateCcw, Loader2, CheckCircle2, Scale, FunctionSquare, Tags, Eye,
 } from 'lucide-react'
 import { saveRecentChat, makeTitle } from '../lib/recentChats'
-import { aiHeaders } from '../lib/devKey'
+import { aiHeadersAsync } from '../lib/devKey'
 import { recordMistake, recordFlashcard, listFormulas, getProfile } from '../lib/twin'
 import { curriculumDirective, resolveCurriculum } from '../lib/curriculum.core'
 import { formulaSignature } from '../lib/knowledgeHygiene.js'
@@ -286,7 +286,7 @@ export default function CameraStudy() {
       })
       const r = await fetch('/api/document/read', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...aiHeaders() },
+        headers: { 'Content-Type': 'application/json', ...(await aiHeadersAsync()) },
         body: JSON.stringify({
           file: b64,
           mime: file.type || 'application/pdf',
@@ -360,7 +360,7 @@ export default function CameraStudy() {
       ]
       const res = await fetch('/api/ai/chat', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...aiHeaders() },
+        headers: { 'Content-Type': 'application/json', ...(await aiHeadersAsync()) },
         body: JSON.stringify({ model, messages }),
       })
       const raw = await res.text()

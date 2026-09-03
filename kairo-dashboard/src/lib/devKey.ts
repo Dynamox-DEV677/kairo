@@ -41,33 +41,6 @@ export function activeDevGroqKey(): string {
 }
 
 /**
- * Headers for any AI-route fetch: the bring-your-own Groq key when dev mode is
- * on, and ALWAYS the session token.
- *
- * The token half is not optional. /api/ai/*, /api/camera/*, /api/document/*,
- * /api/council and /api/topic-architect used to be reachable with no auth at
- * all — anyone could burn the Groq quota — so they were put behind
- * requireSupabaseAuth. These call sites send headers built here and nothing
- * else, so without the Authorization header every one of them 401s and the
- * Solver stops answering.
- *
- * kairo_token holds the Supabase access_token (set on every login path in
- * Login.tsx and refreshed by lib/api.ts), which is exactly what the server
- * verifies.
- */
-export function aiHeaders(): Record<string, string> {
-  const h: Record<string, string> = {}
-
-  const k = activeDevGroqKey()
-  if (k) h['x-groq-key'] = k
-
-  const token = sessionToken()
-  if (token) h.Authorization = `Bearer ${token}`
-
-  return h
-}
-
-/**
  * Is this JWT past its expiry?
  *
  * Treats anything unparseable as expired. A token we cannot read is a token we
@@ -131,12 +104,26 @@ export function sessionToken(): string | null {
 }
 
 /**
- * Headers for an AI call, with a token that is actually valid.
+ * Headers for any AI-route fetch: the bring-your-own Groq key when dev mode is
+ * on, and ALWAYS a session token that is actually valid.
  *
- * Prefer this over aiHeaders() anywhere you can await. getSession() returns the
- * SDK's live session and refreshes it if it is close to expiry, so this cannot
- * send the stale snapshot. It also re-seeds kyno:token, which keeps the
- * synchronous callers healthy for the next hour.
+ * THE TOKEN HALF IS NOT OPTIONAL. /api/ai/*, /api/camera/*, /api/document/*,
+ * /api/council and /api/topic-architect sit behind requireSupabaseAuth, because
+ * they were once reachable with no auth at all and anyone could burn the Groq
+ * quota. Call sites send the headers built here and nothing else, so a missing
+ * Authorization header is not a degraded request -- it is a 401 and a dead
+ * feature.
+ *
+ * There used to be a synchronous aiHeaders() beside this. It read the token
+ * from storage, and when that token had expired it returned an object with no
+ * Authorization key at all -- so the server answered "Missing Bearer token."
+ * and the Solver stopped working about an hour after signing in, while
+ * everything routed through api.ts kept working and hid it. It is deleted:
+ * every caller can await, so nothing needs a version that fails this way.
+ *
+ * getSession() returns the SDK's live session and refreshes it when it is near
+ * expiry, so this cannot send a stale token. It re-seeds kyno:token too, which
+ * keeps the snapshot honest for anything that still reads it.
  */
 export async function aiHeadersAsync(): Promise<Record<string, string>> {
   const h: Record<string, string> = {}

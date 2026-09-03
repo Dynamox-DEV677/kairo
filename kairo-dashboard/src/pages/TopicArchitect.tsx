@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { studentMessage } from '../lib/aiError.core'
-import { aiHeaders } from '../lib/devKey'
+import { aiHeadersAsync } from '../lib/devKey'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Sparkles, Loader2, Brain, CheckCircle2, XCircle, Map as MapIcon,
@@ -82,7 +82,7 @@ export default function TopicArchitect() {
       const r = await fetch('/api/topic-architect/plan', {
         // Route now requires a verified session (it calls Groq), so without
         // this header the planner 401s.
-        method: 'POST', headers: { 'Content-Type': 'application/json', ...aiHeaders() },
+        method: 'POST', headers: { 'Content-Type': 'application/json', ...(await aiHeadersAsync()) },
         body: JSON.stringify({ topic: topic.trim(), exam, depth }),
       })
       if (!r.ok) throw new Error('Server returned ' + r.status)

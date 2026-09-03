@@ -19,7 +19,7 @@ import { buildClozeCards } from '../lib/cloze.core'
 import { speakableText } from '../lib/listen.core'
 import { speak, stopSpeaking, ttsAvailable } from '../lib/tts'
 import { lookupNcert } from '../lib/ncertCacheLookup'
-import { aiHeaders } from '../lib/devKey'
+import { aiHeadersAsync } from '../lib/devKey'
 import { prepMathMarkdown } from '../lib/math.core'
 
 interface ImageSlide {
@@ -165,7 +165,7 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
 
       const r = await fetch('/api/camera/analyze', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...aiHeaders() },
+        headers: { 'Content-Type': 'application/json', ...(await aiHeadersAsync()) },
         body: JSON.stringify({ image: dataUrl, mode: 'transcribe' }),
       })
       const j = await r.json().catch(() => null)
@@ -204,7 +204,7 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
       })
       const r = await fetch('/api/document/read', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...aiHeaders() },
+        headers: { 'Content-Type': 'application/json', ...(await aiHeadersAsync()) },
         body: JSON.stringify({ file: b64, mime: file.type, name: file.name, mode: 'notes' }),
       })
       const j = await r.json().catch(() => null)
@@ -289,7 +289,7 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
     const ctrl = new AbortController()
     abortRef.current = ctrl
 
-    const headers = { 'Content-Type': 'application/json', ...aiHeaders() }
+    const headers = { 'Content-Type': 'application/json', ...(await aiHeadersAsync()) }
 
     async function fetchTextWithRetry(attempt = 0): Promise<TextPlan> {
       const MAX_ATTEMPTS = 4

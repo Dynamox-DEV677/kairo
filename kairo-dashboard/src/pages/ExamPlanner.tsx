@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { studentMessage } from '../lib/aiError.core'
-import { aiHeaders } from '../lib/devKey'
+import { aiHeadersAsync } from '../lib/devKey'
 import { readjustPlan, planDayIndex, missedBlocks } from '../lib/replan.core'
 import SyllabusMap from '../components/SyllabusMap'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -169,7 +169,7 @@ export default function ExamPlanner() {
     try {
       const r = await fetch('/api/exam-planner/generate', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...aiHeaders() },
+        headers: { 'Content-Type': 'application/json', ...(await aiHeadersAsync()) },
         body: JSON.stringify({
           exam, examDate, hoursPerDay,
           weakAreas: weakAreas.split(',').map(s => s.trim()).filter(Boolean),
@@ -196,7 +196,7 @@ export default function ExamPlanner() {
     try {
       const r = await authFetch('/api/exam-planner/save', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...aiHeaders() },
+        headers: { 'Content-Type': 'application/json', ...(await aiHeadersAsync()) },
         body: JSON.stringify({
           user_id: userId, exam, exam_date: examDate,
           hours_per_day: hoursPerDay, plan_json: plan,
@@ -229,7 +229,7 @@ export default function ExamPlanner() {
       try {
         await authFetch(`/api/exam-planner/${planId}`, {
           method: 'PATCH',
-          headers: { 'Content-Type': 'application/json', ...aiHeaders() },
+          headers: { 'Content-Type': 'application/json', ...(await aiHeadersAsync()) },
           body: JSON.stringify({ plan_json: r.plan, hours_per_day: hoursPerDay }),
         })
       } catch { /* local re-fit still applied; sync retries on next save */ }
@@ -265,7 +265,7 @@ export default function ExamPlanner() {
     try {
       await authFetch(`/api/exam-planner/${planId}/checkin`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', ...aiHeaders() },
+        headers: { 'Content-Type': 'application/json', ...(await aiHeadersAsync()) },
         body: JSON.stringify({ block_key: key, done: nextDone }),
       })
     } catch {  }
@@ -278,7 +278,7 @@ export default function ExamPlanner() {
       if (planId) {
         await authFetch(`/api/exam-planner/${planId}/mock`, {
           method: 'PATCH',
-          headers: { 'Content-Type': 'application/json', ...aiHeaders() },
+          headers: { 'Content-Type': 'application/json', ...(await aiHeadersAsync()) },
           body: JSON.stringify({ score: mockScore, note: mockNote }),
         })
       }
@@ -289,7 +289,7 @@ export default function ExamPlanner() {
         : 50
       const r = await fetch('/api/exam-planner/replan', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...aiHeaders() },
+        headers: { 'Content-Type': 'application/json', ...(await aiHeadersAsync()) },
         body: JSON.stringify({
           previousPlan: plan,
           mockScore, completionPercent: completionPct,
@@ -303,7 +303,7 @@ export default function ExamPlanner() {
       if (planId) {
         await authFetch(`/api/exam-planner/${planId}`, {
           method: 'PATCH',
-          headers: { 'Content-Type': 'application/json', ...aiHeaders() },
+          headers: { 'Content-Type': 'application/json', ...(await aiHeadersAsync()) },
           body: JSON.stringify({ plan_json: newPlan, hours_per_day: hoursPerDay }),
         })
       }

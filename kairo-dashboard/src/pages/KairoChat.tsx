@@ -11,7 +11,7 @@ import { saveToNotebook } from '../lib/notebook'
 import { getRecentChats, saveRecentChat, makeTitle } from '../lib/recentChats'
 import { awardXP } from '../lib/game'
 import { useIsMobile } from '../hooks/useViewport'
-import { aiHeaders } from '../lib/devKey'
+import { aiHeadersAsync } from '../lib/devKey'
 import { prepMathMarkdown } from '../lib/math.core'
 
 interface Slide { url: string; caption: string; source: string }
@@ -176,7 +176,7 @@ export default function KairoChat() {
     const userTurn: Turn = { id: _id++, role: 'user', text: q }
     setTurns(prev => [...prev, userTurn])
 
-    const headers = { 'Content-Type': 'application/json', ...aiHeaders() }
+    const headers = { 'Content-Type': 'application/json', ...(await aiHeadersAsync()) }
     try {
       const history = turns.slice(-8).map(t => ({
         role: t.role === 'user' ? 'user' : 'kairo',

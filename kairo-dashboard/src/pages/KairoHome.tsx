@@ -12,7 +12,7 @@ import TodaysThree from '../components/TodaysThree'
 import GoalStrip from '../components/GoalStrip'
 import FocusTodayCard from '../components/FocusTodayCard'
 import { selectStreak, selectRetention } from '../lib/selectors'
-import { aiHeaders } from '../lib/devKey'
+import { aiHeadersAsync } from '../lib/devKey'
 import { get as getStored, set as setStored } from '../lib/storage'
 import { setStoredProfileRaw, storedProfileRaw } from '../lib/storage'
 
@@ -146,7 +146,7 @@ export default function KairoHome({ onNavigate }: Props) {
           // /api/council now requires a verified session — it calls Groq, so
           // an unauthenticated route was an open tab on the quota. Without
           // this header the daily brief 401s and Home never loads.
-          method: 'POST', headers: { 'Content-Type': 'application/json', ...aiHeaders() },
+          method: 'POST', headers: { 'Content-Type': 'application/json', ...(await aiHeadersAsync()) },
           body: JSON.stringify(profile), signal: ctrl.signal,
         })
         if (!r.ok) throw new Error('Server returned ' + r.status)

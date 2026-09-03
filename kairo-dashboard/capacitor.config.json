@@ -1,0 +1,13 @@
+{
+  "appId": "app.kairo.kyno",
+  "appName": "Kyno",
+  "webDir": "dist",
+  "server": {
+    "url": "https://kairo-daily-edu.vercel.app",
+    "cleartext": false,
+    "androidScheme": "https"
+  },
+  "android": {
+    "backgroundColor": "#050505"
+  }
+}

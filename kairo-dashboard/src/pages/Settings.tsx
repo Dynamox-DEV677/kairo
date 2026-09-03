@@ -12,7 +12,7 @@ import { getNotificationPrefs, setNotificationPref } from '../lib/notifications'
 import { PrimaryButton, ToggleChip } from '../components/PrimaryButton'
 import { getRaw, setRaw, activeBackend } from '../lib/storage'
 import { DecoratedAvatar, DECORATIONS, getDecor, setDecor } from '../components/AvatarDecor'
-import { isDevMode, setDevMode, getDevKeyRaw, setDevKey, looksLikeGroqKey, aiHeaders } from '../lib/devKey'
+import { isDevMode, setDevMode, getDevKeyRaw, setDevKey, looksLikeGroqKey, aiHeadersAsync } from '../lib/devKey'
 import { activeFlows, privacyHeadline } from '../lib/privacy.core'
 import { telemetryEnabled, setTelemetryEnabled } from '../lib/usage'
 
@@ -88,7 +88,7 @@ export default function Settings() {
     try {
       const res = await fetch('/api/ai/chat', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...aiHeaders(), 'x-groq-key': k },
+        headers: { 'Content-Type': 'application/json', ...(await aiHeadersAsync()), 'x-groq-key': k },
         body: JSON.stringify({ messages: [{ role: 'user', content: 'Reply with only the word: ok' }] }),
       })
       const data = await res.json().catch(() => ({}))

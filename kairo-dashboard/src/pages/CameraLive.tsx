@@ -10,7 +10,7 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
-import { aiHeaders } from '../lib/devKey'
+import { aiHeadersAsync } from '../lib/devKey'
 import { recordMistake, recordFlashcard } from '../lib/twin'
 import { awardXP } from '../lib/game'
 import { prepMathMarkdown } from '../lib/math.core'
@@ -193,7 +193,7 @@ export default function CameraLive({ onExit }: { onExit?: () => void }) {
     try {
       const r = await fetch('/api/camera/analyze', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...aiHeaders() },
+        headers: { 'Content-Type': 'application/json', ...(await aiHeadersAsync()) },
         body: JSON.stringify({ image: img, mode, context }),
       })
       setCalls(c => c + 1)
@@ -328,7 +328,7 @@ export default function CameraLive({ onExit }: { onExit?: () => void }) {
     try {
       const r = await fetch('/api/camera/speak', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...aiHeaders() },
+        headers: { 'Content-Type': 'application/json', ...(await aiHeadersAsync()) },
         body: JSON.stringify({ text, voice }),
       })
       if (r.ok) {
@@ -364,7 +364,7 @@ export default function CameraLive({ onExit }: { onExit?: () => void }) {
         setThink(true)
         try {
           const tr = await fetch('/api/camera/transcribe', {
-            method: 'POST', headers: { 'Content-Type': 'application/json', ...aiHeaders() },
+            method: 'POST', headers: { 'Content-Type': 'application/json', ...(await aiHeadersAsync()) },
             body: JSON.stringify({ audio: b64, mime: 'audio/webm' }),
           })
           const tj = await tr.json().catch(() => null)

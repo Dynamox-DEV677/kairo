@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { studentMessage, safeDetail } from '../lib/aiError.core'
-import { aiHeaders } from '../lib/devKey'
+import { aiHeadersAsync } from '../lib/devKey'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Users, BookOpen, Bell, TrendingUp, Plus, Check, X, Clock,
@@ -314,7 +314,7 @@ function NoSchoolView() {
     try {
       const r = await fetch('/api/users/join-school', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...aiHeaders() },
+        headers: { 'Content-Type': 'application/json', ...(await aiHeadersAsync()) },
         body: JSON.stringify({ school_name: name.trim(), school_passcode: code.trim() }),
       })
       const j = await r.json().catch(() => ({}))
@@ -465,7 +465,7 @@ function AdminAIAnnounce({ schoolId: _ }: { schoolId: string }) {
     try {
       const res = await fetch('/api/ai/chat', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...aiHeaders() },
+        headers: { 'Content-Type': 'application/json', ...(await aiHeadersAsync()) },
         body: JSON.stringify({
           messages: [{
             role: 'user',
