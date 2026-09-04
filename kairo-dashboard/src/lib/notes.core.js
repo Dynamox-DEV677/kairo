@@ -208,18 +208,28 @@ export function boldTriggers(text) {
   return out
 }
 
-/** Equations get their own mono block: split a note body into prose / equation segments. */
+/**
+ * Split a note body into segments: prose paragraphs, equations (their own mono
+ * block) and headings -- a `#` line such as the "## 1. Write down what you
+ * know" steps a saved doubt carries, or a whole-line **bold** label. A blank
+ * line ends a paragraph; a bullet stands on its own line. Without this the
+ * step title used to run straight into the sentence after it.
+ */
 export function splitBody(content) {
   const lines = String(content || '').split('\n')
   const segs = []
+  let open = false   // is the last segment a paragraph still accepting lines?
   for (const raw of lines) {
     const t = raw.trim()
-    if (!t) continue
-    const isEq = /^\$\$?.*\$\$?$/.test(t) || (/[=≈→]/.test(t) && /\d|[a-z]\s*=/.test(t) && t.length < 120 && !/[.!?]$/.test(t))
-    const last = segs[segs.length - 1]
-    if (isEq) segs.push({ kind: 'eq', text: t.replace(/^\$\$?|\$\$?$/g, '').trim() })
-    else if (last && last.kind === 'prose') last.text += ' ' + t
-    else segs.push({ kind: 'prose', text: t })
+    if (!t) { open = false; continue }
+    const heading = /^#{1,6}\s+/.test(t) || /^\*\*[^*]+\*\*:?$/.test(t)
+    const bullet = !heading && /^[-*•]\s+/.test(t)
+    const isEq = !heading && !bullet && (/^\$\$?.*\$\$?$/.test(t) || (/[=≈→]/.test(t) && /\d|[a-z]\s*=/.test(t) && t.length < 120 && !/[.!?]$/.test(t)))
+    if (heading) { segs.push({ kind: 'heading', text: t.replace(/^#{1,6}\s+/, '').replace(/\*\*/g, '').replace(/:$/, '').trim() }); open = false }
+    else if (isEq) { segs.push({ kind: 'eq', text: t.replace(/^\$\$?|\$\$?$/g, '').trim() }); open = false }
+    else if (bullet) { segs.push({ kind: 'prose', text: '• ' + t.replace(/^[-*•]\s+/, '') }); open = false }
+    else if (open) segs[segs.length - 1].text += ' ' + t
+    else { segs.push({ kind: 'prose', text: t }); open = true }
   }
   return segs
 }
@@ -230,33 +240,41 @@ export function splitBody(content) {
  * Which sheet formulas carry a flag, from the student's own mistake records.
  * A flag says how many marks they have lost to the habit that formula's line
  * fixes -- and is OMITTED entirely with no matching pattern. Never invented.
+ *
+ * A record counts only for the formulas of the chapter it happened in
+ * (`chapter`, a syllabus-graph id the page resolves from the record's topic):
+ * two skipped formula lines in Electricity flag Ohm's law, not the quadratic
+ * formula. A record we cannot place is pinned on nothing -- we do not know
+ * which line it was about, so the sheet says nothing.
  */
 export function formulaFlags(formulas = [], records = []) {
-  const bySig = new Map()
+  const byKey = new Map()   // `${chapter}|${signature}` → { count, marks }
   for (const r of records || []) {
-    if (!r?.signature) continue
-    const cur = bySig.get(r.signature) || { count: 0, marks: 0 }
+    if (!r?.signature || !r.chapter) continue
+    const key = `${r.chapter}|${r.signature}`
+    const cur = byKey.get(key) || { count: 0, marks: 0 }
     cur.count += 1; cur.marks += r.marksLost || 0
-    bySig.set(r.signature, cur)
+    byKey.set(key, cur)
   }
   const out = new Map()
   for (const f of formulas || []) {
     let marks = 0, count = 0, sig = null
     for (const s of f.signatures || []) {
-      const hit = bySig.get(s)
+      const hit = byKey.get(`${f.chapter}|${s}`)
       if (hit && hit.count >= 2 && hit.marks > marks) { marks = hit.marks; count = hit.count; sig = s }
     }
     if (sig) {
-      const verb = sig === 'formula-not-written' ? 'by not writing this line before substituting'
-        : sig === 'wrong-formula-picked' ? 'by reaching for the wrong formula here'
-        : sig === 'sign-flip' ? 'to sign errors on this formula'
-        : sig === 'unit-conversion' ? 'to mixed units in this formula'
-        : sig === 'omits-units' ? 'by leaving the unit off this answer'
-        : sig === 'skipped-step' ? 'by jumping straight to the answer here'
-        : sig === 'arithmetic-slip' ? 'to arithmetic slips inside this formula'
-        : sig === 'copy-error' ? 'by copying a value wrong into this formula'
+      const verb = sig === 'formula-not-written' ? 'by not writing the formula line before substituting'
+        : sig === 'wrong-formula-picked' ? 'by reaching for the wrong formula'
+        : sig === 'sign-flip' ? 'to sign errors'
+        : sig === 'unit-conversion' ? 'to mixed units'
+        : sig === 'omits-units' ? 'by leaving the unit off the answer'
+        : sig === 'skipped-step' ? 'by jumping straight to the answer'
+        : sig === 'arithmetic-slip' ? 'to arithmetic slips'
+        : sig === 'copy-error' ? 'by copying a value wrong'
         : `to the habit "${sig.replace(/-/g, ' ')}"`
-      out.set(f.id, { signature: sig, marks, count, line: `You have lost ${marks} mark${marks === 1 ? '' : 's'} ${verb}` })
+      const where = f.chapterName ? ` in ${String(f.chapterName).replace(/ — .*$/, '')}` : ''
+      out.set(f.id, { signature: sig, marks, count, line: `You have lost ${marks} mark${marks === 1 ? '' : 's'}${where} ${verb}` })
     }
   }
   return out

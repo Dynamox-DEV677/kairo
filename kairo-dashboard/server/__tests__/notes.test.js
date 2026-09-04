@@ -115,20 +115,34 @@ test('trigger words are bolded and equations get their own block', () => {
   assert.equal(body[1].text, 's = ut + ½at²')
 })
 
+test('a saved doubt keeps its step headings; a blank line ends a paragraph; a bullet stands alone', () => {
+  const body = splitBody('## 1. Write down what you know\nThe ball is dropped from rest.\n\nu = 0 m/s, a = 9.8 m/s²\n\n**What was missing**\n- Snell\'s law: the ratio is constant.\n- Units.')
+  assert.deepEqual(body.map(b => b.kind), ['heading', 'prose', 'eq', 'heading', 'prose', 'prose'])
+  assert.equal(body[0].text, '1. Write down what you know')
+  assert.equal(body[1].text, 'The ball is dropped from rest.')
+  assert.equal(body[3].text, 'What was missing')
+  assert.equal(body[4].text, '• Snell\'s law: the ratio is constant.')
+})
+
 /* ── the formula flag ─────────────────────────────────────────────────────── */
 
-test('a formula is flagged ONLY when the student has really lost marks to its habit', () => {
+test('a formula is flagged ONLY when the student has really lost marks to its habit, in ITS chapter', () => {
   const sheet = SHEET.formulas
-  const quiet = formulaFlags(sheet, [{ signature: 'formula-not-written', marksLost: 1 }])   // one occurrence is not a pattern
+  const ELEC = 'sci.phy.electricity'
+  const quiet = formulaFlags(sheet, [{ signature: 'formula-not-written', marksLost: 1, chapter: ELEC }])   // one occurrence is not a pattern
   assert.equal(quiet.size, 0)
   const flags = formulaFlags(sheet, [
-    { signature: 'formula-not-written', marksLost: 2 }, { signature: 'formula-not-written', marksLost: 3 },
+    { signature: 'formula-not-written', marksLost: 2, chapter: ELEC }, { signature: 'formula-not-written', marksLost: 3, chapter: ELEC },
   ])
   const ohm = flags.get('elec.ohm')
   assert.ok(ohm, 'Ohm\'s law carries the formula-not-written signature')
   assert.equal(ohm.marks, 5)
-  assert.equal(ohm.line, 'You have lost 5 marks by not writing this line before substituting')
+  assert.equal(ohm.line, 'You have lost 5 marks in Electricity by not writing the formula line before substituting')
   assert.equal(flags.has('prob.classical'), false, 'a formula without that signature stays unflagged')
+  for (const id of flags.keys()) assert.equal(sheet.find(f => f.id === id).chapter, ELEC, `${id}: a slip in Electricity says nothing about another chapter`)
+  // a slip we cannot place in a chapter is pinned on no formula at all
+  const unplaced = formulaFlags(sheet, [{ signature: 'formula-not-written', marksLost: 2 }, { signature: 'formula-not-written', marksLost: 2, chapter: null }])
+  assert.equal(unplaced.size, 0)
 })
 
 test('chapter chips come from the sheet, biggest first', () => {

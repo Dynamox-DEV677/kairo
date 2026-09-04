@@ -22,6 +22,8 @@ import { post } from '../lib/api'
 import { listNotebook, saveToNotebook, getNotebookEntry, updateNotebookEntry } from '../lib/notebook'
 import type { NoteEntry } from '../lib/notebook'
 import { listFlashcards, listFormulas, listDoubts, loadState, recordFlashcard, reviewFlashcard, recordMistake, getProfile, getMistakes } from '../lib/twin'
+import { graphForProfile } from '../lib/syllabusFor'
+import { matchChapter } from '../lib/syllabusGraph.core'
 import { getJSON, setJSON } from '../lib/storage'
 import { nearestExamDays } from '../lib/examDate'
 import { buildDeck } from '../lib/reels.core'
@@ -82,6 +84,7 @@ function Pill({ children, on, onClick }: { children: React.ReactNode; on?: boole
   return (
     <button onClick={onClick} style={{
       minHeight: 36, padding: '0 12px', borderRadius: 100, fontFamily: FONT, fontSize: 12.5, fontWeight: 600, cursor: 'pointer',
+      flexShrink: 0, whiteSpace: 'nowrap',   // in a scrolling chip row a pill scrolls, it never squashes into a four-line blob
       background: on ? T.accentSurface : T.raised, border: `1px solid ${on ? T.accent : T.borderCtl}`, color: on ? T.accentPale : T.muted,
     }}>{children}</button>
   )
@@ -99,7 +102,9 @@ function useLibrary(tick: number) {
     const own = (() => { try { return listFormulas() } catch { return [] } })()
     const st = (() => { try { return loadState() } catch { return { events: [], mastery: [] } as any } })()
     const index = readIndex()
-    const records = mistakeRecords(st.events)
+    // Each slip is placed in its syllabus chapter, so the formula sheet flags only the lines it was really about.
+    const graph = (() => { try { return graphForProfile(getProfile()) } catch { return null } })()
+    const records = mistakeRecords(st.events).map(r => ({ ...r, chapter: graph ? matchChapter(graph, r.subject, r.topic) : null }))
     return { notes, cards, doubts, own, index, events: st.events, mastery: st.mastery, records }
   }, [tick])
 }
@@ -270,7 +275,9 @@ export default function Notes({ onOpenDoubt, onPractice }: {
               <div style={{ marginTop: 16, fontSize: 15, lineHeight: 1.7, color: T.text2 }}>
                 {splitBody(n.content).map((seg, i) => seg.kind === 'eq'
                   ? <pre key={i} style={{ margin: '10px 0', padding: '10px 12px', borderRadius: 12, background: T.well, border: `1px solid ${T.divider}`, fontFamily: MONO, fontSize: 14, color: T.text, whiteSpace: 'pre-wrap', overflowX: 'auto' }}>{seg.text}</pre>
-                  : <p key={i} style={{ margin: '0 0 10px' }}>{boldTriggers(seg.text.replace(/^#+\s*\d*\.?\s*/, '').replace(/\*\*/g, '')).map((p, k) => p.bold ? <strong key={k} style={{ color: T.text }}>{p.text}</strong> : <span key={k}>{p.text}</span>)}</p>
+                  : seg.kind === 'heading'
+                    ? <div key={i} style={{ fontSize: 13.5, fontWeight: 700, color: T.text, margin: i === 0 ? '0 0 6px' : '16px 0 6px' }}>{seg.text}</div>
+                    : <p key={i} style={{ margin: '0 0 10px' }}>{boldTriggers(seg.text.replace(/\*\*/g, '')).map((p, k) => p.bold ? <strong key={k} style={{ color: T.text }}>{p.text}</strong> : <span key={k}>{p.text}</span>)}</p>
                 )}
               </div>
 
