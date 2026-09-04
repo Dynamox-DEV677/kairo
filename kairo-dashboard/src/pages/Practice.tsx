@@ -784,6 +784,15 @@ export default function Practice({ onOpenDoubt }: { onOpenDoubt?: (seed: string)
 
   const msLeft = Math.max(0, (plan?.minutes || 0) * 60_000 - (now - startedAt))
 
+  // Running out of items ends the session. This used to be a finish() call
+  // inside render -- setState during render, which React tolerates right up
+  // until it does not. A rebuildWithout() that drops the last remaining items
+  // is exactly the path that hits it.
+  useEffect(() => {
+    if (view === 'session' && items.length > 0 && idx >= items.length) finish()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [view, items, idx])
+
   /* ── start ── */
   function start(p: SessionPlan) {
     setPlan(p); setItems(p.items); setIdx(0); setStartedAt(Date.now()); setNow(Date.now())
@@ -1036,7 +1045,7 @@ export default function Practice({ onOpenDoubt }: { onOpenDoubt?: (seed: string)
   const kindTotal = items.filter(it => it.kind === item?.kind).length
   const label = item?.kind === 'card' ? `Card ${kindCount} of ${kindTotal}` : item?.kind === 'question' ? `Question ${kindCount} of ${kindTotal}` : item?.kind === 'written' ? 'Written answer' : 'Teach back'
 
-  if (!item) { finish(); return <div style={shell} /> }
+  if (!item) return <div style={shell} />
 
   const qIndex = items.slice(0, idx).filter(it => it.kind === 'question').length
   const q = questions[qIndex]
@@ -1073,7 +1082,7 @@ export default function Practice({ onOpenDoubt }: { onOpenDoubt?: (seed: string)
           question={item.topic ? `Why does ${item.topic} work the way it does?` : 'Explain the last thing you learned, as if to a friend.'}
           onDone={r => {
             if (r) { setStats(s => ({ ...s, teach: s.teach + 1 })); if (item.topic) setTouched(t => [...t, item.topic!]); advance() }
-            else { setItems(it => rebuildWithout(it, 'teach', idx)); setIdx(i => i) ; if (idx >= items.length - 1) finish() }
+            else { setItems(it => rebuildWithout(it, 'teach', idx)) }   // the effect above ends the session if nothing is left
           }}
         />
       )}
