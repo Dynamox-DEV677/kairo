@@ -29,6 +29,7 @@ import Plan from './Plan'
 import Notes from './Notes'
 import NewIndex from './NewIndex'
 import Profile from './Profile'
+import Progress from './Progress'
 import SpaceFrame from '../components/SpaceFrame'
 import { refreshSocial } from '../lib/social'
 import { startReminderClock } from '../lib/reminder'
@@ -108,6 +109,7 @@ const PAGE_TITLES: Record<string, string> = {
   // bottom of the drawer opens this index. Deleted with the cutover commit.
   'new':            'New design',
   'profile':        'Profile',
+  'progress':       'Progress',
   ops:              'Ops Dashboard',
   flashcards:       'Flashcards & SRS',
   'study-plan':     'Study Plan',
@@ -488,6 +490,20 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
                     setTimeout(() => window.dispatchEvent(new CustomEvent('kyno:practice-filter', { detail: filter })), 60)
                   }}
                 />
+                </SpaceFrame>
+              )}
+            </div>
+
+            <div className={pageClass} style={pageStyle('progress')}>
+              {mounted('progress') && (
+                <SpaceFrame active="progress" onNavigate={navigate}>
+                  <Progress
+                    onPractice={(filter) => {
+                      navigate('practice')
+                      setTimeout(() => window.dispatchEvent(new CustomEvent('kyno:practice-filter', { detail: filter })), 60)
+                    }}
+                    onOpenProfile={() => navigate('profile')}
+                  />
                 </SpaceFrame>
               )}
             </div>
