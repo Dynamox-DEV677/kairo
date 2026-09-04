@@ -6,7 +6,7 @@ import {
   Calendar, FileText, Edit3, Lightbulb, FunctionSquare, Timer,
   Megaphone, Bell, DollarSign, Bot, UserCheck, Grid3x3,
   Building2, GraduationCap, Shield, Sparkles, Settings, LogOut,
-  Sun, Moon, Menu, X, MoreHorizontal, ChevronRight, Key, Copy, Check,
+  Sun, Moon, Menu, X, ChevronRight, Key, Copy, Check,
   AlertTriangle, Beaker, Trophy, Headphones,
 } from 'lucide-react'
 import type { AuthProfile } from '../pages/Login'
@@ -19,11 +19,13 @@ interface NavItem {
   icon: React.ElementType
 }
 
+// Post-cutover: four spaces, and no "More". The drawer (all seven groups)
+// opens from the menu button in the top bar.
 const STUDENT_BOTTOM: NavItem[] = [
-  { to: 'kairo-os',  label: 'Kyno',    icon: Brain },
-  { to: 'doubt',     label: 'Solve',    icon: MessageCircle },
-  { to: 'battle',    label: 'Battle',   icon: Swords },
-  { to: 'notebook',  label: 'Notes',    icon: BookOpen },
+  { to: 'home',          label: 'Home',     icon: Star },
+  { to: 'doubt-solving', label: 'Solve',    icon: MessageCircle },
+  { to: 'practice',      label: 'Practice', icon: Target },
+  { to: 'progress',      label: 'Progress', icon: Trophy },
 ]
 
 const TEACHER_BOTTOM: NavItem[] = [
@@ -44,66 +46,62 @@ const PARENT_BOTTOM: NavItem[] = [
   { to: 'doubt', label: 'Home', icon: MessageCircle },
 ]
 
+/**
+ * THE CUTOVER: seven groups, one per space.
+ *
+ * The 32 items that were here are gone as separate destinations -- each space
+ * absorbed its own, and SPACE_ALIASES in src/lib/spaces.ts redirects every old
+ * route so no bookmark breaks. What still appears beside a space is a page no
+ * space absorbed, filed under the group it belongs with.
+ */
 const DRAWER_STUDENT = [
   {
-    title: 'Core',
+    title: 'Doubt Solving',
     items: [
-      // 'home' was reachable only on desktop — Today's 3 and the daily brief
-      // live there, so on mobile they simply did not exist.
-      { to: 'home',           label: 'Home · Daily brief', icon: Star },
-      { to: 'kairo-os',       label: 'Kyno',           icon: Brain },
-      { to: 'doubt',          label: "Kyno's Solver",     icon: MessageCircle },
-      { to: 'reels',          label: 'Revision Reels',    icon: Layers },
-      { to: 'listen',         label: 'Listen',            icon: Headphones },
-      { to: 'rooms',          label: 'Study Room',        icon: Users },
-      { to: 'camera-live',    label: 'Study Mode · Live',  icon: Camera },
-      { to: 'mistakes',       label: 'Mistake Analysis',   icon: Activity },
-      { to: 'museum',         label: 'My mistakes',        icon: AlertTriangle },
-      { to: 'explain-mistake',label: 'Explain Mistake',    icon: AlertTriangle },
-      { to: 'teach-back',     label: 'Teach Back',         icon: GraduationCap },
-      { to: 'simulator',      label: 'Revision Simulator', icon: Zap },
+      { to: 'doubt-solving', label: 'Ask a question',    icon: MessageCircle },
+      { to: 'camera-live',   label: 'Study Mode · Live',  icon: Camera },
     ],
   },
   {
-    title: 'Tools',
+    title: 'Practice',
     items: [
-      { to: 'flashcards',   label: 'Flashcards',     icon: BookMarked },
-      { to: 'camera',       label: 'Camera Study',   icon: Camera },
-      { to: 'concept-map',  label: 'Concept Map',    icon: Network },
-      { to: 'knowledge',    label: 'Knowledge Graph', icon: Network },
-      { to: 'essay',        label: 'Grader',         icon: FileText },
+      { to: 'practice', label: 'Practise & test', icon: Target },
+    ],
+  },
+  {
+    title: 'Performance',
+    items: [
+      { to: 'performance', label: 'Your mistakes', icon: Activity },
     ],
   },
   {
     title: 'Plan',
     items: [
-      { to: 'goal',         label: 'My goal',         icon: Target },
-      { to: 'study-plan',   label: 'Smart Timetable', icon: Calendar },
-      { to: 'exam-planner', label: 'Exam Planner',    icon: Calendar },
-      { to: 'exam-hall',    label: 'Mock test',       icon: Timer },
-      { to: 'bridge',       label: 'Switched board?', icon: Compass },
-      { to: 'stream',       label: 'Which stream?',   icon: Compass },
-      { to: 'topic-architect', label: 'Topic Architect', icon: Brain },
-      { to: 'school',       label: 'My Tasks',        icon: BookOpen },
-      { to: 'quiz',         label: 'Adaptive Quiz',   icon: Brain },
-      { to: 'focus',        label: 'Focus Lock',      icon: Target },
-      { to: 'pomodoro',     label: 'Pomodoro',        icon: Timer },
+      { to: 'plan',   label: 'Your plan',       icon: Calendar },
+      { to: 'school', label: 'My Tasks',        icon: BookOpen },
+      { to: 'bridge', label: 'Switched board?', icon: Compass },
+      { to: 'stream', label: 'Which stream?',   icon: Compass },
+    ],
+  },
+  {
+    title: 'Notes',
+    items: [
+      { to: 'notes',   label: 'Your library',    icon: BookOpen },
+      { to: 'reels',   label: 'Revision Reels',  icon: Layers },
+      { to: 'concept', label: 'Concept Tools',   icon: Lightbulb },
     ],
   },
   {
     title: 'Progress',
     items: [
-      { to: 'battle',          label: 'Battle Mode',       icon: Swords },
-      { to: 'league',          label: 'League',            icon: Trophy },
-      { to: 'notebook',        label: 'AI Notebook',       icon: BookOpen },
+      { to: 'progress', label: 'What you know', icon: Trophy },
     ],
   },
   {
-    title: 'Other',
+    title: 'Profile',
     items: [
-      { to: 'writing',     label: 'Writing Tools',  icon: Edit3 },
-      { to: 'concept',     label: 'Concept Tools',  icon: Lightbulb },
-      { to: 'formula',     label: 'Formula Sheet',  icon: FunctionSquare },
+      { to: 'profile',  label: 'You & your settings', icon: Settings },
+      { to: 'kairo-os', label: 'Kyno OS',             icon: Brain },
     ],
   },
 ]
@@ -206,7 +204,7 @@ export default function MobileShell(props: MobileShellProps) {
   return (
     <>
       {!immersive && <MobileTopBar {...props} onOpenDrawer={() => setDrawerOpen(true)} />}
-      {!immersive && <BottomNav {...props} onOpenMore={() => setDrawerOpen(true)} />}
+      {!immersive && <BottomNav {...props} />}
       <AnimatePresence>
         {drawerOpen && (
           <MobileDrawer {...props} onClose={() => setDrawerOpen(false)} />
@@ -305,9 +303,11 @@ function MobileTopBar({
   )
 }
 
+// The cutover removed "More": the four bottom slots are spaces, and the whole
+// drawer opens from the menu button in the top bar.
 function BottomNav({
-  active, setActive, profile, onOpenMore,
-}: MobileShellProps & { onOpenMore: () => void }) {
+  active, setActive, profile,
+}: MobileShellProps) {
   const items = getBottomNav(profile?.role)
 
   const [hidden, setHidden] = useState(false)
@@ -395,22 +395,6 @@ function BottomNav({
             </motion.button>
           )
         })}
-        <motion.button onClick={onOpenMore}
-          data-bottom-tab="true"
-          whileTap={{ scale: 0.88 }}
-          aria-label="More"
-          style={{
-            flex: 1,
-            background: 'none', border: 'none', cursor: 'pointer',
-            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-            gap: 2, padding: '8px 0', color: '#9CA3AF',
-            fontFamily: 'inherit',
-            WebkitTapHighlightColor: 'transparent',
-            borderRadius: 14,
-          }}>
-          <MoreHorizontal size={20} style={{ strokeWidth: 1.8 }} />
-          <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: 0.2, fontFamily: 'var(--kyno-display)', color: '#B1B5BA' }}>More</span>
-        </motion.button>
       </div>
     </div>
   )
@@ -584,16 +568,6 @@ function MobileDrawer({
             </button>
           </div>
 
-          {/* Seven-spaces redesign, pre-cutover: the one door into the new
-              screens, so they can be opened on a phone without typing a URL.
-              Deliberately dull -- it should not attract a real user's
-              attention. Deleted, together with #/new, in the cutover commit.
-              Nothing else in this drawer changes until then. */}
-          <button onClick={() => go('new')} style={{
-            width: '100%', marginTop: 8, padding: '10px 4px 2px', background: 'none', border: 'none',
-            borderTop: '1px solid #1E1E2C', color: '#5E5E78', fontFamily: 'inherit', fontSize: 12.5,
-            textAlign: 'left', cursor: 'pointer',
-          }}>New design (preview)</button>
         </div>
       </motion.aside>
     </>

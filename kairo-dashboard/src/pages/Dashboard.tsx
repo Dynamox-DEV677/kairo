@@ -27,10 +27,10 @@ import Practice from './Practice'
 import Performance from './Performance'
 import Plan from './Plan'
 import Notes from './Notes'
-import NewIndex from './NewIndex'
 import Profile from './Profile'
 import Progress from './Progress'
 import SpaceFrame from '../components/SpaceFrame'
+import { resolveSpace } from '../lib/spaces'
 import { refreshSocial } from '../lib/social'
 import { startReminderClock } from '../lib/reminder'
 import { XPToast } from '../components/GameBar'
@@ -95,19 +95,15 @@ const KairoOSM           = memo(KairoOS)
 
 const PAGE_TITLES: Record<string, string> = {
   home:             'Home',
+  // The old solver id stays registered because Doubt Solving hands "I'm stuck
+  // here" to the ONE existing chat by setting it directly. #/doubt from the
+  // outside resolves to the space -- see SPACE_ALIASES.
   doubt:            "Kyno's Solver",
-  // Seven-spaces redesign, pre-cutover. Lives BESIDE the old routes, reachable
-  // only by typing #/doubt-solving -- the drawer still points everything at the
-  // old screens on purpose. The cutover commit renames this to 'doubt' and adds
-  // the redirects; until then nothing a student can click reaches it.
   'doubt-solving':  'Doubt Solving',
   'practice':       'Practice',
   'performance':    'Performance',
   'plan':           'Plan',
   'notes':          'Notes',
-  // The one door into the new spaces before the cutover: a dull row at the
-  // bottom of the drawer opens this index. Deleted with the cutover commit.
-  'new':            'New design',
   'profile':        'Profile',
   'progress':       'Progress',
   ops:              'Ops Dashboard',
@@ -126,6 +122,12 @@ const PAGE_TITLES: Record<string, string> = {
   timetable:        'Timetable',
   writing:          'Writing Tools',
   concept:          'Concept Tools',
+  // These three render but were never registered, so #/bridge and friends
+  // resolved to nothing and the top bar said "Dashboard". They belong to no
+  // space, so the cutover is where they finally get their own route.
+  bridge:           'Switched board?',
+  stream:           'Which stream?',
+  reels:            'Revision Reels',
   formula:          'Formula Sheet',
   quiz:             'Adaptive Quiz',
   pomodoro:         'Pomodoro Timer',
@@ -158,11 +160,18 @@ interface DashboardProps {
   onLogout?: () => void
 }
 
-/** #/<page-id> ↔ nav state. Only ids the registry knows; junk → null. */
+/**
+ * #/<page-id> ↔ nav state. Only ids the registry knows; junk → null.
+ *
+ * Since the cutover an old id resolves to the space that absorbed it, so a
+ * bookmark to #/flashcards or #/battle still lands somewhere real.
+ */
 function pageFromHash(): string | null {
   const m = window.location.hash.match(/^#\/([a-z0-9-]+)$/i)
-  const id = m?.[1]
-  return id && PAGE_TITLES[id] ? id : null
+  const raw = m?.[1]
+  if (!raw) return null
+  const id = resolveSpace(raw)
+  return PAGE_TITLES[id] ? id : null
 }
 
 export default function Dashboard({ profile, onLogout }: DashboardProps) {
@@ -229,9 +238,12 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
   // running, the solver and Doubt Solving are unreachable -- not hidden,
   // unreachable -- from the drawer, from Home cards, from deep links, from
   // every setActive() in the app. One navigate() for all of them.
-  const navigate = useCallback((id: string) => {
+  const navigate = useCallback((raw: string) => {
+    // Old ids resolve to the space that absorbed them, so every button in the
+    // app that still says 'flashcards' or 'battle' lands in the right place.
+    const id = resolveSpace(raw)
     const HELP = new Set(['doubt', 'doubt-solving', 'solver-classic', 'camera', 'camera-study'])
-    if ((window as any).__kynoExamLock && HELP.has(id)) return
+    if ((window as any).__kynoExamLock && (HELP.has(id) || HELP.has(raw))) return
     setActive(id)
   }, [])
 
@@ -516,13 +528,6 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
               )}
             </div>
 
-            <div className={pageClass} style={pageStyle('new')}>
-              {mounted('new') && (
-                <SpaceFrame active="new" onNavigate={navigate}>
-                  <NewIndex onOpen={navigate} />
-                </SpaceFrame>
-              )}
-            </div>
 
             <div className={pageClass} style={pageStyle('flashcards')}>{mounted('flashcards') && <FlashcardsM />}</div>
 

@@ -39,58 +39,30 @@ interface NavItem {
  * before expanding, so everything above the beta block must genuinely work
  * end to end.
  */
+/**
+ * THE CUTOVER: the seven spaces, then the pages no space absorbed.
+ *
+ * Everything that used to be listed separately here now lives inside a space,
+ * and SPACE_ALIASES in src/lib/spaces.ts redirects its old route, so nothing
+ * a student saved stops working.
+ */
 const STUDENT_NAV: NavItem[] = [
-  // ── working, in rough order of daily usefulness ──────────────────────────
   { label: 'Home',            icon: Sparkles,        to: 'home',             color: '#A5B4FC' },
-  // Kyno OS is a separate destination from Home by design. They used to show
-  // different numbers for the same things; both read the shared selectors now,
-  // so they show one truth in two views.
+  { label: 'Doubt Solving',   icon: MessageCircle,   to: 'doubt-solving',    color: '#A5B4FC' },
+  { label: 'Practice',        icon: Target,          to: 'practice',         color: '#A5B4FC' },
+  { label: 'Performance',     icon: Activity,        to: 'performance',      color: '#A5B4FC' },
+  { label: 'Plan',            icon: Calendar,        to: 'plan',             color: '#A5B4FC' },
+  { label: 'Notes',           icon: BookOpen,        to: 'notes',            color: '#A5B4FC' },
+  { label: 'Progress',        icon: Trophy,          to: 'progress',         color: '#FFB44A' },
+  { label: 'Profile',         icon: Users,           to: 'profile',          color: '#A5B4FC' },
+  // not part of a space, so still listed on their own
   { label: 'Kyno OS',         icon: Cpu,             to: 'kairo-os',         color: '#A5B4FC' },
-  { label: "Kyno's Solver",  icon: MessageCircle,   to: 'doubt',            color: '#A5B4FC' },
-  { label: 'Adaptive Quiz',   icon: Brain,           to: 'quiz',             color: '#A5B4FC' },
-  { label: 'Flashcards',      icon: BookMarked,      to: 'flashcards',       color: '#A5B4FC' },
-  { label: 'Camera Study',    icon: Camera,          to: 'camera',           color: '#A5B4FC' },
-  { label: 'Mistake Analysis',icon: Activity,        to: 'mistakes',         color: '#A5B4FC' },
-  { label: 'My goal',         icon: Target,          to: 'goal',             color: '#A5B4FC' },
-  { label: 'My mistakes',     icon: AlertTriangle,   to: 'museum',           color: '#A5B4FC' },
-  { label: 'AI Notebook',     icon: BookOpen,        to: 'notebook',         color: '#A5B4FC' },
-  { label: 'Exam Planner',    icon: Target,          to: 'exam-planner',     color: '#A5B4FC' },
-  { label: 'Mock test',       icon: Timer,           to: 'exam-hall',        color: '#A5B4FC' },
-  { label: 'Switched board?', icon: Target,          to: 'bridge',           color: '#A5B4FC' },
+  { label: 'Study Mode · Live', icon: Camera,        to: 'camera-live',      color: '#4FD8E8' },
   { label: 'Revision Reels',  icon: Layers,          to: 'reels',            color: '#A5B4FC' },
-  { label: 'Listen',          icon: Headphones,      to: 'listen',           color: '#A5B4FC' },
-  { label: 'Study Room',      icon: Users,           to: 'rooms',            color: '#A5B4FC' },
+  { label: 'Concept Tools',   icon: Lightbulb,       to: 'concept',          color: '#A5B4FC' },
+  { label: 'Switched board?', icon: Target,          to: 'bridge',           color: '#A5B4FC' },
   { label: 'Which stream?',   icon: Compass,         to: 'stream',           color: '#A5B4FC' },
-
-  { label: 'Focus Lock',      icon: Target,          to: 'focus',            color: '#A5B4FC' },
-  { label: 'Study Plan',      icon: Calendar,        to: 'study-plan',       color: '#A5B4FC' },
-  { label: 'Knowledge Graph', icon: Share2,          to: 'knowledge',        color: '#A5B4FC' },
-  { label: 'Formula Sheet',   icon: FunctionSquare,  to: 'formula',          color: '#A5B4FC' },
-  { label: 'Grader',          icon: FileText,        to: 'essay',            color: '#A5B4FC' },
-  { label: 'Teach Back',      icon: GraduationCap,   to: 'teach-back',       color: '#4FD8E8' },
-  { label: 'League',          icon: Trophy,          to: 'league',           color: '#FFB44A' },
-  { label: 'Topic Architect', icon: Brain,           to: 'topic-architect',  color: '#A5B4FC' },
-  { label: 'Writing Tools',   icon: Edit3,           to: 'writing',          color: '#A5B4FC' },
-
-  // ── beta: real screens, but not finished enough to present as done ───────
-  { label: 'Study Mode · Live', icon: Camera,        to: 'camera-live',      color: '#4FD8E8',
-    beta: 'Camera hang fixed; the live session flow still needs a pass' },
-  { label: 'Concept Map',     icon: Network,         to: 'concept-map',      color: '#A5B4FC',
-    beta: 'Canvas renders nothing — use Knowledge Graph' },
-  { label: 'Battle Mode',     icon: Swords,          to: 'battle',           color: '#A5B4FC',
-    beta: 'Daily challenge works; the leaderboard needs other players' },
-  { label: 'Revision Sim',    icon: Zap,             to: 'simulator',        color: '#A5B4FC',
-    beta: 'Exam mode is labelled untimed and has no timer' },
-  { label: 'Explain Mistake', icon: AlertTriangle,   to: 'explain-mistake',  color: '#A5B4FC',
-    beta: 'Explains at topic level, not per mistake; merging into Mistake Analysis' },
-  { label: 'Concept Tools',   icon: Lightbulb,       to: 'concept',          color: '#A5B4FC',
-    beta: 'Overlaps Writing Tools — being merged' },
-  { label: 'Pomodoro',        icon: Timer,           to: 'pomodoro',         color: '#A5B4FC',
-    beta: 'Duplicate of Focus Mode' },
-  // Was labelled "My Tasks" but routed to 'school', so tapping it opened
-  // School Hub saying "Not in a school yet". Named for where it actually goes.
-  { label: 'School Hub',      icon: BookOpen,        to: 'school',           color: '#A5B4FC',
-    beta: 'Only joinable from the login screen — unreachable for most students' },
+  { label: 'School Hub',      icon: BookOpen,        to: 'school',           color: '#A5B4FC' },
 ]
 
 const TEACHER_NAV: NavItem[] = [
@@ -698,14 +670,6 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
           )}
         </div>
 
-        {/* Seven-spaces redesign, pre-cutover: the laptop twin of the drawer's
-            dull "New design (preview)" row, so the new screens open here too
-            without a typed URL. Deleted in the cutover commit. */}
-        <button onClick={() => setActive('new')} title="New design (preview)" style={{
-          width: '100%', marginTop: 6, padding: expanded ? '8px 10px 2px' : '8px 0 2px', background: 'none', border: 'none',
-          borderTop: '1px solid #1E1E2C', color: '#5E5E78', fontFamily: 'inherit', fontSize: 12.5,
-          textAlign: expanded ? 'left' : 'center', cursor: 'pointer',
-        }}>{expanded ? 'New design (preview)' : 'New'}</button>
       </div>
     </motion.aside>
   )
