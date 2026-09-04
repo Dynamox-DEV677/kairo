@@ -67,3 +67,43 @@ test('the five states all reachable from real-shaped data', () => {
   assert.equal(st.get('phy.u6.ray-optics').state, 'UNTOUCHED')
   assert.ok(SOLID_BAR > 0.5)
 })
+
+/* ── the Class 10 graph (Plan space) ─────────────────────────────────────── */
+
+const cbse10 = JSON.parse(readFileSync(join(import.meta.dirname, '..', '..', 'src', 'data', 'syllabusGraph', 'cbse10.json'), 'utf-8'))
+const weightage = JSON.parse(readFileSync(join(import.meta.dirname, '..', '..', 'src', 'data', 'syllabus', 'weightage.cbse.json'), 'utf-8'))
+
+test('cbse10 loads with full integrity and covers both Class 10 papers', () => {
+  const g = loadGraph(cbse10)
+  assert.equal(g.chapters.length, 27)
+  assert.deepEqual(g.subjects.map(s => s.id).sort(), ['math', 'sci'])
+  for (const c of g.chapters) {
+    assert.ok(c.est_study_minutes >= 60 && c.est_study_minutes <= 400, `${c.id}: est ${c.est_study_minutes}`)
+    assert.ok(Array.isArray(c.topics) && c.topics.length >= 1, `${c.id}: needs topics for matching`)
+  }
+})
+
+test('cbse10 chapter names and marks stay in step with weightage.cbse.json', () => {
+  const g = loadGraph(cbse10)
+  const bySubject = { sci: '10.Science', math: '10.Mathematics' }
+  const sums = { sci: 0, math: 0 }
+  for (const c of g.chapters) {
+    const subj = g.byId.get(g.byId.get(c.parent).parent).id
+    const paper = weightage.chapters[bySubject[subj]]
+    assert.ok(paper[c.name], `"${c.name}" is not a weightage key -- the two files would drift`)
+    assert.equal(c.typical_marks, paper[c.name].marks, `${c.name}: marks differ from weightage`)
+    sums[subj] += c.typical_marks
+  }
+  assert.equal(sums.sci, 80)
+  assert.equal(sums.math, 80)
+})
+
+test('Class 10 activity matches through the Science subject, whatever the twin calls it', () => {
+  const g = loadGraph(cbse10)
+  // the twin files a physics doubt under subject "Physics"; class 10 has no
+  // 'phy' subject node, so the gate must relax rather than refuse
+  assert.equal(matchChapter(g, 'Physics', "ohm's law"), 'sci.phy.electricity')
+  assert.equal(matchChapter(g, 'Science', 'refraction'), 'sci.phy.light')
+  assert.equal(matchChapter(g, 'Mathematics', 'pythagoras theorem'), 'math.geometry.triangles')
+  assert.equal(matchChapter(g, 'Mathematics', 'photosynthesis'), null, 'a maths gate must still refuse a biology topic')
+})

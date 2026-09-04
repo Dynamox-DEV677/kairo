@@ -29,6 +29,8 @@ export const ROUTE_CATEGORY = {
   'aiChat': 'ai', 'concept': 'ai', 'council': 'ai', 'essay': 'ai',
   // mistake samples sent for a one-line diagnosis, cached per signature
   'performance': 'ai',
+  // a chapter's three-session split, reworded by the model; the standard split is the fallback
+  'plan': 'ai',
   'exam': 'ai', 'examPlanner': 'ai', 'flashcards': 'ai', 'formula': 'ai',
   'grading': 'ai', 'knowledge': 'ai', 'notebook': 'ai', 'quiz': 'ai',
   'study': 'ai', 'studyPlan': 'ai', 'topicArchitect': 'ai', 'writing': 'ai',

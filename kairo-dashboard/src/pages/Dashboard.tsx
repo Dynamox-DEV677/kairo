@@ -25,6 +25,7 @@ import KairoChat from './KairoChat'
 import DoubtSolving from './DoubtSolving'
 import Practice from './Practice'
 import Performance from './Performance'
+import Plan from './Plan'
 import { XPToast } from '../components/GameBar'
 import ErrorBoundary from '../components/ErrorBoundary'
 import EssayGrader from './EssayGrader'
@@ -95,6 +96,7 @@ const PAGE_TITLES: Record<string, string> = {
   'doubt-solving':  'Doubt Solving',
   'practice':       'Practice',
   'performance':    'Performance',
+  'plan':           'Plan',
   ops:              'Ops Dashboard',
   flashcards:       'Flashcards & SRS',
   'study-plan':     'Study Plan',
@@ -422,6 +424,21 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
                   onDrill={(filter) => {
                     // Practice listens and builds the session around these
                     // signatures/topics instead of its default target.
+                    navigate('practice')
+                    setTimeout(() => window.dispatchEvent(new CustomEvent('kyno:practice-filter', { detail: filter })), 60)
+                  }}
+                />
+              )}
+            </div>
+
+            <div className={pageClass} style={pageStyle('plan')}>
+              {mounted('plan') && (
+                <Plan
+                  onOpenDoubt={(seed: string) => {
+                    navigate('doubt-solving')
+                    setTimeout(() => window.dispatchEvent(new CustomEvent('kyno:doubt-seed', { detail: { seed } })), 60)
+                  }}
+                  onPractice={(filter) => {
                     navigate('practice')
                     setTimeout(() => window.dispatchEvent(new CustomEvent('kyno:practice-filter', { detail: filter })), 60)
                   }}

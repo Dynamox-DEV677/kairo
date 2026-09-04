@@ -62,6 +62,7 @@ const SUBJECT_ALIAS = {
   physics: 'phy', phy: 'phy',
   chemistry: 'chem', chem: 'chem',
   mathematics: 'math', maths: 'math', math: 'math',
+  science: 'sci', sci: 'sci',
 }
 
 /**
@@ -70,7 +71,11 @@ const SUBJECT_ALIAS = {
  * null. The brief's rule — leave unmapped rather than guess.
  */
 export function matchChapter(graph, subject, topic) {
-  const subjId = SUBJECT_ALIAS[norm(subject)]
+  // The alias is a gate only when THIS graph has that subject node. Class 10
+  // files "Physics" activity under one "Science" subject; gating on 'phy'
+  // there would refuse every match and leave the whole chapter UNTOUCHED.
+  const aliased = SUBJECT_ALIAS[norm(subject)]
+  const subjId = aliased && graph.subjects.some(sn => sn.id === aliased) ? aliased : null
   const t = norm(topic)
   if (!t) return null
 

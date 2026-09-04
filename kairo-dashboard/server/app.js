@@ -9,6 +9,7 @@ import cameraLiveRoutes from './routes/cameraLive.js'
 import documentRoutes from './routes/document.js'
 import practiceRoutes from './routes/practice.js'
 import performanceRoutes from './routes/performance.js'
+import planRoutes from './routes/plan.js'
 
 import opsRoutes from './routes/ops.js'
 import cronRoutes from './routes/cron.js'
@@ -134,6 +135,7 @@ app.use('/api/camera',         cameraLiveRoutes)
 app.use('/api/document',       documentRoutes)
 app.use('/api/practice',       practiceRoutes)
 app.use('/api/performance',    performanceRoutes)
+app.use('/api/plan',           planRoutes)
 app.use('/api/ops',            opsRoutes)
 app.use('/api/cron',           cronRoutes)
 app.use('/api/credentials',    credentialRoutes)
