@@ -1578,6 +1578,16 @@ export function recordMistake(args: {
   subject?: string
   detail?:  string
   difficulty?: number
+  /** Error taxonomy (Performance space). Optional: old callers still work,
+   *  and the classifier infers a type when none is given. */
+  errType?:   'conceptual' | 'formula' | 'calculation' | 'careless' | 'incomplete'
+  signature?: string
+  marksLost?: number
+  source?:    'quiz' | 'written' | 'mock' | 'flashcard' | 'doubt'
+  why?:       string
+  question?:  string
+  studentAnswer?: string
+  correctAnswer?: string
 }) {
   track({
     type: 'mistake',
@@ -1586,7 +1596,12 @@ export function recordMistake(args: {
     correct: false,
     score: 0,
     difficulty: args.difficulty ?? 0.5,
-    payload: { detail: args.detail || null, manual: true },
+    payload: {
+      detail: args.detail || null, manual: true,
+      errType: args.errType, signature: args.signature, marksLost: args.marksLost,
+      source: args.source, why: args.why,
+      q: args.question, studentAnswer: args.studentAnswer, correctAnswer: args.correctAnswer,
+    },
   })
 }
 

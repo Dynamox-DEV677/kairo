@@ -27,6 +27,8 @@ export const ROUTE_CATEGORY = {
 
   // things you type that a model reads
   'aiChat': 'ai', 'concept': 'ai', 'council': 'ai', 'essay': 'ai',
+  // mistake samples sent for a one-line diagnosis, cached per signature
+  'performance': 'ai',
   'exam': 'ai', 'examPlanner': 'ai', 'flashcards': 'ai', 'formula': 'ai',
   'grading': 'ai', 'knowledge': 'ai', 'notebook': 'ai', 'quiz': 'ai',
   'study': 'ai', 'studyPlan': 'ai', 'topicArchitect': 'ai', 'writing': 'ai',

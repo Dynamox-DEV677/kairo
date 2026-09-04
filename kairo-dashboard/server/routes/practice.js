@@ -69,7 +69,9 @@ Return ONLY valid JSON (no markdown, no prose):
       "marks": <marks available for this step, integer>,
       "awarded": <marks given, integer, 0 to marks>,
       "title": <4-8 words, e.g. "You skipped the formula line" or "Units carried through">,
-      "reason": <1-2 plain sentences for a student. If lost: what to write next time and WHY the board gives a mark for it. If earned: what they did that most students drop.>
+      "reason": <1-2 plain sentences for a student. If lost: what to write next time and WHY the board gives a mark for it. If earned: what they did that most students drop.>,
+      "signature": <ONLY for a lost step: a short kebab-case name for the SPECIFIC recurring habit. Use this vocabulary where it fits: "drops-half-in-suvat", "omits-units", "sign-flip", "formula-not-written", "wrong-formula-picked", "no-vector-resolution", "arithmetic-slip", "copy-error", "unit-conversion", "skipped-step", "ran-out-of-time". A new kebab-case name only if none fits. null for an earned step.>,
+      "habit": <ONLY for a lost step: ONE sentence naming the habit behind it, not the correction. null for an earned step.>
     }
   ]
 }
@@ -110,6 +112,10 @@ export function normaliseRubric(r, marks) {
         awarded: a,
         title:   String(s.title || (a === m ? 'Marks earned' : 'Mark lost')).slice(0, 80),
         reason:  String(s.reason || '').slice(0, 400),
+        // Only a LOST step carries a habit. An earned step with a signature
+        // would count as a mistake in Performance.
+        signature: a < m && s.signature ? String(s.signature).toLowerCase().replace(/[^a-z0-9-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 48) || null : null,
+        habit:     a < m && s.habit ? String(s.habit).slice(0, 240) : null,
       }
     })
   let awarded = steps.length

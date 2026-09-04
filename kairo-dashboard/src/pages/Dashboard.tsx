@@ -24,6 +24,7 @@ import KairoHome from './KairoHome'
 import KairoChat from './KairoChat'
 import DoubtSolving from './DoubtSolving'
 import Practice from './Practice'
+import Performance from './Performance'
 import { XPToast } from '../components/GameBar'
 import ErrorBoundary from '../components/ErrorBoundary'
 import EssayGrader from './EssayGrader'
@@ -93,6 +94,7 @@ const PAGE_TITLES: Record<string, string> = {
   // the redirects; until then nothing a student can click reaches it.
   'doubt-solving':  'Doubt Solving',
   'practice':       'Practice',
+  'performance':    'Performance',
   ops:              'Ops Dashboard',
   flashcards:       'Flashcards & SRS',
   'study-plan':     'Study Plan',
@@ -407,6 +409,23 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
                   navigate('doubt-solving')
                   setTimeout(() => window.dispatchEvent(new CustomEvent('kyno:doubt-seed', { detail: { seed } })), 60)
                 }} />
+              )}
+            </div>
+
+            <div className={pageClass} style={pageStyle('performance')}>
+              {mounted('performance') && (
+                <Performance
+                  onOpenDoubt={(seed: string) => {
+                    navigate('doubt-solving')
+                    setTimeout(() => window.dispatchEvent(new CustomEvent('kyno:doubt-seed', { detail: { seed } })), 60)
+                  }}
+                  onDrill={(filter) => {
+                    // Practice listens and builds the session around these
+                    // signatures/topics instead of its default target.
+                    navigate('practice')
+                    setTimeout(() => window.dispatchEvent(new CustomEvent('kyno:practice-filter', { detail: filter })), 60)
+                  }}
+                />
               )}
             </div>
 
