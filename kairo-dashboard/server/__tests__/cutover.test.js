@@ -47,12 +47,31 @@ test('every old route redirects to a space, and no redirect points at a dead end
     ['goal', 'plan'], ['study-plan', 'plan'], ['exam-planner', 'plan'], ['focus', 'plan'], ['pomodoro', 'plan'],
     ['notebook', 'notes'], ['formula', 'notes'], ['listen', 'notes'], ['writing', 'notes'],
     ['battle', 'progress'], ['league', 'progress'], ['knowledge', 'progress'], ['concept-map', 'progress'], ['rooms', 'progress'],
-    ['settings', 'profile'], ['camera', 'doubt-solving'], ['new', 'progress'],
+    ['camera', 'doubt-solving'], ['new', 'progress'],
   ]) assert.equal(resolveSpace(from), to, `#/${from} should land in ${to}`)
   // an id nobody redirected is left alone
-  for (const keep of ['home', 'kairo-os', 'camera-live', 'reels', 'concept', 'bridge', 'stream', 'school']) {
+  for (const keep of ['home', 'kairo-os', 'camera-live', 'reels', 'concept', 'bridge', 'stream', 'school', 'settings']) {
     assert.equal(resolveSpace(keep), keep, `${keep} belongs to no space and must keep its own route`)
     assert.ok(registered.has(keep), `${keep} is no longer a registered page`)
+  }
+})
+
+/**
+ * A redirect deletes a screen from the student's reach, so it may only point
+ * at a space that genuinely rebuilt what it absorbed. Settings is the case
+ * that failed this: Profile covers the username, the studies and the privacy
+ * switches, but NOT cloud backup, device transfer, the passcode, the privacy
+ * inventory, the telemetry switch, email change or developer mode. So
+ * settings keeps its route and Profile links to it.
+ */
+test('nothing a space did not rebuild is redirected away', () => {
+  assert.equal(SPACE_ALIASES.settings, undefined, 'Settings still holds screens Profile has not rebuilt')
+  const profile = read('src', 'pages', 'Profile.tsx')
+  assert.match(profile, /onOpenSettings/, 'Profile must offer a way into the rest of Settings')
+  assert.match(dashboard, /onOpenSettings=\{\(\) => navigate\('settings'\)\}/, 'and the Dashboard must wire it')
+  const settings = read('src', 'pages', 'Settings.tsx')
+  for (const kept of ['TwinBackupModal', 'DeviceTransferModal', 'ResetPasscode', 'activeFlows', 'setTelemetryEnabled', 'email-change']) {
+    assert.ok(settings.includes(kept), `Settings lost ${kept}, which nothing else provides`)
   }
 })
 

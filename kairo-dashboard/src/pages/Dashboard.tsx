@@ -523,7 +523,7 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
             <div className={pageClass} style={pageStyle('profile')}>
               {mounted('profile') && (
                 <SpaceFrame active="profile" onNavigate={navigate}>
-                  <Profile onLogout={onLogout} />
+                  <Profile onLogout={onLogout} onOpenSettings={() => navigate('settings')} />
                 </SpaceFrame>
               )}
             </div>
