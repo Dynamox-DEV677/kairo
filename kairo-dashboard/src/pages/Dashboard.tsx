@@ -26,6 +26,7 @@ import DoubtSolving from './DoubtSolving'
 import Practice from './Practice'
 import Performance from './Performance'
 import Plan from './Plan'
+import Notes from './Notes'
 import { XPToast } from '../components/GameBar'
 import ErrorBoundary from '../components/ErrorBoundary'
 import EssayGrader from './EssayGrader'
@@ -97,6 +98,7 @@ const PAGE_TITLES: Record<string, string> = {
   'practice':       'Practice',
   'performance':    'Performance',
   'plan':           'Plan',
+  'notes':          'Notes',
   ops:              'Ops Dashboard',
   flashcards:       'Flashcards & SRS',
   'study-plan':     'Study Plan',
@@ -434,6 +436,21 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
             <div className={pageClass} style={pageStyle('plan')}>
               {mounted('plan') && (
                 <Plan
+                  onOpenDoubt={(seed: string) => {
+                    navigate('doubt-solving')
+                    setTimeout(() => window.dispatchEvent(new CustomEvent('kyno:doubt-seed', { detail: { seed } })), 60)
+                  }}
+                  onPractice={(filter) => {
+                    navigate('practice')
+                    setTimeout(() => window.dispatchEvent(new CustomEvent('kyno:practice-filter', { detail: filter })), 60)
+                  }}
+                />
+              )}
+            </div>
+
+            <div className={pageClass} style={pageStyle('notes')}>
+              {mounted('notes') && (
+                <Notes
                   onOpenDoubt={(seed: string) => {
                     navigate('doubt-solving')
                     setTimeout(() => window.dispatchEvent(new CustomEvent('kyno:doubt-seed', { detail: { seed } })), 60)

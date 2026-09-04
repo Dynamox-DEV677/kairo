@@ -26,7 +26,10 @@ import {
 } from 'lucide-react'
 import { aiHeadersAsync } from '../lib/devKey'
 import { studentMessage } from '../lib/aiError.core'
-import { getStudentMemory, getMistakes, listDoubts, recordDoubt } from '../lib/twin'
+import { getStudentMemory, getMistakes, listDoubts, recordDoubt, recordFlashcard } from '../lib/twin'
+import { saveToNotebook } from '../lib/notebook'
+import { cardsForNote, attachCards } from '../lib/notes.core'
+import { getJSON, setJSON } from '../lib/storage'
 import {
   splitSteps, contextLabel, weaknessSuggestion, recentDoubtCards, ownMistakeLine,
 } from '../lib/doubt.core'
@@ -593,8 +596,27 @@ export default function DoubtSolving({
 
   /* ── saving ── */
 
+  /**
+   * "Saved to your notes" has to be true. This used to build the sheet and
+   * persist nothing. Now: the answer becomes a note in the library with its
+   * provenance, cloze cards are made from it and filed in the scheduler, and
+   * the note remembers which cards are its own -- so it can say when it comes
+   * back. Nothing is stored without a return date.
+   */
   function save() {
-    const fronts = steps.slice(0, 2).map(s => s.title).filter(Boolean)
+    const body = steps.map((s, i) => `## ${i + 1}. ${s.title}\n${s.working ? s.working + '\n' : ''}${s.why || ''}`).join('\n\n')
+    const cards = cardsForNote(question, body, { max: 3 })
+    let fronts: string[] = cards.map(c => c.front)
+    ;(async () => {
+      try {
+        const { id } = await saveToNotebook({ kind: 'doubt', title: question.slice(0, 120), content: body, subject: subject || null, tags: topic ? [topic] : [], source: 'doubt-solving' })
+        const ids: string[] = []
+        for (const c of cards) {
+          try { ids.push(recordFlashcard({ front: c.front, back: c.back, subject: subject || undefined, topic: topic || undefined, source: 'auto-from-note' }).id) } catch { /* nicety */ }
+        }
+        try { setJSON('kyno:notes:cards', attachCards(getJSON('kyno:notes:cards') || {}, id, ids)) } catch { /* storage blocked */ }
+      } catch { /* saving is local-first; a failure here must not block the sheet */ }
+    })()
     setSaved({
       flashcards: fronts,
       mistakeNote: ownMistakeLine(topic, mistakes),

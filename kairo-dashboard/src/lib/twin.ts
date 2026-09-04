@@ -133,7 +133,7 @@ export interface Flashcard {
   reviews:   number
   ease:      number
   dueAt:     number
-  source:    'manual' | 'auto-from-doubt' | 'auto-from-mistake' | 'starter'
+  source:    'manual' | 'auto-from-doubt' | 'auto-from-mistake' | 'starter' | 'auto-from-note'
   /** FSRS memory state (retention+coverage brief part B). Absent on cards
    *  never reviewed under FSRS; first review initialises it. */
   fsrs?: { stability: number; difficulty: number; reps: number; lapses: number }

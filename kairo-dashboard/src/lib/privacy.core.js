@@ -31,6 +31,8 @@ export const ROUTE_CATEGORY = {
   'performance': 'ai',
   // a chapter's three-session split, reworded by the model; the standard split is the fallback
   'plan': 'ai',
+  // a long-answer marking scheme: points and keywords, never prose
+  'notesScheme': 'ai',
   'exam': 'ai', 'examPlanner': 'ai', 'flashcards': 'ai', 'formula': 'ai',
   'grading': 'ai', 'knowledge': 'ai', 'notebook': 'ai', 'quiz': 'ai',
   'study': 'ai', 'studyPlan': 'ai', 'topicArchitect': 'ai', 'writing': 'ai',
