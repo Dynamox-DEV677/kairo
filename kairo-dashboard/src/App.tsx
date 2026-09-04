@@ -6,6 +6,8 @@ const Dashboard = lazy(() => import('./pages/Dashboard'))
 import Login, { type AuthProfile } from './pages/Login'
 import { GenerationProvider } from './lib/generationContext'
 import { supabase } from './lib/supabase'
+import { tracked } from './lib/dbError'
+import SyncIndicator from './components/SyncIndicator'
 import { refreshIfStale } from './lib/api'
 import { peekCloudSnapshot, applyCloudSnapshot, hasLocalTwinData, reconcileWithCloud, pauseSyncUntil, getSyncEnabled, isOnboarded, type CloudPeek } from './lib/twin'
 import Onboarding from './pages/Onboarding'
@@ -146,11 +148,16 @@ export default function App() {
         const { data: { session } } = await supabase.auth.getSession()
 
         if (session) {
-          let { data: userRow } = await supabase
+          // Both of these used to fail silently. When an RLS policy on users
+          // started recursing, the select 500'd, the app concluded the row was
+          // missing, the upsert 500'd for the same reason, and an empty catch
+          // hid both. Every outcome is reported now.
+          const { data: fetched } = await tracked('users', 'select', () => supabase
             .from('users')
             .select('id, name, role, school_id, avatar_url')
             .eq('id', session.user.id)
-            .maybeSingle()
+            .maybeSingle())
+          let userRow = fetched
 
           if (!userRow) {
             const meta: any = session.user.user_metadata || {}
@@ -163,7 +170,13 @@ export default function App() {
               school_id:  null as any,
               avatar_url: meta.avatar_url || meta.picture || null,
             }
-            try { await supabase.from('users').upsert(newRow, { onConflict: 'id', ignoreDuplicates: true }) } catch {  }
+            await tracked('users', 'upsert', () => supabase
+              .from('users')
+              .upsert(newRow, { onConflict: 'id', ignoreDuplicates: true })
+              .select('id, name, role, school_id, avatar_url')
+              .maybeSingle())
+            // The app still runs on the local row when the write fails; the
+            // difference is that the indicator now says it is not synced.
             userRow = newRow as any
           }
 
@@ -333,6 +346,8 @@ export default function App() {
       <Suspense fallback={<SplashScreen />}>
         <Dashboard profile={profile} onLogout={handleLogout} />
       </Suspense>
+      {/* Silent while everything works; says so plainly when it does not. */}
+      <SyncIndicator />
       {onboard === 'open' && (
         <Onboarding
           profile={profile}
