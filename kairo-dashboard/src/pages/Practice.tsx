@@ -41,7 +41,7 @@ import { cleanOption } from '../lib/museum.core'
 import { scorePaper, paletteStates, clockLabel } from '../lib/exam.core'
 import type { ExamQuestion } from '../lib/exam.core'
 import {
-  buildSession, rebuildWithout, clock, intervalLabel, lastMissLine,
+  buildSession, rebuildWithout, trimQuestions, clock, intervalLabel, lastMissLine,
   movementRows, resultsHeadline, xpFor, flatTopicNudge, BUDGETS,
 } from '../lib/practice.core'
 import type { SessionPlan, SessionItem, MovementRow } from '../lib/practice.core'
@@ -793,6 +793,18 @@ export default function Practice({ onOpenDoubt }: { onOpenDoubt?: (seed: string)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [view, items, idx])
 
+  // A question item with nothing behind it, once loading is over, is skipped
+  // rather than spun on. trimQuestions() above should make this unreachable;
+  // this is the net under it.
+  useEffect(() => {
+    if (view !== 'session' || qLoading) return
+    const it = items[idx]
+    if (it?.kind !== 'question') return
+    const qi = items.slice(0, idx).filter(x => x.kind === 'question').length
+    if (!questions[qi]) setItems(cur => rebuildWithout(cur, 'question', idx))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [view, qLoading, items, idx, questions])
+
   /* ── start ── */
   function start(p: SessionPlan) {
     setPlan(p); setItems(p.items); setIdx(0); setStartedAt(Date.now()); setNow(Date.now())
@@ -821,7 +833,8 @@ export default function Practice({ onOpenDoubt }: { onOpenDoubt?: (seed: string)
         if (opts.length >= 2 && ci >= 0) qs.push({ q: raw.question, options: opts, correctIndex: ci, explanation: raw.explanation || null, subject, topic: raw.topic || topic || null, difficulty: raw.difficulty || 'medium' })
       }
       setQuestions(qs)
-      if (!qs.length) setItems(it => rebuildWithout(it, 'question', idx))
+      // Fewer than planned is the common case, not the error case.
+      setItems(it => trimQuestions(it, qs.length))
     } catch (e: any) {
       // Questions unavailable: drop the format, keep the session. The student
       // sees a shorter session, not an error.

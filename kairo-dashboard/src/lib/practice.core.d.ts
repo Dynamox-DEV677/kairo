@@ -47,6 +47,7 @@ export function buildSession(opts?: {
   disabled?: ItemKind[] | Array<'questions' | 'written' | 'teach'>
 }): SessionPlan
 export function previewRows(counts: SessionPlan['counts'], target: Target | null): PreviewRow[]
+export function trimQuestions(items: SessionItem[], available: number): SessionItem[]
 export function rebuildWithout(items: SessionItem[], kind: ItemKind, fromIndex?: number): SessionItem[]
 
 export function clock(ms: number): string
