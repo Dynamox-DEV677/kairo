@@ -38,10 +38,14 @@ export const SPACE_ALIASES = {
   // Practice — flashcards, quizzes, mocks, written grading, teach-back
   flashcards: 'practice',
   quiz: 'practice',
+  adaptive: 'practice',
+  'adaptive-quiz': 'practice',
   'exam-hall': 'practice',
+  mock: 'practice',
   simulator: 'practice',
   'teach-back': 'practice',
   essay: 'practice',
+  grader: 'practice',
 
   // Performance — the repeating mistakes
   mistakes: 'performance',
@@ -55,6 +59,9 @@ export const SPACE_ALIASES = {
   'topic-architect': 'plan',
   focus: 'plan',
   pomodoro: 'plan',
+  planner: 'plan',
+  timetable: 'plan',
+  tasks: 'plan',
 
   // Notes — one library
   notebook: 'notes',
@@ -67,7 +74,9 @@ export const SPACE_ALIASES = {
   league: 'progress',
   knowledge: 'progress',
   'concept-map': 'progress',
+  'knowledge-graph': 'progress',
   rooms: 'progress',
+  'study-room': 'progress',
 
   // NOT redirected: 'settings'. Profile is the front door and the drawer
   // points there, but the old Settings screen still holds what Profile does

@@ -215,7 +215,8 @@ export default function Settings() {
     if (stored.id && !stored.localMode) {
       try {
         const { supabase } = await import('../lib/supabase')
-        await supabase.from('users').update({ name }).eq('id', stored.id)
+        const { tracked } = await import('../lib/dbError')
+        await tracked('users', 'update', () => supabase.from('users').update({ name }).eq('id', stored.id).select('id').maybeSingle())
       } catch {  }
     }
     setSaved(true)

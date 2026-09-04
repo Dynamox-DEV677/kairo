@@ -8,6 +8,7 @@ import {
 } from 'lucide-react'
 import { post } from '../lib/api'
 import { supabase, supabaseReady } from '../lib/supabase'
+import { tracked } from '../lib/dbError'
 import { TermsAcceptLine } from '../components/Terms'
 import { Capacitor } from '@capacitor/core'
 import { App as CapApp } from '@capacitor/app'
@@ -353,14 +354,12 @@ function SignIn({ onLogin, onBack }: any) {
         const fallbackName = (data.user.user_metadata as any)?.name
           || data.user.email?.split('@')[0]
           || 'Kyno Student'
-        try {
-          await supabase.from('users').upsert({
-            id:        data.user.id,
-            name:      fallbackName,
-            role:      'student',
-            school_id: null,
-          })
-        } catch {  }
+        await tracked('users', 'upsert', () => supabase.from('users').upsert({
+          id:        data.user.id,
+          name:      fallbackName,
+          role:      'student',
+          school_id: null,
+        }).select('id').maybeSingle())
         userRow = { id: data.user.id, name: fallbackName, role: 'student', school_id: null, avatar_url: null } as any
       }
 

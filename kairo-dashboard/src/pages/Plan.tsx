@@ -23,6 +23,7 @@ import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { ChevronRight, ArrowLeft, Check, Play, Pause, SkipForward, Pencil, AlertTriangle, Calendar, BookOpen, Layers, PenLine } from 'lucide-react'
 import { T, FONT, MONO, ICON, CALLOUT } from '../lib/spaceTokens'
 import { useSpaceLayout } from '../components/SpaceFrame'
+import { keepPageMounted } from '../lib/keepMounted'
 import { awardXP, awardMasteryCrossings } from '../lib/game'
 import { post } from '../lib/api'
 import { loadState, getDashboard, getProfile, track } from '../lib/twin'
@@ -231,6 +232,8 @@ export default function Plan({ onOpenDoubt, onPractice }: {
 
   // A chapter crossing 70% is credited once, here, where the states are freshly computed.
   useEffect(() => { try { awardMasteryCrossings(model.states) } catch { /* nicety */ } }, [model])
+  // A running focus timer must not be unmounted out from under the student.
+  useEffect(() => (view.name === 'focus' ? keepPageMounted('plan') : undefined), [view.name])
 
   const shell: Style = { position: 'absolute', inset: 0, background: T.bg, color: T.text, fontFamily: FONT, display: 'flex', flexDirection: 'column', overflow: 'hidden' }
   const scroll: Style = { flex: 1, overflowY: 'auto', padding: '18px 14px 24px' }

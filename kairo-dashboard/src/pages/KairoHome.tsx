@@ -293,7 +293,8 @@ export default function KairoHome({ onNavigate }: Props) {
                 const p = JSON.parse(storedProfileRaw() || '{}')
                 if (p.id && !p.localMode) {
                   const { supabase } = await import('../lib/supabase')
-                  await supabase.from('users').update({ name: e.target.value }).eq('id', p.id)
+                  const { tracked } = await import('../lib/dbError')
+                  await tracked('users', 'update', () => supabase.from('users').update({ name: e.target.value }).eq('id', p.id).select('id').maybeSingle())
                 }
               } catch {}
             }} /></div>
