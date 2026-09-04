@@ -69,6 +69,13 @@ test('the PWA shell is dark and named Kyno', () => {
   const sizes = new Set(manifest.icons.map(i => i.sizes))
   assert.ok(sizes.has('192x192') && sizes.has('512x512'))
   assert.match(read('index.html'), /<meta name="theme-color" content="#0B0B14"/)
+  // On Vercel ENABLE_PWA=true, so VitePWA GENERATES the manifest from
+  // vite.config.ts and overrides public/manifest.webmanifest. Both sources
+  // must agree, or the installed app and the status bar disagree.
+  const vite = read('vite.config.ts')
+  assert.match(vite, /name:\s*'Kyno',/, 'generated manifest name')
+  assert.match(vite, /theme_color:\s*'#0B0B14'/, 'generated manifest theme colour')
+  assert.match(vite, /background_color:\s*'#0B0B14'/, 'generated manifest background colour')
   const sw = read('public', 'kyno-sw.js')
   assert.match(sw, /manifest\.webmanifest/, 'the one service worker also caches the manifest and icons')
   assert.equal(read('src', 'lib', 'pwa.ts').split('serviceWorker.register(').length - 1, 1, 'still exactly one registration')
