@@ -31,8 +31,10 @@ import { aiHeadersAsync } from '../lib/devKey'
 import { post } from '../lib/api'
 import { studentMessage } from '../lib/aiError.core'
 import {
-  loadState, listFlashcards, reviewFlashcard, getMistakes, getProfile, track,
+  loadState, listFlashcards, reviewFlashcard, getMistakes, getProfile, track, recordFlashcard,
 } from '../lib/twin'
+import { saveToNotebook } from '../lib/notebook'
+import { cardsForNote, attachCards } from '../lib/notes.core'
 import { nearestExamDays } from '../lib/examDate'
 import { nextInterval as fsrsNextInterval } from '../lib/fsrs.core'
 import { awardXPAmount } from '../lib/game'
@@ -469,7 +471,7 @@ function WrittenFormat({ question, marks, onDone }: {
 
 interface TeachResult { score: number; verdict: string; gotRight: string[]; missed: Array<{ point: string; reasoning: string }> }
 
-function TeachFormat({ question, onDone }: { question: string; onDone: (r: TeachResult | null) => void }) {
+function TeachFormat({ question, onDone }: { question: string; onDone: (r: TeachResult | null, said?: string) => void }) {
   const [said, setSaid] = useState('')
   const [listening, setListening] = useState(false)
   const [result, setResult] = useState<TeachResult | null>(null)
@@ -576,7 +578,7 @@ function TeachFormat({ question, onDone }: { question: string; onDone: (r: Teach
           }}><Mic size={24} color="#fff" {...ICON} /></button>
         )}
         {result
-          ? <Primary onClick={() => onDone(result)}>Next <ChevronRight size={18} {...ICON} /></Primary>
+          ? <Primary onClick={() => onDone(result, said)}>Next <ChevronRight size={18} {...ICON} /></Primary>
           : said.trim()
             ? <Primary onClick={grade} disabled={busy}>{busy ? <Loader2 size={18} {...ICON} /> : null} Good enough, grade it</Primary>
             : <Secondary onClick={() => onDone(null)} style={{ flex: 1, height: 54 }}>Skip this one</Secondary>}
@@ -764,11 +766,11 @@ export default function Practice({ onOpenDoubt }: { onOpenDoubt?: (seed: string)
   const [mockSubject, setMockSubject] = useState('Science')
   const [tick, setTick] = useState(0)
   /** From Performance: drill these signatures/topics instead of the default target. */
-  const [filter, setFilter] = useState<{ signatures?: string[]; topics?: string[] } | null>(null)
+  const [filter, setFilter] = useState<{ signatures?: string[]; topics?: string[]; cardIds?: string[] } | null>(null)
   useEffect(() => {
     const on = (e: Event) => {
       const f = (e as CustomEvent)?.detail
-      if (f && (f.signatures?.length || f.topics?.length)) { setFilter(f); setView('home') }
+      if (f && (f.signatures?.length || f.topics?.length || f.cardIds?.length)) { setFilter(f); setView('home') }
     }
     window.addEventListener('kyno:practice-filter', on)
     return () => window.removeEventListener('kyno:practice-filter', on)
@@ -787,7 +789,15 @@ export default function Practice({ onOpenDoubt }: { onOpenDoubt?: (seed: string)
     const hit = mistakes.filter(m => want.has(String(m.topic).toLowerCase()))
     return hit.length ? hit : mistakes
   }, [mistakes, filter])
-  const preview = useMemo(() => buildSession({ minutes, cards, mistakes: targetedMistakes, mastery }), [minutes, cards, targetedMistakes, mastery])
+  // "Review" from Notes hands over exactly the cards that are due from saved
+  // notes; the session is built from those and nothing else.
+  const targetedCards = useMemo(() => {
+    if (!filter?.cardIds?.length) return cards
+    const want = new Set(filter.cardIds)
+    const hit = cards.filter(c => want.has(c.id))
+    return hit.length ? hit : cards
+  }, [cards, filter])
+  const preview = useMemo(() => buildSession({ minutes, cards: targetedCards, mistakes: targetedMistakes, mastery }), [minutes, targetedCards, targetedMistakes, mastery])
 
   const exam = useMemo(() => {
     const days = nearestExamDays()
@@ -950,7 +960,7 @@ export default function Practice({ onOpenDoubt }: { onOpenDoubt?: (seed: string)
                   border: `1px solid ${T.accent}`, color: T.accentPale, fontSize: 12.5, fontWeight: 600, fontFamily: FONT,
                   cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 8,
                 }}>
-                  Drilling: {(filter.topics || filter.signatures || []).slice(0, 2).join(', ')} <X size={14} {...ICON} />
+                  {filter.cardIds?.length ? `Reviewing ${filter.cardIds.length} cards from your notes` : `Drilling: ${(filter.topics || filter.signatures || []).slice(0, 2).join(', ')}`} <X size={14} {...ICON} />
                 </button>
               )}
 
@@ -1128,8 +1138,27 @@ export default function Practice({ onOpenDoubt }: { onOpenDoubt?: (seed: string)
       {item.kind === 'teach' && (
         <TeachFormat
           question={item.topic ? `Why does ${item.topic} work the way it does?` : 'Explain the last thing you learned, as if to a friend.'}
-          onDone={r => {
-            if (r) { setStats(s => ({ ...s, teach: s.teach + 1 })); if (item.topic) setTouched(t => [...t, item.topic!]); advance() }
+          onDone={(r, said) => {
+            if (r) {
+              setStats(s => ({ ...s, teach: s.teach + 1 })); if (item.topic) setTouched(t => [...t, item.topic!])
+              // A teach-back is the best note a student writes all week: their
+              // own words, plus what they missed. It goes to the library with
+              // its provenance and comes back as cards.
+              if (said && said.trim()) {
+                const content = `**You said:** ${said.trim()}\n\n${r.gotRight.map(g => `- ${g}`).join('\n')}${r.missed.length ? `\n\n**What was missing**\n${r.missed.map(m => `- ${m.point}: ${m.reasoning}`).join('\n')}` : ''}`
+                ;(async () => {
+                  try {
+                    const { id } = await saveToNotebook({ kind: 'note', title: `Teach-back · ${item.topic || 'a topic'}`, content, subject: item.subject || null, tags: item.topic ? [item.topic] : [], source: 'teach-back' })
+                    const ids: string[] = []
+                    for (const c of cardsForNote(item.topic || 'Teach-back', content, { max: 2 })) {
+                      try { ids.push(recordFlashcard({ front: c.front, back: c.back, subject: item.subject || undefined, topic: item.topic || undefined, source: 'auto-from-note' }).id) } catch { /* nicety */ }
+                    }
+                    try { setJSON('kyno:notes:cards', attachCards(getJSON('kyno:notes:cards') || {}, id, ids)) } catch { /* storage blocked */ }
+                  } catch { /* the session continues regardless */ }
+                })()
+              }
+              advance()
+            }
             else { setItems(it => rebuildWithout(it, 'teach', idx)) }   // the effect above ends the session if nothing is left
           }}
         />

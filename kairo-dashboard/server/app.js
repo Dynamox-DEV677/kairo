@@ -10,6 +10,7 @@ import documentRoutes from './routes/document.js'
 import practiceRoutes from './routes/practice.js'
 import performanceRoutes from './routes/performance.js'
 import planRoutes from './routes/plan.js'
+import notesSchemeRoutes from './routes/notesScheme.js'
 
 import opsRoutes from './routes/ops.js'
 import cronRoutes from './routes/cron.js'
@@ -136,6 +137,7 @@ app.use('/api/document',       documentRoutes)
 app.use('/api/practice',       practiceRoutes)
 app.use('/api/performance',    performanceRoutes)
 app.use('/api/plan',           planRoutes)
+app.use('/api/notes-scheme',   notesSchemeRoutes)
 app.use('/api/ops',            opsRoutes)
 app.use('/api/cron',           cronRoutes)
 app.use('/api/credentials',    credentialRoutes)
