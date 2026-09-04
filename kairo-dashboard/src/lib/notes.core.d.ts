@@ -17,10 +17,10 @@ export function dueSummary(flashcards?: unknown[], index?: CardIndex, now?: numb
 
 export const TRIGGERS: string[]
 export function boldTriggers(text: string): Array<{ text: string; bold: boolean }>
-export function splitBody(content: string): Array<{ kind: 'prose' | 'eq'; text: string }>
+export function splitBody(content: string): Array<{ kind: 'prose' | 'eq' | 'heading'; text: string }>
 
 export interface SheetFormula { id: string; chapter: string; chapterName: string; name: string; expr: string; when: string; signatures: string[] }
-export function formulaFlags(formulas?: SheetFormula[], records?: Array<{ signature?: string; marksLost?: number }>): Map<string, { signature: string; marks: number; count: number; line: string }>
+export function formulaFlags(formulas?: SheetFormula[], records?: Array<{ signature?: string | null; marksLost?: number | null; chapter?: string | null }>): Map<string, { signature: string; marks: number; count: number; line: string }>
 export function chapterChips(formulas?: SheetFormula[]): Array<{ name: string; count: number }>
 
 export interface Clip { id: string; kind: string; subject: string; topic: string | null; front: string; back: string; due: boolean; ts: number; why: string; type: string; weakRank: number }
