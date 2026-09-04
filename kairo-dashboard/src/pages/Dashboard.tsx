@@ -23,6 +23,7 @@ import TopicArchitect from './TopicArchitect'
 import KairoHome from './KairoHome'
 import KairoChat from './KairoChat'
 import DoubtSolving from './DoubtSolving'
+import Practice from './Practice'
 import { XPToast } from '../components/GameBar'
 import ErrorBoundary from '../components/ErrorBoundary'
 import EssayGrader from './EssayGrader'
@@ -91,6 +92,7 @@ const PAGE_TITLES: Record<string, string> = {
   // old screens on purpose. The cutover commit renames this to 'doubt' and adds
   // the redirects; until then nothing a student can click reaches it.
   'doubt-solving':  'Doubt Solving',
+  'practice':       'Practice',
   ops:              'Ops Dashboard',
   flashcards:       'Flashcards & SRS',
   'study-plan':     'Study Plan',
@@ -206,10 +208,20 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
   const [selectedModel, setSelectedModel] = useState(DEFAULT_MODEL)
   const [solverActive, setSolverActive] = useState(false)
 
-  useEffect(() => {
-    (window as any).__kairoSetActive = setActive
-    return () => { delete (window as any).__kairoSetActive }
+  // A mock is only worth anything because no help exists. While one is
+  // running, the solver and Doubt Solving are unreachable -- not hidden,
+  // unreachable -- from the drawer, from Home cards, from deep links, from
+  // every setActive() in the app. One navigate() for all of them.
+  const navigate = useCallback((id: string) => {
+    const HELP = new Set(['doubt', 'doubt-solving', 'solver-classic', 'camera', 'camera-study'])
+    if ((window as any).__kynoExamLock && HELP.has(id)) return
+    setActive(id)
   }, [])
+
+  useEffect(() => {
+    (window as any).__kairoSetActive = navigate
+    return () => { delete (window as any).__kairoSetActive }
+  }, [navigate])
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', 'dark')
@@ -288,7 +300,7 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
       {!isMobile && (
         <Sidebar
           active={active}
-          setActive={setActive}
+          setActive={navigate}
           isDark={isDark}
           toggleTheme={() => setIsDark(d => !d)}
           profile={profile}
@@ -300,7 +312,7 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
         {isMobile ? (
           <MobileShell
             active={active}
-            setActive={setActive}
+            setActive={navigate}
             pageTitle={PAGE_TITLES[active] || 'Dashboard'}
             isDark={isDark}
             toggleTheme={() => setIsDark(d => !d)}
@@ -386,6 +398,15 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
                     }, 60)
                   }}
                 />
+              )}
+            </div>
+
+            <div className={pageClass} style={pageStyle('practice')}>
+              {mounted('practice') && (
+                <Practice onOpenDoubt={(seed: string) => {
+                  navigate('doubt-solving')
+                  setTimeout(() => window.dispatchEvent(new CustomEvent('kyno:doubt-seed', { detail: { seed } })), 60)
+                }} />
               )}
             </div>
 

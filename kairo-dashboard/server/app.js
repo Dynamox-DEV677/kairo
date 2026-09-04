@@ -7,6 +7,7 @@ import aiChatRoutes from './routes/aiChat.js'
 import ttsRoutes from './routes/tts.js'
 import cameraLiveRoutes from './routes/cameraLive.js'
 import documentRoutes from './routes/document.js'
+import practiceRoutes from './routes/practice.js'
 
 import opsRoutes from './routes/ops.js'
 import cronRoutes from './routes/cron.js'
@@ -130,6 +131,7 @@ app.use('/api/ai',             aiChatRoutes)
 app.use('/api/tts',            ttsRoutes)
 app.use('/api/camera',         cameraLiveRoutes)
 app.use('/api/document',       documentRoutes)
+app.use('/api/practice',       practiceRoutes)
 app.use('/api/ops',            opsRoutes)
 app.use('/api/cron',           cronRoutes)
 app.use('/api/credentials',    credentialRoutes)

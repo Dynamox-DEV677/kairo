@@ -65,6 +65,9 @@ test('every page calling a gated AI route imports aiHeadersAsync', () => {
     const hit = GATED.find(r => src.includes(`'${r}`) || src.includes(`"${r}`) || src.includes(`\`${r}`))
     if (!hit) continue
     if (path.endsWith('devKey.ts')) continue        // defines the helper
+    // *-preview.tsx are dev harnesses that STUB fetch for these routes; they
+    // never send a request, so they never need a token.
+    if (/-preview\.tsx$/.test(path)) continue
     if (!src.includes('aiHeadersAsync')) {
       offenders.push(`${path}  (fetches ${hit} with no session token)`)
     }
