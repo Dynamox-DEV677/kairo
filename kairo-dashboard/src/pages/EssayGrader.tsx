@@ -7,6 +7,7 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
+import { KATEX_OPTS } from '../lib/katex'
 import { chat } from '../lib/openrouter'
 import { prepMathMarkdown } from '../lib/math.core'
 import { authToken } from '../lib/storage'
@@ -166,7 +167,7 @@ export default function EssayGrader() {
                 <span style={{ fontSize: 13, color: '#6B7280' }}>Grading…</span>
               </div>
             ) : (
-              <div className="prose-ai"><ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>{prepMathMarkdown(feedback)}</ReactMarkdown></div>
+              <div className="prose-ai"><ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[[rehypeKatex, KATEX_OPTS]]}>{prepMathMarkdown(feedback)}</ReactMarkdown></div>
             )}
           </motion.div>
         )}

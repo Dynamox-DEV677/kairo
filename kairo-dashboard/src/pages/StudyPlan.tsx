@@ -9,6 +9,7 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
+import { KATEX_OPTS } from '../lib/katex'
 import { chat } from '../lib/openrouter'
 import { prepMathMarkdown } from '../lib/math.core'
 import { authToken } from '../lib/storage'
@@ -343,7 +344,7 @@ Generate the JSON schedule and markdown plan as instructed.`
             <div className="prose-ai" style={{
               fontSize: 13.5, color: '#e4e4e7', lineHeight: 1.7,
             }}>
-              <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>{prepMathMarkdown(plan.markdown)}</ReactMarkdown>
+              <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[[rehypeKatex, KATEX_OPTS]]}>{prepMathMarkdown(plan.markdown)}</ReactMarkdown>
             </div>
 
             <div style={{ display: 'flex', gap: 8, marginTop: 18 }}>

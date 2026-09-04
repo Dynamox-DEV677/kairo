@@ -199,7 +199,13 @@ function FlashcardFormat({ card, missLine, onGrade, onAsk }: {
           <Bookmark size={17} color={T.faint} {...ICON} />
         </div>
 
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '18px 18px', overflowY: 'auto' }}>
+        {/* justify-content:center on a scrolling flex box clips the TOP of any
+            content taller than the box, and the clipped part cannot be
+            scrolled to -- which is why a two-line question lost its first
+            line. Auto margins centre it when it fits and let it scroll from
+            the top when it does not. */}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '18px 18px', overflowY: 'auto' }}>
+        <div style={{ margin: 'auto 0', width: '100%' }}>
           <div style={{ fontSize: 21, fontWeight: 600, color: T.text, lineHeight: 1.4, textAlign: 'center' }}>{card?.front}</div>
           {flipped && (
             <>
@@ -209,6 +215,7 @@ function FlashcardFormat({ card, missLine, onGrade, onAsk }: {
             </>
           )}
           {!flipped && <div style={{ fontSize: 12, color: T.faint, textAlign: 'center', marginTop: 18 }}>Tap to reveal</div>}
+        </div>
         </div>
 
         {missLine && (

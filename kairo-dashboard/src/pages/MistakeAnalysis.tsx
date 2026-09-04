@@ -6,6 +6,7 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
+import { KATEX_OPTS } from '../lib/katex'
 import { getMistakes, recordMistake, getDashboard, type MistakeRow } from '../lib/twin'
 import { chat } from '../lib/openrouter'
 import { classifyMistakes, type MistakeCategory } from '../lib/mistakes.core'
@@ -387,7 +388,7 @@ function AiResultModal({ title, body, loading, onClose }: {
           </div>
         ) : (
           <div className="prose-ai" style={{ fontSize: 14, color: C.textDim, lineHeight: 1.7 }}>
-            <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>{prepMathMarkdown(body)}</ReactMarkdown>
+            <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[[rehypeKatex, KATEX_OPTS]]}>{prepMathMarkdown(body)}</ReactMarkdown>
           </div>
         )}
       </motion.div>

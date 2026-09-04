@@ -39,11 +39,13 @@ test('every category a route uses is explained to the student', () => {
     'routes send data in categories the privacy table never mentions: ' + unexplained.join(', '))
 })
 
-test('Settings does not make the absolute claim any more', () => {
-  const src = readFileSync(join(import.meta.dirname, '..', '..', 'src', 'pages', 'Settings.tsx'), 'utf-8')
+test('the privacy screen does not make the absolute claim any more', () => {
+  // The privacy inventory moved from Settings into Profile when the two
+  // screens merged; Settings.tsx no longer exists.
+  const src = readFileSync(join(import.meta.dirname, '..', '..', 'src', 'pages', 'Profile.tsx'), 'utf-8')
   for (const lie of ['Nothing is sent to our servers', 'All your data is stored locally']) {
     assert.equal(src.includes(lie), false,
-      `Settings.tsx still claims "${lie}", which is false for any signed-in student. ` +
+      `Profile.tsx still claims "${lie}", which is false for any signed-in student. ` +
       'Render privacyHeadline()/activeFlows() from src/lib/privacy.core.js instead.')
   }
 })
@@ -107,7 +109,7 @@ test('ops is never shown — it carries nothing about the student', () => {
 
 test('only flows a student can genuinely switch off are marked optional', () => {
   // If this list grows, a real switch has to exist for the new entry:
-  // telemetry's is in Settings, the three social switches are on Profile.
+  // all four switches now live on Profile.
   assert.deepEqual(DATA_FLOWS.filter(f => f.optional).map(f => f.id), ['telemetry', 'social'])
   const profile = readFileSync(join(import.meta.dirname, '..', '..', 'src', 'pages', 'Profile.tsx'), 'utf-8')
   for (const key of ['show_in_leagues', 'allow_battles', 'join_rooms']) assert.ok(profile.includes(`'${key}'`), `Profile has the ${key} switch`)

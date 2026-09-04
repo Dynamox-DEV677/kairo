@@ -68,6 +68,7 @@ export const SPACE_ALIASES = {
   formula: 'notes/formulas',
   listen: 'notes/watch',
   writing: 'notes/write',
+  reels: 'notes/watch',
 
   // Progress — the map, the league, battles, the room
   battle: 'progress/battle',
@@ -78,12 +79,10 @@ export const SPACE_ALIASES = {
   rooms: 'progress/room',
   'study-room': 'progress/room',
 
-  // NOT redirected: 'settings'. Profile is the front door and the drawer
-  // points there, but the old Settings screen still holds what Profile does
-  // not -- cloud backup, device transfer, passcode reset, the privacy
-  // inventory, the telemetry switch, email change and developer mode.
-  // Redirecting it would silently delete all of that, so Profile links to it
-  // instead and #/settings keeps working.
+  // Profile — settings. Everything Settings held was MOVED into Profile
+  // (account, backup and devices, privacy, this device, developer), so the
+  // redirect no longer loses anything.
+  settings: 'profile',
 
   // the pre-cutover door, now gone
   new: 'progress',

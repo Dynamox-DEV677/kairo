@@ -10,6 +10,7 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
+import { KATEX_OPTS } from '../lib/katex'
 import { chat } from '../lib/openrouter'
 import { saveToNotebook } from '../lib/notebook'
 import { prepMathMarkdown } from '../lib/math.core'
@@ -229,7 +230,7 @@ Now teach me how to never make this mistake again, following your structure exac
                   </div>
 
                   <div className="prose-ai" style={{ fontSize: 13.5, color: '#e4e4e7', lineHeight: 1.7 }}>
-                    <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>
+                    <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[[rehypeKatex, KATEX_OPTS]]}>
                       {prepMathMarkdown(result)}
                     </ReactMarkdown>
                   </div>

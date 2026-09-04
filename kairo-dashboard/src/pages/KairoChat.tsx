@@ -6,6 +6,7 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
+import { KATEX_OPTS } from '../lib/katex'
 import { recordDoubt, recordMistake, recordFlashcard, recordConcept, recordFormula, getMistakes, getStudentMemory } from '../lib/twin'
 import { saveToNotebook } from '../lib/notebook'
 import { getRecentChats, saveRecentChat, makeTitle } from '../lib/recentChats'
@@ -345,7 +346,7 @@ export default function KairoChat() {
                 <div className="kc-md">
                   <ReactMarkdown
                     remarkPlugins={[remarkGfm, remarkMath]}
-                    rehypePlugins={[rehypeKatex]}
+                    rehypePlugins={[[rehypeKatex, KATEX_OPTS]]}
                   >
                     {prepMathMarkdown(t.text)}
                   </ReactMarkdown>

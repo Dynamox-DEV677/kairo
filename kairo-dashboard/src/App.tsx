@@ -152,12 +152,12 @@ export default function App() {
           // started recursing, the select 500'd, the app concluded the row was
           // missing, the upsert 500'd for the same reason, and an empty catch
           // hid both. Every outcome is reported now.
-          const { data: fetched } = await tracked('users', 'select', () => supabase
+          const { data: fetched } = await tracked<any>('users', 'select', () => supabase
             .from('users')
             .select('id, name, role, school_id, avatar_url')
             .eq('id', session.user.id)
             .maybeSingle())
-          let userRow = fetched
+          let userRow: any = fetched
 
           if (!userRow) {
             const meta: any = session.user.user_metadata || {}

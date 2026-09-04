@@ -19,6 +19,7 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
+import { KATEX_OPTS } from '../lib/katex'
 import { prepMathMarkdown } from '../lib/math.core'
 import { nearestExamDays } from '../lib/examDate'
 
@@ -528,7 +529,7 @@ function Face({ side, text, active }: { side: 'front' | 'back'; text: string; ac
           .fc-math .katex { color: inherit; font-size: 1.1em; }
           .fc-math .katex-display { margin: 6px 0; overflow-x: auto; overflow-y: hidden; }
         `}</style>
-        <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>
+        <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[[rehypeKatex, KATEX_OPTS]]}>
           {prepMathMarkdown(text)}
         </ReactMarkdown>
       </div>

@@ -58,7 +58,6 @@ const STUDENT_NAV: NavItem[] = [
   // not part of a space, so still listed on their own
   { label: 'Kyno OS',         icon: Cpu,             to: 'kairo-os',         color: '#A5B4FC' },
   { label: 'Study Mode · Live', icon: Camera,        to: 'camera-live',      color: '#4FD8E8' },
-  { label: 'Revision Reels',  icon: Layers,          to: 'reels',            color: '#A5B4FC' },
   { label: 'Concept Tools',   icon: Lightbulb,       to: 'concept',          color: '#A5B4FC' },
   { label: 'Switched board?', icon: Target,          to: 'bridge',           color: '#A5B4FC' },
   { label: 'Which stream?',   icon: Compass,         to: 'stream',           color: '#A5B4FC' },

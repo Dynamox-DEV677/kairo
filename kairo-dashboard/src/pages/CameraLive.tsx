@@ -10,6 +10,7 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
+import { KATEX_OPTS } from '../lib/katex'
 import { aiHeadersAsync } from '../lib/devKey'
 import { recordMistake, recordFlashcard } from '../lib/twin'
 import { prepMathMarkdown } from '../lib/math.core'
@@ -585,7 +586,7 @@ export default function CameraLive({ onExit }: { onExit?: () => void }) {
                 report ? <ReportView r={report} /> : <Waiting text="Marking your work…" />
               ) : (sheet === 'explain' ? explainMd : hint) ? (
                 <div className="prose-ai" style={{ fontSize: 13.5, color: '#e4e4e7', lineHeight: 1.75 }}>
-                  <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>
+                  <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[[rehypeKatex, KATEX_OPTS]]}>
                     {prepMathMarkdown(sheet === 'explain' ? explainMd : hint)}
                   </ReactMarkdown>
                 </div>

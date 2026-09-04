@@ -18,6 +18,7 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
+import { KATEX_OPTS } from '../lib/katex'
 import { prepMathMarkdown } from '../lib/math.core'
 import ReportQuestion from '../components/ReportQuestion'
 import { authToken } from '../lib/storage'
@@ -576,7 +577,7 @@ function LiveView({ q, idx, total, secsLeft, maxSecs, picked, onPick, mode, reve
         <div style={{
           fontSize: 16, color: '#fafafa', fontWeight: 600, lineHeight: 1.6,
         }}>
-          <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]} components={MD_INLINE}>{prepMathMarkdown(q.q)}</ReactMarkdown>
+          <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[[rehypeKatex, KATEX_OPTS]]} components={MD_INLINE}>{prepMathMarkdown(q.q)}</ReactMarkdown>
         </div>
       </motion.div>
 
@@ -611,7 +612,7 @@ function LiveView({ q, idx, total, secsLeft, maxSecs, picked, onPick, mode, reve
               }}>
                 {showRight ? <CheckCircle2 size={15} /> : showWrong ? <XCircle size={15} /> : String.fromCharCode(65 + i)}
               </div>
-              <span style={{ flex: 1, fontSize: 14, color: '#e4e4e7' }}><ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]} components={MD_INLINE}>{prepMathMarkdown(opt)}</ReactMarkdown></span>
+              <span style={{ flex: 1, fontSize: 14, color: '#e4e4e7' }}><ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[[rehypeKatex, KATEX_OPTS]]} components={MD_INLINE}>{prepMathMarkdown(opt)}</ReactMarkdown></span>
             </motion.button>
           )
         })}
@@ -632,7 +633,7 @@ function LiveView({ q, idx, total, secsLeft, maxSecs, picked, onPick, mode, reve
           </div>
           {q.explain && (
             <div style={{ fontSize: 13.5, color: '#B1B5BA', lineHeight: 1.7 }}>
-              <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]} components={MD_INLINE}>{prepMathMarkdown(q.explain)}</ReactMarkdown>
+              <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[[rehypeKatex, KATEX_OPTS]]} components={MD_INLINE}>{prepMathMarkdown(q.explain)}</ReactMarkdown>
             </div>
           )}
           <ReportQuestion question={q.q} options={q.options} claimed={'ABCD'[q.answer] || String(q.answer)} source="simulator" />
@@ -755,7 +756,7 @@ function ResultsView({ questions, answers, onReset }: any) {
                     Q{i + 1} · {q.topic}
                   </div>
                   <div style={{ fontSize: 13, color: '#fafafa', fontWeight: 600, lineHeight: 1.5 }}>
-                    <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]} components={MD_INLINE}>{prepMathMarkdown(q.q)}</ReactMarkdown>
+                    <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[[rehypeKatex, KATEX_OPTS]]} components={MD_INLINE}>{prepMathMarkdown(q.q)}</ReactMarkdown>
                   </div>
                 </div>
               </div>
@@ -778,7 +779,7 @@ function ResultsView({ questions, answers, onReset }: any) {
                       display: 'flex', alignItems: 'center', gap: 8,
                     }}>
                       <span style={{ fontWeight: 700, fontSize: 10 }}>{String.fromCharCode(65 + j)}</span>
-                      <span><ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]} components={MD_INLINE}>{prepMathMarkdown(opt)}</ReactMarkdown></span>
+                      <span><ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[[rehypeKatex, KATEX_OPTS]]} components={MD_INLINE}>{prepMathMarkdown(opt)}</ReactMarkdown></span>
                     </div>
                   )
                 })}
@@ -789,7 +790,7 @@ function ResultsView({ questions, answers, onReset }: any) {
                 padding: '8px 10px', background: '#141A2A',
                 border: '1px solid #171D2D', borderRadius: 7,
               }}>
-                <strong style={{ color: '#A5B4FC' }}>Why:</strong> <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]} components={MD_INLINE}>{prepMathMarkdown(q.explain)}</ReactMarkdown>
+                <strong style={{ color: '#A5B4FC' }}>Why:</strong> <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[[rehypeKatex, KATEX_OPTS]]} components={MD_INLINE}>{prepMathMarkdown(q.explain)}</ReactMarkdown>
               </div>
             </div>
           )

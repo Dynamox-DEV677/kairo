@@ -13,6 +13,7 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
+import { KATEX_OPTS } from '../lib/katex'
 import { recordDoubt, recordFormula, recordConcept, recordFlashcard, getStudentMemory, getMistakes } from '../lib/twin'
 import { startTopicClock } from '../lib/timeTracker'
 import { buildClozeCards } from '../lib/cloze.core'
@@ -1428,7 +1429,7 @@ function ExplanationPanel({ resp, busy, error, retryHint, question, onOpenLab, o
           <div style={{ fontSize: 13.5, color: '#e4e4e7', lineHeight: 1.75 }}>
             <ReactMarkdown
               remarkPlugins={[remarkGfm, remarkMath]}
-              rehypePlugins={[rehypeKatex]}
+              rehypePlugins={[[rehypeKatex, KATEX_OPTS]]}
               components={MD_COMPONENTS}
             >
               {prepMathMarkdown(resp.textExplanation)}
@@ -1452,7 +1453,7 @@ function ExplanationPanel({ resp, busy, error, retryHint, question, onOpenLab, o
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {resp.formulas.map((f, i) => (
                   <div key={i} style={{ fontSize: 13.5, color: '#fafafa' }}>
-                    <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
+                    <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[[rehypeKatex, KATEX_OPTS]]}>
                       {prepMathMarkdown(`$$${f}$$`)}
                     </ReactMarkdown>
                   </div>

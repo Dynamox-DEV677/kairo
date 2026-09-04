@@ -87,7 +87,6 @@ const DRAWER_STUDENT = [
     title: 'Notes',
     items: [
       { to: 'notes',   label: 'Your library',    icon: BookOpen },
-      { to: 'reels',   label: 'Revision Reels',  icon: Layers },
       { to: 'concept', label: 'Concept Tools',   icon: Lightbulb },
     ],
   },

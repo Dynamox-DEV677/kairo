@@ -23,6 +23,15 @@ import { BOARD_OPTIONS } from '../lib/curriculum.core'
 import { graphForProfile } from '../lib/syllabusFor'
 import { getNotificationPrefs, setNotificationPref, type NotificationKind } from '../lib/notifications'
 import { confirmDialog } from '../components/ConfirmModal'
+import TwinBackupModal from '../components/TwinBackupModal'
+import DeviceTransferModal from '../components/DeviceTransferModal'
+import ResetPasscode from './ResetPasscode'
+import { seedDemo, resetAllData, reconcileWithCloud, deleteCloudSnapshot } from '../lib/twin'
+import { activeFlows, privacyHeadline } from '../lib/privacy.core'
+import { telemetryEnabled, setTelemetryEnabled } from '../lib/usage'
+import { isDevMode, setDevMode, getDevKeyRaw, setDevKey, looksLikeGroqKey, aiHeadersAsync } from '../lib/devKey'
+import { safeDetail } from '../lib/aiError.core'
+import { authToken } from '../lib/storage'
 import { api, post, friendlyError } from '../lib/api'
 import { getReminderTime, setReminderTime, askNotificationPermission } from '../lib/reminder'
 
@@ -177,7 +186,7 @@ export default function Profile({ onLogout, onOpenSettings }: { onLogout?: () =>
   }
 
   /* app rows */
-  const [editingApp, setEditingApp] = useState<'reminders' | 'theme' | null>(null)
+  const [editingApp, setEditingApp] = useState<'reminders' | 'theme' | 'email' | null>(null)
   const [prefs, setPrefs] = useState(() => getNotificationPrefs())
   const [reminder, setReminder] = useState<string | null>(() => getReminderTime())
   const [themePref, setThemePref] = useState<'dark' | 'light' | 'system'>(() => (getRaw(THEME_PREF_KEY) as any) || 'dark')
@@ -196,6 +205,107 @@ export default function Profile({ onLogout, onOpenSettings }: { onLogout?: () =>
     setTimeout(() => URL.revokeObjectURL(url), 5000)
     setDownloadNote((server as any)?.unavailable ? 'Saved this device\'s data. The server copy was not reachable — try again online.' : 'Saved. That is everything, as JSON.')
     setDownloading(false)
+  }
+
+  /* ── moved across from the old Settings screen ─────────────────────────── */
+  const stored = useMemo(() => { try { return JSON.parse(storedProfileRaw() || '{}') || {} } catch { return {} as any } }, [tick])
+  const [backupOpen, setBackupOpen] = useState(false)
+  const [transferOpen, setTransferOpen] = useState(false)
+  const [resetOpen, setResetOpen] = useState(false)
+  const [telemetry, setTelemetry] = useState(telemetryEnabled)
+  const [syncing, setSyncing] = useState(false)
+  const [syncMsg, setSyncMsg] = useState('')
+  const [devMode, setDevModeState] = useState(isDevMode())
+  const [devKeyInput, setDevKeyInput] = useState(getDevKeyRaw())
+  const [showKey, setShowKey] = useState(false)
+  const [devMsg, setDevMsg] = useState('')
+  const [devTesting, setDevTesting] = useState(false)
+  const [newEmail, setNewEmail] = useState('')
+  const [emailCode, setEmailCode] = useState('')
+  const [emailStep, setEmailStep] = useState<'idle' | 'sending' | 'code' | 'verifying' | 'done'>('idle')
+  const [emailErr, setEmailErr] = useState('')
+
+  async function syncNow() {
+    if (syncing) return
+    setSyncing(true); setSyncMsg('')
+    try {
+      const r = await reconcileWithCloud()
+      if (r.ok) { setSyncMsg('Synced. Reloading…'); setTimeout(() => window.location.reload(), 1200) }
+      else setSyncMsg(r.reason === 'not-signed-in' ? 'Sign in first, then sync.' : `Sync failed: ${r.reason || 'network issue'}`)
+    } catch (e) { setSyncMsg('Sync failed: ' + safeDetail(e, 'try again in a moment')) }
+    finally { setSyncing(false) }
+  }
+
+  async function deleteCloud() {
+    const ok = await confirmDialog({
+      title: 'Delete your cloud backup?',
+      body: 'Removes the copy in your Kyno account. Your work stays on this device, but another phone will not be able to pull it.',
+      confirmLabel: 'Delete cloud copy', cancelLabel: 'Keep it', tone: 'danger',
+    })
+    if (!ok) return
+    try { const r = await deleteCloudSnapshot(); setSyncMsg(r.ok ? 'Cloud backup deleted.' : 'Could not delete — try again.') }
+    catch { setSyncMsg('Could not delete — try again.') }
+  }
+
+  async function requestEmailCode() {
+    setEmailErr(''); setEmailStep('sending')
+    try {
+      const r = await fetch('/api/account/email-change/request', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ new_email: newEmail, name: stored.name || '' }),
+      })
+      const j = await r.json().catch(() => ({}))
+      if (!r.ok) throw new Error(j.error || 'Could not send the code.')
+      setEmailStep('code')
+    } catch (e) { setEmailErr(safeDetail(e, 'Could not send the code.')); setEmailStep('idle') }
+  }
+
+  async function verifyEmailCode() {
+    setEmailErr(''); setEmailStep('verifying')
+    try {
+      // The server identifies the account from this token — it does not accept
+      // a user_id from the body, which once allowed account takeover.
+      const r = await fetch('/api/account/email-change/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${authToken() || ''}` },
+        body: JSON.stringify({ new_email: newEmail, code: emailCode }),
+      })
+      const j = await r.json().catch(() => ({}))
+      if (!r.ok) throw new Error(j.error || 'Verification failed.')
+      try { setStoredProfileRaw(JSON.stringify({ ...stored, email: newEmail.trim().toLowerCase() })) } catch { /* storage blocked */ }
+      setEmailStep('done')
+    } catch (e) { setEmailErr(safeDetail(e, 'Verification failed.')); setEmailStep('code') }
+  }
+
+  async function testDevKey() {
+    const k = devKeyInput.trim()
+    if (!looksLikeGroqKey(k)) { setDevMsg('Enter a valid gsk_… key first.'); return }
+    setDevKey(k); setDevTesting(true); setDevMsg('Testing your key…')
+    try {
+      const res = await fetch('/api/ai/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...(await aiHeadersAsync()), 'x-groq-key': k },
+        body: JSON.stringify({ messages: [{ role: 'user', content: 'Reply with only the word: ok' }] }),
+      })
+      const data = await res.json().catch(() => ({}))
+      setDevMsg(res.ok && !data?._fallback && data?.choices?.[0]?.message?.content
+        ? 'Key works. Kyno is now running on your Groq account.'
+        : 'Key failed: ' + String(data?.error || `HTTP ${res.status}`).slice(0, 160))
+    } catch (e) { setDevMsg('Key test failed: ' + safeDetail(e, 'the key was rejected')) }
+    finally { setDevTesting(false) }
+  }
+
+  async function loadDemoProfile() {
+    const ok = await confirmDialog({ title: 'Load demo data?', body: 'Adds two weeks of realistic Class 10 activity on this device. Stacks on top of what is already here.', confirmLabel: 'Load demo data', cancelLabel: 'Cancel', tone: 'primary' })
+    if (ok) { seedDemo(); window.location.reload() }
+  }
+  async function resetToFresh() {
+    const ok = await confirmDialog({ title: 'Reset to a fresh state?', body: 'Wipes every Kyno data store on this device — events, flashcards, mistakes, history. You stay signed in.', confirmLabel: 'Reset everything', cancelLabel: 'Keep my data', tone: 'danger' })
+    if (ok) { resetAllData(); window.location.reload() }
+  }
+  async function clearData() {
+    const ok = await confirmDialog({ title: 'Clear everything on this device?', body: 'Erases your local Kyno profile, settings and learning history. Your account on the server is not affected.', confirmLabel: 'Yes, clear everything', cancelLabel: 'Keep my data', tone: 'danger' })
+    if (ok) { localStorage.clear(); window.location.reload() }
   }
 
   /* sign out / delete */
@@ -352,11 +462,99 @@ export default function Profile({ onLogout, onOpenSettings }: { onLogout?: () =>
           </Row>
           <Row label="Download my data" value={downloading ? <Loader2 size={16} {...ICON} /> : <Download size={16} color={T.muted} {...ICON} />} onClick={downloading ? undefined : download} />
           {downloadNote && <div style={{ padding: '0 14px 12px', fontSize: 12.5, color: T.dim }}>{downloadNote}</div>}
-          {/* Everything Profile does not cover still lives on the old Settings
-              screen: cloud backup, moving to a new device, the passcode, the
-              privacy inventory and its telemetry switch, changing your email,
-              and developer mode. */}
-          {onOpenSettings && <Row label="Backup, privacy and more" value="Settings" onClick={onOpenSettings} />}
+        </Group>
+
+        {/* ── everything the old Settings screen used to hold ───────────────
+            Merged here rather than deleted. Profile had rebuilt the username,
+            the studies and the privacy switches; these six were only on
+            Settings, so redirecting that route without moving them would have
+            quietly removed cloud backup, moving to a new phone, the passcode,
+            the privacy inventory, telemetry and developer mode. */}
+
+        <Group title="Account">
+          <Row first label="Email" value={emailStep === 'done' ? newEmail : (stored.email || 'Not set')} onClick={() => setEditingApp(a => a === 'email' ? null : 'email')}>
+            {editingApp === 'email' && (
+              <div style={{ padding: '0 14px 14px' }}>
+                {emailStep === 'done' ? (
+                  <div style={{ fontSize: 13, color: T.success }}>Changed. Sign in with the new address next time.</div>
+                ) : (
+                  <>
+                    <input value={newEmail} onChange={e => setNewEmail(e.target.value)} placeholder="new@email.com" type="email"
+                      autoCapitalize="none" autoCorrect="off" aria-label="New email" style={{ ...inputStyle, width: '100%' }} />
+                    {emailStep === 'code' && (
+                      <input value={emailCode} onChange={e => setEmailCode(e.target.value)} placeholder="6-digit code" inputMode="numeric"
+                        aria-label="Verification code" style={{ ...inputStyle, width: '100%', marginTop: 8, fontFamily: MONO }} />
+                    )}
+                    <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
+                      <button onClick={emailStep === 'code' ? verifyEmailCode : requestEmailCode}
+                        disabled={emailStep === 'sending' || emailStep === 'verifying' || !newEmail.trim()}
+                        style={{ flex: 1, height: 44, borderRadius: 12, border: 'none', background: newEmail.trim() ? T.accent : T.raised, color: newEmail.trim() ? '#fff' : T.faint, fontFamily: FONT, fontSize: 14, fontWeight: 700, cursor: 'pointer' }}>
+                        {emailStep === 'sending' ? 'Sending…' : emailStep === 'verifying' ? 'Checking…' : emailStep === 'code' ? 'Verify' : 'Send me a code'}
+                      </button>
+                    </div>
+                    {emailErr && <div style={{ fontSize: 12.5, color: T.error, marginTop: 8 }}>{emailErr}</div>}
+                    <div style={{ fontSize: 12, color: T.faint, marginTop: 8, lineHeight: 1.5 }}>Only you ever see this. It is never shown to another student.</div>
+                  </>
+                )}
+              </div>
+            )}
+          </Row>
+          <Row label="Passcode" value="Reset" onClick={() => setResetOpen(true)} />
+        </Group>
+
+        <Group title="Backup and devices" note={syncMsg || 'Your work lives on this device and is copied to your account so a lost phone does not lose it.'}>
+          <Row first label="Sync now" value={syncing ? <Loader2 size={16} {...ICON} /> : undefined} onClick={syncing ? undefined : syncNow} />
+          <Row label="Save a backup file" onClick={() => setBackupOpen(true)} />
+          <Row label="Move to a new phone" onClick={() => setTransferOpen(true)} />
+          <Row label="Delete my cloud copy" onClick={deleteCloud} />
+        </Group>
+
+        <Group title="Privacy" note="This is everything that leaves your device, and when.">
+          <div style={{ padding: '12px 14px', fontSize: 12.5, color: T.text2, lineHeight: 1.55, borderBottom: `1px solid ${T.divider2}` }}>
+            {privacyHeadline({ signedIn: !!studies.storedId && !studies.localMode, schoolMode: false, telemetry })}
+          </div>
+          {activeFlows({ signedIn: !!studies.storedId && !studies.localMode, schoolMode: false, telemetry }).map((f: any, i: number) => (
+            <div key={f.id} style={{ padding: '10px 14px', borderTop: i ? `1px solid ${T.divider2}` : 'none' }}>
+              <div style={{ fontSize: 13, color: T.text, fontWeight: 600 }}>{f.what}</div>
+              <div style={{ fontSize: 11.5, color: T.dim, marginTop: 3 }}>{f.when} · goes to {f.where}</div>
+              {f.note && <div style={{ fontSize: 11.5, color: T.faint, marginTop: 4, lineHeight: 1.5 }}>{f.note}</div>}
+            </div>
+          ))}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, minHeight: 60, padding: '10px 14px', borderTop: `1px solid ${T.divider2}` }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 14, fontWeight: 600 }}>Share which screens I open</div>
+              <div style={{ fontSize: 12.5, color: T.dim, marginTop: 2 }}>The screen name and the time, never what you typed</div>
+            </div>
+            <Switch label="Share which screens I open" on={telemetry} onChange={v => { setTelemetry(v); setTelemetryEnabled(v) }} />
+          </div>
+        </Group>
+
+        <Group title="This device" note="These only touch this phone. Your account is not affected.">
+          <Row first label="Load demo data" onClick={loadDemoProfile} />
+          <Row label="Reset to a fresh state" onClick={resetToFresh} />
+          <Row label="Clear everything on this device" onClick={clearData} />
+        </Group>
+
+        <Group title="Developer" note={devMsg || 'Run Kyno on your own Groq key instead of the shared pool.'}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, minHeight: 56, padding: '10px 14px' }}>
+            <div style={{ flex: 1, fontSize: 14, fontWeight: 600 }}>Use my own key</div>
+            <Switch label="Use my own key" on={devMode} onChange={v => { setDevModeState(v); setDevMode(v) }} />
+          </div>
+          {devMode && (
+            <div style={{ padding: '0 14px 14px', borderTop: `1px solid ${T.divider2}` }}>
+              <input value={devKeyInput} onChange={e => setDevKeyInput(e.target.value)} placeholder="gsk_…" type={showKey ? 'text' : 'password'}
+                autoCapitalize="none" autoCorrect="off" spellCheck={false} aria-label="Groq API key"
+                style={{ ...inputStyle, width: '100%', marginTop: 12, fontFamily: MONO }} />
+              <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
+                <button onClick={testDevKey} disabled={devTesting} style={{ flex: 1, height: 44, borderRadius: 12, border: 'none', background: T.accent, color: '#fff', fontFamily: FONT, fontSize: 14, fontWeight: 700, cursor: 'pointer' }}>
+                  {devTesting ? 'Testing…' : 'Save and test'}
+                </button>
+                <button onClick={() => setShowKey(s => !s)} style={{ height: 44, padding: '0 14px', borderRadius: 12, background: T.raised, border: `1px solid ${T.borderCtl}`, color: T.text2, fontFamily: FONT, fontSize: 14, cursor: 'pointer' }}>
+                  {showKey ? 'Hide' : 'Show'}
+                </button>
+              </div>
+            </div>
+          )}
         </Group>
 
         <div style={{ display: 'flex', gap: 10, marginTop: 26 }}>
@@ -386,6 +584,10 @@ export default function Profile({ onLogout, onOpenSettings }: { onLogout?: () =>
           Kyno {typeof __APP_VERSION__ === 'string' ? __APP_VERSION__ : ''}{typeof __APP_BUILD__ === 'string' && __APP_BUILD__ ? ` · ${__APP_BUILD__}` : ''}
         </div>
       </div>
+
+      <TwinBackupModal open={backupOpen} onClose={() => setBackupOpen(false)} />
+      <DeviceTransferModal open={transferOpen} onClose={() => setTransferOpen(false)} />
+      {resetOpen && <ResetPasscode onClose={() => setResetOpen(false)} />}
     </div>
   )
 }

@@ -62,7 +62,9 @@ export default function StatusPage({ onExit }: Props) {
   async function fetchOnce() {
     const t0 = Date.now()
     try {
-      const res = await fetch('/api/ops/status', { cache: 'no-store' })
+      // /ops/status is token-gated and 404s for everyone without one, by design.
+      // The public health probe is what a student-facing status page may read.
+      const res = await fetch('/api/ops/health', { cache: 'no-store' })
       const data = await res.json()
       setSnap(data)
       setReqAt(Date.now() - t0)

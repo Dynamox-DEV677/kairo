@@ -62,14 +62,14 @@ test('every old route redirects to a space, and no redirect points at a dead end
     ['concept-map', 'progress', 'map'], ['knowledge', 'progress', 'map'], ['knowledge-graph', 'progress', 'map'],
     ['rooms', 'progress', 'room'], ['study-room', 'progress', 'room'],
     ['focus', 'plan', 'focus'], ['pomodoro', 'plan', 'focus'],
-    ['essay', 'practice', 'formats'], ['grader', 'practice', 'formats'],
+    ['essay', 'practice', 'formats'], ['grader', 'practice', 'formats'], ['reels', 'notes', 'watch'],
   ]) assert.deepEqual(resolveRoute(from), { space, view }, `#/${from} should open ${space}/${view}`)
 
   // and a plain space alias carries no view
   assert.deepEqual(resolveRoute('notebook'), { space: 'notes', view: null })
   assert.deepEqual(resolveRoute('practice'), { space: 'practice', view: null })
   // an id nobody redirected is left alone
-  for (const keep of ['home', 'kairo-os', 'camera-live', 'reels', 'concept', 'bridge', 'stream', 'school', 'settings']) {
+  for (const keep of ['home', 'kairo-os', 'camera-live', 'concept', 'bridge', 'stream', 'school']) {
     assert.equal(resolveSpace(keep), keep, `${keep} belongs to no space and must keep its own route`)
     assert.ok(registered.has(keep), `${keep} is no longer a registered page`)
   }
@@ -77,21 +77,30 @@ test('every old route redirects to a space, and no redirect points at a dead end
 
 /**
  * A redirect deletes a screen from the student's reach, so it may only point
- * at a space that genuinely rebuilt what it absorbed. Settings is the case
- * that failed this: Profile covers the username, the studies and the privacy
- * switches, but NOT cloud backup, device transfer, the passcode, the privacy
- * inventory, the telemetry switch, email change or developer mode. So
- * settings keeps its route and Profile links to it.
+ * at a space that genuinely rebuilt what it absorbed. Settings failed that
+ * test once: Profile had the username, the studies and the privacy switches
+ * but NOT cloud backup, device transfer, the passcode, the privacy inventory,
+ * telemetry, email change or developer mode. All six were MOVED into Profile,
+ * so the redirect is now safe and Settings.tsx is gone.
  */
 test('nothing a space did not rebuild is redirected away', () => {
-  assert.equal(SPACE_ALIASES.settings, undefined, 'Settings still holds screens Profile has not rebuilt')
+  assert.equal(resolveSpace('settings'), 'profile')
+  assert.equal(existsSync(join(ROOT, 'src', 'pages', 'Settings.tsx')), false, 'the old Settings screen is deleted')
+  assert.equal(registered.has('settings'), false, "'settings' is no longer its own page")
   const profile = read('src', 'pages', 'Profile.tsx')
-  assert.match(profile, /onOpenSettings/, 'Profile must offer a way into the rest of Settings')
-  assert.match(dashboard, /onOpenSettings=\{\(\) => navigate\('settings'\)\}/, 'and the Dashboard must wire it')
-  const settings = read('src', 'pages', 'Settings.tsx')
-  for (const kept of ['TwinBackupModal', 'DeviceTransferModal', 'ResetPasscode', 'activeFlows', 'setTelemetryEnabled', 'email-change']) {
-    assert.ok(settings.includes(kept), `Settings lost ${kept}, which nothing else provides`)
-  }
+  for (const [what, needle] of [
+    ['a backup file',       'TwinBackupModal'],
+    ['moving to a new phone','DeviceTransferModal'],
+    ['the passcode',        'ResetPasscode'],
+    ['the privacy inventory','activeFlows'],
+    ['the telemetry switch','setTelemetryEnabled'],
+    ['changing your email', 'email-change/verify'],
+    ['developer mode',      'looksLikeGroqKey'],
+    ['cloud sync',          'reconcileWithCloud'],
+    ['deleting the cloud copy', 'deleteCloudSnapshot'],
+    ['demo data',           'seedDemo'],
+    ['resetting the device','resetAllData'],
+  ]) assert.ok(profile.includes(needle), `Profile is missing ${what} (${needle}) -- it was only on Settings`)
 })
 
 test('the hash router and navigate() both resolve old ids', () => {

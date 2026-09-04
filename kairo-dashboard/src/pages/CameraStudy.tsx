@@ -5,6 +5,7 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
+import { KATEX_OPTS } from '../lib/katex'
 import {
   Camera, Upload, X, Sparkles, FileText, BookmarkPlus,
   Lightbulb, RotateCcw, Loader2, CheckCircle2, Scale, FunctionSquare, Tags, Eye,
@@ -852,7 +853,7 @@ export default function CameraStudy() {
               </div>
             ) : (
               <div className="prose-ai" style={{ fontSize: 14, color: '#e4e4e7', lineHeight: 1.7 }}>
-                <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>
+                <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[[rehypeKatex, KATEX_OPTS]]}>
                   {prepMathMarkdown(cleanMarkdown(result))}
                 </ReactMarkdown>
               </div>

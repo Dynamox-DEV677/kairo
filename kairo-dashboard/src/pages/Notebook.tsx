@@ -9,6 +9,7 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
+import { KATEX_OPTS } from '../lib/katex'
 import { api, friendlyError } from '../lib/api'
 import {
   listNotebook, deleteNotebookEntry, updateNotebookEntry,
@@ -608,7 +609,7 @@ function NoteDetail({ note, editing, onClose, onTogglePin, onDelete, onEdit, onS
             </div>
           )}
           <div className="prose-ai nb-math" style={{ fontSize: 14, color: '#e4e4e7', lineHeight: 1.7, maxWidth: 760 }}>
-            <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>{prepMathMarkdown(note.content)}</ReactMarkdown>
+            <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[[rehypeKatex, KATEX_OPTS]]}>{prepMathMarkdown(note.content)}</ReactMarkdown>
           </div>
         </>
       )}
@@ -698,7 +699,7 @@ function CreateModal({ onClose, onCreated }: { onClose: () => void; onCreated: (
             background: '#141A2A', border: '1px solid #1f2532', borderRadius: 8, padding: '10px 12px',
           }}>
             {content.trim()
-              ? <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>{prepMathMarkdown(content)}</ReactMarkdown>
+              ? <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[[rehypeKatex, KATEX_OPTS]]}>{prepMathMarkdown(content)}</ReactMarkdown>
               : <span style={{ color: '#6B7280' }}>Nothing to preview yet.</span>}
           </div>
         ) : (

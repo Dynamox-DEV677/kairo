@@ -6,6 +6,7 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
+import { KATEX_OPTS } from '../lib/katex'
 import { chat } from '../lib/openrouter'
 import { prepMathMarkdown } from '../lib/math.core'
 import { subjectLabels } from '../curriculum/subjects'
@@ -176,7 +177,7 @@ export default function QuestionPaper() {
           </div>
           <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 4px 40px rgba(0,0,0,0.4)', padding: '48px 56px' }}>
             <div id="qp-render" className="qp-paper">
-              <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>{prepMathMarkdown(paper)}</ReactMarkdown>
+              <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[[rehypeKatex, KATEX_OPTS]]}>{prepMathMarkdown(paper)}</ReactMarkdown>
             </div>
           </div>
         </motion.div>

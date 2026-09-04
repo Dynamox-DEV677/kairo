@@ -48,7 +48,6 @@ import CameraLive from './CameraLive'
 import QuestionPaper from './QuestionPaper'
 import LessonPlan from './LessonPlan'
 import ParentMessage from './ParentMessage'
-import Settings from './Settings'
 import FeeReminder from './FeeReminder'
 import AdmissionBot from './AdmissionBot'
 import Attendance from './Attendance'
@@ -158,7 +157,6 @@ const PAGE_TITLES: Record<string, string> = {
   'camera-live':    'Study Mode',
   labs:             'Kyno Labs',
   'kairo-os':       'Kyno',
-  settings:         'Settings',
 }
 
 interface DashboardProps {
@@ -592,7 +590,7 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
               {mounted('profile') && (
                 <BlankGuard id="profile" active={active === 'profile'}>
                 <SpaceFrame active="profile" onNavigate={navigate}>
-                  <Profile onLogout={onLogout} onOpenSettings={() => navigate('settings')} />
+                  <Profile onLogout={onLogout} />
                 </SpaceFrame>
                 </BlankGuard>
               )}
@@ -633,7 +631,6 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
 
             <div className={pageClass} style={pageStyle('parent-message')}>{mounted('parent-message') && <ParentMessage />}</div>
 
-            <div className={pageClass} style={pageStyle('settings')}>{mounted('settings') && <Settings />}</div>
 
             <div className={pageClass} style={pageStyle('fee-reminder')}>{mounted('fee-reminder') && <FeeReminder />}</div>
 

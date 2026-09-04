@@ -9,6 +9,7 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
+import { KATEX_OPTS } from '../lib/katex'
 
 
 const MARKDOWN_COMPONENTS = {
@@ -312,7 +313,7 @@ Keep total length 180-280 words. Tone: friendly, specific, exam-aware.` },
                   style={{ fontSize: 13.5, color: '#e4e4e7', lineHeight: 1.7 }}>
                   <ReactMarkdown
                     remarkPlugins={[remarkGfm, remarkMath]}
-                    rehypePlugins={[rehypeKatex]}
+                    rehypePlugins={[[rehypeKatex, KATEX_OPTS]]}
                     components={MARKDOWN_COMPONENTS}>
                     {prepMathMarkdown(explanation)}
                   </ReactMarkdown>

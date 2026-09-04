@@ -4,6 +4,7 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
+import { KATEX_OPTS } from '../lib/katex'
 import ActionChips from './ActionChips'
 import { prepMathMarkdown } from '../lib/math.core'
 
@@ -77,7 +78,7 @@ export default function MessageBubble({ message, isLast, isStreaming, onChipActi
             <div style={{ fontSize: 14, color: '#d4d4d8', lineHeight: 1.7 }}>
               <ReactMarkdown
                 remarkPlugins={[remarkGfm, remarkMath]}
-                rehypePlugins={[rehypeKatex]}
+                rehypePlugins={[[rehypeKatex, KATEX_OPTS]]}
                 components={{
                   p: ({ children }) => <p style={{ margin: '0 0 10px', lineHeight: 1.7 }}>{children}</p>,
                   h1: ({ children }) => <h1 style={{ fontSize: 18, fontWeight: 800, color: '#fafafa', margin: '14px 0 8px' }}>{children}</h1>,

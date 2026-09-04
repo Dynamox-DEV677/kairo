@@ -4,6 +4,7 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
+import { KATEX_OPTS } from '../lib/katex'
 import { Layers, ChevronLeft, ChevronRight, Sparkles, FunctionSquare, RotateCcw, Plus, Check, Headphones, Square } from 'lucide-react'
 import { useHotkeys } from '../lib/useHotkeys'
 import { speakableText } from '../lib/listen.core'
@@ -46,7 +47,7 @@ function CardText({ text }: { text: string }) {
   return (
     <ReactMarkdown
       remarkPlugins={[remarkGfm, remarkMath]}
-      rehypePlugins={[rehypeKatex]}
+      rehypePlugins={[[rehypeKatex, KATEX_OPTS]]}
       components={MD_INLINE}
     >
       {prepMathMarkdown(text)}

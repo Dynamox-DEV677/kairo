@@ -63,8 +63,8 @@ test('the indicator only ever claims what is true', () => {
 
 test('the boot path reports both the read and the write', () => {
   const app = read('App.tsx')
-  assert.match(app, /tracked\('users', 'select'/)
-  assert.match(app, /tracked\('users', 'upsert'/)
+  assert.match(app, /tracked(<any>)?\('users', 'select'/)
+  assert.match(app, /tracked(<any>)?\('users', 'upsert'/)
   assert.match(app, /<SyncIndicator \/>/)
 })
 
