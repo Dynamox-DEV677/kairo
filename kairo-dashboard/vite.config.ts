@@ -37,14 +37,14 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['kairo_logo.png', 'favicon.svg', 'apple-touch-icon.png'],
       manifest: {
-        name:             'Kyno – AI Education System',
+        name:             'Kyno',
         short_name:       'Kyno',
         description:      'Kyno is an AI-powered education platform by Kairo Industries.',
         // Match the rest of Kairo — deep purple accent on pure black.
         // Both theme + background are dark so the install/launch flow on
         // Android no longer flashes white at any point.
-        theme_color:      '#06060a',
-        background_color: '#06060a',
+        theme_color:      '#0B0B14',   // matches <meta name="theme-color"> and public/manifest.webmanifest
+        background_color: '#0B0B14',
         display:          'standalone',
         orientation:      'portrait',
         scope:            '/',
