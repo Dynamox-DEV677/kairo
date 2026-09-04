@@ -106,8 +106,11 @@ test('ops is never shown — it carries nothing about the student', () => {
 })
 
 test('only flows a student can genuinely switch off are marked optional', () => {
-  // If this list grows, a real switch has to exist for the new entry.
-  assert.deepEqual(DATA_FLOWS.filter(f => f.optional).map(f => f.id), ['telemetry'])
+  // If this list grows, a real switch has to exist for the new entry:
+  // telemetry's is in Settings, the three social switches are on Profile.
+  assert.deepEqual(DATA_FLOWS.filter(f => f.optional).map(f => f.id), ['telemetry', 'social'])
+  const profile = readFileSync(join(import.meta.dirname, '..', '..', 'src', 'pages', 'Profile.tsx'), 'utf-8')
+  for (const key of ['show_in_leagues', 'allow_battles', 'join_rooms']) assert.ok(profile.includes(`'${key}'`), `Profile has the ${key} switch`)
 })
 
 test('every flow says what, when and where in plain words', () => {

@@ -28,8 +28,10 @@ import Performance from './Performance'
 import Plan from './Plan'
 import Notes from './Notes'
 import NewIndex from './NewIndex'
+import Profile from './Profile'
 import SpaceFrame from '../components/SpaceFrame'
 import { refreshSocial } from '../lib/social'
+import { startReminderClock } from '../lib/reminder'
 import { XPToast } from '../components/GameBar'
 import ErrorBoundary from '../components/ErrorBoundary'
 import EssayGrader from './EssayGrader'
@@ -105,6 +107,7 @@ const PAGE_TITLES: Record<string, string> = {
   // The one door into the new spaces before the cutover: a dull row at the
   // bottom of the drawer opens this index. Deleted with the cutover commit.
   'new':            'New design',
+  'profile':        'Profile',
   ops:              'Ops Dashboard',
   flashcards:       'Flashcards & SRS',
   'study-plan':     'Study Plan',
@@ -238,6 +241,8 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
   // The username is the only identity other students see; fetch it once so
   // every social surface (old Study Room included) has it synchronously.
   useEffect(() => { refreshSocial().catch(() => {  }) }, [])
+  // The daily reminder fires while the app is open; a website cannot ping a closed phone.
+  useEffect(() => startReminderClock(), [])
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', 'dark')
@@ -483,6 +488,14 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
                     setTimeout(() => window.dispatchEvent(new CustomEvent('kyno:practice-filter', { detail: filter })), 60)
                   }}
                 />
+                </SpaceFrame>
+              )}
+            </div>
+
+            <div className={pageClass} style={pageStyle('profile')}>
+              {mounted('profile') && (
+                <SpaceFrame active="profile" onNavigate={navigate}>
+                  <Profile onLogout={onLogout} />
                 </SpaceFrame>
               )}
             </div>

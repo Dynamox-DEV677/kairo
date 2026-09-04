@@ -120,9 +120,8 @@ export const DATA_FLOWS = [
     what: 'Your username, your XP and how many minutes you studied this week — never your name, email, school or class',
     when: 'When you are in a league, a battle or a study room',
     where: 'Other Kyno students, as a username only',
-    // optional flips to true the moment the Profile screen ships the switches --
-    // the inventory test only allows "optional" for a flow with a real switch.
-    appliesWhen: 'signed-in', optional: false,
+    // optional: the three switches live on the Profile screen (space 7).
+    appliesWhen: 'signed-in', optional: true,
     note: 'Leagues, battles and study rooms each have their own off switch in Profile. Study rooms are off until you turn them on. A long-press on any username reports it and removes that student from your matches for good.',
   },
   {

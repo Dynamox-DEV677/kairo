@@ -5,7 +5,7 @@
  * the one that points the drawer at this list.
  */
 import type { LucideIcon } from 'lucide-react'
-import { MessageSquare, Target, TrendingUp, Calendar, BookOpen } from 'lucide-react'
+import { MessageSquare, Target, TrendingUp, Calendar, BookOpen, User } from 'lucide-react'
 
 export interface Space { id: string; label: string; sub: string; icon: LucideIcon }
 
@@ -15,6 +15,7 @@ export const SPACES: Space[] = [
   { id: 'performance',   label: 'Performance',   sub: 'your repeating mistakes',                      icon: TrendingUp },
   { id: 'plan',          label: 'Plan',          sub: 'exam countdown and syllabus coverage',         icon: Calendar },
   { id: 'notes',         label: 'Notes',         sub: 'one library, nothing kept without a return date', icon: BookOpen },
+  { id: 'profile',       label: 'Profile',       sub: 'your username, your studies, who can see you',   icon: User },
 ]
 
 export const SPACE_IDS: ReadonlySet<string> = new Set(SPACES.map(s => s.id))
