@@ -162,7 +162,7 @@ export function GameBar() {
                   </div>
                 )}
               </div>
-              <span style={{ fontSize: 11, fontWeight: 800, color: KYNO.gold, flexShrink: 0, ...bigNum }}>+{q.bonus}</span>
+              {q.bonus > 0 && <span style={{ fontSize: 11, fontWeight: 800, color: KYNO.gold, flexShrink: 0, ...bigNum }}>+{q.bonus}</span>}
             </div>
           )
         })}

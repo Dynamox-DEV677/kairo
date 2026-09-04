@@ -23,6 +23,7 @@ import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { ChevronRight, ArrowLeft, Check, Play, Pause, SkipForward, Pencil, AlertTriangle, Calendar, BookOpen, Layers, PenLine } from 'lucide-react'
 import { T, FONT, MONO, ICON, CALLOUT } from '../lib/spaceTokens'
 import { useSpaceLayout } from '../components/SpaceFrame'
+import { awardXP, awardMasteryCrossings } from '../lib/game'
 import { post } from '../lib/api'
 import { loadState, getDashboard, getProfile, track } from '../lib/twin'
 import { getJSON, setJSON, getRaw } from '../lib/storage'
@@ -227,6 +228,9 @@ export default function Plan({ onOpenDoubt, onPractice }: {
   const layout = useSpaceLayout()
   useEffect(() => { layout.setWide(view.name === 'syllabus' && layout.areaWidth >= 760) }, [view.name, layout.areaWidth]) // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => () => layout.setWide(false), []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // A chapter crossing 70% is credited once, here, where the states are freshly computed.
+  useEffect(() => { try { awardMasteryCrossings(model.states) } catch { /* nicety */ } }, [model])
 
   const shell: Style = { position: 'absolute', inset: 0, background: T.bg, color: T.text, fontFamily: FONT, display: 'flex', flexDirection: 'column', overflow: 'hidden' }
   const scroll: Style = { flex: 1, overflowY: 'auto', padding: '18px 14px 24px' }
@@ -584,6 +588,7 @@ function FocusScreen({ shell, footer, now, setNow, onExit, sessionsTotal }: {
   function finish(why: 'complete' | 'stopped') {
     if (!session) return
     const focused = Math.min(session.plannedMs, elapsed)
+    if (why === 'complete') { try { awardXP('session_done') } catch { /* nicety */ } }   // a finished session, not time spent
     try {
       const hist = parseHistory(JSON.parse(getRaw(HISTORY_KEY) || '[]'))
       const next = appendSession(hist, { ts: Date.now(), focusedMs: focused, plannedMs: session.plannedMs, drifts: session.drifts || 0, goal: session.task, driftMs: session.driftMs || undefined })

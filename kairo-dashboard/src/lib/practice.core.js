@@ -333,14 +333,18 @@ export function resultsHeadline(rows = [], weakTopics = []) {
  * already rewards correctness elsewhere, and paying big for volume here would
  * teach students to grind cards instead of attempting the written answer.
  */
+/**
+ * The XP a session showed on its results screen -- the SAME published table
+ * game.ts pays from, so the number on screen is the number credited:
+ * session completed 20, each card kept at review 5, each graded written
+ * answer or teach-back 15. Questions answered and cards merely seen pay
+ * nothing; XP is for what is kept, not for volume.
+ */
 export function xpFor(summary = {}) {
-  const { cards = 0, questions = 0, correct = 0, written = 0, teach = 0, finished = true } = summary
+  const { retained = 0, written = 0, teach = 0, finished = true } = summary
   let xp = finished ? 20 : 0
-  xp += Math.min(cards, 30) * 1
-  xp += Math.min(questions, 20) * 2
-  xp += Math.min(correct, 20) * 2
-  xp += written * 15
-  xp += teach * 15
+  xp += Math.max(0, retained) * 5
+  xp += (Math.max(0, written) + Math.max(0, teach)) * 15
   return xp
 }
 

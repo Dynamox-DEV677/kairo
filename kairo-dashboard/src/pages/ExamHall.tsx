@@ -265,7 +265,7 @@ function Hall({ paper, onSubmit }: { paper: Paper; onSubmit: (res: any) => void 
         })
       } catch {}
     })
-    try { awardXP('quiz_done') } catch {}
+    try { awardXP('session_done') } catch {}
     onSubmit({ score, pm, why })
   }, [paper, onSubmit, bankTime])
 

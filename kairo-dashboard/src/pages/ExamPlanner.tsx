@@ -9,7 +9,6 @@ import {
   Loader2, ChevronRight, RefreshCw, Save, Printer, Folder, X, Check, Brain,
 } from 'lucide-react'
 import KairoGyro from '../components/KairoGyro'
-import { awardXP } from '../lib/game'
 import { authToken, storedProfileRaw } from '../lib/storage'
 
 // Plans are now scoped to the signed-in user server-side, so every call to a
@@ -180,7 +179,6 @@ export default function ExamPlanner() {
       const data = await r.json()
       if (data.error) throw new Error(data.error)
       setPlan(data)
-      try { awardXP('exam_plan') } catch {  }
     } catch (e: any) {
       setError(studentMessage(e))
     } finally {

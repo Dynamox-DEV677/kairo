@@ -31,19 +31,22 @@ test('#/new is a registered page and no old route redirects anywhere', () => {
   assert.match(dashboard, /'new':\s+'New design'/)
   assert.doesNotMatch(dashboard, /PAGE_ALIASES/, 'aliases/redirects are for the cutover commit')
   assert.match(dashboard, /doubt:\s+"Kyno's Solver"/, "the old solver route still resolves under its old id")
-  for (const id of ['doubt-solving', 'practice', 'performance', 'plan', 'notes']) {
+  for (const id of ['doubt-solving', 'practice', 'performance', 'plan', 'notes', 'progress', 'profile']) {
     assert.match(dashboard, new RegExp(`<SpaceFrame active="${id}"`), `${id} renders inside the responsive frame`)
   }
 })
 
 test('text inputs on the new screens are at least 16px, or iOS zooms the page on focus', () => {
-  for (const f of ['DoubtSolving', 'Practice', 'Performance', 'Plan', 'Notes', 'NewIndex']) {
+  for (const f of ['DoubtSolving', 'Practice', 'Performance', 'Plan', 'Notes', 'NewIndex', 'Profile', 'Progress']) {
     const src = read('src', 'pages', `${f}.tsx`)
     const re = /<(input|textarea)\b/g
     let m
     while ((m = re.exec(src))) {
-      const block = src.slice(m.index, m.index + 900)
-      if (/type="file"|type='file'/.test(block.slice(0, 200))) continue
+      // only the element's own tag counts -- a hint paragraph after it may well be 12px
+      const rest = src.slice(m.index, m.index + 1400)
+      const end = rest.search(/\/>|<\/textarea>/)
+      const block = end > 0 ? rest.slice(0, end) : rest.slice(0, 900)
+      if (/type="file"|type='file'/.test(block)) continue
       const fs = block.match(/fontSize:\s*([\d.]+)/)
       if (fs) assert.ok(parseFloat(fs[1]) >= 16, `${f}.tsx: <${m[1]}> at offset ${m.index} has fontSize ${fs[1]}`)
     }

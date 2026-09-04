@@ -12,7 +12,6 @@ import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
 import { aiHeadersAsync } from '../lib/devKey'
 import { recordMistake, recordFlashcard } from '../lib/twin'
-import { awardXP } from '../lib/game'
 import { prepMathMarkdown } from '../lib/math.core'
 
 /* ── tuning: keeps the "always watching" feel without burning the free tier ── */
@@ -293,7 +292,6 @@ export default function CameraLive({ onExit }: { onExit?: () => void }) {
       setReport(j)
       try {
         if (j.weakConcept) recordMistake({ topic: String(j.weakConcept).slice(0, 60), detail: `Camera Study · ${String(j.summary || '').slice(0, 200)}` })
-        else awardXP('chat_answer')
       } catch {  }
       for (const c of (j.flashcards || []).slice(0, 5)) {
         if (c?.front && c?.back) { try { recordFlashcard({ front: c.front, back: c.back, subject: detected?.subject || undefined, topic: detected?.topic || undefined, source: 'camera' as any }) } catch {  } }
