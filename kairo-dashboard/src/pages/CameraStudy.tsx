@@ -16,7 +16,6 @@ import { curriculumDirective, resolveCurriculum } from '../lib/curriculum.core'
 import { formulaSignature } from '../lib/knowledgeHygiene.js'
 import { balance } from '../lib/balanceEquation.js'
 import { parseDiagramResponse, cardsFromDiagram } from '../lib/diagramRecall.core'
-import { awardXP } from '../lib/game'
 import { prepMathMarkdown } from '../lib/math.core'
 
 const VISION_MODELS = [
@@ -530,7 +529,6 @@ export default function CameraStudy() {
         setResult('')
         if (parsed.ok) {
           setRecall({ diagramType: parsed.diagramType, parts: parsed.parts })
-          try { awardXP('camera_scan' as any) } catch {  }
         } else {
           setRecall(null)
           setErr(
@@ -558,7 +556,6 @@ export default function CameraStudy() {
               detail: (verdict + ' — ' + slip).replace(/\s+/g, ' ').slice(0, 300),
             })
           } else {
-            try { awardXP('chat_answer') } catch {  }
           }
         } catch {  }
       }

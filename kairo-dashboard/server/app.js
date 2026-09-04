@@ -27,6 +27,7 @@ import examPlannerRoutes   from './routes/examPlanner.js'
 import topicArchitectRoutes from './routes/topicArchitect.js'
 import councilRoutes        from './routes/council.js'
 import leagueRoutes         from './routes/league.js'
+import socialRoutes from './routes/social.js'
 import accountRoutes        from './routes/account.js'
 import essayRoutes         from './routes/essay.js'
 import examRoutes          from './routes/exam.js'
@@ -152,6 +153,7 @@ app.use('/api/exam-planner',   examPlannerRoutes)
 app.use('/api/topic-architect', topicArchitectRoutes)
 app.use('/api/council',        councilRoutes)
 app.use('/api/league',         leagueRoutes)
+app.use('/api/social',         socialRoutes)
 app.use('/api/account',        accountRoutes)
 app.use('/api/essay',          essayRoutes)
 app.use('/api/exam',           examRoutes)

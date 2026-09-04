@@ -19,6 +19,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { ChevronRight, ArrowLeft, Star, Check, MessageSquare, Layers, Loader2, Info } from 'lucide-react'
 import { T, FONT, MONO, ICON, ERR, CALLOUT } from '../lib/spaceTokens'
 import { useSpaceLayout } from '../components/SpaceFrame'
+import { awardOnce } from '../lib/game'
 import type { ErrorType } from '../lib/spaceTokens'
 import { post } from '../lib/api'
 import { loadState } from '../lib/twin'
@@ -205,6 +206,11 @@ export default function Performance({ onOpenDoubt, onDrill }: {
   const impact = useMemo(() => computeImpact(records, state.events), [records, state])
   const topics = useMemo(() => topicGroups(records, state.mastery), [records, state])
   const pats = summary.state === 'empty' ? null : summary.patterns
+  // A beaten pattern is worth 50 XP -- once. The signature is the key, so
+  // re-detecting the same beaten pattern on the next visit pays nothing.
+  useEffect(() => {
+    for (const p of pats?.beaten || []) { try { awardOnce('pattern_beaten', p.signature) } catch { /* nicety */ } }
+  }, [pats])
 
   const shell: Style = { position: 'absolute', inset: 0, background: T.bg, color: T.text, fontFamily: FONT, display: 'flex', flexDirection: 'column', overflow: 'hidden' }
   const scroll: Style = { flex: 1, overflowY: 'auto', padding: '18px 14px 24px' }

@@ -54,7 +54,7 @@ export default function AdaptiveQuiz() {
   }
 
   async function onComplete(score: number, answers: any[]) {
-    try { awardXP('quiz_done') } catch {  }
+    try { awardXP('session_done') } catch {  }
     try {
       const r = await post('/quiz/complete', { school_id: SCHOOL_ID, session_id: sessionId, score, total: questions.length, answers, subject: form.subject })
       setFinalResult({ score, total: questions.length, ...r })

@@ -110,6 +110,12 @@ export default defineConfig({
       devOptions: { enabled: false },
     })] : []),
   ],
+  // The version string at the bottom of Profile: package.json's version plus
+  // the short commit Vercel built from (empty locally).
+  define: {
+    __APP_VERSION__: JSON.stringify(process.env.npm_package_version || '0.0.0'),
+    __APP_BUILD__:   JSON.stringify((process.env.VERCEL_GIT_COMMIT_SHA || '').slice(0, 7)),
+  },
   build: {
     chunkSizeWarningLimit: 1500,
     sourcemap: false,

@@ -4,7 +4,6 @@ import {
   Beaker, Atom, Heart, Activity, Sparkles, Lock,
   ArrowRight, Loader2, Globe, Dna, Rocket, Brain,
 } from 'lucide-react'
-import { awardXP } from '../lib/game'
 
 const GravityLab    = lazy(() => import('../labs/GravityLab'))
 const PendulumLab   = lazy(() => import('../labs/PendulumLab'))
@@ -148,7 +147,6 @@ export default function KairoLabs({ active = true }: { active?: boolean }) {
 
   useEffect(() => {
     if (activeLab && activeLab.ready) {
-      try { awardXP('lab_open') } catch {  }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeLab?.id])

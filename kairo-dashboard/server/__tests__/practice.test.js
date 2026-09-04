@@ -202,10 +202,11 @@ test('resultsHeadline with nothing moved does not pretend', () => {
   assert.equal(resultsHeadline(rows, []).headline, 'Nothing moved yet.')
 })
 
-test('xpFor rewards finishing and the hard formats, not grinding', () => {
-  const grind = xpFor({ cards: 200, questions: 0, correct: 0, finished: true })
-  const balanced = xpFor({ cards: 20, questions: 6, correct: 4, written: 1, finished: true })
-  assert.ok(balanced > grind, 'a balanced session must out-earn a card grind')
+test('xpFor is the published XP table: 20 a session, 5 a card kept, 15 a graded answer -- nothing for volume', () => {
+  assert.equal(xpFor({ retained: 2, written: 1, finished: true }), 20 + 2 * 5 + 15)
+  assert.equal(xpFor({ retained: 3, teach: 1, finished: true }), 20 + 15 + 15)
+  const grind = xpFor({ cards: 200, questions: 40, correct: 40, retained: 0, finished: true })
+  assert.equal(grind, 20, 'two hundred cards seen and forty questions answered earn the session credit and nothing more')
   assert.equal(xpFor({ finished: false }), 0)
 })
 

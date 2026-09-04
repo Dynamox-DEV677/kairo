@@ -36,7 +36,7 @@ export const ROUTE_CATEGORY = {
   'exam': 'ai', 'examPlanner': 'ai', 'flashcards': 'ai', 'formula': 'ai',
   'grading': 'ai', 'knowledge': 'ai', 'notebook': 'ai', 'quiz': 'ai',
   'study': 'ai', 'studyPlan': 'ai', 'topicArchitect': 'ai', 'writing': 'ai',
-  'battle': 'ai', 'tts': 'ai',
+  'tts': 'ai',
 
   // photos and files you upload
   'cameraLive': 'media', 'document': 'media',
@@ -51,7 +51,11 @@ export const ROUTE_CATEGORY = {
   'fees': 'school', 'lessonPlan': 'school', 'marks': 'school',
   'parent': 'school', 'parentMessage': 'school', 'payments': 'school',
   'questionPaper': 'school', 'schoolHealth': 'school', 'schools': 'school',
-  'students': 'school', 'timetable': 'school', 'league': 'school',
+  'students': 'school', 'timetable': 'school',
+
+  // other students can see these — as a username only, never a name, a photo,
+  // an email, a school or a class section. Each has an off switch in Profile.
+  'league': 'social', 'battle': 'social', 'social': 'social',
 
   // server plumbing — carries no student content
   'cron': 'ops', 'devEmailPreview': 'ops', 'emails': 'ops',
@@ -110,6 +114,15 @@ export const DATA_FLOWS = [
     when: 'Only if your school set up Kyno for you',
     where: 'Your school, who can see it',
     appliesWhen: 'school-mode', optional: false,
+  },
+  {
+    id: 'social', category: 'social',
+    what: 'Your username, your XP and how many minutes you studied this week — never your name, email, school or class',
+    when: 'When you are in a league, a battle or a study room',
+    where: 'Other Kyno students, as a username only',
+    // optional: the three switches live on the Profile screen (space 7).
+    appliesWhen: 'signed-in', optional: true,
+    note: 'Leagues, battles and study rooms each have their own off switch in Profile. Study rooms are off until you turn them on. A long-press on any username reports it and removes that student from your matches for good.',
   },
   {
     id: 'ops', category: 'ops',

@@ -10,7 +10,6 @@ import { api } from '../lib/api'
 import { PrimaryButton } from '../components/PrimaryButton'
 import { chat } from '../lib/openrouter'
 import { track } from '../lib/twin'
-import { awardXPAmount } from '../lib/game'
 import {
   getDailyLocal, getStatsLocal, getLeaderboardLocal,
   submitLocal, isMissingBackend,
@@ -259,9 +258,7 @@ Tips: each tip is one specific actionable line (max 18 words) — reference the 
     const correct = finalAnswers.filter((a, i) => a === questions[i]?.answer).length
     const aiCorrect = aiAnswers.filter((a, i) => a !== null && a === questions[i]?.answer).length
 
-    const perCorrect = daily?.xp_per_correct || (mode === 'spar' ? 10 : 14)
-    const battleXP = correct * perCorrect + (mode === 'spar' && correct > aiCorrect ? 20 : 0)
-    awardXPAmount(battleXP, mode === 'spar' ? 'Battle — sparring win' : 'Battle — daily challenge')
+    // Battles pay no XP now: the published table rewards what is kept (cards, patterns, sessions, written answers), not wins. The server still records the score.
 
     if (mode === 'daily') {
       setSubmitting(true)
