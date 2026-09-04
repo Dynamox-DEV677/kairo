@@ -236,3 +236,19 @@ test('every vocabulary signature has a type in the taxonomy, a fix, and a second
   // an unknown signature still renders a name and never crashes
   assert.equal(signatureInfo('weird-new-thing').name, 'Weird new thing')
 })
+
+test('record ids are unique even for identical events in the same millisecond', () => {
+  // React keys and deep links. Found in the browser: a preview seed wrote two
+  // identical slips with the same ts and React dropped one of the rows.
+  const same = { type: 'mistake', ts: NOW, topic: 'motion', payload: { signature: 'omits-units', marksLost: 1 } }
+  const recs = mistakeRecords([same, { ...same }, { ...same }])
+  assert.equal(recs.length, 3)
+  assert.equal(new Set(recs.map(r => r.id)).size, 3)
+
+  // and two lost steps with the same signature inside ONE graded answer
+  const graded = classifyEvent({ type: 'essay_graded', ts: NOW, topic: 'motion', payload: { steps: [
+    { line: 2, type: 'units', marks: 1, awarded: 0, signature: 'omits-units' },
+    { line: 4, type: 'units', marks: 1, awarded: 0, signature: 'omits-units' },
+  ] } })
+  assert.equal(new Set(graded.map(r => r.id)).size, 2)
+})
