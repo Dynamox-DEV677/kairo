@@ -3,3 +3,6 @@ node_modules/
 *.db
 dist/
 .DS_Store
+
+# file-store temp files (written next to the *.db they replace)
+*.db~
