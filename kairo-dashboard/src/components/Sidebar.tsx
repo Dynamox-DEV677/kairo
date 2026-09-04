@@ -697,6 +697,15 @@ export default function Sidebar({ active, setActive, isDark, toggleTheme, profil
             </>
           )}
         </div>
+
+        {/* Seven-spaces redesign, pre-cutover: the laptop twin of the drawer's
+            dull "New design (preview)" row, so the new screens open here too
+            without a typed URL. Deleted in the cutover commit. */}
+        <button onClick={() => setActive('new')} title="New design (preview)" style={{
+          width: '100%', marginTop: 6, padding: expanded ? '8px 10px 2px' : '8px 0 2px', background: 'none', border: 'none',
+          borderTop: '1px solid #1E1E2C', color: '#5E5E78', fontFamily: 'inherit', fontSize: 12.5,
+          textAlign: expanded ? 'left' : 'center', cursor: 'pointer',
+        }}>{expanded ? 'New design (preview)' : 'New'}</button>
       </div>
     </motion.aside>
   )

@@ -22,6 +22,13 @@ import ExamHall from './ExamHall'
 import TopicArchitect from './TopicArchitect'
 import KairoHome from './KairoHome'
 import KairoChat from './KairoChat'
+import DoubtSolving from './DoubtSolving'
+import Practice from './Practice'
+import Performance from './Performance'
+import Plan from './Plan'
+import Notes from './Notes'
+import NewIndex from './NewIndex'
+import SpaceFrame from '../components/SpaceFrame'
 import { XPToast } from '../components/GameBar'
 import ErrorBoundary from '../components/ErrorBoundary'
 import EssayGrader from './EssayGrader'
@@ -85,6 +92,18 @@ const KairoOSM           = memo(KairoOS)
 const PAGE_TITLES: Record<string, string> = {
   home:             'Home',
   doubt:            "Kyno's Solver",
+  // Seven-spaces redesign, pre-cutover. Lives BESIDE the old routes, reachable
+  // only by typing #/doubt-solving -- the drawer still points everything at the
+  // old screens on purpose. The cutover commit renames this to 'doubt' and adds
+  // the redirects; until then nothing a student can click reaches it.
+  'doubt-solving':  'Doubt Solving',
+  'practice':       'Practice',
+  'performance':    'Performance',
+  'plan':           'Plan',
+  'notes':          'Notes',
+  // The one door into the new spaces before the cutover: a dull row at the
+  // bottom of the drawer opens this index. Deleted with the cutover commit.
+  'new':            'New design',
   ops:              'Ops Dashboard',
   flashcards:       'Flashcards & SRS',
   'study-plan':     'Study Plan',
@@ -200,10 +219,20 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
   const [selectedModel, setSelectedModel] = useState(DEFAULT_MODEL)
   const [solverActive, setSolverActive] = useState(false)
 
-  useEffect(() => {
-    (window as any).__kairoSetActive = setActive
-    return () => { delete (window as any).__kairoSetActive }
+  // A mock is only worth anything because no help exists. While one is
+  // running, the solver and Doubt Solving are unreachable -- not hidden,
+  // unreachable -- from the drawer, from Home cards, from deep links, from
+  // every setActive() in the app. One navigate() for all of them.
+  const navigate = useCallback((id: string) => {
+    const HELP = new Set(['doubt', 'doubt-solving', 'solver-classic', 'camera', 'camera-study'])
+    if ((window as any).__kynoExamLock && HELP.has(id)) return
+    setActive(id)
   }, [])
+
+  useEffect(() => {
+    (window as any).__kairoSetActive = navigate
+    return () => { delete (window as any).__kairoSetActive }
+  }, [navigate])
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', 'dark')
@@ -282,7 +311,7 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
       {!isMobile && (
         <Sidebar
           active={active}
-          setActive={setActive}
+          setActive={navigate}
           isDark={isDark}
           toggleTheme={() => setIsDark(d => !d)}
           profile={profile}
@@ -294,7 +323,7 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
         {isMobile ? (
           <MobileShell
             active={active}
-            setActive={setActive}
+            setActive={navigate}
             pageTitle={PAGE_TITLES[active] || 'Dashboard'}
             isDark={isDark}
             toggleTheme={() => setIsDark(d => !d)}
@@ -361,6 +390,103 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
                   />
                 )}
               </div>
+              )}
+            </div>
+
+            {/* Seven-spaces redesign, pre-cutover. Each space renders inside
+                SpaceFrame: phone edge-to-edge, tablet a centred 480px column,
+                desktop a 240px sidebar of the finished spaces. NEW SCREENS
+                ONLY -- nothing above or below this block is wrapped. */}
+            <div className={pageClass} style={pageStyle('doubt-solving')}>
+              {mounted('doubt-solving') && (
+                <SpaceFrame active="doubt-solving" onNavigate={navigate}>
+                <DoubtSolving
+                  profile={profile}
+                  onOpenChat={(seed: string) => {
+                    // Reuse the ONE existing chat instead of mounting a second
+                    // KairoChat: both instances would listen for
+                    // kairo:load-chat and both would write the chat id.
+                    setActive('doubt')
+                    setTimeout(() => {
+                      window.dispatchEvent(new CustomEvent('kairo:load-chat', {
+                        detail: { id: 'new', seed },
+                      }))
+                    }, 60)
+                  }}
+                />
+                </SpaceFrame>
+              )}
+            </div>
+
+            <div className={pageClass} style={pageStyle('practice')}>
+              {mounted('practice') && (
+                <SpaceFrame active="practice" onNavigate={navigate}>
+                <Practice onOpenDoubt={(seed: string) => {
+                  navigate('doubt-solving')
+                  setTimeout(() => window.dispatchEvent(new CustomEvent('kyno:doubt-seed', { detail: { seed } })), 60)
+                }} />
+                </SpaceFrame>
+              )}
+            </div>
+
+            <div className={pageClass} style={pageStyle('performance')}>
+              {mounted('performance') && (
+                <SpaceFrame active="performance" onNavigate={navigate}>
+                <Performance
+                  onOpenDoubt={(seed: string) => {
+                    navigate('doubt-solving')
+                    setTimeout(() => window.dispatchEvent(new CustomEvent('kyno:doubt-seed', { detail: { seed } })), 60)
+                  }}
+                  onDrill={(filter) => {
+                    // Practice listens and builds the session around these
+                    // signatures/topics instead of its default target.
+                    navigate('practice')
+                    setTimeout(() => window.dispatchEvent(new CustomEvent('kyno:practice-filter', { detail: filter })), 60)
+                  }}
+                />
+                </SpaceFrame>
+              )}
+            </div>
+
+            <div className={pageClass} style={pageStyle('plan')}>
+              {mounted('plan') && (
+                <SpaceFrame active="plan" onNavigate={navigate}>
+                <Plan
+                  onOpenDoubt={(seed: string) => {
+                    navigate('doubt-solving')
+                    setTimeout(() => window.dispatchEvent(new CustomEvent('kyno:doubt-seed', { detail: { seed } })), 60)
+                  }}
+                  onPractice={(filter) => {
+                    navigate('practice')
+                    setTimeout(() => window.dispatchEvent(new CustomEvent('kyno:practice-filter', { detail: filter })), 60)
+                  }}
+                />
+                </SpaceFrame>
+              )}
+            </div>
+
+            <div className={pageClass} style={pageStyle('notes')}>
+              {mounted('notes') && (
+                <SpaceFrame active="notes" onNavigate={navigate}>
+                <Notes
+                  onOpenDoubt={(seed: string) => {
+                    navigate('doubt-solving')
+                    setTimeout(() => window.dispatchEvent(new CustomEvent('kyno:doubt-seed', { detail: { seed } })), 60)
+                  }}
+                  onPractice={(filter) => {
+                    navigate('practice')
+                    setTimeout(() => window.dispatchEvent(new CustomEvent('kyno:practice-filter', { detail: filter })), 60)
+                  }}
+                />
+                </SpaceFrame>
+              )}
+            </div>
+
+            <div className={pageClass} style={pageStyle('new')}>
+              {mounted('new') && (
+                <SpaceFrame active="new" onNavigate={navigate}>
+                  <NewIndex onOpen={navigate} />
+                </SpaceFrame>
               )}
             </div>
 

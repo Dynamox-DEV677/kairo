@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<title>Practice — local preview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  html,body{height:100%;margin:0;background:#07070E;font-family:'Plus Jakarta Sans',system-ui,sans-serif}
+  #root{position:relative;height:100%;width:100%;overflow:hidden}
+  /* Phone-shaped on a big screen, full-bleed on an actual phone. */
+  @media (min-width:520px){
+    body{display:grid;place-items:center}
+    #root{width:390px;height:844px;border-radius:28px;border:1px solid #262636;box-shadow:0 24px 70px rgba(0,0,0,.6)}
+    #note{position:fixed;top:16px;left:16px;color:#5E5E78;font-size:12px;line-height:1.6;max-width:250px}
+  }
+  @media (max-width:519px){ #note{display:none} }
+  /* ?full — fill the window, so the three breakpoints can be checked */
+  html.full body{display:block}
+  html.full #root{width:100%;height:100%;border:0;border-radius:0;box-shadow:none}
+  html.full #note{display:none}
+</style>
+<script>if(location.search.indexOf('full')>-1)document.documentElement.classList.add('full')</script>
+</head><body>
+<div id="note">
+  <b style="color:#9B82FF">Practice — local preview</b><br/>
+  No sign-in. Every network call is stubbed, so answers are canned but
+  every screen and interaction is the real component.<br/><br/>
+  Try: change the minutes and watch the plan rebuild · Start · grade cards ·
+  answer questions · photograph anything for the step-marked grader · teach
+  back (mic or text) · results · Pick a format myself → Full mock (Kyno locks).
+</div>
+<div id="root"></div>
+<script type="module" src="/src/practice-preview.tsx"></script>
+</body></html>

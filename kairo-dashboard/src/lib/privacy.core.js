@@ -27,6 +27,12 @@ export const ROUTE_CATEGORY = {
 
   // things you type that a model reads
   'aiChat': 'ai', 'concept': 'ai', 'council': 'ai', 'essay': 'ai',
+  // mistake samples sent for a one-line diagnosis, cached per signature
+  'performance': 'ai',
+  // a chapter's three-session split, reworded by the model; the standard split is the fallback
+  'plan': 'ai',
+  // a long-answer marking scheme: points and keywords, never prose
+  'notesScheme': 'ai',
   'exam': 'ai', 'examPlanner': 'ai', 'flashcards': 'ai', 'formula': 'ai',
   'grading': 'ai', 'knowledge': 'ai', 'notebook': 'ai', 'quiz': 'ai',
   'study': 'ai', 'studyPlan': 'ai', 'topicArchitect': 'ai', 'writing': 'ai',
@@ -34,6 +40,8 @@ export const ROUTE_CATEGORY = {
 
   // photos and files you upload
   'cameraLive': 'media', 'document': 'media',
+  // photographed handwritten answers and spoken teach-back transcripts
+  'practice': 'media',
 
   // screen views
   'analytics': 'telemetry',
@@ -83,8 +91,8 @@ export const DATA_FLOWS = [
   },
   {
     id: 'media', category: 'media',
-    what: 'Photos and documents you upload',
-    when: 'Each time you snap a question or add a file',
+    what: 'Photos, documents and answers you upload',
+    when: 'Each time you snap a question, add a file, photograph a written answer, or explain something out loud',
     where: 'Kyno server, then the AI model that reads it',
     appliesWhen: 'on-use', optional: false,
   },

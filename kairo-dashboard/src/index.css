@@ -290,6 +290,9 @@ button, [role="button"], a, .kyno-tile, .kyno-chip {
   .kyno-chunky:hover:not(:disabled) { transform: translateY(-1px); }
   .kyno-tile:hover:not(:disabled)   { transform: translateY(-1px); border-color: var(--c-purple); }
   .kyno-ghost:hover:not(:disabled)  { background: rgba(124, 92, 255,0.10); }
+  /* Seven-spaces desktop sidebar (SpaceFrame). Inline styles paint the active
+     row; hover is here so it can never stick after a tap on a touch screen. */
+  .kyno-space-nav:hover:not(.on)    { background: #1A1A26 !important; }
 }
 
 /* Inputs / dropdowns — subtle raised container that presses IN on focus (not up) */

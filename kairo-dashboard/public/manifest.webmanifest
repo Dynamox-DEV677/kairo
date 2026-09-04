@@ -1,5 +1,5 @@
 {
-  "name": "Kyno – AI Education System",
+  "name": "Kyno",
   "short_name": "Kyno",
   "description": "Kyno is an AI-powered education platform developed by Kairo Industries to help students learn faster, smarter, and more effectively.",
   "id": "/",
@@ -7,8 +7,8 @@
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#050505",
-  "theme_color": "#050505",
+  "background_color": "#0B0B14",
+  "theme_color": "#0B0B14",
   "categories": ["education", "productivity"],
   "lang": "en",
   "icons": [
