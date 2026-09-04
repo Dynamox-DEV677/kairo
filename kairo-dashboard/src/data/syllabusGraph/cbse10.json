@@ -1,0 +1,58 @@
+{
+  "graph": "cbse10",
+  "exam": "cbse10",
+  "label": "CBSE Class 10 · Science & Mathematics",
+  "comment": "Seeded BY HAND from weightage.cbse.json (marks per chapter, 80-mark theory papers, 2025-26) and cbse.json (topic lists). est_study_minutes is a data-entry estimate for a first full pass at Class 10 level: roughly 30 min per listed topic scaled by the chapter's difficulty (1-5), rounded to the half hour. pyq_frequency is a coarse estimate from marks + difficulty. Both are DATA so they can be corrected without a deploy. Chapter names match weightage.cbse.json keys exactly so the two files stay in step.",
+  "nodes": [
+    { "id": "sci", "parent": null, "kind": "subject", "name": "Science" },
+    { "id": "sci.chem", "parent": "sci", "kind": "unit", "name": "Chemical Substances" },
+    { "id": "sci.chem.reactions", "parent": "sci.chem", "kind": "chapter", "name": "Chemical Reactions and Equations", "typical_marks": 6, "pyq_frequency": 0.9, "est_study_minutes": 180, "prereq": [], "topics": ["writing and balancing equations", "balancing equations", "types of chemical reactions", "oxidation and reduction", "redox", "corrosion and rancidity", "corrosion", "rancidity"] },
+    { "id": "sci.chem.acids", "parent": "sci.chem", "kind": "chapter", "name": "Acids, Bases and Salts", "typical_marks": 7, "pyq_frequency": 0.9, "est_study_minutes": 210, "prereq": ["sci.chem.reactions"], "topics": ["properties of acids and bases", "acids and bases", "ph scale", "ph", "common salts and their uses", "salts", "indicators"] },
+    { "id": "sci.chem.metals", "parent": "sci.chem", "kind": "chapter", "name": "Metals and Non-metals", "typical_marks": 6, "pyq_frequency": 0.85, "est_study_minutes": 240, "prereq": ["sci.chem.reactions"], "topics": ["physical and chemical properties", "reactivity series", "extraction of metals", "ionic compounds", "metals", "non-metals"] },
+    { "id": "sci.chem.carbon", "parent": "sci.chem", "kind": "chapter", "name": "Carbon and its Compounds", "typical_marks": 6, "pyq_frequency": 0.85, "est_study_minutes": 300, "prereq": ["sci.chem.metals"], "topics": ["covalent bonding in carbon", "covalent bonding", "homologous series", "nomenclature", "chemical properties of carbon compounds", "carbon compounds", "hydrocarbons", "functional groups"] },
+
+    { "id": "sci.bio", "parent": "sci", "kind": "unit", "name": "World of Living" },
+    { "id": "sci.bio.life", "parent": "sci.bio", "kind": "chapter", "name": "Life Processes", "typical_marks": 8, "pyq_frequency": 0.95, "est_study_minutes": 270, "prereq": [], "topics": ["nutrition", "respiration", "transportation", "excretion", "life processes", "photosynthesis", "digestion"] },
+    { "id": "sci.bio.control", "parent": "sci.bio", "kind": "chapter", "name": "Control and Coordination", "typical_marks": 6, "pyq_frequency": 0.85, "est_study_minutes": 210, "prereq": ["sci.bio.life"], "topics": ["nervous system and reflex arc", "nervous system", "reflex arc", "hormones in animals", "hormones", "coordination in plants", "plant hormones"] },
+    { "id": "sci.bio.reproduce", "parent": "sci.bio", "kind": "chapter", "name": "How do Organisms Reproduce", "typical_marks": 6, "pyq_frequency": 0.8, "est_study_minutes": 180, "prereq": ["sci.bio.life"], "topics": ["asexual reproduction", "sexual reproduction in plants", "human reproductive system", "reproduction"] },
+    { "id": "sci.bio.heredity", "parent": "sci.bio", "kind": "chapter", "name": "Heredity", "typical_marks": 5, "pyq_frequency": 0.8, "est_study_minutes": 150, "prereq": ["sci.bio.reproduce"], "topics": ["mendel's laws", "mendel", "sex determination", "heredity", "genetics"] },
+
+    { "id": "sci.phy", "parent": "sci", "kind": "unit", "name": "Natural Phenomena and Effects of Current" },
+    { "id": "sci.phy.light", "parent": "sci.phy", "kind": "chapter", "name": "Light — Reflection and Refraction", "typical_marks": 7, "pyq_frequency": 0.95, "est_study_minutes": 330, "prereq": [], "topics": ["spherical mirrors", "mirror formula and magnification", "mirror formula", "magnification", "refraction and snell's law", "refraction", "snell's law", "lenses and lens formula", "lens formula", "lenses", "reflection", "light"] },
+    { "id": "sci.phy.eye", "parent": "sci.phy", "kind": "chapter", "name": "The Human Eye and the Colourful World", "typical_marks": 5, "pyq_frequency": 0.8, "est_study_minutes": 150, "prereq": ["sci.phy.light"], "topics": ["structure and accommodation", "human eye", "defects of vision", "myopia", "hypermetropia", "dispersion and scattering", "dispersion", "scattering", "rainbow"] },
+    { "id": "sci.phy.electricity", "parent": "sci.phy", "kind": "chapter", "name": "Electricity", "typical_marks": 8, "pyq_frequency": 0.95, "est_study_minutes": 360, "prereq": [], "topics": ["electric current and potential difference", "electric current", "potential difference", "ohm's law", "resistance and resistivity", "resistance", "resistivity", "series and parallel combinations", "series and parallel", "heating effect and electric power", "heating effect", "electric power", "electricity"] },
+    { "id": "sci.phy.magnetism", "parent": "sci.phy", "kind": "chapter", "name": "Magnetic Effects of Electric Current", "typical_marks": 5, "pyq_frequency": 0.85, "est_study_minutes": 210, "prereq": ["sci.phy.electricity"], "topics": ["magnetic field and field lines", "magnetic field", "field lines", "force on a current-carrying conductor", "fleming's left hand rule", "electromagnetic induction", "domestic electric circuits", "magnetism", "electromagnet"] },
+
+    { "id": "sci.env", "parent": "sci", "kind": "unit", "name": "Natural Resources" },
+    { "id": "sci.env.environment", "parent": "sci.env", "kind": "chapter", "name": "Our Environment", "typical_marks": 5, "pyq_frequency": 0.75, "est_study_minutes": 90, "prereq": [], "topics": ["ecosystem and food chains", "ecosystem", "food chain", "food web", "ozone depletion and waste management", "ozone", "waste management", "environment"] },
+
+    { "id": "math", "parent": null, "kind": "subject", "name": "Mathematics" },
+    { "id": "math.numbers", "parent": "math", "kind": "unit", "name": "Number Systems" },
+    { "id": "math.numbers.real", "parent": "math.numbers", "kind": "chapter", "name": "Real Numbers", "typical_marks": 6, "pyq_frequency": 0.9, "est_study_minutes": 150, "prereq": [], "topics": ["euclid's division lemma", "fundamental theorem of arithmetic", "proving irrationality", "irrational numbers", "hcf and lcm", "real numbers"] },
+
+    { "id": "math.algebra", "parent": "math", "kind": "unit", "name": "Algebra" },
+    { "id": "math.algebra.polynomials", "parent": "math.algebra", "kind": "chapter", "name": "Polynomials", "typical_marks": 4, "pyq_frequency": 0.85, "est_study_minutes": 120, "prereq": [], "topics": ["zeroes and coefficients", "zeroes of a polynomial", "division algorithm", "polynomials"] },
+    { "id": "math.algebra.linear", "parent": "math.algebra", "kind": "chapter", "name": "Pair of Linear Equations in Two Variables", "typical_marks": 5, "pyq_frequency": 0.9, "est_study_minutes": 210, "prereq": ["math.algebra.polynomials"], "topics": ["graphical method", "substitution and elimination", "substitution method", "elimination method", "word problems", "linear equations", "pair of linear equations"] },
+    { "id": "math.algebra.quadratic", "parent": "math.algebra", "kind": "chapter", "name": "Quadratic Equations", "typical_marks": 5, "pyq_frequency": 0.9, "est_study_minutes": 210, "prereq": ["math.algebra.polynomials"], "topics": ["solving by factorisation", "factorisation", "quadratic formula", "nature of roots", "discriminant", "quadratic equations"] },
+    { "id": "math.algebra.ap", "parent": "math.algebra", "kind": "chapter", "name": "Arithmetic Progressions", "typical_marks": 6, "pyq_frequency": 0.9, "est_study_minutes": 150, "prereq": [], "topics": ["nth term of an ap", "nth term", "sum of n terms", "arithmetic progression", "ap"] },
+
+    { "id": "math.geometry", "parent": "math", "kind": "unit", "name": "Geometry" },
+    { "id": "math.geometry.triangles", "parent": "math.geometry", "kind": "chapter", "name": "Triangles", "typical_marks": 9, "pyq_frequency": 0.95, "est_study_minutes": 330, "prereq": [], "topics": ["similarity criteria", "similar triangles", "basic proportionality theorem", "thales theorem", "pythagoras theorem", "triangles"] },
+    { "id": "math.geometry.circles", "parent": "math.geometry", "kind": "chapter", "name": "Circles", "typical_marks": 6, "pyq_frequency": 0.85, "est_study_minutes": 120, "prereq": ["math.geometry.triangles"], "topics": ["tangent to a circle", "tangents", "circles"] },
+
+    { "id": "math.coord", "parent": "math", "kind": "unit", "name": "Coordinate Geometry" },
+    { "id": "math.coord.geometry", "parent": "math.coord", "kind": "chapter", "name": "Coordinate Geometry", "typical_marks": 6, "pyq_frequency": 0.85, "est_study_minutes": 120, "prereq": [], "topics": ["distance formula", "section formula", "midpoint", "coordinate geometry"] },
+
+    { "id": "math.trig", "parent": "math", "kind": "unit", "name": "Trigonometry" },
+    { "id": "math.trig.intro", "parent": "math.trig", "kind": "chapter", "name": "Introduction to Trigonometry", "typical_marks": 7, "pyq_frequency": 0.95, "est_study_minutes": 300, "prereq": ["math.geometry.triangles"], "topics": ["trigonometric ratios", "ratios of specific angles", "trigonometric identities", "identities", "trigonometry", "sin cos tan"] },
+    { "id": "math.trig.applications", "parent": "math.trig", "kind": "chapter", "name": "Some Applications of Trigonometry", "typical_marks": 5, "pyq_frequency": 0.85, "est_study_minutes": 120, "prereq": ["math.trig.intro"], "topics": ["heights and distances", "angle of elevation", "angle of depression"] },
+
+    { "id": "math.mensuration", "parent": "math", "kind": "unit", "name": "Mensuration" },
+    { "id": "math.mensuration.circles", "parent": "math.mensuration", "kind": "chapter", "name": "Areas Related to Circles", "typical_marks": 4, "pyq_frequency": 0.8, "est_study_minutes": 120, "prereq": ["math.geometry.circles"], "topics": ["areas of sectors and segments", "sector", "segment", "area of circle"] },
+    { "id": "math.mensuration.solids", "parent": "math.mensuration", "kind": "chapter", "name": "Surface Areas and Volumes", "typical_marks": 6, "pyq_frequency": 0.85, "est_study_minutes": 180, "prereq": [], "topics": ["combinations of solids", "conversion of solids", "surface area", "volume", "frustum"] },
+
+    { "id": "math.stats", "parent": "math", "kind": "unit", "name": "Statistics and Probability" },
+    { "id": "math.stats.statistics", "parent": "math.stats", "kind": "chapter", "name": "Statistics", "typical_marks": 6, "pyq_frequency": 0.9, "est_study_minutes": 150, "prereq": [], "topics": ["mean of grouped data", "median and mode of grouped data", "mean", "median", "mode", "ogive", "statistics"] },
+    { "id": "math.stats.probability", "parent": "math.stats", "kind": "chapter", "name": "Probability", "typical_marks": 5, "pyq_frequency": 0.9, "est_study_minutes": 90, "prereq": [], "topics": ["classical probability", "probability"] }
+  ]
+}
