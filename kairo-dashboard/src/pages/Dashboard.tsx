@@ -22,6 +22,7 @@ import ExamHall from './ExamHall'
 import TopicArchitect from './TopicArchitect'
 import KairoHome from './KairoHome'
 import KairoChat from './KairoChat'
+import DoubtSolving from './DoubtSolving'
 import { XPToast } from '../components/GameBar'
 import ErrorBoundary from '../components/ErrorBoundary'
 import EssayGrader from './EssayGrader'
@@ -85,6 +86,11 @@ const KairoOSM           = memo(KairoOS)
 const PAGE_TITLES: Record<string, string> = {
   home:             'Home',
   doubt:            "Kyno's Solver",
+  // Seven-spaces redesign, pre-cutover. Lives BESIDE the old routes, reachable
+  // only by typing #/doubt-solving -- the drawer still points everything at the
+  // old screens on purpose. The cutover commit renames this to 'doubt' and adds
+  // the redirects; until then nothing a student can click reaches it.
+  'doubt-solving':  'Doubt Solving',
   ops:              'Ops Dashboard',
   flashcards:       'Flashcards & SRS',
   'study-plan':     'Study Plan',
@@ -361,6 +367,25 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
                   />
                 )}
               </div>
+              )}
+            </div>
+
+            <div className={pageClass} style={pageStyle('doubt-solving')}>
+              {mounted('doubt-solving') && (
+                <DoubtSolving
+                  profile={profile}
+                  onOpenChat={(seed: string) => {
+                    // Reuse the ONE existing chat instead of mounting a second
+                    // KairoChat: both instances would listen for
+                    // kairo:load-chat and both would write the chat id.
+                    setActive('doubt')
+                    setTimeout(() => {
+                      window.dispatchEvent(new CustomEvent('kairo:load-chat', {
+                        detail: { id: 'new', seed },
+                      }))
+                    }, 60)
+                  }}
+                />
               )}
             </div>
 

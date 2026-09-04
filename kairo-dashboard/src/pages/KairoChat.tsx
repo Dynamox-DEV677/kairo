@@ -141,12 +141,17 @@ export default function KairoChat() {
   useEffect(() => {
     const onLoad = (e: Event) => {
       const id = (e as CustomEvent).detail?.id
+      const seed = (e as CustomEvent)?.detail?.seed
       if (!id) return
       if (id === 'new') {
         chatIdRef.current = newChatId()
         try { localStorage.setItem(CHAT_ID_KEY, chatIdRef.current) } catch {  }
         setTurns([])
-        setInput('')
+        // Doubt Solving's "I'm stuck here" hands over the step the student was
+        // on. Prefilling rather than auto-sending is deliberate: they usually
+        // want to add a word about WHAT confused them, and a question that
+        // fires before they can is a wasted answer.
+        setInput(typeof seed === 'string' ? seed : '')
         return
       }
       const chat = getRecentChats().find(c => c.id === id)
