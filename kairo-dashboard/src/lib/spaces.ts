@@ -1,22 +1,31 @@
 /**
- * The seven-spaces redesign as a list: what is finished, where it lives, what
- * to call it. Read by the desktop sidebar of the new screens, the /new index
- * page and nothing else. Two spaces are still to come; the cutover commit is
- * the one that points the drawer at this list.
+ * The seven spaces: the whole app, as a list.
+ *
+ * Since the cutover this is the navigation. The drawer, the desktop sidebar
+ * and the bottom bar all read it, and SPACE_ALIASES sends every old route to
+ * the space that absorbed it, so a bookmark, a deep link or an old button
+ * still lands somewhere real.
+ *
+ * The ids, labels and redirects live in spaces.core.js (pure, so the test
+ * runner can import them); this file only adds the icons.
  */
 import type { LucideIcon } from 'lucide-react'
 import { MessageSquare, Target, TrendingUp, Calendar, BookOpen, User, Trophy } from 'lucide-react'
+import { SPACE_META, SPACE_IDS, SPACE_ALIASES, resolveSpace } from './spaces.core'
+import type { SpaceMeta } from './spaces.core'
 
-export interface Space { id: string; label: string; sub: string; icon: LucideIcon }
+export { SPACE_IDS, SPACE_ALIASES, resolveSpace }
 
-export const SPACES: Space[] = [
-  { id: 'doubt-solving', label: 'Doubt Solving', sub: 'ask a question, get stepped answers',           icon: MessageSquare },
-  { id: 'practice',      label: 'Practice',      sub: 'timed sessions, flashcards, written grading',  icon: Target },
-  { id: 'performance',   label: 'Performance',   sub: 'your repeating mistakes',                      icon: TrendingUp },
-  { id: 'plan',          label: 'Plan',          sub: 'exam countdown and syllabus coverage',         icon: Calendar },
-  { id: 'notes',         label: 'Notes',         sub: 'one library, nothing kept without a return date', icon: BookOpen },
-  { id: 'progress',      label: 'Progress',      sub: 'what you know, and the people studying beside you', icon: Trophy },
-  { id: 'profile',       label: 'Profile',       sub: 'your username, your studies, who can see you',   icon: User },
-]
+export interface Space extends SpaceMeta { icon: LucideIcon }
 
-export const SPACE_IDS: ReadonlySet<string> = new Set(SPACES.map(s => s.id))
+const ICONS: Record<string, LucideIcon> = {
+  'doubt-solving': MessageSquare,
+  practice: Target,
+  performance: TrendingUp,
+  plan: Calendar,
+  notes: BookOpen,
+  progress: Trophy,
+  profile: User,
+}
+
+export const SPACES: Space[] = SPACE_META.map(s => ({ ...s, icon: ICONS[s.id] || Target }))
