@@ -201,6 +201,24 @@ export function rebuildWithout(items = [], kind, fromIndex = 0) {
   return items.filter((it, i) => i < fromIndex || it.kind !== kind)
 }
 
+/**
+ * The plan asked for N questions; the API returned fewer.
+ *
+ * /api/quiz/start caps at 15 and a model routinely returns 8 when asked for
+ * 9. Without this, item 9 renders "Writing your questions..." forever -- the
+ * failure path only covered the fetch failing, not the fetch succeeding short.
+ * Keep the first `available` question items; every other kind is untouched.
+ */
+export function trimQuestions(items = [], available = 0) {
+  if (!Array.isArray(items)) return []
+  let seen = 0
+  return items.filter(it => {
+    if (!it || it.kind !== 'question') return true
+    seen += 1
+    return seen <= Math.max(0, available | 0)
+  })
+}
+
 /* ── in-session helpers ──────────────────────────────────────────────────── */
 
 /** "11:42" from milliseconds. Never negative. */

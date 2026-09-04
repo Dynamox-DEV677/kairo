@@ -10,7 +10,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import {
   ESTIMATE, buildSession, dueCards, targetTopic, rebuildWithout, clock,
-  intervalLabel, lastMissLine, movementRows, resultsHeadline, xpFor, flatTopicNudge,
+  intervalLabel, lastMissLine, movementRows, resultsHeadline, xpFor, flatTopicNudge, trimQuestions,
 } from '../../src/lib/practice.core.js'
 
 const NOW = Date.UTC(2026, 8, 3, 12, 0, 0)
@@ -215,4 +215,19 @@ test('flatTopicNudge points a flat topic at a different format', () => {
   assert.match(n.headline, /^Periodic table did not budge/)
   assert.match(n.detail, /teaching it back/)
   assert.equal(flatTopicNudge([]), null)
+})
+
+test('trimQuestions drops only the surplus question items when the API comes back short', () => {
+  const items = [
+    { kind: 'card' }, { kind: 'question' }, { kind: 'question' }, { kind: 'question' },
+    { kind: 'written' }, { kind: 'question' }, { kind: 'teach' },
+  ]
+  // planned 4 questions, got 2
+  const out = trimQuestions(items, 2)
+  assert.deepEqual(out.map(i => i.kind), ['card', 'question', 'question', 'written', 'teach'])
+  // enough (or more) available: nothing changes
+  assert.equal(trimQuestions(items, 9).length, items.length)
+  // none available: every question item goes, the rest stays
+  assert.deepEqual(trimQuestions(items, 0).map(i => i.kind), ['card', 'written', 'teach'])
+  assert.deepEqual(trimQuestions(null, 3), [])
 })
