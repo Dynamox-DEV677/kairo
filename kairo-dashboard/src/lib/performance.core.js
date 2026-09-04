@@ -187,13 +187,13 @@ export function classifyEvent(e) {
   // ── graded written answer: one record per LOST rubric step ──
   if (e.type === 'essay_graded' && Array.isArray(p.steps)) {
     const out = []
-    for (const s of p.steps) {
+    for (const [stepIdx, s] of p.steps.entries()) {
       if (!s || s.awarded >= s.marks) continue
       const type = TYPES.includes(s.type) ? s.type : (RUBRIC_TYPE[s.type] || 'calculation')
       const signature = s.signature || (s.type === 'method' ? 'formula-not-written' : s.type === 'units' ? 'omits-units' : s.type === 'presentation' ? 'skipped-step' : 'arithmetic-slip')
       out.push({
         ...base,
-        id: `${base.id}-${slug(signature)}`,
+        id: `${base.id}-${slug(signature)}-${stepIdx}`,
         source: 'written',
         type: TYPES.includes(signatureInfo(signature).type || '') ? signatureInfo(signature).type : type,
         signature,
@@ -270,7 +270,16 @@ export function classifyEvent(e) {
 export function mistakeRecords(events = []) {
   if (!Array.isArray(events)) return []
   const out = []
-  for (const e of events) for (const r of classifyEvent(e)) out.push(r)
+  // Ids are React keys and deep-link targets. Two 'mistake' events written in
+  // the same millisecond for the same topic and signature -- which a preview
+  // seed did, and which a fast loop of recordMistake() can do -- collided and
+  // React dropped one of the rows. Uniqueness is guaranteed here, not hoped for.
+  const seen = new Map()
+  for (const e of events) for (const r of classifyEvent(e)) {
+    const n = seen.get(r.id) || 0
+    seen.set(r.id, n + 1)
+    out.push(n ? { ...r, id: `${r.id}~${n}` } : r)
+  }
   return out.sort((a, b) => b.ts - a.ts)
 }
 
