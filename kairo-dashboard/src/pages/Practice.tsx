@@ -10,7 +10,7 @@
  * A rewrite. Cards come from the twin's flashcard table and are rescheduled by
  * the same FSRS call Flashcards.tsx makes. Questions come from /api/quiz/start.
  * Written answers are transcribed by the camera route the Solver already uses
- * and marked by /api/practice/grade. XP goes through awardXPAmount. The
+ * and marked by /api/practice/grade. XP goes through awardXP and the published table. The
  * intelligence is upstream; this file is a shell and six layouts.
  *
  * DEGRADED STATE, by design
@@ -38,7 +38,7 @@ import { saveToNotebook } from '../lib/notebook'
 import { cardsForNote, attachCards } from '../lib/notes.core'
 import { nearestExamDays } from '../lib/examDate'
 import { nextInterval as fsrsNextInterval } from '../lib/fsrs.core'
-import { awardXPAmount } from '../lib/game'
+import { awardXP } from '../lib/game'
 import { getJSON, setJSON } from '../lib/storage'
 import { cleanOption } from '../lib/museum.core'
 import { scorePaper, paletteStates, clockLabel } from '../lib/exam.core'
@@ -764,7 +764,7 @@ export default function Practice({ onOpenDoubt }: { onOpenDoubt?: (seed: string)
   const [qNote, setQNote] = useState('')
   const [before, setBefore] = useState<any[]>([])
   const [touched, setTouched] = useState<string[]>([])
-  const [stats, setStats] = useState({ cards: 0, questions: 0, correct: 0, written: 0, teach: 0 })
+  const [stats, setStats] = useState({ cards: 0, questions: 0, correct: 0, retained: 0, written: 0, teach: 0 })
   const [mockSubject, setMockSubject] = useState('Science')
   const [tick, setTick] = useState(0)
   /** From Performance: drill these signatures/topics instead of the default target. */
@@ -888,8 +888,10 @@ export default function Practice({ onOpenDoubt }: { onOpenDoubt?: (seed: string)
 
   function finish() {
     const s = stats
+    // xpFor mirrors the published table for the results screen; the cards and
+    // written answers were credited as they happened, this is the session itself.
     const xp = xpFor({ ...s, finished: true })
-    try { awardXPAmount(xp, 'Practice session') } catch { /* nicety */ }
+    try { awardXP('session_done') } catch { /* nicety */ }
     try { track({ type: 'session_end', payload: { practice: true, ...s, xp } }) } catch { /* nicety */ }
     setTick(t => t + 1)
     setView('results')
@@ -899,7 +901,8 @@ export default function Practice({ onOpenDoubt }: { onOpenDoubt?: (seed: string)
   function gradeCard(card: any, rating: 1 | 2 | 3 | 4) {
     try { reviewFlashcard(card.id, rating, { daysToExam: nearestExamDays() }) } catch { /* nicety */ }
     if (card?.topic) setTouched(t => [...t, card.topic])
-    setStats(s => ({ ...s, cards: s.cards + 1, correct: s.correct + (rating >= 3 ? 1 : 0) }))
+    setStats(s => ({ ...s, cards: s.cards + 1, correct: s.correct + (rating >= 3 ? 1 : 0), retained: (s.retained || 0) + (rating >= 3 ? 1 : 0) }))
+    if (rating >= 3) { try { awardXP('card_retained') } catch { /* nicety */ } }   // Good or Easy: the card was kept
     advance()
   }
 
@@ -1139,7 +1142,7 @@ export default function Practice({ onOpenDoubt }: { onOpenDoubt?: (seed: string)
         <WrittenFormat
           question={`Explain and solve, showing every step: a ${item.topic || 'numerical'} problem of the kind that appears in your board exam.`}
           marks={5}
-          onDone={r => { if (r) setStats(s => ({ ...s, written: s.written + 1 })); if (item.topic) setTouched(t => [...t, item.topic!]); advance() }}
+          onDone={r => { if (r) { setStats(s => ({ ...s, written: s.written + 1 })); try { awardXP('written_graded') } catch { /* nicety */ } } if (item.topic) setTouched(t => [...t, item.topic!]); advance() }}
         />
       )}
       {item.kind === 'teach' && (
@@ -1148,6 +1151,7 @@ export default function Practice({ onOpenDoubt }: { onOpenDoubt?: (seed: string)
           onDone={(r, said) => {
             if (r) {
               setStats(s => ({ ...s, teach: s.teach + 1 })); if (item.topic) setTouched(t => [...t, item.topic!])
+              try { awardXP('written_graded') } catch { /* nicety */ }   // a graded teach-back counts as a graded written answer
               // A teach-back is the best note a student writes all week: their
               // own words, plus what they missed. It goes to the library with
               // its provenance and comes back as cards.

@@ -9,7 +9,6 @@ import rehypeKatex from 'rehype-katex'
 import { recordDoubt, recordMistake, recordFlashcard, recordConcept, recordFormula, getMistakes, getStudentMemory } from '../lib/twin'
 import { saveToNotebook } from '../lib/notebook'
 import { getRecentChats, saveRecentChat, makeTitle } from '../lib/recentChats'
-import { awardXP } from '../lib/game'
 import { useIsMobile } from '../hooks/useViewport'
 import { aiHeadersAsync } from '../lib/devKey'
 import { prepMathMarkdown } from '../lib/math.core'
@@ -215,7 +214,7 @@ export default function KairoChat() {
 
       if (text.quizCheck) {
         try {
-          if (text.quizCheck.correct) awardXP('chat_answer')
+          if (text.quizCheck.correct) { /* a right answer in chat is learning, but XP is for what you keep (see XP_RULES), not for asking */ }
           else if (text.quizCheck.topic) recordMistake({
             topic: text.quizCheck.topic, detail: 'quiz in Kyno chat', source: 'doubt',
             errType: text.quizCheck.type, signature: text.quizCheck.signature, why: text.quizCheck.why,
@@ -252,7 +251,6 @@ export default function KairoChat() {
         try {
           recordDoubt({ question: q, answer: kairoTurn.text, topic: text.topicKeyword || undefined, source: 'chat' })
         } catch {  }
-        try { awardXP('chat_answer') } catch {  }
         // Pin any formulas the Solver returned to the Formula Sheet (chat is the DEFAULT Solve UI).
         try {
           for (const raw of (text.formulas || [])) {

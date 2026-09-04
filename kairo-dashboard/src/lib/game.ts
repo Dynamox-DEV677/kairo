@@ -1,6 +1,6 @@
 import { getRaw, setRaw } from './storage'
 import { addNotification } from './notifications'
-import { post } from './api'
+import { post, get } from './api'
 
 import { FLAGS, type FlagName } from '../config/flags'
 import { storedProfileRaw } from '../lib/storage'
@@ -8,16 +8,34 @@ import { storedProfileRaw } from '../lib/storage'
 const KEY = 'kyno:game:v1'
 const STREAK_MILESTONES = [3, 7, 14, 30, 50, 100, 200, 365]
 
-export const XP_ACTIONS: Record<string, { xp: number; label: string }> = {
-  chat_answer:    { xp: 10, label: 'Asked Kyno' },
-  flashcard_gen:  { xp: 10, label: 'Generated flashcards' },
-  flashcard_rev:  { xp: 5,  label: 'Reviewed a card' },
-  topic_plan:     { xp: 15, label: 'Planned a topic' },
-  exam_plan:      { xp: 20, label: 'Built an exam plan' },
-  quiz_done:      { xp: 15, label: 'Finished a quiz' },
-  lab_open:       { xp: 8,  label: 'Explored a lab' },
-  note_built:     { xp: 8,  label: 'Built a note' },
-}
+/**
+ * XP REWARDS THE RIGHT THING. The old table paid for asking Kyno questions
+ * (farmable without learning anything, and it cost an API call per reward),
+ * for opening labs, for generating cards. This table pays for what a student
+ * KEEPS: cards retained at review, patterns beaten, sessions finished, written
+ * answers graded, chapters crossing 70%. Nothing for opening the app, asking
+ * questions, or time spent. The rules are published on the Progress screen so
+ * the scoring can be checked -- see XP_RULES below.
+ */
+export const XP_ACTIONS = {
+  card_retained:  { xp: 5,  label: 'Card kept at review' },
+  pattern_beaten: { xp: 50, label: 'A mistake pattern beaten' },
+  session_done:   { xp: 20, label: 'Session completed' },
+  written_graded: { xp: 15, label: 'Written answer graded' },
+  chapter_70:     { xp: 40, label: 'Chapter crossed 70%' },
+} as const
+
+export type XPAction = keyof typeof XP_ACTIONS
+
+/** The published rules, in the order the Progress screen prints them. */
+export const XP_RULES: Array<{ action: XPAction; xp: number; line: string }> = [
+  { action: 'card_retained',  xp: 5,  line: 'card retained at review' },
+  { action: 'pattern_beaten', xp: 50, line: 'mistake pattern beaten' },
+  { action: 'session_done',   xp: 20, line: 'session completed' },
+  { action: 'written_graded', xp: 15, line: 'written answer graded' },
+  { action: 'chapter_70',     xp: 40, line: 'chapter mastery crossing 70%' },
+]
+export const XP_NOT_FOR = 'Nothing for opening the app, asking questions, or time spent.'
 
 /**
  * `requires` names the flag that has to be on for this quest to have somewhere
@@ -30,16 +48,15 @@ interface QuestDef {
   requires?: FlagName
 }
 
+// Daily goals are targets, not a second XP table: the only XP in the app is
+// the five actions above, so a goal carries no bonus. (The old "Ask Kyno 5
+// questions" quest was farmable and paid out five API calls' worth of XP.)
 const QUEST_POOL: QuestDef[] = [
-  { id: 'ask3',    label: 'Ask Kyno 3 questions',   action: 'chat_answer',   target: 3,  bonus: 30 },
-  { id: 'rev10',   label: 'Review 10 flashcards',    action: 'flashcard_rev', target: 10, bonus: 40 },
-  { id: 'plan1',   label: 'Plan 1 topic',            action: 'topic_plan',    target: 1,  bonus: 25 },
-  { id: 'quiz1',   label: 'Complete a quiz',         action: 'quiz_done',     target: 1,  bonus: 30 },
-  // LABS_3D is off for v1, so this one is filtered out rather than deleted --
-  // turning the flag back on should restore the quest without an edit here.
-  { id: 'lab1',    label: 'Open a 3D lab',           action: 'lab_open',      target: 1,  bonus: 20, requires: 'LABS_3D' },
-  { id: 'ask5',    label: 'Ask Kyno 5 questions',   action: 'chat_answer',   target: 5,  bonus: 50 },
-  { id: 'note2',   label: 'Build 2 notebook notes',  action: 'note_built',    target: 2,  bonus: 25 },
+  { id: 'keep10',   label: 'Keep 10 cards at review',      action: 'card_retained',  target: 10, bonus: 0 },
+  { id: 'session1', label: 'Finish a practice session',    action: 'session_done',   target: 1,  bonus: 0 },
+  { id: 'write1',   label: 'Get a written answer graded',  action: 'written_graded', target: 1,  bonus: 0 },
+  { id: 'keep20',   label: 'Keep 20 cards at review',      action: 'card_retained',  target: 20, bonus: 0 },
+  { id: 'session2', label: 'Finish two sessions',          action: 'session_done',   target: 2,  bonus: 0 },
 ]
 
 /** Only quests the student can actually reach today. */
@@ -58,12 +75,14 @@ interface GameState {
   actionsToday: Record<string, number>
   questsDone: string[]
   lifetime: Record<string, number>
+  /** keys already credited once (a beaten pattern's signature, a chapter id) */
+  once: string[]
 }
 
 function fresh(): GameState {
   return {
     totalXP: 0, todayXP: 0, todayKey: today(), weekXP: 0, weekKey: weekKey(),
-    streak: 0, lastActive: '', actionsToday: {}, questsDone: [], lifetime: {},
+    streak: 0, lastActive: '', actionsToday: {}, questsDone: [], lifetime: {}, once: [],
   }
 }
 
@@ -154,6 +173,7 @@ export function importGameState(
         streak:   Math.max(cur.streak, inStreak),
         weekXP:   sameWeek ? Math.max(cur.weekXP, Number(incoming.weekXP || 0)) : cur.weekXP,
         lifetime: mergeLifetime(cur.lifetime, inLife),
+        once: [...new Set([...(cur.once || []), ...(Array.isArray((incoming as any).once) ? (incoming as any).once : [])])],
       }
     } else {
       // Replace: trust the incoming snapshot; rollover() normalizes day/week on load.
@@ -195,12 +215,12 @@ export function badges(s: GameState): Badge[] {
     { id: 'lvl5',    label: 'Scholar',      desc: 'Reach level 5',                 earned: level >= 5 },
     { id: 'lvl10',   label: 'Sage',         desc: 'Reach level 10',                earned: level >= 10 },
     { id: 'streak7', label: 'On Fire',      desc: '7-day streak',                  earned: s.streak >= 7 },
-    { id: 'ask50',   label: 'Curious Mind', desc: 'Ask Kyno 50 questions',        earned: (life.chat_answer || 0) >= 50 },
-    { id: 'rev100',  label: 'Memory Master',desc: 'Review 100 flashcards',         earned: (life.flashcard_rev || 0) >= 100 },
+    { id: 'keep100', label: 'Memory Master',desc: 'Keep 100 cards at review',       earned: (life.card_retained || 0) >= 100 },
+    { id: 'beat3',   label: 'Pattern Breaker', desc: 'Beat 3 mistake patterns',    earned: (life.pattern_beaten || 0) >= 3 },
   ]
 }
 
-export function awardXP(action: keyof typeof XP_ACTIONS) {
+export function awardXP(action: XPAction) {
   const def = XP_ACTIONS[action]
   if (!def) return
   const s = loadGame()
@@ -244,43 +264,46 @@ export function awardXP(action: keyof typeof XP_ACTIONS) {
   syncLeague(s)
 }
 
-export function awardXPAmount(amount: number, label: string) {
-  const gained = Math.round(amount)
-  if (!gained || gained <= 0) return
+/**
+ * Credit an action ONCE for a given key -- a beaten pattern's signature, a
+ * chapter id crossing 70%. Re-detecting the same beaten pattern on every
+ * Performance visit must not pay again. Returns true when XP was awarded.
+ */
+export function awardOnce(action: XPAction, key: string): boolean {
+  const k = `${action}:${key}`
   const s = loadGame()
-  rollover(s)
-
-  const before = levelFromXP(s.totalXP).level
-
-  const t = today()
-  if (s.lastActive !== t) {
-    s.streak = s.streak + 1
-    s.lastActive = t
-    if (STREAK_MILESTONES.includes(s.streak)) addNotification(`${s.streak}-day streak! Keep it going.`, '🔥')
-  }
-
-  s.totalXP += gained
-  s.todayXP += gained
-  s.weekXP  += gained
-  const after = levelFromXP(s.totalXP)
-  if (after.level > before) addNotification(`You reached Level ${after.level}!`, '⭐')
+  if ((s.once || []).includes(k)) return false
+  s.once = [...(s.once || []), k].slice(-2000)
   save(s)
-
-  try {
-    window.dispatchEvent(new CustomEvent('kairo:xp', {
-      detail: { amount: gained, reason: label, total: s.totalXP, level: after.level, levelUp: after.level > before, streak: s.streak },
-    }))
-  } catch {  }
-
-  syncLeague(s)
+  awardXP(action)
+  return true
 }
 
-function userIdentity(): { id: string; name: string } {
-  let id = '', name = 'Student'
+/**
+ * Chapters whose mastery has crossed 70% get their one-time credit. Fed by
+ * whoever has just computed syllabus states (Plan, Progress); idempotent.
+ */
+export function awardMasteryCrossings(states: Map<string, { mastery?: number }> | null | undefined): number {
+  if (!states) return 0
+  let n = 0
+  for (const [id, st] of states) {
+    if (typeof st?.mastery === 'number' && st.mastery >= 0.7 && awardOnce('chapter_70', id)) n++
+  }
+  return n
+}
+
+// The old arbitrary-amount grant with a free-text label is gone on
+// purpose: every XP grant in the app now goes through the published table.
+
+// IDENTITY: this used to read the real name out of the stored profile and post
+// it with every XP write, which is how "Sathyamoorthi K S" ended up on a
+// public leaderboard. The real name never leaves this device for a social
+// surface again -- the server derives the username itself.
+function userIdentity(): { id: string } {
+  let id = ''
   try {
     const p = JSON.parse(storedProfileRaw() || '{}')
     id = p.id || p.user_id || ''
-    name = p.name || p.full_name || 'Student'
   } catch {  }
   if (!id) {
     id = getRaw('kyno:device-id') || ''
@@ -289,27 +312,31 @@ function userIdentity(): { id: string; name: string } {
       try { setRaw('kyno:device-id', id) } catch {  }
     }
   }
-  return { id, name }
+  return { id }
 }
+
+/** Study minutes this week, reported so the league can group on effort rather than ability. Optional hook. */
+let _weekMinutes: (() => number) | null = null
+export function provideWeekMinutes(fn: () => number) { _weekMinutes = fn }
 
 let _syncTimer: any = null
 function syncLeague(s: GameState) {
   clearTimeout(_syncTimer)
   _syncTimer = setTimeout(() => {
-    const { id, name } = userIdentity()
-    // Use the api helper so the auth token is attached — the server now takes
-    // the identity from the token, not from a body field anyone could forge.
-    post('/league/xp', { user_id: id, name, week: s.weekKey, xp: s.weekXP })
+    const { id } = userIdentity()
+    let minutes: number | undefined
+    try { minutes = _weekMinutes ? Math.max(0, Math.round(_weekMinutes())) : undefined } catch { minutes = undefined }
+    // Use the api helper so the auth token is attached — the server takes the
+    // identity from the token, not from a body field anyone could forge.
+    post('/league/xp', { user_id: id, week: s.weekKey, xp: s.weekXP, ...(minutes != null ? { minutes } : null) })
       .catch(() => {  })   // leaderboard sync is best-effort, never blocks play
   }, 1500)
 }
 
 export async function fetchLeaderboard(): Promise<{ rank: number; rows: { name: string; xp: number; you: boolean }[] } | null> {
   try {
-    const { id } = userIdentity()
-    const r = await fetch(`/api/league/board?week=${encodeURIComponent(weekKey())}&user_id=${encodeURIComponent(id)}`)
-    if (!r.ok) return null
-    return await r.json()
+    // through the api helper so the token rides along: "you" is the token's identity now
+    return await get(`/league/board?week=${encodeURIComponent(weekKey())}`)
   } catch { return null }
 }
 
@@ -328,12 +355,9 @@ export interface LeagueBoard {
 
 export async function fetchLeagueBoard(range: 'week' | 'month' | 'all' = 'week'): Promise<LeagueBoard | null> {
   try {
-    const { id } = userIdentity()
-    const params = new URLSearchParams({ range, user_id: id })
+    const params = new URLSearchParams({ range })
     if (range === 'week')  params.set('week', weekKey())
     if (range === 'month') params.set('month', monthKey())
-    const r = await fetch(`/api/league/board?${params.toString()}`)
-    if (!r.ok) return null
-    return await r.json()
+    return await get(`/league/board?${params.toString()}`)
   } catch { return null }
 }

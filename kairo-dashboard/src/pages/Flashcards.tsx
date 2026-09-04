@@ -117,7 +117,6 @@ export default function Flashcards() {
       const valid = (parsed || []).filter(c => c && typeof c.front === 'string' && typeof c.back === 'string')
       if (valid.length === 0) throw new Error('AI returned 0 valid cards. Try a more specific topic.')
       setCards(valid)
-      try { const { awardXP } = await import('../lib/game'); awardXP('flashcard_gen') } catch {  }
       try {
         for (const c of valid) {
           recordFlashcard({ front: c.front, back: c.back, topic: useTopic, source: 'auto-from-doubt' })
@@ -138,7 +137,6 @@ export default function Flashcards() {
 
   function prev() { setCurrent(c => Math.max(0, c - 1)); setFlipped(false) }
   function next() {
-    if (flipped) { import('../lib/game').then(g => g.awardXP('flashcard_rev')).catch(() => {}) }
     setCurrent(c => Math.min(cards.length - 1, c + 1)); setFlipped(false)
   }
 
@@ -625,6 +623,8 @@ function ReviewDeck({ deck, onReload }: { deck: TwinCard[]; onReload: () => void
       const card = deck[idx]
       if (card?.id) {
         try { reviewFlashcard(card.id, action === 'got' ? 3 : 1, { daysToExam: nearestExamDays() }) } catch {}
+        // XP is for cards KEPT at review, not cards seen: only "got it" pays.
+        if (action === 'got') { import('../lib/game').then(g => g.awardXP('card_retained')).catch(() => {}) }
       }
     }
     setFlipped(false)

@@ -150,15 +150,10 @@ export function getLeaderboardLocal(): { leaders: LocalLeader[]; you: LocalLeade
     class_name: null,
     xp: stats.total_xp, battles: stats.battles, accuracy: stats.avg_accuracy,
   }
-  const ghosts: LocalLeader[] = [
-    { rank: 0, user_id: 'g1', name: 'Aarav',  avatar_url: null, class_name: 'Class 10', xp: Math.max(0, you.xp - 60),  battles: 5,  accuracy: 76 },
-    { rank: 0, user_id: 'g2', name: 'Diya',   avatar_url: null, class_name: 'Class 10', xp: Math.max(0, you.xp - 40),  battles: 7,  accuracy: 82 },
-    { rank: 0, user_id: 'g3', name: 'Vihaan', avatar_url: null, class_name: 'Class 10', xp: Math.max(0, you.xp - 20),  battles: 4,  accuracy: 88 },
-    { rank: 0, user_id: 'g4', name: 'Ananya', avatar_url: null, class_name: 'Class 10', xp: you.xp + 10,                battles: 6,  accuracy: 90 },
-    { rank: 0, user_id: 'g5', name: 'Kabir',  avatar_url: null, class_name: 'Class 10', xp: you.xp + 30,                battles: 9,  accuracy: 84 },
-  ]
-  const all = [...ghosts, you].sort((a, b) => b.xp - a.xp).map((p, i) => ({ ...p, rank: i + 1 }))
-  return { leaders: all, you: all.find(p => p.user_id === 'me')! }
+  // Offline there is nobody else to show, so nobody else is shown. This used
+  // to invent five named "classmates" around the student's score; a fabricated
+  // opponent is exactly what the social rules forbid.
+  return { leaders: [you], you }
 }
 
 export function isMissingBackend(err: any): boolean {

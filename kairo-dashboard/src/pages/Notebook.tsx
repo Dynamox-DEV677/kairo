@@ -327,7 +327,6 @@ function AutoCollectedStrip({ onBuilt }: { onBuilt?: (id: string) => void }) {
       })
       setToast(`Saved to Notebook: ${args.title}`)
       onBuilt?.(saved.id)
-      try { const { awardXP } = await import('../lib/game'); awardXP('note_built') } catch {  }
     } catch (e: any) {
       setToast(`Couldn't save — ${e?.message || 'try again'}`)
     } finally {

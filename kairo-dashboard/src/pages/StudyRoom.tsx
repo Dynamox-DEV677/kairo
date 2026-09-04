@@ -6,7 +6,7 @@ import {
 } from 'lucide-react'
 import { PrimaryButton } from '../components/PrimaryButton'
 import { supabase } from '../lib/supabase'
-import { getProfile } from '../lib/twin'
+import { getUsername } from '../lib/social'
 import { saveToNotebook } from '../lib/notebook'
 import {
   newRoomCode, cleanCode, isValidCode, idleState, startFocus, stopTimer, nextPhase,
@@ -40,9 +40,11 @@ const card: React.CSSProperties = {
 
 interface Member { key: string; name: string; joinedAt: number }
 
+// IDENTITY: the room used to broadcast the real name (or nickname) from the
+// profile as presence, in the presence KEY, on every shared note and on the
+// timer. Other students get the username, and nothing else.
 function myName(): string {
-  const p = getProfile() as any
-  return (p?.nickname || p?.name || 'Student').slice(0, 24)
+  return getUsername().slice(0, 24)
 }
 
 // Which room this session is in, remembered so a remount (navigation crash,
@@ -149,7 +151,7 @@ function RoomDashboard({ code, onLeave }: { code: string; onLeave: () => void })
   notesRef.current = notes
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null)
   // Presence key: stable per tab, so a refresh rejoins as the same person.
-  const meKey = useMemo(() => `${myName()}-${Math.random().toString(36).slice(2, 7)}`, [])
+  const meKey = useMemo(() => `m-${Math.random().toString(36).slice(2, 10)}`, [])   // random only: no identity in the key
 
   useEffect(() => {
     const ch = supabase.channel(`kyno-room-${code}`, {

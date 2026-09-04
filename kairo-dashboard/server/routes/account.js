@@ -71,4 +71,81 @@ router.post('/email-change/verify', requireSupabaseAuth, async (req, res) => {
   res.json({ ok: true, verified: true, authUpdated })
 })
 
+/* ── DPDP obligations: download everything, delete everything ─────────────
+   Not features. Download returns every row the server holds about the caller
+   as JSON (the client adds the on-device twin to it). Delete really deletes
+   rows -- league, battle, snapshot, social, report rows and the account
+   itself -- then removes the auth user. No soft flag anywhere. */
+
+// Every table that can hold a row keyed by this student. Tables that are not
+// set up on a given project are simply reported as skipped.
+const USER_TABLES = [
+  ['social_profiles', 'user_id'], ['league_scores', 'user_id'], ['battle_scores', 'user_id'],
+  ['battle_queue', 'user_id'], ['twin_snapshots', 'user_id'], ['question_reports', 'user_id'],
+  ['user_reports', 'reporter_id'], ['user_blocks', 'user_id'], ['user_blocks', 'blocked_id'],
+  ['topic_mastery', 'user_id'], ['study_sessions', 'user_id'], ['exam_plans', 'user_id'],
+  ['ai_memory', 'user_id'], ['concept_relations', 'user_id'], ['notes', 'user_id'],
+  ['parent_marks', 'student_id'], ['notifications', 'user_id'],
+]
+
+router.get('/export', requireSupabaseAuth, async (req, res) => {
+  const id = req.user.id
+  const out = {
+    exported_at: new Date().toISOString(),
+    account: { id, name: req.user.name || null, role: req.user.role || null, school_id: req.user.school_id || null, avatar_url: req.user.avatar_url || null, email: req.supabaseUser?.email || null },
+    tables: {},
+  }
+  if (!SUPABASE_CONFIGURED) return res.json({ ...out, offline: true })
+  for (const [table, col] of USER_TABLES) {
+    if (table === 'user_blocks' && col === 'blocked_id') continue   // who blocked you is not your data
+    try {
+      const { data, error } = await supabaseAdmin.from(table).select('*').eq(col, id)
+      if (error) throw error
+      out.tables[table] = data || []
+    } catch (e) {
+      out.tables[table] = { unavailable: true }
+    }
+  }
+  try {
+    const { data } = await supabaseAdmin.from('battle_matches').select('*').or(`p1.eq.${id},p2.eq.${id}`)
+    // the opponent is a username at most; their id is not this student's data
+    out.tables.battle_matches = (data || []).map(m => ({ ...m, p1: m.p1 === id ? id : null, p2: m.p2 === id ? id : null }))
+  } catch { out.tables.battle_matches = { unavailable: true } }
+  res.setHeader('Content-Disposition', 'attachment; filename="kyno-account-export.json"')
+  res.json(out)
+})
+
+router.post('/delete', requireSupabaseAuth, async (req, res) => {
+  if (String(req.body?.confirm || '') !== 'DELETE') return res.status(400).json({ error: 'Type DELETE to confirm.' })
+  const id = req.user.id
+  const results = {}
+  if (SUPABASE_CONFIGURED) {
+    for (const [table, col] of USER_TABLES) {
+      try {
+        const { error } = await supabaseAdmin.from(table).delete().eq(col, id)
+        results[`${table}.${col}`] = error ? (/does not exist|schema cache/i.test(error.message) ? 'skipped' : 'error') : 'deleted'
+        if (error && !/does not exist|schema cache/i.test(error.message)) console.warn('[account] delete', table, error.message)
+      } catch { results[`${table}.${col}`] = 'skipped' }
+    }
+    // Battle records the OTHER player keeps stay intact but nameless: this
+    // student's side is detached rather than the opponent's history erased.
+    try {
+      await supabaseAdmin.from('battle_matches').update({ p1: null }).eq('p1', id)
+      await supabaseAdmin.from('battle_matches').update({ p2: null }).eq('p2', id)
+      results.battle_matches = 'detached'
+    } catch { results.battle_matches = 'skipped' }
+    try {
+      const { error } = await supabaseAdmin.from('users').delete().eq('id', id)
+      results.users = error ? 'error' : 'deleted'
+      if (error) console.warn('[account] delete users row:', error.message)
+    } catch { results.users = 'error' }
+    try {
+      const { error } = await supabaseAdmin.auth.admin.deleteUser(id)
+      results.auth = error ? 'error' : 'deleted'
+      if (error) console.warn('[account] delete auth user:', error.message)
+    } catch (e) { results.auth = 'error' }
+  }
+  res.json({ ok: true, results })
+})
+
 export default router

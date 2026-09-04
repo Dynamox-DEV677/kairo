@@ -157,7 +157,7 @@ export default function TeachBack() {
       setScore(n)
       setResult(reply.replace(/SCORE:\s*\d{1,3}/i, '').trim())
       setScreen('result')
-      try { awardXP('chat_answer') } catch {  }
+      try { awardXP('written_graded') } catch {  }   // a graded explanation in your own words
       try {
         recordDoubt({
           question: `Taught back: ${topic.trim()}`,

@@ -29,6 +29,7 @@ import Plan from './Plan'
 import Notes from './Notes'
 import NewIndex from './NewIndex'
 import SpaceFrame from '../components/SpaceFrame'
+import { refreshSocial } from '../lib/social'
 import { XPToast } from '../components/GameBar'
 import ErrorBoundary from '../components/ErrorBoundary'
 import EssayGrader from './EssayGrader'
@@ -233,6 +234,10 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
     (window as any).__kairoSetActive = navigate
     return () => { delete (window as any).__kairoSetActive }
   }, [navigate])
+
+  // The username is the only identity other students see; fetch it once so
+  // every social surface (old Study Room included) has it synchronously.
+  useEffect(() => { refreshSocial().catch(() => {  }) }, [])
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', 'dark')

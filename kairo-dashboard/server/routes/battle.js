@@ -2,6 +2,7 @@ import { Router } from 'express'
 import { fail } from '../lib/fail.js'
 import { supabaseAdmin, requireSupabase } from '../services/supabase.js'
 import { requireSupabaseAuth } from '../middleware/supabaseAuth.js'
+import { profilesFor, blockedSet } from '../lib/social.js'
 
 const router = Router()
 router.use(requireSupabase)
@@ -112,21 +113,26 @@ router.get('/leaderboard', async (req, res) => {
     aggList.sort((a, b) => b.xp - a.xp)
     const top = aggList.slice(0, 50)
 
-    const userIds = top.map(r => r.user_id)
-    let nameMap = {}
-    if (userIds.length > 0) {
-      const { data: users } = await supabaseAdmin
-        .from('users').select('id, name, avatar_url, class_name')
-        .in('id', userIds)
-      nameMap = (users || []).reduce((m, u) => { m[u.id] = u; return m }, {})
-    }
+    // IDENTITY: this used to read users.name, avatar_url and class_name for
+    // fifty other students and hand them out. Other students get a username,
+    // and nothing else -- no photo, no class section, no real name. Anyone who
+    // turned leagues off, or is in a block pair with the caller, is not listed.
+    const profiles = await profilesFor(top.map(r => r.user_id))
+    const blocked = await blockedSet(req.user.id)
+    const listed = top.filter(r => {
+      if (r.user_id === req.user.id) return true
+      if (blocked.has(r.user_id)) return false
+      const p = profiles.get(r.user_id)
+      return p ? p.show_in_leagues !== false : true
+    })
 
-    const enriched = top.map((r, i) => ({
+    const enriched = listed.map((r, i) => ({
       rank:       i + 1,
       user_id:    r.user_id,
-      name:       nameMap[r.user_id]?.name || 'Anonymous',
-      avatar_url: nameMap[r.user_id]?.avatar_url || null,
-      class_name: nameMap[r.user_id]?.class_name || null,
+      name:       profiles.get(r.user_id)?.username || 'student',   // alias kept for the pre-cutover page; it is the username
+      username:   profiles.get(r.user_id)?.username || 'student',
+      avatar_url: null,
+      class_name: null,
       xp:         r.xp,
       battles:    r.battles,
       accuracy:   r.total > 0 ? Math.round((r.score / r.total) * 100) : 0,
