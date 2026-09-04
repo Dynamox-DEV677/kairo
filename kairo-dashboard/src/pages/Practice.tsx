@@ -28,6 +28,7 @@ import {
 } from 'lucide-react'
 import { T, FONT, MONO, ICON } from '../lib/spaceTokens'
 import { useSpaceLayout } from '../components/SpaceFrame'
+import { keepPageMounted } from '../lib/keepMounted'
 import { aiHeadersAsync } from '../lib/devKey'
 import { post } from '../lib/api'
 import { studentMessage } from '../lib/aiError.core'
@@ -753,6 +754,8 @@ type View = 'home' | 'formats' | 'session' | 'results' | 'mock'
 export default function Practice({ onOpenDoubt }: { onOpenDoubt?: (seed: string) => void }) {
   const [view, setView] = useState<View>('home')
   const layout = useSpaceLayout()   // desktop: the session stays a 480px column, centred vertically
+  // A live session must survive a trip to another space and back.
+  useEffect(() => (view === 'session' || view === 'mock' ? keepPageMounted('practice') : undefined), [view])
   const [minutes, setMinutes] = useState(15)
   const [plan, setPlan] = useState<SessionPlan | null>(null)
   const [items, setItems] = useState<SessionItem[]>([])
@@ -1108,7 +1111,19 @@ export default function Practice({ onOpenDoubt }: { onOpenDoubt?: (seed: string)
   const kindTotal = items.filter(it => it.kind === item?.kind).length
   const label = item?.kind === 'card' ? `Card ${kindCount} of ${kindTotal}` : item?.kind === 'question' ? `Question ${kindCount} of ${kindTotal}` : item?.kind === 'written' ? 'Written answer' : 'Teach back'
 
-  if (!item) return <div style={shell} />
+  // An empty shell here is an invisible failure: the student sees a header and
+  // a void, with nothing to report and nothing to press. Say what happened.
+  if (!item) return (
+    <div style={shell}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, padding: 24, textAlign: 'center' }}>
+        <div style={{ fontSize: 16, fontWeight: 700 }}>This session came out empty.</div>
+        <div style={{ fontSize: 13.5, color: T.dim, lineHeight: 1.55, maxWidth: 300 }}>
+          Kyno had nothing due and nothing to build from yet. Answer a few questions or save a note, and there will be.
+        </div>
+        <Primary style={{ maxWidth: 240, marginTop: 4 }} onClick={() => { setItems([]); setIdx(0); setView('home') }}>Back to Practice</Primary>
+      </div>
+    </div>
+  )
 
   const qIndex = items.slice(0, idx).filter(it => it.kind === 'question').length
   const q = questions[qIndex]

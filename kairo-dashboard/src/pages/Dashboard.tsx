@@ -31,6 +31,8 @@ import Profile from './Profile'
 import Progress from './Progress'
 import SpaceFrame from '../components/SpaceFrame'
 import { resolveSpace } from '../lib/spaces'
+import { KEEP_MOUNTED, busyPages } from '../lib/keepMounted'
+import BlankGuard from '../components/BlankGuard'
 import { refreshSocial } from '../lib/social'
 import { startReminderClock } from '../lib/reminder'
 import { XPToast } from '../components/GameBar'
@@ -216,14 +218,33 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
   // real. That was the actual bug, and it is fixed: both now read the same
   // selectors (selectors.core.js), so they cannot disagree. Two views of one
   // truth is a design choice; two truths was not.
-  const [visited, setVisited] = useState<Set<string>>(
+  /**
+   * Pages stay mounted and hide with display:none, because remounting once
+   * wiped a live Study Room. But nothing ever evicted them, so a student who
+   * walked the app left all 27 screens in the DOM at once -- measured at
+   * 233,000 characters of root HTML, and still growing. That is a leak, and
+   * it makes every later render slower.
+   *
+   * So: a most-recently-used window instead of a set that only grows. The
+   * current page plus the last few stay mounted, which keeps going back
+   * instant, and the rest are dropped.
+   *
+   * A page in the middle of something the student would hate to lose -- a
+   * running session, a focus timer, a live battle, the camera -- pins itself
+   * with keepPageMounted() and is never evicted while it is busy.
+   */
+  const [visited, setVisited] = useState<string[]>(
     // seeded from the hash too, so a deep link paints on the FIRST render
-    () => new Set([pageFromHash() || (profile?.role === 'admin' ? 'school' : 'home')]),
+    () => [pageFromHash() || (profile?.role === 'admin' ? 'school' : 'home')],
   )
   useEffect(() => {
-    setVisited(prev => (prev.has(active) ? prev : new Set(prev).add(active)))
+    setVisited(prev => {
+      const busy = busyPages()
+      const mru = [active, ...prev.filter(p => p !== active)]
+      return mru.filter((p, i) => i < KEEP_MOUNTED || busy.has(p))
+    })
   }, [active])
-  const mounted = (id: string) => visited.has(id)
+  const mounted = (id: string) => visited.includes(id)
   const [solverUi, setSolverUi] = useState<'chat' | 'classic'>(() => {
     try { return (getRaw(KEYS.solverUi) as 'chat' | 'classic') || 'chat' } catch { return 'chat' }
   })
@@ -423,6 +444,7 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
                 ONLY -- nothing above or below this block is wrapped. */}
             <div className={pageClass} style={pageStyle('doubt-solving')}>
               {mounted('doubt-solving') && (
+                <BlankGuard id="doubt-solving" active={active === 'doubt-solving'}>
                 <SpaceFrame active="doubt-solving" onNavigate={navigate}>
                 <DoubtSolving
                   profile={profile}
@@ -439,22 +461,26 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
                   }}
                 />
                 </SpaceFrame>
+                </BlankGuard>
               )}
             </div>
 
             <div className={pageClass} style={pageStyle('practice')}>
               {mounted('practice') && (
+                <BlankGuard id="practice" active={active === 'practice'}>
                 <SpaceFrame active="practice" onNavigate={navigate}>
                 <Practice onOpenDoubt={(seed: string) => {
                   navigate('doubt-solving')
                   setTimeout(() => window.dispatchEvent(new CustomEvent('kyno:doubt-seed', { detail: { seed } })), 60)
                 }} />
                 </SpaceFrame>
+                </BlankGuard>
               )}
             </div>
 
             <div className={pageClass} style={pageStyle('performance')}>
               {mounted('performance') && (
+                <BlankGuard id="performance" active={active === 'performance'}>
                 <SpaceFrame active="performance" onNavigate={navigate}>
                 <Performance
                   onOpenDoubt={(seed: string) => {
@@ -469,11 +495,13 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
                   }}
                 />
                 </SpaceFrame>
+                </BlankGuard>
               )}
             </div>
 
             <div className={pageClass} style={pageStyle('plan')}>
               {mounted('plan') && (
+                <BlankGuard id="plan" active={active === 'plan'}>
                 <SpaceFrame active="plan" onNavigate={navigate}>
                 <Plan
                   onOpenDoubt={(seed: string) => {
@@ -486,11 +514,13 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
                   }}
                 />
                 </SpaceFrame>
+                </BlankGuard>
               )}
             </div>
 
             <div className={pageClass} style={pageStyle('notes')}>
               {mounted('notes') && (
+                <BlankGuard id="notes" active={active === 'notes'}>
                 <SpaceFrame active="notes" onNavigate={navigate}>
                 <Notes
                   onOpenDoubt={(seed: string) => {
@@ -503,11 +533,13 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
                   }}
                 />
                 </SpaceFrame>
+                </BlankGuard>
               )}
             </div>
 
             <div className={pageClass} style={pageStyle('progress')}>
               {mounted('progress') && (
+                <BlankGuard id="progress" active={active === 'progress'}>
                 <SpaceFrame active="progress" onNavigate={navigate}>
                   <Progress
                     onPractice={(filter) => {
@@ -517,14 +549,17 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
                     onOpenProfile={() => navigate('profile')}
                   />
                 </SpaceFrame>
+                </BlankGuard>
               )}
             </div>
 
             <div className={pageClass} style={pageStyle('profile')}>
               {mounted('profile') && (
+                <BlankGuard id="profile" active={active === 'profile'}>
                 <SpaceFrame active="profile" onNavigate={navigate}>
                   <Profile onLogout={onLogout} onOpenSettings={() => navigate('settings')} />
                 </SpaceFrame>
+                </BlankGuard>
               )}
             </div>
 

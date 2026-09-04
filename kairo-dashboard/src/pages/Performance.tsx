@@ -317,7 +317,19 @@ export default function Performance({ onOpenDoubt, onDrill }: {
 
   /* ── screen 2: impact ─────────────────────────────────────────────────── */
   if (view.name === 'impact') {
-    if (!impact) { setView({ name: 'patterns' }); return <div style={shell} /> }
+    // Calling setView during render is a React violation and it left an empty
+    // shell on screen for a frame. Render a real screen and let the student move.
+    if (!impact) return (
+      <div style={shell}>
+        <div style={scroll}>
+          <Back onClick={() => setView({ name: 'patterns' })} />
+          <div style={{ marginTop: 16, fontSize: 16, fontWeight: 700 }}>No mock to break down yet.</div>
+          <div style={{ fontSize: 13.5, color: T.dim, lineHeight: 1.55, marginTop: 6 }}>
+            Sit a mock in Practice and this shows exactly where the marks went.
+          </div>
+        </div>
+      </div>
+    )
     const i: Impact = impact
     return (
       <div style={shell}>

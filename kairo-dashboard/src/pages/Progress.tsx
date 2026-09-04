@@ -22,6 +22,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ArrowLeft, ChevronRight, Check, Loader2, Zap, Users, Trophy, Compass, Flame, WifiOff } from 'lucide-react'
 import { T, FONT, MONO, ICON, CALLOUT } from '../lib/spaceTokens'
 import { useSpaceLayout } from '../components/SpaceFrame'
+import { keepPageMounted } from '../lib/keepMounted'
 import { confirmDialog } from '../components/ConfirmModal'
 import { loadState, getDashboard, getProfile, listFlashcards } from '../lib/twin'
 import { graphForProfile } from '../lib/syllabusFor'
@@ -264,6 +265,8 @@ export default function Progress({ onPractice, onOpenProfile }: {
 
   useEffect(() => { layout.setWide(view.name === 'map' && layout.areaWidth >= 760) }, [view.name, layout.areaWidth]) // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => () => layout.setWide(false), []) // eslint-disable-line react-hooks/exhaustive-deps
+  // A live battle or a study room is real-time: losing it means losing the round.
+  useEffect(() => (view.name === 'battle' || view.name === 'room' ? keepPageMounted('progress') : undefined), [view.name])
 
   const shell: Style = { position: 'absolute', inset: 0, background: T.bg, color: T.text, fontFamily: FONT, display: 'flex', flexDirection: 'column', overflow: 'hidden' }
   const scroll: Style = { flex: 1, overflowY: 'auto', padding: '18px 14px 24px' }
