@@ -202,3 +202,23 @@ test('no page imports the deleted index, and nothing still links to #/new', () =
   }
   assert.deepEqual(offenders, [])
 })
+
+/**
+ * The seven spaces are the STUDENT app. The cutover deliberately left teacher,
+ * admin and parent navigation alone, so their routes must never be redirected
+ * into a student space -- a teacher's Flashcards and Grader, and an admin's
+ * Timetable, are their own tools and would otherwise disappear.
+ */
+test('redirects apply to students only, never to staff', () => {
+  for (const id of ['flashcards', 'essay', 'timetable', 'quiz', 'settings', 'battle']) {
+    for (const role of ['teacher', 'admin', 'parent']) {
+      assert.deepEqual(resolveRoute(id, role), { space: id, view: null }, `${role} must keep #/${id}`)
+    }
+  }
+  // a student still gets the space
+  assert.equal(resolveSpace('flashcards', 'student'), 'practice')
+  assert.equal(resolveSpace('flashcards'), 'practice', 'no role given behaves as before')
+  // and the router passes the role through
+  assert.match(dashboard, /resolveRoute\(raw, role\)/)
+  assert.match(dashboard, /routeFromHash\(role\)/)
+})

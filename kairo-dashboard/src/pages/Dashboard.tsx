@@ -172,16 +172,16 @@ interface DashboardProps {
  * Since the cutover an old id resolves to the space that absorbed it, so a
  * bookmark to #/flashcards or #/battle still lands somewhere real.
  */
-function routeFromHash(): { space: string; view: string | null } | null {
+function routeFromHash(role?: string): { space: string; view: string | null } | null {
   const m = window.location.hash.match(/^#\/([a-z0-9-]+)$/i)
   const raw = m?.[1]
   if (!raw) return null
-  const { space, view } = resolveRoute(raw)
+  const { space, view } = resolveRoute(raw, role)
   return PAGE_TITLES[space] ? { space, view } : null
 }
 
-function pageFromHash(): string | null {
-  return routeFromHash()?.space ?? null
+function pageFromHash(role?: string): string | null {
+  return routeFromHash(role)?.space ?? null
 }
 
 /**
@@ -206,7 +206,7 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
   // the router is a thin hash layer over the existing `active` state:
   // #/goal deep-links, back/forward work, refresh restores the screen.
   const [active, setActive] = useState(
-    () => pageFromHash() || (profile?.role === 'admin' ? 'school' : 'home'),
+    () => pageFromHash(profile?.role) || (profile?.role === 'admin' ? 'school' : 'home'),
   )
   const activeRef = useRef(active)
   activeRef.current = active
@@ -224,7 +224,7 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
   // URL → state: browser back/forward and pasted deep links.
   useEffect(() => {
     const onHash = () => {
-      const r = routeFromHash()
+      const r = routeFromHash(role)
       if (!r) return
       if (r.space !== activeRef.current) setActive(r.space)
       announceView(r.space, r.view)
@@ -261,7 +261,7 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
    */
   const [visited, setVisited] = useState<string[]>(
     // seeded from the hash too, so a deep link paints on the FIRST render
-    () => [pageFromHash() || (profile?.role === 'admin' ? 'school' : 'home')],
+    () => [pageFromHash(profile?.role) || (profile?.role === 'admin' ? 'school' : 'home')],
   )
   useEffect(() => {
     setVisited(prev => {
@@ -285,20 +285,21 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
   // running, the solver and Doubt Solving are unreachable -- not hidden,
   // unreachable -- from the drawer, from Home cards, from deep links, from
   // every setActive() in the app. One navigate() for all of them.
+  const role = profile?.role
   const navigate = useCallback((raw: string) => {
     // Old ids resolve to the space that absorbed them, so every button in the
     // app that still says 'flashcards' or 'battle' lands in the right place --
     // and on the right SCREEN inside it, not the space's index.
-    const { space, view } = resolveRoute(raw)
+    const { space, view } = resolveRoute(raw, role)
     const HELP = new Set(['doubt', 'doubt-solving', 'solver-classic', 'camera', 'camera-study'])
     if ((window as any).__kynoExamLock && (HELP.has(space) || HELP.has(raw))) return
     setActive(space)
     announceView(space, view)
-  }, [])
+  }, [role])
 
   // A deep link pasted into the address bar, and browser back/forward.
   useEffect(() => {
-    const r = routeFromHash()
+    const r = routeFromHash(role)
     if (r?.view) announceView(r.space, r.view)
   }, [])
 

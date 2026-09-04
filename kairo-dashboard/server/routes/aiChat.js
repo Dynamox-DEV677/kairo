@@ -1186,6 +1186,42 @@ function sanitizeOneLine(s) {
     .slice(0, 200)
 }
 
+/**
+ * Undo a model's DOUBLE-ESCAPED newlines -- the bug that put a literal
+ * "\n\n##" on a student's screen.
+ *
+ * Asked for JSON, a model sometimes writes "Step 1\\n\\n## Heading". JSON.parse
+ * turns that into the two characters backslash and n, not a newline. Everything
+ * downstream then breaks quietly: splitSteps() splits on real newlines, finds
+ * one enormous line, matches no heading, and dumps the whole raw answer on
+ * screen with its markup showing.
+ *
+ * Fixed HERE, at the boundary where model text becomes our data, and not with
+ * a blind replace at the render site -- that would corrupt every genuine
+ * backslash, and LaTeX is full of them.
+ *
+ * The repair is narrow on purpose. It runs only when a string has NO real
+ * newline but does contain a literal backslash-n, which is the unambiguous
+ * signature of one escaping pass too many. Then it unescapes exactly the way
+ * JSON would have, so "\\frac" survives as "\frac" and is not mangled.
+ */
+export function repairDoubleEncoded(value) {
+  if (typeof value === 'string') {
+    if (value.includes('\n') || !/\\[nrt]/.test(value)) return value
+    try {
+      const unescaped = JSON.parse(`"${value.replace(/\\(?!["\\/bfnrtu])/g, '\\\\').replace(/"/g, '\\"')}"`)
+      return unescaped.includes('\n') ? unescaped : value
+    } catch { return value }
+  }
+  if (Array.isArray(value)) return value.map(repairDoubleEncoded)
+  if (value && typeof value === 'object') {
+    const out = {}
+    for (const [k, v] of Object.entries(value)) out[k] = repairDoubleEncoded(v)
+    return out
+  }
+  return value
+}
+
 function parseJsonLoose(text) {
   if (!text) return null
   const fence = text.match(/```(?:json)?\s*([\s\S]*?)```/i)
@@ -1194,12 +1230,23 @@ function parseJsonLoose(text) {
   const start = candidate.indexOf('{')
   if (start < 0) return null
   let depth = 0
+  let inStr = false
+  let esc = false
   for (let i = start; i < candidate.length; i++) {
-    if (candidate[i] === '{') depth++
-    else if (candidate[i] === '}') {
+    const c = candidate[i]
+    // Braces INSIDE a string are text, not structure. Counting them was
+    // wrong for every answer containing \frac{a}{b} or a set {1, 2, 3}:
+    // the scan closed early, JSON.parse threw, and the answer was discarded
+    // as "malformed" even though the model had returned perfect JSON.
+    if (esc) { esc = false; continue }
+    if (c === '\\') { esc = true; continue }
+    if (c === '"') { inStr = !inStr; continue }
+    if (inStr) continue
+    if (c === '{') depth++
+    else if (c === '}') {
       depth--
       if (depth === 0) {
-        try { return JSON.parse(candidate.slice(start, i + 1)) }
+        try { return repairDoubleEncoded(JSON.parse(candidate.slice(start, i + 1))) }
         catch { return null }
       }
     }

@@ -97,7 +97,12 @@ export const SPACE_ALIASES = {
  * not the formula sheet. An alias may therefore be "space/view", and the
  * view is handed to the space so it opens on the right screen.
  */
-export function resolveRoute(id) {
+export function resolveRoute(id, role) {
+  // THE SEVEN SPACES ARE THE STUDENT APP. Teacher, admin and parent navigation
+  // was deliberately left alone by the cutover, so their routes must not be
+  // redirected: a teacher's Flashcards and Grader, and an admin's Timetable,
+  // are their own tools and would otherwise vanish into a student space.
+  if (role && role !== 'student') return { space: id, view: null }
   const target = SPACE_ALIASES[id] || id
   const slash = target.indexOf('/')
   if (slash === -1) return { space: target, view: null }
@@ -105,8 +110,8 @@ export function resolveRoute(id) {
 }
 
 /** Just the space. Anything that is not an alias is returned as-is. */
-export function resolveSpace(id) {
-  return resolveRoute(id).space
+export function resolveSpace(id, role) {
+  return resolveRoute(id, role).space
 }
 
 /** The event a space listens for to open on a particular screen. */
