@@ -109,7 +109,7 @@ function fmtDate(iso: string) {
 
 /* ── the page ─────────────────────────────────────────────────────────────── */
 
-export default function Profile({ onLogout }: { onLogout?: () => void }) {
+export default function Profile({ onLogout, onOpenSettings }: { onLogout?: () => void; onOpenSettings?: () => void }) {
   const [social, setSocial] = useState<SocialProfile | null>(() => getSocialCached())
   const [tick, setTick] = useState(0)
   const studies = useMemo(() => readStudies(), [tick])   // eslint-disable-line react-hooks/exhaustive-deps
@@ -352,6 +352,11 @@ export default function Profile({ onLogout }: { onLogout?: () => void }) {
           </Row>
           <Row label="Download my data" value={downloading ? <Loader2 size={16} {...ICON} /> : <Download size={16} color={T.muted} {...ICON} />} onClick={downloading ? undefined : download} />
           {downloadNote && <div style={{ padding: '0 14px 12px', fontSize: 12.5, color: T.dim }}>{downloadNote}</div>}
+          {/* Everything Profile does not cover still lives on the old Settings
+              screen: cloud backup, moving to a new device, the passcode, the
+              privacy inventory and its telemetry switch, changing your email,
+              and developer mode. */}
+          {onOpenSettings && <Row label="Backup, privacy and more" value="Settings" onClick={onOpenSettings} />}
         </Group>
 
         <div style={{ display: 'flex', gap: 10, marginTop: 26 }}>

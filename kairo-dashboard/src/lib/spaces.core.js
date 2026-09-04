@@ -69,8 +69,12 @@ export const SPACE_ALIASES = {
   'concept-map': 'progress',
   rooms: 'progress',
 
-  // Profile — settings
-  settings: 'profile',
+  // NOT redirected: 'settings'. Profile is the front door and the drawer
+  // points there, but the old Settings screen still holds what Profile does
+  // not -- cloud backup, device transfer, passcode reset, the privacy
+  // inventory, the telemetry switch, email change and developer mode.
+  // Redirecting it would silently delete all of that, so Profile links to it
+  // instead and #/settings keeps working.
 
   // the pre-cutover door, now gone
   new: 'progress',
