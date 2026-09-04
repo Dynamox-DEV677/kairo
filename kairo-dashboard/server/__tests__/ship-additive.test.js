@@ -31,13 +31,13 @@ test('#/new is a registered page and no old route redirects anywhere', () => {
   assert.match(dashboard, /'new':\s+'New design'/)
   assert.doesNotMatch(dashboard, /PAGE_ALIASES/, 'aliases/redirects are for the cutover commit')
   assert.match(dashboard, /doubt:\s+"Kyno's Solver"/, "the old solver route still resolves under its old id")
-  for (const id of ['doubt-solving', 'practice', 'performance', 'plan', 'notes', 'profile']) {
+  for (const id of ['doubt-solving', 'practice', 'performance', 'plan', 'notes', 'progress', 'profile']) {
     assert.match(dashboard, new RegExp(`<SpaceFrame active="${id}"`), `${id} renders inside the responsive frame`)
   }
 })
 
 test('text inputs on the new screens are at least 16px, or iOS zooms the page on focus', () => {
-  for (const f of ['DoubtSolving', 'Practice', 'Performance', 'Plan', 'Notes', 'NewIndex', 'Profile']) {
+  for (const f of ['DoubtSolving', 'Practice', 'Performance', 'Plan', 'Notes', 'NewIndex', 'Profile', 'Progress']) {
     const src = read('src', 'pages', `${f}.tsx`)
     const re = /<(input|textarea)\b/g
     let m

@@ -55,7 +55,7 @@ export const ROUTE_CATEGORY = {
 
   // other students can see these — as a username only, never a name, a photo,
   // an email, a school or a class section. Each has an off switch in Profile.
-  'league': 'social', 'battle': 'social', 'social': 'social',
+  'league': 'social', 'battle': 'social', 'social': 'social', 'arena': 'social',
 
   // server plumbing — carries no student content
   'cron': 'ops', 'devEmailPreview': 'ops', 'emails': 'ops',

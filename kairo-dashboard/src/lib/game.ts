@@ -318,6 +318,8 @@ function userIdentity(): { id: string } {
 /** Study minutes this week, reported so the league can group on effort rather than ability. Optional hook. */
 let _weekMinutes: (() => number) | null = null
 export function provideWeekMinutes(fn: () => number) { _weekMinutes = fn }
+/** Push this week's XP and minutes now (the league groups on minutes, so they must arrive before the group is formed). */
+export function pushLeagueNow() { try { syncLeague(loadGame()) } catch {  } }
 
 let _syncTimer: any = null
 function syncLeague(s: GameState) {

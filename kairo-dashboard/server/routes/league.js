@@ -5,8 +5,9 @@ import { supabaseAdmin, SUPABASE_CONFIGURED } from '../services/supabase.js'
 // cannot validate it, threw, and the swallowed catch left req.user undefined --
 // so a fully signed-in student fell through to the anonymous branch and got a
 // 401 on every single XP write. That is why XP never persisted.
-import { optionalSupabaseAuth } from '../middleware/supabaseAuth.js'
-import { profilesFor, blockedSet } from '../lib/social.js'
+import { optionalSupabaseAuth, requireSupabaseAuth } from '../middleware/supabaseAuth.js'
+import { profilesFor, blockedSet, ensureSocialProfile } from '../lib/social.js'
+import { effortBand, GROUP_SIZE, MIN_GROUP } from '../../src/lib/progress.core.js'
 
 const router = Router()
 
@@ -115,6 +116,59 @@ router.get('/board', optionalSupabaseAuth, async (req, res) => {
     console.error('[league] board:', e)
     // Never hand a raw database message to the client.
     res.status(500).json({ error: { code: 'INTERNAL', message: 'Could not load the leaderboard.' } })
+  }
+})
+
+/**
+ * The new league: a group of at most fifteen, formed on EFFORT (study minutes
+ * this week), never on ability. A hard-working weak student can come first,
+ * which is the only version of this feature that helps rather than
+ * demoralises. Nobody is relegated: the bottom simply stays. Fewer than five
+ * in the group → `small`, and the client hides the tile.
+ */
+router.get('/group', requireSupabaseAuth, async (req, res) => {
+  if (!SUPABASE_CONFIGURED) return res.json({ offline: true })
+  const week = String(req.query.week || '')
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(week)) return res.status(400).json({ error: { code: 'BAD_INPUT', message: 'week must be a date (YYYY-MM-DD).', fields: ['week'] } })
+  const me = req.user.id
+  try {
+    const prof = await ensureSocialProfile(me)
+    if (prof.offline) return res.json({ offline: true, hint: 'run server/db/2026-09-04_social.sql in Supabase' })
+    if (prof.show_in_leagues === false) return res.json({ off: true })
+
+    let { data: mine, error } = await supabaseAdmin.from('league_scores').select('user_id, xp, minutes, group_id').eq('user_id', me).eq('week', week).maybeSingle()
+    if (error) throw error
+    if (!mine) {
+      const { data: ins, error: e2 } = await supabaseAdmin.from('league_scores')
+        .upsert({ user_id: me, week, xp: 0, minutes: 0 }, { onConflict: 'user_id,week' }).select('user_id, xp, minutes, group_id').single()
+      if (e2) throw e2
+      mine = ins
+    }
+    const band = effortBand(mine.minutes || 0)
+    if (!mine.group_id) {
+      const { data: rows, error: e3 } = await supabaseAdmin.from('league_scores').select('group_id').eq('week', week).like('group_id', `${week}:${band}:%`)
+      if (e3) throw e3
+      const counts = new Map()
+      for (const r of rows || []) counts.set(r.group_id, (counts.get(r.group_id) || 0) + 1)
+      const open = [...counts.entries()].sort((a, b) => b[1] - a[1]).find(([, n]) => n < GROUP_SIZE)   // fill the fullest open group first
+      const gid = open ? open[0] : `${week}:${band}:${counts.size + 1}`
+      const { error: e4 } = await supabaseAdmin.from('league_scores').update({ group_id: gid }).eq('user_id', me).eq('week', week)
+      if (e4) throw e4
+      mine.group_id = gid
+    }
+    const { data: members, error: e5 } = await supabaseAdmin.from('league_scores').select('user_id, xp, minutes').eq('week', week).eq('group_id', mine.group_id)
+    if (e5) throw e5
+    const profiles = await profilesFor((members || []).map(m => m.user_id))
+    const blocked = await blockedSet(me)
+    const rows = (members || [])
+      .filter(m => m.user_id === me || (!blocked.has(m.user_id) && profiles.get(m.user_id)?.show_in_leagues !== false))
+      .map(m => ({ username: profiles.get(m.user_id)?.username || 'student', xp: m.xp || 0, you: m.user_id === me }))
+      .sort((a, b) => b.xp - a.xp)
+    res.json({ week, band, size: rows.length, small: rows.length < MIN_GROUP, rows })
+  } catch (e) {
+    if (missingTable(e) || /group_id|minutes/i.test(e?.message || '')) return res.json({ offline: true, hint: 'run server/db/2026-09-04_social.sql in Supabase' })
+    console.error('[league] group:', e)
+    res.status(500).json({ error: { code: 'INTERNAL', message: 'Could not load your league.' } })
   }
 })
 
