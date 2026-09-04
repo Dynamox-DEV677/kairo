@@ -9,6 +9,7 @@
  */
 import { createRoot } from 'react-dom/client'
 import Plan from './pages/Plan'
+import { PreviewFrame } from './preview-shared'
 import { saveProfile, track, getDashboard } from './lib/twin'
 import { setJSON } from './lib/storage'
 
@@ -57,8 +58,10 @@ window.fetch = ((url: any, init?: any) => {
 }) as typeof window.fetch
 
 createRoot(document.getElementById('root')!).render(
-  <Plan
-    onOpenDoubt={seed => alert('Opens Doubt Solving with:\n\n' + seed)}
-    onPractice={f => alert('Opens Practice filtered to:\n\n' + JSON.stringify(f))}
-  />,
+  <PreviewFrame active="plan">
+    <Plan
+      onOpenDoubt={seed => alert('Opens Doubt Solving with:\n\n' + seed)}
+      onPractice={f => alert('Opens Practice filtered to:\n\n' + JSON.stringify(f))}
+    />
+  </PreviewFrame>,
 )

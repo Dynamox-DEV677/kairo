@@ -10,6 +10,7 @@
  */
 import { createRoot } from 'react-dom/client'
 import DoubtSolving from './pages/DoubtSolving'
+import { PreviewFrame } from './preview-shared'
 import { recordDoubt } from './lib/twin'
 
 /* Two recents so "Pick up where you left" has something to show. */
@@ -88,8 +89,10 @@ window.fetch = ((url: any, init?: any) => {
 }) as typeof window.fetch
 
 createRoot(document.getElementById('root')!).render(
-  <DoubtSolving
-    profile={{ cls: '10', board: 'CBSE' }}
-    onOpenChat={seed => alert('Opens the existing chat with this prefilled:\n\n' + seed)}
-  />,
+  <PreviewFrame active="doubt-solving">
+    <DoubtSolving
+      profile={{ cls: '10', board: 'CBSE' }}
+      onOpenChat={seed => alert('Opens the existing chat with this prefilled:\n\n' + seed)}
+    />
+  </PreviewFrame>,
 )

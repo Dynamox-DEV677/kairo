@@ -20,6 +20,7 @@
  * layout; the intelligence is all upstream of it.
  */
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
+import { useSpaceLayout } from '../components/SpaceFrame'
 import {
   Camera, Mic, ChevronDown, ChevronRight, Check, RotateCcw, Bookmark,
   ArrowLeft, AlertTriangle, Layers, TrendingUp, Share2, RefreshCw, Loader2, X,
@@ -188,7 +189,7 @@ function InputBar({
           style={{
             flex: 1, minWidth: 0, height: 52, borderRadius: 100, padding: '0 20px',
             background: T.raised, border: `1px solid ${T.borderCtl}`, color: T.text,
-            fontSize: 15, fontFamily: FONT, outline: 'none',
+            fontSize: 16, fontFamily: FONT, outline: 'none',   // 16px minimum, or iOS zooms the page on focus
           }}
         />
         <button
@@ -632,6 +633,15 @@ export default function DoubtSolving({
   }
   const scroll: Style = { flex: 1, overflowY: 'auto', padding: '18px 14px 8px' }
 
+  // Desktop with room for it: the answer screen asks the frame for the wide
+  // column and lays out steps left (max 560px) + the actions rail right (400px).
+  const layout = useSpaceLayout()
+  useEffect(() => {
+    layout.setWide(view === 'answer' && steps.length > 0 && layout.areaWidth >= 880)
+  }, [view, steps.length, layout.areaWidth]) // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => () => layout.setWide(false), []) // eslint-disable-line react-hooks/exhaustive-deps
+  const twoCol = layout.wide
+
   /* entry ------------------------------------------------------------------ */
   if (view === 'entry') {
     return (
@@ -863,7 +873,14 @@ export default function DoubtSolving({
         </button>
       </div>
 
-      <div style={scroll}>
+      {/* Two columns on a wide desktop: steps left, the actions rail docked
+          right. "I'm stuck here" still opens the ONE existing chat -- a second
+          KairoChat instance is exactly the bug the Dashboard comment warns
+          about, so the rail docks the help, not a duplicate chat. */}
+      <div style={twoCol
+        ? { flex: 1, minHeight: 0, display: 'flex', justifyContent: 'center', gap: 28, padding: '0 24px' }
+        : { flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+      <div style={twoCol ? { ...scroll, flex: '0 1 560px', minWidth: 0, padding: '18px 0 24px' } : scroll}>
         <Card style={{ background: T.bgAlt }}>
           <div style={{ fontSize: 12.5, color: T.muted, lineHeight: 1.5 }}>{question}</div>
         </Card>
@@ -906,10 +923,9 @@ export default function DoubtSolving({
       </div>
 
       {total > 0 && (
-        <div style={{
-          background: T.bgAlt, borderTop: `1px solid ${T.divider}`,
-          padding: '12px 14px calc(12px + env(safe-area-inset-bottom))',
-        }}>
+        <div style={twoCol
+          ? { width: 400, flexShrink: 0, overflowY: 'auto', padding: '18px 0 24px 28px', borderLeft: `1px solid ${T.divider}` }
+          : { background: T.bgAlt, borderTop: `1px solid ${T.divider}`, padding: '12px 14px calc(12px + env(safe-area-inset-bottom))' }}>
           {shown < total ? (
             <button
               onClick={() => setRevealed(r => r + 1)}
@@ -954,6 +970,7 @@ export default function DoubtSolving({
           </div>
         </div>
       )}
+      </div>
 
       {saved && (
         <SaveSheet

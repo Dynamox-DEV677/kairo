@@ -10,6 +10,7 @@
  */
 import { createRoot } from 'react-dom/client'
 import Performance from './pages/Performance'
+import { PreviewFrame } from './preview-shared'
 import { track } from './lib/twin'
 
 const DAY = 86_400_000
@@ -104,8 +105,10 @@ window.fetch = ((url: any, init?: any) => {
 }) as typeof window.fetch
 
 createRoot(document.getElementById('root')!).render(
-  <Performance
-    onOpenDoubt={seed => alert('Opens Doubt Solving with:\n\n' + seed)}
-    onDrill={f => alert('Opens Practice filtered to:\n\n' + JSON.stringify(f, null, 2))}
-  />,
+  <PreviewFrame active="performance">
+    <Performance
+      onOpenDoubt={seed => alert('Opens Doubt Solving with:\n\n' + seed)}
+      onDrill={f => alert('Opens Practice filtered to:\n\n' + JSON.stringify(f, null, 2))}
+    />
+  </PreviewFrame>,
 )

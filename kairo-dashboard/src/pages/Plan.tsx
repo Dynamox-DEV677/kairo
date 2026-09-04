@@ -22,6 +22,7 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { ChevronRight, ArrowLeft, Check, Play, Pause, SkipForward, Pencil, AlertTriangle, Calendar, BookOpen, Layers, PenLine } from 'lucide-react'
 import { T, FONT, MONO, ICON, CALLOUT } from '../lib/spaceTokens'
+import { useSpaceLayout } from '../components/SpaceFrame'
 import { post } from '../lib/api'
 import { loadState, getDashboard, getProfile, track } from '../lib/twin'
 import { getJSON, setJSON, getRaw } from '../lib/storage'
@@ -160,13 +161,13 @@ function computeModel(now = Date.now()): Model {
 
 /* ── ring timer ──────────────────────────────────────────────────────────── */
 
-function Ring({ fraction }: { fraction: number }) {
-  const r = 104, c = 2 * Math.PI * r
+function Ring({ fraction, size = 236 }: { fraction: number; size?: number }) {
+  const half = size / 2, r = half - 14, c = 2 * Math.PI * r   // 236 → r 104, as drawn; 320 on a desktop
   return (
-    <svg width={236} height={236} viewBox="0 0 236 236" style={{ display: 'block' }} aria-hidden>
-      <circle cx={118} cy={118} r={r} fill="none" stroke={T.raised} strokeWidth={12} />
-      <circle cx={118} cy={118} r={r} fill="none" stroke={T.accent} strokeWidth={12} strokeLinecap="round"
-        strokeDasharray={c} strokeDashoffset={c * (1 - Math.max(0, Math.min(1, fraction)))} transform="rotate(-90 118 118)"
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ display: 'block' }} aria-hidden>
+      <circle cx={half} cy={half} r={r} fill="none" stroke={T.raised} strokeWidth={12} />
+      <circle cx={half} cy={half} r={r} fill="none" stroke={T.accent} strokeWidth={12} strokeLinecap="round"
+        strokeDasharray={c} strokeDashoffset={c * (1 - Math.max(0, Math.min(1, fraction)))} transform={`rotate(-90 ${half} ${half})`}
         style={{ transition: 'stroke-dashoffset .6s linear' }} />
     </svg>
   )
@@ -180,7 +181,17 @@ export default function Plan({ onOpenDoubt, onPractice }: {
   onOpenDoubt?: (seed: string) => void
   onPractice?: (filter: { topics?: string[] }) => void
 }) {
-  const [view, setView] = useState<View>({ name: 'plan' })
+  // A focus session still running when the page mounts (a reload, the app
+  // reopened) comes straight back up. Its start time is persisted, so the timer
+  // recomputes from the wall clock -- nothing is lost, and "Start" on the home
+  // screen can no longer quietly overwrite a session that was in progress.
+  const [view, setView] = useState<View>(() => {
+    try {
+      const s = getJSON<FocusSession>(FOCUS_KEY)
+      if (s?.startedAt && remainingMs(s, Date.now()) > 0) return { name: 'focus' }
+    } catch { /* storage blocked */ }
+    return { name: 'plan' }
+  })
   const [tick, setTick] = useState(0)
   const [now, setNow] = useState(Date.now())
 
@@ -210,6 +221,12 @@ export default function Plan({ onOpenDoubt, onPractice }: {
     if (!top) return null
     return { title: top.name, why: top.state === 'UNTOUCHED' ? `Untouched, and ${top.marks} marks on the paper` : `${top.marks} marks on the paper, ${top.status.toLowerCase()}`, minutes: 25, chapterId: top.id, sessionId: null }
   }, [sessions, model])
+
+  // Desktop with room for it: the syllabus map asks the frame for the wide
+  // column and lays its chapter cards out in two columns.
+  const layout = useSpaceLayout()
+  useEffect(() => { layout.setWide(view.name === 'syllabus' && layout.areaWidth >= 760) }, [view.name, layout.areaWidth]) // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => () => layout.setWide(false), []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const shell: Style = { position: 'absolute', inset: 0, background: T.bg, color: T.text, fontFamily: FONT, display: 'flex', flexDirection: 'column', overflow: 'hidden' }
   const scroll: Style = { flex: 1, overflowY: 'auto', padding: '18px 14px 24px' }
@@ -315,7 +332,7 @@ export default function Plan({ onOpenDoubt, onPractice }: {
                   <div style={{ fontSize: 12.5, color: T.text2, marginTop: 5 }}>{callout.sub}</div>
                 </div>
               )}
-              <div style={{ display: 'grid', gap: 10, marginTop: 12 }}>
+              <div style={{ display: 'grid', gap: 10, marginTop: 12, gridTemplateColumns: layout.wide ? '1fr 1fr' : undefined }}>
                 {rows.open.map(r => (
                   <Card key={r.id} onClick={() => setView({ name: 'topic', id: r.id })} style={{ borderRadius: 15, border: `1px solid ${r.atRisk ? T.warningBorder : T.border}` }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 10 }}>
@@ -330,7 +347,7 @@ export default function Plan({ onOpenDoubt, onPractice }: {
                   </Card>
                 ))}
                 {rows.done.length > 0 && (
-                  <div style={{ display: 'flex', gap: 10, alignItems: 'center', padding: '12px 14px', background: T.surface, border: `1px solid ${T.successBorder}`, borderRadius: 15 }}>
+                  <div style={{ gridColumn: '1 / -1', display: 'flex', gap: 10, alignItems: 'center', padding: '12px 14px', background: T.surface, border: `1px solid ${T.successBorder}`, borderRadius: 15 }}>
                     <Check size={16} color={T.success} {...ICON} />
                     <div style={{ fontSize: 13.5, color: T.text2 }}>{rows.done.length} chapter{rows.done.length === 1 ? '' : 's'} solid — {rows.done.map(r => r.name).join(', ')}</div>
                   </div>
@@ -433,9 +450,9 @@ function ExamDateCard({ onSaved }: { onSaved: () => void }) {
       <div style={{ fontSize: 12.5, color: T.dim, marginTop: 4, lineHeight: 1.5 }}>Everything below still works — it is projecting to end of term until then.</div>
       <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
         <input value={name} onChange={e => setName(e.target.value)} placeholder="Half-yearly" aria-label="Exam name"
-          style={{ flex: 1, height: 44, borderRadius: 12, padding: '0 12px', background: T.raised, border: `1px solid ${T.borderCtl}`, color: T.text, fontFamily: FONT, fontSize: 14 }} />
+          style={{ flex: 1, height: 44, minWidth: 0, borderRadius: 12, padding: '0 12px', background: T.raised, border: `1px solid ${T.borderCtl}`, color: T.text, fontFamily: FONT, fontSize: 16 }} />
         <input type="date" value={date} onChange={e => setDate(e.target.value)} aria-label="Exam date"
-          style={{ height: 44, borderRadius: 12, padding: '0 10px', background: T.raised, border: `1px solid ${T.borderCtl}`, color: T.text, fontFamily: FONT, fontSize: 14 }} />
+          style={{ height: 44, borderRadius: 12, padding: '0 10px', background: T.raised, border: `1px solid ${T.borderCtl}`, color: T.text, fontFamily: FONT, fontSize: 16 }} />
       </div>
       <div style={{ marginTop: 10 }}>
         <Primary disabled={!date} onClick={() => {
@@ -537,6 +554,7 @@ function FocusScreen({ shell, footer, now, setNow, onExit, sessionsTotal }: {
   shell: Style; footer: Style; now: number; setNow: (n: number) => void; onExit: () => void; sessionsTotal: number
 }) {
   const [session, setSession] = useState<any>(() => getJSON(FOCUS_KEY))
+  const ring = useSpaceLayout().bp === 'desktop' ? 320 : 236   // the ring grows on a laptop; the column does not
   const [done, setDone] = useState(false)
   const awayRef = useRef<number | null>(null)
 
@@ -600,9 +618,9 @@ function FocusScreen({ shell, footer, now, setNow, onExit, sessionsTotal }: {
         </div>
 
         <div style={{ position: 'relative', marginTop: 22 }}>
-          <Ring fraction={done ? 1 : fraction} />
+          <Ring fraction={done ? 1 : fraction} size={ring} />
           <div style={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center' }}>
-            <div style={{ fontFamily: MONO, fontSize: 52, fontWeight: 600, letterSpacing: -1, fontVariantNumeric: 'tabular-nums' }}>{done ? 'Done' : `${mm}:${String(ss).padStart(2, '0')}`}</div>
+            <div style={{ fontFamily: MONO, fontSize: ring === 320 ? 66 : 52, fontWeight: 600, letterSpacing: -1, fontVariantNumeric: 'tabular-nums' }}>{done ? 'Done' : `${mm}:${String(ss).padStart(2, '0')}`}</div>
           </div>
         </div>
 

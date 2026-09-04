@@ -18,6 +18,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { ChevronRight, ArrowLeft, Star, Check, MessageSquare, Layers, Loader2, Info } from 'lucide-react'
 import { T, FONT, MONO, ICON, ERR, CALLOUT } from '../lib/spaceTokens'
+import { useSpaceLayout } from '../components/SpaceFrame'
 import type { ErrorType } from '../lib/spaceTokens'
 import { post } from '../lib/api'
 import { loadState } from '../lib/twin'
@@ -191,6 +192,11 @@ export default function Performance({ onOpenDoubt, onDrill }: {
   onDrill?: (filter: { signatures?: string[]; topics?: string[] }) => void
 }) {
   const [view, setView] = useState<View>({ name: 'patterns' })
+  // Desktop with room for it: the impact screen asks the frame for the wide
+  // column; its bar then runs to 720px with the legend beside it.
+  const layout = useSpaceLayout()
+  useEffect(() => { layout.setWide(view.name === 'impact' && layout.areaWidth >= 760) }, [view.name, layout.areaWidth]) // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => () => layout.setWide(false), []) // eslint-disable-line react-hooks/exhaustive-deps
   const [tick] = useState(0)
 
   const state = useMemo(() => { try { return loadState() } catch { return { events: [], mastery: [] } as any } }, [view.name, tick])
@@ -317,8 +323,11 @@ export default function Performance({ onOpenDoubt, onDrill }: {
             <div style={{ fontSize: 14, color: T.text2 }}>{i.totalLost} marks lost</div>
           </div>
 
-          <div style={{ marginTop: 18 }}><StackedBar segments={i.segments} total={i.totalLost} /></div>
-          <div style={{ marginTop: 14 }}><Legend rows={i.segments.map(s => ({ type: s.type, value: s.marks }))} /></div>
+          {/* Desktop: the bar runs full width to 720px and the legend moves to its right. */}
+          <div style={layout.wide ? { marginTop: 18, display: 'flex', gap: 28, alignItems: 'flex-start' } : { marginTop: 18 }}>
+            <div style={layout.wide ? { flex: '1 1 auto', maxWidth: 720, minWidth: 0 } : undefined}><StackedBar segments={i.segments} total={i.totalLost} height={layout.wide ? 56 : 46} /></div>
+            <div style={layout.wide ? { width: 280, flexShrink: 0 } : { marginTop: 14 }}><Legend rows={i.segments.map(s => ({ type: s.type, value: s.marks }))} /></div>
+          </div>
 
           {i.reframe && (
             <div style={{ marginTop: 18, padding: 16, borderRadius: 16, ...(i.reframe.headline.includes('not about knowing') ? CALLOUT.purple : CALLOUT.amber) }}>

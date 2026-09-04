@@ -27,6 +27,7 @@ import {
   Lock, Grid3x3, Flag, ArrowLeft, Layers, HelpCircle, PenLine, MessageSquare, Loader2,
 } from 'lucide-react'
 import { T, FONT, MONO, ICON } from '../lib/spaceTokens'
+import { useSpaceLayout } from '../components/SpaceFrame'
 import { aiHeadersAsync } from '../lib/devKey'
 import { post } from '../lib/api'
 import { studentMessage } from '../lib/aiError.core'
@@ -535,7 +536,7 @@ function TeachFormat({ question, onDone }: { question: string; onDone: (r: Teach
           ) : (
             <textarea value={said} onChange={e => setSaid(e.target.value)} rows={4}
               placeholder="No microphone here — type your explanation. Your own words, any language mix."
-              style={{ width: '100%', marginTop: 8, background: T.well, border: `1px solid ${T.borderCtl}`, borderRadius: 12, color: T.text2, fontFamily: FONT, fontSize: 14, lineHeight: 1.6, padding: 10, resize: 'vertical', boxSizing: 'border-box' }} />
+              style={{ width: '100%', marginTop: 8, background: T.well, border: `1px solid ${T.borderCtl}`, borderRadius: 12, color: T.text2, fontFamily: FONT, fontSize: 16, lineHeight: 1.6, padding: 10, resize: 'vertical', boxSizing: 'border-box' }} />
           )}
         </Card>
 
@@ -751,6 +752,7 @@ type View = 'home' | 'formats' | 'session' | 'results' | 'mock'
 
 export default function Practice({ onOpenDoubt }: { onOpenDoubt?: (seed: string) => void }) {
   const [view, setView] = useState<View>('home')
+  const layout = useSpaceLayout()   // desktop: the session stays a 480px column, centred vertically
   const [minutes, setMinutes] = useState(15)
   const [plan, setPlan] = useState<SessionPlan | null>(null)
   const [items, setItems] = useState<SessionItem[]>([])
@@ -1109,7 +1111,12 @@ export default function Practice({ onOpenDoubt }: { onOpenDoubt?: (seed: string)
   const q = questions[qIndex]
 
   return (
-    <div style={shell}>
+    <div style={layout.bp === 'desktop' ? { ...shell, justifyContent: 'center' } : shell}>
+      {/* Desktop: one session card of at most 760px tall, in the vertical
+          middle of the 480px column. Never stretch a flashcard across a laptop. */}
+      <div style={layout.bp === 'desktop'
+        ? { display: 'flex', flexDirection: 'column', flex: '0 1 760px', minHeight: 0, border: `1px solid ${T.border}`, borderRadius: 22, overflow: 'hidden', background: T.bg }
+        : { display: 'contents' }}>
       <Chrome label={label} msLeft={msLeft} progress={done} onClose={finish} />
       {item.kind === 'card' && (
         <FlashcardFormat
@@ -1163,6 +1170,7 @@ export default function Practice({ onOpenDoubt }: { onOpenDoubt?: (seed: string)
           }}
         />
       )}
+      </div>
     </div>
   )
 }

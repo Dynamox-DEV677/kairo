@@ -583,6 +583,17 @@ function MobileDrawer({
               <LogOut size={15} />
             </button>
           </div>
+
+          {/* Seven-spaces redesign, pre-cutover: the one door into the new
+              screens, so they can be opened on a phone without typing a URL.
+              Deliberately dull -- it should not attract a real user's
+              attention. Deleted, together with #/new, in the cutover commit.
+              Nothing else in this drawer changes until then. */}
+          <button onClick={() => go('new')} style={{
+            width: '100%', marginTop: 8, padding: '10px 4px 2px', background: 'none', border: 'none',
+            borderTop: '1px solid #1E1E2C', color: '#5E5E78', fontFamily: 'inherit', fontSize: 12.5,
+            textAlign: 'left', cursor: 'pointer',
+          }}>New design (preview)</button>
         </div>
       </motion.aside>
     </>

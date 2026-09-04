@@ -11,6 +11,7 @@
  */
 import { createRoot } from 'react-dom/client'
 import Notes from './pages/Notes'
+import { PreviewFrame } from './preview-shared'
 import { saveToNotebook } from './lib/notebook'
 import { saveProfile, recordFlashcard, recordMistake, track } from './lib/twin'
 import { cardsForNote, attachCards } from './lib/notes.core'
@@ -75,6 +76,8 @@ window.fetch = ((url: any, init?: any) => {
 
 seed().then(() => {
   createRoot(document.getElementById('root')!).render(
-    <Notes onOpenDoubt={s => alert('Opens Doubt Solving with:\n\n' + s)} onPractice={f => alert('Opens Practice with:\n\n' + JSON.stringify(f))} />,
+    <PreviewFrame active="notes">
+      <Notes onOpenDoubt={s => alert('Opens Doubt Solving with:\n\n' + s)} onPractice={f => alert('Opens Practice with:\n\n' + JSON.stringify(f))} />
+    </PreviewFrame>,
   )
 })

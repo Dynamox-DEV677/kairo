@@ -27,6 +27,8 @@ import Practice from './Practice'
 import Performance from './Performance'
 import Plan from './Plan'
 import Notes from './Notes'
+import NewIndex from './NewIndex'
+import SpaceFrame from '../components/SpaceFrame'
 import { XPToast } from '../components/GameBar'
 import ErrorBoundary from '../components/ErrorBoundary'
 import EssayGrader from './EssayGrader'
@@ -99,6 +101,9 @@ const PAGE_TITLES: Record<string, string> = {
   'performance':    'Performance',
   'plan':           'Plan',
   'notes':          'Notes',
+  // The one door into the new spaces before the cutover: a dull row at the
+  // bottom of the drawer opens this index. Deleted with the cutover commit.
+  'new':            'New design',
   ops:              'Ops Dashboard',
   flashcards:       'Flashcards & SRS',
   'study-plan':     'Study Plan',
@@ -388,8 +393,13 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
               )}
             </div>
 
+            {/* Seven-spaces redesign, pre-cutover. Each space renders inside
+                SpaceFrame: phone edge-to-edge, tablet a centred 480px column,
+                desktop a 240px sidebar of the finished spaces. NEW SCREENS
+                ONLY -- nothing above or below this block is wrapped. */}
             <div className={pageClass} style={pageStyle('doubt-solving')}>
               {mounted('doubt-solving') && (
+                <SpaceFrame active="doubt-solving" onNavigate={navigate}>
                 <DoubtSolving
                   profile={profile}
                   onOpenChat={(seed: string) => {
@@ -404,20 +414,24 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
                     }, 60)
                   }}
                 />
+                </SpaceFrame>
               )}
             </div>
 
             <div className={pageClass} style={pageStyle('practice')}>
               {mounted('practice') && (
+                <SpaceFrame active="practice" onNavigate={navigate}>
                 <Practice onOpenDoubt={(seed: string) => {
                   navigate('doubt-solving')
                   setTimeout(() => window.dispatchEvent(new CustomEvent('kyno:doubt-seed', { detail: { seed } })), 60)
                 }} />
+                </SpaceFrame>
               )}
             </div>
 
             <div className={pageClass} style={pageStyle('performance')}>
               {mounted('performance') && (
+                <SpaceFrame active="performance" onNavigate={navigate}>
                 <Performance
                   onOpenDoubt={(seed: string) => {
                     navigate('doubt-solving')
@@ -430,11 +444,13 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
                     setTimeout(() => window.dispatchEvent(new CustomEvent('kyno:practice-filter', { detail: filter })), 60)
                   }}
                 />
+                </SpaceFrame>
               )}
             </div>
 
             <div className={pageClass} style={pageStyle('plan')}>
               {mounted('plan') && (
+                <SpaceFrame active="plan" onNavigate={navigate}>
                 <Plan
                   onOpenDoubt={(seed: string) => {
                     navigate('doubt-solving')
@@ -445,11 +461,13 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
                     setTimeout(() => window.dispatchEvent(new CustomEvent('kyno:practice-filter', { detail: filter })), 60)
                   }}
                 />
+                </SpaceFrame>
               )}
             </div>
 
             <div className={pageClass} style={pageStyle('notes')}>
               {mounted('notes') && (
+                <SpaceFrame active="notes" onNavigate={navigate}>
                 <Notes
                   onOpenDoubt={(seed: string) => {
                     navigate('doubt-solving')
@@ -460,6 +478,15 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
                     setTimeout(() => window.dispatchEvent(new CustomEvent('kyno:practice-filter', { detail: filter })), 60)
                   }}
                 />
+                </SpaceFrame>
+              )}
+            </div>
+
+            <div className={pageClass} style={pageStyle('new')}>
+              {mounted('new') && (
+                <SpaceFrame active="new" onNavigate={navigate}>
+                  <NewIndex onOpen={navigate} />
+                </SpaceFrame>
               )}
             </div>
 

@@ -10,6 +10,7 @@
  */
 import { createRoot } from 'react-dom/client'
 import Practice from './pages/Practice'
+import { PreviewFrame } from './preview-shared'
 import { recordFlashcard, recordMistake } from './lib/twin'
 import { setJSON } from './lib/storage'
 
@@ -95,5 +96,7 @@ window.fetch = ((url: any, init?: any) => {
 }) as typeof window.fetch
 
 createRoot(document.getElementById('root')!).render(
-  <Practice onOpenDoubt={seed => alert('Opens Doubt Solving with this as the question:\n\n' + seed)} />,
+  <PreviewFrame active="practice">
+    <Practice onOpenDoubt={seed => alert('Opens Doubt Solving with this as the question:\n\n' + seed)} />
+  </PreviewFrame>,
 )
