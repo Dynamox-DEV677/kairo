@@ -12,7 +12,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync, existsSync, readdirSync, statSync } from 'node:fs'
 import { join } from 'node:path'
-import { SPACE_META as SPACES, SPACE_IDS, SPACE_ALIASES, resolveSpace } from '../../src/lib/spaces.core.js'
+import { SPACE_META as SPACES, SPACE_IDS, SPACE_ALIASES, resolveSpace, resolveRoute } from '../../src/lib/spaces.core.js'
 
 const ROOT = join(import.meta.dirname, '..', '..')
 const read = (...p) => readFileSync(join(ROOT, ...p), 'utf-8')
@@ -35,10 +35,11 @@ test('there are seven spaces and every one is a registered page rendered in the 
 })
 
 test('every old route redirects to a space, and no redirect points at a dead end', () => {
-  for (const [from, to] of Object.entries(SPACE_ALIASES)) {
-    assert.ok(SPACE_IDS.has(to), `${from} redirects to ${to}, which is not a space`)
-    assert.equal(resolveSpace(from), to)
-    assert.equal(SPACE_ALIASES[to], undefined, `${to} is both a redirect target and a source`)
+  for (const [from, target] of Object.entries(SPACE_ALIASES)) {
+    const { space } = resolveRoute(from)
+    assert.ok(SPACE_IDS.has(space), `${from} redirects to ${target}, whose space is not real`)
+    assert.equal(resolveSpace(from), space)
+    assert.equal(SPACE_ALIASES[space], undefined, `${space} is both a redirect target and a source`)
   }
   // the consolidations each brief promised
   for (const [from, to] of [
@@ -49,6 +50,24 @@ test('every old route redirects to a space, and no redirect points at a dead end
     ['battle', 'progress'], ['league', 'progress'], ['knowledge', 'progress'], ['concept-map', 'progress'], ['rooms', 'progress'],
     ['camera', 'doubt-solving'], ['new', 'progress'],
   ]) assert.equal(resolveSpace(from), to, `#/${from} should land in ${to}`)
+
+  /**
+   * A redirect must land on the SCREEN, not the space's index. Sending
+   * #/formula to the Notes home makes the student go and find the formula
+   * sheet themselves, which is barely better than a 404.
+   */
+  for (const [from, space, view] of [
+    ['formula', 'notes', 'formulas'], ['listen', 'notes', 'watch'], ['writing', 'notes', 'write'],
+    ['battle', 'progress', 'battle'], ['league', 'progress', 'league'],
+    ['concept-map', 'progress', 'map'], ['knowledge', 'progress', 'map'], ['knowledge-graph', 'progress', 'map'],
+    ['rooms', 'progress', 'room'], ['study-room', 'progress', 'room'],
+    ['focus', 'plan', 'focus'], ['pomodoro', 'plan', 'focus'],
+    ['essay', 'practice', 'formats'], ['grader', 'practice', 'formats'],
+  ]) assert.deepEqual(resolveRoute(from), { space, view }, `#/${from} should open ${space}/${view}`)
+
+  // and a plain space alias carries no view
+  assert.deepEqual(resolveRoute('notebook'), { space: 'notes', view: null })
+  assert.deepEqual(resolveRoute('practice'), { space: 'practice', view: null })
   // an id nobody redirected is left alone
   for (const keep of ['home', 'kairo-os', 'camera-live', 'reels', 'concept', 'bridge', 'stream', 'school', 'settings']) {
     assert.equal(resolveSpace(keep), keep, `${keep} belongs to no space and must keep its own route`)
@@ -76,10 +95,12 @@ test('nothing a space did not rebuild is redirected away', () => {
 })
 
 test('the hash router and navigate() both resolve old ids', () => {
-  const fromHash = dashboard.slice(dashboard.indexOf('function pageFromHash'), dashboard.indexOf('export default function Dashboard'))
-  assert.match(fromHash, /resolveSpace\(/, 'a pasted #/flashcards link must resolve')
+  const fromHash = dashboard.slice(dashboard.indexOf('function routeFromHash'), dashboard.indexOf('export default function Dashboard'))
+  assert.match(fromHash, /resolveRoute\(/, 'a pasted #/flashcards link must resolve, to a space AND a screen')
+  assert.match(fromHash, /function announceView/, 'and the screen must be handed to the space')
   const nav = dashboard.slice(dashboard.indexOf('const navigate = useCallback'), dashboard.indexOf('const navigate = useCallback') + 600)
-  assert.match(nav, /resolveSpace\(/, 'in-app buttons still using old ids must resolve')
+  assert.match(nav, /resolveRoute\(/, 'in-app buttons still using old ids must resolve')
+  assert.match(nav, /announceView\(space, view\)/, 'and must open the right screen inside the space')
   assert.match(nav, /__kynoExamLock/, 'the mock lockout still guards the help routes')
 })
 
@@ -87,6 +108,13 @@ test('the drawer is seven groups, one per space, and nothing is orphaned', () =>
   const block = drawer.slice(drawer.indexOf('const DRAWER_STUDENT'), drawer.indexOf('const DRAWER_TEACHER'))
   const titles = [...block.matchAll(/title: '([^']+)'/g)].map(m => m[1])
   assert.deepEqual(titles, SPACES.map(s => s.label))
+  // A value re-exported through a barrel gets elided by the TS transform, and
+  // the import then throws before React mounts -- the whole app renders blank
+  // with only a console error. Values come from the core module directly.
+  const barrel = read('src', 'lib', 'spaces.ts')
+  assert.doesNotMatch(barrel, /^export \{ SPACE/m, 'do not re-export values through src/lib/spaces.ts')
+  assert.match(dashboard, /from '\.\.\/lib\/spaces\.core'/, 'the Dashboard imports the router values directly')
+
   // every destination in the drawer is a real page and never a redirected id
   for (const m of block.matchAll(/to: '([a-z0-9-]+)'/g)) {
     assert.ok(registered.has(m[1]), `drawer points at ${m[1]}, which is not a page`)

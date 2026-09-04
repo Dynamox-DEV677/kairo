@@ -44,8 +44,8 @@ export const SPACE_ALIASES = {
   mock: 'practice',
   simulator: 'practice',
   'teach-back': 'practice',
-  essay: 'practice',
-  grader: 'practice',
+  essay: 'practice/formats',
+  grader: 'practice/formats',
 
   // Performance — the repeating mistakes
   mistakes: 'performance',
@@ -57,26 +57,26 @@ export const SPACE_ALIASES = {
   'study-plan': 'plan',
   'exam-planner': 'plan',
   'topic-architect': 'plan',
-  focus: 'plan',
-  pomodoro: 'plan',
+  focus: 'plan/focus',
+  pomodoro: 'plan/focus',
   planner: 'plan',
   timetable: 'plan',
   tasks: 'plan',
 
   // Notes — one library
   notebook: 'notes',
-  formula: 'notes',
-  listen: 'notes',
-  writing: 'notes',
+  formula: 'notes/formulas',
+  listen: 'notes/watch',
+  writing: 'notes/write',
 
   // Progress — the map, the league, battles, the room
-  battle: 'progress',
-  league: 'progress',
-  knowledge: 'progress',
-  'concept-map': 'progress',
-  'knowledge-graph': 'progress',
-  rooms: 'progress',
-  'study-room': 'progress',
+  battle: 'progress/battle',
+  league: 'progress/league',
+  knowledge: 'progress/map',
+  'concept-map': 'progress/map',
+  'knowledge-graph': 'progress/map',
+  rooms: 'progress/room',
+  'study-room': 'progress/room',
 
   // NOT redirected: 'settings'. Profile is the front door and the drawer
   // points there, but the old Settings screen still holds what Profile does
@@ -89,7 +89,25 @@ export const SPACE_ALIASES = {
   new: 'progress',
 }
 
-/** Resolve an old id to the space that absorbed it; anything else is returned as-is. */
-export function resolveSpace(id) {
-  return SPACE_ALIASES[id] || id
+/**
+ * Resolve an old id to the space AND the screen inside it.
+ *
+ * A redirect that only names the space drops the student on an index and
+ * makes them find the thing again -- #/formula landing on the Notes home is
+ * not the formula sheet. An alias may therefore be "space/view", and the
+ * view is handed to the space so it opens on the right screen.
+ */
+export function resolveRoute(id) {
+  const target = SPACE_ALIASES[id] || id
+  const slash = target.indexOf('/')
+  if (slash === -1) return { space: target, view: null }
+  return { space: target.slice(0, slash), view: target.slice(slash + 1) }
 }
+
+/** Just the space. Anything that is not an alias is returned as-is. */
+export function resolveSpace(id) {
+  return resolveRoute(id).space
+}
+
+/** The event a space listens for to open on a particular screen. */
+export const SPACE_VIEW_EVENT = 'kyno:space-view'

@@ -23,6 +23,7 @@ import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { ChevronRight, ArrowLeft, Check, Play, Pause, SkipForward, Pencil, AlertTriangle, Calendar, BookOpen, Layers, PenLine } from 'lucide-react'
 import { T, FONT, MONO, ICON, CALLOUT } from '../lib/spaceTokens'
 import { useSpaceLayout } from '../components/SpaceFrame'
+import { SPACE_VIEW_EVENT } from '../lib/spaces.core'
 import { keepPageMounted } from '../lib/keepMounted'
 import { awardXP, awardMasteryCrossings } from '../lib/game'
 import { post } from '../lib/api'
@@ -234,6 +235,21 @@ export default function Plan({ onOpenDoubt, onPractice }: {
   useEffect(() => { try { awardMasteryCrossings(model.states) } catch { /* nicety */ } }, [model])
   // A running focus timer must not be unmounted out from under the student.
   useEffect(() => (view.name === 'focus' ? keepPageMounted('plan') : undefined), [view.name])
+  // #/focus and #/pomodoro open the timer -- but only if one is actually
+  // running. Landing on a dead timer screen would be worse than the plan.
+  useEffect(() => {
+    const on = (e: Event) => {
+      const d = (e as CustomEvent).detail
+      if (d?.space !== 'plan') return
+      if (d.view === 'focus') {
+        const running = (() => { try { const s = getJSON<FocusSession>(FOCUS_KEY); return !!(s?.startedAt && remainingMs(s, Date.now()) > 0) } catch { return false } })()
+        if (running) setView({ name: 'focus' })
+        else setView({ name: 'plan' })
+      } else if (['plan', 'syllabus', 'adjust'].includes(d.view)) setView({ name: d.view })
+    }
+    window.addEventListener(SPACE_VIEW_EVENT, on)
+    return () => window.removeEventListener(SPACE_VIEW_EVENT, on)
+  }, [])
 
   const shell: Style = { position: 'absolute', inset: 0, background: T.bg, color: T.text, fontFamily: FONT, display: 'flex', flexDirection: 'column', overflow: 'hidden' }
   const scroll: Style = { flex: 1, overflowY: 'auto', padding: '18px 14px 24px' }

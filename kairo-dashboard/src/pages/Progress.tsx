@@ -22,6 +22,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ArrowLeft, ChevronRight, Check, Loader2, Zap, Users, Trophy, Compass, Flame, WifiOff } from 'lucide-react'
 import { T, FONT, MONO, ICON, CALLOUT } from '../lib/spaceTokens'
 import { useSpaceLayout } from '../components/SpaceFrame'
+import { SPACE_VIEW_EVENT } from '../lib/spaces.core'
 import { keepPageMounted } from '../lib/keepMounted'
 import { confirmDialog } from '../components/ConfirmModal'
 import { loadState, getDashboard, getProfile, listFlashcards } from '../lib/twin'
@@ -262,6 +263,16 @@ export default function Progress({ onPractice, onOpenProfile }: {
   useEffect(() => { const t = setTimeout(loadLeague, 1800); return () => clearTimeout(t) }, [loadLeague])   // after the minutes push lands
   useEffect(() => { if (online) refreshArenaStats().then(s => { if (s) setArena(s) }) }, [online])
   useEffect(() => watchLobby(setLobby), [])
+  // #/battle, #/league, #/study-room and #/concept-map open their own screen.
+  useEffect(() => {
+    const on = (e: Event) => {
+      const d = (e as CustomEvent).detail
+      if (d?.space !== 'progress') return
+      if (['map', 'league', 'battle', 'room', 'home'].includes(d.view)) setView({ name: d.view })
+    }
+    window.addEventListener(SPACE_VIEW_EVENT, on)
+    return () => window.removeEventListener(SPACE_VIEW_EVENT, on)
+  }, [])
 
   useEffect(() => { layout.setWide(view.name === 'map' && layout.areaWidth >= 760) }, [view.name, layout.areaWidth]) // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => () => layout.setWide(false), []) // eslint-disable-line react-hooks/exhaustive-deps

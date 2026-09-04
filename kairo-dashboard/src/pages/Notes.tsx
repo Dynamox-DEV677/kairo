@@ -16,6 +16,7 @@
  */
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { Search, ChevronRight, ArrowLeft, Bookmark, Check, Play, Pause, Mic, Printer, Layers, Headphones, PenLine, FunctionSquare, AlertTriangle, Plus, X } from 'lucide-react'
+import { SPACE_VIEW_EVENT } from '../lib/spaces.core'
 import { T, FONT, MONO, ICON, CALLOUT, ERR } from '../lib/spaceTokens'
 import type { ErrorType } from '../lib/spaceTokens'
 import { post } from '../lib/api'
@@ -128,6 +129,17 @@ export default function Notes({ onOpenDoubt, onPractice }: {
     const on = () => setTick(t => t + 1)
     window.addEventListener('kyno:focus-banked', on)
     return () => window.removeEventListener('kyno:focus-banked', on)
+  }, [])
+  // A redirect may ask this space to open on a particular screen: #/formula
+  // must land on the formula sheet, not the library index.
+  useEffect(() => {
+    const on = (e: Event) => {
+      const d = (e as CustomEvent).detail
+      if (d?.space !== 'notes') return
+      if (d.view === 'formulas' || d.view === 'watch' || d.view === 'write' || d.view === 'library') setView({ name: d.view })
+    }
+    window.addEventListener(SPACE_VIEW_EVENT, on)
+    return () => window.removeEventListener(SPACE_VIEW_EVENT, on)
   }, [])
 
   const shell: Style = { position: 'absolute', inset: 0, background: T.bg, color: T.text, fontFamily: FONT, display: 'flex', flexDirection: 'column', overflow: 'hidden' }

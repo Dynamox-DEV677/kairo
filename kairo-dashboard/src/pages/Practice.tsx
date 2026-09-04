@@ -28,6 +28,7 @@ import {
 } from 'lucide-react'
 import { T, FONT, MONO, ICON } from '../lib/spaceTokens'
 import { useSpaceLayout } from '../components/SpaceFrame'
+import { SPACE_VIEW_EVENT } from '../lib/spaces.core'
 import { keepPageMounted } from '../lib/keepMounted'
 import { aiHeadersAsync } from '../lib/devKey'
 import { post } from '../lib/api'
@@ -756,6 +757,18 @@ export default function Practice({ onOpenDoubt }: { onOpenDoubt?: (seed: string)
   const layout = useSpaceLayout()   // desktop: the session stays a 480px column, centred vertically
   // A live session must survive a trip to another space and back.
   useEffect(() => (view === 'session' || view === 'mock' ? keepPageMounted('practice') : undefined), [view])
+  // #/grader and #/essay open the format picker, where the written format is.
+  // Never yank a student out of a running session to honour a redirect.
+  useEffect(() => {
+    const on = (e: Event) => {
+      const d = (e as CustomEvent).detail
+      if (d?.space !== 'practice') return
+      if (view === 'session' || view === 'mock') return
+      if (['home', 'formats', 'mock'].includes(d.view)) setView(d.view)
+    }
+    window.addEventListener(SPACE_VIEW_EVENT, on)
+    return () => window.removeEventListener(SPACE_VIEW_EVENT, on)
+  }, [view])
   const [minutes, setMinutes] = useState(15)
   const [plan, setPlan] = useState<SessionPlan | null>(null)
   const [items, setItems] = useState<SessionItem[]>([])

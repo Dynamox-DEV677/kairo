@@ -11,10 +11,14 @@
  */
 import type { LucideIcon } from 'lucide-react'
 import { MessageSquare, Target, TrendingUp, Calendar, BookOpen, User, Trophy } from 'lucide-react'
-import { SPACE_META, SPACE_IDS, SPACE_ALIASES, resolveSpace } from './spaces.core'
+import { SPACE_META } from './spaces.core'
 import type { SpaceMeta } from './spaces.core'
 
-export { SPACE_IDS, SPACE_ALIASES, resolveSpace }
+// Values live in spaces.core.js and are imported FROM THERE by their users.
+// This file adds icons and nothing else: re-exporting a value through a barrel
+// is how the app ended up blank once, because the TS transform elided it and
+// the import threw before React could mount.
+export type { SpaceMeta }
 
 export interface Space extends SpaceMeta { icon: LucideIcon }
 

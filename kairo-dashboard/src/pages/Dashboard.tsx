@@ -30,7 +30,11 @@ import Notes from './Notes'
 import Profile from './Profile'
 import Progress from './Progress'
 import SpaceFrame from '../components/SpaceFrame'
-import { resolveSpace } from '../lib/spaces'
+// Straight from the core module, not through the spaces.ts barrel. Re-exporting
+// a value that came from a .js sibling gets elided by the TS transform, and the
+// import then throws at module-evaluation time -- before React mounts anything,
+// so the whole app renders blank with nothing but a console SyntaxError.
+import { resolveSpace, resolveRoute, SPACE_VIEW_EVENT } from '../lib/spaces.core'
 import { KEEP_MOUNTED, busyPages } from '../lib/keepMounted'
 import BlankGuard from '../components/BlankGuard'
 import { refreshSocial } from '../lib/social'
@@ -168,12 +172,32 @@ interface DashboardProps {
  * Since the cutover an old id resolves to the space that absorbed it, so a
  * bookmark to #/flashcards or #/battle still lands somewhere real.
  */
-function pageFromHash(): string | null {
+function routeFromHash(): { space: string; view: string | null } | null {
   const m = window.location.hash.match(/^#\/([a-z0-9-]+)$/i)
   const raw = m?.[1]
   if (!raw) return null
-  const id = resolveSpace(raw)
-  return PAGE_TITLES[id] ? id : null
+  const { space, view } = resolveRoute(raw)
+  return PAGE_TITLES[space] ? { space, view } : null
+}
+
+function pageFromHash(): string | null {
+  return routeFromHash()?.space ?? null
+}
+
+/**
+ * Tell a space which of its screens to open.
+ *
+ * #/formula must land on the formula sheet, not the Notes index -- a redirect
+ * that only names the space makes the student go and find the thing again.
+ * The space owns its own view state, so the route asks rather than sets, and
+ * a space is free to decline (Plan will not open a focus timer that is not
+ * running).
+ */
+function announceView(space: string, view: string | null) {
+  if (!view) return
+  setTimeout(() => {
+    try { window.dispatchEvent(new CustomEvent(SPACE_VIEW_EVENT, { detail: { space, view } })) } catch { /* ssr */ }
+  }, 60)
 }
 
 export default function Dashboard({ profile, onLogout }: DashboardProps) {
@@ -200,8 +224,10 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
   // URL → state: browser back/forward and pasted deep links.
   useEffect(() => {
     const onHash = () => {
-      const id = pageFromHash()
-      if (id && id !== activeRef.current) setActive(id)
+      const r = routeFromHash()
+      if (!r) return
+      if (r.space !== activeRef.current) setActive(r.space)
+      announceView(r.space, r.view)
     }
     window.addEventListener('hashchange', onHash)
     window.addEventListener('popstate', onHash)
@@ -261,11 +287,19 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
   // every setActive() in the app. One navigate() for all of them.
   const navigate = useCallback((raw: string) => {
     // Old ids resolve to the space that absorbed them, so every button in the
-    // app that still says 'flashcards' or 'battle' lands in the right place.
-    const id = resolveSpace(raw)
+    // app that still says 'flashcards' or 'battle' lands in the right place --
+    // and on the right SCREEN inside it, not the space's index.
+    const { space, view } = resolveRoute(raw)
     const HELP = new Set(['doubt', 'doubt-solving', 'solver-classic', 'camera', 'camera-study'])
-    if ((window as any).__kynoExamLock && (HELP.has(id) || HELP.has(raw))) return
-    setActive(id)
+    if ((window as any).__kynoExamLock && (HELP.has(space) || HELP.has(raw))) return
+    setActive(space)
+    announceView(space, view)
+  }, [])
+
+  // A deep link pasted into the address bar, and browser back/forward.
+  useEffect(() => {
+    const r = routeFromHash()
+    if (r?.view) announceView(r.space, r.view)
   }, [])
 
   useEffect(() => {
