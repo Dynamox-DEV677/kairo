@@ -318,7 +318,15 @@ function WrittenFormat({ question, marks, onDone }: {
           board: prof?.board || 'CBSE', class: prof?.cls || '10',
         })
         setRubric(g)
-        try { track({ type: 'essay_graded', score: Math.round((g.awarded / g.total) * 100), correct: g.awarded === g.total, modality: 'text', payload: { practice: true } }) } catch { /* nicety */ }
+        try {
+          track({
+            type: 'essay_graded', topic: question.slice(0, 60), score: Math.round((g.awarded / g.total) * 100),
+            correct: g.awarded === g.total, modality: 'text',
+            // The rubric travels with the event so Performance can name the
+            // line that lost the mark without re-grading anything.
+            payload: { practice: true, source: 'written', q: question, marks: g.total, awarded: g.awarded, steps: g.steps, lines: ls },
+          })
+        } catch { /* nicety */ }
       } catch (e: any) {
         // Grader down: keep the photo, save the answer, carry on. The session
         // must not know the AI layer is struggling.
@@ -635,7 +643,7 @@ function MockRoom({ subject, onExit }: { subject: string; onExit: () => void }) 
     const score = scorePaper(questions, answers, { correct: 1, wrong: 0 })
     questions.forEach((qq, k) => {
       const a = answers[k]; if (a == null) return
-      try { track({ type: 'quiz_answered', subject: qq.subject || undefined, topic: qq.topic || undefined, correct: a === qq.correctIndex, score: a === qq.correctIndex ? 100 : 0, modality: 'interactive', payload: { mock: true } }) } catch { /* nicety */ }
+      try { track({ type: 'quiz_answered', subject: qq.subject || undefined, topic: qq.topic || undefined, correct: a === qq.correctIndex, score: a === qq.correctIndex ? 100 : 0, modality: 'interactive', payload: a === qq.correctIndex ? { mock: true, q: qq.q } : { mock: true, source: 'mock', q: qq.q, options: qq.options, correctIndex: qq.correctIndex, chosenIndex: a, explanation: qq.explanation || undefined } }) } catch { /* nicety */ }
     })
     try { track({ type: 'quiz_completed', subject, score: Math.round((score.marks / Math.max(1, score.maxMarks)) * 100), payload: { mock: true, practice: true } }) } catch { /* nicety */ }
     setPhase('done')
@@ -755,13 +763,31 @@ export default function Practice({ onOpenDoubt }: { onOpenDoubt?: (seed: string)
   const [stats, setStats] = useState({ cards: 0, questions: 0, correct: 0, written: 0, teach: 0 })
   const [mockSubject, setMockSubject] = useState('Science')
   const [tick, setTick] = useState(0)
+  /** From Performance: drill these signatures/topics instead of the default target. */
+  const [filter, setFilter] = useState<{ signatures?: string[]; topics?: string[] } | null>(null)
+  useEffect(() => {
+    const on = (e: Event) => {
+      const f = (e as CustomEvent)?.detail
+      if (f && (f.signatures?.length || f.topics?.length)) { setFilter(f); setView('home') }
+    }
+    window.addEventListener('kyno:practice-filter', on)
+    return () => window.removeEventListener('kyno:practice-filter', on)
+  }, [])
 
   const cards = useMemo(() => { try { return listFlashcards() } catch { return [] } }, [view, tick])
   const mistakes = useMemo(() => { try { return getMistakes() } catch { return [] } }, [view, tick])
   const mastery = useMemo(() => { try { return loadState().mastery } catch { return [] } }, [view, tick])
   const events = useMemo(() => { try { return loadState().events } catch { return [] } }, [view, tick])
 
-  const preview = useMemo(() => buildSession({ minutes, cards, mistakes, mastery }), [minutes, cards, mistakes, mastery])
+  // A filter narrows the mistake rows the builder targets, so "Drill this
+  // pattern" produces questions on THAT topic rather than the overall worst.
+  const targetedMistakes = useMemo(() => {
+    if (!filter?.topics?.length) return mistakes
+    const want = new Set(filter.topics.map(t => String(t).toLowerCase()))
+    const hit = mistakes.filter(m => want.has(String(m.topic).toLowerCase()))
+    return hit.length ? hit : mistakes
+  }, [mistakes, filter])
+  const preview = useMemo(() => buildSession({ minutes, cards, mistakes: targetedMistakes, mastery }), [minutes, cards, targetedMistakes, mastery])
 
   const exam = useMemo(() => {
     const days = nearestExamDays()
@@ -865,8 +891,8 @@ export default function Practice({ onOpenDoubt }: { onOpenDoubt?: (seed: string)
     advance()
   }
 
-  function answerQuestion(q: ExamQuestion, correct: boolean) {
-    try { track({ type: 'quiz_answered', subject: q.subject || undefined, topic: q.topic || undefined, correct, score: correct ? 100 : 0, modality: 'interactive', payload: { practice: true } }) } catch { /* nicety */ }
+  function answerQuestion(q: ExamQuestion, correct: boolean, chosen: number) {
+    try { track({ type: 'quiz_answered', subject: q.subject || undefined, topic: q.topic || undefined, correct, score: correct ? 100 : 0, modality: 'interactive', payload: correct ? { practice: true, q: q.q } : { practice: true, source: 'quiz', q: q.q, options: q.options, correctIndex: q.correctIndex, chosenIndex: chosen, explanation: q.explanation || undefined } }) } catch { /* nicety */ }
     if (q.topic) setTouched(t => [...t, String(q.topic)])
     setStats(s => ({ ...s, questions: s.questions + 1, correct: s.correct + (correct ? 1 : 0) }))
     setTimeout(advance, 900)
@@ -918,6 +944,15 @@ export default function Practice({ onOpenDoubt }: { onOpenDoubt?: (seed: string)
             <>
               <Eyebrow>Practice</Eyebrow>
               <h1 style={{ fontSize: 25, fontWeight: 700, margin: '8px 0 0', letterSpacing: -0.3 }}>How long have you got?</h1>
+              {filter && (
+                <button onClick={() => setFilter(null)} style={{
+                  marginTop: 12, height: 34, padding: '0 12px', borderRadius: 100, background: T.accentSurface,
+                  border: `1px solid ${T.accent}`, color: T.accentPale, fontSize: 12.5, fontWeight: 600, fontFamily: FONT,
+                  cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 8,
+                }}>
+                  Drilling: {(filter.topics || filter.signatures || []).slice(0, 2).join(', ')} <X size={14} {...ICON} />
+                </button>
+              )}
 
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginTop: 18 }}>
                 {BUDGETS.map(m => {
@@ -1081,7 +1116,7 @@ export default function Practice({ onOpenDoubt }: { onOpenDoubt?: (seed: string)
                 ? <div style={{ width: '100%' }}><Inline message="Questions are unavailable right now — carrying on with the rest of your session." /><div style={{ marginTop: 12 }}><Primary onClick={advance}>Continue</Primary></div></div>
                 : <div style={{ display: 'flex', gap: 10, alignItems: 'center', color: T.muted, fontSize: 13 }}><Loader2 size={16} {...ICON} /> Writing your questions…</div>}
             </div>
-          : <QuestionFormat q={q} onAnswer={(c) => answerQuestion(q, c)} />
+          : <QuestionFormat q={q} onAnswer={(c, i) => answerQuestion(q, c, i)} />
       )}
       {item.kind === 'written' && (
         <WrittenFormat

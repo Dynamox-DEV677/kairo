@@ -216,7 +216,10 @@ export default function KairoChat() {
       if (text.quizCheck) {
         try {
           if (text.quizCheck.correct) awardXP('chat_answer')
-          else if (text.quizCheck.topic) recordMistake({ topic: text.quizCheck.topic, detail: 'quiz in Kyno chat' })
+          else if (text.quizCheck.topic) recordMistake({
+            topic: text.quizCheck.topic, detail: 'quiz in Kyno chat', source: 'doubt',
+            errType: text.quizCheck.type, signature: text.quizCheck.signature, why: text.quizCheck.why,
+          })
         } catch {  }
       }
 

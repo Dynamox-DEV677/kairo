@@ -14,12 +14,14 @@ export const T = {
   exam:      '#101018',   // mock chrome — sober, no purple
   surface:   '#15151F',
   raised:    '#1A1A26',
+  raised2:   '#1D1D2A',   // type chips
   sheet:     '#131320',
   well:      '#101019',   // equation blocks, lockout notice
 
   border:    '#262636',
   borderCtl: '#2A2A3C',
   divider:   '#1E1E2C',
+  divider2:  '#21212E',
   borderExam:'#22222E',
   dashed:    '#2E2E42',
 
@@ -69,3 +71,25 @@ export const MONO = "ui-monospace, 'SF Mono', Menlo, monospace"
 export const ICON = { strokeWidth: 1.75, absoluteStrokeWidth: false } as const
 
 export const R = { pill: 100, session: 22, card: 16, button: 14, sheet: 26 } as const
+
+/**
+ * DATA colours for the error taxonomy -- assigned by ENTITY, never by rank.
+ * Conceptual is always blue wherever it sits in a sorted list. Validated for
+ * colour-blind separation on dark. Never cycle these, never generate new hues,
+ * and keep them out of UI chrome: the status colours above are for status and
+ * always ship with an icon.
+ */
+export const ERR = {
+  conceptual:  '#3987e5',
+  formula:     '#d95926',
+  careless:    '#199e70',
+  calculation: '#c98500',
+  incomplete:  '#d55181',
+} as const
+
+export type ErrorType = keyof typeof ERR
+
+export const CALLOUT = {
+  purple: { background: 'linear-gradient(135deg, #1A1430 0%, #15151F 100%)', border: '1px solid #2E2450' },
+  amber:  { background: 'linear-gradient(135deg, #2A1A10 0%, #15151F 100%)', border: '1px solid #4A3A20' },
+} as const
