@@ -444,6 +444,7 @@ export default function DoubtSolving({
 
   useEffect(() => () => abortRef.current?.abort(), [])
 
+
   /* ── asking ── */
 
   const solve = useCallback(async (raw: string, chosen: ModeId = 'steps') => {
@@ -510,6 +511,17 @@ export default function DoubtSolving({
       setBusy(false)
     }
   }, [subject])
+
+  // Practice hands a flashcard over with "Ask Kyno about this card". The two
+  // spaces connect here rather than Practice growing a second chat.
+  useEffect(() => {
+    const onSeed = (e: Event) => {
+      const seed = (e as CustomEvent)?.detail?.seed
+      if (typeof seed === 'string' && seed.trim()) solve(seed, 'steps')
+    }
+    window.addEventListener('kyno:doubt-seed', onSeed)
+    return () => window.removeEventListener('kyno:doubt-seed', onSeed)
+  }, [solve])
 
   /* ── camera ── */
 
