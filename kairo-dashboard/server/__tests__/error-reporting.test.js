@@ -47,7 +47,10 @@ test('the RLS migration removes the recursion instead of patching it', () => {
   // strip -- comments: the header quotes the OLD policy to explain what it broke
   const NL = String.fromCharCode(10)
   const sql = raw.split(NL).filter(l => !l.trim().startsWith('-' + '-')).join(NL)
-  assert.match(sql, /drop function if exists public\.current_school_id/, 'the recursing helper is deleted')
+  // NOT dropped: Postgres refuses while policy schools_select_own depends on
+  // it, and the client reads the schools table. Keeping it is also correct --
+  // the recursion was a policy ON users that read users, never the function.
+  assert.doesNotMatch(sql, /drop function/, 'schools_select_own depends on it')
   assert.match(sql, /alter table public\.users enable row level security/, 'RLS stays ON')
   assert.doesNotMatch(sql, /using \(school_id/, 'no policy reads users from inside a users policy')
   assert.match(sql, /auth\.uid\(\) = id/, 'self-access only')

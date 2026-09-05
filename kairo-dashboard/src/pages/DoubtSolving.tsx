@@ -455,29 +455,11 @@ export default function DoubtSolving({
   const [subject, setSubject] = useState('')
   const chip = contextLabel(profile, subject)
 
-  useEffect(() => { solveRef.current = (q: string) => { void solve(q) } }, [solve])
   useEffect(() => () => abortRef.current?.abort(), [])
 
 
   /* ── asking ── */
 
-  /**
-   * Reopen a doubt that was already answered, instantly.
-   *
-   * Tapping one showed "Working through it…" for six seconds and called the
-   * model again -- for an answer already sitting in storage. The student paid
-   * in time and Kyno paid in quota to reproduce something it had.
-   */
-  const solveRef = useRef<((q: string) => void) | null>(null)
-  const openSaved = useCallback((card: { question: string; answer?: string }) => {
-    if (!card.answer) { solveRef.current?.(card.question); return }
-    setQuestion(card.question)
-    setError('')
-    setBusy(false)
-    setRevealed(1)
-    setSteps(splitSteps({ textExplanation: card.answer }))
-    setView('answer')
-  }, [])
 
   const solve = useCallback(async (raw: string, chosen: ModeId = 'steps') => {
     const asked = raw.trim()
@@ -543,6 +525,23 @@ export default function DoubtSolving({
       setBusy(false)
     }
   }, [subject])
+
+  /**
+   * Reopen a doubt that was already answered, instantly.
+   *
+   * Tapping one showed "Working through it…" for six seconds and called the
+   * model again -- for an answer already sitting in storage. The student paid
+   * in time and Kyno paid in quota to reproduce something it had.
+   */
+  const openSaved = useCallback((card: { question: string; answer?: string }) => {
+    if (!card.answer) { void solve(card.question); return }
+    setQuestion(card.question)
+    setError('')
+    setBusy(false)
+    setRevealed(1)
+    setSteps(splitSteps({ textExplanation: card.answer }))
+    setView('answer')
+  }, [solve])
 
   // Practice hands a flashcard over with "Ask Kyno about this card". The two
   // spaces connect here rather than Practice growing a second chat.

@@ -1,36 +1,45 @@
 -- ============================================================================
--- POST /rest/v1/users?on_conflict=id STILL RETURNS 500 AFTER THE FIRST FIX.
+-- FIX: POST /rest/v1/users?on_conflict=id RETURNS 500 FOR A SIGNED-IN STUDENT
 --
--- The first migration broke the recursion for the ANONYMOUS role, which is why
--- an unauthenticated probe now returns 200. It did not necessarily break it for
--- a SIGNED-IN one, and that is the path the app actually uses.
+-- The error is 42P17, infinite recursion in a policy on public.users.
 --
--- Why: Postgres evaluates EVERY permissive policy and ORs the results. It does
--- not stop at the first one that passes. So for a signed-in student, this
--- policy is evaluated on every read:
+-- WHY THE FIRST FIX DID NOT WORK. Postgres evaluates EVERY permissive policy
+-- and ORs the results -- it does not stop at the first one that passes. So for
+-- a signed-in student this policy still ran on every read:
 --
---     users_select_same_school ... using (school_id = public.current_school_id() ...)
+--     users_select_same_school ... using (school_id = public.current_school_id())
 --
--- and current_school_id() runs "select school_id from public.users", which
--- re-enters the policies on public.users. That is the recursion, rebuilt. It
--- only stays quiet for anon because auth.uid() is null and the planner can
--- short-circuit before the function is ever called.
+-- and current_school_id() does "select school_id from public.users", which
+-- re-enters the policies on public.users. That is the recursion, rebuilt by the
+-- fix meant to remove it. It stayed quiet for the ANONYMOUS role -- the only
+-- role that can be probed from outside -- because auth.uid() is null there and
+-- the planner never reaches the function.
 --
--- THE FIX IS TO DELETE THE POLICY, NOT TO PATCH THE FUNCTION. Nothing needs it:
---   * every client read of users is a self-read (App.tsx, Login.tsx,
---     KairoHome.tsx all filter eq('id', <the signed-in user>))
---   * every staff and admin read goes through the SERVER, which uses
---     supabaseAdmin -- the service-role key -- and bypasses RLS already
---     (server/middleware/supabaseAuth.js, routes/marks.js, routes/ops.js)
+-- WHAT THIS DOES. It deletes that policy instead of patching it. Nothing needs
+-- it:
+--   * every client read of users filters to the signed-in student's own row
+--     (App.tsx, Login.tsx, KairoHome.tsx)
+--   * every staff and admin read goes through the SERVER, which uses the
+--     service-role key and bypasses RLS already (middleware/supabaseAuth.js,
+--     routes/marks.js, routes/ops.js)
 --
--- What is left touches no table, so it cannot recurse by construction.
--- RLS stays ON. The anon key is in the client bundle and this is children's
--- data, so that is not negotiable.
+-- THE FUNCTIONS STAY. An earlier attempt dropped them and Postgres refused:
+--   cannot drop function current_school_id() because other objects depend on it
+--   DETAIL: policy schools_select_own on table schools depends on it
+-- That policy is real and the client needs it -- App.tsx and Login.tsx both
+-- read the schools table. Keeping the function is also CORRECT, because the
+-- recursion was never the function itself. A policy on SCHOOLS that reads
+-- USERS is fine: it evaluates the users policies, which after this migration
+-- compare auth.uid() to id and touch no table at all, so the chain ends.
+-- Only a policy on USERS that reads USERS can loop.
+--
+-- RLS STAYS ON. The anon key ships inside the client bundle and this is
+-- children's data.
 -- ============================================================================
 
 begin;
 
--- 1. Drop every policy on users, whatever it is called.
+-- 1. Every policy on users, whatever it is called, including the recursive one.
 do $$
 declare p record;
 begin
@@ -38,11 +47,8 @@ begin
   loop execute format('drop policy if exists %I on public.users', p.policyname); end loop;
 end $$;
 
--- 2. The helpers are what recursed. Nothing references them any more.
-drop function if exists public.current_school_id();
-drop function if exists public.current_role_name();
-
--- 3. RLS on, self-access only. No function call, no subquery on users.
+-- 2. RLS on, self-access only. No function call, no subquery on users, so
+--    these cannot recurse by construction.
 alter table public.users enable row level security;
 
 create policy users_select_self on public.users
@@ -54,18 +60,22 @@ create policy users_insert_self on public.users
 create policy users_update_self on public.users
   for update to authenticated using (auth.uid() = id) with check (auth.uid() = id);
 
--- No delete policy on purpose: account deletion runs server-side through
--- supabaseAdmin (server/routes/account.js), so a stolen anon key cannot
--- delete a child's account.
+-- No delete policy on purpose: account deletion runs server-side with the
+-- service-role key, so a stolen anon key cannot delete a child's account.
 
 commit;
 
 -- ============================================================================
--- AFTER RUNNING, PASTE THIS INTO THE SAME SQL EDITOR. It should return three
--- rows -- users_select_self, users_insert_self, users_update_self -- and the
--- qual column must NOT mention "current_school_id" or contain a subquery on
--- users. If it does, the old policy survived and the 500 will continue.
+-- RUN THIS AFTERWARDS, IN THE SAME EDITOR, AND READ THE RESULT.
+--
+-- Expect exactly three rows: users_insert_self, users_select_self,
+-- users_update_self. The qual and with_check columns must show only
+-- "(auth.uid() = id)".
+--
+-- If a fourth row appears, or any row mentions current_school_id or a SELECT
+-- on users, an old policy survived and the 500 will continue.
 -- ============================================================================
--- select policyname, cmd, qual, with_check
---   from pg_policies where schemaname='public' and tablename='users'
---   order by policyname;
+select policyname, cmd, qual, with_check
+  from pg_policies
+ where schemaname = 'public' and tablename = 'users'
+ order by policyname;

@@ -19,6 +19,12 @@ import { Search, ChevronRight, ArrowLeft, Bookmark, Check, Play, Pause, Mic, Pri
 import { SPACE_VIEW_EVENT, publishSpaceView } from '../lib/spaces.core'
 import { T, FONT, MONO, ICON, CALLOUT, ERR } from '../lib/spaceTokens'
 import type { ErrorType } from '../lib/spaceTokens'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
+import remarkMath from 'remark-math'
+import rehypeKatex from 'rehype-katex'
+import { KATEX_OPTS } from '../lib/katex'
+import { prepMathMarkdown } from '../lib/math.core'
 import { post } from '../lib/api'
 import { listNotebook, saveToNotebook, getNotebookEntry, updateNotebookEntry } from '../lib/notebook'
 import type { NoteEntry } from '../lib/notebook'
@@ -95,6 +101,25 @@ function Pill({ children, on, onClick }: { children: React.ReactNode; on?: boole
 /* ── data ─────────────────────────────────────────────────────────────────── */
 
 function readIndex(): Record<string, string[]> { return getJSON(CARDS_KEY) || {} }
+
+/**
+ * One formula, typeset.
+ *
+ * The sheet printed expressions in monospace, so "V = I R" was legible but a
+ * fraction or a power was not: the student had to reassemble it in their head,
+ * on the screen whose whole job is to show it correctly.
+ */
+function MathLine({ expr }: { expr: string }) {
+  const src = String(expr || '').trim()
+  if (!src) return null
+  return (
+    <div className="kyno-math" style={{ marginTop: 8, fontSize: 19, fontWeight: 600, color: T.text, overflowX: 'auto' }}>
+      <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[[rehypeKatex, KATEX_OPTS]]}>
+        {prepMathMarkdown(`$${src}$`)}
+      </ReactMarkdown>
+    </div>
+  )
+}
 
 function useLibrary(tick: number) {
   return useMemo(() => {
@@ -445,7 +470,10 @@ function FormulaScreen({ shell, scroll, footer, records, own, onBack }: { shell:
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10 }}>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontSize: 11, color: T.faint, letterSpacing: 0.4 }}>{f.chapterName} · {f.name}</div>
-                      <pre style={{ margin: '8px 0 0', fontFamily: MONO, fontSize: 19, fontWeight: 600, color: T.text, whiteSpace: 'pre-wrap', wordBreak: 'break-word', overflowX: 'auto' }}>{f.expr}</pre>
+                      {/* Typeset, not monospace. A formula sheet whose formulas are
+                          plain text asks the student to parse V = I R themselves,
+                          and fractions and powers do not survive it at all. */}
+                      <MathLine expr={f.expr} />
                     </div>
                     <button onClick={() => toggle(f.id)} aria-label={marks.includes(f.id) ? 'Remove bookmark' : 'Bookmark'} className="kyno-no-print"
                       style={{ width: 44, height: 44, marginRight: -8, marginTop: -8, background: 'none', border: 'none', display: 'grid', placeItems: 'center', cursor: 'pointer' }}>

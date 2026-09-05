@@ -1,3 +1,4 @@
+import { resolve } from 'node:path'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
@@ -129,8 +130,25 @@ export default defineConfig({
     },
     // Aggressive code-splitting keeps Rolldown's per-chunk peak memory low.
     rollupOptions: {
+      // The dev-only harness is built too, so the PRODUCTION bundle can be
+      // driven without a login. Chunking only happens in a real build, which
+      // is why the "Cannot access 'R' before initialization" crash could not
+      // be reproduced against the dev server.
+      input: {
+        main: resolve(__dirname, 'index.html'),
+        'dashboard-preview': resolve(__dirname, 'dashboard-preview.html'),
+      },
+      // temporarily on, to name a minified binding in a chunk-order crash
       output: {
         manualChunks: (id: string) => {
+          // ONLY DEPENDENCIES. These are substring matches, so they happily
+          // caught our own source too: src/lib/katex.ts matched the 'katex'
+          // rule and was pulled into the markdown vendor chunk, away from the
+          // components that use it. The result was a chunk-level cycle and a
+          // "Cannot access 'R' before initialization" the moment a space tried
+          // to render maths -- Doubt, Practice, Notes and Performance all died
+          // on the error boundary. Our files belong with their callers.
+          if (!id.includes('node_modules')) return undefined
           if (id.includes('node_modules/three/')) return 'three'
           if (id.includes('node_modules/@react-three/')) return 'r3f'
           if (

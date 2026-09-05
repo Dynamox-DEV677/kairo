@@ -10,6 +10,9 @@
  */
 import { createRoot } from 'react-dom/client'
 import './index.css'
+// the real entry (main.tsx) loads this; without it KaTeX shows its MathML
+// fallback alongside the rendered maths and every equation looks doubled
+import 'katex/dist/katex.min.css'
 import Dashboard from './pages/Dashboard'
 import { GenerationProvider } from './lib/generationContext'
 
