@@ -122,7 +122,10 @@ test('the hash router and navigate() both resolve old ids', () => {
 test('the drawer is seven groups, one per space, and nothing is orphaned', () => {
   const block = drawer.slice(drawer.indexOf('const DRAWER_STUDENT'), drawer.indexOf('const DRAWER_TEACHER'))
   const titles = [...block.matchAll(/title: '([^']+)'/g)].map(m => m[1])
-  assert.deepEqual(titles, SPACES.map(s => s.label))
+  // Home gave up its bottom-nav slot to Plan, so it leads the sheet. Losing a
+  // tab must never mean losing the screen.
+  assert.deepEqual(titles, ['Today', ...SPACES.map(s => s.label)])
+  assert.match(block, /to: 'home'/, 'Home must stay reachable from the drawer')
   // A value re-exported through a barrel gets elided by the TS transform, and
   // the import then throws before React mounts -- the whole app renders blank
   // with only a console error. Values come from the core module directly.
@@ -140,9 +143,14 @@ test('the drawer is seven groups, one per space, and nothing is orphaned', () =>
   assert.doesNotMatch(sidebar, /STUDENT_NAV_LEGACY/)
 })
 
-test('"More" and the pre-cutover door are gone', () => {
-  assert.doesNotMatch(drawer, />More</)
-  assert.doesNotMatch(drawer, /onOpenMore/)
+test('the bottom bar is four spaces and a way to the rest', () => {
+  const bottom = drawer.slice(drawer.indexOf('const STUDENT_BOTTOM'), drawer.indexOf('const TEACHER_BOTTOM'))
+  const tabs = [...bottom.matchAll(/label: '([^']+)'/g)].map(m => m[1])
+  assert.deepEqual(tabs, ['Plan', 'Doubt', 'Practice', 'Progress', 'More'],
+    'four of the seven spaces were behind a menu most students never open')
+  assert.match(drawer, /MORE_TAB/, 'and a fifth slot opens the drawer')
+  assert.match(drawer, /onOpenMore\(\)/, 'More opens the sheet; it is not a page')
+  assert.doesNotMatch(drawer, /to: '__more'[\s\S]{0,80}setActive/, 'and it never navigates to a route')
   assert.equal(existsSync(join(ROOT, 'src', 'pages', 'NewIndex.tsx')), false, 'the #/new index page is deleted')
   assert.equal(registered.has('new'), false, "'new' is no longer a route")
   for (const f of ['src/components/MobileShell.tsx', 'src/components/Sidebar.tsx']) {

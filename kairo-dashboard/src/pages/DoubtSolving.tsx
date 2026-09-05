@@ -455,10 +455,29 @@ export default function DoubtSolving({
   const [subject, setSubject] = useState('')
   const chip = contextLabel(profile, subject)
 
+  useEffect(() => { solveRef.current = (q: string) => { void solve(q) } }, [solve])
   useEffect(() => () => abortRef.current?.abort(), [])
 
 
   /* ── asking ── */
+
+  /**
+   * Reopen a doubt that was already answered, instantly.
+   *
+   * Tapping one showed "Working through it…" for six seconds and called the
+   * model again -- for an answer already sitting in storage. The student paid
+   * in time and Kyno paid in quota to reproduce something it had.
+   */
+  const solveRef = useRef<((q: string) => void) | null>(null)
+  const openSaved = useCallback((card: { question: string; answer?: string }) => {
+    if (!card.answer) { solveRef.current?.(card.question); return }
+    setQuestion(card.question)
+    setError('')
+    setBusy(false)
+    setRevealed(1)
+    setSteps(splitSteps({ textExplanation: card.answer }))
+    setView('answer')
+  }, [])
 
   const solve = useCallback(async (raw: string, chosen: ModeId = 'steps') => {
     const asked = raw.trim()
@@ -688,7 +707,7 @@ export default function DoubtSolving({
               </div>
               <div style={{ display: 'grid', gap: 10 }}>
                 {recents.map(r => (
-                  <Card key={r.id} onClick={() => solve(r.question)}>
+                  <Card key={r.id} onClick={() => openSaved(r)}>
                     <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
                       <div style={{
                         width: 36, height: 36, borderRadius: 11, background: T.accentSurface,

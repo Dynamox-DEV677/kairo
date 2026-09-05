@@ -7,7 +7,7 @@ import {
   Megaphone, Bell, DollarSign, Bot, UserCheck, Grid3x3,
   Building2, GraduationCap, Shield, Sparkles, Settings, LogOut,
   Sun, Moon, Menu, X, ChevronRight, Key, Copy, Check,
-  AlertTriangle, Beaker, Trophy, Headphones,
+  AlertTriangle, Beaker, Trophy, Headphones, MoreHorizontal, CalendarDays,
 } from 'lucide-react'
 import type { AuthProfile } from '../pages/Login'
 import { DecoratedAvatar } from './AvatarDecor'
@@ -21,12 +21,23 @@ interface NavItem {
 
 // Post-cutover: four spaces, and no "More". The drawer (all seven groups)
 // opens from the menu button in the top bar.
+/**
+ * Four spaces and a way to the rest.
+ *
+ * Home was taking a slot while Plan, Notes, Performance and Profile were
+ * reachable only from the hamburger -- four of the seven spaces behind a menu
+ * most students never open. Home is the daily brief, so it leads the More
+ * sheet instead of holding a tab.
+ */
 const STUDENT_BOTTOM: NavItem[] = [
-  { to: 'home',          label: 'Home',     icon: Star },
-  { to: 'doubt-solving', label: 'Solve',    icon: MessageCircle },
+  { to: 'plan',          label: 'Plan',     icon: CalendarDays },
+  { to: 'doubt-solving', label: 'Doubt',    icon: MessageCircle },
   { to: 'practice',      label: 'Practice', icon: Target },
   { to: 'progress',      label: 'Progress', icon: Trophy },
 ]
+
+/** The fifth slot: the drawer, where the other three spaces and Home live. */
+const MORE_TAB: NavItem = { to: '__more', label: 'More', icon: MoreHorizontal }
 
 const TEACHER_BOTTOM: NavItem[] = [
   { to: 'teacher-ai', label: 'AI',       icon: Bot },
@@ -55,6 +66,14 @@ const PARENT_BOTTOM: NavItem[] = [
  * space absorbed, filed under the group it belongs with.
  */
 const DRAWER_STUDENT = [
+  {
+    // Home gave up its tab to Plan, so it leads the sheet. It is the daily
+    // brief, not a space, and it must never become unreachable.
+    title: 'Today',
+    items: [
+      { to: 'home', label: 'Your daily brief', icon: Star },
+    ],
+  },
   {
     title: 'Doubt Solving',
     items: [
@@ -203,7 +222,7 @@ export default function MobileShell(props: MobileShellProps) {
   return (
     <>
       {!immersive && <MobileTopBar {...props} onOpenDrawer={() => setDrawerOpen(true)} />}
-      {!immersive && <BottomNav {...props} />}
+      {!immersive && <BottomNav {...props} onOpenMore={() => setDrawerOpen(true)} />}
       <AnimatePresence>
         {drawerOpen && (
           <MobileDrawer {...props} onClose={() => setDrawerOpen(false)} />
@@ -306,8 +325,8 @@ function MobileTopBar({
 // The cutover removed "More": the four bottom slots are spaces, and the whole
 // drawer opens from the menu button in the top bar.
 function BottomNav({
-  active, setActive, profile,
-}: MobileShellProps) {
+  active, setActive, profile, onOpenMore,
+}: MobileShellProps & { onOpenMore: () => void }) {
   const items = getBottomNav(profile?.role)
 
   const [hidden, setHidden] = useState(false)
@@ -356,14 +375,14 @@ function BottomNav({
         boxShadow: '0 6px 0 0 rgba(0,0,0,0.45), 0 18px 38px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06)',
         maxWidth: 360, width: '100%',
       }}>
-        {items.map(item => {
+        {([...items, MORE_TAB] as NavItem[]).map(item => {
           const isActive = active === item.to
-          const Icon = item.icon
+          const Icon = item.icon as React.ComponentType<{ size?: number; style?: React.CSSProperties }>
           return (
             <motion.button key={item.to}
               data-bottom-tab="true"
               whileTap={{ scale: 0.88 }}
-              onClick={() => setActive(item.to)}
+              onClick={() => (item.to === '__more' ? onOpenMore() : setActive(item.to))}
               aria-label={item.label}
               style={{
                 flex: 1,
@@ -389,7 +408,7 @@ function BottomNav({
               <Icon size={20} style={{ position: 'relative', strokeWidth: isActive ? 2.6 : 1.8 }} />
               <span style={{
                 position: 'relative',
-                fontSize: 10, fontWeight: 800, letterSpacing: 0.2, fontFamily: 'var(--kyno-display)',
+                fontSize: 11.5, fontWeight: 800, letterSpacing: 0.2, fontFamily: 'var(--kyno-display)',
                 color: isActive ? 'var(--c-purple-lite)' : '#B1B5BA',
               }}>{item.label}</span>
             </motion.button>

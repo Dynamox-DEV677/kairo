@@ -288,5 +288,7 @@ export function recentDoubtCards(doubts = [], limit = 2, now = Date.now()) {
       when: relativeTime(d.ts, now),
       meta: [d.subject || d.topic, relativeTime(d.ts, now)].filter(Boolean).join(' · '),
       saved: Boolean(d.answer),
+      // the stored answer, so reopening a solved doubt costs nothing
+      answer: typeof d.answer === 'string' ? d.answer : '',
     }))
 }
