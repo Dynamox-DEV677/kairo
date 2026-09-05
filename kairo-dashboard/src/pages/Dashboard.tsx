@@ -34,7 +34,7 @@ import SpaceFrame from '../components/SpaceFrame'
 // a value that came from a .js sibling gets elided by the TS transform, and the
 // import then throws at module-evaluation time -- before React mounts anything,
 // so the whole app renders blank with nothing but a console SyntaxError.
-import { resolveSpace, resolveRoute, SPACE_VIEW_EVENT } from '../lib/spaces.core'
+import { resolveSpace, resolveRoute, SPACE_VIEW_EVENT, SPACE_VIEW_CHANGED, SPACE_HOME_VIEW } from '../lib/spaces.core'
 import { KEEP_MOUNTED, busyPages } from '../lib/keepMounted'
 import BlankGuard from '../components/BlankGuard'
 import { refreshSocial } from '../lib/social'
@@ -171,11 +171,16 @@ interface DashboardProps {
  * bookmark to #/flashcards or #/battle still lands somewhere real.
  */
 function routeFromHash(role?: string): { space: string; view: string | null } | null {
-  const m = window.location.hash.match(/^#\/([a-z0-9-]+)$/i)
+  // TWO SEGMENTS. Every sub-screen is a real address now: #/notes/formulas,
+  // #/progress/battle, #/plan/focus. Before this only space roots were routes,
+  // so a deep link did nothing, a refresh lost your place, and browser back
+  // jumped out of the space instead of one screen up.
+  const m = window.location.hash.match(/^#\/([a-z0-9-]+)(?:\/([a-z0-9-]+))?$/i)
   const raw = m?.[1]
   if (!raw) return null
   const { space, view } = resolveRoute(raw, role)
-  return PAGE_TITLES[space] ? { space, view } : null
+  // An explicit second segment wins over whatever the alias suggested.
+  return PAGE_TITLES[space] ? { space, view: m?.[2] || view } : null
 }
 
 function pageFromHash(role?: string): string | null {
@@ -209,15 +214,32 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
   const activeRef = useRef(active)
   activeRef.current = active
 
+  /**
+   * The screen a space is showing, so the URL can say so.
+   *
+   * Reset whenever the space changes: arriving at Notes shows its library, and
+   * the address must not still claim the formula sheet.
+   */
+  const [activeView, setActiveView] = useState<string | null>(() => routeFromHash(profile?.role)?.view ?? null)
+  useEffect(() => {
+    const onViewChanged = (e: Event) => {
+      const d = (e as CustomEvent).detail
+      if (!d || d.space !== activeRef.current) return
+      setActiveView(d.view ?? null)
+    }
+    window.addEventListener(SPACE_VIEW_CHANGED, onViewChanged)
+    return () => window.removeEventListener(SPACE_VIEW_CHANGED, onViewChanged)
+  }, [])
+
   // state → URL + screen-view log (pushState does not re-fire hashchange,
   // so there is no loop).
   useEffect(() => {
-    const want = `#/${active}`
+    const want = activeView ? `#/${active}/${activeView}` : `#/${active}`
     if (window.location.hash !== want) {
       try { window.history.pushState(null, '', want) } catch {}
     }
     try { logScreenView(active) } catch {}
-  }, [active])
+  }, [active, activeView])
 
   // URL → state: browser back/forward and pasted deep links.
   useEffect(() => {
@@ -225,7 +247,10 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
       const r = routeFromHash(role)
       if (!r) return
       if (r.space !== activeRef.current) setActive(r.space)
-      announceView(r.space, r.view)
+      setActiveView(r.view ?? null)
+      // back to a space root must return the space to ITS root, not leave the
+      // last sub-screen showing under a bare address
+      announceView(r.space, r.view || SPACE_HOME_VIEW[r.space] || null)
     }
     window.addEventListener('hashchange', onHash)
     window.addEventListener('popstate', onHash)
@@ -292,6 +317,7 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
     const HELP = new Set(['doubt', 'doubt-solving', 'solver-classic', 'camera', 'camera-study'])
     if ((window as any).__kynoExamLock && (HELP.has(space) || HELP.has(raw))) return
     setActive(space)
+    setActiveView(view ?? null)
     announceView(space, view)
   }, [role])
 
@@ -378,6 +404,22 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
    * Padding rather than margin: the pages scroll internally, and margin here
    * would leave the scrollbar running under the nav.
    */
+  /**
+   * A hidden page must be INERT, not merely invisible.
+   *
+   * display:none hides pixels; it does not stop a hidden screen existing. The
+   * Notes page was still exposing "Start 15 minutes" and Doubt its suggestion
+   * cards, so a screen reader read the buttons of screens nobody was on, and
+   * a stray focus could press them. `inert` removes the subtree from the
+   * accessibility tree, from the tab order, and from hit-testing.
+   */
+  const pageProps = (id: string) => ({
+    className: pageClass,
+    style: pageStyle(id),
+    ...(active === id ? null : { inert: true as any }),
+    'aria-hidden': active === id ? undefined : true,
+  })
+
   const pageStyle = (id: string) => ({
     position: 'absolute' as const,
     inset: 0,
@@ -445,9 +487,9 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
                 switch, which wiped live state like the Study Room's channel. */}
             <ErrorBoundary resetKey={active}>
 
-            <div className={pageClass} style={pageStyle('home')}>{mounted('home') && <KairoHomeM onNavigate={setActive} />}</div>
+            <div {...pageProps('home')}>{mounted('home') && <KairoHomeM onNavigate={setActive} />}</div>
 
-            <div className={pageClass} style={pageStyle('doubt')}>
+            <div {...pageProps('doubt')}>
               {mounted('doubt') && (
               <div style={{ flex: 1, minHeight: 0, position: 'relative', display: 'flex', flexDirection: 'column' }}>
                 <button className="kyno-ghost"
@@ -491,10 +533,10 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
                 SpaceFrame: phone edge-to-edge, tablet a centred 480px column,
                 desktop a 240px sidebar of the finished spaces. NEW SCREENS
                 ONLY -- nothing above or below this block is wrapped. */}
-            <div className={pageClass} style={pageStyle('doubt-solving')}>
+            <div {...pageProps('doubt-solving')}>
               {mounted('doubt-solving') && (
                 <BlankGuard id="doubt-solving" active={active === 'doubt-solving'}>
-                <SpaceFrame active="doubt-solving" onNavigate={navigate}>
+                <SpaceFrame active="doubt-solving" onNavigate={navigate} visible={active === 'doubt-solving'}>
                 <DoubtSolving
                   profile={profile}
                   onOpenChat={(seed: string) => {
@@ -514,10 +556,10 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
               )}
             </div>
 
-            <div className={pageClass} style={pageStyle('practice')}>
+            <div {...pageProps('practice')}>
               {mounted('practice') && (
                 <BlankGuard id="practice" active={active === 'practice'}>
-                <SpaceFrame active="practice" onNavigate={navigate}>
+                <SpaceFrame active="practice" onNavigate={navigate} visible={active === 'practice'}>
                 <Practice onOpenDoubt={(seed: string) => {
                   navigate('doubt-solving')
                   setTimeout(() => window.dispatchEvent(new CustomEvent('kyno:doubt-seed', { detail: { seed } })), 60)
@@ -527,10 +569,10 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
               )}
             </div>
 
-            <div className={pageClass} style={pageStyle('performance')}>
+            <div {...pageProps('performance')}>
               {mounted('performance') && (
                 <BlankGuard id="performance" active={active === 'performance'}>
-                <SpaceFrame active="performance" onNavigate={navigate}>
+                <SpaceFrame active="performance" onNavigate={navigate} visible={active === 'performance'}>
                 <Performance
                   onOpenDoubt={(seed: string) => {
                     navigate('doubt-solving')
@@ -548,10 +590,10 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
               )}
             </div>
 
-            <div className={pageClass} style={pageStyle('plan')}>
+            <div {...pageProps('plan')}>
               {mounted('plan') && (
                 <BlankGuard id="plan" active={active === 'plan'}>
-                <SpaceFrame active="plan" onNavigate={navigate}>
+                <SpaceFrame active="plan" onNavigate={navigate} visible={active === 'plan'}>
                 <Plan
                   onOpenDoubt={(seed: string) => {
                     navigate('doubt-solving')
@@ -567,10 +609,10 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
               )}
             </div>
 
-            <div className={pageClass} style={pageStyle('notes')}>
+            <div {...pageProps('notes')}>
               {mounted('notes') && (
                 <BlankGuard id="notes" active={active === 'notes'}>
-                <SpaceFrame active="notes" onNavigate={navigate}>
+                <SpaceFrame active="notes" onNavigate={navigate} visible={active === 'notes'}>
                 <Notes
                   onOpenDoubt={(seed: string) => {
                     navigate('doubt-solving')
@@ -586,10 +628,10 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
               )}
             </div>
 
-            <div className={pageClass} style={pageStyle('progress')}>
+            <div {...pageProps('progress')}>
               {mounted('progress') && (
                 <BlankGuard id="progress" active={active === 'progress'}>
-                <SpaceFrame active="progress" onNavigate={navigate}>
+                <SpaceFrame active="progress" onNavigate={navigate} visible={active === 'progress'}>
                   <Progress
                     onPractice={(filter) => {
                       navigate('practice')
@@ -602,10 +644,10 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
               )}
             </div>
 
-            <div className={pageClass} style={pageStyle('profile')}>
+            <div {...pageProps('profile')}>
               {mounted('profile') && (
                 <BlankGuard id="profile" active={active === 'profile'}>
-                <SpaceFrame active="profile" onNavigate={navigate}>
+                <SpaceFrame active="profile" onNavigate={navigate} visible={active === 'profile'}>
                   <Profile onLogout={onLogout} />
                 </SpaceFrame>
                 </BlankGuard>
@@ -613,99 +655,99 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
             </div>
 
 
-            <div className={pageClass} style={pageStyle('flashcards')}>{mounted('flashcards') && <FlashcardsM />}</div>
+            <div {...pageProps('flashcards')}>{mounted('flashcards') && <FlashcardsM />}</div>
 
-            <div className={pageClass} style={pageStyle('study-plan')}>{mounted('study-plan') && <StudyPlan />}</div>
+            <div {...pageProps('study-plan')}>{mounted('study-plan') && <StudyPlan />}</div>
 
-            <div className={pageClass} style={pageStyle('exam-planner')}>{mounted('exam-planner') && <ExamPlanner />}</div>
+            <div {...pageProps('exam-planner')}>{mounted('exam-planner') && <ExamPlanner />}</div>
 
-            <div className={pageClass} style={pageStyle('bridge')}>{mounted('bridge') && <Bridge />}</div>
+            <div {...pageProps('bridge')}>{mounted('bridge') && <Bridge />}</div>
 
-            <div className={pageClass} style={pageStyle('reels')}>{mounted('reels') && <RevisionReels />}</div>
+            <div {...pageProps('reels')}>{mounted('reels') && <RevisionReels />}</div>
 
-            <div className={pageClass} style={pageStyle('rooms')}>{mounted('rooms') && <StudyRoom />}</div>
+            <div {...pageProps('rooms')}>{mounted('rooms') && <StudyRoom />}</div>
 
-            <div className={pageClass} style={pageStyle('stream')}>{mounted('stream') && <StreamGuide />}</div>
+            <div {...pageProps('stream')}>{mounted('stream') && <StreamGuide />}</div>
 
-            <div className={pageClass} style={pageStyle('goal')}>{mounted('goal') && <GoalTracker />}</div>
+            <div {...pageProps('goal')}>{mounted('goal') && <GoalTracker />}</div>
 
-            <div className={pageClass} style={pageStyle('museum')}>{mounted('museum') && <MistakeMuseum />}</div>
+            <div {...pageProps('museum')}>{mounted('museum') && <MistakeMuseum />}</div>
 
-            <div className={pageClass} style={pageStyle('listen')}>{mounted('listen') && <Listen />}</div>
+            <div {...pageProps('listen')}>{mounted('listen') && <Listen />}</div>
 
-            <div className={pageClass} style={pageStyle('exam-hall')}>{mounted('exam-hall') && <ExamHall />}</div>
+            <div {...pageProps('exam-hall')}>{mounted('exam-hall') && <ExamHall />}</div>
 
-            <div className={pageClass} style={pageStyle('topic-architect')}>{mounted('topic-architect') && <TopicArchitect />}</div>
+            <div {...pageProps('topic-architect')}>{mounted('topic-architect') && <TopicArchitect />}</div>
 
-            <div className={pageClass} style={pageStyle('essay')}>{mounted('essay') && <EssayGrader />}</div>
+            <div {...pageProps('essay')}>{mounted('essay') && <EssayGrader />}</div>
 
-            <div className={pageClass} style={pageStyle('predictor')}>{mounted('predictor') && <ExamPredictor />}</div>
+            <div {...pageProps('predictor')}>{mounted('predictor') && <ExamPredictor />}</div>
 
-            <div className={pageClass} style={pageStyle('question-paper')}>{mounted('question-paper') && <QuestionPaper />}</div>
+            <div {...pageProps('question-paper')}>{mounted('question-paper') && <QuestionPaper />}</div>
 
-            <div className={pageClass} style={pageStyle('lesson-plan')}>{mounted('lesson-plan') && <LessonPlan />}</div>
+            <div {...pageProps('lesson-plan')}>{mounted('lesson-plan') && <LessonPlan />}</div>
 
-            <div className={pageClass} style={pageStyle('parent-message')}>{mounted('parent-message') && <ParentMessage />}</div>
+            <div {...pageProps('parent-message')}>{mounted('parent-message') && <ParentMessage />}</div>
 
 
-            <div className={pageClass} style={pageStyle('fee-reminder')}>{mounted('fee-reminder') && <FeeReminder />}</div>
+            <div {...pageProps('fee-reminder')}>{mounted('fee-reminder') && <FeeReminder />}</div>
 
-            <div className={pageClass} style={pageStyle('admission')}>{mounted('admission') && <AdmissionBot />}</div>
+            <div {...pageProps('admission')}>{mounted('admission') && <AdmissionBot />}</div>
 
-            <div className={pageClass} style={pageStyle('attendance')}>{mounted('attendance') && <Attendance />}</div>
+            <div {...pageProps('attendance')}>{mounted('attendance') && <Attendance />}</div>
 
-            <div className={pageClass} style={pageStyle('timetable')}>{mounted('timetable') && <Timetable />}</div>
+            <div {...pageProps('timetable')}>{mounted('timetable') && <Timetable />}</div>
 
-            <div className={pageClass} style={pageStyle('writing')}>{mounted('writing') && <WritingTools />}</div>
+            <div {...pageProps('writing')}>{mounted('writing') && <WritingTools />}</div>
 
-            <div className={pageClass} style={pageStyle('concept')}>{mounted('concept') && <ConceptTools />}</div>
+            <div {...pageProps('concept')}>{mounted('concept') && <ConceptTools />}</div>
 
-            <div className={pageClass} style={pageStyle('formula')}>{mounted('formula') && <FormulaSheet />}</div>
+            <div {...pageProps('formula')}>{mounted('formula') && <FormulaSheet />}</div>
 
-            <div className={pageClass} style={pageStyle('quiz')}>{mounted('quiz') && <AdaptiveQuiz />}</div>
+            <div {...pageProps('quiz')}>{mounted('quiz') && <AdaptiveQuiz />}</div>
 
-            <div className={pageClass} style={pageStyle('pomodoro')}>{mounted('pomodoro') && <Pomodoro />}</div>
+            <div {...pageProps('pomodoro')}>{mounted('pomodoro') && <Pomodoro />}</div>
 
-            <div className={pageClass} style={pageStyle('announcement')}>{mounted('announcement') && <Announcement />}</div>
+            <div {...pageProps('announcement')}>{mounted('announcement') && <Announcement />}</div>
 
-            <div className={pageClass} style={pageStyle('school')}>{mounted('school') && profile && <SchoolHub profile={profile} />}</div>
+            <div {...pageProps('school')}>{mounted('school') && profile && <SchoolHub profile={profile} />}</div>
 
-            <div className={pageClass} style={pageStyle('focus')}>{mounted('focus') && <FocusMode />}</div>
+            <div {...pageProps('focus')}>{mounted('focus') && <FocusMode />}</div>
 
-            <div className={pageClass} style={pageStyle('camera')}>{mounted('camera') && <CameraStudy />}</div>
+            <div {...pageProps('camera')}>{mounted('camera') && <CameraStudy />}</div>
 
-            <div className={pageClass} style={pageStyle('mistakes')}>{mounted('mistakes') && <MistakeAnalysisM />}</div>
+            <div {...pageProps('mistakes')}>{mounted('mistakes') && <MistakeAnalysisM />}</div>
 
-            <div className={pageClass} style={pageStyle('simulator')}>{mounted('simulator') && <RevisionSimulatorM />}</div>
+            <div {...pageProps('simulator')}>{mounted('simulator') && <RevisionSimulatorM />}</div>
 
-            <div className={pageClass} style={pageStyle('notebook')}>{mounted('notebook') && <NotebookM />}</div>
+            <div {...pageProps('notebook')}>{mounted('notebook') && <NotebookM />}</div>
 
-            <div className={pageClass} style={pageStyle('concept-map')}>{mounted('concept-map') && <ConceptMapM />}</div>
+            <div {...pageProps('concept-map')}>{mounted('concept-map') && <ConceptMapM />}</div>
 
-            <div className={pageClass} style={pageStyle('battle')}>{mounted('battle') && <BattleModeM />}</div>
+            <div {...pageProps('battle')}>{mounted('battle') && <BattleModeM />}</div>
 
-            <div className={pageClass} style={pageStyle('league')}>{mounted('league') && <LeagueM />}</div>
+            <div {...pageProps('league')}>{mounted('league') && <LeagueM />}</div>
 
-            <div className={pageClass} style={pageStyle('knowledge')}>{mounted('knowledge') && <KnowledgeGraphM />}</div>
+            <div {...pageProps('knowledge')}>{mounted('knowledge') && <KnowledgeGraphM />}</div>
 
-            <div className={pageClass} style={pageStyle('ops')}>{mounted('ops') && <Ops />}</div>
+            <div {...pageProps('ops')}>{mounted('ops') && <Ops />}</div>
 
-            <div className={pageClass} style={pageStyle('teacher-ai')}>{mounted('teacher-ai') && <TeacherAssistant />}</div>
+            <div {...pageProps('teacher-ai')}>{mounted('teacher-ai') && <TeacherAssistant />}</div>
 
-            <div className={pageClass} style={pageStyle('explain-mistake')}>{mounted('explain-mistake') && <ExplainMistake />}</div>
+            <div {...pageProps('explain-mistake')}>{mounted('explain-mistake') && <ExplainMistake />}</div>
 
-            <div className={pageClass} style={pageStyle('teach-back')}>{mounted('teach-back') && <TeachBack />}</div>
+            <div {...pageProps('teach-back')}>{mounted('teach-back') && <TeachBack />}</div>
 
             {/* Rendered ONLY while active — unmounting is what releases the camera + torch. */}
             {active === 'camera-live' && <CameraLive onExit={() => setActive('kairo-os')} />}
 
-            <div className={pageClass} style={pageStyle('labs')}>{mounted('labs') && (
+            <div {...pageProps('labs')}>{mounted('labs') && (
               <Suspense fallback={<div style={{ padding: 28, color: '#9CA3AF', fontSize: 13 }}>Loading labs…</div>}>
                 <KairoLabs active={active === 'labs'} />
               </Suspense>
             )}</div>
 
-            <div className={pageClass} style={pageStyle('kairo-os')}>{mounted('kairo-os') && <KairoOSM />}</div>
+            <div {...pageProps('kairo-os')}>{mounted('kairo-os') && <KairoOSM />}</div>
 
             </ErrorBoundary>
 

@@ -34,7 +34,7 @@ import { KATEX_OPTS } from '../lib/katex'
 import { prepMathMarkdown } from '../lib/math.core'
 import { T, FONT, MONO, ICON } from '../lib/spaceTokens'
 import { useSpaceLayout } from '../components/SpaceFrame'
-import { SPACE_VIEW_EVENT } from '../lib/spaces.core'
+import { SPACE_VIEW_EVENT, publishSpaceView } from '../lib/spaces.core'
 import { keepPageMounted } from '../lib/keepMounted'
 import { aiHeadersAsync } from '../lib/devKey'
 import { post } from '../lib/api'
@@ -659,7 +659,14 @@ function MockRoom({ subject, onExit }: { subject: string; onExit: () => void }) 
   const [now, setNow] = useState(Date.now())
   const TARGET = 20
 
-  useEffect(() => { const id = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(id) }, [])
+  // Paused while another space is on screen: a hidden countdown must not run.
+  const vis = useSpaceLayout().visible
+  useEffect(() => {
+    if (!vis) return
+    setNow(Date.now())
+    const id = setInterval(() => setNow(Date.now()), 1000)
+    return () => clearInterval(id)
+  }, [vis])
 
   // The honest lockout. Doubt Solving, hints and the solver are unreachable
   // while this flag is up -- see the guard in Dashboard.
@@ -816,6 +823,16 @@ export default function Practice({ onOpenDoubt }: { onOpenDoubt?: (seed: string)
   const [items, setItems] = useState<SessionItem[]>([])
   const [idx, setIdx] = useState(0)
   const [startedAt, setStartedAt] = useState(0)
+  /**
+   * Time this space spent off screen, discounted from the session clock.
+   *
+   * Pausing the interval stops the repaint but not the clock, because the
+   * countdown is wall time minus startedAt. A student who ducks into Notes to
+   * look something up was still losing the seconds. They are not studying
+   * somewhere else; the session simply waits.
+   */
+  const [hiddenMs, setHiddenMs] = useState(0)
+  const hiddenSince = useRef<number | null>(null)
   const [now, setNow] = useState(Date.now())
   const [questions, setQuestions] = useState<ExamQuestion[]>([])
   const [qLoading, setQLoading] = useState(false)
@@ -872,13 +889,22 @@ export default function Practice({ onOpenDoubt }: { onOpenDoubt?: (seed: string)
     return { name, days, last: last ? Math.round(last.score) : null }
   }, [events])
 
+  // The session clock stops while the student is on another screen, and the
+  // time spent away is discounted when they come back.
   useEffect(() => {
     if (view !== 'session') return
+    if (!layout.visible) { hiddenSince.current = Date.now(); return }
+    if (hiddenSince.current != null) {
+      const away = Date.now() - hiddenSince.current
+      hiddenSince.current = null
+      setHiddenMs(ms => ms + away)
+    }
+    setNow(Date.now())
     const id = setInterval(() => setNow(Date.now()), 1000)
     return () => clearInterval(id)
-  }, [view])
+  }, [view, layout.visible])
 
-  const msLeft = Math.max(0, (plan?.minutes || 0) * 60_000 - (now - startedAt))
+  const msLeft = Math.max(0, (plan?.minutes || 0) * 60_000 - (now - startedAt - hiddenMs))
 
   // Running out of items ends the session. This used to be a finish() call
   // inside render -- setState during render, which React tolerates right up
@@ -903,7 +929,7 @@ export default function Practice({ onOpenDoubt }: { onOpenDoubt?: (seed: string)
 
   /* ── start ── */
   function start(p: SessionPlan) {
-    setPlan(p); setItems(p.items); setIdx(0); setStartedAt(Date.now()); setNow(Date.now())
+    setPlan(p); setItems(p.items); setIdx(0); setStartedAt(Date.now()); setNow(Date.now()); setHiddenMs(0); hiddenSince.current = null
     setBefore(JSON.parse(JSON.stringify(mastery))); setTouched([])
     setStats({ cards: 0, questions: 0, correct: 0, written: 0, teach: 0 })
     setQuestions([]); setQNote('')
@@ -937,6 +963,11 @@ export default function Practice({ onOpenDoubt }: { onOpenDoubt?: (seed: string)
     window.addEventListener(SPACE_VIEW_EVENT, on)
     return () => window.removeEventListener(SPACE_VIEW_EVENT, on)
   }, [view, preview, items, idx])
+
+
+  // The URL is the record of where you are: every move this space makes is
+  // reported so the address bar matches the screen.
+  useEffect(() => { publishSpaceView('practice', view) }, [view])
 
   async function loadQuestions(n: number, topic: string, subject: string) {
     setQLoading(true); setQNote('')

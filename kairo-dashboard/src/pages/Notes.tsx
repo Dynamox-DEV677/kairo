@@ -16,7 +16,7 @@
  */
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { Search, ChevronRight, ArrowLeft, Bookmark, Check, Play, Pause, Mic, Printer, Layers, Headphones, PenLine, FunctionSquare, AlertTriangle, Plus, X } from 'lucide-react'
-import { SPACE_VIEW_EVENT } from '../lib/spaces.core'
+import { SPACE_VIEW_EVENT, publishSpaceView } from '../lib/spaces.core'
 import { T, FONT, MONO, ICON, CALLOUT, ERR } from '../lib/spaceTokens'
 import type { ErrorType } from '../lib/spaceTokens'
 import { post } from '../lib/api'
@@ -141,6 +141,11 @@ export default function Notes({ onOpenDoubt, onPractice }: {
     window.addEventListener(SPACE_VIEW_EVENT, on)
     return () => window.removeEventListener(SPACE_VIEW_EVENT, on)
   }, [])
+
+
+  // The URL is the record of where you are: every move this space makes is
+  // reported so the address bar matches the screen.
+  useEffect(() => { publishSpaceView('notes', view.name) }, [view.name])
 
   const shell: Style = { position: 'absolute', inset: 0, background: T.bg, color: T.text, fontFamily: FONT, display: 'flex', flexDirection: 'column', overflow: 'hidden' }
   const scroll: Style = { flex: 1, overflowY: 'auto', padding: '18px 14px 24px' }

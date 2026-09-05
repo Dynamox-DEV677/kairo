@@ -29,6 +29,7 @@ import {
   habitTitle, occurrenceContext, shortDate, sinceLine, signatureInfo, TYPE_GLOSS, TYPES,
 } from '../lib/performance.core'
 import type { MistakeRecord, PatternRow, Impact } from '../lib/performance.core'
+import { SPACE_VIEW_EVENT, publishSpaceView } from '../lib/spaces.core'
 
 type Style = React.CSSProperties
 
@@ -193,6 +194,19 @@ export default function Performance({ onOpenDoubt, onDrill }: {
   onDrill?: (filter: { signatures?: string[]; topics?: string[] }) => void
 }) {
   const [view, setView] = useState<View>({ name: 'patterns' })
+
+  // #/performance/impact and #/performance/topics are real addresses, and every
+  // move this space makes is written back to the URL.
+  useEffect(() => {
+    const on = (e: Event) => {
+      const d = (e as CustomEvent).detail
+      if (d?.space !== 'performance') return
+      if (['patterns', 'impact', 'topics'].includes(d.view)) setView({ name: d.view })
+    }
+    window.addEventListener(SPACE_VIEW_EVENT, on)
+    return () => window.removeEventListener(SPACE_VIEW_EVENT, on)
+  }, [])
+  useEffect(() => { publishSpaceView('performance', view.name) }, [view.name])
   // Desktop with room for it: the impact screen asks the frame for the wide
   // column; its bar then runs to 720px with the legend beside it.
   const layout = useSpaceLayout()

@@ -35,9 +35,18 @@ export interface SpaceLayout {
   wide: boolean
   /** A screen with a real desktop layout calls this; the frame widens the column for it. */
   setWide: (wide: boolean) => void
+  /**
+   * True only while this space is the one on screen.
+   *
+   * Hidden spaces stay mounted, and a hidden space's setInterval keeps firing:
+   * the practice countdown ran down while the student was three screens away,
+   * which is how an abandoned session came back and hijacked navigation. Every
+   * ticking effect gates on this.
+   */
+  visible: boolean
 }
 
-const FALLBACK: SpaceLayout = { bp: 'phone', areaWidth: 390, wide: false, setWide: () => {} }
+const FALLBACK: SpaceLayout = { bp: 'phone', areaWidth: 390, wide: false, setWide: () => {}, visible: true }
 const Ctx = createContext<SpaceLayout>(FALLBACK)
 
 /** Read the frame's layout from inside a space. Outside a frame it reports a phone. */
@@ -62,9 +71,11 @@ export function useBreakpoint(): Breakpoint {
   return bp
 }
 
-export default function SpaceFrame({ active, onNavigate, children }: {
+export default function SpaceFrame({ active, onNavigate, visible = true, children }: {
   active: string
   onNavigate: (id: string) => void
+  /** False while another space is on screen. Defaults true for the previews. */
+  visible?: boolean
   children: ReactNode
 }) {
   const bp = useBreakpoint()
@@ -88,7 +99,7 @@ export default function SpaceFrame({ active, onNavigate, children }: {
 
   const constrained = bp !== 'phone'
   const isWide = wide && constrained
-  const ctx = useMemo<SpaceLayout>(() => ({ bp, areaWidth, wide: isWide, setWide }), [bp, areaWidth, isWide])
+  const ctx = useMemo<SpaceLayout>(() => ({ bp, areaWidth, wide: isWide, setWide, visible }), [bp, areaWidth, isWide, visible])
 
   return (
     <Ctx.Provider value={ctx}>

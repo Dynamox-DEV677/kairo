@@ -115,3 +115,36 @@ export function resolveSpace(id, role) {
 
 /** The event a space listens for to open on a particular screen. */
 export const SPACE_VIEW_EVENT = 'kyno:space-view'
+
+/**
+ * The event a space fires when its own screen changes.
+ *
+ * Without it the URL and the screen drift apart: tapping through Notes to the
+ * formula sheet left the hash saying "#/notes", and a nav tap could leave it
+ * saying "#/doubt/report" while Progress was on screen. One direction is not a
+ * router. The URL is the record of where you are, so a space reports every
+ * move and the shell writes it down.
+ */
+export const SPACE_VIEW_CHANGED = 'kyno:space-view-changed'
+
+/**
+ * The screen each space starts on. On this one the URL stays bare -- "#/notes",
+ * not "#/notes/library" -- so the common case keeps a clean address.
+ */
+export const SPACE_HOME_VIEW = {
+  'doubt-solving': 'ask',
+  practice: 'home',
+  performance: 'patterns',
+  plan: 'plan',
+  notes: 'library',
+  progress: 'home',
+  profile: 'profile',
+}
+
+/** A space tells the shell which of its screens is now showing. */
+export function publishSpaceView(space, view) {
+  const v = view && view !== SPACE_HOME_VIEW[space] ? view : null
+  try {
+    window.dispatchEvent(new CustomEvent(SPACE_VIEW_CHANGED, { detail: { space, view: v } }))
+  } catch { /* ssr */ }
+}

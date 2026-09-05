@@ -23,7 +23,7 @@ import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { ChevronRight, ArrowLeft, Check, Play, Pause, SkipForward, Pencil, AlertTriangle, Calendar, BookOpen, Layers, PenLine } from 'lucide-react'
 import { T, FONT, MONO, ICON, CALLOUT } from '../lib/spaceTokens'
 import { useSpaceLayout } from '../components/SpaceFrame'
-import { SPACE_VIEW_EVENT } from '../lib/spaces.core'
+import { SPACE_VIEW_EVENT, publishSpaceView } from '../lib/spaces.core'
 import { keepPageMounted } from '../lib/keepMounted'
 import { awardXP, awardMasteryCrossings } from '../lib/game'
 import { post } from '../lib/api'
@@ -250,6 +250,11 @@ export default function Plan({ onOpenDoubt, onPractice }: {
     window.addEventListener(SPACE_VIEW_EVENT, on)
     return () => window.removeEventListener(SPACE_VIEW_EVENT, on)
   }, [])
+
+
+  // The URL is the record of where you are: every move this space makes is
+  // reported so the address bar matches the screen.
+  useEffect(() => { publishSpaceView('plan', view.name) }, [view.name])
 
   const shell: Style = { position: 'absolute', inset: 0, background: T.bg, color: T.text, fontFamily: FONT, display: 'flex', flexDirection: 'column', overflow: 'hidden' }
   const scroll: Style = { flex: 1, overflowY: 'auto', padding: '18px 14px 24px' }
@@ -581,7 +586,9 @@ function FocusScreen({ shell, footer, now, setNow, onExit, sessionsTotal }: {
   const [done, setDone] = useState(false)
   const awayRef = useRef<number | null>(null)
 
-  useEffect(() => { const id = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(id) }, [setNow])
+  // Paused while another space is on screen: a hidden countdown must not run.
+  const vis = useSpaceLayout().visible
+  useEffect(() => { if (!vis) return; const id = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(id) }, [setNow, vis])
 
   // Departures: visibilitychange + blur. Counted and summed, never punished.
   useEffect(() => {

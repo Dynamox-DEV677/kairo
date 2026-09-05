@@ -22,7 +22,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ArrowLeft, ChevronRight, Check, Loader2, Zap, Users, Trophy, Compass, Flame, WifiOff } from 'lucide-react'
 import { T, FONT, MONO, ICON, CALLOUT } from '../lib/spaceTokens'
 import { useSpaceLayout } from '../components/SpaceFrame'
-import { SPACE_VIEW_EVENT } from '../lib/spaces.core'
+import { SPACE_VIEW_EVENT, publishSpaceView } from '../lib/spaces.core'
 import { keepPageMounted } from '../lib/keepMounted'
 import { confirmDialog } from '../components/ConfirmModal'
 import { loadState, getDashboard, getProfile, listFlashcards } from '../lib/twin'
@@ -273,6 +273,11 @@ export default function Progress({ onPractice, onOpenProfile }: {
     window.addEventListener(SPACE_VIEW_EVENT, on)
     return () => window.removeEventListener(SPACE_VIEW_EVENT, on)
   }, [])
+
+
+  // The URL is the record of where you are: every move this space makes is
+  // reported so the address bar matches the screen.
+  useEffect(() => { publishSpaceView('progress', view.name) }, [view.name])
 
   useEffect(() => { layout.setWide(view.name === 'map' && layout.areaWidth >= 760) }, [view.name, layout.areaWidth]) // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => () => layout.setWide(false), []) // eslint-disable-line react-hooks/exhaustive-deps
@@ -567,7 +572,9 @@ function BattleScreen({ model, social, online, shell, onBack, onOpenProfile, onD
   const battlesOn = social?.allow_battles !== false
   const username = social?.username || 'you'
 
-  useEffect(() => { const id = setInterval(() => setNow(Date.now()), 250); return () => clearInterval(id) }, [])
+  // Paused while another space is on screen: a hidden countdown must not run.
+  const vis = useSpaceLayout().visible
+  useEffect(() => { if (!vis) return; const id = setInterval(() => setNow(Date.now()), 250); return () => clearInterval(id) }, [vis])
   useEffect(() => () => { stop.current = true; if (phase === 'queue') leaveQueue().catch(() => {}) }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   /* matchmaking: poll the queue until paired or fifteen seconds pass */
@@ -811,7 +818,9 @@ function RoomScreen({ model, social, online, shell, scroll, footer, onBack, onOp
   const [now, setNow] = useState(Date.now())
   const [hidden, setHidden] = useState<Set<string>>(() => locallyBlocked())
   const handle = useRef<RoomHandle | null>(null)
-  useEffect(() => { const id = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(id) }, [])
+  // Paused while another space is on screen: a hidden countdown must not run.
+  const vis = useSpaceLayout().visible
+  useEffect(() => { if (!vis) return; const id = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(id) }, [vis])
   useEffect(() => () => { handle.current?.leave() }, [])
 
   async function join(c: GraphNode) {
