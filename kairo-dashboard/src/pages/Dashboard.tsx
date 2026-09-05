@@ -295,10 +295,26 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
     announceView(space, view)
   }, [role])
 
-  // A deep link pasted into the address bar, and browser back/forward.
+  /**
+   * A deep link pasted into the address bar, or opened from a bookmark.
+   *
+   * Read during the FIRST RENDER, not in an effect: the effect that mirrors
+   * `active` back into the URL runs first and rewrites #/simulator to
+   * #/practice, so by the time an effect looked at the hash the view was
+   * already gone and the student landed on the space's index.
+   */
+  const openOnView = useRef<{ space: string; view: string } | null>(
+    (() => { const r = routeFromHash(profile?.role); return r?.view ? { space: r.space, view: r.view } : null })(),
+  )
   useEffect(() => {
-    const r = routeFromHash(role)
-    if (r?.view) announceView(r.space, r.view)
+    const want = openOnView.current
+    if (!want) return
+    openOnView.current = null
+    // a touch longer than a normal navigation: the space is mounting in this
+    // same commit and its listener has to exist before the event fires
+    setTimeout(() => {
+      try { window.dispatchEvent(new CustomEvent(SPACE_VIEW_EVENT, { detail: want })) } catch { /* ssr */ }
+    }, 200)
   }, [])
 
   useEffect(() => {

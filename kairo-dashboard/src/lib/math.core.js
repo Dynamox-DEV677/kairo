@@ -23,7 +23,62 @@ import { normalizeMath } from './normalizeMath.js'
  *     converted $…$ spans are protected ranges it will not touch.
  */
 export function prepMathMarkdown(input) {
-  return normalizeMath(normalizeMathDelimiters(input))
+  return normalizeMathUnicode(normalizeMath(normalizeMathDelimiters(input)))
+}
+
+/**
+ * Unicode symbols inside maths become their LaTeX commands.
+ *
+ * Students type "sin θ + cos θ" and models write resistance as "5 Ω". KaTeX
+ * treats a raw Unicode Greek letter inside math mode as an unknown symbol: in
+ * strict mode it refused the whole expression, and even with strict off the
+ * glyph renders in the wrong font and metrics. Mapping it to \theta is what
+ * makes it come out as real maths.
+ *
+ * ONLY INSIDE MATH SPANS. In ordinary prose, "θ" is already the right
+ * character and a student should see it -- rewriting prose would put a literal
+ * "\theta" on the screen, which is the opposite of the bug we are fixing.
+ */
+const MATH_UNICODE = {
+  'α': '\\alpha', 'β': '\\beta', 'γ': '\\gamma', 'δ': '\\delta', 'ε': '\\epsilon',
+  'ζ': '\\zeta', 'η': '\\eta', 'θ': '\\theta', 'ι': '\\iota', 'κ': '\\kappa',
+  'λ': '\\lambda', 'μ': '\\mu', 'ν': '\\nu', 'ξ': '\\xi', 'π': '\\pi',
+  'ρ': '\\rho', 'σ': '\\sigma', 'τ': '\\tau', 'υ': '\\upsilon', 'φ': '\\phi',
+  'χ': '\\chi', 'ψ': '\\psi', 'ω': '\\omega',
+  'Γ': '\\Gamma', 'Δ': '\\Delta', 'Θ': '\\Theta', 'Λ': '\\Lambda', 'Ξ': '\\Xi',
+  'Π': '\\Pi', 'Σ': '\\Sigma', 'Φ': '\\Phi', 'Ψ': '\\Psi', 'Ω': '\\Omega',
+  '×': '\\times', '÷': '\\div', '±': '\\pm', '∓': '\\mp',
+  '≤': '\\le', '≥': '\\ge', '≠': '\\neq', '≈': '\\approx', '≡': '\\equiv',
+  '∞': '\\infty', '√': '\\surd', '∫': '\\int', '∑': '\\sum', '∏': '\\prod',
+  '∂': '\\partial', '∇': '\\nabla', '∈': '\\in', '∝': '\\propto',
+  '→': '\\to', '⇌': '\\rightleftharpoons', '·': '\\cdot', '∴': '\\therefore',
+  '°': '^{\\circ}', '′': "'", '″': "''",
+}
+const MATH_UNICODE_RE = new RegExp(`[${Object.keys(MATH_UNICODE).join('')}]`, 'g')
+
+/**
+ * A LaTeX command must not run into the next letter: "Δx" becoming "\Deltax"
+ * is an unknown command, not a delta and an x. A single space separates them,
+ * and LaTeX ignores it in maths, so nothing moves on screen.
+ */
+const mapSymbols = s => s.replace(MATH_UNICODE_RE, (c, i) => {
+  const tex = MATH_UNICODE[c]
+  if (!tex) return c
+  if (!tex.startsWith('\\')) return tex
+  return /[A-Za-z]/.test(s[i + 1] || '') ? `${tex} ` : tex
+})
+
+export function normalizeMathUnicode(input) {
+  const text = String(input ?? '')
+  if (!text) return ''
+  // Leave code alone entirely, then rewrite only what sits between $ delimiters.
+  const parts = text.split(/(```[\s\S]*?```|`[^`\n]*`)/)
+  return parts.map((part, i) => {
+    if (i % 2 === 1) return part
+    return part
+      .replace(/\$\$([\s\S]+?)\$\$/g, (_, body) => `$$${mapSymbols(body)}$$`)
+      .replace(/(^|[^$])\$([^$\n]+?)\$(?!\$)/g, (_, before, body) => `${before}$${mapSymbols(body)}$`)
+  }).join('')
 }
 
 /** \(…\) → $…$ and \[…\] → $$…$$, outside code, with $$-balance repair. */

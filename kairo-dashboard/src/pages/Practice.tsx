@@ -26,6 +26,12 @@ import {
   X, Bookmark, Clock, ChevronRight, Check, AlertTriangle, Mic, Camera, RotateCcw,
   Lock, Grid3x3, Flag, ArrowLeft, Layers, HelpCircle, PenLine, MessageSquare, Loader2,
 } from 'lucide-react'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
+import remarkMath from 'remark-math'
+import rehypeKatex from 'rehype-katex'
+import { KATEX_OPTS } from '../lib/katex'
+import { prepMathMarkdown } from '../lib/math.core'
 import { T, FONT, MONO, ICON } from '../lib/spaceTokens'
 import { useSpaceLayout } from '../components/SpaceFrame'
 import { SPACE_VIEW_EVENT } from '../lib/spaces.core'
@@ -147,6 +153,27 @@ function Chrome({ label, msLeft, progress, onClose, exam = false }: {
   )
 }
 
+/**
+ * Maths, wherever a card or a question is shown.
+ *
+ * Anything a student or a model writes can contain maths, so every such
+ * surface renders through markdown + KaTeX. prepMathMarkdown normalises the
+ * delimiters and maps Unicode Greek to LaTeX commands first, which is what
+ * lets "sin θ" and "5 Ω" come out as maths rather than as stray glyphs.
+ */
+function MathText({ text, style }: { text?: string | null; style?: Style }) {
+  const src = String(text ?? '')
+  if (!src.trim()) return null
+  return (
+    <div className="kyno-math" style={style}>
+      <style>{`.kyno-math p { margin: 0 } .kyno-math .katex { color: inherit } .kyno-math .katex-display { margin: 6px 0; overflow-x: auto; overflow-y: hidden }`}</style>
+      <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[[rehypeKatex, KATEX_OPTS]]}>
+        {prepMathMarkdown(src)}
+      </ReactMarkdown>
+    </div>
+  )
+}
+
 /* ── format: flashcard ────────────────────────────────────────────────────── */
 
 const GRADES = [
@@ -206,12 +233,16 @@ function FlashcardFormat({ card, missLine, onGrade, onAsk }: {
             the top when it does not. */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '18px 18px', overflowY: 'auto' }}>
         <div style={{ margin: 'auto 0', width: '100%' }}>
-          <div style={{ fontSize: 21, fontWeight: 600, color: T.text, lineHeight: 1.4, textAlign: 'center' }}>{card?.front}</div>
+          {/* BOTH faces go through the maths renderer. The front used to be
+              plain text, so "sin θ + cos θ" and a resistance in Ω arrived as
+              characters instead of maths -- on the very side the student is
+              asked to answer from. */}
+          <MathText text={card?.front} style={{ fontSize: 21, fontWeight: 600, color: T.text, lineHeight: 1.4, textAlign: 'center' }} />
           {flipped && (
             <>
               <div style={{ height: 1, background: T.divider, margin: '18px 0 14px' }} />
               <Eyebrow color={T.success}>Answer</Eyebrow>
-              <div style={{ fontFamily: MONO, fontSize: 22, color: T.text, marginTop: 8, lineHeight: 1.35, wordBreak: 'break-word' }}>{card?.back}</div>
+              <MathText text={card?.back} style={{ fontSize: 22, color: T.text, marginTop: 8, lineHeight: 1.35, wordBreak: 'break-word' }} />
             </>
           )}
           {!flipped && <div style={{ fontSize: 12, color: T.faint, textAlign: 'center', marginTop: 18 }}>Tap to reveal</div>}
@@ -258,7 +289,7 @@ function QuestionFormat({ q, onAnswer }: { q: ExamQuestion; onAnswer: (correct: 
   return (
     <div style={{ flex: 1, overflowY: 'auto', padding: '16px 14px 0' }}>
       {q.topic && <div style={{ fontSize: 10.5, letterSpacing: 1.2, fontWeight: 700, color: T.accentPale, background: T.accentSurface, borderRadius: 100, padding: '5px 10px', display: 'inline-block' }}>{String(q.topic).toUpperCase()}</div>}
-      <div style={{ fontSize: 16.5, lineHeight: 1.6, color: T.text, marginTop: 12 }}>{q.q}</div>
+      <MathText text={q.q} style={{ fontSize: 16.5, lineHeight: 1.6, color: T.text, marginTop: 12 }} />
       <div style={{ display: 'grid', gap: 9, marginTop: 16 }}>
         {q.options.map((opt, i) => {
           const isRight = i === q.correctIndex
@@ -705,7 +736,7 @@ function MockRoom({ subject, onExit }: { subject: string; onExit: () => void }) 
             color: flags.has(i) ? T.warning : T.muted, fontSize: 12.5, fontWeight: 600, minHeight: 44,
           }}><Flag size={15} {...ICON} /> Mark for review</button>
         </div>
-        <div style={{ fontSize: 16.5, lineHeight: 1.6, color: T.text, marginTop: 10 }}>{q?.q}</div>
+        <MathText text={q?.q} style={{ fontSize: 16.5, lineHeight: 1.6, color: T.text, marginTop: 10 }} />
         <div style={{ display: 'grid', gap: 9, marginTop: 16 }}>
           {q?.options.map((opt, k) => {
             const on = answers[i] === k
@@ -764,18 +795,6 @@ export default function Practice({ onOpenDoubt }: { onOpenDoubt?: (seed: string)
   const layout = useSpaceLayout()   // desktop: the session stays a 480px column, centred vertically
   // A live session must survive a trip to another space and back.
   useEffect(() => (view === 'session' || view === 'mock' ? keepPageMounted('practice') : undefined), [view])
-  // #/grader and #/essay open the format picker, where the written format is.
-  // Never yank a student out of a running session to honour a redirect.
-  useEffect(() => {
-    const on = (e: Event) => {
-      const d = (e as CustomEvent).detail
-      if (d?.space !== 'practice') return
-      if (view === 'session' || view === 'mock') return
-      if (['home', 'formats', 'mock'].includes(d.view)) setView(d.view)
-    }
-    window.addEventListener(SPACE_VIEW_EVENT, on)
-    return () => window.removeEventListener(SPACE_VIEW_EVENT, on)
-  }, [view])
   const [minutes, setMinutes] = useState(15)
   const [plan, setPlan] = useState<SessionPlan | null>(null)
   const [items, setItems] = useState<SessionItem[]>([])
@@ -877,6 +896,31 @@ export default function Practice({ onOpenDoubt }: { onOpenDoubt?: (seed: string)
     const nQ = p.counts.questions
     if (nQ > 0) loadQuestions(nQ, p.target?.topic || '', p.target?.subject || 'Science')
   }
+
+  // #/grader and #/essay open the format picker, where the written format is.
+  // Never yank a student out of a running session to honour a redirect.
+  useEffect(() => {
+    const on = (e: Event) => {
+      const d = (e as CustomEvent).detail
+      if (d?.space !== 'practice') return
+      // A MOCK is the one thing a redirect may not interrupt -- it is an exam
+      // under a real lockout, and the app already refuses to leave it.
+      // Anything else honours the navigation: the student asked for a quiz, so
+      // give them a quiz. Holding them in an abandoned session instead is how
+      // a redirect silently does nothing, which is the bug being fixed.
+      if (view === 'mock' || (window as any).__kynoExamLock) return
+      const t = preview.target
+      // Each old route opens the FORMAT it used to be, not the Practice index:
+      // Adaptive Quiz was questions, Exam Hall was the mock, Teach Back was
+      // speaking it back, Revision Simulator was a mixed run.
+      if (d.view === 'quiz') start({ ...preview, items: Array.from({ length: 8 }, () => ({ kind: 'question' as const, topic: t?.topic || null, subject: t?.subject || null })), counts: { cards: 0, questions: 8, written: 0, teach: 0 } })
+      else if (d.view === 'teachback') start({ ...preview, items: [{ kind: 'teach', topic: t?.topic || null, subject: t?.subject || null }], counts: { cards: 0, questions: 0, written: 0, teach: 1 } })
+      else if (d.view === 'simulator') start(preview)
+      else if (['home', 'formats', 'mock'].includes(d.view)) setView(d.view)
+    }
+    window.addEventListener(SPACE_VIEW_EVENT, on)
+    return () => window.removeEventListener(SPACE_VIEW_EVENT, on)
+  }, [view, preview, items, idx])
 
   async function loadQuestions(n: number, topic: string, subject: string) {
     setQLoading(true); setQNote('')

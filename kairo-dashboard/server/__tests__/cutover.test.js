@@ -43,7 +43,7 @@ test('every old route redirects to a space, and no redirect points at a dead end
   }
   // the consolidations each brief promised
   for (const [from, to] of [
-    ['flashcards', 'practice'], ['exam-hall', 'practice'], ['essay', 'practice'], ['quiz', 'practice'],
+    ['flashcards', 'practice'], ['exam-hall', 'practice'], ['essay', 'notes'], ['quiz', 'practice'],
     ['mistakes', 'performance'], ['museum', 'performance'],
     ['goal', 'plan'], ['study-plan', 'plan'], ['exam-planner', 'plan'], ['focus', 'plan'], ['pomodoro', 'plan'],
     ['notebook', 'notes'], ['formula', 'notes'], ['listen', 'notes'], ['writing', 'notes'],
@@ -62,7 +62,13 @@ test('every old route redirects to a space, and no redirect points at a dead end
     ['concept-map', 'progress', 'map'], ['knowledge', 'progress', 'map'], ['knowledge-graph', 'progress', 'map'],
     ['rooms', 'progress', 'room'], ['study-room', 'progress', 'room'],
     ['focus', 'plan', 'focus'], ['pomodoro', 'plan', 'focus'],
-    ['essay', 'practice', 'formats'], ['grader', 'practice', 'formats'], ['reels', 'notes', 'watch'],
+    ['reels', 'notes', 'watch'],
+    // each old Practice route opens the FORMAT it used to be, never the index
+    ['quiz', 'practice', 'quiz'], ['adaptive', 'practice', 'quiz'],
+    ['exam-hall', 'practice', 'mock'], ['mock', 'practice', 'mock'],
+    ['simulator', 'practice', 'simulator'], ['teach-back', 'practice', 'teachback'],
+    // the written grader lives on the Notes writing screen, not in Practice
+    ['essay', 'notes', 'write'], ['grader', 'notes', 'write'],
   ]) assert.deepEqual(resolveRoute(from), { space, view }, `#/${from} should open ${space}/${view}`)
 
   // and a plain space alias carries no view

@@ -37,15 +37,15 @@ export const SPACE_ALIASES = {
 
   // Practice — flashcards, quizzes, mocks, written grading, teach-back
   flashcards: 'practice',
-  quiz: 'practice',
-  adaptive: 'practice',
-  'adaptive-quiz': 'practice',
-  'exam-hall': 'practice',
-  mock: 'practice',
-  simulator: 'practice',
-  'teach-back': 'practice',
-  essay: 'practice/formats',
-  grader: 'practice/formats',
+  quiz: 'practice/quiz',
+  adaptive: 'practice/quiz',
+  'adaptive-quiz': 'practice/quiz',
+  'exam-hall': 'practice/mock',
+  mock: 'practice/mock',
+  simulator: 'practice/simulator',
+  'teach-back': 'practice/teachback',
+  essay: 'notes/write',
+  grader: 'notes/write',
 
   // Performance — the repeating mistakes
   mistakes: 'performance',
