@@ -222,7 +222,15 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
    */
   const [activeView, setActiveView] = useState<string | null>(() => routeFromHash(profile?.role)?.view ?? null)
   /** Set when a screen is showing something more specific than its page name. */
-  const [titleOverride, setTitleOverride] = useState<string | null>(null)
+  /**
+   * A title more specific than the page name, tied to the page it describes.
+   *
+   * It used to be a bare string cleared by an effect on [active] -- and the
+   * handler set it in the same batch as setActive, so the effect ran a tick
+   * later and wiped it every time. The header kept saying "Kyno's Solver" over
+   * a chat the student opened from step 2.
+   */
+  const [titleOverride, setTitleOverride] = useState<{ page: string; text: string } | null>(null)
   useEffect(() => { setTitleOverride(null) }, [active])
   useEffect(() => {
     const onViewChanged = (e: Event) => {
@@ -463,7 +471,7 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
           <MobileShell
             active={active}
             setActive={navigate}
-            pageTitle={titleOverride || PAGE_TITLES[active] || 'Dashboard'}
+            pageTitle={(titleOverride?.page === active && titleOverride.text) || PAGE_TITLES[active] || 'Dashboard'}
             isDark={isDark}
             toggleTheme={() => setIsDark(d => !d)}
             profile={profile}
@@ -471,7 +479,7 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
           />
         ) : (
           <TopBar
-            title={titleOverride || PAGE_TITLES[active] || 'Dashboard'}
+            title={(titleOverride?.page === active && titleOverride.text) || PAGE_TITLES[active] || 'Dashboard'}
             onModelChange={setSelectedModel}
             profile={profile}
             modelLocked={active === 'doubt' && solverActive}
@@ -550,7 +558,7 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
                     // The header must say what the student is doing. "Kyno's
                     // Solver" over a chat they opened from step 2 reads as a
                     // different place, which is how the thread was lost.
-                    setTitleOverride(anchor ? `Stuck on step ${anchor.step}` : null)
+                    setTitleOverride(anchor ? { page: 'doubt', text: `Stuck on step ${anchor.step}` } : null)
                     setTimeout(() => {
                       window.dispatchEvent(new CustomEvent('kairo:load-chat', {
                         detail: { id: 'new', seed, anchor },

@@ -44,7 +44,12 @@ export default function BlankGuard({ id, active, children }: { id: string; activ
   }, [id, active, attempt])
 
   return (
-    <div ref={ref} style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+    /* NOT absolutely positioned. An absolute box with inset:0 resolves
+       against its ancestor's PADDING box, so it spanned the nav clearance the
+       page slot reserves -- and every screen with an action footer put those
+       buttons underneath the tab bar. "I'm stuck here" and "Similar question"
+       were unreachable on a phone. A plain flex child respects the padding. */
+    <div ref={ref} style={{ position: 'relative', flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
       {children}
       {blank && (
         <div style={{

@@ -153,10 +153,19 @@ export default function KairoChat() {
         // on. Prefilling rather than auto-sending is deliberate: they usually
         // want to add a word about WHAT confused them, and a question that
         // fires before they can is a wasted answer.
-        setInput(typeof seed === 'string' ? seed : '')
+        const anchored = anchor && typeof anchor === 'object' ? anchor : null
         // The step the student was stuck on, pinned above the conversation so
         // the chat continues their work instead of starting from nothing.
-        setAnchor(anchor && typeof anchor === 'object' ? anchor : null)
+        setAnchor(anchored)
+        if (anchored && typeof seed === 'string' && seed.trim()) {
+          // AUTO-SEND. They pressed "I'm stuck here" on a specific step; that
+          // IS the question. Leaving it in the box made them press send for a
+          // message they did not write, and the input clipped it at two lines.
+          setInput('')
+          pending.current = seed
+        } else {
+          setInput(typeof seed === 'string' ? seed : '')
+        }
         return
       }
       const chat = getRecentChats().find(c => c.id === id)
@@ -178,8 +187,21 @@ export default function KairoChat() {
     setTurns(prev => prev.map(t => (t.id === id ? { ...t, ...patch } : t)))
   }, [])
 
-  async function send() {
-    const q = input.trim()
+  /** A message handed over by another screen, sent as soon as we can. */
+  const pending = useRef<string | null>(null)
+  useEffect(() => {
+    const q = pending.current
+    if (!q || busy) return
+    pending.current = null
+    void sendText(q)
+  })
+
+  /** Send whatever the student typed. */
+  async function send() { return sendText(input) }
+
+  /** Send a specific message -- typed, or handed over from another screen. */
+  async function sendText(raw: string) {
+    const q = String(raw || '').trim()
     if (!q || busy) return
     setInput('')
     setBusy(true)
@@ -331,6 +353,20 @@ export default function KairoChat() {
           </div>
         )}
         {turns.length === 0 && !anchor && <EmptyHero isMobile={isMobile} />}
+        {anchor && !busy && turns.some(t => t.role !== 'user') && (
+          /* The three things a student actually wants next when they are stuck
+             on one step. Generic chips ("Explain quadratic equations") belong
+             to a cold start, not to someone mid-problem. */
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', margin: '4px 0 12px' }}>
+            {['Got it, next step', 'Explain simpler', 'Why this formula?'].map(c => (
+              <button key={c} onClick={() => void sendText(c)} style={{
+                minHeight: 40, padding: '0 14px', borderRadius: 100, cursor: 'pointer',
+                background: 'rgba(124,92,255,0.10)', border: '1px solid rgba(124,92,255,0.35)',
+                color: '#C9C2FF', fontFamily: 'inherit', fontSize: 13, fontWeight: 600,
+              }}>{c}</button>
+            ))}
+          </div>
+        )}
 
         {turns.map(t => (
           <motion.div

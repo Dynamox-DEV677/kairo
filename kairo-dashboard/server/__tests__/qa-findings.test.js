@@ -50,7 +50,14 @@ test('the stuck chat opens anchored to the step', () => {
   assert.match(chat, /Stuck on step \{anchor\.step\} of \{anchor\.total\}/, 'the chat pins it')
   assert.match(chat, /turns\.length === 0 && !anchor/, 'and the cold-start hero is suppressed')
   const dash = read('src', 'pages', 'Dashboard.tsx')
-  assert.match(dash, /setTitleOverride\(anchor \? `Stuck on step/, 'the header says so too')
+  // tied to the page it describes: as a bare string, the effect that clears
+  // it on [active] ran a tick after the handler set it and wiped it every time
+  assert.match(dash, /setTitleOverride\(anchor \? \{ page: 'doubt', text: `Stuck on step/, 'the header says so too')
+  assert.match(dash, /titleOverride\?\.page === active/, 'and it only applies to its own page')
+  // the student already pressed a button that says what they want
+  assert.match(chat, /pending\.current = seed/, 'the first message is sent, not left in the box')
+  assert.match(chat, /Got it, next step/, 'and the follow-ups are the ones a stuck student needs')
+  assert.doesNotMatch(chat, /Explain quadratic equations[^]{0,200}anchor/, 'no generic cold-start chips in stuck mode')
 })
 
 test('Plan has a door to the focus timer, and one answer for days studied', () => {
