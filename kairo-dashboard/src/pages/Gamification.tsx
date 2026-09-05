@@ -1,9 +1,11 @@
+import { schoolId } from '../lib/schoolId'
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Star, Trophy, Shield, Zap } from 'lucide-react'
 import { get, post } from '../lib/api'
 
-const SCHOOL_ID = 'demo_school'
+// A student's real school, or nothing -- never a fabricated one.
+const SCHOOL_ID = schoolId() || undefined
 const USER_ID   = 'default'
 
 const card = { background: '#141A2A', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14, padding: 20 } as React.CSSProperties

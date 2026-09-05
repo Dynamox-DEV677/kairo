@@ -22,8 +22,17 @@ const CAP = 1000
  */
 const TELEMETRY_KEY = 'kyno:privacy:telemetry'
 
+/**
+ * OFF until the student turns it on.
+ *
+ * This was opt-OUT: every navigation posted the screen name to
+ * /api/analytics/screen -- 20+ requests in a single pass -- for a product whose
+ * users are children. Behavioural telemetry on minors without a choice is
+ * exactly what the DPDP Act restricts, and "they could have found the switch"
+ * is not a choice. A student who wants to help can turn it on in Profile.
+ */
 export function telemetryEnabled(): boolean {
-  try { return getRaw(TELEMETRY_KEY) !== '0' } catch { return true }
+  try { return getRaw(TELEMETRY_KEY) === '1' } catch { return false }
 }
 
 export function setTelemetryEnabled(on: boolean): void {

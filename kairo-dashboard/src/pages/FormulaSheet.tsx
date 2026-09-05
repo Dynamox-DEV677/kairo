@@ -1,3 +1,4 @@
+import { schoolId } from '../lib/schoolId'
 import { useState, useEffect, useMemo } from 'react'
 import IconButton from '../components/IconButton'
 import { studentMessage } from '../lib/aiError.core'
@@ -12,7 +13,8 @@ import { PrimaryButton } from '../components/PrimaryButton'
 import MathExpr from '../components/MathExpr'
 import { subjectLabels } from '../curriculum/subjects'
 
-const SCHOOL_ID = 'demo_school'
+// A student's real school, or nothing -- never a fabricated one.
+const SCHOOL_ID = schoolId() || undefined
 
 const C = {
   bg:        '#0A0D16',

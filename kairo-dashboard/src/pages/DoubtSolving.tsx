@@ -68,6 +68,15 @@ const ICON = { strokeWidth: 1.75, absoluteStrokeWidth: false } as const
 
 type Style = React.CSSProperties
 
+/** The step a student was stuck on, carried into the chat. */
+export interface DoubtAnchor {
+  step: number
+  total: number
+  question: string
+  title: string
+  working: string
+}
+
 /* ── answer modes ─────────────────────────────────────────────────────────── */
 
 /**
@@ -412,7 +421,7 @@ export default function DoubtSolving({
 }: {
   profile?: any
   /** Hands the question (and the step they were on) to the existing chat. */
-  onOpenChat?: (seed: string) => void
+  onOpenChat?: (seed: string, anchor?: DoubtAnchor) => void
 }) {
   const [view, setView] = useState<View>('entry')
   const [input, setInput] = useState('')
@@ -951,7 +960,18 @@ export default function DoubtSolving({
           <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
             <button
               onClick={() => onOpenChat?.(
-                `I'm stuck on step ${shown} of this: ${question}\n\n${steps[shown - 1]?.title || ''}\n${steps[shown - 1]?.working || ''}`
+                `I'm stuck on step ${shown} of this: ${question}\n\n${steps[shown - 1]?.title || ''}\n${steps[shown - 1]?.working || ''}`,
+                // The chat opens ANCHORED to this step. A prefilled sentence
+                // was not enough: the student still landed on a cold
+                // "Welcome to Kyno" with generic chips, which is the opposite
+                // of continuing the thing they were stuck on.
+                {
+                  step: shown,
+                  total: steps.length,
+                  question,
+                  title: steps[shown - 1]?.title || '',
+                  working: steps[shown - 1]?.working || '',
+                },
               )}
               style={{
                 flex: 1, height: 46, borderRadius: 14, background: T.raised,
@@ -966,7 +986,7 @@ export default function DoubtSolving({
                 border: `1px solid ${T.borderCtl}`, color: T.text2,
                 fontSize: 13.5, fontWeight: 600, fontFamily: FONT, cursor: 'pointer',
               }}
-            >Similar sum</button>
+            >Similar question</button>
           </div>
         </div>
       )}

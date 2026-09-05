@@ -221,6 +221,9 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
    * the address must not still claim the formula sheet.
    */
   const [activeView, setActiveView] = useState<string | null>(() => routeFromHash(profile?.role)?.view ?? null)
+  /** Set when a screen is showing something more specific than its page name. */
+  const [titleOverride, setTitleOverride] = useState<string | null>(null)
+  useEffect(() => { setTitleOverride(null) }, [active])
   useEffect(() => {
     const onViewChanged = (e: Event) => {
       const d = (e as CustomEvent).detail
@@ -460,7 +463,7 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
           <MobileShell
             active={active}
             setActive={navigate}
-            pageTitle={PAGE_TITLES[active] || 'Dashboard'}
+            pageTitle={titleOverride || PAGE_TITLES[active] || 'Dashboard'}
             isDark={isDark}
             toggleTheme={() => setIsDark(d => !d)}
             profile={profile}
@@ -468,7 +471,7 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
           />
         ) : (
           <TopBar
-            title={PAGE_TITLES[active] || 'Dashboard'}
+            title={titleOverride || PAGE_TITLES[active] || 'Dashboard'}
             onModelChange={setSelectedModel}
             profile={profile}
             modelLocked={active === 'doubt' && solverActive}
@@ -539,14 +542,18 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
                 <SpaceFrame active="doubt-solving" onNavigate={navigate} visible={active === 'doubt-solving'}>
                 <DoubtSolving
                   profile={profile}
-                  onOpenChat={(seed: string) => {
+                  onOpenChat={(seed: string, anchor?: any) => {
                     // Reuse the ONE existing chat instead of mounting a second
                     // KairoChat: both instances would listen for
                     // kairo:load-chat and both would write the chat id.
                     setActive('doubt')
+                    // The header must say what the student is doing. "Kyno's
+                    // Solver" over a chat they opened from step 2 reads as a
+                    // different place, which is how the thread was lost.
+                    setTitleOverride(anchor ? `Stuck on step ${anchor.step}` : null)
                     setTimeout(() => {
                       window.dispatchEvent(new CustomEvent('kairo:load-chat', {
-                        detail: { id: 'new', seed },
+                        detail: { id: 'new', seed, anchor },
                       }))
                     }, 60)
                   }}

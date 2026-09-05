@@ -20,7 +20,7 @@
  * cannot lose a session.
  */
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
-import { ChevronRight, ArrowLeft, Check, Play, Pause, SkipForward, Pencil, AlertTriangle, Calendar, BookOpen, Layers, PenLine } from 'lucide-react'
+import { Timer, ChevronRight, ArrowLeft, Check, Play, Pause, SkipForward, Pencil, AlertTriangle, Calendar, BookOpen, Layers, PenLine } from 'lucide-react'
 import { T, FONT, MONO, ICON, CALLOUT } from '../lib/spaceTokens'
 import { useSpaceLayout } from '../components/SpaceFrame'
 import { SPACE_VIEW_EVENT, publishSpaceView } from '../lib/spaces.core'
@@ -30,6 +30,7 @@ import { post } from '../lib/api'
 import { loadState, getDashboard, getProfile, track } from '../lib/twin'
 import { getJSON, setJSON, getRaw } from '../lib/storage'
 import { nearestExamDays } from '../lib/examDate'
+import { selectStreak } from '../lib/selectors.core'
 import { graphForProfile } from '../lib/syllabusFor'
 import { nodeStates } from '../lib/syllabusGraph.core'
 import type { Graph, GraphNode, NodeState } from '../lib/syllabusGraph.core'
@@ -199,6 +200,10 @@ export default function Plan({ onOpenDoubt, onPractice }: {
   const [now, setNow] = useState(Date.now())
 
   const model = useMemo(() => computeModel(Date.now()), [tick, view.name])
+  // ONE answer to "how many days have you studied": the same selector Progress
+  // reads. Plan counted days with recorded study TIME, which sat at 0 while
+  // Progress showed a 6-day streak -- both true, and impossible to believe.
+  const streakDays = useMemo(() => { try { return selectStreak(loadState().events || []) } catch { return 0 } }, [tick])
 
   // recompute when a focus session banks (the timer here or the old Focus Lock)
   useEffect(() => {
@@ -290,8 +295,12 @@ export default function Plan({ onOpenDoubt, onPractice }: {
               </div>
               <div style={{ height: 1, background: T.divider, margin: '12px 0' }} />
               <div style={{ fontSize: 14, color: T.text, lineHeight: 1.55 }}>{line}</div>
-              {daily.median == null && daily.days > 0 && (
-                <div style={{ fontSize: 12, color: T.faint, marginTop: 6 }}>{daily.days} of 7 days of study time recorded so far.</div>
+              {daily.median == null && (
+                <div style={{ fontSize: 12, color: T.faint, marginTop: 6 }}>
+                  {streakDays > 0
+                    ? `${streakDays} day${streakDays === 1 ? '' : 's'} in a row studied. Kyno needs timed sessions before it can pace you — start one below.`
+                    : 'Kyno needs a few timed sessions before it can pace you.'}
+                </div>
               )}
             </Card>
           ) : (
@@ -330,7 +339,13 @@ export default function Plan({ onOpenDoubt, onPractice }: {
             </div>
           </Card>
         </div>
-        <div style={footer}>
+        <div style={{ ...footer, flexWrap: 'wrap' }}>
+          {/* The focus timer had NO DOOR. Pomodoro and Focus Lock were merged
+              into Plan and then nothing in Plan opened them -- the only way in
+              was an old URL, which no student would guess. */}
+          <Primary style={{ flexBasis: '100%', marginBottom: 8 }} onClick={() => startFocus('Study', 25)}>
+            <Timer size={16} {...ICON} /> Start 25 minutes
+          </Primary>
           <Secondary onClick={() => setView({ name: 'syllabus' })} style={{ flex: 1 }}>Syllabus map</Secondary>
           <Secondary onClick={() => setView({ name: 'adjust' })} style={{ flex: 1 }}>Change my plan</Secondary>
         </div>

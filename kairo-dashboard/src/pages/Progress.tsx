@@ -94,7 +94,7 @@ function Back({ onClick, label = 'Back' }: { onClick: () => void; label?: string
 function Chip({ on, onClick, children }: { on: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
     <button onClick={onClick} style={{
-      minHeight: 36, padding: '0 12px', borderRadius: 100, fontFamily: FONT, fontSize: 12.5, fontWeight: 600, cursor: 'pointer', flexShrink: 0, whiteSpace: 'nowrap',
+      minHeight: 44, padding: '0 14px', borderRadius: 100, fontFamily: FONT, fontSize: 13, fontWeight: 600, cursor: 'pointer', flexShrink: 0, whiteSpace: 'nowrap',
       background: on ? T.accentSurface : T.raised, border: `1px solid ${on ? T.accent : T.borderCtl}`, color: on ? T.accentPale : T.muted,
     }}>{children}</button>
   )

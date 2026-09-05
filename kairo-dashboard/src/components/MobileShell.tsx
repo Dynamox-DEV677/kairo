@@ -254,7 +254,8 @@ function MobileTopBar({
       paddingTop: safeTop,
     }}>
       <button onClick={onOpenDrawer} aria-label="Menu" style={{
-        width: 38, height: 38, borderRadius: 12,
+        // 44 square: the floor for a thumb, and this was 38.
+        width: 44, height: 44, borderRadius: 12,
         background: 'rgba(255,255,255,0.05)',
         border: '1px solid rgba(255,255,255,0.10)',
         cursor: 'pointer', flexShrink: 0,
@@ -549,7 +550,7 @@ function MobileDrawer({
                 overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
               }}>{profile?.name || 'Guest'}</div>
               <div style={{
-                fontSize: 10, color: isDark ? '#6B7280' : '#B1B5BA',
+                fontSize: 11.5, color: isDark ? '#6B7280' : '#B1B5BA',
                 textTransform: 'capitalize',
               }}>{profile?.role || 'student'}{profile?.school_name ? ' · ' + profile.school_name : ''}</div>
             </div>

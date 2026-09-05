@@ -1,3 +1,4 @@
+import { schoolId } from '../lib/schoolId'
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { studentMessage } from '../lib/aiError.core'
 import { subjectLabels } from '../curriculum/subjects'
@@ -23,7 +24,8 @@ import {
  * automatically.
  */
 
-const SCHOOL_ID = 'demo_school'
+// A student's real school, or nothing -- never a fabricated one.
+const SCHOOL_ID = schoolId() || undefined
 const SUBJECTS = (() => { const p = getProfile() as any; return subjectLabels({ board: p?.board, cls: p?.cls }) })()
 
 const C = {

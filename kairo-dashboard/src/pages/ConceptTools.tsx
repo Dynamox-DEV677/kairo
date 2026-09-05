@@ -1,3 +1,4 @@
+import { schoolId } from '../lib/schoolId'
 import { useState, useEffect, type JSX } from 'react'
 import { studentMessage } from '../lib/aiError.core'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -12,7 +13,8 @@ import { prepMathMarkdown } from '../lib/math.core'
 import { subjectLabels } from '../curriculum/subjects'
 import { getProfile } from '../lib/twin'
 
-const SCHOOL_ID = 'demo_school'
+// A student's real school, or nothing -- never a fabricated one.
+const SCHOOL_ID = schoolId() || undefined
 
 const TABS = [
   { id: 'simplify', label: 'Concept Simplifier', icon: Lightbulb  },

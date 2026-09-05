@@ -990,7 +990,15 @@ export default function Practice({ onOpenDoubt }: { onOpenDoubt?: (seed: string)
     } catch (e: any) {
       // Questions unavailable: drop the format, keep the session. The student
       // sees a shorter session, not an error.
-      setQNote(studentMessage(e))
+      // Never let the preview promise something the session then omits without
+      // a word. The student was told "9 questions" and got a written answer.
+      const left = items.filter(i => i.kind !== 'question')
+      const kinds = [
+        left.some(i => i.kind === 'card') && 'cards',
+        left.some(i => i.kind === 'written') && 'written answer',
+        left.some(i => i.kind === 'teach') && 'teach-back',
+      ].filter(Boolean) as string[]
+      setQNote(`Questions skipped — ${studentMessage(e)}${kinds.length ? ` Your ${kinds.join(' and ')} ${kinds.length > 1 ? 'are' : 'is'} still ready.` : ''}`)
       setItems(it => rebuildWithout(it, 'question', idx))
     } finally { setQLoading(false) }
   }
@@ -1000,13 +1008,20 @@ export default function Practice({ onOpenDoubt }: { onOpenDoubt?: (seed: string)
     else setIdx(idx + 1)
   }
 
-  function finish() {
+  /**
+   * `completed` decides the bonus. Closing at card 18 of 24 used to pay the
+   * same +20 "Session completed" as finishing, and the level went up for
+   * quitting -- which teaches the wrong thing and makes the number a lie. The
+   * per-card and per-answer XP is already banked either way; only the session
+   * bonus depends on actually reaching the end.
+   */
+  function finish(completed = true) {
     const s = stats
     // xpFor mirrors the published table for the results screen; the cards and
     // written answers were credited as they happened, this is the session itself.
-    const xp = xpFor({ ...s, finished: true })
-    try { awardXP('session_done') } catch { /* nicety */ }
-    try { track({ type: 'session_end', payload: { practice: true, ...s, xp } }) } catch { /* nicety */ }
+    const xp = xpFor({ ...s, finished: completed })
+    if (completed) { try { awardXP('session_done') } catch { /* nicety */ } }
+    try { track({ type: 'session_end', payload: { practice: true, ...s, xp, completed } }) } catch { /* nicety */ }
     setTick(t => t + 1)
     setView('results')
   }
@@ -1246,7 +1261,16 @@ export default function Practice({ onOpenDoubt }: { onOpenDoubt?: (seed: string)
       <div style={layout.bp === 'desktop'
         ? { display: 'flex', flexDirection: 'column', flex: '0 1 760px', minHeight: 0, border: `1px solid ${T.border}`, borderRadius: 22, overflow: 'hidden', background: T.bg }
         : { display: 'contents' }}>
-      <Chrome label={label} msLeft={msLeft} progress={done} onClose={finish} />
+      <Chrome label={label} msLeft={msLeft} progress={done} onClose={() => finish(false)} />
+      {qNote && (
+        <div style={{
+          display: 'flex', gap: 9, alignItems: 'flex-start', padding: '10px 14px',
+          background: T.warningBg, borderBottom: `1px solid ${T.borderExam}`,
+        }}>
+          <AlertTriangle size={15} color={T.warning} {...ICON} style={{ flexShrink: 0, marginTop: 1 }} />
+          <div style={{ fontSize: 12.5, color: T.text2, lineHeight: 1.5 }}>{qNote}</div>
+        </div>
+      )}
       {item.kind === 'card' && (
         <FlashcardFormat
           card={item.card}

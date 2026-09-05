@@ -1,3 +1,4 @@
+import { schoolId } from '../lib/schoolId'
 import { useState, useEffect, useRef } from 'react'
 import { studentMessage } from '../lib/aiError.core'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -9,7 +10,8 @@ import ReportQuestion from '../components/ReportQuestion'
 import { awardXP } from '../lib/game'
 import { subjectLabels } from '../curriculum/subjects'
 
-const SCHOOL_ID = 'demo_school'
+// A student's real school, or nothing -- never a fabricated one.
+const SCHOOL_ID = schoolId() || undefined
 
 const card  = { background: '#141A2A', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14, padding: 20 } as React.CSSProperties
 const inp   = { background: '#141A2A', border: '1px solid #1f2532', borderRadius: 8, padding: '9px 12px', fontSize: 13, color: '#fafafa', fontFamily: 'inherit', outline: 'none', width: '100%' } as React.CSSProperties

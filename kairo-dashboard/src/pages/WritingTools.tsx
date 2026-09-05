@@ -1,3 +1,4 @@
+import { schoolId } from '../lib/schoolId'
 import { useState, useMemo, useEffect } from 'react'
 import ErrorNote from '../components/ErrorNote'
 import { studentMessage } from '../lib/aiError.core'
@@ -9,7 +10,8 @@ import { KEYS, getRaw, setRaw } from '../lib/storage'
 import { subjectLabels } from '../curriculum/subjects'
 import { getProfile } from '../lib/twin'
 
-const SCHOOL_ID = 'demo_school'
+// A student's real school, or nothing -- never a fabricated one.
+const SCHOOL_ID = schoolId() || undefined
 
 const TABS = [
   { id: 'editor',      label: 'Editor',           icon: PencilLine },

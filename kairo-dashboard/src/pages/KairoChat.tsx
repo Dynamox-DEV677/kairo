@@ -87,6 +87,8 @@ function turnsToMessages(turns: Turn[]): { role: 'user' | 'assistant'; content: 
 }
 
 export default function KairoChat() {
+  /** The Doubt Solving step this chat was opened from, if any. */
+  const [anchor, setAnchor] = useState<{ step: number; total: number; question: string; title: string; working: string } | null>(null)
   const [turns, setTurns] = useState<Turn[]>(() => {
     try {
       const raw = typeof localStorage !== 'undefined' ? localStorage.getItem(CHAT_KEY) : null
@@ -152,6 +154,9 @@ export default function KairoChat() {
         // want to add a word about WHAT confused them, and a question that
         // fires before they can is a wasted answer.
         setInput(typeof seed === 'string' ? seed : '')
+        // The step the student was stuck on, pinned above the conversation so
+        // the chat continues their work instead of starting from nothing.
+        setAnchor(anchor && typeof anchor === 'object' ? anchor : null)
         return
       }
       const chat = getRecentChats().find(c => c.id === id)
@@ -307,7 +312,25 @@ export default function KairoChat() {
         padding: isMobile ? '50px 12px 10px' : '26px clamp(14px, 6vw, 90px) 20px',
         display: 'flex', flexDirection: 'column', gap: isMobile ? 13 : 18,
       }}>
-        {turns.length === 0 && <EmptyHero isMobile={isMobile} />}
+        {anchor && (
+          <div style={{
+            margin: '0 0 14px', padding: '12px 14px', borderRadius: 14,
+            background: 'rgba(124,92,255,0.10)', border: '1px solid rgba(124,92,255,0.35)',
+          }}>
+            <div style={{ fontSize: 11, letterSpacing: 1.2, fontWeight: 700, color: '#A99BFF', textTransform: 'uppercase' }}>
+              Stuck on step {anchor.step} of {anchor.total}
+            </div>
+            <div style={{ fontSize: 14, fontWeight: 600, color: '#EDEDF5', marginTop: 7, lineHeight: 1.45 }}>{anchor.question}</div>
+            {anchor.title && <div style={{ fontSize: 13, color: '#C9C9DC', marginTop: 8, lineHeight: 1.5 }}>{anchor.title}</div>}
+            {anchor.working && (
+              <pre style={{
+                margin: '6px 0 0', fontSize: 12.5, color: '#9494AD', whiteSpace: 'pre-wrap',
+                fontFamily: 'ui-monospace, monospace', lineHeight: 1.5,
+              }}>{anchor.working}</pre>
+            )}
+          </div>
+        )}
+        {turns.length === 0 && !anchor && <EmptyHero isMobile={isMobile} />}
 
         {turns.map(t => (
           <motion.div
