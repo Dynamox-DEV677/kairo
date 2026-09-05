@@ -29,17 +29,23 @@ import { reportFault } from '../services/alert.js'
 export function fail(res, req, e, opts = {}) {
   const { status = 500, message = 'Something went wrong on our side.', extra } = opts
 
+  // A short id printed in the log AND shown to the student. Without it a
+  // report of "it said something broke" cannot be matched to anything, which
+  // is exactly the position four 500s left us in.
+  const ref = Math.random().toString(36).slice(2, 8).toUpperCase()
+
   reportFault({
     route: req?.originalUrl || req?.path || 'unknown',
     message: e?.message || String(e ?? 'unknown error'),
     stack: e?.stack,
     status,
     source: 'server',
-    extra,
+    extra: { ...(extra || {}), ref },
   })
+  console.error(`[fail ${ref}] ${req?.method || ''} ${req?.originalUrl || req?.path || '?'} -> ${status}: ${e?.message || e}`)
 
   // A string, not { code, message } — the client reads `data.error` as a
   // string in most places, and changing 181 responses' shape at the same time
   // as their content is how you turn a fix into an outage.
-  if (!res.headersSent) res.status(status).json({ error: message })
+  if (!res.headersSent) res.status(status).json({ error: message, ref })
 }

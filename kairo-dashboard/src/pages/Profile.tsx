@@ -31,6 +31,7 @@ import { activeFlows, privacyHeadline } from '../lib/privacy.core'
 import { telemetryEnabled, setTelemetryEnabled } from '../lib/usage'
 import { isDevMode, setDevMode, getDevKeyRaw, setDevKey, looksLikeGroqKey, aiHeadersAsync } from '../lib/devKey'
 import { safeDetail } from '../lib/aiError.core'
+import { failureLog, clearFailureLog } from '../lib/dbError'
 import { authToken } from '../lib/storage'
 import { api, post, friendlyError } from '../lib/api'
 import { getReminderTime, setReminderTime, askNotificationPermission } from '../lib/reminder'
@@ -224,6 +225,8 @@ export default function Profile({ onLogout, onOpenSettings }: { onLogout?: () =>
   const [emailCode, setEmailCode] = useState('')
   const [emailStep, setEmailStep] = useState<'idle' | 'sending' | 'code' | 'verifying' | 'done'>('idle')
   const [emailErr, setEmailErr] = useState('')
+  const [failures, setFailures] = useState(() => { try { return failureLog() } catch { return [] } })
+  const [copied, setCopied] = useState(false)
 
   async function syncNow() {
     if (syncing) return
@@ -527,6 +530,30 @@ export default function Profile({ onLogout, onOpenSettings }: { onLogout?: () =>
             </div>
             <Switch label="Share which screens I open" on={telemetry} onChange={v => { setTelemetry(v); setTelemetryEnabled(v) }} />
           </div>
+        </Group>
+
+        {/* The real database error, in the app, because a student -- or the
+            person fixing this -- cannot open a server log from a phone. Every
+            failed Supabase call is recorded verbatim with its Postgres code. */}
+        <Group title="Connection" note={failures.length ? 'Kyno could not save something. This is the exact error.' : 'No save has failed on this device.'}>
+          {failures.length === 0 ? (
+            <div style={{ padding: '12px 14px', fontSize: 13, color: T.success }}>Everything has saved.</div>
+          ) : (
+            <>
+              {failures.slice(-4).reverse().map((f, i) => (
+                <div key={f.at + String(i)} style={{ padding: '10px 14px', borderTop: i ? `1px solid ${T.divider2}` : 'none' }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: T.text }}>{f.op} {f.table}{f.code ? ` — ${f.code}` : ''}</div>
+                  <div style={{ fontSize: 12, color: T.dim, marginTop: 3, fontFamily: MONO, lineHeight: 1.5, wordBreak: 'break-word' }}>{f.message}</div>
+                  <div style={{ fontSize: 11, color: T.faint, marginTop: 3 }}>{new Date(f.at).toLocaleString()}</div>
+                </div>
+              ))}
+              <Row label={copied ? 'Copied' : 'Copy all errors'} onClick={() => {
+                const text = failures.map(f => `${new Date(f.at).toISOString()} ${f.op} ${f.table} ${f.code || ''} ${f.message}`).join(String.fromCharCode(10))
+                try { navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 2000) } catch { /* no clipboard */ }
+              }} />
+              <Row label="Clear this list" onClick={() => { clearFailureLog(); setFailures([]) }} />
+            </>
+          )}
         </Group>
 
         <Group title="This device" note="These only touch this phone. Your account is not affected.">

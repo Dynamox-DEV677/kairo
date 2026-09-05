@@ -51,6 +51,22 @@ Mathematics notation: use $...$ for inline math and $$...$$ for display math ONL
 
     const data = parseJSON(raw)
 
+    // The model can return prose, an empty list, or a shape with no questions
+    // at all. data.questions.length then threw a TypeError, fail() turned it
+    // into a bare 500, and the student saw "something is broken on our side"
+    // while the Practice session silently dropped its question block and
+    // jumped to the written answer. Check it, and say what actually happened.
+    const questions = Array.isArray(data?.questions)
+      ? data.questions.filter(q => q && (q.question || q.q))
+      : []
+    if (!questions.length) {
+      return fail(res, req, new Error(`quiz/start produced no usable questions for ${subject}/${topic || 'any topic'} (model returned ${String(raw || '').length} chars)`), {
+        status: 502,
+        message: `Kyno could not write ${subject} questions just now. Nothing you did — try again in a minute.`,
+      })
+    }
+    data.questions = questions
+
     const session = await db.quizSessions?.insertAsync?.({
       school_id: sid(req), subject, topic, board, class: cls,
       questions: data.questions, answers: [], current_index: 0,

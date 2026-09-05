@@ -106,6 +106,9 @@ export async function api(path: string, options: RequestInit = {}): Promise<any>
     const err: any = new Error(detail || `HTTP ${res.status}`)
     err.status = res.status
     err.upstream = data
+    // The server prints this id beside the real stack. Showing it to the
+    // student is what makes "it said something broke" a reportable fault.
+    err.ref = typeof data?.ref === 'string' ? data.ref : undefined
     throw err
   }
   return data

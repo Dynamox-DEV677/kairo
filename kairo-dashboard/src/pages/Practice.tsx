@@ -550,14 +550,30 @@ function TeachFormat({ question, onDone }: { question: string; onDone: (r: Teach
     const transcript = said.trim()
     if (!transcript) return
     setBusy(true); setNote('')
+
+    // SAVE FIRST, GRADE SECOND. A student who speaks for a minute and loses it
+    // to a failed request does not come back. The transcript is theirs from
+    // the moment they stop talking, whether or not the grader answers.
+    try {
+      saveToNotebook({
+        kind: 'note',
+        title: `Teach-back · ${String(question).slice(0, 60)}`,
+        content: transcript,
+        subject: null,
+        tags: [],
+        source: 'teach-back',
+      })
+    } catch { /* storage full or blocked: grading still gets its chance */ }
+
     try {
       const prof = getProfile() as any
       const r = await post('/practice/teachback', { question, transcript, class: prof?.cls || '10' })
       setResult(r)
     } catch (e: any) {
-      // Grading down: the format is dropped, not failed. onDone(null) tells the
-      // shell to skip the rest of this kind for the session.
-      setNote(studentMessage(e))
+      // Name the step, promise the recovery, and carry the reference id so a
+      // report can be matched to the server log.
+      const ref = e?.ref ? ` (ref ${e.ref})` : ''
+      setNote(`Could not grade your answer${ref} — what you said is saved in Notes. ${studentMessage(e)}`)
     } finally { setBusy(false) }
   }
 
