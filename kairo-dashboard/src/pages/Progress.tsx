@@ -36,11 +36,12 @@ import {
   leagueSections, timeLeftLabel, roomMinutes, numberWord, RAMP, FADE, EDGE, MIN_GROUP,
 } from '../lib/progress.core'
 import type { ChapterGroup } from '../lib/progress.core'
-import { SUBJECTS, ROUND, masteryBand, buildBank, pickQuestions, scoreAnswer, outcome, subjectOfChapter } from '../lib/arena.core'
+import { SUBJECTS, ROUND, masteryBand, buildBank, pickQuestions, scoreAnswer, outcome, subjectOfChapter,
+  kynoPlay, kynoScoreAfter, hashSeed, KYNO_OPPONENT_NAME } from '../lib/arena.core'
 import type { BankQuestion } from '../lib/arena.core'
-import { queueForBattle, leaveQueue, fetchMatch, sendAnswer, refreshArenaStats, cachedArenaStats, type MatchView, type ArenaStats } from '../lib/arena'
+import { fetchMatch, sendAnswer, refreshArenaStats, cachedArenaStats, type MatchView, type ArenaStats } from '../lib/arena'
 import { joinRoom, watchLobby, roomsAvailable, type RoomMember, type RoomHandle } from '../lib/rooms'
-import { getSocialCached, refreshSocial, reportUser, locallyBlocked, SOCIAL_EVENT, type SocialProfile } from '../lib/social'
+import { setSocialSettings, getSocialCached, refreshSocial, reportUser, locallyBlocked, SOCIAL_EVENT, type SocialProfile } from '../lib/social'
 import { tileHue, tileLetter } from '../lib/username.core'
 import { parseHistory } from '../lib/focus.core'
 import { readTimeStore } from '../lib/timeTracker'
@@ -370,7 +371,7 @@ export default function Progress({ onPractice, onOpenProfile }: {
               <div style={{ fontSize: 14, fontWeight: 600, marginTop: 10 }}>Battle</div>
               <div style={{ fontSize: 12, color: T.dim, marginTop: 2 }}>{!online ? 'needs a connection' : !battlesOn ? 'off in Profile' : '1v1, 60 seconds'}</div>
             </Card>
-            <Card onClick={online && roomsOn ? () => setView({ name: 'room' }) : roomsOn ? undefined : onOpenProfile} style={{ opacity: online ? 1 : 0.6 }}>
+            <Card onClick={online ? () => setView({ name: 'room' }) : undefined} style={{ opacity: online ? 1 : 0.6 }}>
               <Users size={18} color={T.accentPale} {...ICON} />
               <div style={{ fontSize: 14, fontWeight: 600, marginTop: 10 }}>Study room</div>
               <div style={{ fontSize: 12, color: T.dim, marginTop: 2 }}>{!online ? 'needs a connection' : !roomsOn ? 'off in Profile — tap to turn on' : lobby == null ? 'quiet co-presence' : lobby === 0 ? 'nobody in yet' : `${lobby} ${lobby === 1 ? 'person' : 'people'} in now`}</div>
@@ -559,7 +560,8 @@ function BattleScreen({ model, social, online, shell, onBack, onOpenProfile, onD
   onBack: () => void; onOpenProfile?: () => void; onDone: () => void
 }) {
   const [subject, setSubject] = useState<string>(SUBJECTS[0])
-  const [phase, setPhase] = useState<'pick' | 'queue' | 'offer' | 'live' | 'solo' | 'over'>('pick')
+  // 'queue' and 'offer' went with human matchmaking: a round is against Kyno.
+  const [phase, setPhase] = useState<'pick' | 'live' | 'solo' | 'over'>('pick')
   const [match, setMatch] = useState<MatchView | null>(null)
   const [local, setLocal] = useState<Local | null>(null)
   const [offset, setOffset] = useState(0)          // server clock minus ours
@@ -575,26 +577,8 @@ function BattleScreen({ model, social, online, shell, onBack, onOpenProfile, onD
   // Paused while another space is on screen: a hidden countdown must not run.
   const vis = useSpaceLayout().visible
   useEffect(() => { if (!vis) return; const id = setInterval(() => setNow(Date.now()), 250); return () => clearInterval(id) }, [vis])
-  useEffect(() => () => { stop.current = true; if (phase === 'queue') leaveQueue().catch(() => {}) }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => () => { stop.current = true }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  /* matchmaking: poll the queue until paired or fifteen seconds pass */
-  async function findOpponent() {
-    stop.current = false; setPhase('queue'); setWaited(0); setNote('')
-    const band = bandFor(model.graph, model.states, subject)
-    const t0 = Date.now()
-    while (!stop.current) {
-      let r: any
-      try { r = await queueForBattle(subject, band) } catch { r = { offline: true } }
-      if (stop.current) return
-      if (r.matchId) { await openMatch(r.matchId); return }
-      if (r.offline) { setNote('Battles need a connection to the server. A solo round works offline.'); setPhase('offer'); return }
-      if (r.disabled) { setPhase('pick'); return }
-      const w = Date.now() - t0
-      setWaited(w)
-      if (w >= ROUND.waitSeconds * 1000) { leaveQueue().catch(() => {}); setNote('Nobody free in ' + subject + ' right now.'); setPhase('offer'); return }
-      await new Promise(res => setTimeout(res, 2000))
-    }
-  }
   async function openMatch(id: string) {
     const m = await fetchMatch(id)
     setOffset(m.now - Date.now()); setMatch(m); shownAt.current = Date.now(); setPhase('live')
@@ -611,13 +595,26 @@ function BattleScreen({ model, social, online, shell, onBack, onOpenProfile, onD
       }
     })()
   }
+  /**
+   * A round against Kyno.
+   *
+   * Battles used to pair two students, which was the only place in the app
+   * where one child's identity was shown to another. That is gone. The
+   * opponent is Kyno, playing at an accuracy calibrated to this student's
+   * mastery in this subject, deterministic from the round seed. Same seven
+   * questions, same sixty seconds, same faster-is-more scoring.
+   */
   function startSolo() {
     const graph = model.graph
     const bank = buildBank((SHEET as any).formulas, graph)
-    const qs = pickQuestions(bank, subject, `solo-${Date.now()}`)
+    const seedStr = `kyno-${Date.now()}`
+    const qs = pickQuestions(bank, subject, seedStr)
+    setKyno(kynoPlay(qs.length, { band: bandFor(model.graph, model.states, subject), seed: hashSeed(seedStr) }))
     setLocal({ questions: qs, answers: [], startedAt: Date.now() }); shownAt.current = Date.now(); setPhase('solo')
   }
 
+  /** How Kyno answers this round, fixed when the round starts. */
+  const [kyno, setKyno] = useState<Array<{ correct: boolean; elapsedMs: number }>>([])
   const live = phase === 'live' && match
   const solo = phase === 'solo' && local
   const questions = live ? match!.questions : solo ? local!.questions : []
@@ -656,14 +653,14 @@ function BattleScreen({ model, social, online, shell, onBack, onOpenProfile, onD
   const mm = Math.floor(left / 60000), ss = Math.floor((left % 60000) / 1000)
 
   /* pick a subject */
-  if (phase === 'pick' || phase === 'queue' || phase === 'offer') {
+  if (phase === 'pick') {
     return (
       <div style={shell}>
         <div style={{ flex: 1, overflowY: 'auto', padding: '18px 14px 24px' }}>
-          <Back onClick={() => { stop.current = true; leaveQueue().catch(() => {}); onBack() }} />
+          <Back onClick={() => { stop.current = true; onBack() }} />
           <div style={{ marginTop: 6 }}><Eyebrow>Battle</Eyebrow></div>
           <h1 style={{ fontSize: 22, fontWeight: 700, margin: '8px 0 0' }}>1v1 · 7 questions · 60 seconds</h1>
-          <div style={{ fontSize: 13, color: T.dim, lineHeight: 1.5, marginTop: 6 }}>Faster right answers score more. You are matched with someone at a similar level in the subject. A dropped connection voids the round for both of you — never a loss.</div>
+          <div style={{ fontSize: 13, color: T.dim, lineHeight: 1.5, marginTop: 6 }}>Faster right answers score more. You play Kyno, at your level in this subject.</div>
           {!battlesOn ? (
             <Card style={{ marginTop: 16 }}>
               <div style={{ fontSize: 15, fontWeight: 600 }}>Battles are off for you</div>
@@ -676,30 +673,12 @@ function BattleScreen({ model, social, online, shell, onBack, onOpenProfile, onD
               <div style={{ display: 'flex', gap: 8, marginTop: 8, overflowX: 'auto', paddingBottom: 4 }}>
                 {SUBJECTS.map(s => <Chip key={s} on={subject === s} onClick={() => phase === 'pick' && setSubject(s)}>{s}</Chip>)}
               </div>
-              {phase === 'queue' && (
-                <Card style={{ marginTop: 16 }}>
-                  <div style={{ display: 'flex', gap: 10, alignItems: 'center', fontSize: 14, color: T.text2 }}><Loader2 size={16} {...ICON} /> Looking for someone in {subject}…</div>
-                  <div style={{ height: 4, borderRadius: 2, background: T.divider, marginTop: 12, overflow: 'hidden' }}><div style={{ height: '100%', width: `${Math.min(100, (waited / (ROUND.waitSeconds * 1000)) * 100)}%`, background: T.accent, transition: 'width .3s linear' }} /></div>
-                  <div style={{ fontSize: 12, color: T.faint, marginTop: 8 }}>Up to fifteen seconds. If nobody is free you get a solo timed round instead — never a fake opponent.</div>
-                  <Secondary style={{ marginTop: 12, width: '100%' }} onClick={() => { stop.current = true; leaveQueue().catch(() => {}); setPhase('pick') }}>Stop looking</Secondary>
-                </Card>
-              )}
-              {phase === 'offer' && (
-                <Card style={{ marginTop: 16 }}>
-                  <div style={{ fontSize: 15, fontWeight: 600 }}>{note || 'Nobody free right now.'}</div>
-                  <div style={{ fontSize: 13, color: T.dim, lineHeight: 1.5, marginTop: 6 }}>A solo timed round has the same seven questions and the same clock. It is not recorded as a battle.</div>
-                  <div style={{ display: 'flex', gap: 10, marginTop: 12 }}>
-                    <Primary style={{ flex: 1 }} onClick={startSolo}>Solo round</Primary>
-                    {online && <Secondary onClick={findOpponent}>Try again</Secondary>}
-                  </div>
-                </Card>
-              )}
             </>
           )}
         </div>
         {battlesOn && phase === 'pick' && (
           <div style={{ padding: '12px 14px calc(12px + env(safe-area-inset-bottom))', borderTop: `1px solid ${T.divider}`, background: T.bgAlt }}>
-            <Primary onClick={online ? findOpponent : startSolo}>{online ? <><Zap size={18} {...ICON} /> Find an opponent</> : 'Solo round (offline)'}</Primary>
+            <Primary onClick={startSolo}><Zap size={18} {...ICON} /> Play Kyno</Primary>
           </div>
         )}
       </div>
@@ -708,12 +687,12 @@ function BattleScreen({ model, social, online, shell, onBack, onOpenProfile, onD
 
   /* the round is over */
   if (phase === 'over') {
-    const oppScore = live || match ? match?.opp.score || 0 : 0
+    const oppScore = live && match ? match.opp.score || 0 : kynoScoreAfter(kyno, myAnswers.length)
     const res = match && match.status === 'void' ? 'void' : match ? outcome(match.me.score, oppScore) : 'solo'
     return (
       <div style={versus}>
         <div style={{ flex: 1, overflowY: 'auto', padding: '18px 14px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
-          <Eyebrow color={T.muted}>{res === 'void' ? 'Round void' : res === 'solo' ? 'Solo round' : 'Round over'}</Eyebrow>
+          <Eyebrow color={T.muted}>{res === 'void' ? 'Round void' : 'Round over'}</Eyebrow>
           <div style={{ fontSize: 26, fontWeight: 700, marginTop: 10 }}>
             {res === 'void' ? 'The connection dropped.' : res === 'won' ? 'You won.' : res === 'lost' ? `${match?.opp.username || 'They'} won.` : res === 'draw' ? 'A draw.' : 'Done.'}
           </div>
@@ -722,7 +701,7 @@ function BattleScreen({ model, social, online, shell, onBack, onOpenProfile, onD
             <div><Tile username={username} size={44} /><div style={{ fontFamily: MONO, fontSize: 28, fontWeight: 700, marginTop: 8 }}>{myScore}</div><div style={{ fontSize: 12, color: T.dim }}>You</div></div>
             {match && match.opp.username && <div><Tile username={match.opp.username} size={44} /><div style={{ fontFamily: MONO, fontSize: 28, fontWeight: 700, marginTop: 8 }}>{oppScore}</div><div style={{ fontSize: 12, color: T.dim }}>{match.opp.username}</div></div>}
           </div>
-          {res === 'solo' && <div style={{ fontSize: 12.5, color: T.faint, marginTop: 14 }}>Not recorded — there was no opponent.</div>}
+          {!live && <div style={{ fontSize: 12.5, color: T.faint, marginTop: 14 }}>You played {KYNO_OPPONENT_NAME}, at your level in this subject.</div>}
         </div>
         <div style={{ padding: '12px 14px calc(12px + env(safe-area-inset-bottom))', borderTop: `1px solid ${T.borderExam}`, background: VERSUS, display: 'flex', gap: 10 }}>
           <Secondary style={{ flex: 1 }} onClick={() => { stop.current = true; onBack() }}>Back</Secondary>
@@ -753,7 +732,18 @@ function BattleScreen({ model, social, online, shell, onBack, onOpenProfile, onD
                 <div style={{ minWidth: 0, textAlign: 'right' }}><div style={{ fontSize: 12, color: T.dim, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{match!.opp.username}</div><div style={{ fontFamily: MONO, fontSize: 18, fontWeight: 700 }}>{match!.opp.score}</div></div>
                 <LongPress onLongPress={() => reportFlow(match!.opp.username!, 'battle', () => {})}><Tile username={match!.opp.username!} size={30} /></LongPress>
               </>
-            ) : <div style={{ fontSize: 12, color: T.faint }}>Solo round</div>}
+            ) : (
+              /* It is a race, so the opponent belongs on screen. */
+              <>
+                <div style={{ minWidth: 0, textAlign: 'right' }}>
+                  <div style={{ fontSize: 12, color: T.dim }}>{KYNO_OPPONENT_NAME}</div>
+                  <div style={{ fontFamily: MONO, fontSize: 16, fontWeight: 700, color: T.text }}>{kynoScoreAfter(kyno, myAnswers.length)}</div>
+                </div>
+                <div style={{ width: 30, height: 30, borderRadius: 10, background: T.accentSurface, display: 'grid', placeItems: 'center', flexShrink: 0 }}>
+                  <Zap size={15} color={T.accentPale} {...ICON} />
+                </div>
+              </>
+            )}
           </div>
         </div>
         <div style={{ display: 'flex', gap: 6, justifyContent: 'center', marginTop: 12 }}>
@@ -807,6 +797,7 @@ function RoomScreen({ model, social, online, shell, scroll, footer, onBack, onOp
   onBack: () => void; onOpenProfile?: () => void
 }) {
   const roomsOn = social?.join_rooms === true
+  const [joining, setJoining] = useState(false)
   const username = social?.username || 'student'
   const chapters = model.graph?.chapters || []
   const [topic, setTopic] = useState<GraphNode | null>(null)
@@ -858,9 +849,25 @@ function RoomScreen({ model, social, online, shell, scroll, footer, onBack, onOp
           <Back onClick={onBack} />
           <div style={{ marginTop: 6 }}><Eyebrow>Study room</Eyebrow></div>
           <Card style={{ marginTop: 12 }}>
-            <div style={{ fontSize: 15, fontWeight: 600 }}>Study rooms are off for you</div>
-            <div style={{ fontSize: 13, color: T.dim, lineHeight: 1.55, marginTop: 6 }}>They are off for everyone until they choose otherwise. In a room, others see your username and the subject you are on — nothing else, and there is no chat. Turn "Join study rooms" on in Profile to sit in one.</div>
-            {onOpenProfile && <Secondary style={{ marginTop: 12, width: '100%' }} onClick={onOpenProfile}>Open Profile</Secondary>}
+            <div style={{ fontSize: 15, fontWeight: 600 }}>Join study rooms?</div>
+            <div style={{ fontSize: 13, color: T.dim, lineHeight: 1.55, marginTop: 6 }}>Rooms are off for everyone until they choose otherwise. In a room, others see your username and the subject you are on — nothing else, and there is no chat.</div>
+            {/* Ask HERE. Sending a student to Profile to hunt for a switch is
+                how a feature dies: they arrive somewhere else and forget what
+                they came for. Rooms stay OFF by default -- this is one choice,
+                made in context, with the consequence written next to it. */}
+            <div style={{ display: 'flex', gap: 10, marginTop: 14 }}>
+              <Primary style={{ flex: 1 }} onClick={async () => {
+                setJoining(true)
+                try { await setSocialSettings({ join_rooms: true }); await refreshSocial() }
+                catch { /* the switch stays off; nothing changes silently */ }
+                finally { setJoining(false) }
+              }}>{joining ? 'Turning on…' : 'Turn on'}</Primary>
+              <Secondary style={{ flex: 1 }} onClick={onBack}>Not now</Secondary>
+            </div>
+            <div style={{ fontSize: 12, color: T.faint, marginTop: 10, lineHeight: 1.5 }}>
+              Others see your subject only. Never your name, and never a message from you — there is no chat.
+              You can turn it off again in Profile whenever you like.
+            </div>
           </Card>
         </div>
       </div>

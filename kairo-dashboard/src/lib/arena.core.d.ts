@@ -13,3 +13,12 @@ export function subjectCounts(bank: BankQuestion[]): Record<string, number>
 export function scoreAnswer(correct: boolean, elapsedMs: number, opts?: { base?: number; bonusMax?: number; perQuestionMs?: number }): number
 export function outcome(myScore: number, oppScore: number): 'won' | 'lost' | 'draw'
 export function masteryBand(avgMastery: number): 1 | 2 | 3
+
+/** Kyno as the opponent: deterministic, calibrated to the student's band. */
+export const KYNO_ACCURACY: Readonly<Record<number, number>>
+export const KYNO_OPPONENT_NAME: string
+export function kynoPlay(
+  questionCount: number,
+  opts?: { band?: number; seed?: number; accuracy?: number | null },
+): Array<{ correct: boolean; elapsedMs: number }>
+export function kynoScoreAfter(play: Array<{ correct: boolean; elapsedMs: number }>, answered: number): number

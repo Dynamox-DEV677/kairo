@@ -171,3 +171,61 @@ export function masteryBand(avgMastery) {
   const m = Math.max(0, Math.min(1, Number(avgMastery) || 0))
   return m < 0.35 ? 1 : m < 0.7 ? 2 : 3
 }
+
+/* ── the Kyno opponent ──────────────────────────────────────────────────────
+ *
+ * Battles are against Kyno, not against another child. That is an owner
+ * decision, and it is also the right one on privacy grounds: pairing two
+ * students was the only place in the app where one child's identity was put
+ * in front of another. Removing it removes that surface entirely.
+ *
+ * The round is unchanged -- seven questions, sixty seconds, faster right
+ * answers score more. Only the opponent changed.
+ *
+ * Kyno plays at an accuracy calibrated to the student's own mastery band, so
+ * a strong student gets a real race and a struggling one is not buried. It is
+ * DETERMINISTIC from the match seed: the same round always plays out the same
+ * way, so a result can be recomputed and checked, and nothing depends on a
+ * server holding secret state.
+ */
+
+/** Accuracy Kyno plays at, per mastery band (1 = shaky, 3 = solid). */
+export const KYNO_ACCURACY = { 1: 0.5, 2: 0.65, 3: 0.78 }
+
+/** How long Kyno "thinks", per band, in ms. Faster when it knows the topic. */
+const KYNO_PACE = { 1: [4200, 11000], 2: [3200, 9000], 3: [2200, 7200] }
+
+/** A deterministic 0-1 from an integer. Same seed, same round, always. */
+function unit(n) {
+  const x = Math.sin(n * 12.9898) * 43758.5453
+  return x - Math.floor(x)
+}
+
+/**
+ * How Kyno answers each question of a round.
+ *
+ * Returns one entry per question: whether it got it right and how long it
+ * took. Pass `accuracy` to override the band, which is what makes it tunable
+ * without touching this file.
+ */
+export function kynoPlay(questionCount, { band = 2, seed = 1, accuracy = null } = {}) {
+  const n = Math.max(0, Math.floor(Number(questionCount) || 0))
+  const acc = accuracy == null ? (KYNO_ACCURACY[band] ?? 0.65) : Math.max(0, Math.min(1, Number(accuracy)))
+  const [fast, slow] = KYNO_PACE[band] || KYNO_PACE[2]
+  const out = []
+  for (let i = 0; i < n; i++) {
+    const correct = unit(seed + i * 7 + 1) < acc
+    const elapsedMs = Math.round(fast + unit(seed + i * 13 + 5) * (slow - fast))
+    out.push({ correct, elapsedMs })
+  }
+  return out
+}
+
+/** Kyno's running score after `answered` questions of a play-through. */
+export function kynoScoreAfter(play, answered) {
+  return (play || []).slice(0, Math.max(0, answered)).reduce(
+    (t, p) => t + scoreAnswer(p.correct, p.elapsedMs), 0)
+}
+
+/** The label a student sees for their opponent. Never another child's name. */
+export const KYNO_OPPONENT_NAME = 'Kyno'
