@@ -42,6 +42,7 @@ import SHEET from '../data/formulas.cbse10.json'
 type Style = React.CSSProperties
 const CARDS_KEY = 'kyno:notes:cards'
 const BOOKMARK_KEY = 'kyno:notes:formula-bookmarks'
+const RATE_KEY = 'kyno:notes:playback-rate'
 
 /* ── shared bits ─────────────────────────────────────────────────────────── */
 
@@ -130,6 +131,40 @@ export default function Notes({ onOpenDoubt, onPractice }: {
     window.addEventListener('kyno:focus-banked', on)
     return () => window.removeEventListener('kyno:focus-banked', on)
   }, [])
+
+  /**
+   * Any note without cards gets them, once.
+   *
+   * Notes saved from the solver, teach-back and Mistake Explained never went
+   * through the card builder, so the library listed them as "0 cards" -- a
+   * note with no return date, which is the one thing this space promises not
+   * to keep. The builder is deterministic and offline, so this is a local
+   * repair, not a request: nothing is pending and nothing can fail.
+   *
+   * A note that genuinely cannot yield a card (empty, or a couple of words)
+   * is left alone and says so, rather than being retried forever.
+   */
+  useEffect(() => {
+    const index = readIndex()
+    const missing = lib.notes.filter(n => !(index[n.id] || []).length && String(n.content || '').trim().length > 24)
+    if (!missing.length) return
+    let changed = false
+    let next = index
+    for (const n of missing) {
+      const built = cardsForNote(n.title, n.content, { max: 4 })
+      if (!built.length) continue
+      const ids: string[] = []
+      for (const c of built) {
+        try { ids.push(recordFlashcard({ front: c.front, back: c.back, subject: n.subject || undefined, topic: n.tags?.[0] || undefined }).id) }
+        catch { /* storage full: stop, do not half-write */ }
+      }
+      if (ids.length) { next = attachCards(next, n.id, ids); changed = true }
+    }
+    if (changed) {
+      try { setJSON(CARDS_KEY, next) } catch { /* storage blocked */ }
+      setTick(t => t + 1)
+    }
+  }, [lib.notes])
   // A redirect may ask this space to open on a particular screen: #/formula
   // must land on the formula sheet, not the library index.
   useEffect(() => {
@@ -452,7 +487,20 @@ function WatchScreen({ shell, scroll, footer, lib, onBack, onOpenDoubt, onTick }
   const [revealed, setRevealed] = useState(false)
   const [playing, setPlaying] = useState<string | null>(null)
   const [paused, setPaused] = useState(false)
-  const [rate, setRate] = useState(1)
+  /**
+   * Playback speed, remembered.
+   *
+   * It offered 1x, 1.25x and 1.5x and forgot the choice the moment the screen
+   * closed, so a student who prefers 1.5x reset it every single time. 2x is
+   * there now too -- revision listening is usually a second pass.
+   */
+  const [rate, setRateState] = useState<number>(() => {
+    try { const v = Number(getJSON<number>(RATE_KEY)); return [1, 1.25, 1.5, 2].includes(v) ? v : 1 } catch { return 1 }
+  })
+  const setRate = (r: number) => {
+    setRateState(r)
+    try { setJSON(RATE_KEY, r) } catch { /* storage blocked */ }
+  }
   const queue = useRef<Clip[]>([])
 
   useEffect(() => () => { try { stopSpeaking() } catch { /* ignore */ } }, [])
@@ -542,7 +590,7 @@ function WatchScreen({ shell, scroll, footer, lib, onBack, onOpenDoubt, onTick }
                   <div style={{ fontSize: 12, color: T.dim, marginTop: 2 }}>{ttsAvailable() ? 'For the bus, chores, hands-busy time. Lock-screen controls work.' : 'No speech engine in this browser.'}</div>
                 </div>
                 <div style={{ display: 'flex', gap: 4 }}>
-                  {[1, 1.25, 1.5].map(r => <Pill key={r} on={rate === r} onClick={() => setRate(r)}>{r}×</Pill>)}
+                  {[1, 1.25, 1.5, 2].map(r => <Pill key={r} on={rate === r} onClick={() => setRate(r)}>{r}×</Pill>)}
                 </div>
               </div>
             </Card>
