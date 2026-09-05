@@ -122,10 +122,23 @@ test('the hash router and navigate() both resolve old ids', () => {
 test('the drawer is seven groups, one per space, and nothing is orphaned', () => {
   const block = drawer.slice(drawer.indexOf('const DRAWER_STUDENT'), drawer.indexOf('const DRAWER_TEACHER'))
   const titles = [...block.matchAll(/title: '([^']+)'/g)].map(m => m[1])
-  // Home gave up its bottom-nav slot to Plan, so it leads the sheet. Losing a
-  // tab must never mean losing the screen.
-  assert.deepEqual(titles, ['Today', ...SPACES.map(s => s.label)])
-  assert.match(block, /to: 'home'/, 'Home must stay reachable from the drawer')
+  /**
+   * The More sheet is what the tab bar does NOT show, and nothing else.
+   *
+   * It had grown back into the pre-cutover drawer -- Study Mode Live, My
+   * Tasks, Switched board?, Concept Tools, Ask a question -- every one of
+   * which now lives inside a space. A second front door to a screen that
+   * already has one is how the drawer reached 32 rows the first time.
+   */
+  assert.deepEqual(titles, ['Today', 'Spaces'])
+  assert.match(block, /to: 'home'/, 'Home gave up its tab, so it leads the sheet')
+  const onTabs = ['plan', 'doubt-solving', 'practice', 'progress']
+  const inSheet = [...block.matchAll(/to: '([a-z0-9-]+)'/g)].map(m => m[1])
+  assert.deepEqual(inSheet, ['home', 'notes', 'performance', 'profile'],
+    'exactly Home plus the three spaces with no tab')
+  for (const id of onTabs) {
+    assert.ok(!inSheet.includes(id), `${id} already has a tab; listing it again is a second front door`)
+  }
   // A value re-exported through a barrel gets elided by the TS transform, and
   // the import then throws before React mounts -- the whole app renders blank
   // with only a console error. Values come from the core module directly.

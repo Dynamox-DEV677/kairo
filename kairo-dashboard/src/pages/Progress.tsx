@@ -36,7 +36,7 @@ import {
   leagueSections, timeLeftLabel, roomMinutes, numberWord, RAMP, FADE, EDGE, MIN_GROUP,
 } from '../lib/progress.core'
 import type { ChapterGroup } from '../lib/progress.core'
-import { SUBJECTS, ROUND, masteryBand, buildBank, pickQuestions, scoreAnswer, outcome, subjectOfChapter,
+import { SUBJECTS, ROUND, masteryBand, buildBank, pickQuestions, scoreAnswer, outcome, subjectOfChapter, topicChoices, FALLBACK_TOPICS,
   kynoPlay, kynoScoreAfter, hashSeed, KYNO_OPPONENT_NAME } from '../lib/arena.core'
 import type { BankQuestion } from '../lib/arena.core'
 import { fetchMatch, sendAnswer, refreshArenaStats, cachedArenaStats, type MatchView, type ArenaStats } from '../lib/arena'
@@ -374,7 +374,7 @@ export default function Progress({ onPractice, onOpenProfile }: {
             <Card onClick={online ? () => setView({ name: 'room' }) : undefined} style={{ opacity: online ? 1 : 0.6 }}>
               <Users size={18} color={T.accentPale} {...ICON} />
               <div style={{ fontSize: 14, fontWeight: 600, marginTop: 10 }}>Study room</div>
-              <div style={{ fontSize: 12, color: T.dim, marginTop: 2 }}>{!online ? 'needs a connection' : !roomsOn ? 'off in Profile — tap to turn on' : lobby == null ? 'quiet co-presence' : lobby === 0 ? 'nobody in yet' : `${lobby} ${lobby === 1 ? 'person' : 'people'} in now`}</div>
+              <div style={{ fontSize: 12, color: T.dim, marginTop: 2 }}>{!online ? 'needs a connection' : !roomsOn ? 'tap to join' : lobby == null ? 'quiet co-presence' : lobby === 0 ? 'nobody in yet' : `${lobby} studying now`}</div>
             </Card>
           </div>
           {league && !league.offline && !league.off && !league.small && (
@@ -419,7 +419,28 @@ function MapScreen({ model, shell, scroll, footer, wide, onBack, onPractice }: {
         <Back onClick={onBack} />
         <div style={{ marginTop: 6 }}><Eyebrow>Your map</Eyebrow></div>
         {!graph ? (
-          <Card style={{ marginTop: 12 }}><div style={{ fontSize: 14, color: T.text2, lineHeight: 1.55 }}>No verified syllabus for your board and class yet, so there is no map to draw. Kyno will not invent one.</div></Card>
+          /* A missing syllabus makes the map thinner, not unavailable. The
+             subjects still draw, each saying it has no data yet, so the screen
+             shows what it is FOR instead of refusing to open. */
+          <Card style={{ marginTop: 12 }}>
+            <div style={{ fontSize: 15, fontWeight: 600 }}>Your subjects, waiting for data</div>
+            <div style={{ fontSize: 13.5, color: T.dim, lineHeight: 1.55, marginTop: 6 }}>
+              Kyno has no verified syllabus for your board and class yet, so this map is by subject rather than by
+              chapter. Answer questions and each one fills in.
+            </div>
+            <div style={{ display: 'grid', gap: 8, marginTop: 14 }}>
+              {FALLBACK_TOPICS.slice(0, 8).map(name => (
+                <div key={name} style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  minHeight: 44, padding: '0 14px', borderRadius: 12,
+                  background: T.surface, border: `1px solid ${T.border}`,
+                }}>
+                  <span style={{ fontSize: 14, color: T.text }}>{name}</span>
+                  <span style={{ fontSize: 12, color: T.faint }}>no data yet</span>
+                </div>
+              ))}
+            </div>
+          </Card>
         ) : empty ? (
           <Card style={{ marginTop: 12 }}><div style={{ fontSize: 15, fontWeight: 600 }}>Answer some questions and your map fills in.</div><div style={{ fontSize: 13, color: T.dim, marginTop: 6, lineHeight: 1.5 }}>Every chapter you touch lights up here — solid, shaky, or fading.</div></Card>
         ) : (
@@ -799,8 +820,12 @@ function RoomScreen({ model, social, online, shell, scroll, footer, onBack, onOp
   const roomsOn = social?.join_rooms === true
   const [joining, setJoining] = useState(false)
   const username = social?.username || 'student'
-  const chapters = model.graph?.chapters || []
-  const [topic, setTopic] = useState<GraphNode | null>(null)
+  // Chapters when the student has a verified syllabus, a fixed list when they
+  // do not. Never a text input, and never an empty screen that refuses to let
+  // them in -- most personal students have no syllabus at all.
+  const choices = topicChoices(model.graph?.chapters || [])
+  const chapters = choices.items
+  const [topic, setTopic] = useState<{ id: string; name: string } | null>(null)
   const [picking, setPicking] = useState(true)
   const [members, setMembers] = useState<RoomMember[]>([])
   const [connected, setConnected] = useState(false)
@@ -814,7 +839,7 @@ function RoomScreen({ model, social, online, shell, scroll, footer, onBack, onOp
   useEffect(() => { if (!vis) return; const id = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(id) }, [vis])
   useEffect(() => () => { handle.current?.leave() }, [])
 
-  async function join(c: GraphNode) {
+  async function join(c: { id: string; name: string }) {
     setTopic(c); setPicking(false); setErr('')
     const subject = subjectOfChapter(c.id) || c.name
     if (handle.current) { handle.current.setSubject(subject); return }
@@ -837,10 +862,10 @@ function RoomScreen({ model, social, online, shell, scroll, footer, onBack, onOp
   const em = Math.floor(elapsed / 60000), es = Math.floor((elapsed % 60000) / 1000)
 
   const bySubject = useMemo(() => {
-    const m = new Map<string, GraphNode[]>()
-    for (const c of chapters) { const s = subjectOfChapter(c.id) || 'Other'; if (!m.has(s)) m.set(s, []); m.get(s)!.push(c) }
+    const m = new Map<string, Array<{ id: string; name: string }>>()
+    for (const c of chapters) { const s = choices.source === 'syllabus' ? (subjectOfChapter(c.id) || 'Other') : 'Pick a subject'; if (!m.has(s)) m.set(s, []); m.get(s)!.push(c) }
     return [...m.entries()]
-  }, [chapters])
+  }, [chapters, choices.source])
 
   if (!roomsOn) {
     return (
@@ -881,10 +906,10 @@ function RoomScreen({ model, social, online, shell, scroll, footer, onBack, onOp
           <Back onClick={handle.current ? () => setPicking(false) : onBack} />
           <div style={{ marginTop: 6 }}><Eyebrow>Study room</Eyebrow></div>
           <h1 style={{ fontSize: 22, fontWeight: 700, margin: '8px 0 0' }}>{handle.current ? 'Change my topic' : 'What are you working on?'}</h1>
-          <div style={{ fontSize: 13, color: T.dim, lineHeight: 1.5, marginTop: 6 }}>Pick from your own syllabus. Others in the room see only the subject.</div>
+          <div style={{ fontSize: 13, color: T.dim, lineHeight: 1.5, marginTop: 6 }}>Others in the room see only the subject you pick. Never your name, and there is no chat.</div>
           {(!online || !roomsAvailable()) && <Card style={{ marginTop: 12 }}><div style={{ display: 'flex', gap: 10, alignItems: 'center', color: T.text2, fontSize: 14 }}><WifiOff size={16} {...ICON} /> Study rooms need a connection.</div></Card>}
           {err && <div style={{ fontSize: 13, color: T.warning, marginTop: 10 }}>{err}</div>}
-          {!chapters.length && <Card style={{ marginTop: 12 }}><div style={{ fontSize: 14, color: T.text2 }}>No verified syllabus for your board and class yet, so there is no topic list to pick from.</div></Card>}
+          {false && <Card style={{ marginTop: 12 }}><div style={{ fontSize: 14, color: T.text2 }}>No verified syllabus for your board and class yet, so there is no topic list to pick from.</div></Card>}
           {bySubject.map(([s, list]) => (
             <div key={s} style={{ marginTop: 16 }}>
               <Eyebrow color={T.muted}>{s}</Eyebrow>

@@ -65,61 +65,28 @@ const PARENT_BOTTOM: NavItem[] = [
  * route so no bookmark breaks. What still appears beside a space is a page no
  * space absorbed, filed under the group it belongs with.
  */
+/**
+ * The More sheet is what the tab bar does not show, and nothing else.
+ *
+ * It had grown back into the pre-cutover drawer -- Study Mode Live, My Tasks,
+ * Switched board?, Which stream?, Concept Tools, Ask a question -- all of
+ * which now live INSIDE a space. Listing them here is a second front door to
+ * screens that already have one, and it is how the drawer got to 32 rows the
+ * first time.
+ */
 const DRAWER_STUDENT = [
   {
-    // Home gave up its tab to Plan, so it leads the sheet. It is the daily
-    // brief, not a space, and it must never become unreachable.
     title: 'Today',
     items: [
       { to: 'home', label: 'Your daily brief', icon: Star },
     ],
   },
   {
-    title: 'Doubt Solving',
+    title: 'Spaces',
     items: [
-      { to: 'doubt-solving', label: 'Ask a question',    icon: MessageCircle },
-      { to: 'camera-live',   label: 'Study Mode · Live',  icon: Camera },
-    ],
-  },
-  {
-    title: 'Practice',
-    items: [
-      { to: 'practice', label: 'Practise & test', icon: Target },
-    ],
-  },
-  {
-    title: 'Performance',
-    items: [
-      { to: 'performance', label: 'Your mistakes', icon: Activity },
-    ],
-  },
-  {
-    title: 'Plan',
-    items: [
-      { to: 'plan',   label: 'Your plan',       icon: Calendar },
-      { to: 'school', label: 'My Tasks',        icon: BookOpen },
-      { to: 'bridge', label: 'Switched board?', icon: Compass },
-      { to: 'stream', label: 'Which stream?',   icon: Compass },
-    ],
-  },
-  {
-    title: 'Notes',
-    items: [
-      { to: 'notes',   label: 'Your library',    icon: BookOpen },
-      { to: 'concept', label: 'Concept Tools',   icon: Lightbulb },
-    ],
-  },
-  {
-    title: 'Progress',
-    items: [
-      { to: 'progress', label: 'What you know', icon: Trophy },
-    ],
-  },
-  {
-    title: 'Profile',
-    items: [
-      { to: 'profile',  label: 'You & your settings', icon: Settings },
-      { to: 'kairo-os', label: 'Kyno OS',             icon: Brain },
+      { to: 'notes',       label: 'Notes',       icon: BookOpen },
+      { to: 'performance', label: 'Performance', icon: Activity },
+      { to: 'profile',     label: 'Profile',     icon: UserCheck },
     ],
   },
 ]

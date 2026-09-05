@@ -229,3 +229,26 @@ export function kynoScoreAfter(play, answered) {
 
 /** The label a student sees for their opponent. Never another child's name. */
 export const KYNO_OPPONENT_NAME = 'Kyno'
+
+/* ── topics without a syllabus ──────────────────────────────────────────────
+ *
+ * The safety rule is that a topic is NEVER free text -- not that it must be a
+ * syllabus chapter. Study rooms were refusing to open for any student whose
+ * board and class have no verified syllabus, which is most personal students,
+ * because the picker was built from chapters and the list came back empty.
+ *
+ * A syllabus makes these screens BETTER. Its absence must not make them
+ * UNAVAILABLE. So: chapters when we have them, this fixed list when we do not,
+ * and a text input in neither case.
+ */
+export const FALLBACK_TOPICS = [
+  'Physics', 'Chemistry', 'Biology', 'Maths', 'English',
+  'Hindi', 'Social Science', 'Computer Science', 'Revision', 'Homework',
+]
+
+/** The picker's options: real chapters if any, otherwise the fixed list. */
+export function topicChoices(chapters = []) {
+  const real = Array.isArray(chapters) ? chapters.filter(c => c && c.id && c.name) : []
+  if (real.length) return { source: 'syllabus', items: real }
+  return { source: 'fallback', items: FALLBACK_TOPICS.map(name => ({ id: 'topic:' + name.toLowerCase().replace(/[^a-z]+/g, '-'), name })) }
+}

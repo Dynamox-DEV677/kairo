@@ -98,7 +98,16 @@ function Secondary({ children, onClick, style }: { children: React.ReactNode; on
 }
 
 /** Inline, never full-screen. The session keeps going around it. */
-function Inline({ message, onRetry, tone = 'warn' }: { message: string; onRetry?: () => void; tone?: 'warn' | 'ok' }) {
+/**
+ * An inline failure, with the reference the server already minted.
+ *
+ * Every 500 from this app carries a short id -- fail() puts it in the log AND
+ * in the response, and api.ts keeps it on the error. Nothing rendered it, so a
+ * student could only ever report "it said something broke", which is the
+ * position four audits of /api/quiz/start left us in.
+ */
+function Inline({ message, onRetry, tone = 'warn', reference }: { message: string; onRetry?: () => void; tone?: 'warn' | 'ok'; reference?: string }) {
+  const [copied, setCopied] = useState(false)
   return (
     <div style={{
       display: 'flex', gap: 10, alignItems: 'flex-start', padding: 12, borderRadius: 14,
@@ -115,6 +124,18 @@ function Inline({ message, onRetry, tone = 'warn' }: { message: string; onRetry?
             display: 'block', marginTop: 8, background: 'none', border: 'none', padding: 0,
             color: T.accentPale, fontSize: 12.5, fontWeight: 600, fontFamily: FONT, cursor: 'pointer',
           }}>Try again</button>
+        )}
+        {reference && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 8 }}>
+            <span style={{ fontSize: 11.5, color: T.faint, fontFamily: MONO }}>Ref {reference}</span>
+            <button onClick={() => {
+              try { navigator.clipboard?.writeText(`Kyno ${reference}: ${message}`) } catch { /* denied */ }
+              setCopied(true)
+            }} style={{
+              background: 'none', border: 'none', padding: 0, color: T.accentPale,
+              fontSize: 11.5, fontWeight: 600, fontFamily: FONT, cursor: 'pointer',
+            }}>{copied ? 'Copied' : 'Copy details'}</button>
+          </div>
         )}
       </div>
     </div>
@@ -208,7 +229,10 @@ function FlashcardFormat({ card, missLine, onGrade, onAsk }: {
     })
   }, [card?.id])
 
-  const pill = [card?.subject, card?.topic].filter(Boolean).join(' · ').toUpperCase()
+  // Subject and topic are frequently the same word -- a card tagged
+  // Photosynthesis/Photosynthesis rendered its own name twice.
+  const pill = [...new Set([card?.subject, card?.topic].filter(Boolean).map(x => String(x).trim()))]
+    .join(' · ').toUpperCase()
 
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '14px 14px 0', minHeight: 0 }}>
@@ -654,6 +678,7 @@ function MockRoom({ subject, onExit }: { subject: string; onExit: () => void }) 
   const [i, setI] = useState(0)
   const [palette, setPalette] = useState(false)
   const [err, setErr] = useState('')
+  const [errRef, setErrRef] = useState('')
   const TOTAL_MS = 40 * 60_000
   const [startedAt] = useState(Date.now())
   const [now, setNow] = useState(Date.now())
@@ -694,7 +719,7 @@ function MockRoom({ subject, onExit }: { subject: string; onExit: () => void }) 
         if (cancelled) return
         if (qs.length < 6) throw new Error('Could not build enough questions — try again in a minute.')
         setQuestions(qs); setAnswers(Array(qs.length).fill(null)); setPhase('live')
-      } catch (e: any) { if (!cancelled) setErr(studentMessage(e)) }
+      } catch (e: any) { if (!cancelled) { setErr(studentMessage(e)); setErrRef(typeof e?.ref === 'string' ? e.ref : '') } }
     })()
     return () => { cancelled = true }
   }, [subject])
@@ -721,7 +746,7 @@ function MockRoom({ subject, onExit }: { subject: string; onExit: () => void }) 
     <div style={shell}>
       <Chrome label={`${subject.toUpperCase()} MOCK`} msLeft={TOTAL_MS} progress={0} onClose={onExit} exam />
       <div style={{ flex: 1, display: 'grid', placeItems: 'center', padding: 20 }}>
-        {err ? <div style={{ width: '100%' }}><Inline message={err} onRetry={onExit} /></div>
+        {err ? <div style={{ width: '100%' }}><Inline message={err} onRetry={onExit} reference={errRef} /></div>
              : <div style={{ display: 'flex', gap: 10, alignItems: 'center', color: T.muted, fontSize: 13 }}><Loader2 size={16} {...ICON} /> Setting the paper…</div>}
       </div>
     </div>
@@ -958,6 +983,7 @@ export default function Practice({ onOpenDoubt }: { onOpenDoubt?: (seed: string)
       if (d.view === 'quiz') start({ ...preview, items: Array.from({ length: 8 }, () => ({ kind: 'question' as const, topic: t?.topic || null, subject: t?.subject || null })), counts: { cards: 0, questions: 8, written: 0, teach: 0 } })
       else if (d.view === 'teachback') start({ ...preview, items: [{ kind: 'teach', topic: t?.topic || null, subject: t?.subject || null }], counts: { cards: 0, questions: 0, written: 0, teach: 1 } })
       else if (d.view === 'simulator') start(preview)
+      else if (d.view === 'session') { if (items.length) setView('session'); else setView('formats') }
       else if (['home', 'formats', 'mock'].includes(d.view)) setView(d.view)
     }
     window.addEventListener(SPACE_VIEW_EVENT, on)

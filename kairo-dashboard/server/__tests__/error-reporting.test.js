@@ -22,13 +22,18 @@ test('every failure carries a reference id, to the log and to the student', () =
   assert.match(api, /err\.ref = /, 'the client keeps it so it can be shown')
 })
 
-test('quiz/start never 500s on a model that returned no questions', () => {
+test('quiz/start returns "no questions" as DATA, never as a 500', () => {
   const quiz = read('server', 'routes', 'quiz.js')
-  // data.questions.length used to throw a TypeError straight into fail()
-  const guard = quiz.slice(quiz.indexOf('const data = parseJSON(raw)'), quiz.indexOf('const session ='))
-  assert.match(guard, /Array\.isArray\(data\?\.questions\)/, 'the shape is checked')
-  assert.match(guard, /status: 502/, 'a bad upstream answer is not our 500')
-  assert.match(guard, /could not write/, 'and the message names the step')
+  const guard = quiz.slice(quiz.indexOf('let data = null'), quiz.indexOf('const session ='))
+  // An empty question set is a fact about the world, not a server fault. A 500
+  // told the student "something broke on our side" and told us nothing.
+  assert.match(guard, /res\.status\(200\)\.json/, 'empty comes back 200')
+  assert.match(guard, /questions: \[\]/, 'with an empty list the builder can read')
+  assert.match(guard, /reason:/, 'and a reason it can show')
+  assert.match(guard, /Array\.isArray\(data\?\.questions\)/, 'the shape is still checked')
+  // and the one thing four audits could not see: what the model actually said
+  assert.match(guard, /console\.error\('\[quiz\/start\] unparseable model reply'/, 'the raw reply is logged')
+  assert.match(guard, /head: String\(raw \|\| ''\)\.slice\(0, 600\)/)
 })
 
 test('a spoken transcript is saved BEFORE it is graded', () => {

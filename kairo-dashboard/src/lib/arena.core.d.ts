@@ -22,3 +22,10 @@ export function kynoPlay(
   opts?: { band?: number; seed?: number; accuracy?: number | null },
 ): Array<{ correct: boolean; elapsedMs: number }>
 export function kynoScoreAfter(play: Array<{ correct: boolean; elapsedMs: number }>, answered: number): number
+
+/** Topic options that work with or without a verified syllabus. */
+export const FALLBACK_TOPICS: readonly string[]
+export function topicChoices(chapters?: Array<{ id: string; name: string }>): {
+  source: 'syllabus' | 'fallback'
+  items: Array<{ id: string; name: string }>
+}

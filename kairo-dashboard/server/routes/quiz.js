@@ -49,7 +49,35 @@ Mathematics notation: use $...$ for inline math and $$...$$ for display math ONL
       maxTokens: 2500,
     })
 
-    const data = parseJSON(raw)
+    /**
+     * An empty or unreadable question set is DATA, not a server fault.
+     *
+     * This route has 500ed through four audits. A 500 tells the student
+     * "something broke on our side" and tells us nothing, because the one
+     * thing worth seeing -- what the model actually replied -- was never
+     * logged. Now it is, truncated, on exactly the failing path.
+     */
+    let data = null
+    try {
+      data = parseJSON(raw)
+    } catch (e) {
+      console.error('[quiz/start] unparseable model reply',
+        JSON.stringify({ subject, topic, len: (raw || '').length, head: String(raw || '').slice(0, 600) }))
+      return res.status(200).json({
+        session_id: 'local', total: 0, questions: [], first_question: null,
+        reason: 'Kyno could not build questions for this topic just now.',
+      })
+    }
+    const list = Array.isArray(data?.questions) ? data.questions.filter(Boolean) : []
+    if (!list.length) {
+      console.error('[quiz/start] model returned no questions',
+        JSON.stringify({ subject, topic, keys: Object.keys(data || {}), head: String(raw || '').slice(0, 600) }))
+      return res.status(200).json({
+        session_id: 'local', total: 0, questions: [], first_question: null,
+        reason: 'Kyno had no questions ready for this topic.',
+      })
+    }
+    data.questions = list
 
     // The model can return prose, an empty list, or a shape with no questions
     // at all. data.questions.length then threw a TypeError, fail() turned it

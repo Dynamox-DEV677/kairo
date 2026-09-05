@@ -324,7 +324,20 @@ export function pickClips(deck = [], weak = [], { max = 6, patterns = [] } = {})
   scored.sort((a, b) => a.weakRank - b.weakRank || (b.due ? 1 : 0) - (a.due ? 1 : 0) || (b.ts || 0) - (a.ts || 0))
   const items = scored.slice(0, Math.max(6, Math.min(8, max)))
   const general = !weakKeys.length
-  return { items, general, totalMinutes: Math.max(1, Math.round(items.length * 3)) }
+  // No row twice. "Lens formula · Drilling has not moved this one" appeared
+  // identically twice, because a clip can arrive from the weak list and from
+  // the deck. Deduping by TOPIC alone would be wrong -- several different
+  // clips legitimately share one topic -- so this keys on the clip itself and
+  // falls back to topic+reason, which is exactly what a duplicate row is.
+  const seen = new Set()
+  const unique = items.filter(c => {
+    const k = String(c?.id || `${c?.topic || ''}|${c?.why || ''}`).trim().toLowerCase()
+    if (!k) return true
+    if (seen.has(k)) return false
+    seen.add(k)
+    return true
+  })
+  return { items: unique, general, totalMinutes: Math.max(1, Math.round(unique.length * 3)) }
 }
 
 /* ── writing ──────────────────────────────────────────────────────────────── */

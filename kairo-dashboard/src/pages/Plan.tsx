@@ -226,7 +226,19 @@ export default function Plan({ onOpenDoubt, onPractice }: {
     const planned = sessions.find(s => !s.done)
     if (planned) return { title: `${planned.kind === 'LEARN' ? 'Learn' : planned.kind === 'PRACTISE' ? 'Practise' : 'Test'}: ${planned.chapter}`, why: planned.why, minutes: planned.minutes, chapterId: planned.chapterId, sessionId: planned.id }
     const top = model.rows.open[0]
-    if (!top) return null
+    if (!top) {
+      // No syllabus means no chapter rows, and Today went blank -- the screen
+      // that is supposed to answer "what now?" answered nothing. The last
+      // thing they actually studied is a real answer.
+      const last = (() => {
+        try {
+          const ev = (loadState().events || []).filter((e: any) => e?.topic)
+          return ev.length ? String(ev[ev.length - 1].topic) : null
+        } catch { return null }
+      })()
+      if (last) return { title: `Back to ${last}`, why: 'The last thing you studied. Kyno will plan properly once it knows your syllabus.', minutes: 25 }
+      return null
+    }
     return { title: top.name, why: top.state === 'UNTOUCHED' ? `Untouched, and ${top.marks} marks on the paper` : `${top.marks} marks on the paper, ${top.status.toLowerCase()}`, minutes: 25, chapterId: top.id, sessionId: null }
   }, [sessions, model])
 
