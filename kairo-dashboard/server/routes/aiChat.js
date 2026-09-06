@@ -428,6 +428,8 @@ Always answer the question. No matter the topic — science, math, history, biol
 
 CASUAL QUESTIONS: if the message is small-talk or a utility question rather than a STUDY topic — greetings ("hi", "how are you"), the time/date, jokes, thanks, "what's up", meta questions about Kyno itself — set questionType="casual". For casual: imageQueries=[], videoQuery="", supports3D=false, labRoute=null, formulas=[], relatedConcepts=[], geography=null, and textExplanation is a SHORT friendly note (1-3 sentences, NO ## headings, no lesson structure). Do not force a lesson out of small-talk.
 
+MATHS: write every formula and every symbol with dollar delimiters -- $...$ inline, $$...$$ on its own line for a displayed equation. "$V = IR$", not "V = IR". "$\theta$", not the bare character. Without the delimiters the app has nothing to typeset and the student reads your source instead of the maths.
+
 Your output MUST be a single valid JSON object (no markdown fences, no commentary, no leading text). Schema:
 
 {

@@ -245,7 +245,7 @@ function FlashcardFormat({ card, missLine, onGrade, onAsk }: {
       >
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 14px 0' }}>
           {pill ? (
-            <div style={{ fontSize: 10.5, letterSpacing: 1.2, fontWeight: 700, color: T.accentPale, background: T.accentSurface, borderRadius: 100, padding: '5px 10px' }}>{pill}</div>
+            <div style={{ fontSize: 11, letterSpacing: 1.2, fontWeight: 700, color: T.accentPale, background: T.accentSurface, borderRadius: 100, padding: '5px 10px' }}>{pill}</div>
           ) : <span />}
           <Bookmark size={17} color={T.faint} {...ICON} />
         </div>
@@ -291,7 +291,7 @@ function FlashcardFormat({ card, missLine, onGrade, onAsk }: {
               display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, fontFamily: FONT,
             }}>
               <span style={{ fontSize: 13.5, fontWeight: 700, color: g.color }}>{g.label}</span>
-              <span style={{ fontSize: 10.5, color: T.faint }}>{intervals[i]}</span>
+              <span style={{ fontSize: 11, color: T.faint }}>{intervals[i]}</span>
             </button>
           ))}
         </div>
@@ -312,7 +312,7 @@ function QuestionFormat({ q, onAnswer }: { q: ExamQuestion; onAnswer: (correct: 
   const revealed = chosen !== null
   return (
     <div style={{ flex: 1, overflowY: 'auto', padding: '16px 14px 0' }}>
-      {q.topic && <div style={{ fontSize: 10.5, letterSpacing: 1.2, fontWeight: 700, color: T.accentPale, background: T.accentSurface, borderRadius: 100, padding: '5px 10px', display: 'inline-block' }}>{String(q.topic).toUpperCase()}</div>}
+      {q.topic && <div style={{ fontSize: 11, letterSpacing: 1.2, fontWeight: 700, color: T.accentPale, background: T.accentSurface, borderRadius: 100, padding: '5px 10px', display: 'inline-block' }}>{String(q.topic).toUpperCase()}</div>}
       <MathText text={q.q} style={{ fontSize: 16.5, lineHeight: 1.6, color: T.text, marginTop: 12 }} />
       <div style={{ display: 'grid', gap: 9, marginTop: 16 }}>
         {q.options.map((opt, i) => {
@@ -468,7 +468,7 @@ function WrittenFormat({ question, marks, onDone }: {
                       {l}
                       {(isLost || isWon) && step && (
                         <span style={{
-                          position: 'absolute', right: -2, top: -10, fontSize: 10.5, fontWeight: 700, color: '#fff',
+                          position: 'absolute', right: -2, top: -10, fontSize: 11, fontWeight: 700, color: '#fff',
                           background: isLost ? T.markLost : T.markWon, borderRadius: 100, padding: '2px 7px', fontFamily: FONT,
                         }}>{isLost ? `−${step.marks - step.awarded}` : `✓ ${step.awarded}`}</span>
                       )}

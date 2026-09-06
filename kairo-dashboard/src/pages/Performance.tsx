@@ -292,7 +292,7 @@ export default function Performance({ onOpenDoubt, onDrill }: {
                       </div>
                       <div style={{ textAlign: 'right', flexShrink: 0 }}>
                         <div style={{ fontSize: 20, fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>{row.marksLost}</div>
-                        <div style={{ fontSize: 10.5, color: T.faint, marginTop: -2 }}>marks</div>
+                        <div style={{ fontSize: 11, color: T.faint, marginTop: -2 }}>marks</div>
                         <div style={{ marginTop: 8, display: 'flex', justifyContent: 'flex-end' }}><Sparkline bars={row.sparkline} type={row.type} /></div>
                       </div>
                     </div>
@@ -486,7 +486,7 @@ export default function Performance({ onOpenDoubt, onDrill }: {
                         borderLeft: here ? `2px solid ${T.error}` : '2px solid transparent',
                       }}>
                         {l}
-                        {here && <span style={{ position: 'absolute', right: 8, top: 6, fontSize: 10, fontWeight: 700, letterSpacing: 1, color: T.error, fontFamily: FONT }}>HERE</span>}
+                        {here && <span style={{ position: 'absolute', right: 8, top: 6, fontSize: 11, fontWeight: 700, letterSpacing: 1, color: T.error, fontFamily: FONT }}>HERE</span>}
                       </div>
                     )
                   })}

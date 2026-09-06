@@ -564,7 +564,7 @@ function TopicScreen({ node, row, model, shell, scroll, footer, onBack, onAdd, o
           {[{ v: `${plan.totalMinutes}`, l: 'minutes' }, { v: `${node.typical_marks}`, l: 'marks on the paper' }, { v: finish, l: 'finish date' }].map(t => (
             <Card key={t.l} style={{ textAlign: 'center', padding: '12px 8px' }}>
               <div style={{ fontSize: 18, fontWeight: 700 }}>{t.v}</div>
-              <div style={{ fontSize: 10.5, color: T.faint, marginTop: 3 }}>{t.l}</div>
+              <div style={{ fontSize: 11, color: T.faint, marginTop: 3 }}>{t.l}</div>
             </Card>
           ))}
         </div>
@@ -580,7 +580,7 @@ function TopicScreen({ node, row, model, shell, scroll, footer, onBack, onAdd, o
                   <div style={{ width: 30, height: 30, borderRadius: 10, background: T.accentSurface, color: T.accentPale, display: 'grid', placeItems: 'center', fontSize: 12.5, fontWeight: 700, flexShrink: 0, position: 'relative', zIndex: 1 }}>{i + 1}</div>
                   <Card style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 10.5, letterSpacing: 1.2, fontWeight: 700, color: T.accentPale, background: T.accentSurface, borderRadius: 100, padding: '4px 9px' }}><K.icon size={12} {...ICON} /> {K.label.toUpperCase()}</span>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 11, letterSpacing: 1.2, fontWeight: 700, color: T.accentPale, background: T.accentSurface, borderRadius: 100, padding: '4px 9px' }}><K.icon size={12} {...ICON} /> {K.label.toUpperCase()}</span>
                       <span style={{ fontSize: 12, color: T.dim }}>{when} · {s.minutes} min</span>
                     </div>
                     <div style={{ fontSize: 14, color: T.text, lineHeight: 1.5, marginTop: 8 }}>{s.what}</div>

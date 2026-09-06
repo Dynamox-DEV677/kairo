@@ -1,4 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
+import { showTabBar, isEmptyContentTap, NAV_REVEAL_MS } from '../lib/bottomSlot'
+import { busyPages } from '../lib/keepMounted'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   MessageCircle, BookMarked, Brain, Swords, Mic, Network, Layers, Users,
@@ -167,9 +169,78 @@ interface MobileShellProps {
 // Pages that take over the whole screen and supply their own chrome.
 const IMMERSIVE_PAGES = new Set(['camera-live'])
 
+/**
+ * Whether the tab bar is showing, and how to get it back.
+ *
+ * The bar belongs to space ROOTS. A sub-screen, a running session, or an open
+ * keyboard means the screen's own footer owns the bottom edge -- two fixed
+ * stacks were colliding and the nav won, hiding "I'm stuck here" behind it.
+ *
+ * A swipe up from the bottom edge, or a tap on empty content, brings it back
+ * for a few seconds. The back chevron is the discoverable route; this is the
+ * safety net, and it auto-hides so an accidental reveal never sticks.
+ */
+function useTabBarVisible(page: string) {
+  const [subScreen, setSubScreen] = useState(false)
+  const [typing, setTyping] = useState(false)
+  const [revealed, setRevealed] = useState(false)
+  const timer = useRef<number | undefined>(undefined)
+
+  // a second hash segment IS a sub-screen -- the router made that true
+  useEffect(() => {
+    const read = () => setSubScreen(/^#\/[a-z0-9-]+\/[a-z0-9-]+/i.test(window.location.hash))
+    read()
+    window.addEventListener('hashchange', read)
+    window.addEventListener('popstate', read)
+    return () => { window.removeEventListener('hashchange', read); window.removeEventListener('popstate', read) }
+  }, [])
+
+  useEffect(() => {
+    const isField = (el: any) => !!el && (el.tagName === 'TEXTAREA' || el.isContentEditable ||
+      (el.tagName === 'INPUT' && !['checkbox', 'radio', 'button', 'submit', 'reset', 'file', 'range', 'color']
+        .includes((el.getAttribute('type') || 'text').toLowerCase())))
+    const onIn = (e: FocusEvent) => { if (isField(e.target)) setTyping(true) }
+    const onOut = () => { window.setTimeout(() => setTyping(isField(document.activeElement)), 60) }
+    document.addEventListener('focusin', onIn)
+    document.addEventListener('focusout', onOut)
+    return () => { document.removeEventListener('focusin', onIn); document.removeEventListener('focusout', onOut) }
+  }, [])
+
+  const reveal = useCallback(() => {
+    setRevealed(true)
+    window.clearTimeout(timer.current)
+    timer.current = window.setTimeout(() => setRevealed(false), NAV_REVEAL_MS)
+  }, [])
+
+  // swipe up from the bottom edge, and a tap on plain content
+  useEffect(() => {
+    let startY = 0
+    const onStart = (e: TouchEvent) => { startY = e.touches[0]?.clientY ?? 0 }
+    const onEnd = (e: TouchEvent) => {
+      const endY = e.changedTouches[0]?.clientY ?? 0
+      const fromEdge = startY > window.innerHeight - 40
+      if (fromEdge && startY - endY > 30) reveal()
+    }
+    const onClick = (e: MouseEvent) => { if (isEmptyContentTap(e.target as Element)) reveal() }
+    document.addEventListener('touchstart', onStart, { passive: true })
+    document.addEventListener('touchend', onEnd, { passive: true })
+    document.addEventListener('click', onClick)
+    return () => {
+      document.removeEventListener('touchstart', onStart)
+      document.removeEventListener('touchend', onEnd)
+      document.removeEventListener('click', onClick)
+      window.clearTimeout(timer.current)
+    }
+  }, [reveal])
+
+  const busy = busyPages().size > 0
+  return showTabBar(page, { atRoot: !subScreen, subScreen, busy, typing, revealed })
+}
+
 export default function MobileShell(props: MobileShellProps) {
   const [drawerOpen, setDrawerOpen] = useState(false)
   const immersive = IMMERSIVE_PAGES.has(props.active)
+  const navVisible = useTabBarVisible(props.active)
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setDrawerOpen(false) }
@@ -189,7 +260,7 @@ export default function MobileShell(props: MobileShellProps) {
   return (
     <>
       {!immersive && <MobileTopBar {...props} onOpenDrawer={() => setDrawerOpen(true)} />}
-      {!immersive && <BottomNav {...props} onOpenMore={() => setDrawerOpen(true)} />}
+      {navVisible && <BottomNav {...props} onOpenMore={() => setDrawerOpen(true)} />}
       <AnimatePresence>
         {drawerOpen && (
           <MobileDrawer {...props} onClose={() => setDrawerOpen(false)} />

@@ -345,7 +345,7 @@ export default function Notes({ onOpenDoubt, onPractice }: {
             <>
               <h1 style={{ fontSize: 22, fontWeight: 700, margin: '10px 0 0', lineHeight: 1.3, letterSpacing: -0.3 }}>{n.title}</h1>
               <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginTop: 8, flexWrap: 'wrap' }}>
-                {n.subject && <span style={{ fontSize: 10.5, letterSpacing: 1.2, fontWeight: 700, color: T.accentPale, background: T.accentSurface, borderRadius: 100, padding: '4px 9px' }}>{n.subject.toUpperCase()}</span>}
+                {n.subject && <span style={{ fontSize: 11, letterSpacing: 1.2, fontWeight: 700, color: T.accentPale, background: T.accentSurface, borderRadius: 100, padding: '4px 9px' }}>{n.subject.toUpperCase()}</span>}
                 <span style={{ fontSize: 12.5, color: T.dim }}>{originLine(n)}</span>
               </div>
 

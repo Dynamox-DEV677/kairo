@@ -25,6 +25,13 @@ import {
   Camera, Mic, ChevronDown, ChevronRight, Check, RotateCcw, Bookmark,
   ArrowLeft, AlertTriangle, Layers, TrendingUp, Share2, RefreshCw, Loader2, X,
 } from 'lucide-react'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
+import remarkMath from 'remark-math'
+import rehypeKatex from 'rehype-katex'
+import { KATEX_OPTS } from '../lib/katex'
+import { prepMathMarkdown } from '../lib/math.core'
+import { useKeyboardInset } from '../hooks/useKeyboardInset'
 import { aiHeadersAsync } from '../lib/devKey'
 import { studentMessage } from '../lib/aiError.core'
 import { getStudentMemory, getMistakes, listDoubts, recordDoubt, recordFlashcard } from '../lib/twin'
@@ -67,6 +74,34 @@ const MONO = "ui-monospace, 'SF Mono', Menlo, monospace"
 const ICON = { strokeWidth: 1.75, absoluteStrokeWidth: false } as const
 
 type Style = React.CSSProperties
+
+/**
+ * Step prose, rendered.
+ *
+ * A step body arrived as markdown and was printed as characters, so a student
+ * read literal "**turgor pressure**" in the middle of an explanation. The
+ * Solver has always rendered its answers; the steps this space splits out of
+ * the same response were the one surface that did not.
+ */
+function Prose({ text, style, mono }: { text?: string | null; style?: Style; mono?: boolean }) {
+  const src = String(text ?? '')
+  if (!src.trim()) return null
+  return (
+    <div className={mono ? 'kyno-prose kyno-prose-mono' : 'kyno-prose'} style={style}>
+      <style>{`
+        .kyno-prose p { margin: 0 }
+        .kyno-prose p + p { margin-top: 8px }
+        .kyno-prose strong { font-weight: 700; color: ${T.text} }
+        .kyno-prose code { font-family: ${MONO}; font-size: 0.94em }
+        .kyno-prose .katex { color: inherit }
+        .kyno-prose ul, .kyno-prose ol { margin: 6px 0 0; padding-left: 20px }
+      `}</style>
+      <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[[rehypeKatex, KATEX_OPTS]]}>
+        {prepMathMarkdown(src)}
+      </ReactMarkdown>
+    </div>
+  )
+}
 
 /** The step a student was stuck on, carried into the chat. */
 export interface DoubtAnchor {
@@ -182,11 +217,23 @@ function InputBar({
   busy: boolean
   caption?: string
 }) {
+  /**
+   * The bar rides the VISUAL viewport.
+   *
+   * Mobile browsers do not reliably shrink the layout viewport when the
+   * keyboard opens, so bottom:0 could end up behind it -- the bar stayed put
+   * and left dead space underneath. The visual viewport does move, so lifting
+   * by its hidden height puts the bar exactly on top of the keyboard, and the
+   * lift is zero when the keyboard is closed.
+   */
+  const kb = useKeyboardInset()
   return (
     <div style={{
-      position: 'sticky', bottom: 0, background: T.bgAlt,
+      position: 'sticky', bottom: kb, background: T.bgAlt,
       borderTop: `1px solid ${T.divider}`,
-      padding: '12px 14px calc(12px + env(safe-area-inset-bottom))',
+      // the safe-area gap belongs under the bar only when nothing is under it
+      padding: kb ? '12px 14px 12px' : '12px 14px calc(12px + env(safe-area-inset-bottom))',
+      transition: 'bottom 180ms ease',
     }}>
       <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
         <input
@@ -248,21 +295,17 @@ function StepCard({ step, n }: { step: DoubtStep; n: number }) {
           display: 'grid', placeItems: 'center', fontSize: 11.5, fontWeight: 700,
         }}>{n}</div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 13.5, fontWeight: 600, color: T.text, lineHeight: 1.4 }}>
-            {step.title}
-          </div>
+          <Prose text={step.title} style={{ fontSize: 13.5, fontWeight: 600, color: T.text, lineHeight: 1.4 }} />
           {step.working && (
-            <pre style={{
+            <div style={{
               margin: '10px 0 0', padding: '10px 12px', borderRadius: 12,
               background: '#101019', border: `1px solid ${T.divider}`,
               fontFamily: MONO, fontSize: 13, color: T.text2,
-              whiteSpace: 'pre-wrap', wordBreak: 'break-word', overflowX: 'auto',
-            }}>{step.working}</pre>
+              wordBreak: 'break-word', overflowX: 'auto',
+            }}><Prose text={step.working} mono /></div>
           )}
           {step.why && (
-            <div style={{ marginTop: 9, fontSize: 12.5, color: T.dim, lineHeight: 1.55 }}>
-              {step.why}
-            </div>
+            <Prose text={step.why} style={{ marginTop: 9, fontSize: 12.5, color: T.dim, lineHeight: 1.55 }} />
           )}
         </div>
       </div>
