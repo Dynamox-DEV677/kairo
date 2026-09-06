@@ -58,3 +58,13 @@ test('the solver parser does not strip LaTeX backslashes', () => {
   assert.ok(!body.includes('bfnrtu'), 'and it does not run the backslash-stripping repair')
   assert.ok(chat.includes('parseJsonLoose(raw)'), 'the solver path uses it')
 })
+
+test('a prompt change invalidates the cached answers it would change', () => {
+  // The key was question + curriculum, and the database cache never expires,
+  // so a question asked before a prompt fix kept its old answer forever --
+  // the fix would have looked broken for exactly the questions a student
+  // retries first.
+  const chat = read('server', 'routes', 'aiChat.js')
+  assert.ok(chat.includes('const SOLVER_PROMPT_VERSION'), 'the prompt has a version')
+  assert.ok(chat.includes("SOLVER_PROMPT_VERSION + '|' + cacheTag"), 'and the cache key carries it')
+})

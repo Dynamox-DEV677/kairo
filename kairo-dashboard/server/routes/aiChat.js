@@ -57,6 +57,19 @@ router.use(requireSupabaseAuth)
 // and can return a readable message instead of a platform-level timeout.
 const UPSTREAM_TIMEOUT_MS = Number(process.env.AI_TIMEOUT_MS || 8500)
 
+/**
+ * Bump this whenever SOLVER_SYSTEM changes in a way that changes the ANSWER.
+ *
+ * The cache key was the question plus the curriculum, and the database cache
+ * never expires -- so a question answered before a prompt fix kept returning
+ * its old answer forever. Adding the maths rule would have changed nothing for
+ * any question a student had already asked, and the fix would have looked
+ * broken for exactly the questions they were most likely to retry.
+ *
+ * v2: formulas must arrive with dollar delimiters so the app can typeset them.
+ */
+const SOLVER_PROMPT_VERSION = 'v2'
+
 const SOLVER_CACHE = new Map()
 const SOLVER_CACHE_TTL_MS = 24 * 60 * 60 * 1000
 const SOLVER_CACHE_MAX = 300
@@ -660,7 +673,7 @@ function curriculumContext(student, question = '') {
 
 async function getSolverPlan(question, devKey = null, student = null) {
   const { systemExtra, cacheTag } = curriculumContext(student, question)
-  const qKey       = cacheTag + normalizeKey(question)
+  const qKey       = SOLVER_PROMPT_VERSION + '|' + cacheTag + normalizeKey(question)
   const cacheKey   = 'plan:' + qKey
 
   const memHit = cacheGet(cacheKey)
