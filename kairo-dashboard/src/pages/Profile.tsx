@@ -22,6 +22,7 @@ import { getJSON, setJSON, getRaw, setRaw, storedProfileRaw, setStoredProfileRaw
 import { BOARD_OPTIONS } from '../lib/curriculum.core'
 import { graphForProfile } from '../lib/syllabusFor'
 import { getNotificationPrefs, setNotificationPref, type NotificationKind } from '../lib/notifications'
+import Switch from '../components/Switch'
 import { confirmDialog } from '../components/ConfirmModal'
 import TwinBackupModal from '../components/TwinBackupModal'
 import DeviceTransferModal from '../components/DeviceTransferModal'
@@ -76,16 +77,6 @@ function Row({ label, value, accent, onClick, first, children }: { label: string
   )
 }
 
-function Switch({ on, disabled, onChange, label }: { on: boolean; disabled?: boolean; onChange: (v: boolean) => void; label: string }) {
-  return (
-    <button role="switch" aria-checked={on} aria-label={label} disabled={disabled} onClick={() => onChange(!on)} style={{
-      width: 48, height: 30, borderRadius: 100, flexShrink: 0, position: 'relative', cursor: disabled ? 'not-allowed' : 'pointer',
-      background: on ? T.accent : T.raised, border: `1px solid ${on ? T.accent : T.borderCtl}`, opacity: disabled ? 0.5 : 1, padding: 0,
-    }}>
-      <span style={{ position: 'absolute', top: 3, left: on ? 21 : 3, width: 22, height: 22, borderRadius: '50%', background: on ? '#fff' : T.muted, transition: 'left .15s ease' }} />
-    </button>
-  )
-}
 
 function Chip({ on, onClick, children }: { on: boolean; onClick: () => void; children: React.ReactNode }) {
   return (

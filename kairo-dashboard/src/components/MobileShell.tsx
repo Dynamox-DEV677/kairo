@@ -7,7 +7,7 @@ import {
   BookOpen, Compass, Activity, Zap, Target, Camera, Star,
   Calendar, FileText, Edit3, Lightbulb, FunctionSquare, Timer,
   Megaphone, Bell, DollarSign, Bot, UserCheck, Grid3x3,
-  Building2, GraduationCap, Shield, Sparkles, Settings, LogOut,
+  Building2, GraduationCap, Shield, Sparkles, LogOut,
   Sun, Moon, Menu, X, ChevronRight, Key, Copy, Check,
   AlertTriangle, Beaker, Trophy, Headphones, MoreHorizontal, CalendarDays,
 } from 'lucide-react'
@@ -76,19 +76,38 @@ const PARENT_BOTTOM: NavItem[] = [
  * screens that already have one, and it is how the drawer got to 32 rows the
  * first time.
  */
+/**
+ * The drawer is the canonical list of what Kyno is: all seven spaces, always,
+ * in the same order, whether or not a space happens to have a tab.
+ *
+ * It briefly listed only the three spaces without a tab, which was a smaller
+ * menu but a worse one -- a student had no single place that answers "what can
+ * this app do?", which is the confusion the consolidation existed to end.
+ *
+ * There is no separate Settings row. Settings IS space 7: board, class,
+ * subjects, the privacy switches, backup, passcode, theme, download-my-data
+ * and delete-account all live inside Profile & Settings. A Profile tile AND a
+ * Settings button is precisely the scattered-menu problem, reintroduced one
+ * row lower.
+ */
 const DRAWER_STUDENT = [
   {
+    // not one of the seven; a shortcut to the daily brief
     title: 'Today',
     items: [
-      { to: 'home', label: 'Your daily brief', icon: Star },
+      { to: 'home', label: 'Your daily brief', icon: Star, sub: 'What to do right now' },
     ],
   },
   {
     title: 'Spaces',
     items: [
-      { to: 'notes',       label: 'Notes',       icon: BookOpen },
-      { to: 'performance', label: 'Performance', icon: Activity },
-      { to: 'profile',     label: 'Profile',     icon: UserCheck },
+      { to: 'doubt-solving', label: 'Doubt Solving',          icon: MessageCircle,  sub: 'Ask, solve, understand' },
+      { to: 'practice',      label: 'Practice & Assessment',  icon: Target,         sub: 'Quizzes, flashcards, mock tests' },
+      { to: 'performance',   label: 'Performance Analysis',   icon: Activity,       sub: 'Mistakes, patterns, weak spots' },
+      { to: 'plan',          label: 'Study Planner',          icon: CalendarDays,   sub: 'Goals, timetable, exam countdown' },
+      { to: 'notes',         label: 'Notes & Resources',      icon: BookOpen,       sub: 'Your notes, formulas, revision reels' },
+      { to: 'progress',      label: 'Progress & Competition', icon: Trophy,         sub: 'Map, battles, league, study rooms' },
+      { to: 'profile',       label: 'Profile & Settings',     icon: UserCheck,      sub: 'Board, privacy, account' },
     ],
   },
 ]
@@ -555,7 +574,7 @@ function MobileDrawer({
                         display: 'flex', alignItems: 'center', gap: 12,
                         color: isActive ? '#fff' : '#d4d4d8',
                         fontFamily: 'inherit', fontSize: 14, fontWeight: isActive ? 700 : 500,
-                        minHeight: 46,
+                        minHeight: 56,
                       }}>
                       <span className="kyno-ichip" style={{
                         width: 28, height: 28,
@@ -567,8 +586,18 @@ function MobileDrawer({
                       }}>
                         <Icon size={15} />
                       </span>
-                      <span style={{ flex: 1, textAlign: 'left' }}>{item.label}</span>
-                      <ChevronRight size={14} style={{ color: isActive ? '#fff' : '#3a3f4a' }} />
+                      <span style={{ flex: 1, textAlign: 'left', minWidth: 0 }}>
+                        <span style={{ display: 'block' }}>{item.label}</span>
+                        {(item as any).sub && (
+                          /* what the space is FOR. The names alone do not tell a
+                             student that battles live under Progress. */
+                          <span style={{
+                            display: 'block', fontSize: 11.5, fontWeight: 500, marginTop: 2,
+                            color: isActive ? 'rgba(255,255,255,0.72)' : '#8A8FA0', lineHeight: 1.35,
+                          }}>{(item as any).sub}</span>
+                        )}
+                      </span>
+                      <ChevronRight size={14} style={{ color: isActive ? '#fff' : '#3a3f4a', flexShrink: 0 }} />
                     </button>
                   )
                 })}
@@ -581,19 +610,6 @@ function MobileDrawer({
           borderTop: `1px solid ${isDark ? '#171D2D' : '#e4e4e7'}`,
           padding: '10px 14px',
         }}>
-          <div style={{ display: 'flex', gap: 6, marginBottom: 10 }}>
-            <button onClick={() => go('settings')}
-              style={{
-                flex: 1, padding: '11px 14px', borderRadius: 9,
-                background: isDark ? '#1C2233' : '#f4f4f5',
-                border: `1px solid ${isDark ? '#1f2532' : '#e4e4e7'}`,
-                color: isDark ? '#B1B5BA' : '#6B7280', cursor: 'pointer',
-                fontFamily: 'inherit', fontSize: 13, fontWeight: 600,
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
-              }}>
-              <Settings size={14} /> Settings
-            </button>
-          </div>
 
           <div style={{
             display: 'flex', alignItems: 'center', gap: 10,
