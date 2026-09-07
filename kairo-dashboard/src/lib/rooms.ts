@@ -11,6 +11,7 @@
  * room stops existing. Nothing to organise means nothing to police.
  */
 import { supabase, supabaseReady } from './supabase'
+import { makeRoomCode, normalizeCode, isValidCodeShape, codeExpired, channelForCode } from './roomCode.core'
 
 export const ROOM_MAX = 12
 const MAX_ROOMS = 12
@@ -97,4 +98,126 @@ export function watchLobby(onCount: (n: number) => void): () => void {
   ch.on('presence', { event: 'sync' }, () => onCount(Object.keys(ch.presenceState()).length))
   ch.subscribe()
   return () => { supabase.removeChannel(ch) }
+}
+
+/* ── private rooms: a code, not a directory ─────────────────────────────────
+ *
+ * Two students who already know each other could not deliberately end up in
+ * the same room. The obvious fix -- look your friend up by username -- is the
+ * one thing this app must never ship: a directory a friend can search is a
+ * directory a stranger can search, and these users are children.
+ *
+ * So the connection is made OUTSIDE Kyno. One creates a room and reads the
+ * code out; the other types it in. Nothing here maps a person to a code or a
+ * code to a person, nothing is remembered after the room empties, and there
+ * is no list of anybody to pick from at any point.
+ *
+ * A private room is an ordinary presence channel named after its code, so
+ * "the room dies when it empties" needs no cleanup job: an empty channel has
+ * no presence, which is exactly what an unknown code looks like. That is also
+ * why an expired code and a wrong code give the SAME answer -- the app cannot
+ * tell them apart, and pretending otherwise would leak whether a code was
+ * ever real.
+ */
+
+export interface PrivateRoomHandle extends RoomHandle { code: string; openedAt: number }
+
+type PrivatePayload = Payload & { openedAt: number }
+
+function privateMembers(ch: ReturnType<typeof supabase.channel>): RoomMember[] {
+  const state = ch.presenceState() as Record<string, PrivatePayload[]>
+  return Object.entries(state)
+    .map(([key, arr]) => ({
+      key,
+      username: arr[0]?.username || 'student',
+      subject: arr[0]?.subject || '',
+      joinedAt: arr[0]?.joinedAt || 0,
+    }))
+    .sort((a, b) => a.joinedAt - b.joinedAt)
+}
+
+/** When this room was opened, from whoever has been here longest. */
+function roomOpenedAt(ch: ReturnType<typeof supabase.channel>): number {
+  const state = ch.presenceState() as Record<string, PrivatePayload[]>
+  const stamps = Object.values(state).map(arr => Number(arr[0]?.openedAt || 0)).filter(n => n > 0)
+  return stamps.length ? Math.min(...stamps) : 0
+}
+
+/** Open a new private room. Returns the handle AND the code to share. */
+export async function createPrivateRoom(
+  me: { username: string; subject: string },
+  onMembers: (m: RoomMember[]) => void,
+  onStatus: (connected: boolean) => void,
+): Promise<PrivateRoomHandle> {
+  if (!roomsAvailable()) throw new Error('needs a connection')
+
+  const code = makeRoomCode()
+  const openedAt = Date.now()
+  const key = `m-${Math.random().toString(36).slice(2, 10)}`   // random: no identity in the key
+  let payload: PrivatePayload = { username: me.username, subject: me.subject, joinedAt: openedAt, openedAt }
+
+  const ch = supabase.channel(channelForCode(code), { config: { presence: { key } } })
+  ch.on('presence', { event: 'sync' }, () => onMembers(privateMembers(ch)))
+  const ok = await subscribe(ch)
+  if (!ok) { supabase.removeChannel(ch); throw new Error('needs a connection') }
+  await ch.track(payload)
+  onStatus(true)
+
+  // A private room is NOT announced to the lobby. The lobby counts people
+  // studying in topic rooms; a private room is between the people who have
+  // the code, and putting it on a public counter starts to undo that.
+  return {
+    room: 0,
+    code,
+    openedAt,
+    leave() { onStatus(false); supabase.removeChannel(ch) },
+    setSubject(subject: string) { payload = { ...payload, subject }; ch.track(payload) },
+  }
+}
+
+/**
+ * Join an existing private room by its exact code.
+ *
+ * Throws with a message the screen can show as-is. There is deliberately no
+ * "did you mean" and no near-match: a code is exact or it is nothing.
+ */
+export async function joinPrivateRoom(
+  rawCode: string,
+  me: { username: string; subject: string },
+  onMembers: (m: RoomMember[]) => void,
+  onStatus: (connected: boolean) => void,
+): Promise<PrivateRoomHandle> {
+  const code = normalizeCode(rawCode)
+  if (!isValidCodeShape(code)) throw new Error("This code isn't active right now")
+  if (!roomsAvailable()) throw new Error('needs a connection')
+
+  const key = `m-${Math.random().toString(36).slice(2, 10)}`
+  const ch = supabase.channel(channelForCode(code), { config: { presence: { key } } })
+  ch.on('presence', { event: 'sync' }, () => onMembers(privateMembers(ch)))
+  const ok = await subscribe(ch)
+  if (!ok) { supabase.removeChannel(ch); throw new Error('needs a connection') }
+
+  // presence arrives with the first sync; give it the same beat topic rooms do
+  await new Promise(r => setTimeout(r, 250))
+  const present = Object.keys(ch.presenceState()).length
+
+  // Nobody here means the code was never real, or the room emptied, or it is
+  // a typo. All three are the same fact to a student and the same message.
+  if (present === 0) { supabase.removeChannel(ch); throw new Error("This code isn't active right now") }
+
+  const openedAt = roomOpenedAt(ch)
+  if (codeExpired(openedAt)) { supabase.removeChannel(ch); throw new Error("This code isn't active right now") }
+  if (present >= ROOM_MAX) { supabase.removeChannel(ch); throw new Error('That room is full') }
+
+  let payload: PrivatePayload = { username: me.username, subject: me.subject, joinedAt: Date.now(), openedAt }
+  await ch.track(payload)
+  onStatus(true)
+
+  return {
+    room: 0,
+    code,
+    openedAt,
+    leave() { onStatus(false); supabase.removeChannel(ch) },
+    setSubject(subject: string) { payload = { ...payload, subject }; ch.track(payload) },
+  }
 }

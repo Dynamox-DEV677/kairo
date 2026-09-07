@@ -41,6 +41,9 @@ import { SUBJECTS, ROUND, masteryBand, buildBank, pickQuestions, scoreAnswer, ou
 import type { BankQuestion } from '../lib/arena.core'
 import { fetchMatch, sendAnswer, refreshArenaStats, cachedArenaStats, type MatchView, type ArenaStats } from '../lib/arena'
 import { joinRoom, watchLobby, roomsAvailable, type RoomMember, type RoomHandle } from '../lib/rooms'
+import { createPrivateRoom, joinPrivateRoom } from '../lib/rooms'
+import { normalizeCode, isValidCodeShape, minutesLeft } from '../lib/roomCode.core'
+import { safeDetail } from '../lib/aiError.core'
 import { setSocialSettings, getSocialCached, refreshSocial, reportUser, locallyBlocked, SOCIAL_EVENT, type SocialProfile } from '../lib/social'
 import { tileHue, tileLetter } from '../lib/username.core'
 import { parseHistory } from '../lib/focus.core'
@@ -827,6 +830,21 @@ function RoomScreen({ model, social, online, shell, scroll, footer, onBack, onOp
   const chapters = choices.items
   const [topic, setTopic] = useState<{ id: string; name: string } | null>(null)
   const [picking, setPicking] = useState(true)
+  /**
+   * Three ways in, and none of them is a list of people.
+   *
+   *   'topic'   the existing auto-match into a shared-subject room
+   *   'create'  open a private room and get a code to read out
+   *   'join'    type a friend's code
+   *
+   * A student can only reach another specific student by already having their
+   * code from outside Kyno. There is deliberately no directory, no search, no
+   * recent-partners list, and no way to go from a code back to a person.
+   */
+  const [mode, setMode] = useState<'topic' | 'create' | 'join'>('topic')
+  const [myCode, setMyCode] = useState('')
+  const [codeInput, setCodeInput] = useState('')
+  const [busy, setBusy] = useState(false)
   const [members, setMembers] = useState<RoomMember[]>([])
   const [connected, setConnected] = useState(false)
   const [err, setErr] = useState('')
@@ -854,7 +872,40 @@ function RoomScreen({ model, social, online, shell, scroll, footer, onBack, onOp
       setPicking(true)
     }
   }
-  function leave() { handle.current?.leave(); handle.current = null; onBack() }
+  /** Open a private room on the chosen topic and show the code to share. */
+  async function createPrivate(c: { id: string; name: string }) {
+    setTopic(c); setErr(''); setBusy(true)
+    const subject = subjectOfChapter(c.id) || c.name
+    try {
+      const h = await createPrivateRoom({ username, subject }, setMembers, setConnected)
+      handle.current = h
+      setMyCode(h.code)
+      setJoinedAt(Date.now())
+      setPicking(false)
+    } catch (e) {
+      setErr(safeDetail(e, 'Could not open a room right now'))
+    } finally { setBusy(false) }
+  }
+
+  /** Join a friend's room by the exact code they gave you. */
+  async function joinByCode() {
+    setErr(''); setBusy(true)
+    const subject = topic ? (subjectOfChapter(topic.id) || topic.name) : 'Study'
+    try {
+      const h = await joinPrivateRoom(codeInput, { username, subject }, setMembers, setConnected)
+      handle.current = h
+      setMyCode(h.code)
+      setJoinedAt(Date.now())
+      setPicking(false)
+    } catch (e) {
+      // A wrong code, an expired code and an emptied room are the same fact
+      // to a student. safeDetail keeps our own sentence and drops anything
+      // the network threw that might be leaking internals.
+      setErr(safeDetail(e, "This code isn't active right now"))
+    } finally { setBusy(false) }
+  }
+
+  function leave() { handle.current?.leave(); handle.current = null; setMyCode(''); onBack() }
 
   const others = members.filter(m => m.username !== username && !hidden.has(m.username))
   const count = others.length + (handle.current ? 1 : 0)
@@ -909,13 +960,62 @@ function RoomScreen({ model, social, online, shell, scroll, footer, onBack, onOp
           <div style={{ fontSize: 13, color: T.dim, lineHeight: 1.5, marginTop: 6 }}>Others in the room see only the subject you pick. Never your name, and there is no chat.</div>
           {(!online || !roomsAvailable()) && <Card style={{ marginTop: 12 }}><div style={{ display: 'flex', gap: 10, alignItems: 'center', color: T.text2, fontSize: 14 }}><WifiOff size={16} {...ICON} /> Study rooms need a connection.</div></Card>}
           {err && <div style={{ fontSize: 13, color: T.warning, marginTop: 10 }}>{err}</div>}
+
+          {/* Three doors. None of them is a list of people: the only way to
+              reach one specific friend is to already have their code from
+              outside Kyno. */}
+          <div style={{ display: 'flex', gap: 8, marginTop: 16 }} role="tablist">
+            {([['topic', 'Any room'], ['create', 'Private room'], ['join', 'Have a code']] as const).map(([m, label]) => (
+              <button key={m} role="tab" aria-selected={mode === m} onClick={() => { setMode(m); setErr('') }} style={{
+                flex: 1, minHeight: 44, borderRadius: 12, cursor: 'pointer', fontFamily: FONT,
+                fontSize: 12.5, fontWeight: 600,
+                background: mode === m ? T.accentSurface : T.surface,
+                border: `1px solid ${mode === m ? T.accent : T.border}`,
+                color: mode === m ? T.accentPale : T.muted,
+              }}>{label}</button>
+            ))}
+          </div>
+
+          {mode === 'join' && (
+            <Card style={{ marginTop: 14 }}>
+              <div style={{ fontSize: 14, fontWeight: 600 }}>Type your friend's code</div>
+              <div style={{ fontSize: 12.5, color: T.dim, lineHeight: 1.5, marginTop: 6 }}>
+                They read it out or send it to you however you already talk. Kyno has no way to look someone up.
+              </div>
+              <input
+                value={codeInput}
+                onChange={e => setCodeInput(normalizeCode(e.target.value))}
+                placeholder="ABC23"
+                aria-label="Room code"
+                autoCapitalize="characters" autoCorrect="off" spellCheck={false}
+                style={{
+                  width: '100%', height: 52, marginTop: 12, borderRadius: 12, textAlign: 'center',
+                  background: T.raised, border: `1px solid ${T.borderCtl}`, color: T.text,
+                  fontFamily: MONO, fontSize: 22, letterSpacing: '0.3em', boxSizing: 'border-box',
+                }}
+              />
+              <Primary
+                style={{ marginTop: 12 }}
+                disabled={busy || !isValidCodeShape(codeInput) || !online}
+                onClick={joinByCode}
+              >{busy ? 'Looking…' : 'Join this room'}</Primary>
+            </Card>
+          )}
+
+          {mode === 'create' && (
+            <div style={{ fontSize: 12.5, color: T.dim, lineHeight: 1.5, marginTop: 14 }}>
+              Pick what you are working on, and Kyno gives you a code to share. It stops working when everyone leaves,
+              and after three hours either way.
+            </div>
+          )}
+
           {false && <Card style={{ marginTop: 12 }}><div style={{ fontSize: 14, color: T.text2 }}>No verified syllabus for your board and class yet, so there is no topic list to pick from.</div></Card>}
-          {bySubject.map(([s, list]) => (
+          {mode !== 'join' && bySubject.map(([s, list]) => (
             <div key={s} style={{ marginTop: 16 }}>
               <Eyebrow color={T.muted}>{s}</Eyebrow>
               <div style={{ display: 'grid', gap: 6, marginTop: 8 }}>
                 {list.map(c => (
-                  <button key={c.id} onClick={() => join(c)} disabled={!online || !roomsAvailable()} style={{
+                  <button key={c.id} onClick={() => (mode === 'create' ? createPrivate(c) : join(c))} disabled={busy || !online || !roomsAvailable()} style={{
                     minHeight: 46, padding: '0 14px', borderRadius: 12, textAlign: 'left', fontFamily: FONT, fontSize: 14, cursor: 'pointer',
                     background: topic?.id === c.id ? T.accentSurface : T.surface, border: `1px solid ${topic?.id === c.id ? T.accent : T.border}`, color: T.text,
                   }}>{c.name}</button>
@@ -938,6 +1038,28 @@ function RoomScreen({ model, social, online, shell, scroll, footer, onBack, onOp
           <span style={{ width: 8, height: 8, borderRadius: '50%', background: connected ? T.success : T.warning }} />
           {count <= 1 ? 'You are the only one here so far — others will join.' : `${numberWord(count).replace(/^./, ch => ch.toUpperCase())} people working`}
         </div>
+
+        {myCode && (
+          /* The code lives here so it can be read out mid-session, with the
+             time left next to it -- a code that quietly stops working is how
+             a student decides the feature is broken. */
+          <Card style={{ marginTop: 14, background: T.accentSurface, border: `1px solid ${T.accent}` }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <Eyebrow color={T.accentPale}>Private room</Eyebrow>
+                <div style={{ fontFamily: MONO, fontSize: 30, fontWeight: 700, letterSpacing: '0.22em', marginTop: 6 }}>{myCode}</div>
+                <div style={{ fontSize: 12, color: T.dim, marginTop: 6, lineHeight: 1.5 }}>
+                  Read this out to a friend. It stops working when everyone leaves{minutesLeft(joinedAt) > 0 ? `, and in ${minutesLeft(joinedAt)} minutes either way` : ''}.
+                </div>
+              </div>
+              <button onClick={() => { try { navigator.clipboard?.writeText(myCode) } catch { /* denied */ } }} style={{
+                minHeight: 44, padding: '0 14px', borderRadius: 12, cursor: 'pointer', flexShrink: 0,
+                background: T.raised, border: `1px solid ${T.borderCtl}`, color: T.text2,
+                fontFamily: FONT, fontSize: 12.5, fontWeight: 600,
+              }}>Copy</button>
+            </div>
+          </Card>
+        )}
 
         <div style={{ display: 'grid', gap: 6, marginTop: 16 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, minHeight: 56, padding: '10px 12px', borderRadius: 14, ...CALLOUT.purple, border: `1px solid ${T.accent}` }}>
