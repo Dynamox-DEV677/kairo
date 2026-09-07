@@ -84,6 +84,8 @@ function defaultProfile(): Profile {
 interface Brief {
   /** true when the server could not reach the AI and built the plan from the student's own data */
   fallback?: boolean
+  /** Why it fell back, so the banner can say more than "retrying". */
+  fallbackReason?: string
   greetingNote: string
   todaysFocus: { task: string; subject: string; why: string }[]
   mentorNote: string
@@ -263,9 +265,14 @@ export default function KairoHome({ onNavigate }: Props) {
             {/* Was hardcoded to "The AI mentors were busy" for EVERY failure,
                 which blamed load for auth and server faults alike. Say the real
                 reason; the fallback plan is genuinely usable either way. */}
+            {/* Say WHY. "The AI layer is retrying" for the fourth day running
+                is not a status, it is a shrug -- and it hid the real reason in
+                a server log nobody reads. */}
             {error
               ? `${error} Today's plan below is built from your own data — it still stands.`
-              : "Today's plan is built from your own data — it still stands, and the AI layer is retrying."}
+              : brief?.fallbackReason && brief.fallbackReason !== 'unknown'
+                ? `Today's plan is built from your own data — it still stands. The AI layer is retrying (${brief.fallbackReason}).`
+                : "Today's plan is built from your own data — it still stands, and the AI layer is retrying."}
           </span>
           <button onClick={fetchBrief} className="kyno-ghost" style={{ padding: '6px 12px', borderRadius: 8, cursor: 'pointer', background: 'transparent', color: '#FFB020', fontFamily: 'inherit', fontSize: 12, fontWeight: 700, border: '1px solid rgba(255,176,32,0.4)' }}>
             Retry now

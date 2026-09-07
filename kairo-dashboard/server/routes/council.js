@@ -12,10 +12,14 @@ const router = Router()
  * fields (scores, motivation, trend) are omitted rather than guessed; the
  * client hides those cards when they are absent. Exported for tests.
  */
-export function fallbackBrief({ name, weakTopics = [], strongTopics = [], nextExam = null, withDays = [] }) {
+export function fallbackBrief({ name, weakTopics = [], strongTopics = [], nextExam = null, withDays = [], reason = null }) {
   const focusPool = (weakTopics.length ? weakTopics : strongTopics).slice(0, 3)
   return {
     fallback: true,
+    // WHY it fell back, carried to the client. The reason used to exist only
+    // in a Vercel log, so the banner said "the AI layer is retrying" forever
+    // and nobody -- including us -- could say what was actually wrong.
+    fallbackReason: reason || 'unknown',
     greetingNote: `Hi ${name} — the AI mentors are busy right now, so today's plan is built straight from your own data.`,
     todaysFocus: focusPool.length
       ? focusPool.map(t => ({
@@ -100,15 +104,23 @@ Rules:
     const raw = await aiCall({
       taskType: 'study_plan',
       messages: [{ role: 'user', content: prompt }],
-      maxTokens: 700,
+      maxTokens: 1400,
       temperature: 0.6,
     })
     const brief = parseJSON(raw)
     // Garbage from the model gets the same data-built fallback as an outage —
     // a 502 here killed the whole Home screen over one malformed response.
     if (!brief) {
-      console.error('[council] non-JSON from model, serving fallback')
-      return res.json(fallbackBrief({ name, weakTopics, strongTopics, nextExam, withDays }))
+      const head = String(raw || '').slice(0, 400)
+      console.error('[council] non-JSON from model', JSON.stringify({ len: (raw || '').length, head }))
+      return res.json(fallbackBrief({
+        name, weakTopics, strongTopics, nextExam, withDays,
+        // a truncated reply is the common shape here: valid JSON that simply
+        // stops mid-object because the token budget ran out
+        reason: (raw || '').length === 0 ? 'the model returned nothing'
+          : /[{[]/.test(head) ? 'the answer was cut off before it finished'
+          : 'the model did not answer in the expected format',
+      }))
     }
     brief.examDates = withDays
     brief.nextExam = nextExam
@@ -121,8 +133,11 @@ Rules:
     // request data. Focus items come from the student's real weak topics —
     // nothing invented — and the fabricatable fields (scores, motivation,
     // trend) are omitted rather than guessed; the client hides those cards.
-    console.error('[council] brief failed, serving data-built fallback:', err.message)
-    return res.json(fallbackBrief({ name, weakTopics, strongTopics, nextExam, withDays }))
+    console.error('[council] brief failed, serving data-built fallback:', err.message, err.stack)
+    return res.json(fallbackBrief({
+      name, weakTopics, strongTopics, nextExam, withDays,
+      reason: String(err?.message || 'the AI call failed').slice(0, 160),
+    }))
   }
 })
 
