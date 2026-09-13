@@ -30,6 +30,15 @@ export const TYPE_GLOSS = {
   incomplete:  'ran out of time or did not attempt',
 }
 
+/** One noun per type, for sentences. TYPE_GLOSS is a clause and reads wrong inline. */
+export const TYPE_NOUN = {
+  conceptual:  'the idea',
+  formula:     'formula lines',
+  calculation: 'arithmetic',
+  careless:    'careless slips',
+  incomplete:  'unfinished answers',
+}
+
 /**
  * Controlled vocabulary. A signature is a stable string; this map gives each
  * one a plain-language name, its type, and a fix small enough to actually
@@ -448,8 +457,31 @@ export function topicGroups(records = [], mastery = [], now = Date.now()) {
     const m = mm.get(k)
     const masteryPct = m && typeof m.mastery === 'number' ? Math.round(m.mastery * 100) : null
     const group = share.conceptual > 0.6 ? 'relearn' : 'tighten'
+
+    /*
+     * The advice has to differ per topic or this screen contradicts its own
+     * headline. It promises "two topics can both be at 40% for completely
+     * different reasons" and then every relearn topic printed ONE canned
+     * sentence, because this branch ignored the numbers it had just computed.
+     *
+     * Thin data comes first and says so. Three wrong answers cannot tell a
+     * missing idea from three bad days, and a confident diagnosis built on
+     * them is a lie a student will act on.
+     */
+    const conceptualPct = Math.round(share.conceptual * 100)
+    // the biggest NON-conceptual loss, which is what makes one relearn topic
+    // different from the next
+    const second = TYPES.filter(t => t !== 'conceptual').sort((a, b) => byType[b] - byType[a])[0]
+    const secondPct = Math.round((share[second] || 0) * 100)
+
     let advice
-    if (group === 'relearn') advice = 'Almost every loss is conceptual — start from the chapter, not from questions'
+    if (list.length < 3) {
+      advice = `Only ${list.length} ${list.length === 1 ? 'attempt' : 'attempts'} here so far — not enough to tell a missing idea from a bad day`
+    } else if (group === 'relearn') {
+      if (conceptualPct >= 95) advice = 'Every mark here went on the idea itself — start from the chapter, not from questions'
+      else if (secondPct >= 15) advice = `${conceptualPct}% of the loss is the idea, ${secondPct}% ${TYPE_NOUN[second]} — read the chapter first, the rest follows`
+      else advice = `${conceptualPct}% of the loss is the idea — questions will not fix this one, the chapter will`
+    }
     else if (recent3w >= 3 && (m?.mastery ?? 0) < 0.5) advice = 'Drilling has not moved it in 3 weeks — try teaching it back instead'
     else if (dominant === 'careless') advice = 'You understand it. The marks go on units, signs and copying'
     else if (dominant === 'formula') advice = 'You understand it. The marks go on formula lines you skip'

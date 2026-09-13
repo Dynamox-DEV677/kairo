@@ -24,6 +24,7 @@ import type { ErrorType } from '../lib/spaceTokens'
 import { post } from '../lib/api'
 import { loadState } from '../lib/twin'
 import { getJSON, setJSON } from '../lib/storage'
+import { titleCase, pluralWord } from '../lib/text.core'
 import {
   mistakeRecords, summarize, beatenCopy, impact as computeImpact, topicGroups, crossCut,
   habitTitle, occurrenceContext, shortDate, sinceLine, signatureInfo, TYPE_GLOSS, TYPES,
@@ -268,13 +269,29 @@ export default function Performance({ onOpenDoubt, onDrill }: {
             <>
               {heroMarks > 0 && pats.live.length > 0 && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 16, padding: '14px 16px', background: T.surface, border: `1px solid ${T.border}`, borderRadius: 16 }}>
-                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 5 }}>
-                    <span style={{ fontSize: 34, fontWeight: 700, letterSpacing: -1 }}>{heroMarks}</span>
-                    <span style={{ fontSize: 13, color: T.muted }}>marks</span>
+                  {/*
+                    * The whole number-and-unit group is one unbreakable run.
+                    * Stopping only the WORD from splitting moved the break onto
+                    * the number itself: "31 marks" rendered as "3 marks / 1",
+                    * which reads as three. flexShrink:0 keeps the sentence
+                    * beside it from squeezing this instead of wrapping itself.
+                    */}
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 5, flexShrink: 0, whiteSpace: 'nowrap' }}>
+                    <span style={{ fontSize: 34, fontWeight: 700, letterSpacing: -1, fontVariantNumeric: 'tabular-nums' }}>{heroMarks}</span>
+                    {/* A unit must never break mid-word. The tile rendered "3 mark / s". */}
+                    <span style={{ fontSize: 13, color: T.muted, whiteSpace: 'nowrap', overflowWrap: 'normal', wordBreak: 'keep-all' }}>{pluralWord(heroMarks, 'mark')}</span>
                   </div>
                   <div style={{ width: 1, alignSelf: 'stretch', background: T.divider2 }} />
-                  <div style={{ fontSize: 12.5, color: T.dim, lineHeight: 1.45 }}>
-                    {impact ? `lost to these in your last mock — the same slips, not new topics` : `lost to these ${Math.min(3, pats.live.length)} — the same slips, not new topics`}
+                  <div style={{ fontSize: 12.5, color: T.dim, lineHeight: 1.45, minWidth: 0 }}>
+                    {/* "lost to these 1" -- a plural determiner on a bare number. */}
+                    {impact
+                      ? `lost to these in your last mock — the same slips, not new topics`
+                      : (() => {
+                          const n = Math.min(3, pats.live.length)
+                          return n === 1
+                            ? 'lost to this one slip — the same mistake, not a new topic'
+                            : `lost to these ${n} slips — the same mistakes, not new topics`
+                        })()}
                   </div>
                 </div>
               )}
@@ -292,7 +309,7 @@ export default function Performance({ onOpenDoubt, onDrill }: {
                       </div>
                       <div style={{ textAlign: 'right', flexShrink: 0 }}>
                         <div style={{ fontSize: 20, fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>{row.marksLost}</div>
-                        <div style={{ fontSize: 11, color: T.faint, marginTop: -2 }}>marks</div>
+                        <div style={{ fontSize: 11, color: T.faint, marginTop: -2, whiteSpace: 'nowrap', overflowWrap: 'normal', wordBreak: 'keep-all' }}>{pluralWord(row.marksLost, 'mark')}</div>
                         <div style={{ marginTop: 8, display: 'flex', justifyContent: 'flex-end' }}><Sparkline bars={row.sparkline} type={row.type} /></div>
                       </div>
                     </div>
@@ -404,10 +421,36 @@ export default function Performance({ onOpenDoubt, onDrill }: {
           {rows.map(t => (
             <Card key={t.topic}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                <div style={{ fontSize: 14.5, fontWeight: 600, textTransform: 'capitalize' }}>{t.topic}</div>
+                <div style={{ fontSize: 14.5, fontWeight: 600 }}>{titleCase(t.topic)}</div>
                 {t.mastery != null && <div style={{ fontSize: 13, color: T.muted, fontVariantNumeric: 'tabular-nums' }}>{t.mastery}%</div>}
               </div>
-              <div style={{ display: 'flex', gap: 2, height: 7, marginTop: 10, borderRadius: 4, overflow: 'hidden' }} aria-hidden>
+
+              {/*
+                * TWO bars, and they were being read as one.
+                *
+                * The stacked bar below is a COMPOSITION -- the share of this
+                * topic's lost marks by error type -- so its segments always sum
+                * to the full width. Sitting directly under "15%" with nothing
+                * to separate them, it read as a 15% meter that was somehow
+                * completely full, on every topic at once.
+                *
+                * So the mastery number gets the meter it looked like it had:
+                * a track, filled to the value. 15% is now visibly a sixth.
+                */}
+              {t.mastery != null && (
+                <div style={{ height: 7, marginTop: 10, borderRadius: 4, background: T.well, overflow: 'hidden' }}
+                     role="img" aria-label={`Mastery ${t.mastery}%`}>
+                  <div style={{
+                    width: `${Math.max(0, Math.min(100, t.mastery))}%`, height: '100%', borderRadius: 4,
+                    background: t.mastery < 34 ? T.error : t.mastery < 67 ? T.warning : T.success,
+                  }} />
+                </div>
+              )}
+
+              <div style={{ fontSize: 10.5, color: T.faint, marginTop: 10, letterSpacing: 0.4 }}>
+                WHERE THE MARKS WENT
+              </div>
+              <div style={{ display: 'flex', gap: 2, height: 7, marginTop: 4, borderRadius: 4, overflow: 'hidden' }} aria-hidden>
                 {TYPES.filter(ty => t.share[ty] > 0).map(ty => (
                   <div key={ty} title={`${ty} ${Math.round(t.share[ty] * 100)}%`} style={{ flex: `${t.share[ty]} 0 0`, background: ERR[ty], minWidth: 3 }} />
                 ))}
@@ -426,6 +469,8 @@ export default function Performance({ onOpenDoubt, onDrill }: {
           <div style={{ fontSize: 14, color: T.text2, lineHeight: 1.55, marginTop: 8 }}>Two topics can both be at 40% for completely different reasons. These are sorted by what would actually fix them.</div>
           {group('Relearn — the idea is missing', 'Most of the marks here are conceptual', topics.relearn)}
           {group('Tighten up — you know it, you slip', 'The marks here go on habits, not ideas', topics.tighten)}
+          {/* The sticky "Build a session" bar sits over the end of this list. */}
+          <div style={{ height: 84 }} aria-hidden />
           <div style={{ marginTop: 18, padding: 12, borderRadius: 14, background: T.well, border: `1px solid ${T.divider}` }}>
             <Legend rows={TYPES.map(ty => ({ type: ty }))} />
           </div>

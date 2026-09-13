@@ -75,11 +75,30 @@ function distractors(pool, answer, n, seed) {
   return shuffle(others, seed).slice(0, n)
 }
 
+/**
+ * Typographic dashes, applied once on the way into the bank.
+ *
+ * Question text is assembled from the `when` and `expr` fields of the content
+ * files, and those were hand-authored with ASCII "--" while the rest of the app
+ * uses an em dash. Fixing the file fixes today's 7; doing it here as well means
+ * the next chapter someone adds cannot put "--" in front of a student.
+ */
+function dashes(text) {
+  return String(text ?? '')
+    .replace(/\s+--\s+/g, ' — ')   // spaced: "words -- more"  ->  em dash
+    .replace(/(\w)--(\w)/g, '$1—$2') // tight:  "words--more"    ->  em dash
+}
+
 function question(id, subject, kind, text, answer, pool) {
   const wrong = distractors(pool, answer, 3, hashSeed(id + ':d'))
   if (wrong.length < 3) return null
   const options = shuffle([answer, ...wrong], hashSeed(id + ':o'))
-  return { id, subject, kind, text, options, answer: options.indexOf(answer) }
+  return {
+    id, subject, kind,
+    text: dashes(text),
+    options: options.map(dashes),
+    answer: options.indexOf(answer),
+  }
 }
 
 /* ── the bank ─────────────────────────────────────────────────────────────── */

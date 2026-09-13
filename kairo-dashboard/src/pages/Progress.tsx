@@ -711,20 +711,85 @@ function BattleScreen({ model, social, online, shell, onBack, onOpenProfile, onD
 
   /* the round is over */
   if (phase === 'over') {
-    const oppScore = live && match ? match.opp.score || 0 : kynoScoreAfter(kyno, myAnswers.length)
-    const res = match && match.status === 'void' ? 'void' : match ? outcome(match.me.score, oppScore) : 'solo'
+    /*
+     * `myAnswers` is derived from `solo`, which is `phase === 'solo' && local`
+     * -- and by the time this screen renders the phase is 'over', so it is the
+     * empty array and Kyno's score came out 0 every single time.
+     *
+     * It went unnoticed because the opponent was not rendered at all here;
+     * showing the score is what made the zero visible. Read the count from
+     * `local` directly, which outlives the phase change.
+     */
+    const answeredCount = live && match ? match.me.answers.length : (local?.answers.length || 0)
+    // `questions` is derived from `solo` as well, so `total` is 0 on this
+    // screen -- which printed "6 wrong out of 0".
+    const roundTotal = (live && match ? match.questions.length : local?.questions.length) || answeredCount
+    const oppScore = live && match ? match.opp.score || 0 : kynoScoreAfter(kyno, answeredCount)
+    /*
+     * A solo round has no `match`, and BOTH the outcome and the opponent were
+     * gated behind it -- so playing Kyno ended on the word "Done." with one
+     * score on screen. Kyno's score was right here in oppScore the whole time,
+     * computed and thrown away, while the header had shown it for seven
+     * questions. A student who cannot tell whether they won assumes the screen
+     * is broken.
+     *
+     * Losing is softened in the WORDING below, never by hiding the number.
+     */
+    const res = match && match.status === 'void' ? 'void'
+      : outcome(live && match ? match.me.score : myScore, oppScore)
+    const oppName = match?.opp.username || KYNO_OPPONENT_NAME
     return (
       <div style={versus}>
         <div style={{ flex: 1, overflowY: 'auto', padding: '18px 14px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
           <Eyebrow color={T.muted}>{res === 'void' ? 'Round void' : 'Round over'}</Eyebrow>
           <div style={{ fontSize: 26, fontWeight: 700, marginTop: 10 }}>
-            {res === 'void' ? 'The connection dropped.' : res === 'won' ? 'You won.' : res === 'lost' ? `${match?.opp.username || 'They'} won.` : res === 'draw' ? 'A draw.' : 'Done.'}
+            {res === 'void' ? 'The connection dropped.'
+              : res === 'won' ? 'You won.'
+              : res === 'draw' ? 'A draw.'
+              : `${oppName} won this one.`}
           </div>
           {res === 'void' && <div style={{ fontSize: 14, color: T.text2, lineHeight: 1.55, marginTop: 8, maxWidth: 320 }}>Nobody loses a void round. Mobile data does this; it is not you.</div>}
-          <div style={{ display: 'flex', gap: 24, marginTop: 20, alignItems: 'center' }}>
-            <div><Tile username={username} size={44} /><div style={{ fontFamily: MONO, fontSize: 28, fontWeight: 700, marginTop: 8 }}>{myScore}</div><div style={{ fontSize: 12, color: T.dim }}>You</div></div>
-            {match && match.opp.username && <div><Tile username={match.opp.username} size={44} /><div style={{ fontFamily: MONO, fontSize: 28, fontWeight: 700, marginTop: 8 }}>{oppScore}</div><div style={{ fontSize: 12, color: T.dim }}>{match.opp.username}</div></div>}
+          {/* Same left/right arrangement the header used for the whole match,
+              so the comparison is where the eye already expects it. */}
+          <div style={{ display: 'flex', gap: 20, marginTop: 20, alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ minWidth: 92 }}>
+              <Tile username={username} size={44} />
+              <div style={{ fontFamily: MONO, fontSize: 28, fontWeight: 700, marginTop: 8, color: res === 'won' ? T.success : T.text }}>{myScore}</div>
+              <div style={{ fontSize: 12, color: T.dim }}>You</div>
+            </div>
+            <div style={{ fontSize: 13, color: T.faint, fontWeight: 700 }}>vs</div>
+            <div style={{ minWidth: 92 }}>
+              {match?.opp.username
+                ? <Tile username={match.opp.username} size={44} />
+                : <div style={{ width: 44, height: 44, borderRadius: 14, background: T.accentSurface, display: 'grid', placeItems: 'center', margin: '0 auto' }}>
+                    <Zap size={20} color={T.accentPale} {...ICON} />
+                  </div>}
+              <div style={{ fontFamily: MONO, fontSize: 28, fontWeight: 700, marginTop: 8, color: res === 'lost' ? T.success : T.text }}>{oppScore}</div>
+              <div style={{ fontSize: 12, color: T.dim }}>{oppName}</div>
+            </div>
           </div>
+
+          {/* A bare number teaches nothing -- name what actually cost the round. */}
+          {(() => {
+            const rounds = live && match ? match.me.answers : (local?.answers || [])
+            const missed = rounds.filter(a => a && !a.correct).length
+            const answered = rounds.length
+            const skipped = Math.max(0, roundTotal - answered)
+            if (res === 'void') return null
+            const bits = []
+            if (missed) bits.push(`${missed} wrong`)
+            if (skipped) bits.push(`${skipped} never reached`)
+            if (!bits.length) return (
+              <div style={{ fontSize: 12.5, color: T.text2, marginTop: 14, maxWidth: 320 }}>
+                Every answer correct — the gap was speed, not knowledge.
+              </div>
+            )
+            return (
+              <div style={{ fontSize: 12.5, color: T.text2, marginTop: 14, maxWidth: 320, lineHeight: 1.5 }}>
+                {bits.join(' · ')} out of {roundTotal}. Faster right answers score more.
+              </div>
+            )
+          })()}
           {!live && <div style={{ fontSize: 12.5, color: T.faint, marginTop: 14 }}>You played {KYNO_OPPONENT_NAME}, at your level in this subject.</div>}
         </div>
         <div style={{ padding: '12px 14px calc(12px + env(safe-area-inset-bottom))', borderTop: `1px solid ${T.borderExam}`, background: VERSUS, display: 'flex', gap: 10 }}>
@@ -775,7 +840,10 @@ function BattleScreen({ model, social, online, shell, onBack, onOpenProfile, onD
         </div>
       </div>
 
-      <div style={{ flex: 1, overflowY: 'auto', padding: '18px 14px 12px' }}>
+      {/* The last option used to end flush against the footer's border, which
+          reads as a cut-off answer -- and a 60-second timer is the worst place
+          to make someone discover a scroll. The trailing space clears it. */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: '18px 14px 28px' }}>
         {q ? (
           <>
             <div style={{ fontSize: 19, fontWeight: 600, lineHeight: 1.4 }}>{q.text}</div>

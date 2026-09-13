@@ -197,6 +197,7 @@ test('topicGroups splits RELEARN (conceptual > 60%) from TIGHTEN UP, with advice
   const recs = mistakeRecords([
     { type: 'mistake', ts: NOW, topic: 'optics', payload: { errType: 'conceptual', marksLost: 3 } },
     { type: 'mistake', ts: NOW, topic: 'optics', payload: { errType: 'conceptual', marksLost: 3 } },
+    { type: 'mistake', ts: NOW, topic: 'optics', payload: { errType: 'conceptual', marksLost: 3 } },
     sig('omits-units', NOW, 1, { }),  // topic 'motion'
     sig('omits-units', NOW - DAY, 1),
     sig('sign-flip', NOW - 2 * DAY, 1),
@@ -208,6 +209,41 @@ test('topicGroups splits RELEARN (conceptual > 60%) from TIGHTEN UP, with advice
   assert.equal(g.tighten[0].dominant, 'careless')
   assert.match(g.tighten[0].advice, /units, signs and copying/)
   assert.equal(g.tighten[0].mastery, 70)
+})
+
+test('under three attempts, a topic says it cannot tell yet instead of diagnosing', () => {
+  // Three wrong answers cannot separate a missing idea from a bad day, and a
+  // confident sentence built on two of them is one a student will act on.
+  const recs = mistakeRecords([
+    { type: 'mistake', ts: NOW, topic: 'optics', payload: { errType: 'conceptual', marksLost: 3 } },
+    { type: 'mistake', ts: NOW, topic: 'optics', payload: { errType: 'conceptual', marksLost: 3 } },
+  ])
+  const g = topicGroups(recs, [{ topic: 'optics', mastery: 0.3 }], NOW)
+  const row = [...g.relearn, ...g.tighten].find(r => r.topic === 'optics')
+  assert.match(row.advice, /not enough to tell/)
+  assert.ok(!/start from the chapter/.test(row.advice), 'must not diagnose on two attempts')
+})
+
+test('two relearn topics get DIFFERENT advice, not one canned sentence', () => {
+  // The screen promises "two topics can both be at 40% for completely
+  // different reasons". One canned sentence for every relearn topic made that
+  // a lie on screen.
+  const recs = mistakeRecords([
+    // optics: purely conceptual
+    { type: 'mistake', ts: NOW, topic: 'optics', payload: { errType: 'conceptual', marksLost: 3 } },
+    { type: 'mistake', ts: NOW, topic: 'optics', payload: { errType: 'conceptual', marksLost: 3 } },
+    { type: 'mistake', ts: NOW, topic: 'optics', payload: { errType: 'conceptual', marksLost: 3 } },
+    // heat: mostly conceptual, but a real slice of careless on top
+    { type: 'mistake', ts: NOW, topic: 'heat', payload: { errType: 'conceptual', marksLost: 3 } },
+    { type: 'mistake', ts: NOW, topic: 'heat', payload: { errType: 'conceptual', marksLost: 3 } },
+    { type: 'mistake', ts: NOW, topic: 'heat', payload: { errType: 'conceptual', marksLost: 2 } },
+    { type: 'mistake', ts: NOW, topic: 'heat', payload: { errType: 'careless', marksLost: 2 } },
+  ])
+  const g = topicGroups(recs, [{ topic: 'optics', mastery: 0.2 }, { topic: 'heat', mastery: 0.3 }], NOW)
+  const optics = g.relearn.find(r => r.topic === 'optics')
+  const heat = g.relearn.find(r => r.topic === 'heat')
+  assert.ok(optics && heat, 'both should be RELEARN')
+  assert.notEqual(optics.advice, heat.advice)
 })
 
 test('a topic drilled 3+ times in three weeks and still weak is routed to teach-back', () => {
