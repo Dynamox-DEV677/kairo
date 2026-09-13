@@ -780,6 +780,45 @@ select option:checked { background-color: #2a2450; color: #fff; }
   -moz-osx-font-smoothing: grayscale;
 }
 
+/*
+ * KaTeX owns the inside of a formula.
+ *
+ * The rule above is `.kairo-mobile *` with !important -- a universal selector
+ * that reaches INSIDE every rendered formula and replaces KaTeX's glyphs with
+ * the app font. KaTeX draws 
+eq, big operators, radicals and extensible
+ * delimiters using PRIVATE-USE codepoints (U+E000-F8FF) that exist only in the
+ * KaTeX fonts, so the app font has nothing at that codepoint and the browser
+ * draws a box. "a 
+eq 0" came out as "a [] 0".
+ *
+ * That is the tofu, and it is why it only ever appeared on phones: this rule
+ * is mobile-only, so the same card was correct on desktop and broken in the
+ * hand of every student. Adding fallback fonts to the prose (an earlier fix)
+ * could not touch it, because the glyph is not in ANY general-purpose font.
+ *
+ * `.kairo-mobile .katex *` is (0,2,0) and beats the (0,1,0) universal rule, so
+ * the subtree inherits KaTeX_Main again; the per-class rules that follow are
+ * (0,3,0) and restore the specific faces -- italic variables, AMS, the Size
+ * fonts that draw tall brackets.
+ */
+.kairo-mobile .katex * { font-family: inherit !important }
+.kairo-mobile .katex   { font-family: KaTeX_Main !important }
+.kairo-mobile .katex .mathnormal,
+.kairo-mobile .katex .mathdefault,
+.kairo-mobile .katex .mathit   { font-family: KaTeX_Math !important }
+.kairo-mobile .katex .mathbb,
+.kairo-mobile .katex .amsrm    { font-family: KaTeX_AMS !important }
+.kairo-mobile .katex .mathcal  { font-family: KaTeX_Caligraphic !important }
+.kairo-mobile .katex .mathfrak { font-family: KaTeX_Fraktur !important }
+.kairo-mobile .katex .mathtt   { font-family: KaTeX_Typewriter !important }
+.kairo-mobile .katex .mathsf   { font-family: KaTeX_SansSerif !important }
+.kairo-mobile .katex .mathscr  { font-family: KaTeX_Script !important }
+.kairo-mobile .katex .size1    { font-family: KaTeX_Size1 !important }
+.kairo-mobile .katex .size2    { font-family: KaTeX_Size2 !important }
+.kairo-mobile .katex .size3    { font-family: KaTeX_Size3 !important }
+.kairo-mobile .katex .size4    { font-family: KaTeX_Size4 !important }
+
 /* Re-enable serif only for the long-form note body (Charter) */
 .kairo-mobile .note-body,
 .kairo-mobile textarea[data-serif="true"] {

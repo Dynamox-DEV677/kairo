@@ -227,10 +227,21 @@ function FlashcardFormat({ card, missLine, onGrade, onAsk }: {
       <div
         onClick={() => setFlipped(f => !f)}
         style={{
-          // 167px is what flex:1 left after the grading panel took its share
-          // on a 601px viewport -- too short to hold a revealed answer. A floor
-          // keeps the card usable; the column above scrolls if that overflows.
-          flex: 1, minHeight: 240, background: T.surface, borderRadius: 22, border: `1px solid ${T.border}`,
+          /*
+           * The card SIZES TO ITS CONTENT. It must, because the two faces are
+           * different heights and the taller one is the answer.
+           *
+           * `flex: 1` is `1 1 0%`: it takes exactly the free space left over
+           * and never one pixel more, so the card was the same height revealed
+           * as hidden -- which is why the answer was in the DOM, the rating
+           * buttons lit up, and the text itself was nowhere on screen. The
+           * floor and the inner `safe center` did not help: neither makes a
+           * fixed-height box grow.
+           *
+           * `0 0 auto` sizes to content and the column above (overflowY: auto)
+           * scrolls when the whole card is taller than the screen.
+           */
+          flex: '0 0 auto', minHeight: 240, background: T.surface, borderRadius: 22, border: `1px solid ${T.border}`,
           display: 'flex', flexDirection: 'column', cursor: 'pointer', overflow: 'hidden',
         }}
       >
@@ -259,9 +270,16 @@ function FlashcardFormat({ card, missLine, onGrade, onAsk }: {
           * top-aligns, which is the safe direction to fail in.
           */}
         <div style={{
-          flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column',
+          /*
+           * No longer a scroll container. It was one so a too-tall face could
+           * be reached inside a card that could not grow; now the card grows,
+           * so an inner scrollbar would only hide content behind a gesture
+           * nothing advertises. `safe center` still centres a short face
+           * without pushing a tall one out of reach.
+           */
+          flex: '1 1 auto', minHeight: 0, display: 'flex', flexDirection: 'column',
           justifyContent: 'safe center' as any,
-          padding: '18px 18px', overflowY: 'auto',
+          padding: '18px 18px',
         }}>
         <div style={{ width: '100%', flexShrink: 0 }}>
           {/* BOTH faces go through the maths renderer. The front used to be
