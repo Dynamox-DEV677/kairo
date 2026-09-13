@@ -15,12 +15,7 @@ import {
   type Flashcard as TwinCard,
   reviewFlashcard,
 } from '../lib/twin'
-import ReactMarkdown from 'react-markdown'
-import remarkGfm from 'remark-gfm'
-import remarkMath from 'remark-math'
-import rehypeKatex from 'rehype-katex'
-import { KATEX_OPTS } from '../lib/katex'
-import { prepMathMarkdown } from '../lib/math.core'
+import MathText from '../components/MathText'
 import { nearestExamDays } from '../lib/examDate'
 
 const C = {
@@ -517,21 +512,14 @@ function Face({ side, text, active }: { side: 'front' | 'back'; text: string; ac
       }}>
         {side === 'front' ? 'Question' : 'Answer'}
       </div>
-      <div className="fc-math" style={{
+      <div className="kyno-math" style={{
         margin: 0, fontSize: 19, fontWeight: 600,
         color: C.text, lineHeight: 1.5, maxWidth: 640,
         fontFamily: '"Charter", "Iowan Old Style", Georgia, serif',
         position: 'relative',
         maxHeight: '100%', overflowY: 'auto', overflowWrap: 'anywhere',
       }}>
-        <style>{`
-          .fc-math p { margin: 0; }
-          .fc-math .katex { color: inherit; font-size: 1.1em; }
-          .fc-math .katex-display { margin: 6px 0; overflow-x: auto; overflow-y: hidden; }
-        `}</style>
-        <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[[rehypeKatex, KATEX_OPTS]]}>
-          {prepMathMarkdown(text)}
-        </ReactMarkdown>
+        <MathText text={text} />
       </div>
       <div style={{
         position: 'absolute', bottom: 14, right: 20,

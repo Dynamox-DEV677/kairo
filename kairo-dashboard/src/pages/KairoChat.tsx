@@ -11,6 +11,9 @@ import { recordDoubt, recordMistake, recordFlashcard, recordConcept, recordFormu
 import { saveToNotebook } from '../lib/notebook'
 import { getRecentChats, saveRecentChat, makeTitle } from '../lib/recentChats'
 import { useIsMobile } from '../hooks/useViewport'
+import { useKeyboardInset } from '../hooks/useKeyboardInset'
+import MathText from '../components/MathText'
+import { takePendingHandoff, HANDOFF_EVENT } from '../lib/chatHandoff'
 import { aiHeadersAsync } from '../lib/devKey'
 import { prepMathMarkdown } from '../lib/math.core'
 
@@ -104,6 +107,7 @@ export default function KairoChat() {
   const [busy, setBusy] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
   const isMobile = useIsMobile()
+  const kb = useKeyboardInset()
   const chatIdRef = useRef<string>('')
   if (!chatIdRef.current) {
     try { chatIdRef.current = localStorage.getItem(CHAT_ID_KEY) || newChatId() }
@@ -189,6 +193,27 @@ export default function KairoChat() {
 
   /** A message handed over by another screen, sent as soon as we can. */
   const pending = useRef<string | null>(null)
+
+  /**
+   * Take whatever another screen left for us -- on mount, and again whenever
+   * one is left while we are already open. The old path was a timed event that
+   * a cold mount missed entirely.
+   */
+  useEffect(() => {
+    const take = () => {
+      const h = takePendingHandoff()
+      if (!h) return
+      chatIdRef.current = 'new'
+      try { localStorage.setItem(CHAT_ID_KEY, 'new') } catch { /* storage blocked */ }
+      setTurns([])
+      setAnchor(h.anchor)
+      if (h.anchor && h.seed.trim()) { setInput(''); pending.current = h.seed }
+      else setInput(h.seed || '')
+    }
+    take()
+    window.addEventListener(HANDOFF_EVENT, take)
+    return () => window.removeEventListener(HANDOFF_EVENT, take)
+  }, [])
   useEffect(() => {
     const q = pending.current
     if (!q || busy) return
@@ -331,7 +356,7 @@ export default function KairoChat() {
     }}>
       <div ref={scrollRef} style={{
         flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch',
-        padding: isMobile ? '50px 12px 10px' : '26px clamp(14px, 6vw, 90px) 20px',
+        padding: isMobile ? '10px 12px 10px' : '26px clamp(14px, 6vw, 90px) 20px',
         display: 'flex', flexDirection: 'column', gap: isMobile ? 13 : 18,
       }}>
         {anchor && (
@@ -342,13 +367,13 @@ export default function KairoChat() {
             <div style={{ fontSize: 11, letterSpacing: 1.2, fontWeight: 700, color: '#A99BFF', textTransform: 'uppercase' }}>
               Stuck on step {anchor.step} of {anchor.total}
             </div>
-            <div style={{ fontSize: 14, fontWeight: 600, color: '#EDEDF5', marginTop: 7, lineHeight: 1.45 }}>{anchor.question}</div>
-            {anchor.title && <div style={{ fontSize: 13, color: '#C9C9DC', marginTop: 8, lineHeight: 1.5 }}>{anchor.title}</div>}
+            {/* The pinned step goes through the renderer too. It was a raw
+                <pre>, so the one place showing the student WHY they are here
+                printed "$= \frac{-3 \pm ...}" at them. */}
+            <MathText text={anchor.question} style={{ fontSize: 14, fontWeight: 600, color: '#EDEDF5', marginTop: 7, lineHeight: 1.45 }} />
+            {anchor.title && <MathText text={anchor.title} style={{ fontSize: 13, color: '#C9C9DC', marginTop: 8, lineHeight: 1.5 }} />}
             {anchor.working && (
-              <pre style={{
-                margin: '6px 0 0', fontSize: 12.5, color: '#9494AD', whiteSpace: 'pre-wrap',
-                fontFamily: 'ui-monospace, monospace', lineHeight: 1.5,
-              }}>{anchor.working}</pre>
+              <MathText text={anchor.working} mono style={{ marginTop: 6, fontSize: 12.5, color: '#9494AD', lineHeight: 1.5 }} />
             )}
           </div>
         )}
@@ -410,7 +435,7 @@ export default function KairoChat() {
                     {prepMathMarkdown(t.text)}
                   </ReactMarkdown>
                 </div>
-              ) : t.text}
+              ) : <MathText text={t.text} />}
 
               {t.role === 'kairo' && t.done && (
                 <button
@@ -466,10 +491,19 @@ export default function KairoChat() {
       </div>
 
       <div className="kc-composer" style={{
+        /*
+         * The page wrapper already reserves --kyno-nav-clearance for the dock.
+         * This reserved it a SECOND time (100px), and that double count is the
+         * hole that opened between the input bar and the nav. A plain gap here;
+         * `bottom: kb` rides the keyboard the way the Doubt bar does, which is
+         * what the :focus-within override in index.css used to fake.
+         */
+        position: 'sticky', bottom: kb,
         padding: isMobile
-          ? '8px 10px calc(100px + env(safe-area-inset-bottom, 0px))'
+          ? (kb ? '8px 10px 10px' : '8px 10px calc(10px + env(safe-area-inset-bottom, 0px))')
           : '10px clamp(14px, 6vw, 90px) 18px',
         flexShrink: 0,
+        transition: 'bottom 180ms ease',
       }}>
         <div style={{
           ...GLASS, border: '1px solid rgba(124, 92, 255,0.24)',

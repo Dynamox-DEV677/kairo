@@ -20,6 +20,9 @@ router.post('/start', async (req, res) => {
   } = req.body
   if (!subject) return res.status(400).json({ error: 'subject is required.' })
 
+  // Hoisted so the catch can log the reply that caused the throw.
+  let raw = null
+
   try {
     const prompt = `You are an expert ${board} Class ${cls} ${subject} quiz maker.
 
@@ -43,7 +46,7 @@ Return ONLY valid JSON:
 Mix difficulties: 30% easy, 50% medium, 20% hard. Make questions exam-style. No markdown.
 Mathematics notation: use $...$ for inline math and $$...$$ for display math ONLY. Never use \\(...\\), \\[...\\], or bare LaTeX commands outside dollar delimiters.`
 
-    const raw = await aiCall({
+    raw = await aiCall({
       taskType: 'quiz_generate',
       messages: [{ role: 'user', content: prompt }],
       maxTokens: 2500,
@@ -88,6 +91,21 @@ Mathematics notation: use $...$ for inline math and $$...$$ for display math ONL
       ? data.questions.filter(q => q && (q.question || q.q))
       : []
     if (!questions.length) {
+      /*
+       * The two paths above log `head: raw.slice(0, 600)`. This one -- the
+       * ONLY path that actually returns a 5xx, and therefore the only one a
+       * student ever sees as "something's broken on our side" -- logged the
+       * LENGTH of the model reply and nothing else. Six audits of this
+       * endpoint produced no diagnosable output for exactly that reason.
+       * Log the reply and the shape we could not use.
+       */
+      console.error('[quiz/start] questions present but none usable',
+        JSON.stringify({
+          subject, topic,
+          count: list.length,
+          sampleKeys: Object.keys(list[0] || {}),
+          head: String(raw || '').slice(0, 600),
+        }))
       return fail(res, req, new Error(`quiz/start produced no usable questions for ${subject}/${topic || 'any topic'} (model returned ${String(raw || '').length} chars)`), {
         status: 502,
         message: `Kyno could not write ${subject} questions just now. Nothing you did — try again in a minute.`,
@@ -109,6 +127,20 @@ Mathematics notation: use $...$ for inline math and $$...$$ for display math ONL
       questions: data.questions,
     })
   } catch (e) {
+    /*
+     * `raw` is in scope here and was never logged. When the throw happens
+     * AFTER the model replied -- a bad shape, a database insert -- the reply
+     * that caused it is the single most useful thing to see, and it was
+     * being dropped on the floor along with the stack.
+     */
+    console.error('[quiz/start] threw',
+      JSON.stringify({
+        subject, topic,
+        message: e?.message || String(e),
+        rawLen: typeof raw === 'string' ? raw.length : null,
+        head: typeof raw === 'string' ? raw.slice(0, 600) : null,
+      }))
+    console.error(e?.stack || e)
     fail(res, req, e)
   }
 })

@@ -25,12 +25,7 @@ import {
   Camera, Mic, ChevronDown, ChevronRight, Check, RotateCcw, Bookmark,
   ArrowLeft, AlertTriangle, Layers, TrendingUp, Share2, RefreshCw, Loader2, X,
 } from 'lucide-react'
-import ReactMarkdown from 'react-markdown'
-import remarkGfm from 'remark-gfm'
-import remarkMath from 'remark-math'
-import rehypeKatex from 'rehype-katex'
-import { KATEX_OPTS } from '../lib/katex'
-import { prepMathMarkdown } from '../lib/math.core'
+import MathText from '../components/MathText'
 import { useKeyboardInset } from '../hooks/useKeyboardInset'
 import { aiHeadersAsync } from '../lib/devKey'
 import { studentMessage } from '../lib/aiError.core'
@@ -39,7 +34,7 @@ import { saveToNotebook } from '../lib/notebook'
 import { cardsForNote, attachCards } from '../lib/notes.core'
 import { getJSON, setJSON } from '../lib/storage'
 import {
-  splitSteps, contextLabel, weaknessSuggestion, recentDoubtCards, ownMistakeLine,
+  splitSteps, contextLabel, weaknessSuggestion, recentDoubtCards, ownMistakeLine, stuckMessage,
 } from '../lib/doubt.core'
 import type { DoubtStep } from '../lib/doubt.core'
 
@@ -75,33 +70,6 @@ const ICON = { strokeWidth: 1.75, absoluteStrokeWidth: false } as const
 
 type Style = React.CSSProperties
 
-/**
- * Step prose, rendered.
- *
- * A step body arrived as markdown and was printed as characters, so a student
- * read literal "**turgor pressure**" in the middle of an explanation. The
- * Solver has always rendered its answers; the steps this space splits out of
- * the same response were the one surface that did not.
- */
-function Prose({ text, style, mono }: { text?: string | null; style?: Style; mono?: boolean }) {
-  const src = String(text ?? '')
-  if (!src.trim()) return null
-  return (
-    <div className={mono ? 'kyno-prose kyno-prose-mono' : 'kyno-prose'} style={style}>
-      <style>{`
-        .kyno-prose p { margin: 0 }
-        .kyno-prose p + p { margin-top: 8px }
-        .kyno-prose strong { font-weight: 700; color: ${T.text} }
-        .kyno-prose code { font-family: ${MONO}; font-size: 0.94em }
-        .kyno-prose .katex { color: inherit }
-        .kyno-prose ul, .kyno-prose ol { margin: 6px 0 0; padding-left: 20px }
-      `}</style>
-      <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[[rehypeKatex, KATEX_OPTS]]}>
-        {prepMathMarkdown(src)}
-      </ReactMarkdown>
-    </div>
-  )
-}
 
 /** The step a student was stuck on, carried into the chat. */
 export interface DoubtAnchor {
@@ -295,17 +263,17 @@ function StepCard({ step, n }: { step: DoubtStep; n: number }) {
           display: 'grid', placeItems: 'center', fontSize: 11.5, fontWeight: 700,
         }}>{n}</div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <Prose text={step.title} style={{ fontSize: 13.5, fontWeight: 600, color: T.text, lineHeight: 1.4 }} />
+          <MathText text={step.title} style={{ fontSize: 13.5, fontWeight: 600, color: T.text, lineHeight: 1.4 }} />
           {step.working && (
             <div style={{
               margin: '10px 0 0', padding: '10px 12px', borderRadius: 12,
               background: '#101019', border: `1px solid ${T.divider}`,
               fontFamily: MONO, fontSize: 13, color: T.text2,
               wordBreak: 'break-word', overflowX: 'auto',
-            }}><Prose text={step.working} mono /></div>
+            }}><MathText text={step.working} mono /></div>
           )}
           {step.why && (
-            <Prose text={step.why} style={{ marginTop: 9, fontSize: 12.5, color: T.dim, lineHeight: 1.55 }} />
+            <MathText text={step.why} style={{ marginTop: 9, fontSize: 12.5, color: T.dim, lineHeight: 1.55 }} />
           )}
         </div>
       </div>
@@ -494,6 +462,22 @@ export default function DoubtSolving({
     try { return recentDoubtCards(listDoubts(8), 2) } catch { return [] }
   }, [view])
   const suggestion = useMemo(() => weaknessSuggestion(mistakes), [mistakes])
+
+  /**
+   * A revealed step lands BELOW the fold, behind the sticky "Show step N+1"
+   * button, so the student taps and nothing appears to happen. Scroll it into
+   * view once React has painted it.
+   */
+  const newestStep = useRef<HTMLDivElement | null>(null)
+  const revealScroll = useRef(false)
+  useEffect(() => {
+    if (!revealScroll.current) return
+    revealScroll.current = false
+    const el = newestStep.current
+    if (!el) return
+    // after paint, or it scrolls to where the step was about to be
+    requestAnimationFrame(() => el.scrollIntoView({ behavior: 'smooth', block: 'nearest' }))
+  }, [revealed])
 
   const [subject, setSubject] = useState('')
   const chip = contextLabel(profile, subject)
@@ -985,7 +969,11 @@ export default function DoubtSolving({
             </div>
 
             <div style={{ display: 'grid', gap: 10 }}>
-              {steps.slice(0, shown).map((s, i) => <StepCard key={i} step={s} n={i + 1} />)}
+              {steps.slice(0, shown).map((s, i) => (
+                <div key={i} ref={i === shown - 1 ? newestStep : undefined}>
+                  <StepCard step={s} n={i + 1} />
+                </div>
+              ))}
               {shown < total && <LockedStep step={steps[shown]} n={shown + 1} />}
             </div>
           </>
@@ -998,7 +986,7 @@ export default function DoubtSolving({
           : { background: T.bgAlt, borderTop: `1px solid ${T.divider}`, padding: '12px 14px calc(12px + env(safe-area-inset-bottom))' }}>
           {shown < total ? (
             <button
-              onClick={() => setRevealed(r => r + 1)}
+              onClick={() => { setRevealed(r => r + 1); revealScroll.current = true }}
               style={{
                 width: '100%', height: 52, borderRadius: 15, background: T.accent,
                 border: 'none', color: '#fff', fontSize: 15, fontWeight: 700,
@@ -1021,7 +1009,7 @@ export default function DoubtSolving({
           <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
             <button
               onClick={() => onOpenChat?.(
-                `I'm stuck on step ${shown} of this: ${question}\n\n${steps[shown - 1]?.title || ''}\n${steps[shown - 1]?.working || ''}`,
+                stuckMessage({ question, step: shown, total: steps.length, title: steps[shown - 1]?.title }),
                 // The chat opens ANCHORED to this step. A prefilled sentence
                 // was not enough: the student still landed on a cold
                 // "Welcome to Kyno" with generic chips, which is the opposite

@@ -60,3 +60,17 @@ export function splitSteps(plan: SolverPlanLike | null | undefined): DoubtStep[]
 export function weaknessSuggestion(mistakes?: MistakeRowLike[], now?: number): WeaknessSuggestion | null
 export function ownMistakeLine(topic: string, mistakes?: MistakeRowLike[], now?: number): string | null
 export function recentDoubtCards(doubts?: DoubtLike[], limit?: number, now?: number): RecentDoubtCard[]
+
+/** Collapse a name an older build stored twice: "AbAb" -> "Ab". */
+export function collapseDoubled(name: unknown): string
+
+/** A short, readable line for "I'm stuck here" -- never the raw step source. */
+export function stuckMessage(args: {
+  question?: string
+  step: number
+  total?: number
+  title?: string
+}): string
+
+/** A step title as a sentence, with markup and LaTeX reduced to words. */
+export function plainSummary(text: unknown): string

@@ -37,6 +37,7 @@ import SpaceFrame from '../components/SpaceFrame'
 import { resolveSpace, resolveRoute, SPACE_VIEW_EVENT, SPACE_VIEW_CHANGED, SPACE_HOME_VIEW } from '../lib/spaces.core'
 import { KEEP_MOUNTED, busyPages } from '../lib/keepMounted'
 import BlankGuard from '../components/BlankGuard'
+import { setPendingHandoff } from '../lib/chatHandoff'
 import { refreshSocial } from '../lib/social'
 import { startReminderClock } from '../lib/reminder'
 import { XPToast } from '../components/GameBar'
@@ -503,6 +504,18 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
             <div {...pageProps('doubt')}>
               {mounted('doubt') && (
               <div style={{ flex: 1, minHeight: 0, position: 'relative', display: 'flex', flexDirection: 'column' }}>
+                {/*
+                  * This toggle used to be `position: absolute` over the thread.
+                  * Out of flow means nothing reserves its space, so every
+                  * message that scrolled past slid underneath it -- and the
+                  * scroller grew a 50px top padding to hide that at rest only.
+                  * A real row cannot be overlapped by anything.
+                  */}
+                <div style={{
+                  flexShrink: 0, display: 'flex', justifyContent: 'flex-end',
+                  padding: isMobile ? '6px 12px 0' : '8px 16px 0',
+                  paddingRight: isMobile ? 'max(12px, env(safe-area-inset-right))' : 16,
+                }}>
                 <button className="kyno-ghost"
                   onClick={() => {
                     const next = solverUi === 'chat' ? 'classic' : 'chat'
@@ -510,8 +523,7 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
                     try { setRaw(KEYS.solverUi, next) } catch {}
                   }}
                   style={{
-                    position: 'absolute', top: isMobile ? 8 : 10, zIndex: 20,
-                    right: isMobile ? 'max(12px, env(safe-area-inset-right))' : 16,
+                    flexShrink: 0,
                     padding: isMobile ? '6px 12px' : '6px 14px', borderRadius: 999, cursor: 'pointer',
                     background: 'rgba(13,16,25,0.9)',
 
@@ -526,6 +538,7 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
                     ? (isMobile ? '◈ Visual' : '◈ Visual mode')
                     : (isMobile ? '💬 Chat' : '💬 Chat mode')}
                 </button>
+                </div>
 
                 {solverUi === 'chat' ? (
                   <KairoChatM />
@@ -551,19 +564,15 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
                 <DoubtSolving
                   profile={profile}
                   onOpenChat={(seed: string, anchor?: any) => {
-                    // Reuse the ONE existing chat instead of mounting a second
-                    // KairoChat: both instances would listen for
-                    // kairo:load-chat and both would write the chat id.
+                    // Reuse the ONE existing chat rather than mounting a second
+                    // KairoChat: both would listen for the same events and both
+                    // would write the chat id.
                     setActive('doubt')
-                    // The header must say what the student is doing. "Kyno's
-                    // Solver" over a chat they opened from step 2 reads as a
-                    // different place, which is how the thread was lost.
                     setTitleOverride(anchor ? { page: 'doubt', text: `Stuck on step ${anchor.step}` } : null)
-                    setTimeout(() => {
-                      window.dispatchEvent(new CustomEvent('kairo:load-chat', {
-                        detail: { id: 'new', seed, anchor },
-                      }))
-                    }, 60)
+                    // QUEUED, not timed. A 60ms dispatch beat the chat's own
+                    // mount on a cold open, so the handoff arrived at nobody
+                    // and the student got the generic welcome instead.
+                    setPendingHandoff({ seed, anchor: anchor || null })
                   }}
                 />
                 </SpaceFrame>

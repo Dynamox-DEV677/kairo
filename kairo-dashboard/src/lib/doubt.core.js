@@ -233,10 +233,10 @@ export function weaknessSuggestion(mistakes = [], now = Date.now()) {
   const top = recent.slice().sort((a, b) => (b.severity || 0) - (a.severity || 0))[0]
   const n = top.count || 2
   return {
-    topic: top.topic,
+    topic: collapseDoubled(top.topic),
     subject: top.subject || '',
     count: n,
-    headline: `${sentenceCase(top.topic)} keeps tripping you up`,
+    headline: `${sentenceCase(collapseDoubled(top.topic))} keeps tripping you up`,
     detail: `${n} wrong this week — ask one now`,
     prompt: `Explain ${top.topic} to me from the start, and give me one practice question on it.`,
   }
@@ -291,4 +291,64 @@ export function recentDoubtCards(doubts = [], limit = 2, now = Date.now()) {
       // the stored answer, so reopening a solved doubt costs nothing
       answer: typeof d.answer === 'string' ? d.answer : '',
     }))
+}
+
+/**
+ * A name that got stored twice: "Photosynthesisphotosynthesis".
+ *
+ * No current code path builds one -- the templates interpolate a single
+ * variable and the mistake aggregator reads a single field -- so this is data
+ * already written by an older build. It heals on read rather than waiting for
+ * somebody to clear their storage, and on write so it cannot come back.
+ */
+export function collapseDoubled(name) {
+  const s = String(name || '').trim()
+  if (s.length < 4 || s.length % 2 !== 0) return s
+  const half = s.length / 2
+  return s.slice(0, half).toLowerCase() === s.slice(half).toLowerCase() ? s.slice(0, half) : s
+}
+
+/**
+ * The message that opens the chat from "I'm stuck here".
+ *
+ * It used to be the question and the ENTIRE step body concatenated with no
+ * separator, so the student watched their own words arrive as
+ * "...show each step Solve for $x$ $$x = \frac{-b \pm ...}{2a}$$ **Key
+ * takeaway:**". Three faults at once: no structure, raw LaTeX, and the whole
+ * source rather than the point.
+ *
+ * What Kyno needs is which question, which step, and what that step was doing.
+ * The working is already on the screen behind the chat; sending it again
+ * helps nobody and costs the student a wall of source.
+ */
+export function stuckMessage({ question, step, total, title }) {
+  const q = String(question || '').trim()
+  const t = plainSummary(title)
+  const where = total ? `step ${step} of ${total}` : `step ${step}`
+  const lines = [`I'm stuck on ${where}.`]
+  if (q) lines.push(`The question: ${q}`)
+  if (t) lines.push(`That step: ${t}`)
+  lines.push('Can you explain just that step differently?')
+  return lines.join('\n\n')
+}
+
+/**
+ * A step title as a sentence a person would say.
+ *
+ * Strips the markup and reduces maths to a readable placeholder rather than
+ * pasting its source -- "$$x = \frac{-b}{2a}$$" becomes "an equation", because
+ * the point of this line is WHICH step, not the algebra.
+ */
+export function plainSummary(text) {
+  let s = String(text || '')
+  s = s.replace(/\$\$[\s\S]*?\$\$/g, ' an equation ')
+  s = s.replace(/\$[^$\n]+\$/g, ' an expression ')
+  s = s.replace(/```[\s\S]*?```/g, ' ')
+  s = s.replace(/`([^`]*)`/g, '$1')
+  s = s.replace(/\*\*([^*]+)\*\*/g, '$1')
+  s = s.replace(/[*_#>]/g, ' ')
+  s = s.replace(/\[a-zA-Z]+\s*/g, ' ')      // any stray LaTeX command
+  s = s.replace(/[{}]/g, ' ')
+  s = s.replace(/\s+/g, ' ').trim()
+  return s.length > 160 ? s.slice(0, 157).trimEnd() + '…' : s
 }

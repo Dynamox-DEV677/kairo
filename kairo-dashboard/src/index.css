@@ -547,24 +547,18 @@ button, [role="button"], a, .kyno-tile, .kyno-chip {
   bottom: calc(96px + env(safe-area-inset-bottom)) !important;
 }
 
-/* Kyno's Solver composer: it lives at the bottom of a fixed-height overflow-
-   hidden column, so on phones it sat behind the floating bottom-nav dock with
-   only 18px clearance. Lift it above the dock (dock ~= 96px + safe-area). */
+/* Kyno's Solver composer.
+   It once lifted itself 100px to clear the floating bottom-nav dock. That was
+   right when the composer was the only thing clearing the dock -- but nav
+   clearance now belongs to the page wrapper (--kyno-nav-clearance, set once in
+   Dashboard.tsx for all 48 pages), so the lift became a SECOND reservation and
+   opened a ~100px hole between the input bar and the nav.
+   The :focus-within rules that used to sit here dropped the composer back down
+   when the keyboard opened; they were cancelling this double count, not solving
+   anything, so they went with it. A plain gap is all this needs. */
 @media (max-width: 768px) {
   .ks-composer {
-    margin-bottom: calc(100px + env(safe-area-inset-bottom)) !important;
-    transition: margin-bottom .2s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-  /* When the input is focused, the bottom dock auto-hides — so drop the composer
-     down to sit at the bottom instead of leaving the dock's reserved gap. */
-  .ks-composer:focus-within {
-    margin-bottom: calc(12px + env(safe-area-inset-bottom)) !important;
-  }
-  /* KairoChat (the default Solve UI) composer: it reserves 100px for the dock,
-     so when the input is focused (dock auto-hides) drop it flush to the bottom. */
-  .kc-composer { transition: padding-bottom .2s cubic-bezier(0.4, 0, 0.2, 1); }
-  .kc-composer:focus-within {
-    padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px)) !important;
+    margin-bottom: calc(10px + env(safe-area-inset-bottom)) !important;
   }
 }
 
@@ -2058,3 +2052,52 @@ html[data-theme="light"] [style*="rgb(17, 17, 17) none repeat scroll"]
    provides the breathing room, not the maths. */
 .kyno-formula-box .katex-display { margin: 0 !important; }
 .kyno-formula-box .katex-display > .katex { text-align: center; }
+
+/* ── rendered maths and prose, one place ───────────────────────────────────
+ *
+ * These rules were duplicated as inline <style> blocks inside four different
+ * components under two different class names, so ".fc-math" leaked globally
+ * whenever the old flashcards page mounted and a fix to one never reached the
+ * others.
+ */
+.kyno-math p { margin: 0 }
+.kyno-math p + p { margin-top: 8px }
+.kyno-math strong { font-weight: 700; color: #EDEDF5 }
+.kyno-math .katex { color: inherit }
+.kyno-math ul, .kyno-math ol { margin: 6px 0 0; padding-left: 20px }
+.kyno-math-mono { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace }
+
+/* A long derivation is wider than a phone. It scrolls on its own rather than
+   being cut off at the container edge, which is what hid the right-hand side
+   of every worked example. */
+.kyno-math .katex-display {
+  margin: 6px 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 2px;
+}
+.kyno-math .katex-display > .katex { text-align: left }
+
+/* KaTeX's throwOnError:false fallback. It renders the SOURCE in red, which is
+   correct -- a student can still read it -- but it must not run off the edge
+   unread. */
+.kyno-math .katex-error {
+  display: inline-block;
+  max-width: 100%;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/*
+ * Prose maths symbols.
+ *
+ * "where a ≠ 0" is ORDINARY PROSE, not a maths span, so the Unicode-to-LaTeX
+ * pass deliberately leaves it alone -- rewriting prose would print a literal
+ * \neq. But Plus Jakarta Sans has no glyph for ≠, so the browser drew a tofu
+ * box. The fix is a font that has the glyph, not a rewrite: this covers every
+ * symbol at once instead of only the ones anybody thought to enumerate.
+ */
+body, .kyno-math {
+  font-family: var(--kairo-font), "Segoe UI Symbol", "Cambria Math", "DejaVu Sans", sans-serif;
+}

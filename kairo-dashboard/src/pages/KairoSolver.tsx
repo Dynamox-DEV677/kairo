@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
   Send, StopCircle, Sparkles, Image as ImageIcon, Loader2,
   ChevronLeft, ChevronRight, Beaker, ExternalLink, BookOpen, Atom, RefreshCw, Layers, Headphones,
-  Mic, MicOff, Calendar, X, Paperclip,
+  Mic, MicOff, X, Paperclip,
   FileText as TextIcon, MapPin as MapPinIcon,
   Box as Box3DIcon, LayoutPanelTop as BothIcon, Wand2, Camera,
 } from 'lucide-react'
@@ -22,6 +22,7 @@ import { speak, stopSpeaking, ttsAvailable } from '../lib/tts'
 import { lookupNcert } from '../lib/ncertCacheLookup'
 import { aiHeadersAsync } from '../lib/devKey'
 import { prepMathMarkdown } from '../lib/math.core'
+import { useIsMobile } from '../hooks/useViewport'
 
 interface ImageSlide {
   url:         string
@@ -124,7 +125,9 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
   const [retryHint, setRetryHint]       = useState('')
   const [voiceOn, setVoiceOn]           = useState(false)
   const [voiceSupported, setVoiceSupported] = useState(false)
-  const [examModal, setExamModal]       = useState(false)
+  const isMobile = useIsMobile()
+  /** At rest the input is one line; focusing opens it up. */
+  const [focused, setFocused]           = useState(false)
   const [viewMode, setViewMode]         = useState<SolverViewMode>('auto')
   const [autoSwitched, setAutoSwitched] = useState(false)
   const abortRef = useRef<AbortController | null>(null)
@@ -496,8 +499,17 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
       {!showResult && (
         <div style={{
           flex: 1, minHeight: 0, position: 'relative', zIndex: 1,
-          display: 'flex', flexDirection: 'column', justifyContent: 'center',
-          overflowY: 'auto',
+          display: 'flex', flexDirection: 'column',
+          /*
+           * `safe center` centres only while the content FITS. Plain `center`
+           * on a scroll container overflows equally in both directions, and the
+           * top half becomes unreachable -- on a phone that cut the last
+           * suggestion chip in half at the composer's edge and no amount of
+           * scrolling brought it back. This is the same trap that clipped the
+           * flashcard answers.
+           */
+          justifyContent: 'safe center' as any,
+          overflowY: 'auto', paddingBottom: 8,
         }}>
           <Hero onPick={ask} />
         </div>
@@ -562,7 +574,7 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
         background: 'linear-gradient(180deg, rgba(20, 24, 35, 1) 0%, rgba(11, 11, 15, 1) 100%)',
         border: `1px solid ${voiceOn ? 'rgba(165, 180, 252, 0.55)' : 'rgba(255, 255, 255, 0.06)'}`,
         borderRadius: 28, padding: '10px 12px',
-        display: 'flex', alignItems: 'flex-end', gap: 10,
+        display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: 8,
         marginBottom: 18, marginTop: showResult ? 0 : 14,
         position: 'relative', zIndex: 2,
         transition: 'border-color .24s ease, box-shadow .24s ease, background .24s ease',
@@ -600,131 +612,152 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
             {snapNote}
           </span>
         )}
-        <textarea
-          ref={taRef}
-          value={input}
-          onChange={handleInput}
-          onKeyDown={onKeyDown}
-          rows={1}
-          placeholder={voiceOn
-            ? 'Listening… speak your doubt'
-            : (showResult ? 'Ask another question…' : 'Ask anything — physics, biology, math, history…')}
-          disabled={busy}
-          style={{
-            flex: 1, minWidth: 0, background: 'transparent', border: 'none', outline: 'none',
-            color: '#fafafa', fontFamily: 'inherit', fontSize: 14, resize: 'none',
-            padding: '8px 6px', lineHeight: 1.5, maxHeight: 140,
-          }}
-        />
-        {!busy && (
-          <>
-            {/* Snap-and-Solve. capture="environment" opens the rear camera
-                directly on a phone; on desktop it is an ordinary file picker,
-                so the same control works everywhere. */}
-            <input
-              ref={snapInputRef}
-              type="file"
-              accept="image/*"
-              capture="environment"
-              style={{ display: 'none' }}
-              onChange={e => {
-                const f = e.target.files?.[0]
-                if (f) snapSolve(f)
-                e.target.value = ''   // same photo twice in a row must re-fire
-              }}
-            />
-            <button
-              onClick={() => snapInputRef.current?.click()}
-              title="Photograph a question — Kyno types it out for you to check"
-              className="kr-tactile"
-              disabled={snapBusy}
-              aria-label="Photograph a question"
-              style={{
-                display: 'inline-flex', alignItems: 'center', gap: 6,
-                padding: '8px 14px', borderRadius: 999,
-                background: 'rgba(255,255,255,0.03)',
-                border: '1px solid rgba(255,255,255,0.08)',
-                color: '#9CA3AF', fontSize: 12.5, fontFamily: 'inherit',
-                cursor: snapBusy ? 'default' : 'pointer', flexShrink: 0,
-                opacity: snapBusy ? 0.6 : 1,
-              }}
-            >
-              <Camera size={14} />
-              {snapBusy ? 'Reading…' : 'Snap'}
-            </button>
+        {/*
+          * ONE explicit row, flex-wrap:nowrap.
+          *
+          * The previous attempt left these as direct children of a wrapping
+          * flex container and trusted them not to wrap. They wrapped: the
+          * textarea took a line of its own and the placeholder broke across
+          * two lines again. A row that must not wrap should say so rather
+          * than depend on every child's min-content width staying small.
+          */}
+        <div style={{
+          display: 'flex', alignItems: 'center', flexWrap: 'nowrap',
+          gap: 6, width: '100%', minWidth: 0,
+        }}>
+          {/*
+            * One row: attachments, input, send.
+            *
+            * This was five identically-weighted pills -- Snap, Document, Voice,
+            * Exam, Solve -- wrapping onto two rows above a full-width textarea,
+            * with Solve (the only one that submits anything) no more prominent
+            * than Exam. Snap, Document and Voice are ways of FILLING the input,
+            * so they read as icons beside it, and Solve is the one filled button.
+            */}
+          {!busy && (
+            <>
+              {/* Snap-and-Solve. capture="environment" opens the rear camera
+                  directly on a phone; on desktop it is an ordinary file picker,
+                  so the same control works everywhere. */}
+              <input
+                ref={snapInputRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                style={{ display: 'none' }}
+                onChange={e => {
+                  const f = e.target.files?.[0]
+                  if (f) snapSolve(f)
+                  e.target.value = ''   // same photo twice in a row must re-fire
+                }}
+              />
+              <button
+                onClick={() => snapInputRef.current?.click()}
+                title="Photograph a question — Kyno types it out for you to check"
+                className="kr-tactile"
+                disabled={snapBusy}
+                aria-label="Photograph a question"
+                style={{ ...btnAttach, opacity: snapBusy ? 0.6 : 1, cursor: snapBusy ? 'default' : 'pointer' }}
+              >
+                {snapBusy ? <Loader2 size={16} className="kr-voice-pulse" /> : <Camera size={16} />}
+              </button>
 
+              <button
+                onClick={() => docInputRef.current?.click()}
+                title="Attach a PDF or notes — Kyno will read it and answer from it"
+                className="kr-tactile"
+                disabled={docBusy}
+                aria-label={docName ? 'Change the attached document' : 'Attach a document'}
+                style={{
+                  ...btnAttach,
+                  opacity: docBusy ? 0.6 : 1, cursor: docBusy ? 'default' : 'pointer',
+                  ...(docName ? { border: '1px solid rgba(165,180,252,0.45)', color: '#c7d2fe' } : null),
+                }}>
+                {docBusy ? <Loader2 size={16} className="kr-voice-pulse" /> : <Paperclip size={16} />}
+              </button>
+              <input
+                ref={docInputRef}
+                type="file"
+                accept="application/pdf,.pdf,.txt,.md,image/*"
+                style={{ display: 'none' }}
+                onChange={e => { const f = e.target.files?.[0]; if (f) readDocument(f); e.currentTarget.value = '' }}
+              />
+            </>
+          )}
+          {voiceSupported && !busy && (
             <button
-              onClick={() => docInputRef.current?.click()}
-              title="Attach a PDF or notes — Kyno will read it and answer from it"
+              onClick={toggleVoice}
+              title={voiceOn ? 'Stop listening' : 'Speak your doubt'}
+              aria-label={voiceOn ? 'Stop listening' : 'Speak your doubt'}
+              aria-pressed={voiceOn}
               className="kr-tactile"
-              disabled={docBusy}
               style={{
-                display: 'inline-flex', alignItems: 'center', gap: 6,
-                padding: '8px 14px', borderRadius: 999,
-                background: 'rgba(255,255,255,0.03)',
-                border: '1px solid rgba(255,255,255,0.08)',
-                color: docBusy ? '#6B7280' : '#B1B5BA',
-                fontFamily: 'inherit', fontSize: 12, fontWeight: 600,
-                cursor: docBusy ? 'default' : 'pointer',
+                ...btnAttach,
+                background: voiceOn ? 'rgba(165, 180, 252, 0.18)' : 'rgba(255,255,255,0.03)',
+                border: `1px solid ${voiceOn ? 'rgba(165, 180, 252, 0.55)' : 'rgba(255,255,255,0.08)'}`,
+                color: voiceOn ? '#A5B4FC' : '#9CA3AF',
+                boxShadow: voiceOn ? '0 0 14px rgba(124, 92, 255, 0.32)' : 'none',
               }}>
-              <Paperclip size={14} />
-              {docBusy ? 'Reading…' : (docName ? 'Change' : 'Document')}
+              {voiceOn ? <Mic size={16} className="kr-voice-pulse" /> : <MicOff size={16} />}
             </button>
-            <input
-              ref={docInputRef}
-              type="file"
-              accept="application/pdf,.pdf,.txt,.md,image/*"
-              style={{ display: 'none' }}
-              onChange={e => { const f = e.target.files?.[0]; if (f) readDocument(f); e.currentTarget.value = '' }}
-            />
-          </>
-        )}
-        {voiceSupported && !busy && (
-          <button
-            onClick={toggleVoice}
-            title={voiceOn ? 'Stop listening' : 'Speak your doubt'}
-            className="kr-tactile"
+          )}
+
+          <textarea
+            ref={taRef}
+            value={input}
+            onChange={handleInput}
+            onKeyDown={onKeyDown}
+            onFocus={() => setFocused(true)}
+            onBlur={() => setFocused(false)}
+            rows={1}
+            placeholder={voiceOn
+              ? 'Listening… speak your doubt'
+              : (isMobile
+                  ? 'Ask anything…'
+                  : (showResult ? 'Ask another question…' : 'Ask anything — physics, biology, math, history…'))}
+            disabled={busy}
             style={{
-              display: 'inline-flex', alignItems: 'center', gap: 6,
-              padding: '8px 14px', borderRadius: 999,
-              background: voiceOn ? 'rgba(165, 180, 252, 0.18)' : 'rgba(255,255,255,0.03)',
-              border: `1px solid ${voiceOn ? 'rgba(165, 180, 252, 0.55)' : 'rgba(255,255,255,0.08)'}`,
-              color: voiceOn ? '#A5B4FC' : '#B1B5BA',
-              fontFamily: 'inherit', fontSize: 12, fontWeight: 600,
-              cursor: 'pointer',
-              boxShadow: voiceOn ? '0 0 14px rgba(124, 92, 255, 0.32)' : 'none',
-            }}>
-            {voiceOn ? <Mic size={14} className="kr-voice-pulse" /> : <MicOff size={14} />}
-            {voiceOn ? 'Listening' : 'Voice'}
-          </button>
-        )}
-        {!busy && (
-          <button onClick={() => setExamModal(true)} title="Plan your exam"
-            className="kr-tactile"
-            style={{
-              display: 'inline-flex', alignItems: 'center', gap: 6,
-              padding: '8px 14px', borderRadius: 999,
-              background: '#141A2A',
-              border: '1px solid rgba(255,255,255,0.08)',
-              color: '#B1B5BA', fontFamily: 'inherit', fontSize: 12, fontWeight: 600,
-              cursor: 'pointer',
-            }}>
-            <Calendar size={14} />
-            Exam
-          </button>
-        )}
-        {busy ? (
-          <button className="kyno-ghost" onClick={stop} style={btnStop}>
-            <StopCircle size={14} /> Stop
-          </button>
-        ) : (
-          <button className="kyno-ghost" onClick={() => ask(input)} disabled={!input.trim()} style={{
-            ...btnSend, opacity: input.trim() ? 1 : 0.45,
-            cursor: input.trim() ? 'pointer' : 'not-allowed',
-          }}>
-            <Send size={14} /> Solve
-          </button>
-        )}
+              flex: 1, minWidth: 90, background: 'transparent', border: 'none', outline: 'none',
+              color: '#fafafa', fontFamily: 'inherit',
+              // 16px minimum, or iOS zooms the whole page when it takes focus
+              fontSize: isMobile ? 16 : 14, resize: 'none',
+              padding: '8px 6px', lineHeight: 1.5,
+              /*
+               * A textarea grows to fit its VALUE, never its PLACEHOLDER. With
+               * rows={1} the long desktop placeholder wrapped to a second line
+               * and was sliced mid-glyph. Hence the short placeholder on phones,
+               * and a one-line floor here that handleInput grows from.
+               *
+               * `height` is deliberately absent: handleInput writes it directly
+               * on the element, and a value in this object would clobber that
+               * measurement on the very next render.
+               */
+              maxHeight: 140, overflowY: 'auto',
+            }}
+          />
+
+          {busy ? (
+            <button className="kyno-ghost" onClick={stop} style={btnStop} aria-label="Stop">
+              <StopCircle size={14} /> Stop
+            </button>
+          ) : (
+            <button
+              className="kyno-ghost"
+              onClick={() => ask(input)}
+              disabled={!input.trim()}
+              aria-label="Solve"
+              style={{
+                ...btnSend, flexShrink: 0,
+                ...(isMobile
+                  ? { width: 40, height: 40, padding: 0, justifyContent: 'center', borderRadius: 999 }
+                  : null),
+                opacity: input.trim() ? 1 : 0.45,
+                cursor: input.trim() ? 'pointer' : 'not-allowed',
+              }}>
+              <Send size={isMobile ? 18 : 14} />{!isMobile && ' Solve'}
+            </button>
+          )}
+        </div>
         <style>{`
           @keyframes kr-voice-pulse { 0%,100% { opacity: 1 } 50% { opacity: 0.45 } }
           .kr-voice-pulse { animation: kr-voice-pulse 1.2s ease-in-out infinite }
@@ -733,125 +766,24 @@ export default function KairoSolver({ onNavigate, onActiveChange }: KairoSolverP
           @media (max-width: 760px){
             .ks-result { grid-template-columns: 1fr !important; gap: 12px !important; }
             .ks-result > * { min-height: 320px; }
-            .ks-composer { flex-wrap: wrap; border-radius: 20px; padding: 12px !important; }
-            .ks-composer textarea { min-width: 100% !important; order: -1; font-size: 16px !important; padding: 6px 4px 10px !important; }
+            /* The textarea used to be forced full-width with order:-1, which
+               is what pushed the five action pills onto rows of their own
+               below it. It now sits inline between the attachment icons and
+               Solve, so the whole composer is a single row. */
+            .ks-composer { border-radius: 22px; padding: 8px !important; gap: 6px !important; }
+            /* One line at rest, whatever the placeholder does.
+               A textarea grows for its VALUE but never its PLACEHOLDER, so a
+               placeholder that wraps is simply sliced. Pinning the resting
+               height in CSS -- not the style prop -- keeps the composer one
+               line until the student types: handleInput writes style.height
+               inline, which beats this rule the moment there is content. */
+            .ks-composer textarea { height: 40px; }
+            .ks-composer textarea:focus { height: 52px; }
           }
         `}</style>
       </div>
 
-      <AnimatePresence>
-        {examModal && <ExamPlanModal onClose={() => setExamModal(false)} />}
-      </AnimatePresence>
     </div>
-  )
-}
-
-function ExamPlanModal({ onClose }: { onClose: () => void }) {
-  const [subject, setSubject] = useState('')
-  const [date, setDate]       = useState('')
-  const [topics, setTopics]   = useState('')
-  function save() {
-    if (!subject.trim() || !date) return
-    try {
-      const key = 'kyno:exams'
-      const list = JSON.parse(localStorage.getItem(key) || '[]')
-      list.push({
-        id:       Math.random().toString(36).slice(2, 10),
-        subject:  subject.trim(),
-        date,
-        topics:   topics.split(',').map(t => t.trim()).filter(Boolean),
-        createdAt: Date.now(),
-      })
-      localStorage.setItem(key, JSON.stringify(list))
-      onClose()
-    } catch { onClose() }
-  }
-  const daysLeft = date ? Math.max(0, Math.ceil((new Date(date).getTime() - Date.now()) / 86_400_000)) : 0
-  return (
-    <motion.div
-      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      onClick={onClose}
-      style={{
-        position: 'fixed', inset: 0, zIndex: 999,
-        background: 'rgba(0,0,0,0.78)',
-        display: 'grid', placeItems: 'center', padding: 16,
-      }}>
-      <motion.div
-        initial={{ y: 12, scale: 0.96 }} animate={{ y: 0, scale: 1 }}
-        onClick={e => e.stopPropagation()}
-        style={{
-          width: '100%', maxWidth: 460,
-          background: '#141A2A',
-          border: '1px solid rgba(165, 180, 252, 0.35)',
-          borderRadius: 18, padding: 24,
-          color: '#fafafa', fontFamily: 'inherit',
-          boxShadow: '0 24px 60px rgba(124, 92, 255, 0.03)',
-          position: 'relative',
-        }}>
-        <button className="kyno-ghost" onClick={onClose} aria-label="Close" style={{
-          position: 'absolute', top: 14, right: 14,
-          width: 30, height: 30, borderRadius: 8,
-          background: 'transparent', border: '1px solid rgba(255,255,255,0.08)',
-          color: '#9CA3AF', cursor: 'pointer', display: 'grid', placeItems: 'center',
-        }}>
-          <X size={14} />
-        </button>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-          <Calendar size={16} color="#A5B4FC" />
-          <span style={{ fontSize: 10.5, fontWeight: 700, color: '#A5B4FC', textTransform: 'uppercase', letterSpacing: 2 }}>
-            Plan an exam
-          </span>
-        </div>
-        <h3 style={{ margin: 0, fontSize: 18, fontWeight: 800 }}>Add an exam to your countdown</h3>
-        <p style={{ margin: '4px 0 14px', fontSize: 12.5, color: '#9CA3AF' }}>
-          Saved on this device. Kyno will show the countdown + adjust your weak-topic revisions toward the exam date.
-        </p>
-        <ExamLabel>Subject *</ExamLabel>
-        <ExamInput value={subject} onChange={setSubject} placeholder="e.g. Physics" autoFocus />
-        <ExamLabel>Date *</ExamLabel>
-        <ExamInput type="date" value={date} onChange={setDate} />
-        {date && (
-          <p style={{ margin: '6px 0 0', fontSize: 11.5, color: daysLeft <= 7 ? '#A5B4FC' : '#9CA3AF' }}>
-            {daysLeft === 0 ? 'Today' : daysLeft === 1 ? 'Tomorrow' : `${daysLeft} days from today`}
-          </p>
-        )}
-        <ExamLabel>Topics to focus on (optional)</ExamLabel>
-        <ExamInput value={topics} onChange={setTopics} placeholder="comma-separated, e.g. vectors, optics" />
-        <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 18 }}>
-          <button className="kyno-ghost" onClick={onClose} style={{
-            padding: '9px 16px', borderRadius: 9,
-            background: 'transparent', border: '1px solid rgba(255,255,255,0.08)',
-            color: '#B1B5BA', fontFamily: 'inherit', fontSize: 12.5, fontWeight: 600, cursor: 'pointer',
-          }}>Cancel</button>
-          <button className="kyno-chunky" onClick={save} disabled={!subject.trim() || !date} style={{
-            padding: '9px 20px', borderRadius: 9,
-            background: 'linear-gradient(135deg, #7C5CFF, #4A2FA8)',
-            color: '#fff', fontFamily: 'inherit', fontSize: 13, fontWeight: 700,
-            border: 'none', cursor: subject.trim() && date ? 'pointer' : 'not-allowed',
-            opacity: subject.trim() && date ? 1 : 0.5,
-          }}>Save exam</button>
-        </div>
-      </motion.div>
-    </motion.div>
-  )
-}
-
-function ExamLabel({ children }: { children: React.ReactNode }) {
-  return <div style={{
-    fontSize: 10.5, fontWeight: 700, color: '#9CA3AF',
-    textTransform: 'uppercase', letterSpacing: 1.4, margin: '12px 0 6px',
-  }}>{children}</div>
-}
-function ExamInput({ value, onChange, placeholder, autoFocus, type }: { value: string; onChange: (v: string) => void; placeholder?: string; autoFocus?: boolean; type?: string }) {
-  return (
-    <input type={type || 'text'} value={value} onChange={e => onChange(e.target.value)}
-      placeholder={placeholder} autoFocus={autoFocus}
-      style={{
-        width: '100%', boxSizing: 'border-box',
-        padding: '10px 12px', borderRadius: 10,
-        background: '#1C2233', border: '1px solid rgba(255,255,255,0.06)',
-        color: '#fafafa', fontFamily: 'inherit', fontSize: 13, outline: 'none',
-      }} />
   )
 }
 
@@ -1571,6 +1503,24 @@ const MD_COMPONENTS = {
       : <code style={{ background: '#1a1a2e', padding: '2px 6px', borderRadius: 4, fontSize: 12.5, color: '#A5B4FC', fontFamily: 'monospace' }}>{children}</code>
   },
   blockquote: ({ children }: any) => <blockquote style={{ borderLeft: '3px solid #7C5CFF', paddingLeft: 12, margin: '8px 0', color: '#B1B5BA', fontStyle: 'italic' }}>{children}</blockquote>,
+}
+
+/**
+ * An attachment affordance, not an action.
+ *
+ * Snap, Document and Voice were full pills with labels, the same visual weight
+ * as Solve -- five equal pills wrapping onto two rows, with the one button that
+ * actually submits the question no louder than the rest. They are ways of
+ * FILLING the input, so they read as icons beside it and Solve is the only
+ * thing shaped like a button you press.
+ */
+const btnAttach: React.CSSProperties = {
+  width: 32, height: 32, flexShrink: 0, padding: 0,
+  display: 'grid', placeItems: 'center', borderRadius: 999,
+  background: 'rgba(255,255,255,0.03)',
+  border: '1px solid rgba(255,255,255,0.08)',
+  color: '#9CA3AF', fontFamily: 'inherit', cursor: 'pointer',
+  transition: 'background .18s ease, border-color .18s ease, color .18s ease',
 }
 
 const btnSend: React.CSSProperties = {

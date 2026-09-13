@@ -174,6 +174,7 @@ export interface TwinState {
 }
 
 import * as storage from './storage'
+import { collapseDoubled } from './doubt.core'
 import { exportGameState, importGameState } from './game'
 // Shared arithmetic — see selectors.core.js. Imported here so the twin cannot
 // disagree with Home about a number they both display.
@@ -255,17 +256,42 @@ export function loadState(): TwinState {
       }
     }
     if (parsed.version !== 3) return emptyState()
-    return {
+    return healTopics({
       ...emptyState(),
       ...parsed,
       doubts:     parsed.doubts     ?? [],
       concepts:   parsed.concepts   ?? [],
       formulas:   parsed.formulas   ?? [],
       flashcards: parsed.flashcards ?? [],
-    }
+    })
   } catch {
     return emptyState()
   }
+}
+
+/**
+ * Repair topic names that were stored doubled.
+ *
+ * "photosynthesisphotosynthesis" reached three separate screens -- the
+ * flashcard chip, the Doubt home headline and the Focus header -- and each was
+ * patched on its own, which is why it kept coming back somewhere else. The
+ * display sites were never the bug: the NAME IS STORED DOUBLED, written before
+ * normalizeTopic() collapsed them at write time.
+ *
+ * So fixing it at any one screen fixes one screen. Healing here, at the single
+ * point every reader loads through, fixes all of them at once and the next
+ * saveState persists the repair. Write-time normalisation stops new ones;
+ * this clears the ones already on disk.
+ */
+function healTopics(state: TwinState): TwinState {
+  const fix = (t: any) => (typeof t === 'string' && t ? collapseDoubled(t) : t)
+  for (const list of [state.events, state.mastery, state.flashcards, state.doubts, state.concepts, state.formulas] as any[]) {
+    if (!Array.isArray(list)) continue
+    for (const row of list) {
+      if (row && typeof row === 'object' && 'topic' in row) row.topic = fix((row as any).topic)
+    }
+  }
+  return state
 }
 
 function saveState(state: TwinState) {
@@ -788,7 +814,11 @@ if (typeof window !== 'undefined') {
 
 export function normalizeTopic(s: string | undefined | null): string | undefined {
   if (!s) return undefined
-  return s.trim().toLowerCase().replace(/[_-]+/g, ' ').replace(/\s+/g, ' ').slice(0, 80)
+  const clean = s.trim().toLowerCase().replace(/[_-]+/g, ' ').replace(/\s+/g, ' ').slice(0, 80)
+  // A name stored twice -- "photosynthesisphotosynthesis" -- reached the
+  // screens that interpolate it. No current path builds one, so this is older
+  // data; collapsing here stops it being written again.
+  return collapseDoubled(clean)
 }
 
 function clamp01(x: number)    { return Math.max(0, Math.min(1, x)) }

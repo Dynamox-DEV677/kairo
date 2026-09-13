@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
 import { User } from 'lucide-react'
+import MathText from './MathText'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
@@ -71,9 +72,15 @@ export default function MessageBubble({ message, isLast, isStreaming, onChipActi
           position: 'relative',
         }}>
           {isUser ? (
-            <p style={{ fontSize: 14, color: '#d4d4d8', lineHeight: 1.6, margin: 0 }}>
-              {message.content}
-            </p>
+            /*
+             * The student's own bubble goes through the SAME renderer.
+             *
+             * It was a plain <p>, so anything handed over from another screen
+             * arrived as source: a "stuck on step 6" message showed the
+             * student raw $$, rac and **bold**. Their message can contain
+             * maths for exactly the same reasons Kyno's can.
+             */
+            <MathText text={message.content} style={{ fontSize: 14, color: '#d4d4d8', lineHeight: 1.6 }} />
           ) : (
             <div style={{ fontSize: 14, color: '#d4d4d8', lineHeight: 1.7 }}>
               <ReactMarkdown

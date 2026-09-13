@@ -16,28 +16,32 @@ const read = (...p) => readFileSync(join(ROOT, ...p), 'utf-8')
 
 test('Doubt step bodies go through the shared math renderer', () => {
   const src = read('src', 'pages', 'DoubtSolving.tsx')
-  assert.ok(src.includes('rehypeKatex, KATEX_OPTS'), 'the same options as the Formula Sheet')
-  assert.ok(src.includes('prepMathMarkdown'), 'and the same Unicode-Greek normaliser')
+  // ONE component now, imported. Four screens each carried their own copy and
+  // a fix landed on one and missed the rest three times running.
+  assert.ok(src.includes("from '../components/MathText'"), 'it imports the shared renderer')
   for (const field of ['step.title', 'step.working', 'step.why']) {
-    assert.ok(src.includes('<Prose text={' + field + '}'), field + ' must be rendered, not printed')
+    assert.ok(src.includes('<MathText text={' + field + '}'), field + ' must be rendered, not printed')
   }
   assert.ok(!src.includes('}>{step.working}</pre>'), 'the raw pre body is gone')
+  assert.ok(!src.includes('rehypeKatex'), 'and no longer configures KaTeX itself')
 })
 
-test('nobody creates a second KaTeX config', () => {
-  const walk = d => readdirSync(d).flatMap(n => {
-    const p = join(d, n)
-    return statSync(p).isDirectory() ? walk(p) : [p]
-  })
-  const SRC = join(ROOT, 'src')
-  const offenders = []
-  for (const f of walk(SRC).filter(f => f.endsWith('.tsx'))) {
-    const s = readFileSync(f, 'utf-8')
-    if (!s.includes('rehypeKatex')) continue
-    if (!s.includes('KATEX_OPTS')) offenders.push(f.slice(SRC.length + 1))
+test('the screens in this bug all share ONE renderer', () => {
+  // Four screens each carried their own copy of this and a fix landed on one
+  // and missed the rest three times running: raw $$ in a chat bubble,
+  // **bold** in a doubt step, a class name matching no CSS.
+  //
+  // NOT yet unified: ~20 other screens still wire rehypeKatex themselves.
+  // They share KATEX_OPTS (pinned by math-unicode.test.js) so the CONFIG
+  // cannot drift, but each still owns its markup. That is real remaining work.
+  for (const f of ['DoubtSolving', 'Practice', 'Notes', 'Flashcards']) {
+    const src = read('src', 'pages', f + '.tsx')
+    assert.ok(src.includes("components/MathText'"), f + ' must import the shared renderer')
+    assert.ok(!src.includes('rehypeKatex'), f + ' must not configure KaTeX itself')
   }
-  assert.deepEqual(offenders, [],
-    'these define their own KaTeX options, so fixing one surface would not fix them')
+  const bubble = read('src', 'components', 'MessageBubble.tsx')
+  assert.ok(bubble.includes('<MathText text={message.content}'),
+    "the student's own bubble renders, or a handed-over message arrives as source")
 })
 
 test('the solver is actually asked to emit delimiters', () => {

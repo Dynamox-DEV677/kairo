@@ -26,12 +26,7 @@ import {
   X, Bookmark, Clock, ChevronRight, Check, AlertTriangle, Mic, Camera, RotateCcw,
   Lock, Grid3x3, Flag, ArrowLeft, Layers, HelpCircle, PenLine, MessageSquare, Loader2,
 } from 'lucide-react'
-import ReactMarkdown from 'react-markdown'
-import remarkGfm from 'remark-gfm'
-import remarkMath from 'remark-math'
-import rehypeKatex from 'rehype-katex'
-import { KATEX_OPTS } from '../lib/katex'
-import { prepMathMarkdown } from '../lib/math.core'
+import MathText from '../components/MathText'
 import { T, FONT, MONO, ICON } from '../lib/spaceTokens'
 import { useSpaceLayout } from '../components/SpaceFrame'
 import { SPACE_VIEW_EVENT, publishSpaceView } from '../lib/spaces.core'
@@ -174,27 +169,6 @@ function Chrome({ label, msLeft, progress, onClose, exam = false }: {
   )
 }
 
-/**
- * Maths, wherever a card or a question is shown.
- *
- * Anything a student or a model writes can contain maths, so every such
- * surface renders through markdown + KaTeX. prepMathMarkdown normalises the
- * delimiters and maps Unicode Greek to LaTeX commands first, which is what
- * lets "sin θ" and "5 Ω" come out as maths rather than as stray glyphs.
- */
-function MathText({ text, style }: { text?: string | null; style?: Style }) {
-  const src = String(text ?? '')
-  if (!src.trim()) return null
-  return (
-    <div className="kyno-math" style={style}>
-      <style>{`.kyno-math p { margin: 0 } .kyno-math .katex { color: inherit } .kyno-math .katex-display { margin: 6px 0; overflow-x: auto; overflow-y: hidden }`}</style>
-      <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[[rehypeKatex, KATEX_OPTS]]}>
-        {prepMathMarkdown(src)}
-      </ReactMarkdown>
-    </div>
-  )
-}
-
 /* ── format: flashcard ────────────────────────────────────────────────────── */
 
 const GRADES = [
@@ -231,15 +205,32 @@ function FlashcardFormat({ card, missLine, onGrade, onAsk }: {
 
   // Subject and topic are frequently the same word -- a card tagged
   // Photosynthesis/Photosynthesis rendered its own name twice.
-  const pill = [...new Set([card?.subject, card?.topic].filter(Boolean).map(x => String(x).trim()))]
-    .join(' · ').toUpperCase()
+  // Deduped case-INSENSITIVELY. Matching on the exact string let
+  // "Photosynthesis" and "photosynthesis" both through, and the chip printed
+  // its own name twice.
+  const pill = (() => {
+    const seen = new Set<string>()
+    const parts: string[] = []
+    for (const raw of [card?.subject, card?.topic]) {
+      const v = String(raw || '').trim()
+      if (!v) continue
+      const k = v.toLowerCase()
+      if (seen.has(k)) continue
+      seen.add(k)
+      parts.push(v)
+    }
+    return parts.join(' · ').toUpperCase()
+  })()
 
   return (
-    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '14px 14px 0', minHeight: 0 }}>
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '14px 14px 0', minHeight: 0, overflowY: 'auto' }}>
       <div
         onClick={() => setFlipped(f => !f)}
         style={{
-          flex: 1, minHeight: 0, background: T.surface, borderRadius: 22, border: `1px solid ${T.border}`,
+          // 167px is what flex:1 left after the grading panel took its share
+          // on a 601px viewport -- too short to hold a revealed answer. A floor
+          // keeps the card usable; the column above scrolls if that overflows.
+          flex: 1, minHeight: 240, background: T.surface, borderRadius: 22, border: `1px solid ${T.border}`,
           display: 'flex', flexDirection: 'column', cursor: 'pointer', overflow: 'hidden',
         }}
       >
@@ -250,13 +241,29 @@ function FlashcardFormat({ card, missLine, onGrade, onAsk }: {
           <Bookmark size={17} color={T.faint} {...ICON} />
         </div>
 
-        {/* justify-content:center on a scrolling flex box clips the TOP of any
-            content taller than the box, and the clipped part cannot be
-            scrolled to -- which is why a two-line question lost its first
-            line. Auto margins centre it when it fits and let it scroll from
-            the top when it does not. */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '18px 18px', overflowY: 'auto' }}>
-        <div style={{ margin: 'auto 0', width: '100%' }}>
+        {/*
+          * Centring a SCROLL container has bitten this card twice, in opposite
+          * directions, and both times only the front face was checked.
+          *
+          *   justify-content:center  clipped the TOP of a long question, with
+          *                           no way to scroll up to it
+          *   margin: auto 0          absorbed the free space instead, which
+          *                           pushed the revealed answer outside the
+          *                           scrollable range entirely -- 265px of it
+          *                           unreachable, and cropped by the card
+          *
+          * `safe center` is the one mechanism that does both: it centres while
+          * the content fits and silently becomes flex-start the moment it
+          * overflows, so nothing is ever pushed out of reach. Where a browser
+          * does not know it the whole declaration is dropped and the content
+          * top-aligns, which is the safe direction to fail in.
+          */}
+        <div style={{
+          flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column',
+          justifyContent: 'safe center' as any,
+          padding: '18px 18px', overflowY: 'auto',
+        }}>
+        <div style={{ width: '100%', flexShrink: 0 }}>
           {/* BOTH faces go through the maths renderer. The front used to be
               plain text, so "sin θ + cos θ" and a resistance in Ω arrived as
               characters instead of maths -- on the very side the student is
