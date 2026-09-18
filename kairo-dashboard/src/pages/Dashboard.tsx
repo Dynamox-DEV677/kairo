@@ -27,6 +27,7 @@ import Practice from './Practice'
 import Performance from './Performance'
 import Plan from './Plan'
 import Notes from './Notes'
+import Reader from './Reader'
 import Profile from './Profile'
 import Progress from './Progress'
 import SpaceFrame from '../components/SpaceFrame'
@@ -110,6 +111,7 @@ const PAGE_TITLES: Record<string, string> = {
   'performance':    'Performance',
   'plan':           'Plan',
   'notes':          'Notes',
+  'reader':         'Reader',
   'profile':        'Profile',
   'progress':       'Progress',
   ops:              'Ops Dashboard',
@@ -648,6 +650,14 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
                   }}
                 />
                 </SpaceFrame>
+                </BlankGuard>
+              )}
+            </div>
+
+            <div {...pageProps('reader')}>
+              {mounted('reader') && (
+                <BlankGuard id="reader" active={active === 'reader'}>
+                  <Reader />
                 </BlankGuard>
               )}
             </div>

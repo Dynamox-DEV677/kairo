@@ -649,6 +649,9 @@ export default function DoubtSolving({
     }
   }
 
+  /** Confirmation after making cards, so the action is visibly not a no-op. */
+  const [cardNote, setCardNote] = useState('')
+
   /* ── saving ── */
 
   /**
@@ -658,6 +661,26 @@ export default function DoubtSolving({
    * the note remembers which cards are its own -- so it can say when it comes
    * back. Nothing is stored without a return date.
    */
+  /**
+   * Cards from this answer, on request.
+   *
+   * The generation already existed, but only inside save() -- a student who
+   * wanted flashcards had to work out that "Save to notes" would also make
+   * them. Making it its own action costs nothing and stops the feature being
+   * a secret.
+   */
+  function makeCards() {
+    const body = steps.map((st, i) => `## ${i + 1}. ${st.title}\n${st.working ? st.working + '\n' : ''}${st.why || ''}`).join('\n\n')
+    const cards = cardsForNote(question, body, { max: 4 })
+    if (!cards.length) { setCardNote('This answer was too short to make cards from.'); return }
+    let made = 0
+    for (const c of cards) {
+      try { recordFlashcard({ front: c.front, back: c.back, subject: subject || undefined, topic: topic || undefined, source: 'auto-from-note' }); made++ } catch { /* nicety */ }
+    }
+    setCardNote(`${made} flashcard${made === 1 ? '' : 's'} added${topic ? ` under ${topic}` : ''} — they'll come back in Practice.`)
+    setTimeout(() => setCardNote(''), 3200)
+  }
+
   function save() {
     const body = steps.map((s, i) => `## ${i + 1}. ${s.title}\n${s.working ? s.working + '\n' : ''}${s.why || ''}`).join('\n\n')
     const cards = cardsForNote(question, body, { max: 3 })
@@ -1005,6 +1028,21 @@ export default function DoubtSolving({
                 fontFamily: FONT, cursor: 'pointer',
               }}
             >Save to notes</button>
+          )}
+          <button
+            onClick={makeCards}
+            style={{
+              width: '100%', height: 46, marginTop: 10, borderRadius: 14,
+              background: T.raised, border: `1px solid ${T.borderCtl}`, color: T.text2,
+              fontSize: 13.5, fontWeight: 600, fontFamily: FONT, cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9,
+            }}
+          >
+            <Layers size={16} color={T.accentPale} {...ICON} />
+            Make flashcards from this
+          </button>
+          {cardNote && (
+            <div style={{ fontSize: 12.5, color: T.success, marginTop: 8, lineHeight: 1.5 }}>{cardNote}</div>
           )}
           <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
             <button
