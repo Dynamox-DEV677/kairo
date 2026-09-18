@@ -4,10 +4,26 @@ import groqPool from '../services/groqPool.js'
 
 const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions'
 
+/*
+ * Groq moved the Llama models to an Enterprise tier ("Contact Sales"), so a
+ * FREE-tier key asking for llama-3.3-70b-versatile or llama-3.1-8b-instant is
+ * refused with a 404 -- "does not exist or you do not have access to it". The
+ * pool had nothing else in it, so all four attempts failed, aiCall threw, and
+ * every AI feature died. /api/quiz/start was the visible symptom and it
+ * survived six audits because the 404 reads like a missing endpoint rather
+ * than a billing tier.
+ *
+ * gpt-oss-* have public pricing and free-tier access. 20b is also FASTER than
+ * the Llama it replaces (1000 tok/s vs 560), which suits the Vercel Hobby 10s
+ * function ceiling.
+ *
+ * If a model here ever 404s again, that is what it means: not gone, just not
+ * available to this key's tier. Check console.groq.com/docs/models.
+ */
 const MODEL_POOLS = {
-  speed:  ['llama-3.1-8b-instant',    'llama-3.3-70b-versatile'],
-  reason: ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant'],
-  code:   ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant'],
+  speed:  ['openai/gpt-oss-20b',  'openai/gpt-oss-120b'],
+  reason: ['openai/gpt-oss-120b', 'openai/gpt-oss-20b'],
+  code:   ['openai/gpt-oss-120b', 'openai/gpt-oss-20b'],
 }
 
 const TASK_POOL_MAP = {

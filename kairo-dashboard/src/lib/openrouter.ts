@@ -5,15 +5,15 @@ import { AiError } from './aiError.core'
 const PROXY_URL = '/api/ai/chat'
 
 export const FREE_MODELS = [
-  { id: 'llama-3.3-70b-versatile', name: 'Llama 3.3 70B',    provider: 'Groq', color: '#A5B4FC', badge: 'Smart' },
-  { id: 'llama-3.1-8b-instant',    name: 'Llama 8B Instant', provider: 'Groq', color: '#34d399', badge: 'Fast' },
+  { id: 'openai/gpt-oss-120b', name: 'GPT-OSS 120B', provider: 'Groq', color: '#A5B4FC', badge: 'Smart' },
+  { id: 'openai/gpt-oss-20b',  name: 'GPT-OSS 20B',  provider: 'Groq', color: '#34d399', badge: 'Fast' },
 ]
 
-export const DEFAULT_MODEL = 'llama-3.3-70b-versatile'
+export const DEFAULT_MODEL = 'openai/gpt-oss-120b'
 
 const FALLBACK_CHAIN = [
-  'llama-3.3-70b-versatile',
-  'llama-3.1-8b-instant',
+  'openai/gpt-oss-120b',
+  'openai/gpt-oss-20b',
 ]
 
 export interface Message {
