@@ -137,6 +137,12 @@ export default defineConfig({
       input: {
         main: resolve(__dirname, 'index.html'),
         'dashboard-preview': resolve(__dirname, 'dashboard-preview.html'),
+        // Built for the same reason: it is the only thing that exercises the
+        // pdf.js worker through a REAL bundle. The worker is referenced with
+        // `?url` so Vite emits and fingerprints it; a bare path works in dev
+        // and 404s the moment the bundle is hashed, and nothing catches that
+        // unless something importing it is actually built.
+        'reader-preview': resolve(__dirname, 'reader-preview.html'),
       },
       // temporarily on, to name a minified binding in a chunk-order crash
       output: {

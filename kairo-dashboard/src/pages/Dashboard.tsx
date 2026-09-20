@@ -27,6 +27,7 @@ import Practice from './Practice'
 import Performance from './Performance'
 import Plan from './Plan'
 import Notes from './Notes'
+import Reader from './Reader'
 import Profile from './Profile'
 import Progress from './Progress'
 import SpaceFrame from '../components/SpaceFrame'
@@ -110,6 +111,7 @@ const PAGE_TITLES: Record<string, string> = {
   'performance':    'Performance',
   'plan':           'Plan',
   'notes':          'Notes',
+  'reader':         'Reader',
   'profile':        'Profile',
   'progress':       'Progress',
   ops:              'Ops Dashboard',
@@ -638,6 +640,7 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
                 <BlankGuard id="notes" active={active === 'notes'}>
                 <SpaceFrame active="notes" onNavigate={navigate} visible={active === 'notes'}>
                 <Notes
+                  onOpenReader={() => navigate('reader')}
                   onOpenDoubt={(seed: string) => {
                     navigate('doubt-solving')
                     setTimeout(() => window.dispatchEvent(new CustomEvent('kyno:doubt-seed', { detail: { seed } })), 60)
@@ -648,6 +651,14 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
                   }}
                 />
                 </SpaceFrame>
+                </BlankGuard>
+              )}
+            </div>
+
+            <div {...pageProps('reader')}>
+              {mounted('reader') && (
+                <BlankGuard id="reader" active={active === 'reader'}>
+                  <Reader />
                 </BlankGuard>
               )}
             </div>

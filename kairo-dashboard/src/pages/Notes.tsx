@@ -15,7 +15,7 @@
  * produces the sentences -- that is the part that earns the marks.
  */
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
-import { Search, ChevronRight, ArrowLeft, Bookmark, Check, Play, Pause, Mic, Printer, Layers, Headphones, PenLine, FunctionSquare, AlertTriangle, Plus, X } from 'lucide-react'
+import { Search, ChevronRight, ArrowLeft, Bookmark, Check, Play, Pause, Mic, Printer, Layers, Headphones, PenLine, FunctionSquare, AlertTriangle, Plus, X, BookOpen } from 'lucide-react'
 import { SPACE_VIEW_EVENT, publishSpaceView } from '../lib/spaces.core'
 import { T, FONT, MONO, ICON, CALLOUT, ERR } from '../lib/spaceTokens'
 import type { ErrorType } from '../lib/spaceTokens'
@@ -119,9 +119,10 @@ const SHEET_FORMULAS = (SHEET as any).formulas as SheetFormula[]
 
 type View = { name: 'library' } | { name: 'note'; id: string } | { name: 'formulas' } | { name: 'watch' } | { name: 'write'; noteId?: string } | { name: 'new' }
 
-export default function Notes({ onOpenDoubt, onPractice }: {
+export default function Notes({ onOpenDoubt, onPractice, onOpenReader }: {
   onOpenDoubt?: (seed: string) => void
   onPractice?: (filter: { topics?: string[]; cardIds?: string[] }) => void
+  onOpenReader?: () => void
 }) {
   const [view, setView] = useState<View>({ name: 'library' })
   const [tick, setTick] = useState(0)
@@ -210,6 +211,32 @@ export default function Notes({ onOpenDoubt, onPractice }: {
         <div style={scroll}>
           <Eyebrow>Notes</Eyebrow>
           <h1 style={{ fontSize: 25, fontWeight: 700, margin: '8px 0 0', letterSpacing: -0.3 }}>Your library</h1>
+
+          {/*
+            * The way into the Reader.
+            *
+            * It lives here rather than in the drawer: the drawer is exactly
+            * Today plus the seven Spaces and a test enforces that, which is
+            * right -- it is the canonical answer to what Kyno is. A shelf of
+            * the student's own textbooks belongs with their notes and formulas,
+            * which is what this space already is.
+            */}
+          {onOpenReader && (
+            <Card style={{ padding: 13, borderRadius: 15, marginTop: 14 }} onClick={onOpenReader}>
+              <div style={{ display: 'flex', gap: 11, alignItems: 'center' }}>
+                <div style={{ width: 34, height: 34, borderRadius: 10, background: T.accentSurface, display: 'grid', placeItems: 'center', flexShrink: 0 }}>
+                  <BookOpen size={16} color={T.accentPale} {...ICON} />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 14, fontWeight: 600 }}>Your books</div>
+                  <div style={{ fontSize: 12, color: T.dim, marginTop: 2 }}>
+                    Add a textbook — search it, highlight it, make cards. Works offline.
+                  </div>
+                </div>
+                <ChevronRight size={17} color={T.faint} {...ICON} />
+              </div>
+            </Card>
+          )}
 
           <div style={{ position: 'relative', marginTop: 14 }}>
             <Search size={17} color={T.faint} {...ICON} style={{ position: 'absolute', left: 16, top: 14 }} />
