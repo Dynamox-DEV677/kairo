@@ -640,6 +640,7 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
                 <BlankGuard id="notes" active={active === 'notes'}>
                 <SpaceFrame active="notes" onNavigate={navigate} visible={active === 'notes'}>
                 <Notes
+                  onOpenReader={() => navigate('reader')}
                   onOpenDoubt={(seed: string) => {
                     navigate('doubt-solving')
                     setTimeout(() => window.dispatchEvent(new CustomEvent('kyno:doubt-seed', { detail: { seed } })), 60)

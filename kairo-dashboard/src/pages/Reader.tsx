@@ -15,6 +15,7 @@ import {
   BookOpen, Upload, Search as SearchIcon, X, Trash2, Layers,
   Sparkles, FileText, Loader2, Check, ChevronLeft, AlertTriangle,
 } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import { T, FONT, ICON } from '../lib/spaceTokens'
 import { extractPdfText, stripPageFurniture, looksScanned } from '../lib/pdfText'
 import { chunk, buildIndex, search, isConfident, snippet } from '../lib/search.core.js'
@@ -242,7 +243,10 @@ const Shelf: React.FC<{
 
 /* ── reading ──────────────────────────────────────────────────────────────── */
 
-const ACTIONS: { id: Highlight['action']; label: string; icon: React.ElementType; instant: boolean }[] = [
+// `icon: React.ElementType` makes TS collapse the union of every possible
+// component's props to `never`, so passing size/color is an error. LucideIcon
+// is the concrete type, and it is what spaces.ts already uses.
+const ACTIONS: { id: Highlight['action']; label: string; icon: LucideIcon; instant: boolean }[] = [
   { id: 'flashcard', label: 'Make flashcards', icon: Layers, instant: true },
   { id: 'explain', label: 'Explain simply', icon: Sparkles, instant: false },
   { id: 'summarise', label: 'Summarise', icon: FileText, instant: false },
