@@ -127,7 +127,7 @@ function joinItems(items: any[]): string {
  * headers and footers without needing to know what this particular book puts
  * there.
  */
-export function stripPageFurniture(pages: PdfPage[]): string {
+export function cleanPages(pages: PdfPage[]): PdfPage[] {
   const counts = new Map<string, number>()
   const lines = pages.map(p =>
     p.text.split('\n').map(l => l.trim()).filter(Boolean),
@@ -141,9 +141,10 @@ export function stripPageFurniture(pages: PdfPage[]): string {
     /^\d{1,4}$/.test(l) ||                       // a bare page number
     /^reprint\b/i.test(l)
 
-  return lines
-    .map(ls => ls.filter(l => !isFurniture(l)).join('\n'))
-    .join('\n\n')
+  return pages.map((p, i) => ({
+    page: p.page,
+    text: lines[i].filter(l => !isFurniture(l)).join('\n'),
+  }))
 }
 
 /**
@@ -156,4 +157,157 @@ export function stripPageFurniture(pages: PdfPage[]): string {
 export function looksScanned(doc: PdfDoc): boolean {
   const chars = doc.pages.reduce((n, p) => n + p.text.replace(/\s/g, '').length, 0)
   return doc.pageCount > 0 && chars / doc.pageCount < 80
+}
+
+/* ── rendering the actual page ────────────────────────────────────────────── */
+
+/**
+ * Showing extracted TEXT was wrong, and a real chemistry chapter proved it:
+ *
+ *   "Volume by volume percentage Volume of solution Volume of solute 100 ="
+ *
+ * That is a formula whose LAYOUT carried all of its meaning, flattened into a
+ * word order that means nothing. Figures disappear entirely. In a science
+ * textbook the equations and diagrams ARE the content.
+ *
+ * So the reader draws the real page and lays an invisible, selectable text
+ * layer over it: the student reads the actual book, and selection still
+ * yields clean text for the index and the cards.
+ */
+
+/** Open a stored PDF for rendering. The caller destroys it when finished. */
+export async function openPdf(data: ArrayBuffer): Promise<any> {
+  const pdfjs = await getPdfjs()
+  return pdfjs.getDocument({
+    data,
+    disableFontFace: false,   // unlike extraction, real pages need real fonts
+    isEvalSupported: false,
+  }).promise
+}
+
+export interface PageRender {
+  /** Resolves when the page is on the canvas. Rejects if cancelled. */
+  done: Promise<{ page: any; viewport: any }>
+  /** Stop the draw. Safe at any point, including before it has begun. */
+  cancel: () => void
+}
+
+/**
+ * Draw one page to a canvas at the device's true pixel density.
+ *
+ * Returns a HANDLE rather than a bare promise, because a render in flight has
+ * to be cancellable. pdf.js refuses to run two renders against one canvas, and
+ * a second one starts more easily than it looks: tapping Next twice, the
+ * scrollbar appearing, a phone rotating, the keyboard opening. Without a
+ * cancel, the NEW draw is the one that gets rejected -- so the page the
+ * student asked for is exactly the page they never see, and the canvas sits
+ * blank with nothing in the console.
+ *
+ * Without the devicePixelRatio multiplier a textbook page is visibly soft on
+ * a phone, which defeats the point of showing the real page at all.
+ */
+export function renderPage(
+  doc: any,
+  pageNumber: number,
+  canvas: HTMLCanvasElement,
+  cssWidth: number,
+): PageRender {
+  let task: any = null
+  let cancelled = false
+
+  const done = (async () => {
+    const page = await doc.getPage(pageNumber)
+    if (cancelled) throw cancelledError()
+
+    const base = page.getViewport({ scale: 1 })
+    const scale = cssWidth / base.width
+    const dpr = Math.min(3, Math.max(1, window.devicePixelRatio || 1))
+    const draw = page.getViewport({ scale: scale * dpr })
+
+    canvas.width = Math.floor(draw.width)
+    canvas.height = Math.floor(draw.height)
+    canvas.style.width = Math.floor(draw.width / dpr) + 'px'
+    canvas.style.height = Math.floor(draw.height / dpr) + 'px'
+
+    const ctx = canvas.getContext('2d')
+    if (!ctx) throw new Error('no 2d context')
+
+    task = page.render({ canvasContext: ctx, viewport: draw, background: '#FFFFFF' })
+    await task.promise
+
+    // The TEXT layer uses the viewport WITHOUT the dpr multiplier. With it,
+    // every span lands at the wrong coordinates and the selection is offset
+    // from the words being dragged over.
+    return { page, viewport: page.getViewport({ scale }) }
+  })()
+
+  return {
+    done,
+    cancel() {
+      cancelled = true
+      try { task?.cancel() } catch { /* already finished */ }
+    },
+  }
+}
+
+function cancelledError(): Error {
+  const e = new Error('render cancelled')
+  e.name = 'RenderingCancelledException'
+  return e
+}
+
+/**
+ * Was this rejection just a cancelled draw?
+ *
+ * Cancelling is normal -- it happens on every page turn -- so it must never
+ * reach the student as an error message.
+ */
+export function isRenderCancelled(e: any): boolean {
+  return e?.name === 'RenderingCancelledException'
+}
+
+/**
+ * The invisible, selectable text layer that sits exactly over a page.
+ *
+ * This is what makes the real page still work like text: the student drags
+ * across the printed words and gets a clean string back for a flashcard.
+ */
+export async function paintTextLayer(
+  page: any,
+  container: HTMLElement,
+  viewport: any,
+): Promise<void> {
+  const pdfjs = await getPdfjs()
+  container.replaceChildren()
+
+  // pdf.js sizes the layer and every span from this variable. Without it the
+  // width/height calc() is invalid, the layer collapses, and selection lands
+  // nowhere. It must be the CSS scale -- the one without devicePixelRatio.
+  container.style.setProperty('--total-scale-factor', String(viewport.scale))
+
+  const layer = new pdfjs.TextLayer({
+    textContentSource: await page.getTextContent(),
+    container,
+    viewport,
+  })
+  await layer.render()
+
+  /*
+   * Promote each span's font to !important.
+   *
+   * `.kairo-mobile *` sets font-family with !important -- the same universal
+   * rule that once replaced KaTeX's glyphs with the app font and printed tofu
+   * in every formula on a phone. Here it would beat pdf.js's INLINE
+   * font-family (author !important outranks a plain inline declaration) and
+   * every invisible span would be measured in the wrong typeface.
+   *
+   * Nothing would look wrong -- the spans are transparent. The selection would
+   * simply drift a little further from the words with each line, which is the
+   * worst kind of bug to ship. An inline !important is the one thing that
+   * outranks an author !important, so pdf.js's own value is re-set as one.
+   */
+  for (const el of container.querySelectorAll<HTMLElement>('span')) {
+    const f = el.style.fontFamily
+    if (f) el.style.setProperty('font-family', f, 'important')
+  }
 }

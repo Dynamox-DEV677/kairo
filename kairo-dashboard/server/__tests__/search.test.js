@@ -10,7 +10,8 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import {
-  stem, tokenize, chunk, buildIndex, mergeIndexes, search, isConfident, snippet,
+  stem, tokenize, chunk, chunkPages, buildIndex, mergeIndexes, search,
+  isConfident, snippet,
 } from '../../src/lib/search.core.js'
 
 /** A small stand-in for a science chapter. Real text lives in the PDFs. */
@@ -130,4 +131,37 @@ test('the snippet centres on the match and marks the hit words', () => {
   assert.ok(hit.some(h => h.includes('hypertonic')), 'the matched term must be marked')
   // Segments, not HTML -- this module does not decide what a highlight looks like.
   assert.ok(sn.parts.every(p => typeof p.text === 'string' && typeof p.hit === 'boolean'))
+})
+
+/*
+ * A search hit has to be somewhere the student can go.
+ *
+ * The reader draws the real textbook page now, so "here is your answer,
+ * somewhere in this book" is not an answer. These pin the two ways that
+ * quietly breaks: losing the page number, and letting a short page's text
+ * get filed under the page before it.
+ */
+test('every passage remembers which page it came from', () => {
+  const pages = [
+    { page: 1, text: 'A'.repeat(40) + ' photosynthesis happens in the chloroplast of a plant cell.' },
+    { page: 2, text: 'B'.repeat(40) + ' respiration releases the energy stored in glucose molecules.' },
+  ]
+  const passages = chunkPages(pages)
+  assert.ok(passages.length >= 2)
+  assert.deepEqual([...new Set(passages.map(p => p.page))].sort(), [1, 2])
+
+  const ix = buildIndex(passages.map((p, i) => ({ id: String(i), text: p.text, page: p.page })))
+  assert.equal(search(ix, 'chloroplast')[0].doc.page, 1)
+})
+
+test('a short page is never folded into the page before it', () => {
+  // chunk() glues a stray fragment onto the previous chunk. Across a page
+  // boundary that would file this text under page 1 and send the student to a
+  // page that does not contain it, so chunking must happen per page.
+  const pages = [
+    { page: 1, text: 'The solvent is the component present in the larger amount. '.repeat(6) },
+    { page: 2, text: 'Tyndall effect.' },
+  ]
+  const tyndall = chunkPages(pages).find(p => p.text.includes('Tyndall'))
+  assert.equal(tyndall.page, 2)
 })

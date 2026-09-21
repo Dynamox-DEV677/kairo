@@ -32,6 +32,10 @@ export interface Snippet {
 export function stem(word: string): string
 export function tokenize(text: string): string[]
 export function chunk(text: string, opts?: { min?: number; max?: number }): string[]
+export function chunkPages(
+  pages: { page: number; text: string }[],
+  opts?: { min?: number; max?: number },
+): { text: string; page: number }[]
 export function buildIndex(docs: SearchDoc[]): SearchIndex
 export function mergeIndexes(indexes: SearchIndex[]): SearchIndex
 export function search(

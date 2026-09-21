@@ -2140,3 +2140,69 @@ html[data-theme="light"] [style*="rgb(17, 17, 17) none repeat scroll"]
 body, .kyno-math {
   font-family: var(--kairo-font), "Segoe UI Symbol", "Cambria Math", "DejaVu Sans", sans-serif;
 }
+
+/* ── the reader's PDF text layer ──────────────────────────────────────────── */
+
+/*
+ * Kyno's reader draws the real page to a canvas and lays an invisible,
+ * selectable copy of its text exactly on top -- the same trick every browser's
+ * PDF viewer uses. The student sees the actual textbook, diagrams, formulae
+ * and all, and dragging across it still yields clean text for a flashcard.
+ *
+ * This is a minimal port of pdf.js's own .textLayer rules. Importing
+ * pdfjs-dist/web/pdf_viewer.css instead would pull six thousand lines of
+ * viewer chrome in to fight with the app's styles for the sake of this one
+ * block. The custom properties are NOT decoration: pdf.js writes --font-height,
+ * --scale-x and --rotate onto each span and expects these calc()s to be here.
+ */
+.kyno-textlayer {
+  position: absolute;
+  inset: 0;
+  text-align: initial;
+  overflow: clip;
+  line-height: 1;
+  letter-spacing: normal;
+  word-spacing: normal;
+  -webkit-text-size-adjust: none;
+  text-size-adjust: none;
+  forced-color-adjust: none;
+  transform-origin: 0 0;
+  z-index: 1;
+  /* pdf.js rounds the layer's size to whole pixels against these. */
+  --scale-round-x: 1px;
+  --scale-round-y: 1px;
+  --min-font-size: 1;
+  --text-scale-factor: calc(var(--total-scale-factor) * var(--min-font-size));
+  --min-font-size-inv: calc(1 / var(--min-font-size));
+}
+
+.kyno-textlayer span,
+.kyno-textlayer br {
+  color: transparent;
+  position: absolute;
+  white-space: pre;
+  cursor: text;
+  transform-origin: 0% 0%;
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+.kyno-textlayer > :not(.markedContent),
+.kyno-textlayer .markedContent span:not(.markedContent) {
+  z-index: 1;
+  --font-height: 0;
+  --scale-x: 1;
+  --rotate: 0deg;
+  font-size: calc(var(--text-scale-factor) * var(--font-height));
+  transform: rotate(var(--rotate)) scaleX(var(--scale-x)) scale(var(--min-font-size-inv));
+}
+
+.kyno-textlayer .markedContent { display: contents }
+
+/*
+ * The selection is the ONLY visible part of this layer, so it has to read as
+ * a highlighter on paper rather than a browser's blue box over a photo.
+ */
+.kyno-textlayer ::selection {
+  background: rgba(124, 92, 255, 0.34);
+}

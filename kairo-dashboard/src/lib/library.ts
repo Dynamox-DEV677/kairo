@@ -14,7 +14,15 @@
 import type { SearchIndex } from './search.core'
 
 const DB_NAME = 'kyno-library'
-const DB_VERSION = 1
+/*
+ * v2 stores the PDF's own bytes alongside the index.
+ *
+ * v1 kept only extracted text, and a real chemistry chapter showed why that
+ * was never going to be a textbook reader: the formula for volume percentage
+ * came out as a meaningless word order and every figure was simply gone. The
+ * bytes are the book; the text is a search index over it.
+ */
+const DB_VERSION = 2
 
 export const BOOKS = 'books'
 export const HIGHLIGHTS = 'highlights'
@@ -28,8 +36,21 @@ export interface Book {
   passageCount: number
   /** The whole searchable index, including passage text. */
   index: SearchIndex
+  /**
+   * The original PDF, so the reader can draw the real pages.
+   *
+   * A Blob, not an ArrayBuffer: Safari has historically mangled large
+   * ArrayBuffers through structured clone, and a Blob is also what lets the
+   * browser keep an 11MB book on disk instead of in memory.
+   *
+   * Optional because books shelved by v1 do not have it; the reader offers to
+   * re-add those rather than pretending it can render them.
+   */
+  file?: Blob
   /** Where the student had got to, so the reader reopens where they left. */
   lastPassage?: number
+  /** Which page they were on. Pages are what the reader shows now. */
+  lastPage?: number
   lastOpenedAt?: number
 }
 
@@ -38,7 +59,14 @@ export interface Highlight {
   id: string
   bookId: string
   bookTitle: string
-  passage: number
+  /**
+   * The page it was highlighted on, so "go back to it" can actually go.
+   *
+   * `passage` is what v1 recorded, when the reader paged through extracted
+   * passages instead of the book. Kept so old highlights still render.
+   */
+  page?: number
+  passage?: number
   text: string
   createdAt: number
   /**
@@ -102,15 +130,19 @@ export async function getBook(id: string): Promise<Book | undefined> {
 }
 
 /**
- * Every book, newest first, WITHOUT their indexes.
+ * Every book, newest first, WITHOUT their indexes or their bytes.
  *
- * The shelf only needs titles; loading twenty full indexes to draw a list is
- * how a library screen takes two seconds to open on a cheap phone.
+ * The shelf only needs titles. Loading twenty full indexes to draw a list is
+ * how a library screen takes two seconds to open on a cheap phone -- and now
+ * that the PDFs are stored too, it would also pull a couple of hundred
+ * megabytes through memory to render a list of names.
  */
-export async function listBooks(): Promise<Omit<Book, 'index'>[]> {
+export type BookSummary = Omit<Book, 'index' | 'file'> & { hasFile: boolean }
+
+export async function listBooks(): Promise<BookSummary[]> {
   const all = await tx<Book[]>(BOOKS, 'readonly', s => s.getAll())
   return all
-    .map(({ index, ...rest }) => rest)
+    .map(({ index, file, ...rest }) => ({ ...rest, hasFile: !!file }))
     .sort((a, b) => (b.lastOpenedAt || b.addedAt) - (a.lastOpenedAt || a.addedAt))
 }
 
@@ -121,10 +153,10 @@ export async function deleteBook(id: string): Promise<void> {
 }
 
 /** Remember where they stopped reading. */
-export async function noteProgress(id: string, passage: number): Promise<void> {
+export async function noteProgress(id: string, page: number): Promise<void> {
   const b = await getBook(id)
   if (!b) return
-  await putBook({ ...b, lastPassage: passage, lastOpenedAt: Date.now() })
+  await putBook({ ...b, lastPage: page, lastOpenedAt: Date.now() })
 }
 
 /* ── highlights ───────────────────────────────────────────────────────────── */

@@ -14,15 +14,20 @@ import React, { useState, useEffect, useRef, useCallback } from 'react'
 import {
   BookOpen, Upload, Search as SearchIcon, X, Trash2, Layers,
   Sparkles, FileText, Loader2, Check, ChevronLeft, AlertTriangle,
+  ChevronRight, ZoomIn, ZoomOut,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { T, FONT, ICON } from '../lib/spaceTokens'
-import { extractPdfText, stripPageFurniture, looksScanned } from '../lib/pdfText'
-import { chunk, buildIndex, search, isConfident, snippet } from '../lib/search.core.js'
+import {
+  extractPdfText, cleanPages, looksScanned, openPdf, renderPage, paintTextLayer,
+  isRenderCancelled,
+} from '../lib/pdfText'
+import { chunkPages, buildIndex, search, isConfident, snippet } from '../lib/search.core.js'
 import type { SearchResult } from '../lib/search.core'
 import {
-  type Book, type Highlight, putBook, getBook, listBooks, deleteBook,
-  noteProgress, putHighlight, deleteHighlight, pendingHighlights, bookId, usage,
+  type Book, type BookSummary, type Highlight, putBook, getBook, listBooks,
+  deleteBook, noteProgress, putHighlight, deleteHighlight, pendingHighlights,
+  bookId, usage,
 } from '../lib/library'
 import { buildClozeCards } from '../lib/cloze.core.js'
 import { recordFlashcard } from '../lib/twin'
@@ -39,7 +44,7 @@ const uid = () => Math.random().toString(36).slice(2, 10)
 
 export default function Reader() {
   const [view, setView] = useState<View>({ name: 'shelf' })
-  const [books, setBooks] = useState<Omit<Book, 'index'>[]>([])
+  const [books, setBooks] = useState<BookSummary[]>([])
   const [pending, setPending] = useState<Highlight[]>([])
   const [space, setSpace] = useState<{ usedMb: number; quotaMb: number } | null>(null)
   const [err, setErr] = useState('')
@@ -94,7 +99,7 @@ export default function Reader() {
 
 const Shelf: React.FC<{
   shell: React.CSSProperties
-  books: Omit<Book, 'index'>[]
+  books: BookSummary[]
   pending: number
   space: { usedMb: number; quotaMb: number } | null
   onOpen: (id: string) => void
@@ -120,8 +125,19 @@ const Shelf: React.FC<{
         return
       }
       setBusy('Indexing…')
-      const passages = chunk(stripPageFurniture(doc.pages))
-      const index = buildIndex(passages.map((text, i) => ({ id: `${id}:${i}`, text, n: i })))
+      /*
+       * Chunk PAGE BY PAGE, so every passage remembers where it came from.
+       *
+       * The index used to be built over one flattened string. It could find
+       * the right paragraph and then had nothing to do with it -- the reader
+       * shows real pages, and "here is your answer, somewhere in this book"
+       * is not an answer. Indexing per page costs nothing and makes a search
+       * hit a place you can turn to.
+       */
+      const passages = chunkPages(cleanPages(doc.pages))
+      const index = buildIndex(
+        passages.map((p, i) => ({ id: `${id}:${i}`, text: p.text, n: i, page: p.page })),
+      )
       await putBook({
         id,
         title: doc.title || file.name.replace(/\.pdf$/i, ''),
@@ -130,6 +146,9 @@ const Shelf: React.FC<{
         pageCount: doc.pageCount,
         passageCount: passages.length,
         index,
+        // The book itself. Without this the reader has only the text, which
+        // is what made a chemistry formula come out as a shuffled sentence.
+        file,
       })
       setBusy('')
       onChanged()
@@ -207,8 +226,10 @@ const Shelf: React.FC<{
                   {b.title}
                 </div>
                 <div style={{ fontSize: 12, color: T.dim, marginTop: 3 }}>
-                  {b.pageCount} pages · {b.passageCount} passages
-                  {b.lastPassage != null ? ` · resumed at ${b.lastPassage + 1}` : ''}
+                  {b.hasFile
+                    ? <>{b.pageCount} pages{b.lastPage ? ` · on page ${b.lastPage}` : ''}</>
+                    /* Shelved before the reader kept the PDF itself. */
+                    : <span style={{ color: T.warning }}>Re-add this one to see the pages</span>}
                 </div>
               </button>
               <button
@@ -259,28 +280,110 @@ const BookView: React.FC<{
   onChanged: () => void
 }> = ({ id, shell, onBack, onChanged }) => {
   const [book, setBook] = useState<Book | null>(null)
-  const [at, setAt] = useState(0)
+  const [doc, setDoc] = useState<any>(null)
+  const [page, setPage] = useState(1)
+  const [zoom, setZoom] = useState(1)
+  const [width, setWidth] = useState(0)
+  const [loading, setLoading] = useState(true)
+  const [err, setErr] = useState('')
   const [q, setQ] = useState('')
   const [hits, setHits] = useState<SearchResult[] | null>(null)
   const [sel, setSel] = useState('')
   const [flash, setFlash] = useState('')
-  const bodyRef = useRef<HTMLDivElement>(null)
 
+  /*
+   * A callback ref, not useRef.
+   *
+   * The page container does not exist while the book is still opening -- that
+   * branch returns early -- so a mount effect reading a useRef found null,
+   * never measured, left the width at 0 and drew nothing at all. State set by
+   * the ref fires exactly when the node attaches, whenever that is.
+   */
+  const [scrollEl, setScrollEl] = useState<HTMLDivElement | null>(null)
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const textRef = useRef<HTMLDivElement>(null)
+  const docRef = useRef<any>(null)
+  const [drawing, setDrawing] = useState(true)
+
+  /* open the book */
   useEffect(() => {
-    getBook(id).then(b => {
-      if (!b) return
-      setBook(b)
-      setAt(b.lastPassage || 0)
-    })
+    let dead = false
+    ;(async () => {
+      try {
+        const b = await getBook(id)
+        if (dead) return
+        if (!b) { setErr('That book is no longer on your shelf.'); setLoading(false); return }
+        setBook(b)
+        setPage(Math.min(Math.max(1, b.lastPage || 1), b.pageCount || 1))
+        if (!b.file) { setLoading(false); return }   // shelved before v2
+        const d = await openPdf(await b.file.arrayBuffer())
+        if (dead) { d?.destroy?.(); return }
+        docRef.current = d
+        setDoc(d)
+        setLoading(false)
+      } catch (e: any) {
+        if (!dead) { setErr(studentMessage(e)); setLoading(false) }
+      }
+    })()
+    return () => {
+      dead = true
+      // The worker holds the whole decoded book. Leaving it open on every
+      // back-press is how a reader ends up costing hundreds of megabytes.
+      docRef.current?.destroy?.()
+      docRef.current = null
+    }
   }, [id])
 
-  // Persist the position, but not on every scroll -- a write per frame would
-  // thrash IndexedDB for no benefit.
+  /* how wide the page may be drawn */
+  useEffect(() => {
+    const el = scrollEl
+    if (!el) return
+    const measure = () => setWidth(Math.max(0, el.clientWidth - 24))
+    measure()
+    if (typeof ResizeObserver === 'undefined') {
+      window.addEventListener('resize', measure)
+      return () => window.removeEventListener('resize', measure)
+    }
+    const ro = new ResizeObserver(measure)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [scrollEl])
+
+  /* draw it */
+  useEffect(() => {
+    const d = doc
+    const cv = canvasRef.current
+    const tl = textRef.current
+    if (!d || !cv || !tl || !width) return
+
+    let alive = true
+    setDrawing(true)
+    const job = renderPage(d, page, cv, width * zoom)
+
+    job.done
+      .then(async ({ page: pg, viewport }) => {
+        if (!alive) return
+        await paintTextLayer(pg, tl, viewport)
+        if (!alive) return
+        pg.cleanup()
+        setDrawing(false)
+      })
+      .catch(e => {
+        // A cancelled draw is the normal result of turning a page.
+        if (alive && !isRenderCancelled(e)) { setErr(studentMessage(e)); setDrawing(false) }
+      })
+
+    // Cancelling here is what keeps the NEXT render alive: pdf.js will not run
+    // two draws against one canvas, and it rejects the second, not the first.
+    return () => { alive = false; job.cancel() }
+  }, [doc, page, zoom, width])
+
+  /* remember the page, but not on every tap */
   useEffect(() => {
     if (!book) return
-    const t = setTimeout(() => { noteProgress(book.id, at) }, 800)
+    const t = setTimeout(() => { noteProgress(book.id, page) }, 800)
     return () => clearTimeout(t)
-  }, [book, at])
+  }, [book, page])
 
   useEffect(() => {
     if (!book || !q.trim()) { setHits(null); return }
@@ -288,22 +391,30 @@ const BookView: React.FC<{
     setHits(isConfident(r) ? r : [])
   }, [book, q])
 
-  /** What the student has selected, if anything worth acting on. */
+  /**
+   * What the student has selected.
+   *
+   * The text layer is a grid of absolutely positioned spans, so a selection
+   * arrives carrying the line breaks and padding of the printed page.
+   * Collapsing the whitespace is what makes it usable as a flashcard.
+   */
   const readSelection = () => {
-    const s = window.getSelection?.()
-    const text = String(s?.toString() || '').trim()
-    return text.length >= 12 ? text : ''
+    const t = String(window.getSelection?.()?.toString() || '').replace(/\s+/g, ' ').trim()
+    return t.length >= 12 ? t : ''
   }
 
-  const onUp = () => {
-    const t = readSelection()
-    if (t) setSel(t)
+  const onUp = () => { const t = readSelection(); if (t) setSel(t) }
+
+  const goto = (n: number) => {
+    if (!book) return
+    setPage(Math.min(Math.max(1, n), book.pageCount || 1))
+    scrollEl?.scrollTo({ top: 0 })
   }
 
   async function act(action: Highlight['action']) {
     if (!book || !sel) return
     const h: Highlight = {
-      id: uid(), bookId: book.id, bookTitle: book.title, passage: at,
+      id: uid(), bookId: book.id, bookTitle: book.title, page,
       text: sel, createdAt: Date.now(), status: 'pending', action,
     }
 
@@ -331,51 +442,137 @@ const BookView: React.FC<{
     setTimeout(() => setFlash(''), 2600)
   }
 
-  if (!book) {
+  if (loading) {
     return <div style={shell}><div style={{ flex: 1, display: 'grid', placeItems: 'center', color: T.muted }}>Opening…</div></div>
   }
 
-  const passages = book.index.meta
-  const current = passages[at]
+  const header = (
+    <div style={{ padding: '12px 14px 10px', borderBottom: `1px solid ${T.divider}`, flexShrink: 0 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <button onClick={onBack} aria-label="Back to your books"
+          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
+          <ChevronLeft size={22} color={T.text2} {...ICON} />
+        </button>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 14, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {book?.title}
+          </div>
+          <div style={{ fontSize: 11.5, color: T.dim }}>page {page} of {book?.pageCount}</div>
+        </div>
+        <button onClick={() => setZoom(z => Math.max(0.8, Math.round((z - 0.2) * 10) / 10))}
+          disabled={zoom <= 0.8} aria-label="Zoom out"
+          style={{ background: 'none', border: 'none', padding: 5, cursor: zoom <= 0.8 ? 'default' : 'pointer' }}>
+          <ZoomOut size={18} color={zoom <= 0.8 ? T.fainter : T.text2} {...ICON} />
+        </button>
+        <button onClick={() => setZoom(z => Math.min(2.5, Math.round((z + 0.2) * 10) / 10))}
+          disabled={zoom >= 2.5} aria-label="Zoom in"
+          style={{ background: 'none', border: 'none', padding: 5, cursor: zoom >= 2.5 ? 'default' : 'pointer' }}>
+          <ZoomIn size={18} color={zoom >= 2.5 ? T.fainter : T.text2} {...ICON} />
+        </button>
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 10 }}>
+        <SearchIcon size={16} color={T.faint} {...ICON} />
+        <input
+          value={q} onChange={e => setQ(e.target.value)}
+          placeholder="Search this book"
+          style={{
+            flex: 1, background: 'transparent', border: 'none', outline: 'none',
+            color: T.text, fontFamily: FONT, fontSize: 16, padding: '6px 0',
+          }}
+        />
+        {q && (
+          <button onClick={() => setQ('')} aria-label="Clear search"
+            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
+            <X size={16} color={T.faint} {...ICON} />
+          </button>
+        )}
+      </div>
+    </div>
+  )
+
+  /*
+   * A book shelved before the reader kept the PDF itself. Saying so is better
+   * than rendering the old flattened text and calling it the book.
+   */
+  if (book && !book.file) {
+    return (
+      <div style={shell}>
+        {header}
+        <div style={{ flex: 1, display: 'grid', placeItems: 'center', padding: 24, textAlign: 'center' }}>
+          <div style={{ maxWidth: 320 }}>
+            <AlertTriangle size={26} color={T.warning} {...ICON} />
+            <div style={{ fontSize: 14.5, color: T.text2, marginTop: 14, lineHeight: 1.6 }}>
+              This book was added before Kyno kept the PDF itself, so there are no pages to show —
+              only the text it pulled out. Remove it and add the file again to read the real pages.
+            </div>
+            <button
+              onClick={async () => { await deleteBook(book.id); onChanged(); onBack() }}
+              style={{
+                marginTop: 18, padding: '12px 18px', borderRadius: 12, background: T.raised,
+                border: `1px solid ${T.borderCtl}`, color: T.text, fontFamily: FONT,
+                fontSize: 14, cursor: 'pointer',
+              }}
+            >
+              Remove it
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div style={shell}>
-      {/* chrome */}
-      <div style={{ padding: '12px 14px 10px', borderBottom: `1px solid ${T.divider}` }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <button onClick={onBack} aria-label="Back to your books"
-            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
-            <ChevronLeft size={22} color={T.text2} {...ICON} />
-          </button>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 14, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              {book.title}
-            </div>
-            <div style={{ fontSize: 11.5, color: T.dim }}>{at + 1} of {passages.length}</div>
-          </div>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 10 }}>
-          <SearchIcon size={16} color={T.faint} {...ICON} />
-          <input
-            value={q} onChange={e => setQ(e.target.value)}
-            placeholder="Search this book"
-            style={{
-              flex: 1, background: 'transparent', border: 'none', outline: 'none',
-              color: T.text, fontFamily: FONT, fontSize: 16, padding: '6px 0',
-            }}
+      {header}
+
+      {/* The page itself, always mounted. Unmounting it to show search results
+          threw the rendered canvas away and made every search cost a redraw. */}
+      <div
+        ref={setScrollEl}
+        onMouseUp={onUp}
+        onTouchEnd={onUp}
+        style={{ flex: 1, overflow: 'auto', padding: '12px 12px 150px', WebkitOverflowScrolling: 'touch' }}
+      >
+        <div style={{ position: 'relative', width: 'fit-content', margin: '0 auto' }}>
+          <canvas
+            ref={canvasRef}
+            style={{ display: 'block', borderRadius: 10, background: '#fff', boxShadow: '0 6px 24px rgba(0,0,0,0.35)' }}
           />
-          {q && (
-            <button onClick={() => setQ('')} aria-label="Clear search"
-              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
-              <X size={16} color={T.faint} {...ICON} />
-            </button>
+          <div ref={textRef} className="kyno-textlayer" />
+          {/* A textbook page takes a moment to draw. Saying so beats a blank
+              white rectangle that looks like a book that failed to open. */}
+          {drawing && (
+            <div style={{
+              position: 'absolute', inset: 0, display: 'grid', placeItems: 'center',
+              background: 'rgba(255,255,255,0.65)', borderRadius: 10, zIndex: 2,
+            }}>
+              <Loader2 size={22} color={T.accent} {...ICON} className="kyno-spin" />
+            </div>
           )}
         </div>
+        {err && (
+          <div style={{ marginTop: 14, fontSize: 13, color: T.warning, textAlign: 'center' }}>{err}</div>
+        )}
       </div>
 
-      {/* search results replace the page while searching */}
-      {hits !== null ? (
-        <div style={{ flex: 1, overflowY: 'auto', padding: '14px 14px 120px' }}>
+      {/* pager — hidden while the sheet or search is up, so it never sits under them */}
+      {!sel && hits === null && (
+        <div style={{
+          position: 'absolute', left: 14, right: 14,
+          bottom: 'calc(84px + env(safe-area-inset-bottom))', zIndex: 30,
+          display: 'flex', alignItems: 'center', gap: 10,
+        }}>
+          <PageBtn label="Previous" disabled={page <= 1} onClick={() => goto(page - 1)} icon={ChevronLeft} />
+          <PageBtn label="Next" disabled={page >= (book?.pageCount || 1)} onClick={() => goto(page + 1)} icon={ChevronRight} />
+        </div>
+      )}
+
+      {/* search results sit OVER the page rather than replacing it */}
+      {hits !== null && (
+        <div style={{
+          position: 'absolute', left: 0, right: 0, top: 104, bottom: 0, zIndex: 35,
+          background: T.bg, overflowY: 'auto', padding: '14px 14px 120px',
+        }}>
           {hits.length === 0 ? (
             <div style={{ color: T.muted, fontSize: 14, lineHeight: 1.6, padding: '10px 2px' }}>
               Nothing in this book answers that. It only knows what is on these pages —
@@ -385,14 +582,14 @@ const BookView: React.FC<{
             const sn = snippet(r.doc.text, r.terms, { width: 260 })
             return (
               <button key={i}
-                onClick={() => { setAt(Number(r.doc.n) || 0); setQ('') }}
+                onClick={() => { goto(Number(r.doc.page) || 1); setQ('') }}
                 style={{
                   width: '100%', textAlign: 'left', marginBottom: 10, padding: 14,
                   background: T.surface, border: `1px solid ${T.border}`, borderRadius: 14,
                   color: T.text, fontFamily: FONT, cursor: 'pointer',
                 }}>
-                <div style={{ fontSize: 11.5, color: T.dim, marginBottom: 6 }}>
-                  passage {Number(r.doc.n) + 1}
+                <div style={{ fontSize: 11.5, color: T.accentPale, marginBottom: 6, fontWeight: 600 }}>
+                  page {Number(r.doc.page) || 1}
                 </div>
                 <div style={{ fontSize: 14, lineHeight: 1.6, color: T.text2 }}>
                   {sn.truncatedStart && '… '}
@@ -404,22 +601,6 @@ const BookView: React.FC<{
               </button>
             )
           })}
-        </div>
-      ) : (
-        <div
-          ref={bodyRef}
-          onMouseUp={onUp}
-          onTouchEnd={onUp}
-          style={{ flex: 1, overflowY: 'auto', padding: '20px 18px 130px' }}
-        >
-          <MathText
-            text={current?.text || ''}
-            style={{ fontSize: 18.5, lineHeight: 1.72, color: T.text2 }}
-          />
-          <div style={{ display: 'flex', gap: 10, marginTop: 28 }}>
-            <PageBtn label="Previous" disabled={at <= 0} onClick={() => { setAt(a => Math.max(0, a - 1)); bodyRef.current?.scrollTo({ top: 0 }) }} />
-            <PageBtn label="Next" disabled={at >= passages.length - 1} onClick={() => { setAt(a => Math.min(passages.length - 1, a + 1)); bodyRef.current?.scrollTo({ top: 0 }) }} />
-          </div>
         </div>
       )}
 
@@ -473,12 +654,22 @@ const BookView: React.FC<{
   )
 }
 
-const PageBtn: React.FC<{ label: string; disabled: boolean; onClick: () => void }> = ({ label, disabled, onClick }) => (
+const PageBtn: React.FC<{
+  label: string
+  disabled: boolean
+  onClick: () => void
+  icon: LucideIcon
+}> = ({ label, disabled, onClick, icon: Icon }) => (
   <button onClick={onClick} disabled={disabled} style={{
-    flex: 1, padding: '13px', borderRadius: 13, fontFamily: FONT, fontSize: 14, fontWeight: 600,
-    background: T.raised, border: `1px solid ${T.borderCtl}`,
+    flex: 1, padding: '12px', borderRadius: 13, fontFamily: FONT, fontSize: 14, fontWeight: 600,
+    background: T.sheet, border: `1px solid ${T.borderCtl}`,
     color: disabled ? T.fainter : T.text2, cursor: disabled ? 'default' : 'pointer',
-  }}>{label}</button>
+    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+  }}>
+    {label === 'Previous' && <Icon size={16} {...ICON} />}
+    {label}
+    {label === 'Next' && <Icon size={16} {...ICON} />}
+  </button>
 )
 
 /* ── pending ──────────────────────────────────────────────────────────────── */
@@ -540,7 +731,9 @@ const PendingView: React.FC<{
             padding: 14, marginBottom: 10,
           }}>
             <div style={{ fontSize: 11.5, color: T.dim, marginBottom: 7 }}>
-              {h.bookTitle} · passage {h.passage + 1} · {h.action === 'explain' ? 'explain simply' : 'summarise'}
+              {h.bookTitle}
+              {h.page != null ? ` · page ${h.page}` : h.passage != null ? ` · passage ${h.passage + 1}` : ''}
+              {' · '}{h.action === 'explain' ? 'explain simply' : 'summarise'}
             </div>
             <div style={{
               fontSize: 13.5, color: T.muted, lineHeight: 1.55, marginBottom: 12,

@@ -307,3 +307,25 @@ export function snippet(text, terms, { width = 240 } = {}) {
     truncatedEnd: end < words.length,
   }
 }
+
+/**
+ * Split already-cleaned pages into passages that REMEMBER their page.
+ *
+ * The reader shows the real page, so a search hit has to say which page to
+ * turn to. An earlier version indexed the book as one flattened string: it
+ * could find the right paragraph and then had nowhere to send the student,
+ * which is not an answer.
+ *
+ * Chunking happens per page, never across one, for a second reason: a page
+ * holding less than one chunk's worth of text gets folded into its neighbour
+ * by chunk(), and across a page boundary that would file the text under the
+ * wrong page number -- sending a student to a page that does not contain
+ * what they searched for.
+ */
+export function chunkPages(pages = [], opts = {}) {
+  const out = []
+  for (const p of pages) {
+    for (const text of chunk(p.text, opts)) out.push({ text, page: p.page })
+  }
+  return out
+}
