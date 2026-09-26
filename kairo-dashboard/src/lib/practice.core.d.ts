@@ -4,6 +4,10 @@ export const ALLOCATION: Record<number, { cards: number; questions: number; writ
 
 export type ItemKind = 'card' | 'question' | 'written' | 'teach'
 
+// The fields the core actually reads -- and no `[k: string]: unknown`. An
+// index signature made these impossible to satisfy with the app's own
+// Flashcard / MistakeRow / MasteryRow interfaces (interfaces never gain an
+// implicit index signature), which is where Practice.tsx's type errors came from.
 export interface CardLike {
   id?: string
   front: string
@@ -11,11 +15,10 @@ export interface CardLike {
   topic?: string
   subject?: string
   dueAt: number
-  [k: string]: unknown
 }
 
-export interface MistakeLike { topic?: string; subject?: string; severity?: number; count?: number; [k: string]: unknown }
-export interface MasteryLike { topic?: string; subject?: string; mastery?: number; attempts?: number; [k: string]: unknown }
+export interface MistakeLike { topic?: string; subject?: string; severity?: number; count?: number }
+export interface MasteryLike { topic?: string; subject?: string; mastery?: number; attempts?: number }
 
 export interface Target { topic: string; subject: string | null; why: 'mistakes' | 'mastery' }
 

@@ -1004,7 +1004,7 @@ export default function Practice({ onOpenDoubt }: { onOpenDoubt?: (seed: string)
   function start(p: SessionPlan) {
     setPlan(p); setItems(p.items); setIdx(0); setStartedAt(Date.now()); setNow(Date.now()); setHiddenMs(0); hiddenSince.current = null
     setBefore(JSON.parse(JSON.stringify(mastery))); setTouched([])
-    setStats({ cards: 0, questions: 0, correct: 0, written: 0, teach: 0 })
+    setStats({ cards: 0, questions: 0, correct: 0, retained: 0, written: 0, teach: 0 })
     setQuestions([]); setQNote('')
     try { track({ type: 'session_start', payload: { practice: true, minutes: p.minutes } }) } catch { /* nicety */ }
     setView('session')
@@ -1139,7 +1139,7 @@ export default function Practice({ onOpenDoubt }: { onOpenDoubt?: (seed: string)
                   { k: 'card', label: 'Flashcards', sub: `${preview.counts.cards || 0} due`, run: () => start({ ...preview, items: preview.items.filter(i => i.kind === 'card'), counts: { ...preview.counts, questions: 0, written: 0, teach: 0 } }) },
                   { k: 'question', label: 'Questions', sub: preview.target?.topic ? `on ${preview.target.topic}` : 'mixed', run: () => start({ ...preview, items: Array.from({ length: 8 }, () => ({ kind: 'question' as const, topic: preview.target?.topic || null, subject: preview.target?.subject || null })), counts: { cards: 0, questions: 8, written: 0, teach: 0 } }) },
                   { k: 'written', label: 'Written answer', sub: 'photograph and get step-marked', run: () => start({ ...preview, items: [{ kind: 'written', topic: preview.target?.topic || null, subject: preview.target?.subject || null }], counts: { cards: 0, questions: 0, written: 1, teach: 0 } }) },
-                  { k: 'teach', label: 'Teach it back', sub: 'explain it in your own words', run: () => start({ ...preview, items: [{ kind: 'teach', topic: preview.target?.topic || null, subject: preview.target?.subject || null }], counts: { cards: 0, questions: 0, written: 0, teach: 1 } }) },
+                  { k: 'teach', label: 'Teach it back', sub: 'explain it out loud, or type it', run: () => start({ ...preview, items: [{ kind: 'teach', topic: preview.target?.topic || null, subject: preview.target?.subject || null }], counts: { cards: 0, questions: 0, written: 0, teach: 1 } }) },
                 ].map(f => {
                   const Icon = KIND_ICON[f.k as keyof typeof KIND_ICON]
                   return (

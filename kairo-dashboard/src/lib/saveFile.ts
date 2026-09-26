@@ -19,6 +19,14 @@ export function isNativeApp(): boolean {
   try { return Capacitor.isNativePlatform() } catch { return false }
 }
 
+/** 'android' | 'ios' | 'web' -- coarse, for bug reports. */
+export function platformName(): 'android' | 'ios' | 'web' {
+  try {
+    const p = Capacitor.getPlatform()
+    return p === 'android' || p === 'ios' ? p : 'web'
+  } catch { return 'web' }
+}
+
 export async function saveTextFile(text: string, fileName: string, mime: string): Promise<SaveResult> {
   try {
     const file = new File([text], fileName, { type: mime })

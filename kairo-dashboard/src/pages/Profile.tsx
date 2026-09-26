@@ -18,7 +18,8 @@ import { T, FONT, MONO, ICON } from '../lib/spaceTokens'
 import { validateUsername, tileHue, tileLetter } from '../lib/username.core'
 import { getSocialCached, refreshSocial, setUsername, setSocialSettings, forgetSocial, SOCIAL_EVENT, type SocialProfile } from '../lib/social'
 import { getProfile, saveProfile, exportTwin } from '../lib/twin'
-import { saveTextFile } from '../lib/saveFile'
+import { saveTextFile, platformName } from '../lib/saveFile'
+import { FEEDBACK_CATEGORIES, FEEDBACK_SCREENS, MESSAGE_MAX, normalizeFeedback } from '../lib/feedback.core'
 import { getJSON, setJSON, getRaw, setRaw, storedProfileRaw, setStoredProfileRaw, clearAuthTokens, removeStoredProfile } from '../lib/storage'
 import { BOARD_OPTIONS } from '../lib/curriculum.core'
 import { graphForProfile } from '../lib/syllabusFor'
@@ -205,6 +206,37 @@ export default function Profile({ onLogout, onOpenSettings }: { onLogout?: () =>
       : 'Saved. That is everything, as JSON.',
     )
     setDownloading(false)
+  }
+
+  /* feedback to the Kyno team -- goes nowhere near other students */
+  const [fbOpen, setFbOpen] = useState(false)
+  const [fbCat, setFbCat] = useState<string>('bug')
+  const [fbScreen, setFbScreen] = useState('other')
+  const [fbText, setFbText] = useState('')
+  const [fbState, setFbState] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
+  const [fbNote, setFbNote] = useState('')
+  const appVersion = typeof __APP_VERSION__ === 'string' ? __APP_VERSION__ : null
+  // Exactly what travels with the message, shown to the student before they send.
+  const fbDevice = { platform: platformName(), width: window.innerWidth, height: window.innerHeight, online: navigator.onLine !== false }
+
+  async function sendFeedback() {
+    const n = normalizeFeedback({ category: fbCat, message: fbText, screen: fbScreen, appVersion, device: fbDevice })
+    if (!n.ok) { setFbState('error'); setFbNote(n.error); return }
+    if (!fbDevice.online) { setFbState('error'); setFbNote('You are offline. Your message is still here — send it once you are connected.'); return }
+    setFbState('sending'); setFbNote('')
+    try {
+      const r: any = await post('/feedback', { category: fbCat, message: fbText, screen: fbScreen, appVersion, device: fbDevice })
+      if (r?.stored) {
+        setFbState('sent'); setFbText('')
+        setFbNote('Sent to the Kyno team. Thank you — this is how Kyno gets better.')
+      } else {
+        // Never "sent" when nothing was stored (e.g. the table isn't set up yet).
+        setFbState('error')
+        setFbNote('It did not go through, and nothing was saved. Your message is still here — try again in a little while.')
+      }
+    } catch (e: any) {
+      setFbState('error'); setFbNote(friendlyError(e))
+    }
   }
 
   /* ── moved across from the old Settings screen ─────────────────────────── */
@@ -464,6 +496,48 @@ export default function Profile({ onLogout, onOpenSettings }: { onLogout?: () =>
           </Row>
           <Row label="Download my data" value={downloading ? <Loader2 size={16} {...ICON} /> : <Download size={16} color={T.muted} {...ICON} />} onClick={downloading ? undefined : download} />
           {downloadNote && <div style={{ padding: '0 14px 12px', fontSize: 12.5, color: T.dim }}>{downloadNote}</div>}
+        </Group>
+
+        <Group title="Feedback" note="Goes to the Kyno team only — never to other students. It is linked to your account, so deleting your account deletes it too.">
+          {authToken() ? (
+            <Row first label="Tell the Kyno team something" onClick={() => { setFbOpen(o => !o); if (fbState === 'sent') { setFbState('idle'); setFbNote('') } }}>
+              {fbOpen && (
+                <div style={{ padding: '0 14px 14px' }}>
+                  <div style={{ fontSize: 12.5, color: T.dim, marginBottom: 8 }}>What is it?</div>
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    {FEEDBACK_CATEGORIES.map(c => <Chip key={c.id} on={fbCat === c.id} onClick={() => setFbCat(c.id)}>{c.label}</Chip>)}
+                  </div>
+                  <div style={{ fontSize: 12.5, color: T.dim, margin: '14px 0 8px' }}>Where in Kyno?</div>
+                  <select value={fbScreen} onChange={e => setFbScreen(e.target.value)} aria-label="Which part of Kyno" style={{ ...inputStyle, width: '100%' }}>
+                    {FEEDBACK_SCREENS.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
+                  </select>
+                  <textarea
+                    value={fbText} onChange={e => { setFbText(e.target.value.slice(0, MESSAGE_MAX)); if (fbState !== 'sending') { setFbState('idle'); setFbNote('') } }}
+                    placeholder={fbCat === 'answer' ? 'Which question, and what the right answer should be…' : fbCat === 'bug' ? 'What you did, and what happened instead…' : 'Tell us…'}
+                    aria-label="Your feedback" rows={5}
+                    style={{ ...inputStyle, width: '100%', height: 'auto', minHeight: 120, padding: 12, marginTop: 10, resize: 'vertical', lineHeight: 1.5 }}
+                  />
+                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, fontSize: 11.5, color: T.faint, marginTop: 6, lineHeight: 1.5 }}>
+                    <span>Please leave out your phone number, email or address.</span>
+                    <span style={{ flexShrink: 0, fontFamily: MONO }}>{fbText.length}/{MESSAGE_MAX}</span>
+                  </div>
+                  <div style={{ fontSize: 11.5, color: T.faint, marginTop: 8, lineHeight: 1.5 }}>
+                    Sent with it: the part of Kyno you picked{appVersion ? `, app version ${appVersion}` : ''}, {fbDevice.platform === 'web' ? 'browser' : fbDevice.platform}, screen size {fbDevice.width}×{fbDevice.height}. Nothing else.
+                  </div>
+                  <button onClick={sendFeedback} disabled={fbState === 'sending' || fbText.trim().length < 3} style={{
+                    marginTop: 12, width: '100%', height: 44, borderRadius: 12, border: 'none', fontFamily: FONT, fontSize: 14, fontWeight: 600,
+                    background: fbText.trim().length >= 3 ? T.accent : T.raised, color: fbText.trim().length >= 3 ? '#fff' : T.faint,
+                    cursor: fbState === 'sending' || fbText.trim().length < 3 ? 'default' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                  }}>
+                    {fbState === 'sending' ? <Loader2 size={16} {...ICON} /> : fbState === 'sent' ? <Check size={16} {...ICON} /> : null} {fbState === 'sending' ? 'Sending…' : 'Send'}
+                  </button>
+                  {fbNote && <div style={{ fontSize: 12.5, color: fbState === 'error' ? T.warning : T.success, lineHeight: 1.5, marginTop: 8 }}>{fbNote}</div>}
+                </div>
+              )}
+            </Row>
+          ) : (
+            <Row first label="Tell the Kyno team something" value="Sign in first" />
+          )}
         </Group>
 
         {/* ── everything the old Settings screen used to hold ───────────────

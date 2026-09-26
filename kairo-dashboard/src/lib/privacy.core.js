@@ -57,6 +57,9 @@ export const ROUTE_CATEGORY = {
   // an email, a school or a class section. Each has an off switch in Profile.
   'league': 'social', 'battle': 'social', 'social': 'social', 'arena': 'social',
 
+  // what a student chooses to tell the Kyno team, only when they press Send
+  'feedback': 'feedback',
+
   // server plumbing — carries no student content
   'cron': 'ops', 'devEmailPreview': 'ops', 'emails': 'ops',
   'networkRules': 'ops', 'notifications': 'ops', 'ops': 'ops',
@@ -123,6 +126,15 @@ export const DATA_FLOWS = [
     // optional: the three switches live on the Profile screen (space 7).
     appliesWhen: 'signed-in', optional: true,
     note: 'Leagues, battles and study rooms each have their own off switch in Profile. Study rooms are off until you turn them on. A long-press on any username reports it and removes that student from your matches for good.',
+  },
+  {
+    id: 'feedback', category: 'feedback',
+    what: 'The feedback you write, the part of Kyno it is about, your app version and screen size',
+    when: 'Only when you press Send on feedback',
+    where: 'The Kyno team — never other students',
+    // Not "optional": there is no switch because nothing is sent unless you send it.
+    appliesWhen: 'signed-in', optional: false,
+    note: 'It is linked to your account so that deleting your account deletes it too.',
   },
   {
     id: 'ops', category: 'ops',

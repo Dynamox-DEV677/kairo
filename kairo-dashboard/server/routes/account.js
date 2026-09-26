@@ -86,6 +86,7 @@ const USER_TABLES = [
   ['topic_mastery', 'user_id'], ['study_sessions', 'user_id'], ['exam_plans', 'user_id'],
   ['ai_memory', 'user_id'], ['concept_relations', 'user_id'], ['notes', 'user_id'],
   ['parent_marks', 'student_id'], ['notifications', 'user_id'],
+  ['tester_feedback', 'user_id'],
 ]
 
 router.get('/export', requireSupabaseAuth, async (req, res) => {

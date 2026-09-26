@@ -23,6 +23,7 @@ import { awardOnce } from '../lib/game'
 import type { ErrorType } from '../lib/spaceTokens'
 import { post } from '../lib/api'
 import { loadState } from '../lib/twin'
+import { demoAvailable, loadDemo } from '../lib/demoMode'
 import { getJSON, setJSON } from '../lib/storage'
 import { titleCase, pluralWord } from '../lib/text.core'
 import {
@@ -244,6 +245,19 @@ export default function Performance({ onOpenDoubt, onDrill }: {
           {summary.state === 'empty' && (
             <Card style={{ marginTop: 18, padding: 18 }}>
               <div style={{ fontSize: 14, color: T.text2, lineHeight: 1.55 }}>{summary.sub}</div>
+              {/* Only on a brand-new, EMPTY account: demo data appends to real
+                  history, so anyone with activity of their own never sees this. */}
+              {demoAvailable() && (
+                <div style={{ marginTop: 14, paddingTop: 14, borderTop: `1px solid ${T.divider}` }}>
+                  <div style={{ fontSize: 13, color: T.dim, lineHeight: 1.55 }}>
+                    Want to see what this looks like first? Load a sample fortnight of Class 10 practice. It's only offered while your account is empty, so sample results never mix with your real ones.
+                  </div>
+                  <button onClick={() => { try { loadDemo() } catch { /* account no longer empty */ } }} style={{
+                    marginTop: 12, height: 44, padding: '0 16px', borderRadius: 12, border: 'none', background: T.accent,
+                    color: '#fff', fontFamily: FONT, fontSize: 14, fontWeight: 600, cursor: 'pointer',
+                  }}>See it with sample data</button>
+                </div>
+              )}
             </Card>
           )}
 

@@ -1,25 +1,7 @@
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Sparkles, X } from 'lucide-react'
-import { seedDemo, loadState } from '../lib/twin'
-import { authToken } from '../lib/storage'
-
-function promptStorageKey(): string {
-  if (typeof window === 'undefined') return 'kyno:demo-prompt-shown:_local'
-  try {
-    const tok = authToken()
-    if (tok) {
-      const payload = JSON.parse(atob(tok.split('.')[1]))
-      if (payload?.sub) {
-        let h = 0x811c9dc5
-        const s = String(payload.sub)
-        for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 0x01000193)
-        return 'kyno:demo-prompt-shown:' + ((h >>> 0).toString(36)).padStart(7, '0')
-      }
-    }
-  } catch {  }
-  return 'kyno:demo-prompt-shown:_local'
-}
+import { demoAvailable, loadDemo, promptStorageKey } from '../lib/demoMode'
 
 interface Props {
   delayMs?: number
@@ -32,10 +14,8 @@ export default function DemoModePrompt({ delayMs = 1400 }: Props) {
   useEffect(() => {
     if (typeof window === 'undefined') return
     if (localStorage.getItem(promptStorageKey())) return
-    try {
-      const state = loadState()
-      if (state.events.length > 0) return
-    } catch {  }
+    // Only an empty account: demo data appends to real history (see lib/demoMode).
+    if (!demoAvailable()) return
 
     const t = window.setTimeout(() => setOpen(true), delayMs)
     return () => window.clearTimeout(t)
@@ -50,9 +30,7 @@ export default function DemoModePrompt({ delayMs = 1400 }: Props) {
     if (busy) return
     setBusy(true)
     try {
-      seedDemo()
-      localStorage.setItem(promptStorageKey(), 'accepted:' + Date.now())
-      window.location.reload()
+      loadDemo()
     } catch (err) {
       console.warn('[DemoModePrompt] seed failed:', err)
       setBusy(false)

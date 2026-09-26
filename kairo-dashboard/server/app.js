@@ -30,6 +30,7 @@ import leagueRoutes         from './routes/league.js'
 import socialRoutes from './routes/social.js'
 import arenaRoutes from './routes/arena.js'
 import accountRoutes        from './routes/account.js'
+import feedbackRoutes       from './routes/feedback.js'
 import essayRoutes         from './routes/essay.js'
 import examRoutes          from './routes/exam.js'
 import questionPaperRoutes from './routes/questionPaper.js'
@@ -157,6 +158,7 @@ app.use('/api/league',         leagueRoutes)
 app.use('/api/social',         socialRoutes)
 app.use('/api/arena',          arenaRoutes)
 app.use('/api/account',        accountRoutes)
+app.use('/api/feedback',       feedbackRoutes)
 app.use('/api/essay',          essayRoutes)
 app.use('/api/exam',           examRoutes)
 app.use('/api/question-paper', questionPaperRoutes)
