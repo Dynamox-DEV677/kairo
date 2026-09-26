@@ -39,9 +39,12 @@ import { readTimeStore } from '../lib/timeTracker'
 import {
   dailyMinutes, coverageSplit, minutesNeeded, project, honestLine, weekStrip, missedRun,
   chapterRows, untouchedCallout, defaultTopicPlan, adjustOptions, elapsedMs, remainingMs, driftLine,
-  DEFAULT_TARGET,
+  DEFAULT_TARGET, clampStudyDays,
 } from '../lib/pace.core'
 import type { Projection, ChapterRow, TopicPlan, PlanSession, FocusSession } from '../lib/pace.core'
+import { buildIcs, upcomingExams, googleCalendarUrl } from '../lib/calendar.core'
+import type { UpcomingExam } from '../lib/calendar.core'
+import { saveTextFile, openExternal } from '../lib/saveFile'
 
 type Style = React.CSSProperties
 
@@ -124,6 +127,9 @@ interface Model {
   split: ReturnType<typeof coverageSplit>
   need: number
   p: Projection
+  /** Study days a week the student keeps (7 unless they set rest days). */
+  studyDays: number
+  exams: UpcomingExam[]
   line: string
   week: ReturnType<typeof weekStrip>
   missed: number
@@ -143,18 +149,22 @@ function computeModel(now = Date.now()): Model {
 
   const daysLeft = nearestExamDays(now)
   let examName = 'Exam'
+  let studyDays = 7
+  let exams: UpcomingExam[] = []
   try {
-    const p = getJSON<{ examDates?: Array<{ name?: string; date?: string }> }>(PROFILE_KEY)
+    const p = getJSON<{ examDates?: Array<{ name?: string; date?: string }>; studyDaysPerWeek?: number }>(PROFILE_KEY)
     const soon = (p?.examDates || []).map(e => ({ n: e?.name, t: Date.parse(e?.date || '') })).filter(e => Number.isFinite(e.t) && e.t > now - 86400000).sort((a, b) => a.t - b.t)[0]
     if (soon?.n) examName = soon.n
+    studyDays = clampStudyDays(p?.studyDaysPerWeek)
+    exams = upcomingExams(p?.examDates || [], now)
   } catch { /* ignore */ }
 
   const split = coverageSplit(graph, states)
   const need = minutesNeeded(graph, states)
   // No exam date: project to end of term (~90 days) so the rest still works.
-  const p = project({ solidPct: split.solidPct, needMinutes: need, dailyMedian: daily.median, daysLeft: daysLeft ?? 90, target: DEFAULT_TARGET })
+  const p = project({ solidPct: split.solidPct, needMinutes: need, dailyMedian: daily.median, daysLeft: daysLeft ?? 90, target: DEFAULT_TARGET, studyDays })
   return {
-    graph, states, daysLeft, examName, daily, split, need, p,
+    graph, states, daysLeft, examName, daily, split, need, p, studyDays, exams,
     line: honestLine(p, daily.median, DEFAULT_TARGET),
     week: weekStrip(daily.byDay, now),
     missed: missedRun(daily.byDay, now),
@@ -198,6 +208,7 @@ export default function Plan({ onOpenDoubt, onPractice }: {
   })
   const [tick, setTick] = useState(0)
   const [now, setNow] = useState(Date.now())
+  const [calOpen, setCalOpen] = useState(false)
 
   const model = useMemo(() => computeModel(Date.now()), [tick, view.name])
   // ONE answer to "how many days have you studied": the same selector Progress
@@ -277,6 +288,13 @@ export default function Plan({ onOpenDoubt, onPractice }: {
   const scroll: Style = { flex: 1, overflowY: 'auto', padding: '18px 14px 24px' }
   const footer: Style = { padding: '12px 14px calc(12px + env(safe-area-inset-bottom))', borderTop: `1px solid ${T.divider}`, background: T.bgAlt, display: 'flex', gap: 10 }
 
+  // Rest days change what each study day has to carry; stored on the profile
+  // so the honest line and the "reachable" ceiling both use it.
+  function setStudyDays(n: number) {
+    try { const p = getJSON<any>(PROFILE_KEY) || {}; setJSON(PROFILE_KEY, { ...p, studyDaysPerWeek: n }) } catch { /* storage blocked */ }
+    setTick(t => t + 1)
+  }
+
   function startFocus(task: string, minutes: number, chapterId?: string, sessionId?: string | null) {
     const s: FocusSession & { task: string; chapterId?: string; sessionId?: string | null; drifts: number; driftMs: number } =
       { startedAt: Date.now(), plannedMs: minutes * 60_000, pausedMs: 0, pausedAt: null, task, chapterId, sessionId, drifts: 0, driftMs: 0 }
@@ -296,6 +314,13 @@ export default function Plan({ onOpenDoubt, onPractice }: {
           ) : (
             <ExamDateCard onSaved={() => setTick(t => t + 1)} />
           )}
+          {model.exams.length > 0 && (calOpen
+            ? <CalendarCard exams={model.exams} onDone={() => setCalOpen(false)} />
+            : (
+              <button onClick={() => setCalOpen(true)} style={{ marginTop: 6, background: 'none', border: 'none', padding: 0, minHeight: 44, color: T.accentPale, fontFamily: FONT, fontSize: 13.5, fontWeight: 600, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 7 }}>
+                <Calendar size={15} {...ICON} /> {model.exams.length === 1 ? 'Add this exam to your calendar' : `Add all ${model.exams.length} exams to your calendar`}
+              </button>
+            ))}
 
           {graph ? (
             <Card style={{ marginTop: 16 }}>
@@ -307,6 +332,18 @@ export default function Plan({ onOpenDoubt, onPractice }: {
               </div>
               <div style={{ height: 1, background: T.divider, margin: '12px 0' }} />
               <div style={{ fontSize: 14, color: T.text, lineHeight: 1.55 }}>{line}</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12, flexWrap: 'wrap' }}>
+                <span style={{ fontSize: 12.5, color: T.dim, marginRight: 2 }}>Study days a week</span>
+                {[4, 5, 6, 7].map(n => {
+                  const on = model.studyDays === n
+                  return (
+                    <button key={n} onClick={() => setStudyDays(n)} aria-pressed={on} aria-label={`${n} study days a week`} style={{
+                      width: 44, height: 44, borderRadius: 12, fontFamily: FONT, fontSize: 14, fontWeight: 700, cursor: 'pointer',
+                      background: on ? T.accentSurface : T.raised, border: `1px solid ${on ? T.accent : T.borderCtl}`, color: on ? T.text : T.text2,
+                    }}>{n}</button>
+                  )
+                })}
+              </div>
               {daily.median == null && (
                 <div style={{ fontSize: 12, color: T.faint, marginTop: 6 }}>
                   {streakDays > 0
@@ -519,6 +556,59 @@ function ExamDateCard({ onSaved }: { onSaved: () => void }) {
           onSaved()
         }}><Calendar size={16} {...ICON} /> Save</Primary>
       </div>
+    </Card>
+  )
+}
+
+/* ── exams into the student's own calendar ───────────────────────────────── */
+
+/**
+ * Google Calendar links are the primary path because they work in the Android
+ * app, where there is no plugin to save a file. The .ics is for everywhere
+ * else -- and when it can't be saved, the note says so instead of pretending.
+ */
+function CalendarCard({ exams, onDone }: { exams: UpcomingExam[]; onDone: () => void }) {
+  const [note, setNote] = useState('')
+  const fmt = (ymd: string) => new Date(Number(ymd.slice(0, 4)), Number(ymd.slice(4, 6)) - 1, Number(ymd.slice(6, 8)))
+    .toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })
+
+  async function saveAll() {
+    setNote('')
+    const r = await saveTextFile(buildIcs(exams), 'kyno-exams.ics', 'text/calendar')
+    setNote(
+      r === 'shared' ? 'Sent — choose your calendar app to add them.'
+      : r === 'downloaded' ? 'Downloaded. Open the file and your calendar will offer to add every exam.'
+      : r === 'cancelled' ? 'Not saved.'
+      : 'This app can\'t save files on your phone yet — use the Google Calendar buttons above instead.',
+    )
+  }
+
+  return (
+    <Card style={{ marginTop: 12 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
+        <div style={{ fontSize: 16, fontWeight: 700 }}>Add to your calendar</div>
+        <button onClick={onDone} style={{ background: 'none', border: 'none', color: T.muted, fontFamily: FONT, fontSize: 13, cursor: 'pointer', minHeight: 44, padding: 0 }}>Done</button>
+      </div>
+      <div style={{ fontSize: 12.5, color: T.dim, lineHeight: 1.5 }}>All-day events, each with a reminder at 9 am the day before.</div>
+      <div style={{ display: 'grid', gap: 10, marginTop: 12 }}>
+        {exams.map(e => (
+          <div key={e.ymd + e.name} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 14, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{e.name}</div>
+              <div style={{ fontSize: 12, color: T.dim }}>{fmt(e.ymd)}</div>
+            </div>
+            <button onClick={() => { const u = googleCalendarUrl(e); if (u) void openExternal(u) }} style={{
+              height: 44, padding: '0 12px', borderRadius: 12, flexShrink: 0, background: T.raised, border: `1px solid ${T.borderCtl}`,
+              color: T.text2, fontFamily: FONT, fontSize: 13, fontWeight: 600, cursor: 'pointer',
+            }}>Google Calendar</button>
+          </div>
+        ))}
+      </div>
+      <button onClick={saveAll} style={{
+        marginTop: 12, width: '100%', height: 44, borderRadius: 12, background: 'transparent', border: `1px solid ${T.borderCtl}`,
+        color: T.text2, fontFamily: FONT, fontSize: 13.5, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+      }}><Calendar size={15} {...ICON} /> Download .ics — all exams</button>
+      {note && <div style={{ fontSize: 12.5, color: T.text2, lineHeight: 1.5, marginTop: 8 }}>{note}</div>}
     </Card>
   )
 }

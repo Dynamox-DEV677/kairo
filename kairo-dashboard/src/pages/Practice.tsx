@@ -42,7 +42,8 @@ import { cardsForNote, attachCards } from '../lib/notes.core'
 import { nearestExamDays } from '../lib/examDate'
 import { nextInterval as fsrsNextInterval } from '../lib/fsrs.core'
 import { awardXP } from '../lib/game'
-import { getJSON, setJSON } from '../lib/storage'
+import { getJSON, setJSON, getRaw, setRaw, removeRaw } from '../lib/storage'
+import { snapshotMock, readMock, peekMock, MOCK_KEY } from '../lib/mockSave.core'
 import { cleanOption } from '../lib/museum.core'
 import { scorePaper, paletteStates, clockLabel } from '../lib/exam.core'
 import type { ExamQuestion } from '../lib/exam.core'
@@ -696,18 +697,22 @@ function TeachFormat({ question, onDone }: { question: string; onDone: (r: Teach
 /* ── the mock room ────────────────────────────────────────────────────────── */
 
 function MockRoom({ subject, onExit }: { subject: string; onExit: () => void }) {
-  const [phase, setPhase] = useState<'building' | 'live' | 'done'>('building')
-  const [questions, setQuestions] = useState<ExamQuestion[]>([])
-  const [answers, setAnswers] = useState<(number | null)[]>([])
-  const [flags, setFlags] = useState<Set<number>>(new Set())
-  const [i, setI] = useState(0)
+  // A paper still open for this subject -- Android killed the app, or the
+  // student left -- comes back exactly as it was, clock included.
+  const [restored] = useState(() => readMock<ExamQuestion>(getRaw(MOCK_KEY), subject))
+  const [phase, setPhase] = useState<'building' | 'live' | 'done'>(restored ? 'live' : 'building')
+  const [questions, setQuestions] = useState<ExamQuestion[]>(restored?.questions ?? [])
+  const [answers, setAnswers] = useState<(number | null)[]>(restored?.answers ?? [])
+  const [flags, setFlags] = useState<Set<number>>(restored?.flags ?? new Set())
+  const [i, setI] = useState(restored?.i ?? 0)
   const [palette, setPalette] = useState(false)
   const [err, setErr] = useState('')
   const [errRef, setErrRef] = useState('')
-  const TOTAL_MS = 40 * 60_000
-  const [startedAt] = useState(Date.now())
+  const TOTAL_MS = restored?.totalMs ?? 40 * 60_000
+  const [startedAt] = useState(restored?.startedAt ?? Date.now())
   const [now, setNow] = useState(Date.now())
   const TARGET = 20
+  const submitted = useRef(false)
 
   // Paused while another space is on screen: a hidden countdown must not run.
   const vis = useSpaceLayout().visible
@@ -726,6 +731,7 @@ function MockRoom({ subject, onExit }: { subject: string; onExit: () => void }) 
   }, [])
 
   useEffect(() => {
+    if (restored) return // the paper is already here -- don't set a new one over it
     let cancelled = false
     ;(async () => {
       const prof = getProfile() as any
@@ -750,12 +756,27 @@ function MockRoom({ subject, onExit }: { subject: string; onExit: () => void }) 
   }, [subject])
 
   const msLeft = Math.max(0, TOTAL_MS - (now - startedAt))
-  useEffect(() => { if (phase === 'live' && msLeft === 0) setPhase('done') }, [msLeft, phase])
+  // Time up means SUBMIT, not just "show the result screen". This used to set
+  // phase 'done' directly, so a paper that ran out was never recorded -- while
+  // the result screen told the student every wrong answer was in their Mistake
+  // Museum. A paper restored after its time ran out lands here too.
+  useEffect(() => { if (phase === 'live' && msLeft === 0) submit() }, [msLeft, phase]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Written on every answer, flag and move, so the app being killed can't
+  // take the paper with it. Cleared the moment the paper is submitted.
+  useEffect(() => {
+    if (phase !== 'live' || !questions.length) return
+    setRaw(MOCK_KEY, JSON.stringify(snapshotMock({ subject, questions, answers, flags, i, startedAt, totalMs: TOTAL_MS })))
+  }, [phase, questions, answers, flags, i]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const states = paletteStates(questions.length, answers, flags)
   const q = questions[i]
 
   function submit() {
+    // Once only: the timeout effect and the Submit button can race.
+    if (submitted.current) return
+    submitted.current = true
+    removeRaw(MOCK_KEY)
     const score = scorePaper(questions, answers, { correct: 1, wrong: 0 })
     questions.forEach((qq, k) => {
       const a = answers[k]; if (a == null) return
@@ -892,6 +913,8 @@ export default function Practice({ onOpenDoubt }: { onOpenDoubt?: (seed: string)
   const [stats, setStats] = useState({ cards: 0, questions: 0, correct: 0, retained: 0, written: 0, teach: 0 })
   const [mockSubject, setMockSubject] = useState('Science')
   const [tick, setTick] = useState(0)
+  // A mock left open -- usually because Android killed the app mid-paper.
+  const pendingMock = useMemo(() => peekMock(getRaw(MOCK_KEY)), [tick, view]) // eslint-disable-line react-hooks/exhaustive-deps
   /** From Performance: drill these signatures/topics instead of the default target. */
   const [filter, setFilter] = useState<{ signatures?: string[]; topics?: string[]; cardIds?: string[] } | null>(null)
   useEffect(() => {
@@ -1096,7 +1119,10 @@ export default function Practice({ onOpenDoubt }: { onOpenDoubt?: (seed: string)
   /* ── render ── */
   const shell: Style = { position: 'absolute', inset: 0, background: T.bg, color: T.text, fontFamily: FONT, display: 'flex', flexDirection: 'column', overflow: 'hidden' }
 
-  if (view === 'mock') return <MockRoom subject={mockSubject} onExit={() => { setTick(t => t + 1); setView('home') }} />
+  // An open paper is finished before a new one starts: entering the mock room
+  // with one pending resumes it, whichever "Full mock" card was tapped, so a
+  // second paper can never be written over the first.
+  if (view === 'mock') return <MockRoom subject={pendingMock?.subject ?? mockSubject} onExit={() => { setTick(t => t + 1); setView('home') }} />
 
   /* home ------------------------------------------------------------------ */
   if (view === 'home' || view === 'formats') {
@@ -1113,7 +1139,7 @@ export default function Practice({ onOpenDoubt }: { onOpenDoubt?: (seed: string)
                   { k: 'card', label: 'Flashcards', sub: `${preview.counts.cards || 0} due`, run: () => start({ ...preview, items: preview.items.filter(i => i.kind === 'card'), counts: { ...preview.counts, questions: 0, written: 0, teach: 0 } }) },
                   { k: 'question', label: 'Questions', sub: preview.target?.topic ? `on ${preview.target.topic}` : 'mixed', run: () => start({ ...preview, items: Array.from({ length: 8 }, () => ({ kind: 'question' as const, topic: preview.target?.topic || null, subject: preview.target?.subject || null })), counts: { cards: 0, questions: 8, written: 0, teach: 0 } }) },
                   { k: 'written', label: 'Written answer', sub: 'photograph and get step-marked', run: () => start({ ...preview, items: [{ kind: 'written', topic: preview.target?.topic || null, subject: preview.target?.subject || null }], counts: { cards: 0, questions: 0, written: 1, teach: 0 } }) },
-                  { k: 'teach', label: 'Teach it back', sub: 'explain out loud', run: () => start({ ...preview, items: [{ kind: 'teach', topic: preview.target?.topic || null, subject: preview.target?.subject || null }], counts: { cards: 0, questions: 0, written: 0, teach: 1 } }) },
+                  { k: 'teach', label: 'Teach it back', sub: 'explain it in your own words', run: () => start({ ...preview, items: [{ kind: 'teach', topic: preview.target?.topic || null, subject: preview.target?.subject || null }], counts: { cards: 0, questions: 0, written: 0, teach: 1 } }) },
                 ].map(f => {
                   const Icon = KIND_ICON[f.k as keyof typeof KIND_ICON]
                   return (
@@ -1139,6 +1165,24 @@ export default function Practice({ onOpenDoubt }: { onOpenDoubt?: (seed: string)
             <>
               <Eyebrow>Practice</Eyebrow>
               <h1 style={{ fontSize: 25, fontWeight: 700, margin: '8px 0 0', letterSpacing: -0.3 }}>How long have you got?</h1>
+              {pendingMock && (
+                <Card onClick={() => { setMockSubject(pendingMock.subject); setView('mock') }} style={{ marginTop: 14, background: T.exam, border: `1px solid ${T.warning}` }}>
+                  <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+                    <div style={{ width: 38, height: 38, borderRadius: 12, background: T.warningBg, display: 'grid', placeItems: 'center', flexShrink: 0 }}><Clock size={17} color={T.warning} {...ICON} /></div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: 14, fontWeight: 600 }}>
+                        {pendingMock.expired ? `Your ${pendingMock.subject} mock ran out of time` : `Your ${pendingMock.subject} mock is still open`}
+                      </div>
+                      <div style={{ fontSize: 12, color: T.dim, marginTop: 2 }}>
+                        {pendingMock.expired
+                          ? `See your result · ${pendingMock.answered} of ${pendingMock.total} answered`
+                          : `${Math.ceil(pendingMock.msLeft / 60_000)} min left, clock running · ${pendingMock.answered} of ${pendingMock.total} answered`}
+                      </div>
+                    </div>
+                    <ChevronRight size={17} color={T.fainter} {...ICON} />
+                  </div>
+                </Card>
+              )}
               {filter && (
                 <button onClick={() => setFilter(null)} style={{
                   marginTop: 12, height: 34, padding: '0 12px', borderRadius: 100, background: T.accentSurface,

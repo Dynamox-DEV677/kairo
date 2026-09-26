@@ -207,3 +207,37 @@ test('the drift line is accountability, not enforcement', () => {
   assert.deepEqual(driftLine(2, 4 * 60_000), { left: 'You left the app twice', lost: '4 min lost' })
   assert.equal(driftLine(1, 20_000).lost, 'under a minute lost')
 })
+
+/* ── study days a week ────────────────────────────────────────────────────── */
+
+test('study days: at seven a week the numbers are exactly what they were', () => {
+  const base = { solidPct: 40, needMinutes: 3000, dailyMedian: 30, daysLeft: 60 }
+  const before = project(base)
+  const seven = project({ ...base, studyDays: 7 })
+  assert.equal(seven.required, before.required)
+  assert.equal(seven.reachable, before.reachable)
+  assert.equal(seven.projected, before.projected)
+  assert.equal(honestLine(seven, 30), honestLine(before, 30))
+})
+
+test('rest days spread what is still needed over the days actually studied', () => {
+  const base = { solidPct: 40, needMinutes: 3000, dailyMedian: 30, daysLeft: 70 }
+  const seven = project({ ...base, studyDays: 7 })
+  const five = project({ ...base, studyDays: 5 })
+  // the same minutes over 50 study days instead of 70
+  assert.ok(five.required > seven.required)
+  assert.ok(Math.abs(five.required / seven.required - 7 / 5) < 0.1)
+  // the projection is the student's REAL pace, rest days already in it
+  assert.equal(five.projected, seven.projected)
+  // and the sentence says the ask is per study day, not every day
+  assert.match(honestLine(five, 30), /Fifty minutes on each of your five study days a week gets you to 90%/)
+  assert.doesNotMatch(honestLine(seven, 30), /study days/)
+})
+
+test('study days are clamped to a real week, and missing means every day', () => {
+  const base = { solidPct: 40, needMinutes: 3000, dailyMedian: 30, daysLeft: 60 }
+  assert.equal(project({ ...base, studyDays: 0 }).studyDays, 1)
+  assert.equal(project({ ...base, studyDays: 12 }).studyDays, 7)
+  assert.equal(project({ ...base, studyDays: 'x' }).studyDays, 7)
+  assert.equal(project({ ...base, studyDays: null }).studyDays, 7)
+})

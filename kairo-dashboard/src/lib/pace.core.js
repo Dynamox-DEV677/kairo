@@ -135,23 +135,41 @@ export function minutesNeeded(graph, states) {
  * `reachable` is the honest target when the asked-for one is gone: never show
  * a number the student cannot still reach.
  */
-export function project({ solidPct = 0, needMinutes = 0, dailyMedian = null, daysLeft = null, target = DEFAULT_TARGET } = {}) {
+/**
+ * Study days a week, 1–7. Anything missing or nonsense means every day, which
+ * is what the model assumed before the setting existed.
+ */
+export function clampStudyDays(n) {
+  if (n == null || n === '') return 7
+  const v = Math.round(Number(n))
+  return Number.isFinite(v) ? Math.min(7, Math.max(1, v)) : 7
+}
+
+export function project({ solidPct = 0, needMinutes = 0, dailyMedian = null, daysLeft = null, target = DEFAULT_TARGET, studyDays = 7 } = {}) {
+  const sd = clampStudyDays(studyDays)
   const gap = Math.max(0, target - solidPct)
   if (daysLeft == null || daysLeft <= 0) {
-    return { projected: solidPct, required: null, reachable: solidPct, gap, daysLeft: daysLeft ?? null, haveHistory: dailyMedian != null }
+    return { projected: solidPct, required: null, reachable: solidPct, gap, daysLeft: daysLeft ?? null, haveHistory: dailyMedian != null, studyDays: sd }
   }
   if (needMinutes <= 0) {
-    return { projected: 100, required: 0, reachable: 100, gap: 0, daysLeft, haveHistory: dailyMedian != null }
+    return { projected: 100, required: 0, reachable: 100, gap: 0, daysLeft, haveHistory: dailyMedian != null, studyDays: sd }
   }
   const remainingPct = 100 - solidPct
   const perMinute = remainingPct / needMinutes            // coverage points bought per study minute
+  // The projection is the student's REAL pace: dailyMedian is measured per
+  // calendar day, rest days included, so it needs no adjustment.
   const projected = dailyMedian == null ? null : Math.min(100, Math.round(solidPct + dailyMedian * daysLeft * perMinute))
-  const required = Math.ceil((gap / perMinute) / daysLeft)  // minutes/day to close the gap
+  // What they still NEED is spread over the days they will actually study.
+  // "Forty minutes a day" quietly assumed seven days a week; a student who
+  // keeps Sundays free needed more on the other six and was never told.
+  // At seven this is exactly daysLeft, so the old numbers are unchanged.
+  const effDays = daysLeft * sd / 7
+  const required = Math.ceil((gap / perMinute) / effDays)  // minutes per study day to close the gap
   // What is genuinely reachable if the student doubles down to a hard ceiling
-  // of 4 hours a day -- beyond that the number is fantasy, and so is the plan.
-  const ceiling = Math.min(100, Math.round(solidPct + 240 * daysLeft * perMinute))
+  // of 4 hours a study day -- beyond that the number is fantasy, and so is the plan.
+  const ceiling = Math.min(100, Math.round(solidPct + 240 * effDays * perMinute))
   const reachable = ceiling >= target ? target : Math.max(solidPct, Math.floor(ceiling / 5) * 5)
-  return { projected, required, reachable, gap, daysLeft, haveHistory: dailyMedian != null, perMinute }
+  return { projected, required, reachable, gap, daysLeft, haveHistory: dailyMedian != null, perMinute, studyDays: sd, effDays }
 }
 
 const WORDS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen', 'twenty']
@@ -190,11 +208,17 @@ export function honestLine(p, dailyMedian, target = DEFAULT_TARGET) {
     return `At ${dailyMedian} minutes a day you reach ${p.projected}% by exam day — that already clears ${target}%.`
   }
   const req = p.required || 0
+  // With rest days the ask is per STUDY day, and the sentence has to say so --
+  // "fifty minutes a day" would read as seven days of fifty.
+  const sd = p.studyDays || 7
+  const unit = sd < 7 ? ` on each of your ${words(sd)} study days a week` : ' a day'
+  // Today's pace restated per study day (identical to dailyMedian at seven).
+  const pacePerStudyDay = dailyMedian * 7 / sd
   if (p.reachable < target) {
-    const reqReach = Math.ceil(((p.reachable - (p.projected ?? 0)) / (p.perMinute || 1)) / Math.max(1, p.daysLeft)) + dailyMedian
-    return `At ${dailyMedian} minutes a day you reach ${p.projected}% by exam day. ${target}% is out of reach now — ${cap(words(Math.min(240, Math.max(dailyMedian + 5, reqReach))))} minutes a day gets you to ${p.reachable}%.`
+    const reqReach = Math.ceil(((p.reachable - (p.projected ?? 0)) / (p.perMinute || 1)) / Math.max(1, p.effDays ?? p.daysLeft)) + pacePerStudyDay
+    return `At ${dailyMedian} minutes a day you reach ${p.projected}% by exam day. ${target}% is out of reach now — ${cap(words(Math.min(240, Math.max(pacePerStudyDay + 5, reqReach))))} minutes${unit} gets you to ${p.reachable}%.`
   }
-  return `At ${dailyMedian} minutes a day you reach ${p.projected}% by exam day. ${cap(words(Math.min(240, req)))} minutes a day gets you to ${target}%.`
+  return `At ${dailyMedian} minutes a day you reach ${p.projected}% by exam day. ${cap(words(Math.min(240, req)))} minutes${unit} gets you to ${target}%.`
 }
 
 /* ── the week strip ───────────────────────────────────────────────────────── */

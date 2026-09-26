@@ -331,6 +331,16 @@ const BookView: React.FC<{
       // back-press is how a reader ends up costing hundreds of megabytes.
       docRef.current?.destroy?.()
       docRef.current = null
+      // And the page bitmap: at a phone's 3× density one page is several
+      // megabytes, more when zoomed. Zeroing the canvas frees it now instead
+      // of whenever the garbage collector gets round to it -- which on a
+      // 2–3 GB phone can be after the WebView has already been killed.
+      // (Read at cleanup on purpose: the canvas mounts after this effect runs.)
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      const cv = canvasRef.current
+      if (cv) { cv.width = 0; cv.height = 0 }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      textRef.current?.replaceChildren()
     }
   }, [id])
 

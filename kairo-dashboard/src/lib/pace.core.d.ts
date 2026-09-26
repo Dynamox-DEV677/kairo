@@ -32,8 +32,13 @@ export interface Projection {
   daysLeft: number | null
   haveHistory: boolean
   perMinute?: number
+  /** Study days a week the ask is spread over (1–7; 7 = every day). */
+  studyDays: number
+  /** daysLeft × studyDays / 7 — the days that will actually be studied. */
+  effDays?: number
 }
-export function project(args?: { solidPct?: number; needMinutes?: number; dailyMedian?: number | null; daysLeft?: number | null; target?: number }): Projection
+export function clampStudyDays(n: unknown): number
+export function project(args?: { solidPct?: number; needMinutes?: number; dailyMedian?: number | null; daysLeft?: number | null; target?: number; studyDays?: number | null }): Projection
 export function honestLine(p: Projection | null | undefined, dailyMedian: number | null, target?: number): string
 
 export interface WeekTile { ts: number; label: string; state: 'done' | 'missed' | 'today' | 'future'; minutes: number }

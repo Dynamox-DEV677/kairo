@@ -18,6 +18,7 @@ import { T, FONT, MONO, ICON } from '../lib/spaceTokens'
 import { validateUsername, tileHue, tileLetter } from '../lib/username.core'
 import { getSocialCached, refreshSocial, setUsername, setSocialSettings, forgetSocial, SOCIAL_EVENT, type SocialProfile } from '../lib/social'
 import { getProfile, saveProfile, exportTwin } from '../lib/twin'
+import { saveTextFile } from '../lib/saveFile'
 import { getJSON, setJSON, getRaw, setRaw, storedProfileRaw, setStoredProfileRaw, clearAuthTokens, removeStoredProfile } from '../lib/storage'
 import { BOARD_OPTIONS } from '../lib/curriculum.core'
 import { graphForProfile } from '../lib/syllabusFor'
@@ -191,11 +192,18 @@ export default function Profile({ onLogout, onOpenSettings }: { onLogout?: () =>
     try { server = await api('/account/export') } catch (e: any) { server = { unavailable: true, reason: e?.message || 'offline' } }
     let device: unknown
     try { device = JSON.parse(exportTwin()) } catch { device = { unavailable: true } }
-    const blob = new Blob([JSON.stringify({ exported_at: new Date().toISOString(), what: 'Everything Kyno holds about you: the server rows and this device\'s learning history.', server, device }, null, 2)], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a'); a.href = url; a.download = `kyno-my-data-${new Date().toISOString().slice(0, 10)}.json`; a.click()
-    setTimeout(() => URL.revokeObjectURL(url), 5000)
-    setDownloadNote((server as any)?.unavailable ? 'Saved this device\'s data. The server copy was not reachable — try again online.' : 'Saved. That is everything, as JSON.')
+    const text = JSON.stringify({ exported_at: new Date().toISOString(), what: 'Everything Kyno holds about you: the server rows and this device\'s learning history.', server, device }, null, 2)
+    const partial = !!(server as any)?.unavailable
+    // saveTextFile, not an <a download>: inside the Android app a download link
+    // does nothing at all, and this used to announce "Saved." regardless.
+    const r = await saveTextFile(text, `kyno-my-data-${new Date().toISOString().slice(0, 10)}.json`, 'application/json')
+    setDownloadNote(
+      r === 'unsupported' ? 'This app can\'t save files on your phone yet. Open kairo-daily-edu.vercel.app in Chrome, sign in, and download it from Profile there.'
+      : r === 'cancelled' ? 'Not saved — the share sheet was closed.'
+      : partial ? `${r === 'shared' ? 'Shared' : 'Saved'} this device's data. The server copy was not reachable — try again online.`
+      : r === 'shared' ? 'Shared — pick where to keep it. That is everything, as JSON.'
+      : 'Saved. That is everything, as JSON.',
+    )
     setDownloading(false)
   }
 
@@ -585,6 +593,15 @@ export default function Profile({ onLogout, onOpenSettings }: { onLogout?: () =>
         </div>
         {deleting !== 'idle' && (
           <div style={{ marginTop: 12, padding: 14, borderRadius: 16, background: T.errorBg, border: `1px solid ${T.errorBorder}` }}>
+            {/* A student can take their data with them before it is gone for good
+                (the DPDP Act's portability right, and plain decency). */}
+            <div style={{ fontSize: 14, fontWeight: 600 }}>Take a copy first?</div>
+            <div style={{ fontSize: 12.5, color: T.text2, lineHeight: 1.5, marginTop: 4 }}>Deleting removes every note, card, mistake and score for good. Download them first if you might want them.</div>
+            <button onClick={downloading ? undefined : download} disabled={downloading} style={{ marginTop: 10, width: '100%', height: 44, borderRadius: 12, background: T.raised, border: `1px solid ${T.borderCtl}`, color: T.text, fontFamily: FONT, fontSize: 14, fontWeight: 600, cursor: downloading ? 'default' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+              {downloading ? <Loader2 size={16} {...ICON} /> : <Download size={16} {...ICON} />} Download my data
+            </button>
+            {downloadNote && <div style={{ fontSize: 12.5, color: T.text2, lineHeight: 1.5, marginTop: 8 }}>{downloadNote}</div>}
+            <div style={{ height: 1, background: T.errorBorder, margin: '14px 0' }} />
             <div style={{ fontSize: 14, fontWeight: 600 }}>Type DELETE to confirm</div>
             <div style={{ fontSize: 12.5, color: T.text2, lineHeight: 1.5, marginTop: 4 }}>Your rows go first, then the account itself. Nothing is kept.</div>
             <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
