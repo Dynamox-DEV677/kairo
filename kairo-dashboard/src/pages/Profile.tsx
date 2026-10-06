@@ -20,7 +20,7 @@ import { getSocialCached, refreshSocial, setUsername, setSocialSettings, forgetS
 import { getProfile, saveProfile, exportTwin } from '../lib/twin'
 import { saveTextFile, platformName } from '../lib/saveFile'
 import { FEEDBACK_CATEGORIES, FEEDBACK_SCREENS, MESSAGE_MAX, normalizeFeedback } from '../lib/feedback.core'
-import { getJSON, setJSON, getRaw, setRaw, storedProfileRaw, setStoredProfileRaw, clearAuthTokens, removeStoredProfile } from '../lib/storage'
+import { getJSON, setJSON, storedProfileRaw, setStoredProfileRaw, clearAuthTokens, removeStoredProfile } from '../lib/storage'
 import { BOARD_OPTIONS } from '../lib/curriculum.core'
 import { graphForProfile } from '../lib/syllabusFor'
 import { getNotificationPrefs, setNotificationPref, type NotificationKind } from '../lib/notifications'
@@ -43,7 +43,6 @@ type Style = React.CSSProperties
 
 const CLASSES = ['6', '7', '8', '9', '10', '11', '12']
 const STUDENT_PROFILE_KEY = 'kyno:student_profile'
-const THEME_PREF_KEY = 'kyno:theme:pref'
 
 /* ── shared bits ─────────────────────────────────────────────────────────── */
 
@@ -180,10 +179,9 @@ export default function Profile({ onLogout, onOpenSettings }: { onLogout?: () =>
   }
 
   /* app rows */
-  const [editingApp, setEditingApp] = useState<'reminders' | 'theme' | 'email' | null>(null)
+  const [editingApp, setEditingApp] = useState<'reminders' | 'email' | null>(null)
   const [prefs, setPrefs] = useState(() => getNotificationPrefs())
   const [reminder, setReminder] = useState<string | null>(() => getReminderTime())
-  const [themePref, setThemePref] = useState<'dark' | 'light' | 'system'>(() => (getRaw(THEME_PREF_KEY) as any) || 'dark')
   const [downloading, setDownloading] = useState(false)
   const [downloadNote, setDownloadNote] = useState('')
 
@@ -481,16 +479,6 @@ export default function Profile({ onLogout, onOpenSettings }: { onLogout?: () =>
                     </div>
                   ))}
                 </div>
-              </div>
-            )}
-          </Row>
-          <Row label="Theme" value={themePref === 'dark' ? 'Dark' : themePref === 'light' ? 'Light' : 'System'} onClick={() => setEditingApp(a => a === 'theme' ? null : 'theme')}>
-            {editingApp === 'theme' && (
-              <div style={{ padding: '0 14px 14px' }}>
-                <div style={{ display: 'flex', gap: 8 }}>
-                  {(['dark', 'light', 'system'] as const).map(t => <Chip key={t} on={themePref === t} onClick={() => { setThemePref(t); setRaw(THEME_PREF_KEY, t) }}>{t === 'dark' ? 'Dark' : t === 'light' ? 'Light' : 'System'}</Chip>)}
-                </div>
-                <div style={{ fontSize: 12, color: T.faint, marginTop: 8, lineHeight: 1.5 }}>Kyno is dark today. Your choice is saved and applies as soon as the light theme ships with the new design.</div>
               </div>
             )}
           </Row>
