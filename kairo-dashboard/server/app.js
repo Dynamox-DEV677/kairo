@@ -97,6 +97,10 @@ if (!process.env.GROQ_API_KEYS && !process.env.GROQ_API_KEY) {
 
 const app = express()
 
+// The Razorpay webhook needs the request's exact bytes to check its signature,
+// so it gets them raw, before express.json() turns them into an object. Reading
+// the body here also marks it read, so the JSON parser below skips this route.
+app.use('/api/payments/webhook', express.raw({ type: '*/*', limit: '1mb' }))
 app.use(express.json({ limit: '10mb' }))
 
 // Liveness probe. Exactly `{ ok: true }` — no version, no feature list, no

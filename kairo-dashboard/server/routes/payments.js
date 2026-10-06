@@ -3,6 +3,7 @@ import { fail } from '../lib/fail.js'
 import crypto from 'crypto'
 import { supabaseAdmin, requireSupabase } from '../services/supabase.js'
 import { requireSupabaseAuth, requireRole } from '../middleware/supabaseAuth.js'
+import { verifyRazorpaySignature } from '../lib/razorpay.js'
 
 const router = Router()
 router.use(requireSupabase)
@@ -146,19 +147,26 @@ router.post('/webhook', async (req, res) => {
     return res.status(401).json({ error: 'Missing signature or webhook secret not configured.' })
   }
 
-  const rawBody = JSON.stringify(req.body)
-  const expected = crypto
-    .createHmac('sha256', RAZORPAY_WEBHOOK_SECRET)
-    .update(rawBody)
-    .digest('hex')
-
-  if (expected !== signature) {
+  // app.js mounts express.raw on this route, so req.body is the exact bytes
+  // Razorpay signed. Verify those, and only then parse them.
+  if (!Buffer.isBuffer(req.body)) {
+    console.error('[webhook] no raw body: empty request, or express.raw is not mounted ahead of express.json in app.js')
+    return res.status(400).json({ error: 'Raw body unavailable.' })
+  }
+  if (!verifyRazorpaySignature(req.body, signature, RAZORPAY_WEBHOOK_SECRET)) {
     console.warn('[webhook] signature mismatch')
     return res.status(401).json({ error: 'Invalid signature.' })
   }
 
-  const event   = req.body?.event
-  const payload = req.body?.payload || {}
+  let body
+  try {
+    body = JSON.parse(req.body.toString('utf8'))
+  } catch {
+    return res.status(400).json({ error: 'Webhook body is not JSON.' })
+  }
+
+  const event   = body?.event
+  const payload = body?.payload || {}
 
   try {
     switch (event) {

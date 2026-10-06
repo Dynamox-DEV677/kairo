@@ -3,6 +3,7 @@ import { fail } from '../lib/fail.js'
 import { supabaseAdmin, requireSupabase }             from '../services/supabase.js'
 import { requireSupabaseAuth }                         from '../middleware/supabaseAuth.js'
 import { requireTeacherOrAdmin, checkNetworkRestriction } from '../middleware/schoolAuth.js'
+import { pgrstValue } from '../lib/pgrst.js'
 
 const router = Router()
 router.use(requireSupabase)
@@ -68,7 +69,7 @@ router.get('/', async (req, res) => {
     if (req.user.role === 'student') {
       query = query.eq('status', 'active')
       if (req.user.class_name) {
-        query = query.or(`target_class.is.null,target_class.eq.${req.user.class_name}`)
+        query = query.or(`target_class.is.null,target_class.eq.${pgrstValue(req.user.class_name)}`)
       }
     }
 

@@ -3,6 +3,7 @@ import { fail } from '../lib/fail.js'
 import PDFDocument       from 'pdfkit'
 import { supabaseAdmin, requireSupabase } from '../services/supabase.js'
 import { requireSupabaseAuth } from '../middleware/supabaseAuth.js'
+import { ilikeContains } from '../lib/pgrst.js'
 
 const router = Router()
 router.use(requireSupabase)
@@ -50,7 +51,10 @@ router.get('/', async (req, res) => {
       .range(Number(offset), Number(offset) + Number(limit) - 1)
 
     if (subject) query = query.ilike('subject', subject)
-    if (q)       query = query.or(`title.ilike.%${q}%,content.ilike.%${q}%`)
+    if (q) {
+      const like = ilikeContains(q)
+      query = query.or(`title.ilike.${like},content.ilike.${like}`)
+    }
 
     const { data, error } = await query
     if (error) throw new Error(error.message)
