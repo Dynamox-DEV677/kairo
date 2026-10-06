@@ -75,6 +75,7 @@ import battleRoutes        from './routes/battle.js'
 import knowledgeRoutes     from './routes/knowledge.js'
 
 import paymentRoutes       from './routes/payments.js'
+import { kynoCors }        from './lib/cors.js'
 
 import twinRoutes          from './routes/twin.js'
 import studyRoutes         from './routes/study.js'
@@ -113,22 +114,8 @@ app.get('/api/health', (_req, res) => {
 
 app.use(apiLimiter)
 
-app.use((req, res, next) => {
-  const origin = req.headers.origin || ''
-  const isLocalhost = /^http:\/\/localhost(:\d+)?$/.test(origin)
-  const isVercel    = /^https:\/\/[^.]+\.vercel\.app$/.test(origin)
-  const isAllowed   = process.env.ALLOWED_ORIGIN
-    ? process.env.ALLOWED_ORIGIN.split(',').map(s => s.trim()).includes(origin)
-    : false
-
-  if (isLocalhost || isVercel || isAllowed) {
-    res.setHeader('Access-Control-Allow-Origin', origin)
-  }
-  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS')
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization')
-  if (req.method === 'OPTIONS') return res.sendStatus(204)
-  next()
-})
+// CORS: exact origins only, no more "any *.vercel.app". See server/lib/cors.js.
+app.use(kynoCors())
 
 app.use([
   '/api/ai', '/api/camera', '/api/council', '/api/quiz', '/api/notebook', '/api/essay',

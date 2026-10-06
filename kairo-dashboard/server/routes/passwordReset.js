@@ -3,11 +3,14 @@ import { Router } from 'express'
 import jwt        from 'jsonwebtoken'
 import { supabaseAdmin, requireSupabase } from '../services/supabase.js'
 import { getClientIp } from '../middleware/schoolAuth.js'
+import { resetRequestLimiter } from '../middleware/rateLimit.js'
 import { sendPasswordResetEmail } from '../email/index.js'
 import { appUrl } from '../email/theme.js'
 
 const router = Router()
 router.use(requireSupabase)
+// Ahead of the route, so the route itself still starts with needsSecret.
+router.use('/forgot-password', resetRequestLimiter)
 
 const TOKEN_TTL_MIN = Math.max(5, parseInt(process.env.RESET_TOKEN_TTL_MINUTES || '30', 10) || 30)
 

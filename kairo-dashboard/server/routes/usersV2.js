@@ -10,6 +10,7 @@ import {
   getTransporter,
 } from '../email/index.js'
 import { getClientIp, isIpInRange }            from '../middleware/schoolAuth.js'
+import { loginLimiter }                         from '../middleware/rateLimit.js'
 
 const router = Router()
 router.use(requireSupabase)
@@ -384,7 +385,7 @@ async function tryInsertPersonalProfile(id, name, avatarUrl, class_name, board, 
   return null
 }
 
-router.post('/login', async (req, res) => {
+router.post('/login', loginLimiter, async (req, res) => {
   const { email, password } = req.body
   if (!email || !password) return res.status(400).json({ error: 'email and password are required.' })
 

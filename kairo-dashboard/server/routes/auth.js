@@ -3,6 +3,7 @@ import { fail } from '../lib/fail.js'
 import bcrypt from 'bcryptjs'
 import { db } from '../db/index.js'
 import { signToken, requireAuth } from '../middleware/auth.js'
+import { loginLimiter } from '../middleware/rateLimit.js'
 
 const router = Router()
 
@@ -36,7 +37,7 @@ router.post('/register', async (req, res) => {
   }
 })
 
-router.post('/login', async (req, res) => {
+router.post('/login', loginLimiter, async (req, res) => {
   const { email, password } = req.body
   if (!email || !password)
     return res.status(400).json({ error: 'email and password are required.' })
