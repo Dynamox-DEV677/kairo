@@ -153,5 +153,15 @@
       "Listen gets a Neural voice — a studio-quality AI voice that runs ON YOUR DEVICE. One ~90 MB download, then it works offline forever: no internet, no limits.",
       "Pick your voice source in Listen: Device (instant), HD (online), or Neural (best) — with four neural voices to choose from. If your pick can't speak a card, the next one takes over automatically."
     ]
+  },
+  {
+    "n": 16,
+    "date": "2026-10-10",
+    "title": "Kyno Update 16",
+    "changes": [
+      "Open a book in the Reader and tap Study. Ask anything about it and Kyno answers from your own textbook only, showing the page each answer came from — tap the page to jump straight there.",
+      "Make a study guide, an FAQ, a timeline or a mind map from a chapter in one tap. Every item links to its page, and they're saved on your phone, so they open instantly next time.",
+      "Explain simply and Summarise on your highlights work again, and the answer stays on screen once it arrives."
+    ]
   }
 ]
