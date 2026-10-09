@@ -21,11 +21,15 @@ const DB_NAME = 'kyno-library'
  * was never going to be a textbook reader: the formula for volume percentage
  * came out as a meaningless word order and every figure was simply gone. The
  * bytes are the book; the text is a search index over it.
+ *
+ * v3 adds the study items made from a book (guide, FAQ, timeline, mind map),
+ * so reopening one is instant and costs no AI call.
  */
-const DB_VERSION = 2
+const DB_VERSION = 3
 
 export const BOOKS = 'books'
 export const HIGHLIGHTS = 'highlights'
+export const STUDIO = 'studio'
 
 export interface Book {
   id: string
@@ -83,6 +87,18 @@ export interface Highlight {
   error?: string
 }
 
+/** A study item made from a page range of one book. `data` is the normalised result. */
+export interface StudioItem {
+  /** studioKey(bookId, kind, range) */
+  id: string
+  bookId: string
+  kind: 'guide' | 'faq' | 'timeline' | 'mindmap'
+  from: number
+  to: number
+  createdAt: number
+  data: unknown
+}
+
 let dbPromise: Promise<IDBDatabase> | null = null
 
 function open(): Promise<IDBDatabase> {
@@ -103,9 +119,19 @@ function open(): Promise<IDBDatabase> {
         s.createIndex('byBook', 'bookId', { unique: false })
         s.createIndex('byStatus', 'status', { unique: false })
       }
+      if (!db.objectStoreNames.contains(STUDIO)) {
+        const s = db.createObjectStore(STUDIO, { keyPath: 'id' })
+        s.createIndex('byBook', 'bookId', { unique: false })
+      }
     }
-    req.onsuccess = () => resolve(req.result)
-    req.onerror = () => reject(req.error || new Error('Could not open the library'))
+    req.onsuccess = () => {
+      const db = req.result
+      // A newer Kyno in another tab is upgrading the library: step aside so
+      // its upgrade is not blocked, and reopen on the next call.
+      db.onversionchange = () => { db.close(); dbPromise = null }
+      resolve(db)
+    }
+    req.onerror = () => { dbPromise = null; reject(req.error || new Error('Could not open the library')) }
   })
   return dbPromise
 }
@@ -150,6 +176,8 @@ export async function deleteBook(id: string): Promise<void> {
   await tx(BOOKS, 'readwrite', s => s.delete(id))
   const hs = await highlightsForBook(id)
   for (const h of hs) await deleteHighlight(h.id)
+  const items = await tx<StudioItem[]>(STUDIO, 'readonly', s => s.index('byBook').getAll(id))
+  for (const it of items) await tx(STUDIO, 'readwrite', s => s.delete(it.id))
 }
 
 /** Remember where they stopped reading. */
@@ -181,6 +209,16 @@ export async function pendingHighlights(): Promise<Highlight[]> {
 export async function highlightsForBook(bookId: string): Promise<Highlight[]> {
   const all = await allHighlights()
   return all.filter(h => h.bookId === bookId)
+}
+
+/* ── study items ──────────────────────────────────────────────────────────── */
+
+export async function putStudio(item: StudioItem): Promise<void> {
+  await tx(STUDIO, 'readwrite', s => s.put(item))
+}
+
+export async function getStudio(id: string): Promise<StudioItem | undefined> {
+  return tx<StudioItem | undefined>(STUDIO, 'readonly', s => s.get(id))
 }
 
 /* ── housekeeping ─────────────────────────────────────────────────────────── */

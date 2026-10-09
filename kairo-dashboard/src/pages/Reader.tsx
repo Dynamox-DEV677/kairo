@@ -14,7 +14,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react'
 import {
   BookOpen, Upload, Search as SearchIcon, X, Trash2, Layers,
   Sparkles, FileText, Loader2, Check, ChevronLeft, AlertTriangle,
-  ChevronRight, ZoomIn, ZoomOut,
+  ChevronRight, ZoomIn, ZoomOut, GraduationCap,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { T, FONT, ICON } from '../lib/spaceTokens'
@@ -31,9 +31,10 @@ import {
 } from '../lib/library'
 import { buildClozeCards } from '../lib/cloze.core.js'
 import { recordFlashcard } from '../lib/twin'
-import { post } from '../lib/api'
+import { chat } from '../lib/openrouter'
 import { studentMessage } from '../lib/aiError.core'
 import MathText from '../components/MathText'
+import BookStudio from '../components/BookStudio'
 
 type View =
   | { name: 'shelf' }
@@ -290,6 +291,10 @@ const BookView: React.FC<{
   const [hits, setHits] = useState<SearchResult[] | null>(null)
   const [sel, setSel] = useState('')
   const [flash, setFlash] = useState('')
+  // Study is mounted on first open and then only hidden, so a guide being
+  // written keeps going while the student reads.
+  const [studio, setStudio] = useState<'closed' | 'open' | 'hidden'>('closed')
+  const [studioBusy, setStudioBusy] = useState(false)
 
   /*
    * A callback ref, not useRef.
@@ -469,6 +474,19 @@ const BookView: React.FC<{
           </div>
           <div style={{ fontSize: 11.5, color: T.dim }}>page {page} of {book?.pageCount}</div>
         </div>
+        {book?.file && (
+          <button onClick={() => { setSel(''); setStudio('open') }} aria-label="Study this book"
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6, padding: '7px 11px', borderRadius: 100,
+              background: T.accentSurface, border: `1px solid ${T.accent}`, color: T.text,
+              fontFamily: FONT, fontSize: 12.5, fontWeight: 700, cursor: 'pointer', flexShrink: 0,
+            }}>
+            {studioBusy
+              ? <Loader2 size={14} color={T.accentPale} {...ICON} className="kyno-spin" />
+              : <GraduationCap size={14} color={T.accentPale} {...ICON} />}
+            Study
+          </button>
+        )}
         <button onClick={() => setZoom(z => Math.max(0.8, Math.round((z - 0.2) * 10) / 10))}
           disabled={zoom <= 0.8} aria-label="Zoom out"
           style={{ background: 'none', border: 'none', padding: 5, cursor: zoom <= 0.8 ? 'default' : 'pointer' }}>
@@ -660,6 +678,17 @@ const BookView: React.FC<{
           <Check size={16} color={T.success} {...ICON} />{flash}
         </div>
       )}
+
+      {book && studio !== 'closed' && (
+        <BookStudio
+          book={book}
+          page={page}
+          open={studio === 'open'}
+          onClose={() => setStudio('hidden')}
+          onGoto={n => { setQ(''); goto(n) }}
+          onBusy={setStudioBusy}
+        />
+      )}
     </div>
   )
 }
@@ -696,7 +725,13 @@ const PendingView: React.FC<{
 }> = ({ shell, items, onBack, onChanged }) => {
   const [busyId, setBusyId] = useState('')
   const [local, setLocal] = useState(items)
-  useEffect(() => setLocal(items), [items])
+  // Keep answers already on this screen. The parent re-reads its PENDING list
+  // after every run, and taking that list wholesale made each explanation
+  // vanish the moment it arrived.
+  useEffect(() => setLocal(cur => {
+    const answered = cur.filter(h => h.status === 'done' && !items.some(i => i.id === h.id))
+    return [...items, ...answered].sort((a, b) => b.createdAt - a.createdAt)
+  }), [items])
 
   async function run(h: Highlight) {
     setBusyId(h.id)
@@ -704,9 +739,12 @@ const PendingView: React.FC<{
       ? `Explain this to a 14-year-old in three short sentences. Plain words, no preamble:\n\n${h.text}`
       : `Summarise this in at most three bullet points, each under 15 words:\n\n${h.text}`
     try {
-      const r = await post('/ai/chat', { messages: [{ role: 'user', content: ask }], taskType: 'speed' })
-      const out = String(r?.reply || r?.content || r?.text || '').trim()
-      if (!out) throw new Error('empty reply')
+      // chat(), not a bare post: /ai/chat answers in the chat-completion
+      // shape, so reading `reply`/`content` off it found nothing and every
+      // queued highlight failed as "empty". strict, so the server's "busy"
+      // stand-in is never saved as the explanation.
+      const out = (await chat({ messages: [{ role: 'user', content: ask }], effort: 'low', strict: true })).trim()
+      if (!out) throw new Error('Empty response')
       const done: Highlight = { ...h, status: 'done', result: out }
       await putHighlight(done)
       setLocal(l => l.map(x => x.id === h.id ? done : x))

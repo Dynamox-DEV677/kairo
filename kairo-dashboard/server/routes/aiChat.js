@@ -1,5 +1,6 @@
 import express from 'express'
 import { fail } from '../lib/fail.js'
+import { chatExtras } from '../lib/chatExtras.js'
 import { searchManyParallel } from '../services/imageSearch.js'
 import { supabaseAdmin } from '../services/supabase.js'
 import groqPool from '../services/groqPool.js'
@@ -222,7 +223,7 @@ function readDevKey(req) {
 }
 
 router.post('/chat', async (req, res) => {
-  const { messages, model, stream = false } = req.body
+  const { messages, model, stream = false, json = false, effort } = req.body
 
   if (!messages?.length) {
     return res.status(400).json({ error: 'messages array required' })
@@ -257,7 +258,7 @@ router.post('/chat', async (req, res) => {
         const r = await withSlot(() => fetch('https://api.groq.com/openai/v1/chat/completions', {
           method: 'POST',
           headers: { 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ model: m, messages, stream, max_tokens: 2048 }),
+          body: JSON.stringify({ model: m, messages, stream, max_tokens: 2048, ...chatExtras(m, { json, effort }) }),
           // Vercel Hobby hard-kills the function at 10s; fail before that so we
           // can still return a readable error instead of a platform timeout.
           signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS),

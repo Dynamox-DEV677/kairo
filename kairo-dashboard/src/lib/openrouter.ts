@@ -26,13 +26,27 @@ interface ChatOptions {
   messages: Message[]
   onChunk?: (token: string, full: string) => void
   signal?: AbortSignal
+  /** Ask for JSON mode (the caller still parses leniently). */
+  json?: boolean
+  /** gpt-oss reasoning effort; "low" leaves more of the 2048 tokens for the reply. */
+  effort?: 'low' | 'medium' | 'high'
+  /**
+   * Refuse the server's stand-in replies (the "busy" message, the Wikipedia
+   * extract). Anything that must come from the student's own material --
+   * "Ask this book" above all -- would otherwise show one as if it were the
+   * answer.
+   */
+  strict?: boolean
 }
+
+type CallExtras = Pick<ChatOptions, 'json' | 'effort' | 'strict'>
 
 async function callModel(
   model: string,
   messages: Message[],
   onChunk?: ChatOptions['onChunk'],
   signal?: AbortSignal,
+  extras: CallExtras = {},
 ): Promise<string> {
   const res = await fetch(PROXY_URL, {
     method: 'POST',
@@ -40,7 +54,11 @@ async function callModel(
     // await, so the SDK hands back a live token rather than the stale
     // kyno:token snapshot that used to 401 every AI route after an hour
     headers: { 'Content-Type': 'application/json', ...(await aiHeadersAsync()) },
-    body: JSON.stringify({ model, messages, stream: !!onChunk }),
+    body: JSON.stringify({
+      model, messages, stream: !!onChunk,
+      ...(extras.json ? { json: true } : {}),
+      ...(extras.effort ? { effort: extras.effort } : {}),
+    }),
   })
 
   if (!res.ok) {
@@ -56,6 +74,12 @@ async function callModel(
 
   if (!onChunk) {
     const data = await res.json()
+    if (extras.strict && data?._fallback) {
+      // Carries a 503 so AiError reads it as a fault, never as "busy" load.
+      const err: any = new Error('AI unavailable (stand-in reply refused)')
+      err.status = 503
+      throw err
+    }
     const content = data.choices?.[0]?.message?.content || ''
     if (!content) throw new Error('Empty response')
     return content
@@ -97,14 +121,15 @@ function isAuthError(e: any): boolean {
     /missing bearer|invalid or expired token|not authenticated/i.test(m)
 }
 
-export async function chat({ model = DEFAULT_MODEL, messages, onChunk, signal }: ChatOptions): Promise<string> {
+export async function chat({ model = DEFAULT_MODEL, messages, onChunk, signal, json, effort, strict }: ChatOptions): Promise<string> {
   const chain = Array.from(new Set([model, ...FALLBACK_CHAIN]))
+  const extras: CallExtras = { json, effort, strict }
   let lastErr: any = null
 
   for (const m of chain) {
     if (signal?.aborted) throw new DOMException('Aborted', 'AbortError')
     try {
-      return await callModel(m, messages, onChunk, signal)
+      return await callModel(m, messages, onChunk, signal, extras)
     } catch (e: any) {
       if (e?.name === 'AbortError') throw e
       lastErr = e
@@ -115,7 +140,7 @@ export async function chat({ model = DEFAULT_MODEL, messages, onChunk, signal }:
         try {
           const { refreshAccessToken } = await import('./api')
           const r = await refreshAccessToken()
-          if (r?.ok) return await callModel(m, messages, onChunk, signal)
+          if (r?.ok) return await callModel(m, messages, onChunk, signal, extras)
         } catch { /* fall through to the throw below */ }
         throw new AiError('AUTH_EXPIRED', e)
       }
