@@ -213,27 +213,27 @@ export default function Notes({ onOpenDoubt, onPractice, onOpenReader }: {
           <h1 style={{ fontSize: 25, fontWeight: 700, margin: '8px 0 0', letterSpacing: -0.3 }}>Your library</h1>
 
           {/*
-            * The way into the Reader.
+            * A way into the Reader, beside the student's notes and formulas.
             *
-            * It lives here rather than in the drawer: the drawer is exactly
-            * Today plus the seven Spaces and a test enforces that, which is
-            * right -- it is the canonical answer to what Kyno is. A shelf of
-            * the student's own textbooks belongs with their notes and formulas,
-            * which is what this space already is.
+            * It used to be the ONLY way in, and it was not found: the drawer
+            * now has a "Your books" group and the desktop sidebar a Reader
+            * row. This stays because a shelf of textbooks belongs here too.
             */}
+          {/* Lit, not just listed: a quiet grey row is how the Reader went
+              unnoticed. The drawer and the sidebar now point here too. */}
           {onOpenReader && (
-            <Card style={{ padding: 13, borderRadius: 15, marginTop: 14 }} onClick={onOpenReader}>
-              <div style={{ display: 'flex', gap: 11, alignItems: 'center' }}>
-                <div style={{ width: 34, height: 34, borderRadius: 10, background: T.accentSurface, display: 'grid', placeItems: 'center', flexShrink: 0 }}>
-                  <BookOpen size={16} color={T.accentPale} {...ICON} />
+            <Card style={{ padding: 15, borderRadius: 16, marginTop: 14, background: T.accentSurface, border: `1px solid ${T.accent}` }} onClick={onOpenReader}>
+              <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+                <div style={{ width: 40, height: 40, borderRadius: 12, background: T.accent, display: 'grid', placeItems: 'center', flexShrink: 0 }}>
+                  <BookOpen size={19} color="#fff" {...ICON} />
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 14, fontWeight: 600 }}>Your books</div>
-                  <div style={{ fontSize: 12, color: T.dim, marginTop: 2 }}>
-                    Add a textbook — search it, highlight it, make cards. Works offline.
+                  <div style={{ fontSize: 15, fontWeight: 700 }}>Reader · your textbooks</div>
+                  <div style={{ fontSize: 12.5, color: T.text2, marginTop: 3, lineHeight: 1.45 }}>
+                    Add a PDF, then ask it questions or make a study guide, FAQ or mind map. Works offline.
                   </div>
                 </div>
-                <ChevronRight size={17} color={T.faint} {...ICON} />
+                <ChevronRight size={18} color={T.accentPale} {...ICON} />
               </div>
             </Card>
           )}

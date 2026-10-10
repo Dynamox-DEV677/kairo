@@ -130,10 +130,16 @@ test('the drawer is seven groups, one per space, and nothing is orphaned', () =>
    * worse one, because a student then had no single place answering "what can
    * this app do?", which is the confusion the consolidation existed to end.
    */
-  assert.deepEqual(titles, ['Today', 'Spaces'])
+  /**
+   * Plus one group that is not a space: the Reader. It lived only behind a
+   * card inside Notes, and students who had it never found it, so on
+   * 2026-10-10 it was given a row of its own. It is not a space, which is why
+   * it sits in its own group and not among the seven.
+   */
+  assert.deepEqual(titles, ['Today', 'Your books', 'Spaces'])
   const inSheet = [...block.matchAll(/to: '([a-z0-9-]+)'/g)].map(m => m[1])
-  assert.deepEqual(inSheet, ['home', ...SPACES.map(s => s.id)],
-    'Home plus all seven spaces, in the canonical order')
+  assert.deepEqual(inSheet, ['home', 'reader', ...SPACES.map(s => s.id)],
+    'Home, the Reader, then all seven spaces in the canonical order')
   // every row says what the space is FOR
   const subs = [...block.matchAll(/sub: '([^']+)'/g)].map(m => m[1])
   assert.equal(subs.length, inSheet.length, 'every row needs a subtitle')
@@ -185,6 +191,9 @@ test('the desktop sidebar leads with the seven spaces', () => {
   const block = sidebar.slice(sidebar.indexOf('const STUDENT_NAV'), sidebar.indexOf('const TEACHER_NAV'))
   const tos = [...block.matchAll(/to: '([a-z0-9-]+)'/g)].map(m => m[1])
   assert.deepEqual(tos.slice(0, 8), ['home', ...SPACES.map(s => s.id)])
+  // ...then the Reader, inside what shows before "more"
+  assert.equal(tos[8], 'reader')
+  assert.match(sidebar, /const DEFAULT_VISIBLE = 9\b/)
   for (const t of tos) assert.equal(SPACE_ALIASES[t], undefined, `sidebar still lists ${t}, which now redirects`)
 })
 

@@ -99,6 +99,18 @@ const DRAWER_STUDENT = [
     ],
   },
   {
+    /*
+     * The Reader, out in the open. It used to be reachable only from a card
+     * inside Notes, and students who had it on their phones never found it
+     * -- including the founder. Not a space, so it gets its own group rather
+     * than a slot among the seven.
+     */
+    title: 'Your books',
+    items: [
+      { to: 'reader', label: 'Reader', icon: BookMarked, sub: 'Your textbooks: ask them, make study guides' },
+    ],
+  },
+  {
     title: 'Spaces',
     items: [
       { to: 'doubt-solving', label: 'Doubt Solving',          icon: MessageCircle,  sub: 'Ask, solve, understand' },

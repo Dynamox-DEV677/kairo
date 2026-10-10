@@ -78,62 +78,67 @@ createRoot(document.getElementById('root')!).render(
   </StrictMode>,
 )
 
+/* ── New versions ──────────────────────────────────────────────────────────
+   Found while the app is still opening, before the student has touched
+   anything: apply it at once, so opening Kyno means opening the latest Kyno.
+   Found later -- the window has been open a while -- it waits for a tap on a
+   small bar. Reloading by itself mid-session could throw away a mock test.
+
+   Never a full-screen splash again: the old "Updating…" screen auto-reloaded,
+   and a stuck service worker trapped students on it. The bar covers nothing,
+   and the automatic path runs at most once per session.                    */
+const bootAt = Date.now()
+let touched = false
+for (const ev of ['pointerdown', 'keydown'] as const) {
+  window.addEventListener(ev, () => { touched = true }, { capture: true, once: true })
+}
+
+function showUpdateBar(reload: () => void) {
+  if (document.getElementById('kyno-update-bar')) return
+  const bar = document.createElement('div')
+  bar.id = 'kyno-update-bar'
+  bar.setAttribute('role', 'status')
+  bar.style.cssText = `
+    position: fixed; left: 50%; transform: translateX(-50%); z-index: 99999;
+    top: calc(10px + env(safe-area-inset-top, 0px));
+    display: flex; align-items: center; gap: 12px; max-width: calc(100vw - 24px);
+    padding: 8px 8px 8px 16px; border-radius: 14px;
+    background: #15151F; border: 1px solid #2A2A3C; box-shadow: 0 12px 34px rgba(0,0,0,0.5);
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif; font-size: 13.5px; color: #EDEDF5;
+  `
+  const label = document.createElement('span')
+  label.textContent = 'A new version of Kyno is ready.'
+  const go = document.createElement('button')
+  go.textContent = 'Reload'
+  go.style.cssText = 'border:none;border-radius:10px;padding:8px 14px;background:#7C5CFF;color:#fff;font:inherit;font-weight:700;cursor:pointer'
+  go.onclick = () => {
+    go.textContent = 'Reloading…'
+    go.disabled = true
+    reload()
+    // If the new worker never takes over, a plain reload still beats a dead button.
+    setTimeout(() => location.reload(), 4000)
+  }
+  const close = document.createElement('button')
+  close.textContent = '×'
+  close.setAttribute('aria-label', 'Later')
+  close.style.cssText = 'border:none;background:none;color:#9494AD;font-size:20px;line-height:1;padding:4px 8px;cursor:pointer'
+  close.onclick = () => bar.remove()
+  bar.append(label, go, close)
+  document.body.appendChild(bar)
+}
+
 initPwa({
   onUpdateAvailable(reload) {
-    // Safety: attempt the auto-update reload at most ONCE per session, so a bad
-    // service-worker state can never trap the app in a splash/reload loop.
-    if (sessionStorage.getItem('kairo:updating') === '1') return
-    try { sessionStorage.setItem('kairo:updating', '1') } catch {  }
-    const splash = document.createElement('div')
-    splash.id = 'kairo-update-splash'
-    splash.style.cssText = `
-      position: fixed; inset: 0; z-index: 999999;
-      background: #0A0D16;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      gap: 24px; padding: 32px;
-      font-family: 'Inter', system-ui, sans-serif;
-      animation: kairo-fade-in 240ms ease-out;
-    `
-    splash.innerHTML = `
-      <style>
-        @keyframes kairo-fade-in { from { opacity: 0 } to { opacity: 1 } }
-        @keyframes kairo-spin    { to   { transform: rotate(360deg) } }
-        @keyframes kairo-pulse   { 0%,100% { opacity: 0.85 } 50% { opacity: 1 } }
-      </style>
-
-      <img src="/kairo-mark.svg" alt="Kyno"
-           style="width: 96px; height: 96px; border-radius: 22px;
-                  box-shadow: 0 0 50px rgba(124, 92, 255, 0.32);
-                  animation: kairo-pulse 1.6s ease-in-out infinite;" />
-
-      <div style="text-align: center;">
-        <div style="font-size: 30px; font-weight: 800; color: #fafafa;
-                    letter-spacing: -1px; line-height: 1;">kyno</div>
-        <div style="font-size: 11px; font-weight: 700; color: #7C5CFF;
-                    letter-spacing: 6px; margin-top: 10px;">
-          BY KAIRO INDUSTRIES
-        </div>
-      </div>
-
-      <div style="display: flex; align-items: center; gap: 10px; margin-top: 8px;">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-             stroke="#A5B4FC" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"
-             style="animation: kairo-spin 0.9s linear infinite;">
-          <polyline points="23 4 23 10 17 10"></polyline>
-          <polyline points="1 20 1 14 7 14"></polyline>
-          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
-        </svg>
-        <span style="font-size: 13px; color: #B1B5BA; font-weight: 500;">
-          Updating to the latest version…
-        </span>
-      </div>
-    `
-    document.body.appendChild(splash)
-
-    requestAnimationFrame(() => setTimeout(() => reload(), 600))
-    // Never trap the user: if the reload hasn't happened (stuck/looping SW), drop
-    // the splash so the app stays usable on the current build.
-    setTimeout(() => { document.getElementById('kairo-update-splash')?.remove() }, 5000)
+    let triedThisSession = false
+    try { triedThisSession = sessionStorage.getItem('kyno:auto-updated') === '1' } catch { /* storage blocked */ }
+    if (!touched && Date.now() - bootAt < 10_000 && !triedThisSession) {
+      try { sessionStorage.setItem('kyno:auto-updated', '1') } catch { /* storage blocked */ }
+      reload()
+      // Still here after a few seconds? The worker is stuck: offer the bar.
+      setTimeout(() => showUpdateBar(reload), 5000)
+      return
+    }
+    showUpdateBar(reload)
   },
   onOfflineReady() {
     console.log('[Kyno] Ready to use offline.')

@@ -17,9 +17,10 @@ import {
   pagesFromIndex, pagesInRange, clampRange, groupPages, tagPages, planStudio,
   pickPassages, askMessages, parseAnswer, digestMessages, joinNotes,
   studioMessages, parseJson, normalizeGuide, normalizeFaq, normalizeTimeline,
-  normalizeMindMap, normalizeStudio, studioKey,
+  normalizeMindMap, normalizeStudio, studioKey, repairLatex, formulaTex,
 } from '../../src/lib/bookStudio.core.js'
 import { chatExtras } from '../lib/chatExtras.js'
+import katex from 'katex'
 
 const ROOT = join(import.meta.dirname, '..', '..')
 const read = (...p) => readFileSync(join(ROOT, ...p), 'utf-8')
@@ -127,12 +128,13 @@ test('"not in this book" is an answer, not an error', () => {
 
 /* ── study items ─────────────────────────────────────────────────────────── */
 
-test('every study prompt is grounded, asks for JSON, and keeps formulas out of LaTeX', () => {
+test('every study prompt is grounded, asks for JSON, and asks for LaTeX with doubled backslashes', () => {
   for (const kind of ['guide', 'faq', 'timeline', 'mindmap']) {
     const [sys, user] = studioMessages(kind, tagPages(PAGES), { from: 1, to: 3 })
     assert.match(sys.content, /ONLY the material/)
     assert.match(sys.content, /JSON only/)
-    assert.match(sys.content, /never LaTeX/)
+    assert.match(sys.content, /"l = 2\\\\sqrt\{r\^2 - d\^2\}"/, 'the example shows the JSON-escaped form')
+    assert.match(sys.content, /every backslash must be doubled/)
     assert.match(sys.content, /pages 1-3/)
     assert.match(user.content, /JSON shape/)
   }
@@ -148,6 +150,44 @@ test('a reply wrapped in a fence or a sentence still parses; junk does not', () 
 })
 
 const R = { from: 1, to: 3 }
+
+/* ── formulas ────────────────────────────────────────────────────────────── */
+
+test('LaTeX that lost its backslashes in JSON is put back', () => {
+  // What JSON.parse makes of "\frac" and "\times" written without doubling.
+  const parsed = JSON.parse('{"f": "\\frac{a}{b} \\times c", "t": "angle $\\theta$ and\\nnext line"}')
+  assert.equal(parsed.f, '\frac{a}{b} \times c', 'control characters, not backslashes')
+  assert.equal(repairLatex(parsed.f), '\\frac{a}{b} \\times c')
+  const g = normalizeGuide({
+    formulas: [{ formula: parsed.f, page: 1 }],
+    keyConcepts: [{ term: 'Angle', explanation: parsed.t, page: 1 }],
+  }, R)
+  assert.equal(g.formulas[0].formula, '\\frac{a}{b} \\times c')
+  assert.equal(g.keyConcepts[0].explanation, 'angle $\\theta$ and next line', 'a real line break outside the maths stays a break')
+  assert.equal(repairLatex('\nu', { newlines: true }), '\\nu')
+})
+
+test('plain-text formulas become typeset maths that KaTeX can draw', () => {
+  const cases = {
+    'chord length = 2*sqrt(r^2 - d^2)': '\\text{chord length} = 2 \\cdot \\sqrt{r^{2} - d^{2}}',
+    'chord length = 2*r*sin(theta/2)': '\\text{chord length} = 2 \\cdot r \\cdot \\sin(\\theta/2)',
+    'central angle = 2*inscribed angle': '\\text{central angle} = 2 \\cdot \\text{inscribed angle}',
+    'v = u + at': 'v = u + at',
+    'F = ma': 'F = ma',
+    'a^(n+1) = sqrt(sqrt(x)+1)': 'a^{n+1} = \\sqrt{\\sqrt{x}+1}',
+    'Mass % = (mass of solute / mass of solution) x 100':
+      '\\text{Mass} \\% = (\\text{mass of solute} / \\text{mass of solution}) \\times 100',
+    'Delta x = v*t': '\\Delta x = v \\cdot t',
+  }
+  for (const [plain, tex] of Object.entries(cases)) {
+    assert.equal(formulaTex(plain), tex, plain)
+    assert.doesNotThrow(() => katex.renderToString(tex, { throwOnError: true, strict: false }), plain)
+  }
+  // Already LaTeX, or wrapped in $: passed through, never converted twice.
+  assert.equal(formulaTex('l = 2\\sqrt{r^2 - d^2}'), 'l = 2\\sqrt{r^2 - d^2}')
+  assert.equal(formulaTex('$F = ma$'), 'F = ma')
+  assert.equal(formulaTex('sqrt(x'), 'sqrt(x', 'an unbalanced bracket is left alone')
+})
 
 test('the study guide keeps real pages, drops invented ones, and caps its lists', () => {
   const g = normalizeGuide({

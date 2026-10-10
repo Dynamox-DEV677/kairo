@@ -28,8 +28,10 @@ import { search } from '../lib/search.core.js'
 import {
   MAX_RANGE, pagesFromIndex, pagesInRange, clampRange, planStudio, pickPassages,
   askMessages, parseAnswer, digestMessages, joinNotes, studioMessages, parseJson,
-  normalizeStudio, studioKey,
+  normalizeStudio, studioKey, formulaTex,
 } from '../lib/bookStudio.core.js'
+import katex from 'katex'
+import { KATEX_OPTS } from '../lib/katex'
 import type {
   StudioKind, PageRange, StudyGuide, Faq, Timeline, MindMap, StudioResult,
 } from '../lib/bookStudio.core'
@@ -495,6 +497,21 @@ function StudioBody({ kind, item, job, busyElsewhere, err, range, bookTitle, onM
   )
 }
 
+/**
+ * One formula, typeset the way the textbook prints it.
+ *
+ * Rendered with KaTeX directly rather than through MathText's markdown pass,
+ * so nothing rewrites the LaTeX on the way. A formula KaTeX cannot read is
+ * shown as the model wrote it -- plain text beats a line of red error.
+ */
+function Formula({ src }: { src: string }) {
+  const html = useMemo(() => {
+    try { return katex.renderToString(formulaTex(src), { ...KATEX_OPTS, throwOnError: true }) } catch { return null }
+  }, [src])
+  if (html == null) return <span style={{ fontSize: 14.5, fontWeight: 600 }}>{src}</span>
+  return <span style={{ fontSize: 16 }} dangerouslySetInnerHTML={{ __html: html }} />
+}
+
 function ErrLine({ text }: { text: string }) {
   return (
     <div style={{ display: 'flex', gap: 8, marginTop: 12, color: T.warning, fontSize: 13, lineHeight: 1.5 }}>
@@ -532,7 +549,7 @@ function GuideView({ guide, stamp, bookTitle, onGo, onAsk }: {
             {guide.keyConcepts.map((k, i) => (
               <div key={i} style={CARD}>
                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-                  <div style={{ flex: 1, fontSize: 14.5, fontWeight: 700 }}>{k.term}</div>
+                  <MathText text={k.term} style={{ flex: 1, minWidth: 0, fontSize: 14.5, fontWeight: 700 }} />
                   <PageChip page={k.page} onGo={onGo} />
                 </div>
                 <MathText text={k.explanation} style={{ fontSize: 13.5, color: T.text2, lineHeight: 1.55, marginTop: 4 }} />
@@ -563,15 +580,17 @@ function GuideView({ guide, stamp, bookTitle, onGo, onAsk }: {
             {guide.formulas.map((f, i) => (
               <div key={i} style={CARD}>
                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                  {/* minWidth 0, or a long formula widens the card and pushes
+                      the page chip off the screen instead of scrolling. */}
                   <div style={{
-                    flex: 1, padding: '8px 10px', borderRadius: 10, background: T.well,
-                    fontSize: 14.5, fontWeight: 600, color: T.text, overflowX: 'auto',
+                    flex: 1, minWidth: 0, padding: '10px 12px', borderRadius: 10, background: T.well,
+                    color: T.text, overflowX: 'auto',
                   }}>
-                    {f.formula}
+                    <Formula src={f.formula} />
                   </div>
                   <PageChip page={f.page} onGo={onGo} />
                 </div>
-                {f.meaning && <div style={{ fontSize: 13.5, color: T.text2, lineHeight: 1.55, marginTop: 8 }}>{f.meaning}</div>}
+                {f.meaning && <MathText text={f.meaning} style={{ fontSize: 13.5, color: T.text2, lineHeight: 1.55, marginTop: 8 }} />}
               </div>
             ))}
           </div>
@@ -586,7 +605,7 @@ function GuideView({ guide, stamp, bookTitle, onGo, onAsk }: {
               <div key={i} style={CARD}>
                 <div style={{ display: 'flex', gap: 10 }}>
                   <span style={{ color: T.accentPale, fontWeight: 700, fontSize: 13.5 }}>{i + 1}.</span>
-                  <div style={{ flex: 1, fontSize: 14, lineHeight: 1.55 }}>{q.question}</div>
+                  <MathText text={q.question} style={{ flex: 1, minWidth: 0, fontSize: 14, lineHeight: 1.55 }} />
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 10 }}>
                   <button onClick={() => onAsk(q.question)} style={{
@@ -620,7 +639,7 @@ function FaqView({ faq, onGo }: { faq: Faq; onGo: (p: number) => void }) {
               background: 'none', border: 'none', color: T.text, fontFamily: FONT,
               fontSize: 14.5, fontWeight: 600, textAlign: 'left', cursor: 'pointer', lineHeight: 1.4,
             }}>
-              <span style={{ flex: 1 }}>{it.q}</span>
+              <MathText text={it.q} style={{ flex: 1, minWidth: 0 }} />
               <ChevronRight size={16} color={T.faint} {...ICON}
                 style={{ transform: on ? 'rotate(90deg)' : 'none', transition: 'transform .2s', flexShrink: 0 }} />
             </button>
@@ -660,10 +679,10 @@ function TimelineView({ tl, onGo }: { tl: Timeline; onGo: (p: number) => void })
               background: T.bg, border: `2px solid ${T.accent}`,
             }} />
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <div style={{ flex: 1, fontSize: 12.5, fontWeight: 700, color: T.accentPale, letterSpacing: 0.3 }}>{it.when}</div>
+              <div style={{ flex: 1, minWidth: 0, fontSize: 12.5, fontWeight: 700, color: T.accentPale, letterSpacing: 0.3 }}>{it.when}</div>
               <PageChip page={it.page} onGo={onGo} />
             </div>
-            <div style={{ fontSize: 14, color: T.text, lineHeight: 1.55, marginTop: 3 }}>{it.what}</div>
+            <MathText text={it.what} style={{ fontSize: 14, color: T.text, lineHeight: 1.55, marginTop: 3 }} />
           </div>
         ))}
       </div>

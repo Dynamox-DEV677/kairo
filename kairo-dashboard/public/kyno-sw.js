@@ -14,13 +14,15 @@
  * - /api/*     network only, never cached. Serving a stale AI answer or sync
  *              state as if fresh is the kind of lie this app doesn't tell.
  */
-const SHELL = 'kyno-shell-v2'
-const ASSETS = 'kyno-assets-v2'
+// v3: drops the v2 caches, which held the old purple icon and the manifest
+// pointing at it -- served cache-first under a name nothing ever bumped.
+const SHELL = 'kyno-shell-v3'
+const ASSETS = 'kyno-assets-v3'
 
 // The shell is the document plus what an installed app needs to draw its own
-// icon and splash offline: the manifest and the two PWA icons. Each is added
-// on its own so one missing file never empties the whole precache.
-const PRECACHE = ['/', '/manifest.webmanifest', '/kairo_icon_192.png', '/kairo_icon_512.png', '/kairo_icon_512_maskable.png']
+// icon and splash offline: the manifest and the PWA icons. Each is added on
+// its own so one missing file never empties the whole precache.
+const PRECACHE = ['/', '/manifest.webmanifest', '/kyno-icon-192.png', '/kyno-icon-512.png', '/kyno-icon-512-maskable.png']
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(SHELL).then(c => Promise.all(PRECACHE.map(p => c.add(p).catch(() => {})))).catch(() => {}))
@@ -40,15 +42,19 @@ self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET' || url.origin !== self.location.origin) return
   if (url.pathname.startsWith('/api/')) return // never cache API traffic
 
-  // Manifest + icons: cache-first too (they change only with a deploy, which
-  // bumps the cache name), so the installed icon paints offline.
+  // Manifest + icons: network-first, cache only as the offline fallback.
+  // These were cache-first on the promise that a deploy "bumps the cache
+  // name" -- nothing ever did, so an icon change never reached an installed
+  // app. They are tiny; asking the network costs nothing.
   if (url.pathname !== '/' && PRECACHE.includes(url.pathname)) {
     e.respondWith((async () => {
-      const hit = await caches.match(e.request)
-      if (hit) return hit
-      const res = await fetch(e.request)
-      if (res.ok) (await caches.open(SHELL)).put(e.request, res.clone())
-      return res
+      try {
+        const res = await fetch(e.request)
+        if (res.ok) (await caches.open(SHELL)).put(e.request, res.clone())
+        return res
+      } catch {
+        return (await caches.match(e.request)) || Response.error()
+      }
     })())
     return
   }

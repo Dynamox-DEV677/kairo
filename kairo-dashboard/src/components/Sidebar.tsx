@@ -55,7 +55,9 @@ const STUDENT_NAV: NavItem[] = [
   { label: 'Notes',           icon: BookOpen,        to: 'notes',            color: '#A5B4FC' },
   { label: 'Progress',        icon: Trophy,          to: 'progress',         color: '#FFB44A' },
   { label: 'Profile',         icon: Users,           to: 'profile',          color: '#A5B4FC' },
-  // not part of a space, so still listed on their own
+  // not part of a space, so still listed on their own. The Reader comes first
+  // and inside DEFAULT_VISIBLE: tucked into Notes, nobody found it.
+  { label: 'Reader',          icon: BookMarked,      to: 'reader',           color: '#A5B4FC' },
   { label: 'Kyno OS',         icon: Cpu,             to: 'kairo-os',         color: '#A5B4FC' },
   { label: 'Study Mode · Live', icon: Camera,        to: 'camera-live',      color: '#4FD8E8' },
   { label: 'Concept Tools',   icon: Lightbulb,       to: 'concept',          color: '#A5B4FC' },
@@ -113,7 +115,8 @@ interface SidebarProps {
   onLogout?: () => void
 }
 
-const DEFAULT_VISIBLE = 8
+// Home, the seven spaces, and the Reader.
+const DEFAULT_VISIBLE = 9
 
 export default function Sidebar({ active, setActive, isDark, toggleTheme, profile, onLogout }: SidebarProps) {
   const [recentOpen, setRecentOpen]   = useState(true)

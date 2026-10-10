@@ -12,6 +12,9 @@ export interface PageText { page: number; text: string }
 export interface PageRange { from: number; to: number }
 export interface ChatMessage { role: 'system' | 'user' | 'assistant'; content: string }
 
+export function repairLatex(s: string, opts?: { newlines?: boolean }): string
+export function formulaTex(input: string): string
+
 export function pagesFromIndex(index: SearchIndex | null | undefined): PageText[]
 export function pagesInRange(pages: PageText[], from: number, to: number): PageText[]
 export function clampRange(from: number, to: number, pageCount: number): PageRange

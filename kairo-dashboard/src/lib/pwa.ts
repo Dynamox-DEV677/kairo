@@ -37,6 +37,18 @@ export function initPwa(opts?: {
     onOfflineReady() {
       opts?.onOfflineReady?.()
     },
+    /*
+     * A browser looks for a new service worker only when a page loads. An
+     * installed Kyno window can stay open for days, so it went on running a
+     * build from last week while every deploy landed somewhere else. Look
+     * every 30 minutes, and whenever the window comes back into view.
+     */
+    onRegisteredSW(_url: string, reg: ServiceWorkerRegistration | undefined) {
+      if (!reg) return
+      const check = () => { if (navigator.onLine !== false) reg.update().catch(() => { /* offline or mid-deploy */ }) }
+      setInterval(check, 30 * 60 * 1000)
+      document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') check() })
+    },
     onRegisterError(err) {
       console.warn('[PWA] Service worker registration failed:', err)
     },

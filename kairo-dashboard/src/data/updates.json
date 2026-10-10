@@ -163,5 +163,15 @@
       "Make a study guide, an FAQ, a timeline or a mind map from a chapter in one tap. Every item links to its page, and they're saved on your phone, so they open instantly next time.",
       "Explain simply and Summarise on your highlights work again, and the answer stays on screen once it arrives."
     ]
+  },
+  {
+    "n": 17,
+    "date": "2026-10-10",
+    "title": "Kyno Update 17",
+    "changes": [
+      "The Reader is easy to find now: it has its own row in the menu (tap More on your phone), right under your daily brief.",
+      "Formulas in your study guides look the way they do in your textbook, with real roots, powers and θ instead of 2*sqrt(r^2 - d^2).",
+      "Using Kyno as an installed app on a computer? It now tells you when a new version is ready, with a Reload button, instead of staying on the old one."
+    ]
   }
 ]
