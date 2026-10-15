@@ -658,7 +658,10 @@ export default function Dashboard({ profile, onLogout }: DashboardProps) {
             <div {...pageProps('reader')}>
               {mounted('reader') && (
                 <BlankGuard id="reader" active={active === 'reader'}>
-                  <Reader />
+                  <Reader onOpenDoubt={(seed: string) => {
+                    navigate('doubt-solving')
+                    setTimeout(() => window.dispatchEvent(new CustomEvent('kyno:doubt-seed', { detail: { seed } })), 60)
+                  }} />
                 </BlankGuard>
               )}
             </div>

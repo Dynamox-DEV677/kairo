@@ -35,6 +35,8 @@ import { chat } from '../lib/openrouter'
 import { studentMessage } from '../lib/aiError.core'
 import MathText from '../components/MathText'
 import BookStudio from '../components/BookStudio'
+import ExplainChat from '../components/ExplainChat'
+import type { ExplainMode } from '../lib/explain.core'
 import { MARK_COLORS, MARK_FILL, MARK_LABEL, MARK_SWATCH, selectionRects, marksOnPage, bookMarks } from '../lib/marks.core.js'
 import type { MarkColor, MarkRect } from '../lib/marks.core'
 
@@ -45,7 +47,10 @@ type View =
 
 const uid = () => Math.random().toString(36).slice(2, 10)
 
-export default function Reader() {
+export default function Reader({ onOpenDoubt }: {
+  /** Hands an exercise to Doubt Solving ("Solve it step by step" in the side chat). */
+  onOpenDoubt?: (seed: string) => void
+} = {}) {
   const [view, setView] = useState<View>({ name: 'shelf' })
   const [books, setBooks] = useState<BookSummary[]>([])
   const [pending, setPending] = useState<Highlight[]>([])
@@ -83,7 +88,7 @@ export default function Reader() {
   }
 
   if (view.name === 'read') {
-    return <BookView id={view.bookId} shell={shell} onBack={() => { setView({ name: 'shelf' }); refresh() }} onChanged={refresh} />
+    return <BookView id={view.bookId} shell={shell} onBack={() => { setView({ name: 'shelf' }); refresh() }} onChanged={refresh} onOpenDoubt={onOpenDoubt} />
   }
   if (view.name === 'pending') {
     return <PendingView shell={shell} items={pending} onBack={() => { setView({ name: 'shelf' }); refresh() }} onChanged={refresh} />
@@ -270,10 +275,10 @@ const Shelf: React.FC<{
 // `icon: React.ElementType` makes TS collapse the union of every possible
 // component's props to `never`, so passing size/color is an error. LucideIcon
 // is the concrete type, and it is what spaces.ts already uses.
-const ACTIONS: { id: Highlight['action']; label: string; icon: LucideIcon; instant: boolean }[] = [
-  { id: 'flashcard', label: 'Make flashcards', icon: Layers, instant: true },
-  { id: 'explain', label: 'Explain simply', icon: Sparkles, instant: false },
-  { id: 'summarise', label: 'Summarise', icon: FileText, instant: false },
+const ACTIONS: { id: Highlight['action']; label: string; icon: LucideIcon; note: string }[] = [
+  { id: 'flashcard', label: 'Make flashcards', icon: Layers, note: 'instant' },
+  { id: 'explain', label: 'Explain simply', icon: Sparkles, note: 'opens a chat' },
+  { id: 'summarise', label: 'Summarise', icon: FileText, note: 'opens a chat' },
 ]
 
 const BookView: React.FC<{
@@ -281,7 +286,8 @@ const BookView: React.FC<{
   shell: React.CSSProperties
   onBack: () => void
   onChanged: () => void
-}> = ({ id, shell, onBack, onChanged }) => {
+  onOpenDoubt?: (seed: string) => void
+}> = ({ id, shell, onBack, onChanged, onOpenDoubt }) => {
   const [book, setBook] = useState<Book | null>(null)
   const [doc, setDoc] = useState<any>(null)
   const [page, setPage] = useState(1)
@@ -302,6 +308,18 @@ const BookView: React.FC<{
   const [marks, setMarks] = useState<Highlight[]>([])
   const [selRects, setSelRects] = useState<MarkRect[]>([])
   const pageRef = useRef<HTMLDivElement>(null)
+  // The side chat for Explain / Summarise. A new key per selection, so each
+  // one starts its own conversation.
+  const [explain, setExplain] = useState<{ key: number; quote: string; mode: ExplainMode; page: number } | null>(null)
+  // A side column beside the page on a wide screen; a bottom sheet on a phone.
+  const [wide, setWide] = useState(() => typeof window !== 'undefined' && !!window.matchMedia?.('(min-width: 900px)').matches)
+  useEffect(() => {
+    const mq = window.matchMedia?.('(min-width: 900px)')
+    if (!mq) return
+    const on = () => setWide(mq.matches)
+    mq.addEventListener?.('change', on)
+    return () => mq.removeEventListener?.('change', on)
+  }, [])
 
   /*
    * A callback ref, not useRef.
@@ -507,10 +525,20 @@ const BookView: React.FC<{
         await putHighlight({ ...h, status: 'done', cards })
         setFlash(`${cards.length} flashcard${cards.length === 1 ? '' : 's'} added.`)
       }
+    } else if (navigator.onLine !== false) {
+      // Answered beside the page, now. The page stays in view, so reading
+      // still doesn't stop for a model -- the student just sees the answer
+      // while the paragraph is in front of them, instead of on another screen
+      // later.
+      setExplain({ key: Date.now(), quote: sel, mode: action as ExplainMode, page })
+      setSel('')
+      setSelRects([])
+      window.getSelection?.()?.removeAllRanges()
+      return
     } else {
-      // Queued deliberately: reading does not stop for a model.
+      // No connection: keep it for later, as before.
       await putHighlight(h)
-      setFlash('Saved — it will be ready in your pending list.')
+      setFlash("You're offline — saved to your pending list.")
     }
 
     setSel('')
@@ -621,7 +649,12 @@ const BookView: React.FC<{
         ref={setScrollEl}
         onMouseUp={onUp}
         onTouchEnd={onUp}
-        style={{ flex: 1, overflow: 'auto', padding: '12px 12px 150px', WebkitOverflowScrolling: 'touch' }}
+        style={{
+          flex: 1, overflow: 'auto', padding: '12px 12px 150px', WebkitOverflowScrolling: 'touch',
+          // Make room for the chat column, so the page redraws beside it
+          // instead of under it.
+          marginRight: explain && wide ? 380 : 0,
+        }}
       >
         <div ref={pageRef} style={{ position: 'relative', width: 'fit-content', margin: '0 auto' }}>
           <canvas
@@ -656,7 +689,7 @@ const BookView: React.FC<{
       </div>
 
       {/* pager — hidden while the sheet or search is up, so it never sits under them */}
-      {!sel && hits === null && (
+      {!sel && hits === null && !(explain && !wide) && (
         <div style={{
           position: 'absolute', left: 14, right: 14,
           bottom: 'calc(84px + env(safe-area-inset-bottom))', zIndex: 30,
@@ -747,7 +780,7 @@ const BookView: React.FC<{
               }}>
                 <a.icon size={17} color={T.accentPale} {...ICON} />
                 <span style={{ flex: 1 }}>{a.label}</span>
-                <span style={{ fontSize: 11.5, color: T.faint }}>{a.instant ? 'instant' : 'queued'}</span>
+                <span style={{ fontSize: 11.5, color: T.faint }}>{a.note}</span>
               </button>
             ))}
           </div>
@@ -775,6 +808,28 @@ const BookView: React.FC<{
           onBusy={setStudioBusy}
           marks={marks}
           onDeleteMark={deleteMark}
+        />
+      )}
+
+      {book && explain && (
+        <ExplainChat
+          key={explain.key}
+          book={book}
+          page={explain.page}
+          quote={explain.quote}
+          mode={explain.mode}
+          wide={wide}
+          onClose={() => setExplain(null)}
+          onGoto={n => { if (n !== page) goto(n) }}
+          onSolve={onOpenDoubt ? seed => { setExplain(null); onOpenDoubt(seed) } : undefined}
+          onAnswered={answer => {
+            // Kept with the student's highlights, so the explanation is
+            // still there after the chat is closed.
+            void putHighlight({
+              id: uid(), bookId: book.id, bookTitle: book.title, page: explain.page,
+              text: explain.quote, createdAt: Date.now(), status: 'done', action: explain.mode, result: answer,
+            }).catch(() => { /* the chat still shows it */ })
+          }}
         />
       )}
     </div>

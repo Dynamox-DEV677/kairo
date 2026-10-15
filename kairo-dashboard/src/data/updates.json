@@ -182,5 +182,13 @@
       "Check my working: in Doubt Solving, write your steps on a whiteboard, one per line, and Kyno marks each line and points to the first slip without giving the answer away. Every answer has a \"Try it on the whiteboard\" button too.",
       "Highlight your textbook in the Reader: select some words and pick yellow for definitions, green for examples or pink for things to revise. Highlights stay on the page, and Study → Highlights lists them all, each one a tap away from its page."
     ]
+  },
+  {
+    "n": 19,
+    "date": "2026-10-15",
+    "title": "Kyno Update 19",
+    "changes": [
+      "Explain simply and Summarise in the Reader now answer right away, in a chat beside the page instead of a list for later. Ask follow-ups, tap Simpler, Give an example or Quiz me, and for a worksheet question jump to a step-by-step solution."
+    ]
   }
 ]
