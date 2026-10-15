@@ -29,7 +29,9 @@ const GROQ_VISION = process.env.GROQ_VISION_MODEL || 'qwen/qwen3.6-27b'
 // for both the reasoning and the answer.
 const FAST_MODES  = new Set(['detect', 'grade', 'transcribe'])
 const LONG_MODES  = new Set(['explain', 'report'])
-const tokensFor = (mode) => (FAST_MODES.has(mode) ? 900 : LONG_MODES.has(mode) ? 5000 : 2000)
+// `board` transcribes and judges every line of the whiteboard, which needs
+// more room than grade's one-line verdict but far less than an explanation.
+const tokensFor = (mode) => (mode === 'board' ? 1600 : FAST_MODES.has(mode) ? 900 : LONG_MODES.has(mode) ? 5000 : 2000)
 
 // ── quota guard ────────────────────────────────────────────────────────────
 // Protects the free tier from a runaway client loop. Per-IP sliding window.
@@ -220,6 +222,31 @@ Schema:
   "firstWrongStep": <step number of the first error, or null>,
   "feedback": <ONE short line for the student. If a step is right: "Step N looks right." If a calculation slipped: "Check this calculation." If the formula is wrong: a nudge like "Think about which formula connects these variables." NEVER give the answer. Max 90 chars.>,
   "done": <true only if they have reached a final answer>
+}`,
+
+  /**
+   * The Doubt Solving whiteboard: a typed question plus a drawing of the
+   * student's own working. Same rule as `grade` -- judge only what is
+   * written, point at the first slip, never hand over the answer -- but line
+   * by line, because the board is ruled and the student wrote one step per
+   * line on purpose.
+   */
+  board: (ctx) => `A student wrote their working for this question on a ruled whiteboard in a study app (dark ink on white, one step per line, top to bottom).
+
+The question:
+${String(ctx?.question || '').slice(0, 600) || '(not given; work it out from what they wrote)'}
+
+Solve it yourself first, then check each line they wrote, in order. Judge only what is actually written; never invent steps. Do NOT give the final answer and do NOT write the corrected step.
+
+${JSON_ONLY}
+Schema:
+{
+  "readable": <false if the board is empty or too messy to judge>,
+  "lines": [{ "n": <1-based line number, top to bottom>, "text": <what they wrote on that line, transcribed>, "ok": <true if this line is correct> }],
+  "firstWrongLine": <n of the first wrong line, or null>,
+  "status": <"correct"|"mistake"|"inprogress"|"unclear">,
+  "feedback": <one or two short sentences for the student. If there is a slip, say which line and what kind of slip (sign, arithmetic, wrong formula, skipped step) as a nudge, without the fix. If everything so far is right but unfinished, encourage the next step. If finished and correct, say so. Max 200 chars.>,
+  "done": <true only if they reached a final answer>
 }`,
 
   hint: (ctx) => `A student is stuck on this question:

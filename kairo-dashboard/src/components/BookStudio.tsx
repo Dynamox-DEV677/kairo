@@ -20,7 +20,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import {
   ChevronLeft, MessageCircle, GraduationCap, CircleQuestionMark, History, Network,
-  Send, Loader2, AlertTriangle, Layers, Check, RefreshCw, ChevronRight,
+  Send, Loader2, AlertTriangle, Layers, Check, RefreshCw, ChevronRight, Highlighter, Trash2,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { T, FONT, ICON } from '../lib/spaceTokens'
@@ -35,16 +35,19 @@ import { KATEX_OPTS } from '../lib/katex'
 import type {
   StudioKind, PageRange, StudyGuide, Faq, Timeline, MindMap, StudioResult,
 } from '../lib/bookStudio.core'
-import { type Book, type StudioItem, putStudio, getStudio } from '../lib/library'
+import { type Book, type Highlight, type StudioItem, putStudio, getStudio } from '../lib/library'
+import { MARK_COLORS, MARK_LABEL, MARK_SWATCH } from '../lib/marks.core.js'
+import type { MarkColor } from '../lib/marks.core'
 import { chat } from '../lib/openrouter'
 import { AiError, studentMessage } from '../lib/aiError.core'
 import { recordFlashcard } from '../lib/twin'
 import MathText from './MathText'
 
-type Tab = 'ask' | StudioKind
+type Tab = 'ask' | 'marks' | StudioKind
 
 const TABS: { id: Tab; label: string; icon: LucideIcon }[] = [
   { id: 'ask', label: 'Ask', icon: MessageCircle },
+  { id: 'marks', label: 'Highlights', icon: Highlighter },
   { id: 'guide', label: 'Guide', icon: GraduationCap },
   { id: 'faq', label: 'FAQ', icon: CircleQuestionMark },
   { id: 'timeline', label: 'Timeline', icon: History },
@@ -67,7 +70,7 @@ interface Turn {
 const uid = () => Math.random().toString(36).slice(2, 10)
 const isAbort = (e: any) => e?.name === 'AbortError'
 
-export default function BookStudio({ book, page, open, onClose, onGoto, onBusy }: {
+export default function BookStudio({ book, page, open, onClose, onGoto, onBusy, marks = [], onDeleteMark }: {
   book: Book
   /** The page being read when Study was first opened; seeds the range of a long book. */
   page: number
@@ -75,6 +78,9 @@ export default function BookStudio({ book, page, open, onClose, onGoto, onBusy }
   onClose: () => void
   onGoto: (page: number) => void
   onBusy: (busy: boolean) => void
+  /** This book's colour highlights, owned by the Reader so the page and this list agree. */
+  marks?: Highlight[]
+  onDeleteMark?: (id: string) => void
 }) {
   const [tab, setTab] = useState<Tab>('ask')
   const pages = useMemo(() => pagesFromIndex(book.index), [book])
@@ -347,6 +353,10 @@ export default function BookStudio({ book, page, open, onClose, onGoto, onBusy }
             </button>
           </form>
         </>
+      ) : tab === 'marks' ? (
+        <div style={{ flex: 1, overflowY: 'auto', padding: '14px 14px 140px' }}>
+          <MarksList marks={marks} onGo={goto} onDelete={id => onDeleteMark?.(id)} />
+        </div>
       ) : (
         <div style={{ flex: 1, overflowY: 'auto', padding: '14px 14px 140px' }}>
           {/* which pages */}
@@ -385,6 +395,74 @@ export default function BookStudio({ book, page, open, onClose, onGoto, onBusy }
 }
 
 /* ── pieces ──────────────────────────────────────────────────────────────── */
+
+/**
+ * Every colour highlight in the book, by page, filterable by colour -- the
+ * "go back over what I marked to revise" list. Each one opens its page.
+ */
+function MarksList({ marks, onGo, onDelete }: {
+  marks: Highlight[]
+  onGo: (p: number) => void
+  onDelete: (id: string) => void
+}) {
+  const [only, setOnly] = useState<MarkColor | 'all'>('all')
+  const shown = only === 'all' ? marks : marks.filter(m => m.color === only)
+
+  if (!marks.length) {
+    return (
+      <div style={{ padding: 18, borderRadius: 16, border: `1px dashed ${T.dashed}`, color: T.muted, fontSize: 13.5, lineHeight: 1.6 }}>
+        No highlights yet. Select words on a page and pick a colour: yellow for definitions, green for
+        examples, pink for things to revise. They stay on the page and collect here.
+      </div>
+    )
+  }
+
+  const chip = (id: MarkColor | 'all', label: string, swatch?: string) => {
+    const on = only === id
+    const n = id === 'all' ? marks.length : marks.filter(m => m.color === id).length
+    return (
+      <button key={id} onClick={() => setOnly(id)} aria-pressed={on} style={{
+        flexShrink: 0, display: 'inline-flex', alignItems: 'center', gap: 6, padding: '7px 11px', borderRadius: 100,
+        background: on ? T.accentSurface : T.raised, border: `1px solid ${on ? T.accent : T.borderCtl}`,
+        color: on ? T.text : T.muted, fontFamily: FONT, fontSize: 12.5, fontWeight: 600, cursor: 'pointer',
+      }}>
+        {swatch && <span style={{ width: 10, height: 10, borderRadius: 3, background: swatch }} />}
+        {label} <span style={{ color: T.faint }}>{n}</span>
+      </button>
+    )
+  }
+
+  return (
+    <div>
+      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 }}>
+        {chip('all', 'All')}
+        {MARK_COLORS.map(c => chip(c, MARK_LABEL[c], MARK_SWATCH[c]))}
+      </div>
+      <div style={{ display: 'grid', gap: 8 }}>
+        {shown.map(m => (
+          <div key={m.id} style={{ ...CARD, display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+            <span style={{ width: 4, alignSelf: 'stretch', borderRadius: 2, background: MARK_SWATCH[m.color as MarkColor], flexShrink: 0 }} />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{
+                fontSize: 13.5, color: T.text, lineHeight: 1.5,
+                display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden',
+              }}>{m.text}</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
+                <PageChip page={m.page ?? null} onGo={onGo} />
+                <span style={{ fontSize: 11.5, color: T.faint }}>{MARK_LABEL[m.color as MarkColor]}</span>
+              </div>
+            </div>
+            <button onClick={() => onDelete(m.id)} aria-label="Remove this highlight" style={{
+              background: 'none', border: 'none', cursor: 'pointer', padding: 6, flexShrink: 0,
+            }}>
+              <Trash2 size={16} color={T.faint} {...ICON} />
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
 
 function PageChip({ page, onGo }: { page: number | null; onGo: (p: number) => void }) {
   if (page == null) return null

@@ -79,7 +79,18 @@ export interface Highlight {
    * wait for a model.
    */
   status: 'pending' | 'done'
-  action: 'flashcard' | 'explain' | 'summarise'
+  /**
+   * 'mark' is a colour highlight that stays on the page. It is always 'done'
+   * (nothing to run), so it never shows up in the pending queue.
+   */
+  action: 'flashcard' | 'explain' | 'summarise' | 'mark'
+  /** For marks: which highlighter. */
+  color?: 'yellow' | 'green' | 'pink'
+  /**
+   * For marks: where on the page, as fractions of the page (see marks.core),
+   * so the colour lands on the same words at any zoom or screen width.
+   */
+  rects?: { x: number; y: number; w: number; h: number }[]
   /** Filled in when the action completes. */
   result?: string
   /** For flashcards: the cloze cards generated from the selection. */

@@ -14,7 +14,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react'
 import {
   BookOpen, Upload, Search as SearchIcon, X, Trash2, Layers,
   Sparkles, FileText, Loader2, Check, ChevronLeft, AlertTriangle,
-  ChevronRight, ZoomIn, ZoomOut, GraduationCap,
+  ChevronRight, ZoomIn, ZoomOut, GraduationCap, Highlighter,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { T, FONT, ICON } from '../lib/spaceTokens'
@@ -26,7 +26,7 @@ import { chunkPages, buildIndex, search, isConfident, snippet } from '../lib/sea
 import type { SearchResult } from '../lib/search.core'
 import {
   type Book, type BookSummary, type Highlight, putBook, getBook, listBooks,
-  deleteBook, noteProgress, putHighlight, deleteHighlight, pendingHighlights,
+  deleteBook, noteProgress, putHighlight, deleteHighlight, pendingHighlights, highlightsForBook,
   bookId, usage,
 } from '../lib/library'
 import { buildClozeCards } from '../lib/cloze.core.js'
@@ -35,6 +35,8 @@ import { chat } from '../lib/openrouter'
 import { studentMessage } from '../lib/aiError.core'
 import MathText from '../components/MathText'
 import BookStudio from '../components/BookStudio'
+import { MARK_COLORS, MARK_FILL, MARK_LABEL, MARK_SWATCH, selectionRects, marksOnPage, bookMarks } from '../lib/marks.core.js'
+import type { MarkColor, MarkRect } from '../lib/marks.core'
 
 type View =
   | { name: 'shelf' }
@@ -295,6 +297,11 @@ const BookView: React.FC<{
   // written keeps going while the student reads.
   const [studio, setStudio] = useState<'closed' | 'open' | 'hidden'>('closed')
   const [studioBusy, setStudioBusy] = useState(false)
+  // Colour highlights for this book, and where the current selection sits on
+  // the page (taken when the finger lifts, while the selection still exists).
+  const [marks, setMarks] = useState<Highlight[]>([])
+  const [selRects, setSelRects] = useState<MarkRect[]>([])
+  const pageRef = useRef<HTMLDivElement>(null)
 
   /*
    * A callback ref, not useRef.
@@ -415,10 +422,65 @@ const BookView: React.FC<{
    */
   const readSelection = () => {
     const t = String(window.getSelection?.()?.toString() || '').replace(/\s+/g, ' ').trim()
-    return t.length >= 12 ? t : ''
+    // Two characters is enough to highlight a word; the flashcard action
+    // still says so when a selection is too short to make a card from.
+    return t.length >= 2 ? t : ''
   }
 
-  const onUp = () => { const t = readSelection(); if (t) setSel(t) }
+  /** Where the selection sits on the page, as fractions of the page. */
+  const readRects = (): MarkRect[] => {
+    const s = window.getSelection?.()
+    const box = pageRef.current?.getBoundingClientRect()
+    if (!s || !s.rangeCount || !box) return []
+    return selectionRects(Array.from(s.getRangeAt(0).getClientRects()), box)
+  }
+
+  const onUp = () => { const t = readSelection(); if (t) { setSel(t); setSelRects(readRects()) } }
+
+  /* this book's colour marks */
+  useEffect(() => {
+    if (!book) return
+    let dead = false
+    highlightsForBook(book.id).then(hs => { if (!dead) setMarks(bookMarks(hs)) }).catch(() => { /* none yet */ })
+    return () => { dead = true }
+  }, [book])
+
+  /**
+   * A colour highlight. Instant and local, like a flashcard: nothing to wait
+   * for. The rectangles are re-read from the live selection when one still
+   * exists (a desktop click keeps it) and otherwise come from the moment the
+   * finger lifted.
+   */
+  async function mark(color: MarkColor) {
+    if (!book || !sel) return
+    const live = readRects()
+    const rects = live.length ? live : selRects
+    setSel('')
+    setSelRects([])
+    window.getSelection?.()?.removeAllRanges()
+    if (!rects.length) {
+      setFlash('Select the words on the page first, then pick a colour.')
+      setTimeout(() => setFlash(''), 2600)
+      return
+    }
+    const h: Highlight = {
+      id: uid(), bookId: book.id, bookTitle: book.title, page,
+      text: sel, createdAt: Date.now(), status: 'done', action: 'mark', color, rects,
+    }
+    try {
+      await putHighlight(h)
+      setMarks(m => bookMarks([...m, h]))
+      setFlash(`Highlighted · ${MARK_LABEL[color]}`)
+    } catch (e: any) {
+      setFlash(studentMessage(e))
+    }
+    setTimeout(() => setFlash(''), 2200)
+  }
+
+  async function deleteMark(id: string) {
+    try { await deleteHighlight(id) } catch { return }
+    setMarks(m => m.filter(x => x.id !== id))
+  }
 
   const goto = (n: number) => {
     if (!book) return
@@ -561,11 +623,21 @@ const BookView: React.FC<{
         onTouchEnd={onUp}
         style={{ flex: 1, overflow: 'auto', padding: '12px 12px 150px', WebkitOverflowScrolling: 'touch' }}
       >
-        <div style={{ position: 'relative', width: 'fit-content', margin: '0 auto' }}>
+        <div ref={pageRef} style={{ position: 'relative', width: 'fit-content', margin: '0 auto' }}>
           <canvas
             ref={canvasRef}
             style={{ display: 'block', borderRadius: 10, background: '#fff', boxShadow: '0 6px 24px rgba(0,0,0,0.35)' }}
           />
+          {/* Colour marks: above the page, below the selectable text layer
+              (z-index 1), and multiplied so the print stays crisp. Sized in
+              percentages, so they follow every zoom. */}
+          {marksOnPage(marks, page).flatMap(m => (m.rects || []).map((r, i) => (
+            <div key={`${m.id}-${i}`} aria-hidden="true" style={{
+              position: 'absolute', left: `${r.x * 100}%`, top: `${r.y * 100}%`,
+              width: `${r.w * 100}%`, height: `${r.h * 100}%`, borderRadius: 2,
+              background: MARK_FILL[m.color as MarkColor], mixBlendMode: 'multiply', pointerEvents: 'none',
+            }} />
+          )))}
           <div ref={textRef} className="kyno-textlayer" />
           {/* A textbook page takes a moment to draw. Saying so beats a blank
               white rectangle that looks like a book that failed to open. */}
@@ -647,12 +719,26 @@ const BookView: React.FC<{
             }}>
               “{sel}”
             </div>
-            <button onClick={() => { setSel(''); window.getSelection?.()?.removeAllRanges() }}
+            <button onClick={() => { setSel(''); setSelRects([]); window.getSelection?.()?.removeAllRanges() }}
               aria-label="Cancel" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2 }}>
               <X size={18} color={T.faint} {...ICON} />
             </button>
           </div>
-          <div style={{ display: 'grid', gap: 8, marginTop: 12 }}>
+          {/* The highlighter: a colour per purpose, kept on the page. */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12 }}>
+            <Highlighter size={17} color={T.accentPale} {...ICON} style={{ flexShrink: 0 }} />
+            {MARK_COLORS.map(c => (
+              <button key={c} onClick={() => mark(c)} aria-label={`Highlight in ${c}: ${MARK_LABEL[c]}`} style={{
+                flex: 1, minWidth: 0, height: 42, borderRadius: 12, background: T.raised,
+                border: `1px solid ${T.borderCtl}`, color: T.text, fontFamily: FONT, fontSize: 12.5, fontWeight: 600,
+                cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+              }}>
+                <span style={{ width: 12, height: 12, borderRadius: 4, background: MARK_SWATCH[c], flexShrink: 0 }} />
+                {MARK_LABEL[c]}
+              </button>
+            ))}
+          </div>
+          <div style={{ display: 'grid', gap: 8, marginTop: 8 }}>
             {ACTIONS.map(a => (
               <button key={a.id} onClick={() => act(a.id)} style={{
                 display: 'flex', alignItems: 'center', gap: 11, padding: '13px 14px',
@@ -687,6 +773,8 @@ const BookView: React.FC<{
           onClose={() => setStudio('hidden')}
           onGoto={n => { setQ(''); goto(n) }}
           onBusy={setStudioBusy}
+          marks={marks}
+          onDeleteMark={deleteMark}
         />
       )}
     </div>

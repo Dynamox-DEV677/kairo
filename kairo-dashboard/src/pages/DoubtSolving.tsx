@@ -23,9 +23,10 @@ import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { useSpaceLayout } from '../components/SpaceFrame'
 import {
   Camera, Mic, ChevronDown, ChevronRight, Check, RotateCcw, Bookmark,
-  ArrowLeft, AlertTriangle, Layers, TrendingUp, Share2, RefreshCw, Loader2, X,
+  ArrowLeft, AlertTriangle, Layers, TrendingUp, Share2, RefreshCw, Loader2, X, PenLine,
 } from 'lucide-react'
 import MathText from '../components/MathText'
+import Whiteboard from '../components/Whiteboard'
 import { useKeyboardInset } from '../hooks/useKeyboardInset'
 import { aiHeadersAsync } from '../lib/devKey'
 import { studentMessage } from '../lib/aiError.core'
@@ -452,6 +453,18 @@ export default function DoubtSolving({
 
   const [saved, setSaved] = useState<SaveResult | null>(null)
 
+  /*
+   * The whiteboard. Mounted on first use and then only hidden, so closing it
+   * to peek at a step does not wipe the student's working. A different
+   * question gets a fresh board (new key).
+   */
+  const [board, setBoard] = useState<{ question: string; key: number } | null>(null)
+  const [boardOpen, setBoardOpen] = useState(false)
+  const openBoard = (q: string) => {
+    setBoard(b => (b && b.question === q ? b : { question: q, key: Date.now() }))
+    setBoardOpen(true)
+  }
+
   const fileRef = useRef<HTMLInputElement>(null)
   const abortRef = useRef<AbortController | null>(null)
 
@@ -719,6 +732,22 @@ export default function DoubtSolving({
   useEffect(() => () => layout.setWide(false), []) // eslint-disable-line react-hooks/exhaustive-deps
   const twoCol = layout.wide
 
+  // Keyed and a direct child of every view's shell, so React keeps the same
+  // board (and its drawing) when the view behind it changes.
+  const boardEl = board ? (
+    <Whiteboard
+      key={board.key}
+      open={boardOpen}
+      initialQuestion={board.question}
+      onClose={() => setBoardOpen(false)}
+      onShowSolution={q => {
+        setBoardOpen(false)
+        if (q === question && steps.length) setView('answer')
+        else void solve(q, 'steps')
+      }}
+    />
+  ) : null
+
   /* entry ------------------------------------------------------------------ */
   if (view === 'entry') {
     return (
@@ -748,6 +777,24 @@ export default function DoubtSolving({
           )}
 
           {error && <div style={{ marginTop: 16 }}><InlineError message={error} /></div>}
+
+          <Card onClick={() => openBoard(input.trim())} style={{ marginTop: 18 }}>
+            <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+              <div style={{
+                width: 36, height: 36, borderRadius: 11, background: T.accentSurface,
+                display: 'grid', placeItems: 'center', flexShrink: 0,
+              }}>
+                <PenLine size={16} color={T.accentPale} {...ICON} />
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 13.5, fontWeight: 600, color: T.text }}>Check my working</div>
+                <div style={{ fontSize: 12, color: T.dim, marginTop: 3, lineHeight: 1.45 }}>
+                  Write your steps on the whiteboard. Kyno finds the first slip without giving the answer away.
+                </div>
+              </div>
+              <ChevronRight size={17} color={T.fainter} {...ICON} style={{ flexShrink: 0 }} />
+            </div>
+          </Card>
 
           {recents.length > 0 && (
             <>
@@ -808,6 +855,7 @@ export default function DoubtSolving({
           listening={listening} busy={busy}
           caption="Snap the question, say it, or type it — same place"
         />
+        {boardEl}
       </div>
     )
   }
@@ -1041,6 +1089,19 @@ export default function DoubtSolving({
             <Layers size={16} color={T.accentPale} {...ICON} />
             Make flashcards from this
           </button>
+          {/* "Try it yourself first" needs somewhere to try. */}
+          <button
+            onClick={() => openBoard(question)}
+            style={{
+              width: '100%', height: 46, marginTop: 10, borderRadius: 14,
+              background: T.raised, border: `1px solid ${T.borderCtl}`, color: T.text2,
+              fontSize: 13.5, fontWeight: 600, fontFamily: FONT, cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9,
+            }}
+          >
+            <PenLine size={16} color={T.accentPale} {...ICON} />
+            Try it on the whiteboard
+          </button>
           {cardNote && (
             <div style={{ fontSize: 12.5, color: T.success, marginTop: 8, lineHeight: 1.5 }}>{cardNote}</div>
           )}
@@ -1086,6 +1147,7 @@ export default function DoubtSolving({
           onAskAnother={() => { setSaved(null); setView('entry'); setSteps([]); setQuestion('') }}
         />
       )}
+      {boardEl}
     </div>
   )
 }
