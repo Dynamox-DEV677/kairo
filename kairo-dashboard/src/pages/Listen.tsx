@@ -1,4 +1,5 @@
 import { useMemo, useState, useRef, useEffect } from 'react'
+import { useFlashcardsVersion } from '../lib/useFlashcardsVersion'
 import { Headphones, Play, Pause, SkipForward, Square, ArrowRight } from 'lucide-react'
 import { PrimaryButton } from '../components/PrimaryButton'
 import { listFormulas, listFlashcards } from '../lib/twin'
@@ -31,7 +32,8 @@ const card: React.CSSProperties = { background: C.panel, border: `1px solid ${C.
 const RATES = [1, 1.25, 1.5, 0.85]
 
 export default function Listen() {
-  const [tick] = useState(0)
+  // New cards join the playlist; nothing here reviews, but stay safe if it ever does.
+  const tick = useFlashcardsVersion({ ignoreReviews: true })
   const [playingId, setPlayingId] = useState<string | null>(null)
   const [paused, setPaused] = useState(false)
   const [rate, setRate] = useState(1)

@@ -1778,6 +1778,27 @@ export function listFormulas(subject?: string): Formula[] {
   return subject ? all.filter(f => f.subject === subject) : all
 }
 
+/**
+ * Fired on window when this tab adds or reviews a flashcard. Screens stay
+ * mounted after their first visit, so without this a card made in the Reader
+ * never showed up on a Practice or Flashcards page that was already open.
+ * Read through useFlashcardsVersion().
+ */
+export const FLASHCARDS_CHANGED = 'kyno:flashcards-changed'
+
+let pendingCardKinds: Set<string> | null = null
+/** Coalesced: adding five cards in one loop is one event, not five re-renders per page. */
+function notifyFlashcards(kind: 'added' | 'reviewed') {
+  if (typeof window === 'undefined') return
+  if (pendingCardKinds) { pendingCardKinds.add(kind); return }
+  pendingCardKinds = new Set([kind])
+  queueMicrotask(() => {
+    const kinds = [...(pendingCardKinds ?? [])]
+    pendingCardKinds = null
+    try { window.dispatchEvent(new CustomEvent(FLASHCARDS_CHANGED, { detail: { kinds } })) } catch {  }
+  })
+}
+
 export function recordFlashcard(args: { front: string; back: string; subject?: string; topic?: string; source?: Flashcard['source'] }): Flashcard {
   const state = loadState()
   const c: Flashcard = {
@@ -1790,6 +1811,7 @@ export function recordFlashcard(args: { front: string; back: string; subject?: s
   }
   state.flashcards.unshift(c)
   saveState(state)
+  notifyFlashcards('added')
   return c
 }
 
@@ -1825,6 +1847,7 @@ export function reviewFlashcard(
   card.reviews = (card.reviews || 0) + 1
 
   saveState(state)
+  notifyFlashcards('reviewed')
   try {
     track({
       type: 'flashcard_review',

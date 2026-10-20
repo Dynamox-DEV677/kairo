@@ -19,6 +19,7 @@
  * No AI anywhere in this file. If a model call ever appears here, that is a bug.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useFlashcardsVersion } from '../lib/useFlashcardsVersion'
 import { ArrowLeft, ChevronRight, Check, Loader2, Zap, Users, Trophy, Compass, Flame, WifiOff } from 'lucide-react'
 import { T, FONT, MONO, ICON, CALLOUT } from '../lib/spaceTokens'
 import { useSpaceLayout } from '../components/SpaceFrame'
@@ -234,7 +235,8 @@ export default function Progress({ onPractice, onOpenProfile }: {
 }) {
   const [view, setView] = useState<View>({ name: 'home' })
   const [tick, setTick] = useState(0)
-  const model = useModel(tick)
+  const cardsVersion = useFlashcardsVersion()
+  const model = useModel(tick + cardsVersion)
   const online = useOnline()
   const layout = useSpaceLayout()
   const [social, setSocial] = useState<SocialProfile | null>(() => getSocialCached())

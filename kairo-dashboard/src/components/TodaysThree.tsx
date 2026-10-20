@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { useFlashcardsVersion } from '../lib/useFlashcardsVersion'
 import { ListTodo, ArrowRight, TrendingUp } from 'lucide-react'
 import { getDashboard, listFlashcards, getProfile, loadState } from '../lib/twin'
 import { todaysThree, growthStat, type DailyTask } from '../lib/daily.core'
@@ -31,6 +32,8 @@ function dailyMinutesOf(profile: { dailyHours?: string } | null | undefined): nu
  * the number to mean something.
  */
 export default function TodaysThree({ onNavigate }: { onNavigate?: (view: string) => void }) {
+  // Due cards are one of the three; a card reviewed or made elsewhere changes them.
+  const cardsVersion = useFlashcardsVersion()
   const { tasks, growth, plan } = useMemo(() => {
     const now = Date.now()
     const snap = getDashboard()
@@ -63,7 +66,7 @@ export default function TodaysThree({ onNavigate }: { onNavigate?: (view: string
       growth: growthStat(snap.recentEvents, now),
       plan: syllabusPlan,
     }
-  }, [])
+  }, [cardsVersion])
 
   return (
     <div style={{

@@ -29,7 +29,8 @@ import {
   deleteBook, noteProgress, putHighlight, deleteHighlight, pendingHighlights, highlightsForBook,
   bookId, usage,
 } from '../lib/library'
-import { buildClozeCards } from '../lib/cloze.core.js'
+import { buildClozeCards, clozeForTerm } from '../lib/cloze.core.js'
+import { pageText } from '../lib/explain.core.js'
 import { recordFlashcard } from '../lib/twin'
 import { chat } from '../lib/openrouter'
 import { studentMessage } from '../lib/aiError.core'
@@ -515,15 +516,28 @@ const BookView: React.FC<{
 
     if (action === 'flashcard') {
       // Local, instant, offline. No reason to make this wait in a queue.
-      const cards = buildClozeCards(sel, { max: 5 }) as { front: string; back: string }[]
+      //
+      // A key word or short phrase ("photosynthesis") has no sentence of its
+      // own to blank, so the card comes from the sentences on THIS page that
+      // use it, with the word itself blanked. A sentence or more is blanked
+      // directly; long ones are split at their own commas first.
+      const words = sel.split(/\s+/).filter(Boolean).length
+      let cards: { front: string; back: string }[] = []
+      if (words <= 6) cards = clozeForTerm(sel, pageText(book.index, page, 40_000), { max: 2 })
+      if (!cards.length) cards = buildClozeCards(sel, { max: 5 }) as { front: string; back: string }[]
+
       if (!cards.length) {
-        setFlash('That selection was too short to make a card from.')
+        // Say which it was. "Too short" for a whole paragraph sent people
+        // looking for a bug in the button.
+        setFlash(words <= 6
+          ? `This page never uses “${sel.slice(0, 40)}” in a full sentence. Select the sentence it is in instead.`
+          : 'No clear key word to blank in that. Try one or two full sentences.')
       } else {
         for (const c of cards) {
           try { recordFlashcard({ front: c.front, back: c.back, topic: book.title, source: 'manual' }) } catch { /* card still saved below */ }
         }
         await putHighlight({ ...h, status: 'done', cards })
-        setFlash(`${cards.length} flashcard${cards.length === 1 ? '' : 's'} added.`)
+        setFlash(`${cards.length} flashcard${cards.length === 1 ? '' : 's'} added — they're in Practice, Flashcards and Reels.`)
       }
     } else if (navigator.onLine !== false) {
       // Answered beside the page, now. The page stays in view, so reading

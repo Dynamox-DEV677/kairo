@@ -15,6 +15,7 @@
  * produces the sentences -- that is the part that earns the marks.
  */
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
+import { useFlashcardsVersion } from '../lib/useFlashcardsVersion'
 import { Search, ChevronRight, ArrowLeft, Bookmark, Check, Play, Pause, Mic, Printer, Layers, Headphones, PenLine, FunctionSquare, AlertTriangle, Plus, X, BookOpen } from 'lucide-react'
 import { SPACE_VIEW_EVENT, publishSpaceView } from '../lib/spaces.core'
 import { T, FONT, MONO, ICON, CALLOUT, ERR } from '../lib/spaceTokens'
@@ -126,7 +127,8 @@ export default function Notes({ onOpenDoubt, onPractice, onOpenReader }: {
 }) {
   const [view, setView] = useState<View>({ name: 'library' })
   const [tick, setTick] = useState(0)
-  const lib = useLibrary(tick + (view.name === 'library' ? 0 : 0))
+  const cardsVersion = useFlashcardsVersion()
+  const lib = useLibrary(tick + cardsVersion)
   const [q, setQ] = useState('')
 
   useEffect(() => {

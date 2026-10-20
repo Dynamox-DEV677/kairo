@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, useRef } from 'react'
+import { useFlashcardsVersion } from '../lib/useFlashcardsVersion'
 import { motion } from 'framer-motion'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
@@ -68,9 +69,11 @@ export default function RevisionReels() {
   const [showPicker, setShowPicker] = useState(false)
 
   // Read on mount and after each starter-deck add.
+  // New cards from anywhere join the deck; reviewing here does not reshuffle it.
+  const cardsVersion = useFlashcardsVersion({ ignoreReviews: true })
   const deck = useMemo(
     () => buildDeck({ formulas: listFormulas(), flashcards: listFlashcards() }, { now: Date.now() }),
-    [rev],
+    [rev, cardsVersion],
   )
   const subjects = useMemo(() => deckSubjects(deck), [deck])
 

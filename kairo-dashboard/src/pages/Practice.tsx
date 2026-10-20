@@ -22,6 +22,7 @@
  * full-screen error.
  */
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
+import { useFlashcardsVersion } from '../lib/useFlashcardsVersion'
 import {
   X, Bookmark, Clock, ChevronRight, Check, AlertTriangle, Mic, Camera, RotateCcw,
   Lock, Grid3x3, Flag, ArrowLeft, Layers, HelpCircle, PenLine, MessageSquare, Loader2,
@@ -926,7 +927,9 @@ export default function Practice({ onOpenDoubt }: { onOpenDoubt?: (seed: string)
     return () => window.removeEventListener('kyno:practice-filter', on)
   }, [])
 
-  const cards = useMemo(() => { try { return listFlashcards() } catch { return [] } }, [view, tick])
+  // Cards made on another screen while this one sat mounted must show up here.
+  const cardsVersion = useFlashcardsVersion()
+  const cards = useMemo(() => { try { return listFlashcards() } catch { return [] } }, [view, tick, cardsVersion])
   const mistakes = useMemo(() => { try { return getMistakes() } catch { return [] } }, [view, tick])
   const mastery = useMemo(() => { try { return loadState().mastery } catch { return [] } }, [view, tick])
   const events = useMemo(() => { try { return loadState().events } catch { return [] } }, [view, tick])

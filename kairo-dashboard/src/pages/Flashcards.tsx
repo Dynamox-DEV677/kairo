@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useFlashcardsVersion } from '../lib/useFlashcardsVersion'
+import { readGeneratedCards } from '../lib/flashcardParse.core.js'
 import { studentMessage } from '../lib/aiError.core'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -45,10 +47,10 @@ const GRAD = {
 interface Card { front: string; back: string }
 
 const SYSTEM = `You are Kyno, an expert tutor for Indian school students.
-When given a chapter or topic, generate exactly 10 flashcards in this JSON format:
-[{"front": "Question or term", "back": "Concise but complete answer or definition"}]
+When given a chapter or topic, generate exactly 10 flashcards as a JSON object in this format:
+{"cards": [{"front": "Question or term", "back": "Concise but complete answer or definition"}]}
 Wrap any equation, formula or symbol in KaTeX delimiters (inline $...$, block $$...$$), and escape LaTeX backslashes so the JSON stays valid.
-Return ONLY the JSON array, no other text. Make cards exam-realistic.`
+Return ONLY the JSON object, no other text. Make cards exam-realistic.`
 
 const QUICK_CHIPS = [
   'Newton\'s Laws',          'Quadratic Equations',
@@ -69,7 +71,9 @@ export default function Flashcards() {
 
   const [deck, setDeck] = useState<TwinCard[]>([])
   function reloadDeck() { setDeck(listFlashcards().slice(0, 200)) }
-  useEffect(() => { reloadDeck() }, [])
+  // Re-read when a card is made anywhere else (this page stays mounted).
+  const cardsVersion = useFlashcardsVersion()
+  useEffect(() => { reloadDeck() }, [cardsVersion])
   useEffect(() => { if (mode === 'review') reloadDeck() }, [mode])
 
   const stats = useMemo(() => {
@@ -99,18 +103,17 @@ export default function Flashcards() {
     setLoading(true); setError(''); setCards([]); setCurrent(0); setFlipped(false)
     startGenerating()
     try {
+      // JSON mode, and a reader that takes {cards}, a bare array, fences or
+      // stray LaTeX backslashes. It used to accept only a bare array, so a
+      // perfectly good {"cards": [...]} answer threw and showed an error.
       const result = await chat({
         messages: [
           { role: 'system', content: SYSTEM },
           { role: 'user',   content: `Generate flashcards for: ${useTopic}` },
         ],
+        json: true,
       })
-      let parsed: Card[] = []
-      try { parsed = JSON.parse(result) } catch {
-        const m = result.match(/\[[\s\S]*\]/)
-        if (m) try { parsed = JSON.parse(m[0]) } catch {}
-      }
-      const valid = (parsed || []).filter(c => c && typeof c.front === 'string' && typeof c.back === 'string')
+      const valid: Card[] = readGeneratedCards(result)
       if (valid.length === 0) throw new Error('AI returned 0 valid cards. Try a more specific topic.')
       setCards(valid)
       try {
