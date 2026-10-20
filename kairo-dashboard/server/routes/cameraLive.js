@@ -8,6 +8,8 @@ import groqPool from '../services/groqPool.js'
 import { withSlot } from '../utils/ai.js'
 
 import { requireSupabaseAuth } from '../middleware/supabaseAuth.js'
+import { visionModel, visionModels, isRetiredModel, retireVisionModel } from '../lib/visionModel.js'
+import { reportFault } from '../services/alert.js'
 
 const router = express.Router()
 
@@ -17,10 +19,11 @@ router.use(requireSupabaseAuth)
 
 // Vercel Hobby kills the function at 10s — bail first so we own the error.
 const CAMERA_TIMEOUT_MS = Number(process.env.AI_TIMEOUT_MS || 8500)
+/** The whole request, retries included, has to finish inside this. */
+const CAMERA_DEADLINE_MS = 9000
 
-// Groq only. Verified live 2026-08-04: 10 keys healthy, qwen3.6-27b reads a
-// diagram correctly in ~6s. Gemini is deliberately NOT used here.
-const GROQ_VISION = process.env.GROQ_VISION_MODEL || 'qwen/qwen3.6-27b'
+// Groq only; the model id lives in server/lib/visionModel.js. Gemini is
+// deliberately NOT used here.
 
 // Token budget per mode. qwen3.6 is a REASONING model — it spends tokens
 // thinking before it answers, so a long prompt on a small budget gets
@@ -98,17 +101,18 @@ function parseJsonLoose(text) {
 }
 
 
-async function callGroqVision(prompt, image, devKey, mode = 'detect') {
+async function callGroqVision(prompt, image, devKey, mode = 'detect', timeoutMs = CAMERA_TIMEOUT_MS) {
   const key = devKey || groqPool.next()
   if (!key) throw new Error('no live Groq keys')
+  const model = visionModel()
   // Camera frames are the heaviest payloads we send; share the global gate and
   // never let one hang past Vercel's function ceiling.
   const r = await withSlot(() => fetch('https://api.groq.com/openai/v1/chat/completions', {
     method: 'POST',
-    signal: AbortSignal.timeout(CAMERA_TIMEOUT_MS),
+    signal: AbortSignal.timeout(timeoutMs),
     headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      model: GROQ_VISION,
+      model,
       temperature: 0.2,
       max_tokens: tokensFor(mode),
       messages: [{ role: 'user', content: [
@@ -118,8 +122,13 @@ async function callGroqVision(prompt, image, devKey, mode = 'detect') {
     }),
   }))
   if (!r.ok) {
+    const body = (await r.text()).slice(0, 300)
+    if (isRetiredModel(r.status, body)) {
+      retireVisionModel(model, '/api/camera/analyze', body)
+      throw Object.assign(new Error(`groq/${model} ${r.status}: model retired`), { retiredModel: true })
+    }
     if (!devKey && (r.status === 429 || r.status >= 500)) { try { groqPool.markBad(key, r.status) } catch {  } }
-    throw new Error(`groq/${GROQ_VISION} ${r.status}: ${(await r.text()).slice(0, 160)}`)
+    throw new Error(`groq/${model} ${r.status}: ${body.slice(0, 160)}`)
   }
   const d = await r.json()
   return d?.choices?.[0]?.message?.content || ''
@@ -131,16 +140,30 @@ function readDevKey(req) {
   return /^gsk_[A-Za-z0-9]{20,}$/.test(k) ? k : ''
 }
 
-/** Groq vision, with one retry on a fresh pool key for transient failures. */
+/**
+ * Groq vision, with one retry - on a fresh pool key for a quick transient
+ * failure, or on the next model when the current one has been retired.
+ *
+ * NOT after a timeout. The first attempt may run for 8.5s, and retrying after
+ * that guaranteed a second request Vercel would kill at 10s, so a slow answer
+ * turned into a 504 with no body instead of "that took too long, try again".
+ */
 async function vision(prompt, image, { devKey = '', mode = 'detect' } = {}) {
+  const started = Date.now()
   let lastErr
   for (let attempt = 0; attempt < 2; attempt++) {
+    const left = CAMERA_DEADLINE_MS - (Date.now() - started)
+    if (attempt > 0 && left < 3000) break
     try {
-      return { text: await callGroqVision(prompt, image, devKey, mode), provider: 'groq' }
+      return { text: await callGroqVision(prompt, image, devKey, mode, Math.min(CAMERA_TIMEOUT_MS, left)), provider: 'groq' }
     } catch (e) {
       lastErr = e
-      const transient = /\b(429|500|502|503|529)\b|timeout|abort|overload/i.test(e.message)
-      if (!transient || attempt === 1) break
+      if (e.retiredModel) {
+        if (visionModels().length < 2) break
+        continue   // retireVisionModel already moved visionModel() on
+      }
+      const quick = /\b(429|500|502|503|529)\b|overload/i.test(e.message) && !/timeout|abort/i.test(e.message)
+      if (!quick || attempt === 1) break
       await new Promise(r => setTimeout(r, 400))   // rotate to another pool key
     }
   }
@@ -348,6 +371,7 @@ router.post('/analyze', async (req, res) => {
       // problem, not a lighting problem — say so, and log the actual reply so
       // this is diagnosable instead of guesswork.
       console.error('[camera/analyze] unparseable reply', mode, provider, JSON.stringify(String(text || '').slice(0, 300)))
+      reportFault({ route: '/api/camera/analyze', status: 502, message: `unparseable ${mode} reply from ${visionModel()}`, extra: { mode, chars: String(text || '').length } })
       return res.status(502).json({
         error: text
           ? `The ${provider} vision model returned an unreadable response. It may be overloaded — try again.`
@@ -360,14 +384,22 @@ router.post('/analyze', async (req, res) => {
     console.error('[camera/analyze]', mode, e.message)
     // Turn the common upstream failures into something a student can act on.
     const raw = String(e.message || 'vision failed')
+    // Busy and slow are weather; anything else is a fault someone has to fix,
+    // and the student is about to be told "We've been alerted". A retired
+    // model has already been reported, with a clearer message.
+    if (!e.retiredModel && !/\b429\b|rate limit|abort|timeout/i.test(raw)) {
+      reportFault({ route: '/api/camera/analyze', status: 502, message: raw.slice(0, 300), extra: { mode } })
+    }
     const friendly =
       /no live groq keys/i.test(raw) ? 'Vision service is not configured (no AI key on the server).'
       : /\b429\b|rate limit/i.test(raw) ? 'Too many requests right now — wait a few seconds and try again.'
       : /\b(404|decommissioned|does not exist|not found)\b/i.test(raw) ? 'The vision model is no longer available — this needs a server update.'
       : /\b(500|502|503|529)\b|overload/i.test(raw) ? 'The vision service is overloaded — try again in a moment.'
       : /abort|timeout/i.test(raw) ? 'The vision service timed out — try again.'
-      : raw.slice(0, 160)
-    return res.status(502).json({ error: friendly, mode, detail: raw.slice(0, 200) })
+      : 'The vision service failed — try again in a moment.'
+    // No `detail`: it carried the provider's raw error body to the phone, and
+    // nothing in the app read it. The real text is in the log and the alert.
+    return res.status(502).json({ error: friendly, mode })
   }
 })
 
@@ -491,7 +523,7 @@ router.get('/status', (_req, res) => {
   const pool = groqPool.status()
   res.json({
     provider: 'groq',
-    visionModel: GROQ_VISION,
+    visionModel: visionModel(),
     sttModel: 'whisper-large-v3-turbo',
     groqKeysLive: pool.live,
     maxFramesPerMinute: MAX_PER_WINDOW,

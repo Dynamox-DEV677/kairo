@@ -8,6 +8,7 @@ import { PRODUCTION_MODELS, TASK_MODELS, liveModels, isDeadModelError, markModel
 import { withSlot, loadLevel } from '../utils/ai.js'
 
 import { requireSupabaseAuth } from '../middleware/supabaseAuth.js'
+import { visionModels } from '../lib/visionModel.js'
 import {
   curriculumDirective, resolveCurriculum, detectCommandWord, commandWordDirective,
 } from '../../src/lib/curriculum.core.js'
@@ -207,7 +208,9 @@ async function chatWikipediaFallback(question) {
 // retires. Five models deep now: the screenshot that prompted this had a
 // 429 on one and a 404 on the other, and there was nothing behind them.
 const CHAT_MODELS_TEXT   = [...PRODUCTION_MODELS.smart, ...PRODUCTION_MODELS.fast, ...PRODUCTION_MODELS.backstop]
-const CHAT_MODELS_VISION = ['qwen/qwen3.6-27b']
+// Named in server/lib/visionModel.js. A client still asking for a retired id
+// (an old cached app) is not in this list, so it falls through to a live one.
+const CHAT_MODELS_VISION = visionModels()
 
 const messagesHaveImages = (messages) =>
   messages.some(m => Array.isArray(m?.content) && m.content.some(p => p?.type === 'image_url'))

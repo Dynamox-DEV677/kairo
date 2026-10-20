@@ -15,6 +15,7 @@ import { aiCall, withSlot } from '../utils/ai.js';
 import { extractPdfText, countPdfPages } from '../utils/pdf.js';
 
 import { requireSupabaseAuth } from '../middleware/supabaseAuth.js'
+import { visionModel, isRetiredModel, retireVisionModel } from '../lib/visionModel.js'
 
 const router = express.Router()
 
@@ -39,12 +40,13 @@ const MODES = {
 async function visionRead(b64, mime, instruction) {
   const key = groqPool.next();
   if (!key) throw new Error('no live Groq keys');
+  const model = visionModel();
   const r = await withSlot(() => fetch('https://api.groq.com/openai/v1/chat/completions', {
     method: 'POST',
     headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
     signal: AbortSignal.timeout(Number(process.env.AI_TIMEOUT_MS || 8500)),
     body: JSON.stringify({
-      model: process.env.GROQ_VISION_MODEL || 'qwen/qwen3.6-27b',
+      model,
       temperature: 0.3,
       max_tokens: 4000,   // reasoning model: needs room to think AND answer
       messages: [{ role: 'user', content: [
@@ -54,8 +56,10 @@ async function visionRead(b64, mime, instruction) {
     }),
   }));
   if (!r.ok) {
+    const body = (await r.text()).slice(0, 300);
+    if (isRetiredModel(r.status, body)) retireVisionModel(model, '/api/document/read', body);
     if (r.status === 429 || r.status >= 500) { try { groqPool.markBad(key, r.status) } catch {} }
-    throw new Error(`groq ${r.status}: ${(await r.text()).slice(0, 140)}`);
+    throw new Error(`groq ${r.status}: ${body.slice(0, 140)}`);
   }
   const j = await r.json();
   const out = (j?.choices?.[0]?.message?.content || '')

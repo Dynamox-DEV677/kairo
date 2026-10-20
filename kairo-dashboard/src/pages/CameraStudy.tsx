@@ -21,7 +21,10 @@ import { prepMathMarkdown } from '../lib/math.core'
 
 const VISION_MODELS = [
   {
-    id: 'qwen/qwen3.6-27b',
+    // Must match server/lib/visionModel.js. The server ignores an id it does
+    // not recognise and uses its own, so a stale one here degrades rather
+    // than breaks - qwen3.6-27b was retired by Groq on 2026-09-14.
+    id: 'qwen/qwen3.8-27b',
     label: 'Kyno Vision',
     desc:  'Reads diagrams, handwriting & homework photos, then solves them step-by-step',
   },
