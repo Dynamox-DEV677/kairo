@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import crypto from 'crypto'
 import { sendPasscodeOtpEmail } from '../email/index.js'
 import { supabaseAdmin, SUPABASE_CONFIGURED } from '../services/supabase.js'
 import { requireSupabaseAuth } from '../middleware/supabaseAuth.js'
@@ -16,7 +17,10 @@ setInterval(() => {
 }, 5 * 60 * 1000).unref?.()
 
 function newCode() {
-  return String(Math.floor(100000 + Math.random() * 900000))
+  // crypto, not Math.random: V8's Math.random is predictable from enough of
+  // its own outputs, and anyone can request codes to their own inbox to see
+  // them. passcode.js already did this; this route had been missed.
+  return String(crypto.randomInt(100000, 1_000_000))
 }
 
 router.post('/email-change/request', async (req, res) => {

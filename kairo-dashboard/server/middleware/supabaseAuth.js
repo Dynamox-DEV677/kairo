@@ -20,6 +20,13 @@ export async function requireSupabaseAuth(req, res, next) {
       return res.status(403).json({ error: 'User profile not found. Please complete registration.' })
     }
 
+    // Status used to be read here and then ignored. The only check lived in
+    // /api/users/login, which the app never calls - it signs in with Supabase
+    // directly - so a suspended account kept full API access.
+    if (profile.status === 'suspended') {
+      return res.status(403).json({ error: 'This account has been suspended. Contact your school.', suspended: true })
+    }
+
     let school = null
     if (profile.school_id) {
       const { data } = await supabaseAdmin
@@ -45,6 +52,13 @@ export async function requireSupabaseAuth(req, res, next) {
 export function requireRole(...roles) {
   return (req, res, next) => {
     if (!req.user) return res.status(401).json({ error: 'Not authenticated.' })
+    // A role is only a power once it has been approved. A teacher who joined
+    // with the school passcode is 'pending' until an admin approves them, and
+    // must not read a class's marks in the meantime. (null = rows from before
+    // the status column existed, which were all active.)
+    if (req.user.status && req.user.status !== 'active') {
+      return res.status(403).json({ error: 'Your account is waiting for your school admin to approve it.', pending: true })
+    }
     if (!roles.includes(req.user.role)) {
       return res.status(403).json({
         error: `Access denied. Required role: ${roles.join(' or ')}. Your role: ${req.user.role}`,

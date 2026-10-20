@@ -142,9 +142,14 @@ router.post('/register', async (req, res) => {
     const isFirstMember = existingCount === 0
     const effectiveRole = isFirstMember ? 'admin' : role
 
+    // Anyone with the school passcode used to become an ACTIVE teacher on the
+    // spot - and every student knows the passcode, because they joined with
+    // it. A teacher now waits for the school admin (POST
+    // /api/schools/:id/approve/:userId, which already handles any role).
     const initialStatus = isFirstMember
       ? 'active'
-      : (effectiveRole === 'student' && school.require_approval) ? 'pending' : 'active'
+      : effectiveRole !== 'student' ? 'pending'
+      : school.require_approval ? 'pending' : 'active'
 
     const { data: authData, error: authErr } = await supabaseAdmin.auth.admin.createUser({
       email:         email.trim().toLowerCase(),
@@ -540,7 +545,9 @@ router.post('/join-school', requireSupabaseAuth, async (req, res) => {
     const match = await bcrypt.compare(school_passcode, school.school_passcode)
     if (!match) return res.status(401).json({ error: 'Incorrect school passcode.' })
 
-    const initialStatus = (req.user.role === 'student' && school.require_approval) ? 'pending' : 'active'
+    // Same rule as registration: staff joining a school wait for its admin.
+    const initialStatus = req.user.role !== 'student' ? 'pending'
+      : school.require_approval ? 'pending' : 'active'
 
     const updates = {
       school_id: school.id,

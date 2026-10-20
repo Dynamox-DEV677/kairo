@@ -2,6 +2,7 @@ import { Router } from 'express'
 import { db } from '../db/index.js'
 
 import { requireSupabaseAuth, requireRole } from '../middleware/supabaseAuth.js'
+import { ownSchoolOnly } from '../middleware/ownSchool.js'
 
 const router = Router()
 
@@ -9,6 +10,8 @@ const router = Router()
 // No UI ships for these in v1, so the role check is the only guard.
 router.use(requireSupabaseAuth)
 router.use(requireRole('teacher', 'admin'))
+// The caller's own school only - see middleware/ownSchool.js.
+router.use(ownSchoolOnly)
 
 router.get('/', async (req, res) => {
   const { school_id } = req.query
@@ -41,12 +44,12 @@ router.put('/:id', async (req, res) => {
   if (parent_email !== undefined) update.parent_email  = parent_email
   if (phone !== undefined)        update.phone         = phone
   if (active !== undefined)       update.active        = active
-  await db.students.updateAsync({ _id: req.params.id }, { $set: update })
+  await db.students.updateAsync({ _id: req.params.id, school_id: req.body.school_id }, { $set: update })
   res.json({ message: 'Student updated.' })
 })
 
 router.delete('/:id', async (req, res) => {
-  await db.students.updateAsync({ _id: req.params.id }, { $set: { active: false } })
+  await db.students.updateAsync({ _id: req.params.id, school_id: req.query.school_id }, { $set: { active: false } })
   res.json({ message: 'Student deactivated.' })
 })
 

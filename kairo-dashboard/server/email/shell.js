@@ -1,6 +1,6 @@
 
 import { THEME } from './theme.js'
-import { footer, brandStrip, preheader } from './components.js'
+import { footer, brandStrip, preheader, escapeHtml } from './components.js'
 
 export function shell({
   title       = 'Kyno',
@@ -17,7 +17,7 @@ export function shell({
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="x-apple-disable-message-reformatting">
   <meta name="format-detection" content="telephone=no,address=no,email=no,date=no,url=no">
-  <title>${title}</title>
+  <title>${escapeHtml(title)}</title>
   <!--[if mso]>
   <noscript><xml><o:OfficeDocumentSettings>
     <o:PixelsPerInch>96</o:PixelsPerInch>

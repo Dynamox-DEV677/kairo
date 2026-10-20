@@ -23,10 +23,30 @@ const DEFAULTS = {
 
 export type FlagName = keyof typeof DEFAULTS
 
+/**
+ * Each override written out by name, never looked up with a computed key.
+ *
+ * This used to read import.meta.env[`VITE_FLAG_${name}`]. Vite cannot know at
+ * build time which variable a computed key means, so it inlined the WHOLE env
+ * object into the bundle - every VITE_ variable on the Vercel project, which
+ * put a live OpenRouter key in public JavaScript for anyone to copy. Spelling
+ * each one out makes Vite inline exactly these seven values and nothing else.
+ * server/__tests__/env-leak.test.js keeps it that way.
+ */
+const ENV_OVERRIDES: Record<FlagName, string | undefined> = {
+  TEACHER_TOOLS: import.meta.env.VITE_FLAG_TEACHER_TOOLS,
+  ADMIN_TOOLS:   import.meta.env.VITE_FLAG_ADMIN_TOOLS,
+  PARENT_PORTAL: import.meta.env.VITE_FLAG_PARENT_PORTAL,
+  SCHOOL_MODE:   import.meta.env.VITE_FLAG_SCHOOL_MODE,
+  LABS_3D:       import.meta.env.VITE_FLAG_LABS_3D,
+  VOICE_MODE:    import.meta.env.VITE_FLAG_VOICE_MODE,
+  PDF_ENGINE:    import.meta.env.VITE_FLAG_PDF_ENGINE,
+}
+
 /** Only 'true' and 'false' count. Anything else falls back to the default,
  *  so a typo in an env var can't silently disable a shipped feature. */
 function envOverride(name: FlagName): boolean | undefined {
-  const raw = import.meta.env[`VITE_FLAG_${name}` as keyof ImportMetaEnv]
+  const raw = ENV_OVERRIDES[name]
   if (raw === 'true') return true
   if (raw === 'false') return false
   return undefined

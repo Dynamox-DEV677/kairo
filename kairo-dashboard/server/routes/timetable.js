@@ -4,6 +4,7 @@ import { db } from '../db/index.js'
 import { aiCall, parseJSON } from '../utils/ai.js'
 
 import { requireSupabaseAuth, requireRole } from '../middleware/supabaseAuth.js'
+import { ownSchoolOnly } from '../middleware/ownSchool.js'
 
 const router = Router()
 
@@ -11,6 +12,8 @@ const router = Router()
 // No UI ships for these in v1, so the role check is the only guard.
 router.use(requireSupabaseAuth)
 router.use(requireRole('teacher', 'admin'))
+// The caller's own school only - see middleware/ownSchool.js.
+router.use(ownSchoolOnly)
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 
 async function detectClashes(schoolId, newSlot, excludeId = null) {

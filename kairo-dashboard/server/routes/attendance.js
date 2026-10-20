@@ -4,6 +4,7 @@ import { db } from '../db/index.js'
 import { aiCall } from '../utils/ai.js'
 
 import { requireSupabaseAuth, requireRole } from '../middleware/supabaseAuth.js'
+import { ownSchoolOnly } from '../middleware/ownSchool.js'
 
 const router = Router()
 
@@ -11,6 +12,8 @@ const router = Router()
 // No UI ships for these in v1, so the role check is the only guard.
 router.use(requireSupabaseAuth)
 router.use(requireRole('teacher', 'admin'))
+// The caller's own school only - see middleware/ownSchool.js.
+router.use(ownSchoolOnly)
 const sid = req => req.body?.school_id || req.query?.school_id
 
 router.post('/log', async (req, res) => {
@@ -96,8 +99,7 @@ router.get('/at-risk', async (req, res) => {
 router.get('/stats/:studentId', async (req, res) => {
   const { school_id } = req.query
   try {
-    const q = { student_id: req.params.studentId }
-    if (school_id) q.school_id = school_id
+    const q = { student_id: req.params.studentId, school_id }
     const records  = await db.attendance.findAsync(q).sort({ date: 1 })
     const total    = records.length
     const present  = records.filter(r => r.status === 'present').length

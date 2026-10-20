@@ -4,6 +4,7 @@ import { db } from '../db/index.js'
 import { aiCall, parseJSON } from '../utils/ai.js'
 
 import { requireSupabaseAuth, requireRole } from '../middleware/supabaseAuth.js'
+import { ownSchoolOnly } from '../middleware/ownSchool.js'
 
 const router = Router()
 
@@ -24,6 +25,8 @@ router.post('/screen', (req, res) => {
 // No UI ships for these in v1, so the role check is the only guard.
 router.use(requireSupabaseAuth)
 router.use(requireRole('teacher', 'admin'))
+// The caller's own school only - see middleware/ownSchool.js.
+router.use(ownSchoolOnly)
 const sid = req => req.body?.school_id || req.query?.school_id || 'demo_school'
 
 router.get('/weak-areas', async (req, res) => {

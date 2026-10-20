@@ -6,6 +6,7 @@ import { runDailyReminders } from '../services/schedulerService.js'
 import { db } from '../db/index.js'
 
 import { requireSupabaseAuth, requireRole } from '../middleware/supabaseAuth.js'
+import { ownSchoolOnly, ownSchoolParam } from '../middleware/ownSchool.js'
 
 const router = Router()
 
@@ -13,6 +14,8 @@ const router = Router()
 // No UI ships for these in v1, so the role check is the only guard.
 router.use(requireSupabaseAuth)
 router.use(requireRole('teacher', 'admin'))
+// The caller's own school only - see middleware/ownSchool.js.
+router.use(ownSchoolOnly)
 const TONES = ['friendly', 'formal', 'urgent']
 
 router.post('/send-one', emailLimiter, async (req, res) => {
@@ -77,12 +80,12 @@ router.get('/stats', async (req, res) => {
   })
 })
 
-router.get('/config/:schoolId', async (req, res) => {
+router.get('/config/:schoolId', ownSchoolParam('schoolId'), async (req, res) => {
   const row = await db.config.findOneAsync({ school_id: req.params.schoolId })
   res.json(row || { message: 'No config — defaults will be used.', before_due_days: 3, on_due: true, after_due_days: '1,3,7', tone: 'friendly' })
 })
 
-router.put('/config/:schoolId', async (req, res) => {
+router.put('/config/:schoolId', ownSchoolParam('schoolId'), async (req, res) => {
   const { before_due_days, on_due, after_due_days, tone, enabled } = req.body
   const u = { school_id: req.params.schoolId, updated_at: new Date().toISOString() }
   if (before_due_days !== undefined) u.before_due_days = before_due_days

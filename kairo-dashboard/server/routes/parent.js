@@ -34,7 +34,9 @@ router.post('/generate-code', requireSupabaseAuth, requireRole('student'), async
 
     if (error) throw new Error(error.message)
 
-    console.log(`[Parent] ✓ Code generated for student ${req.user.id}: ${code}`)
+    // Never the code itself: it links a parent to this child, and logs are
+    // read by more people than the parent is.
+    console.log(`[Parent] ✓ Code generated for student ${req.user.id}`)
 
     res.status(201).json({
       message:    'Parent access code generated. Share it with your parent.',
@@ -276,7 +278,8 @@ router.get('/links', requireSupabaseAuth, requireRole('admin'), async (req, res)
 
 function generateCode() {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
-  return Array.from({ length: 8 }, () => chars[Math.floor(Math.random() * chars.length)]).join('')
+  // A link code ties a parent to a child's account: crypto, not Math.random.
+  return Array.from({ length: 8 }, () => chars[crypto.randomInt(chars.length)]).join('')
 }
 
 function buildSummary(marks) {

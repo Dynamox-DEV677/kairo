@@ -62,11 +62,11 @@ export function hero({ title, subtitle, accent = 'logo' }) {
         <div style="position:relative;z-index:1;">
           <div style="margin-bottom:14px;">${mark}</div>
           <h1 style="margin:0;font-family:${THEME.font.family};font-size:30px;font-weight:800;color:#ffffff;letter-spacing:-0.6px;line-height:1.15;text-shadow:0 2px 14px rgba(0,0,0,0.35);">
-            ${title}
+            ${escapeHtml(title)}
           </h1>
           ${subtitle ? `
             <p style="margin:12px 0 0;font-family:${THEME.font.family};font-size:14px;color:rgba(255,255,255,0.88);font-weight:500;line-height:1.5;letter-spacing:0.1px;">
-              ${subtitle}
+              ${escapeHtml(subtitle)}
             </p>
           ` : ''}
         </div>
@@ -248,7 +248,7 @@ export function footer({ note, schoolName } = {}) {
             <td align="center">
               ${note ? `
                 <p style="margin:0 0 8px;font-family:${THEME.font.family};font-size:11.5px;color:${THEME.text.dim};line-height:1.65;">
-                  ${note}
+                  ${escapeHtml(note)}
                 </p>
               ` : ''}
               <p style="margin:0;font-family:${THEME.font.family};font-size:11.5px;color:${THEME.text.faint};line-height:1.55;">

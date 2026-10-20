@@ -4,12 +4,15 @@ import { db } from '../db/index.js'
 import { aiCall } from '../utils/ai.js'
 
 import { requireSupabaseAuth } from '../middleware/supabaseAuth.js'
+import { ownSchoolOnly } from '../middleware/ownSchool.js'
 
 const router = Router()
 
 // Phase 0: was reachable with no token. These burn the Groq quota and touch
 // student data; identity comes from the verified JWT only.
 router.use(requireSupabaseAuth)
+// The caller's own school only - see middleware/ownSchool.js.
+router.use(ownSchoolOnly)
 const sid = req => req.body?.school_id || req.query?.school_id || 'demo_school'
 
 router.post('/simplify', async (req, res) => {

@@ -4,6 +4,7 @@ import { saveCredentials, testSmtp, getGmail, deleteCredentials } from '../servi
 import { isAppPassword, cleanAppPassword } from '../config/crypto.js'
 
 import { requireSupabaseAuth, requireRole } from '../middleware/supabaseAuth.js'
+import { ownSchoolOnly, ownSchoolParam } from '../middleware/ownSchool.js'
 
 const router = Router()
 
@@ -11,6 +12,8 @@ const router = Router()
 // No UI ships for these in v1, so the role check is the only guard.
 router.use(requireSupabaseAuth)
 router.use(requireRole('teacher', 'admin'))
+// The caller's own school only - see middleware/ownSchool.js.
+router.use(ownSchoolOnly)
 
 router.post('/save', credentialLimiter, async (req, res) => {
   const { school_id, gmail, app_password } = req.body
@@ -38,13 +41,13 @@ router.post('/test', credentialLimiter, async (req, res) => {
     : { success: false, message: r.error })
 })
 
-router.get('/:schoolId', async (req, res) => {
+router.get('/:schoolId', ownSchoolParam('schoolId'), async (req, res) => {
   const row = await getGmail(req.params.schoolId)
   if (!row) return res.status(404).json({ error: 'No credentials found.' })
   res.json(row)
 })
 
-router.delete('/:schoolId', async (req, res) => {
+router.delete('/:schoolId', ownSchoolParam('schoolId'), async (req, res) => {
   await deleteCredentials(req.params.schoolId)
   res.json({ success: true })
 })

@@ -3,12 +3,16 @@ import { fail } from '../lib/fail.js'
 import { db } from '../db/index.js'
 
 import { requireSupabaseAuth } from '../middleware/supabaseAuth.js'
+import { ownSchoolOnly, ownUserOnly } from '../middleware/ownSchool.js'
 
 const router = Router()
 
 // Phase 0: was reachable with no token. These burn the Groq quota and touch
 // student data; identity comes from the verified JWT only.
 router.use(requireSupabaseAuth)
+// The caller's own school only - see middleware/ownSchool.js.
+router.use(ownSchoolOnly)
+router.use(ownUserOnly)
 const sid = req => req.body?.school_id || req.query?.school_id || 'demo_school'
 
 const LEVELS = [

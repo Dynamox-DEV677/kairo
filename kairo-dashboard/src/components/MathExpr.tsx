@@ -31,7 +31,12 @@ export default function MathExpr({ expr, displayMode, style, className }: Props)
       })
       return { html: out, didFall: false }
     } catch {
-      return { html: expr, didFall: true }
+      // The fallback goes into innerHTML too, and `expr` is AI output: escape
+      // it, or a formula KaTeX could not parse becomes markup.
+      const safe = String(expr)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;')
+      return { html: safe, didFall: true }
     }
   }, [expr, displayMode])
 
