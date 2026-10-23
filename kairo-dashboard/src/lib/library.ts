@@ -120,6 +120,18 @@ function open(): Promise<IDBDatabase> {
       return
     }
     const req = indexedDB.open(DB_NAME, DB_VERSION)
+    let settled = false
+    // Another tab running an OLDER Kyno has the library open and will not let
+    // it upgrade. Without this the shelf showed "loading" forever. Give that
+    // tab a moment to step aside, then say what to do.
+    req.onblocked = () => {
+      setTimeout(() => {
+        if (settled) return
+        settled = true
+        dbPromise = null
+        reject(new Error('Kyno is open in another tab or window. Close it, then open your books again.'))
+      }, 4000)
+    }
     req.onupgradeneeded = () => {
       const db = req.result
       if (!db.objectStoreNames.contains(BOOKS)) {
@@ -137,12 +149,14 @@ function open(): Promise<IDBDatabase> {
     }
     req.onsuccess = () => {
       const db = req.result
+      if (settled) { db.close(); return }   // gave up already; the next call reopens
+      settled = true
       // A newer Kyno in another tab is upgrading the library: step aside so
       // its upgrade is not blocked, and reopen on the next call.
       db.onversionchange = () => { db.close(); dbPromise = null }
       resolve(db)
     }
-    req.onerror = () => { dbPromise = null; reject(req.error || new Error('Could not open the library')) }
+    req.onerror = () => { settled = true; dbPromise = null; reject(req.error || new Error('Could not open the library')) }
   })
   return dbPromise
 }

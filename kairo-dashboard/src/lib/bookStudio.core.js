@@ -84,10 +84,25 @@ function sqrtToTex(s) {
  */
 export function formulaTex(input) {
   let s = String(input ?? '').trim().replace(/^\$+|\$+$/g, '').trim()
-  if (!s || s.includes('\\')) return s   // already LaTeX
+  // Already LaTeX: leave it - except a bare %, which is a COMMENT in LaTeX and
+  // silently deleted the rest of the formula ("\times 100% \text{…}" -> "×100").
+  if (!s || s.includes('\\')) return s.replace(/(^|[^\\])%/g, '$1\\%')
+  // A reaction arrow means every formula in it is chemistry, H2 and O2 too.
+  const reaction = /-+>|→/.test(s)
   s = s.replace(/([%&#])/g, '\\$1')
     .replace(/\s*\*\s*/g, ' \\cdot ')
     .replace(/\s+[x×]\s+(?=[\d(])/g, ' \\times ')
+    .replace(/\s*(?:-+>|→)\s*/g, ' \\to ')
+  // Chemistry: H2O, CO2, 2H2SO4, Fe2O3 - two or more element symbols with
+  // counts - get real subscripts, upright as chemistry is printed. Without it
+  // "H2O" came out as an italic variable H times 2 times O. A lone symbol
+  // with a number (R2, V1) is a physics label and is left alone - unless the
+  // formula is a reaction.
+  const chem = reaction
+    ? /(?<![A-Za-z0-9_^\\{])(\d*)((?:[A-Z][a-z]?\d*)+)(?![A-Za-z0-9])/g
+    : /(?<![A-Za-z0-9_^\\{])(\d*)((?:[A-Z][a-z]?\d*){2,})(?![A-Za-z0-9])/g
+  s = s.replace(chem, (whole, coeff, f) =>
+    /\d/.test(f) ? `${coeff}\\mathrm{${f.replace(/([A-Z][a-z]?)(\d+)/g, '$1_{$2}')}}` : whole)
   s = s.replace(/(?<![\\A-Za-z])[A-Za-z]+(?:\s+[A-Za-z]+)*/g, run => {
     const all = run.split(/\s+/)
     // A lone short run is variables multiplied together -- the "at" in
@@ -108,7 +123,11 @@ export function formulaTex(input) {
   s = sqrtToTex(s)
   return s
     .replace(/([\^_])\(([^()]*)\)/g, '$1{$2}')
-    .replace(/([\^_])([A-Za-z0-9.]+)/g, '$1{$2}')
+    // A charge keeps its sign up with it: Fe^3+ is Fe^{3+}, not Fe^{3}+.
+    .replace(/\^(\d+[+-])(?!\d)/g, '^{$1}')
+    // A subscript is a number OR a name, never both: H_2O is H_{2}O, not H_{2O}.
+    .replace(/_(\d+|[A-Za-z]+)/g, '_{$1}')
+    .replace(/\^([A-Za-z0-9.]+)/g, '^{$1}')
 }
 
 /* ── the book's text, page by page ────────────────────────────────────────── */
@@ -215,7 +234,10 @@ export function askMessages(question, passages) {
   ]
 }
 
-const CITE = /\[\s*(?:p|pg|page)\.?\s*(\d{1,4})(?:\s*[-–,]\s*(\d{1,4}))?\s*\]/gi
+// Square OR round brackets, p/pp/pg/page/pages: the model is told "[p. 12]"
+// and also writes "(page 12)" and "[pp. 3-4]", which used to stay as plain
+// text with no tap-to-open chip and no check that the page was real.
+const CITE = /[[(]\s*(?:pp?|pgs?|pages?)\.?\s*(\d{1,4})(?:\s*(?:[-–,]|and|to)\s*(\d{1,4}))?\s*[\])]/gi
 
 /**
  * The model's answer, made safe to show: citations to pages that were really

@@ -67,6 +67,9 @@ const mapSymbols = s => s.replace(MATH_UNICODE_RE, (c, i) => {
   if (!tex.startsWith('\\')) return tex
   return /[A-Za-z]/.test(s[i + 1] || '') ? `${tex} ` : tex
 })
+  // % starts a COMMENT in LaTeX: "\times 100%" ate everything after it in
+  // the span. Escape it; an already-escaped \% is left alone.
+  .replace(/(^|[^\\])%/g, '$1\\%')
 
 export function normalizeMathUnicode(input) {
   const text = String(input ?? '')

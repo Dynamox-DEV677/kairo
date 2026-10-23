@@ -71,3 +71,26 @@ test('the privacy policy covers the permissions the app asks for', () => {
   assert.match(p, /Profile → Delete account/)
   assert.match(p, /delete-account\.html/)
 })
+
+test('a failed solve shows "Try again", not the crash screen', () => {
+  const src = read('src', 'pages', 'KairoSolver.tsx')
+  const panel = src.slice(src.indexOf('function ExplanationPanel'))
+  assert.ok(!/\{topic && !busy/.test(panel), 'topic is not defined in ExplanationPanel')
+  assert.ok(!/onClick=\{\(\) => ask\(topic\)\}/.test(panel), 'ask is not defined in ExplanationPanel')
+  assert.match(panel, /\{question && !busy && \(/)
+  assert.match(panel, /onClick=\{\(\) => onAskRelated\(question\)\}/)
+})
+
+test('account deletion only reports success when the sign-in is really gone', () => {
+  const src = read('server', 'routes', 'account.js')
+  const route = src.slice(src.indexOf("router.post('/delete'"))
+  assert.ok(route.indexOf('auth.admin.deleteUser') < route.indexOf(".from('users').delete()"), 'sign-in first, so a retry is still possible')
+  assert.match(route, /if \(results\.auth !== 'deleted'\) \{/)
+  assert.match(route, /res\.status\(SUPABASE_CONFIGURED \? 500 : 503\)/)
+})
+
+test('the Reader shelf cannot wait forever on a blocked library upgrade', () => {
+  const src = read('src', 'lib', 'library.ts')
+  assert.match(src, /req\.onblocked = \(\) => \{/)
+  assert.match(src, /Close it, then open your books again\./)
+})

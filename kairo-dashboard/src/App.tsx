@@ -338,7 +338,7 @@ export default function App() {
 
   return (
     <GenerationProvider>
-      <Suspense fallback={<SplashScreen />}>
+      <Suspense fallback={<SplashScreen onComplete={() => {}} />}>
         <Dashboard profile={profile} onLogout={handleLogout} />
       </Suspense>
       {/* Silent while everything works; says so plainly when it does not. */}

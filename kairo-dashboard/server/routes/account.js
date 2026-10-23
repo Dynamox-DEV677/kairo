@@ -3,6 +3,7 @@ import crypto from 'crypto'
 import { sendPasscodeOtpEmail } from '../email/index.js'
 import { supabaseAdmin, SUPABASE_CONFIGURED } from '../services/supabase.js'
 import { requireSupabaseAuth } from '../middleware/supabaseAuth.js'
+import { reportFault } from '../services/alert.js'
 
 const router = Router()
 
@@ -139,16 +140,32 @@ router.post('/delete', requireSupabaseAuth, async (req, res) => {
       await supabaseAdmin.from('battle_matches').update({ p2: null }).eq('p2', id)
       results.battle_matches = 'detached'
     } catch { results.battle_matches = 'skipped' }
-    try {
-      const { error } = await supabaseAdmin.from('users').delete().eq('id', id)
-      results.users = error ? 'error' : 'deleted'
-      if (error) console.warn('[account] delete users row:', error.message)
-    } catch { results.users = 'error' }
+    // The sign-in BEFORE the profile row. If deleting the sign-in failed after
+    // the row was gone, the student could not even retry: requireSupabaseAuth
+    // would find a valid token with no profile and answer 403. users.id
+    // references auth.users ON DELETE CASCADE, so this also removes the row.
     try {
       const { error } = await supabaseAdmin.auth.admin.deleteUser(id)
       results.auth = error ? 'error' : 'deleted'
       if (error) console.warn('[account] delete auth user:', error.message)
     } catch (e) { results.auth = 'error' }
+    if (results.auth === 'deleted') {
+      try {
+        const { error } = await supabaseAdmin.from('users').delete().eq('id', id)
+        results.users = error ? 'error' : 'deleted'
+      } catch { results.users = 'error' }
+    }
+  }
+
+  // "Deleted" only when the sign-in really is gone. This used to answer
+  // ok:true whatever happened, and the app then wiped the phone and told the
+  // student their account was deleted while it could still log in.
+  if (results.auth !== 'deleted') {
+    reportFault({ route: '/api/account/delete', status: 500, message: `account deletion incomplete: auth=${results.auth ?? 'not attempted'}`, extra: { results } })
+    return res.status(SUPABASE_CONFIGURED ? 500 : 503).json({
+      error: 'We could not finish deleting your account. Nothing has changed on your phone. Try again, or email kairoindustries.cor@gmail.com and we will do it for you.',
+      results,
+    })
   }
   res.json({ ok: true, results })
 })

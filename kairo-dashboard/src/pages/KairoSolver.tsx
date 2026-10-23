@@ -1340,9 +1340,12 @@ function ExplanationPanel({ resp, busy, error, retryHint, question, onOpenLab, o
               {error}
             </div>
           </div>
-          {topic && !busy && (
+          {/* `topic` and `ask` belong to the parent, not this panel: reading
+              them here was a ReferenceError, so every failed solve - AI busy,
+              offline - showed the crash screen instead of this retry. */}
+          {question && !busy && (
             <button className="kyno-chunky"
-              onClick={() => ask(topic)}
+              onClick={() => onAskRelated(question)}
               style={{
                 padding: '8px 14px', borderRadius: 9,
                 background: 'linear-gradient(135deg, #7C5CFF 0%, #4A2FA8 50%, #7C5CFF 100%)',
