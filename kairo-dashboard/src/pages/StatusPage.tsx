@@ -1,11 +1,11 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { studentMessage } from '../lib/aiError.core'
 import { motion } from 'framer-motion'
 import {
   CheckCircle2, AlertTriangle, XCircle, RefreshCw, Loader2,
-  Users, Building2, Activity, UserPlus, Server, Database, Sparkles, Mail,
-  Clock,
+  Activity, Server, Sparkles, Gauge, Clock,
 } from 'lucide-react'
+import { readHealth, type Health, type ServiceRow } from '../lib/statusHealth.core.js'
 
 const FONT = "'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif"
 
@@ -28,50 +28,40 @@ const C = {
   bad:   '#4A2FA8',
 }
 
-interface StatusSnapshot {
-  project:   string
-  timestamp: string
-  deploy:    {
-    commitShort:   string | null
-    commitMessage: string | null
-    branch:        string | null
-    region:        string | null
-    env:           string
-    uptimeSeconds: number
-  }
-  users:     { total: number | null; students: number | null; teachers: number | null; admins: number | null; parents: number | null; activeLast24h: number | null }
-  schools:   { total: number | null; active: number | null }
-  database:  { reachable: boolean; recentLogins24h: number | null; recentRegistrations7d: number | null; error?: string }
-  errors:    { totalLogged: number; recent: Array<{ ts: string; message: string }> }
-  features:  { total: number }
-  env:       Record<string, boolean>
-}
-
-type Health = 'ok' | 'degraded' | 'down'
+/**
+ * /status - the public health page.
+ *
+ * It used to read /api/ops/status (user counts, schools, the error log, build
+ * info). That endpoint was locked to operators because it leaked exactly that,
+ * the page was repointed at the public /api/ops/health probe, and its code was
+ * never changed: `snap.deploy.region` on a payload with no `deploy` crashed it
+ * to a blank screen in production. It now shows what the public probe can
+ * honestly say - is the server answering, and is the AI tutor working - and
+ * nothing about any user. statusHealth.core.js does the reading.
+ */
 
 interface Props {
   onExit?: () => void
 }
 
+const ICONS: Record<string, any> = { api: Server, ai: Sparkles }
+
 export default function StatusPage({ onExit }: Props) {
-  const [snap, setSnap]       = useState<StatusSnapshot | null>(null)
+  const [view, setView]       = useState<ReturnType<typeof readHealth> | null>(null)
   const [loading, setLoading] = useState(true)
   const [err, setErr]         = useState('')
-  const [reqAt, setReqAt]     = useState<number>(0)
 
   async function fetchOnce() {
-    const t0 = Date.now()
+    const t0 = performance.now()
     try {
-      // /ops/status is token-gated and 404s for everyone without one, by design.
-      // The public health probe is what a student-facing status page may read.
       const res = await fetch('/api/ops/health', { cache: 'no-store' })
+      if (!res.ok) throw Object.assign(new Error(`health ${res.status}`), { status: res.status })
       const data = await res.json()
-      setSnap(data)
-      setReqAt(Date.now() - t0)
+      setView(readHealth(data, performance.now() - t0))
       setErr('')
     } catch (e: any) {
       setErr(studentMessage(e))
-      setSnap(null)
+      setView(null)
     } finally {
       setLoading(false)
     }
@@ -83,52 +73,8 @@ export default function StatusPage({ onExit }: Props) {
     return () => clearInterval(id)
   }, [])
 
-  const services = useMemo(() => {
-    if (!snap) return []
-    return [
-      {
-        id:       'api',
-        icon:     Server,
-        label:    'API server',
-        body:     `Round-trip ${reqAt} ms · region ${snap.deploy.region || 'iad1'}`,
-        health:   (reqAt > 0 && reqAt < 1500 ? 'ok' : 'degraded') as Health,
-      },
-      {
-        id:       'db',
-        icon:     Database,
-        label:    'Database (Supabase)',
-        body:     snap.database.reachable
-                    ? `${snap.database.recentLogins24h ?? 0} logins in the last 24 h`
-                    : `Unreachable — ${snap.database.error || 'try again in a minute'}`,
-        health:   (snap.database.reachable ? 'ok' : 'down') as Health,
-      },
-      {
-        id:       'ai',
-        icon:     Sparkles,
-        label:    'AI provider',
-        body:     (snap.env as any).hasGroq
-                    ? 'Groq key pool configured — all AI runs on Groq'
-                    : 'GROQ_API_KEYS missing — Solver, Chat, Notebook AI will fail',
-        health:   ((snap.env as any).hasGroq ? 'ok' : 'down') as Health,
-      },
-      {
-        id:       'email',
-        icon:     Mail,
-        label:    'Email transport',
-        body:     snap.env.hasServiceRole
-                    ? 'Gmail SMTP configured · OTP + reset emails active'
-                    : 'Service role key missing — password resets will fail',
-        health:   (snap.env.hasServiceRole ? 'ok' : 'down') as Health,
-      },
-    ]
-  }, [snap, reqAt])
-
-  const overall: Health = useMemo(() => {
-    if (loading || !snap) return 'ok'
-    if (services.some(s => s.health === 'down')) return 'down'
-    if (services.some(s => s.health === 'degraded')) return 'degraded'
-    return 'ok'
-  }, [services, loading, snap])
+  const services: ServiceRow[] = view?.services ?? []
+  const overall: Health = err ? 'down' : view?.overall ?? 'ok'
 
   const overallText = {
     ok:       'All systems normal',
@@ -137,10 +83,12 @@ export default function StatusPage({ onExit }: Props) {
   }[overall]
 
   const overallBlurb = {
-    ok:       'Kyno is up and running. Latest stats below.',
-    degraded: 'Things still work, but one or more services are running slow. We\'re watching.',
+    ok:       'Kyno is up and running.',
+    degraded: 'Things still work, but something is running slow. We\'re watching.',
     down:     'Part of Kyno is offline. We\'re working on it — try again in a minute.',
   }[overall]
+
+  const pct = view?.stats.failRate == null ? null : Math.round(view.stats.failRate * 100)
 
   return (
     <div style={{
@@ -155,8 +103,7 @@ export default function StatusPage({ onExit }: Props) {
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 28 }}>
           <img src="/kairo_logo.png" alt="Kyno"
-            style={{ width: 38, height: 38, borderRadius: 10, objectFit: 'contain',
-                     filter: 'drop-shadow(0 0 18px rgba(124, 92, 255, 0.03))' }} />
+            style={{ width: 38, height: 38, borderRadius: 10, objectFit: 'contain' }} />
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 14, fontWeight: 800, letterSpacing: -0.2, color: C.text }}>
               Kyno Status
@@ -180,11 +127,7 @@ export default function StatusPage({ onExit }: Props) {
           style={{
             padding: '22px 24px',
             borderRadius: 18,
-            background: `linear-gradient(135deg,
-              ${overall === 'ok'       ? 'rgba(165, 180, 252, 0.10)' :
-                overall === 'degraded' ? 'rgba(165, 180, 252, 0.10)' :
-                                         'rgba(74, 47, 168, 0.18)'} 0%,
-              ${C.panel} 100%)`,
+            background: `linear-gradient(135deg, ${overall === 'down' ? 'rgba(74, 47, 168, 0.18)' : 'rgba(165, 180, 252, 0.10)'} 0%, ${C.panel} 100%)`,
             border: `1px solid ${overall === 'down' ? C.borderHi : C.border}`,
             display: 'flex', alignItems: 'center', gap: 18,
             marginBottom: 28,
@@ -196,11 +139,7 @@ export default function StatusPage({ onExit }: Props) {
               {loading ? 'Checking systems…' : overallText}
             </div>
             <div style={{ fontSize: 13, color: C.textDim, marginTop: 4, lineHeight: 1.55 }}>
-              {loading
-                ? 'Pinging API, database, AI providers, email transport.'
-                : err
-                  ? `Couldn't reach the status endpoint: ${err}`
-                  : overallBlurb}
+              {loading ? 'Asking the Kyno server and the AI tutor.' : err ? `Couldn't reach Kyno: ${err}` : overallBlurb}
             </div>
           </div>
           <button className="kyno-ghost" onClick={fetchOnce} aria-label="Refresh now"
@@ -216,18 +155,6 @@ export default function StatusPage({ onExit }: Props) {
           </button>
         </motion.div>
 
-        {snap && (
-          <div style={{
-            display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
-            gap: 12, marginBottom: 28,
-          }}>
-            <StatTile icon={Users}    label="Total users"    value={snap.users.total} />
-            <StatTile icon={Building2} label="Schools"        value={snap.schools.total} />
-            <StatTile icon={Activity} label="Active in 24 h" value={snap.users.activeLast24h ?? snap.database.recentLogins24h} accent />
-            <StatTile icon={UserPlus} label="New signups · 7 d" value={snap.database.recentRegistrations7d} />
-          </div>
-        )}
-
         <SectionTitle>Services</SectionTitle>
         <div style={{
           background: C.panel,
@@ -237,7 +164,7 @@ export default function StatusPage({ onExit }: Props) {
           marginBottom: 28,
         }}>
           {services.map((s, i) => {
-            const Icon = s.icon
+            const Icon = ICONS[s.id] || Server
             return (
               <div key={s.id}
                 style={{
@@ -260,63 +187,23 @@ export default function StatusPage({ onExit }: Props) {
               </div>
             )
           })}
-          {loading && !snap && (
+          {!services.length && (
             <div style={{ padding: 18, fontSize: 12, color: C.textFaint }}>
-              Loading service health…
+              {loading ? 'Loading service health…' : 'No health data right now.'}
             </div>
           )}
         </div>
 
-        {snap && snap.users.total != null && (
+        {view && (
           <>
-            <SectionTitle>Users by role</SectionTitle>
+            <SectionTitle>AI tutor · last hour</SectionTitle>
             <div style={{
-              background: C.panel,
-              border: `1px solid ${C.border}`,
-              borderRadius: 16, padding: '14px 18px',
-              marginBottom: 28,
-              display: 'flex', flexWrap: 'wrap', gap: 18,
+              display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+              gap: 12, marginBottom: 28,
             }}>
-              <RoleChip label="Students" value={snap.users.students} />
-              <RoleChip label="Teachers" value={snap.users.teachers} />
-              <RoleChip label="Admins"   value={snap.users.admins} />
-              <RoleChip label="Parents"  value={snap.users.parents} />
-            </div>
-          </>
-        )}
-
-        {snap && (
-          <>
-            <SectionTitle>Recent errors (24 h)</SectionTitle>
-            <div style={{
-              background: C.panel,
-              border: `1px solid ${C.border}`,
-              borderRadius: 16, padding: '16px 18px',
-              marginBottom: 28,
-              display: 'flex', alignItems: 'center', gap: 14,
-            }}>
-              <div style={{
-                width: 38, height: 38, borderRadius: 10, flexShrink: 0,
-                background: snap.errors.totalLogged === 0
-                  ? 'rgba(165, 180, 252, 0.10)'
-                  : 'rgba(74, 47, 168, 0.18)',
-                border: `1px solid ${C.border}`,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}>
-                {snap.errors.totalLogged === 0
-                  ? <CheckCircle2 size={17} color={C.purpleSoft} />
-                  : <AlertTriangle size={17} color={C.purpleLite} />}
-              </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 22, fontWeight: 800, color: C.text }}>
-                  {snap.errors.totalLogged}
-                </div>
-                <div style={{ fontSize: 11.5, color: C.textFaint, marginTop: 2 }}>
-                  {snap.errors.totalLogged === 0
-                    ? 'No client errors reported. Nice.'
-                    : 'Errors reported by the front-end since the last cold start.'}
-                </div>
-              </div>
+              <StatTile icon={Activity} label="Requests" value={view.stats.calls} accent />
+              <StatTile icon={AlertTriangle} label="Failed %" value={pct} />
+              <StatTile icon={Gauge} label="Slowest 5% · ms" value={view.stats.p95ms} />
             </div>
           </>
         )}
@@ -326,29 +213,13 @@ export default function StatusPage({ onExit }: Props) {
           background: 'rgba(165, 180, 252, 0.04)',
           border: `1px solid ${C.border}`,
           fontSize: 11, color: C.textFaint, lineHeight: 1.6,
+          display: 'flex', alignItems: 'center', gap: 6,
         }}>
-          {snap ? (
-            <>
-              <span style={{ color: C.textDim }}>Build</span>{' '}
-              <code style={{ color: C.purpleSoft, fontFamily: 'ui-monospace, monospace' }}>
-                {snap.deploy.commitShort || 'local'}
-              </code>
-              {snap.deploy.branch && (
-                <>{' '}· branch <code style={{ color: C.textDim, fontFamily: 'ui-monospace, monospace' }}>{snap.deploy.branch}</code></>
-              )}
-              {' '}· env <strong style={{ color: C.textDim }}>{snap.deploy.env}</strong>
-              {' '}· uptime <strong style={{ color: C.textDim }}>{fmtUptime(snap.deploy.uptimeSeconds)}</strong>
-              {' '}· {snap.features.total} features
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4, color: C.textVery }}>
-                <Clock size={10} />
-                <span>Last checked {new Date(snap.timestamp).toLocaleTimeString()}</span>
-              </div>
-            </>
-          ) : err ? (
-            <span>{err}</span>
-          ) : (
-            <span>Fetching build info…</span>
-          )}
+          <Clock size={10} />
+          <span>
+            {view ? `Last checked ${new Date(view.checkedAt).toLocaleTimeString()}` : err || 'Checking…'}
+            {' '}· figures are per server instance, so a quiet one can show 0 requests.
+          </span>
         </div>
       </div>
 
@@ -435,21 +306,6 @@ function StatTile({ icon: Icon, label, value, accent = false }: {
   )
 }
 
-function RoleChip({ label, value }: { label: string; value: number | null }) {
-  return (
-    <div style={{
-      display: 'flex', flexDirection: 'column', gap: 2, minWidth: 80,
-    }}>
-      <span style={{ fontSize: 10, fontWeight: 700, color: C.textFaint, textTransform: 'uppercase', letterSpacing: 1.2 }}>
-        {label}
-      </span>
-      <span style={{ fontSize: 20, fontWeight: 800, color: C.text, lineHeight: 1.1 }}>
-        {value == null ? '—' : value.toLocaleString('en-IN')}
-      </span>
-    </div>
-  )
-}
-
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
     <div style={{
@@ -465,14 +321,4 @@ const navBtn: React.CSSProperties = {
   background: 'transparent', border: `1px solid ${C.border}`,
   color: C.textDim, fontFamily: FONT,
   fontSize: 11.5, fontWeight: 600, cursor: 'pointer',
-}
-
-function fmtUptime(s: number): string {
-  if (!s || s < 0) return '—'
-  const d = Math.floor(s / 86400)
-  const h = Math.floor((s % 86400) / 3600)
-  const m = Math.floor((s % 3600) / 60)
-  if (d) return `${d}d ${h}h`
-  if (h) return `${h}h ${m}m`
-  return `${m}m`
 }

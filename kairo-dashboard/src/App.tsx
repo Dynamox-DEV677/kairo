@@ -270,7 +270,6 @@ export default function App() {
         />
         <TermsHost />
         <DesktopUpdateBanner />
-        <DemoModePrompt />
       </>
     )
   }
@@ -286,7 +285,6 @@ export default function App() {
         />
         <TermsHost />
         <DesktopUpdateBanner />
-        <DemoModePrompt />
       </>
     )
   }
@@ -302,7 +300,6 @@ export default function App() {
         />
         <TermsHost />
         <DesktopUpdateBanner />
-        <DemoModePrompt />
       </>
     )
   }
@@ -323,7 +320,6 @@ export default function App() {
         </div>
         <TermsHost />
         <DesktopUpdateBanner />
-        <DemoModePrompt />
         {splash}
       </>
     )
@@ -335,7 +331,6 @@ export default function App() {
         <Login onLogin={handleLogin} />
         <TermsHost />
         <DesktopUpdateBanner />
-        <DemoModePrompt />
         {splash}
       </>
     )
@@ -348,6 +343,11 @@ export default function App() {
       </Suspense>
       {/* Silent while everything works; says so plainly when it does not. */}
       <SyncIndicator />
+      {/* Signed in, onboarding out of the way, account still empty. It used to
+          render ONLY on the logged-out screens - over the sign-in form on a
+          phone, where "Load demo data" filled local storage and reloaded
+          straight back to the same login page. */}
+      {onboard === 'done' && <DemoModePrompt />}
       {onboard === 'open' && (
         <Onboarding
           profile={profile}

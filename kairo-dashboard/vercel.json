@@ -3,6 +3,8 @@
   "outputDirectory": "dist",
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/index" },
+    { "source": "/delete-account", "destination": "/delete-account.html" },
+    { "source": "/privacy", "destination": "/privacy.html" },
     { "source": "/(.*)",     "destination": "/index.html" }
   ],
   "functions": {

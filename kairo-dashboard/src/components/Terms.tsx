@@ -461,7 +461,7 @@ function TermsBody() {
       <H>11. Suspension &amp; termination</H>
       <P>
         You may delete your Kyno account at any time from{' '}
-        <Em>Settings → Security</Em>. We may suspend or terminate accounts
+        <Em>Profile → Delete account</Em>. We may suspend or terminate accounts
         that violate these Terms, that pose a security risk, or that we are
         required to remove by law. On termination, your local data on the
         device is preserved (it's yours); server-side data is wiped within
@@ -611,8 +611,8 @@ function PrivacyBody() {
         <li><Em>View &amp; export</Em> — Settings → Data → Export Twin</li>
         <li><Em>Reset device passcode</Em> — Settings → Security → Reset
             Passcode</li>
-        <li><Em>Delete account</Em> — Settings → Account → Delete Account.
-            Server data is wiped within 30 days.</li>
+        <li><Em>Delete account</Em> — Profile → Delete account.
+            It happens immediately; routine backups expire within 30 days.</li>
       </L>
 
       <H>9. Security</H>
