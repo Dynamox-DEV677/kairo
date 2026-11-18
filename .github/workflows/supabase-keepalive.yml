@@ -1,0 +1,37 @@
+# Keeps the free-tier Supabase project awake.
+# Free projects pause after ~7 days without database activity. On 17 Nov 2026 that
+# happened during Google Play review: the reviewer's sign-in showed "Can't reach Kyno"
+# and Play rejected the app for "unresponsive UI elements".
+#
+# Every 2 days this reads the public Supabase URL + anon key from the live site's own
+# bundle (no secrets, nothing committed) and sends one tiny query. An anon "permission
+# denied" (401/403) still runs inside Postgres, so it counts as activity; any other
+# status means Supabase is down or paused, and the run fails so GitHub emails us.
+name: supabase-keepalive
+
+on:
+  schedule:
+    - cron: '0 6 */2 * *'   # every 2 days, 11:30 IST
+  workflow_dispatch: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Query Supabase through the public client config
+        run: |
+          set -euo pipefail
+          SITE=https://kairo-daily-edu.vercel.app
+          curl -fsS "$SITE/" -o index.html
+          for js in $(grep -oE '/assets/[^"]+\.js' index.html | sort -u); do
+            curl -fsS "$SITE$js" >> bundle.js || true
+          done
+          URL=$(grep -ohE 'https://[a-z0-9]{20}\.supabase\.co' bundle.js | head -1 || true)
+          KEY=$(grep -ohE 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+' bundle.js | head -1 || true)
+          if [ -z "$URL" ] || [ -z "$KEY" ]; then echo "Could not find the Supabase config in the live bundle"; exit 1; fi
+          auth=$(curl -s -o /dev/null -w "%{http_code}" "$URL/auth/v1/health" -H "apikey: $KEY")
+          rest=$(curl -s -o /dev/null -w "%{http_code}" "$URL/rest/v1/schools?select=id&limit=1" -H "apikey: $KEY" -H "Authorization: Bearer $KEY")
+          echo "auth health: $auth · database query: $rest"
+          [ "$auth" = "200" ] || { echo "Supabase auth is not healthy (paused?)"; exit 1; }
+          case "$rest" in 200|206|401|403) echo "Supabase is awake" ;; *) echo "Database did not answer normally (paused?)"; exit 1 ;; esac
